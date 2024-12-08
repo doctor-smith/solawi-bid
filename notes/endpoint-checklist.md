@@ -12,3 +12,4 @@
     - [ ] ```LensType -> ApiType```
     - [ ] ```ApiType -> LensType```
 - [ ] Add corresponding Action to frontend
+- [ ] Implement endpoint

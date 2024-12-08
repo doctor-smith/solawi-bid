@@ -44,7 +44,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<Auction>(Auction.serializer())
         add<GetAuctions>(GetAuctions.serializer())
         add<Auctions>(Auctions.serializer())
-
+        add<DeleteAuctions>(DeleteAuctions.serializer())
         // Bid
         add<Bid>(Bid.serializer())
         add<Bidder>(Bidder.serializer())

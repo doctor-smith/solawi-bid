@@ -36,6 +36,5 @@ fun Application.installSerializers() {
     serializers[CreateAuction::class] = CreateAuction.serializer()
     serializers[GetAuctions::class] = GetAuctions.serializer()
     serializers[Auctions::class] = Auctions.serializer()
-
-
+    serializers[DeleteAuctions::class] = DeleteAuctions.serializer()
 }

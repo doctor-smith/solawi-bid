@@ -8,18 +8,24 @@ Here we list important todos
 - [x] Create Lenses and Pseudo Lenses via Gradle Plugin 
 - [x] Create DB Migrations via Gradle Plugin
 
-### Routing
+### Routing (Frontend)
 - [x] common layouts under specific routes
 - [x] conditional routing / control access efficiently 
 
 ### Code Organization
-This is an ongoing task. There are many parts of the code, which are to be extracted in separate modules / projects:
-- Authorization / Authentication
-- User Management
-- Permission Api
-- Frontend Components
-- ...
-
+1. This is an ongoing task. There are many parts of the code, which are to be extracted in separate modules / projects:
+   - Authorization / Authentication
+   - User Management
+   - Permission Api
+   - Frontend Components
+   - ...
+2. Define typealiases for entities, domain types, and api types (serializable types)
+   - [x] authentication
+   - [x] auctions / bid
+   - [ ] usermanagement
+     - [x] entities
+   - [ ] rights and roles
+     - [x] entities
 
 ### Style
 - [x] Adjust ModalLayer, so that it is capable of showing messages 
@@ -46,9 +52,10 @@ This is an ongoing task. There are many parts of the code, which are to be extra
       - [x] Modal (Create)
   - [ ] Api Calls: 
     - [ ] Auctions
-      - [x] Read Auctions 
-        - Note: 
-          - [ ] Need to adjust types !!! 
+      - [x] Read Auctions  
+      - [ ] Need to adjust type !!! 
+        - [x] date added
+        - [ ] What about adding a state to the Auction type 
       - [x] Create Auctions
       - [ ] Update Auctions
       - [ ] Delete Auctions
@@ -75,12 +82,16 @@ This is an ongoing task. There are many parts of the code, which are to be extra
 - [ ] of Results of an auction
 
 ### Prosumer Management
+Needs to be planned soon!!! (2024.12.1)
 
 
-
-### Mail Service 
+### Mail Service (needed for Prosumer management, double opt in)
 
 ### Access different Apis (Future)
 
 ### Roles and Rights
 TODO
+
+### Setup E2E Tests
+- [ ] Choose Framework
+- [ ] Make framework functional

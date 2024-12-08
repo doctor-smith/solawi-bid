@@ -13,10 +13,12 @@ import org.evoleq.util.Respond
 import org.solyton.solawi.bid.application.environment.Environment
 import org.solyton.solawi.bid.module.bid.action.db.CreateAuction
 import org.solyton.solawi.bid.module.bid.action.db.ReadAuctions
+import org.solyton.solawi.bid.module.bid.action.db.DeleteAuctions
 import org.solyton.solawi.bid.module.bid.action.db.StoreBid
 import org.solyton.solawi.bid.module.bid.data.api.Bid
 import org.solyton.solawi.bid.module.bid.data.api.GetAuctions
 import org.solyton.solawi.bid.module.bid.data.api.CreateAuction
+import org.solyton.solawi.bid.module.bid.data.api.DeleteAuctions
 
 
 @KtorDsl
@@ -45,11 +47,11 @@ fun Routing.auction(environment: Environment,authenticate: Routing.(Route.() -> 
             post("create") {
                 (Receive<CreateAuction>() * CreateAuction * Respond()) runOn Base(call, environment)
             }
-            post("update") {
+            patch("update") {
 
             }
-            delete(":id") {
-
+            delete("delete") {
+                (Receive<DeleteAuctions>() * DeleteAuctions * ReadAuctions * Respond()) runOn Base(call, environment)
             }
             get("results") {
 
