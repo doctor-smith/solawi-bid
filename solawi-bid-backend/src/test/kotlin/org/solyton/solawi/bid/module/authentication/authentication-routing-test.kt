@@ -1,7 +1,6 @@
 package org.solyton.solawi.bid.module.authentication
 
 import com.typesafe.config.ConfigFactory
-import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -19,12 +18,13 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.solyton.solawi.bid.Api
+import org.solyton.solawi.bid.module.authentication.data.api.AccessToken
 import org.solyton.solawi.bid.module.authentication.data.api.LoggedIn
-import org.solyton.solawi.bid.module.authentication.data.api.Login
 import java.io.File
 import java.util.stream.Stream
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
 class AuthenticationRoutingTest {
@@ -50,7 +50,8 @@ class AuthenticationRoutingTest {
              "use-new-token",
              "revoke-token",
              "use-revoked-tokens",
-            // "token-expiration" // ???
+            // "token-expiration" // ???,
+
         )
     }
     @Api@ParameterizedTest
@@ -111,6 +112,7 @@ class AuthenticationRoutingTest {
                     // Check access with and without token
                     val accessToken = loggedInResult.data.accessToken
                     val refreshToken = loggedInResult.data.refreshToken
+                    var newToken: String? = null  // need to use statemonad
 
                     testCase( "use-wrong-token") {
                         val negativeResponse = testCall("1$accessToken")
@@ -122,16 +124,27 @@ class AuthenticationRoutingTest {
                         assertTrue("Status not OK") { positiveResponse.status == HttpStatusCode.OK }
                     }
                     // Refresh token and check access with new token and old token
-                    testCase("refresh-token", true){
-                        kotlin.test.fail("Not implemented yet!")
+                    testCase("refresh-token"){
+                        val refreshTokenResponse = refreshToken(rightUsername, refreshToken)
+                        assertTrue("Status not OK") { refreshTokenResponse.status == HttpStatusCode.OK }
+                        val result = Json.decodeFromString(
+                            ResultSerializer,
+                            refreshTokenResponse.bodyAsText()
+                        )
+                        assertIs<Result.Success<AccessToken>>(result)
+                        newToken = result.data.accessToken
+                        assertNotSame(accessToken, newToken)
                     }
                     // new token  -> expect success
-                    testCase("use-new-token",true) {
-                        kotlin.test.fail("Not implemented yet!")
+                    testCase("use-new-token", true) {
+                        val positiveResponse = testCall(newToken!!)
+                        assertTrue("Status not OK") { positiveResponse.status == HttpStatusCode.OK }
                     }
                     // old token -> expect fail
                     testCase( "use-old-token", true) {
-                        kotlin.test.fail("Not implemented yet!")
+                        val negativeResponse = testCall(accessToken)
+                        assertFalse("Status is OK") { negativeResponse.status == HttpStatusCode.OK }
+                        assertTrue("Status is not Unauthorized") { negativeResponse.status == HttpStatusCode.Unauthorized }
                     }
                     // Revoke token and check access. Expect no token work anymore
                     testCase("revoke-token", true) {
@@ -145,23 +158,4 @@ class AuthenticationRoutingTest {
         }
     }
 
-    suspend fun ApplicationTestBuilder.testCall(accessToken: String? = null) = client.get("test") {
-        header(HttpHeaders.ContentType, ContentType.Application.Json)
-        if (accessToken != null) {
-            header(HttpHeaders.Authorization, "Bearer $accessToken")
-        }
-    }
-
-    suspend fun ApplicationTestBuilder.login(username: String, password: String) = client.post("/login") {
-        header(HttpHeaders.ContentType, ContentType.Application.Json)
-        setBody(
-            Json.encodeToString(
-                Login.serializer(),
-                Login(
-                    username = username,
-                    password = password
-                )
-            )
-        )
-    }
 }

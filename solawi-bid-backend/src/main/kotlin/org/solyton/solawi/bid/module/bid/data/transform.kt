@@ -22,7 +22,7 @@ fun AuctionEntity.toApiType(): Auction = Auction(
         listOf()
     },
     bidderIds = try {
-        bidders.map {
+        bidders.toList().map {
             it.id.value.toString()
         }
     }catch(e:Exception){

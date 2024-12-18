@@ -88,7 +88,8 @@ fun DragDropEnvironment(
         write = {hitTarget = it}
     )
 
-    val dragDropEnvironment = with(
+    /*val dragDropEnvironment = */
+    with(
         DragDropEnvironment(
         sources = sourcesStorage,
         targets = targetsStorage,

@@ -57,7 +57,7 @@ fun AuctionPage(storage: Storage<Application>) = Div{
                         actions.emit( createAuction(auction) )
                     } catch(exception: Exception) {
                         (storage * modals).showErrorModal(
-                            errorModalTexts(exception.message?:exception.cause?.message?:"Cannot Emit action")
+                            errorModalTexts(exception.message?:exception.cause?.message?:"Cannot Emit action 'CreateAuction'")
                         )
                     }
                 }
@@ -68,5 +68,16 @@ fun AuctionPage(storage: Storage<Application>) = Div{
     }
     // render list of auctions
     // each entry offers the opportunity to read details, edit, or delete
-    AuctionList(storage * auctions)
+    AuctionList(storage * auctions){
+        CoroutineScope(Job()).launch {
+            val actions = (storage * actions).read()
+            try {
+                actions.emit( it )
+            } catch(exception: Exception) {
+                (storage * modals).showErrorModal(
+                    errorModalTexts(exception.message?:exception.cause?.message?:"Cannot Emit action '${it.name}'")
+                )
+            }
+        }
+    }
 }

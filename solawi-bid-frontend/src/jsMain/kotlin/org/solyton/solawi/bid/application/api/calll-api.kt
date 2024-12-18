@@ -58,11 +58,11 @@ fun <S : Any,T : Any> Call(action: Action<Application, S, T>): KlState<Storage<A
             when(call) {
                 is EndPoint.Get -> get<S, T>(url, port, action.serializer, action.deserializer)
                 is EndPoint.Post -> post<S, T>(url, port, action.serializer, action.deserializer)
-                is EndPoint.Delete -> TODO()//delete<S, T>(url)
-                is EndPoint.Head -> TODO()
-                is EndPoint.Patch -> TODO()// patch<S, T>(url)
+                is EndPoint.Delete -> delete<S, T>(url, port, action.serializer, action.deserializer)
+                is EndPoint.Head -> TODO("Call of function Client.head has not benn implemented yet")
+                is EndPoint.Patch -> patch<S, T>(url, port, action.serializer, action.deserializer)// patch<S, T>(url)
 
-                is EndPoint.Put -> TODO()
+                is EndPoint.Put -> put<S, T>(url, port, action.serializer, action.deserializer)
             }
 
         } (s) x storage

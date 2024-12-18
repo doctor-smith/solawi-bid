@@ -9,7 +9,7 @@ import org.jetbrains.compose.web.dom.Text
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun Label(text: String, width: Int = 100, id: String = "", labelStyle: StyleScope.()->Unit) {
+fun Label(text: String, id: String = "", labelStyle: StyleScope.()->Unit) {
     org.jetbrains.compose.web.dom.Label(attrs = {
         forId(id)
         style {

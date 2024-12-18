@@ -13,6 +13,7 @@ import org.solyton.solawi.bid.application.service.isLoggerIn
 import org.solyton.solawi.bid.application.ui.page.auction.AuctionPage
 import org.solyton.solawi.bid.application.ui.page.dashboard.DashboardPage
 import org.solyton.solawi.bid.application.ui.page.login.LoginPage
+import org.solyton.solawi.bid.application.ui.page.sendbid.SendBidPage
 import org.solyton.solawi.bid.application.ui.page.test.TestPage
 import org.solyton.solawi.bid.module.navbar.component.NavBar
 
@@ -84,6 +85,11 @@ fun Routing(storage: Storage<Application>): Routes = Routing("/") {
             route("test") {
                 component { TestPage() }
             }
+        }
+    }
+    route("bid/send/:cryptoId") {
+        component {
+            SendBidPage(storage, "${parameter("cryptoId")}")
         }
     }
 }

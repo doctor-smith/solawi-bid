@@ -102,6 +102,8 @@ data class Actions(
     private val dispatch: HashMap<ActionType, ()->Unit>
 ): Map<ActionType, ()->Unit> by dispatch
 
+fun Actions(vararg actions: Pair<ActionType,()->Unit>): Actions = Actions(hashMapOf(*actions))
+
 fun Actions.dispatch(type: ActionType): Unit = get(type)!!()
 
 
