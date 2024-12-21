@@ -41,6 +41,39 @@ fun <S: Any,T: Any> HttpClient.get(url: String, port: Int, serializer: KSerializ
         decode(deserializer)
     } }
 
+fun <S: Any,T: Any> HttpClient.put(url: String, port: Int, serializer: KSerializer<S>, deserializer: KSerializer<Result<T>>): suspend (S)-> Result<T> = { s: S ->
+    with(put(url) {
+        this.port = port
+        if (s::class != Unit::class) {
+            val serialized = Json.encodeToString(serializer, s)
+            setBody(serialized)
+        }
+    }) {
+        decode(deserializer)
+    } }
+
+fun <S: Any,T: Any> HttpClient.patch(url: String, port: Int, serializer: KSerializer<S>, deserializer: KSerializer<Result<T>>): suspend (S)-> Result<T> = { s: S ->
+    with(patch(url) {
+        this.port = port
+        if (s::class != Unit::class) {
+            val serialized = Json.encodeToString(serializer, s)
+            setBody(serialized)
+        }
+    }) {
+        decode(deserializer)
+    } }
+
+fun <S: Any,T: Any> HttpClient.delete(url: String, port: Int, serializer: KSerializer<S>, deserializer: KSerializer<Result<T>>): suspend (S)-> Result<T> = { s: S ->
+    with(delete(url) {
+        this.port = port
+        if (s::class != Unit::class) {
+            val serialized = Json.encodeToString(serializer, s)
+            setBody(serialized)
+        }
+    }) {
+        decode(deserializer)
+    } }
+
 
 suspend fun <T : Any> HttpResponse.decode(deserializer : KSerializer<Result<T>>): Result<T> = try{
         Json.decodeFromString(deserializer, this.bodyAsText())

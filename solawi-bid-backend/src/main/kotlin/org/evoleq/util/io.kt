@@ -9,33 +9,45 @@ import io.ktor.server.response.*
 import io.ktor.util.*
 import kotlinx.serialization.json.Json
 import org.evoleq.exposedx.NoMessageProvided
-import org.evoleq.ktorx.result.Result
-import org.evoleq.ktorx.result.ResultSerializer
-import org.evoleq.ktorx.result.Return
-import org.evoleq.ktorx.result.Serializer
+import org.evoleq.ktorx.result.*
+import org.evoleq.math.state.times
 import org.evoleq.math.x
 import org.solyton.solawi.bid.module.authentication.exception.AuthenticationException
 import org.solyton.solawi.bid.module.db.BidRoundException
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
+import java.util.*
 
-
-fun <T : Any> Authenticate(): Action<JWTPrincipal?> = ApiAction {
-    call -> call.authentication.principal<JWTPrincipal>() x call
+@KtorDsl
+@Suppress("FunctionName")
+fun  Principle(): Action<Result<JWTPrincipal>> = ApiAction {
+    call -> with(call.authentication.principal<JWTPrincipal>()) {
+        when(this){
+            null -> Result.Failure.Exception(AuthenticationException.InvalidOrExpiredToken)
+            else -> Result.Success(this)
+        }
+    } x call
 }
 
 
 
 @KtorDsl
 @Suppress("FunctionName")
-suspend inline fun <reified T : Any>  AuthReceive(): KlAction<JWTPrincipal? ,Result<T>> = {principal -> ApiAction {
-     call -> if(principal != null) {
-        Result.Success(call.receive<T>())
-     } else {
+suspend inline fun <reified T : Any>  ReceiveContextual(): Action<Result<Contextual<T>>> = Principle() * {
+    principle -> ApiAction { call -> principle mapSuspend  { jwtp ->
+        val data = call.receive<T>()
+        val userId = jwtp.payload.subject
+        Contextual(UUID.fromString(userId), data)
+    } x call }
+}
+@KtorDsl
+@Suppress("FunctionName")
+suspend inline fun   Context(): Action<Result<Contextual<Unit>>> = Principle() * {
+    principle -> ApiAction { call -> principle mapSuspend  { jwtp ->
 
-        Result.Failure.Exception(AuthenticationException.InvalidOrExpiredToken)
-} x call
-
-}}
+        val userId = jwtp.payload.subject
+        Contextual(UUID.fromString(userId), Unit)
+    } x call }
+}
 
 @KtorDsl
 @Suppress("FunctionName")
@@ -43,6 +55,7 @@ suspend inline fun <reified T : Any>  Receive(): Action<Result<T>> = ApiAction {
     call -> try{
         Result.Success(Json.decodeFromString(Serializer<T>(), call.receive<String>()))
     } catch (e: Exception) {
+        // println(e.message?:"No message provided")
         Result.Failure.Exception(e)
     } x call
 }
@@ -74,6 +87,11 @@ suspend inline fun <reified T : Any>  Respond(): KlAction<Result<T>, Unit> = {re
         } x call
 } }
 
+@KtorDsl
+@Suppress("FunctionName")
+fun <S : Any, T: Any> Transform(f: (S)-> T): KlAction<Result<S>, Result<T>> =
+    {result: Result<S> -> Action { base -> result map f x base } }
+
 fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Message> =
     when(this.value) {
         // Authentication
@@ -97,3 +115,9 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
     } x this.value.toMessage()
 
 fun Throwable.toMessage(): Result.Failure.Message = Result.Failure.Message(message?: NoMessageProvided)
+
+@KtorDsl
+@Suppress("FunctionName")
+fun <T:  Any> Fail(message: String): KlAction<Result<T>, Result<T>> = {_ -> ApiAction {
+    call -> Result.Failure.Message(message) x call
+}}

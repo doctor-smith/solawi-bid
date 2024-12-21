@@ -4,5 +4,5 @@ import org.evoleq.optics.storage.ActionType
 
 object CreateAuction : ActionType
 object DeleteAuction : ActionType
-object EditAction : ActionType
-object DetailsAction : ActionType
+object EditAuction : ActionType
+object DetailsOfAuction : ActionType

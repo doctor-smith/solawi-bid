@@ -64,7 +64,6 @@ fun AuctionModal(
                 id("date")
                 style { dateInputStyle() }
                 onInput {
-                    console.log(it.value)
                     (auction * date).write(it.value.parse(Locale.Iso))
                 }
             }

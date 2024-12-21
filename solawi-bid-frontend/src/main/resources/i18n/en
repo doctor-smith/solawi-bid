@@ -49,6 +49,15 @@ en{
                         title: "Abbrechen"
                     }
                 }
+                importBiddersDialog {
+                    title: "Bieter importieren"
+                    okButton {
+                        title: "Ok"
+                    }
+                    cancelButton {
+                        title: "Abbrechen"
+                    }
+                }
             }
             errors {
                 title: "Fehler"

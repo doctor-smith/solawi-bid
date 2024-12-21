@@ -6,13 +6,14 @@ import org.evoleq.exposedx.transaction.resultTransaction
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.ktorx.result.map
-import org.evoleq.ktorx.result.mapSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.crypto.generateSecureLink
 import org.evoleq.math.x
 import org.evoleq.util.DbAction
 import org.evoleq.util.KlAction
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.Transaction
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.bid.data.api.*
@@ -32,10 +33,8 @@ val CreateAuction = KlAction<Result<CreateAuction>, Result<Auction>> {
     auction: Result<CreateAuction> -> DbAction {
         database -> auction bindSuspend  { data -> resultTransaction(database) {
             println("Create auction: ${data.name}")
-            createAuction(data.name, data.date)
-        } } mapSuspend  {
-            it.toApiType()
-        } x database
+            createAuction(data.name, data.date).toApiType()
+        } }  x database
     }
 }
 
@@ -47,11 +46,9 @@ fun Transaction.createAuction(name: String, date: LocalDate): AuctionEntity = Au
 @MathDsl
 val ReadAuctions = KlAction<Result<GetAuctions>, Result<ApiAuctions>> {
     auctions -> DbAction { database ->  resultTransaction(database){
-      readAuctions()//
+      with(readAuctions()){ApiAuctions(toApiType())}
 
     // TODO(use identifier to return all auction which are accessible as identified person)
-    }  mapSuspend  {
-        ApiAuctions(it.toApiType())
     } x database }
 }
 
@@ -65,20 +62,75 @@ fun Transaction.readAuctions(): List<AuctionEntity> = with(AuctionEntity.all().m
    }
 }
 
+@MathDsl
+val ReadAuction = KlAction<Result<UUID>, Result<ApiAuction>> {
+    auction -> DbAction {
+        database ->  auction bindSuspend { resultTransaction(database) {
+                readAuction(it).toApiType()
+
+                // TODO(use identifier to return all auction which are accessible as identified person)
+            }
+        }  x database
+    }}
+
+
+
+fun Transaction.readAuction(auctionId: UUID): AuctionEntity {
+    val auction = AuctionEntity.find { Auctions.id eq auctionId }.firstOrNull()
+        ?: throw BidRoundException.NoSuchAuction
+   //val bidderIds = AuctionBidders.select(listOf(bidderId)).where{AuctionBidders.auctionId eq auctionId}.toList()
+    val rounds = auction.rounds.toList()
+    val bidders = auction.bidders
+    //auction.rounds = rounds
+    auction.bidders = bidders
+    return auction
+}
+
+
+
+@MathDsl
+val DeleteAuctions = KlAction<Result<DeleteAuctions>, Result<GetAuctions>> {
+    auctions -> DbAction {
+        database -> auctions bindSuspend {
+            data -> resultTransaction(database){
+                deleteAuctions(data.auctionIds.map { UUID.fromString(it) })
+        } } map { GetAuctions } x database
+    }
+}
+
+fun Transaction.deleteAuctions(auctionIds: List<UUID>) {
+    Auctions.deleteWhere { Auctions.id inList auctionIds }
+}
+
+@MathDsl
+val UpdateAuctions = KlAction<Result<UpdateAuctions>, Result<GetAuctions>> {
+    auctions -> DbAction {
+        database -> auctions bindSuspend {
+            data -> resultTransaction(database) {
+                 updateAuctions(data.list )
+            }
+        } map { GetAuctions } x database
+    }
+}
+
+fun Transaction.updateAuctions(auctions: List<ApiAuction>) {
+    TODO("Function updateAuctions not implemented yet!")
+}
+
 val AddRound = KlAction<Result<PreRound>, Result<Round>> {
     round -> DbAction {
         database -> round bindSuspend  { data -> resultTransaction(database){
-            addRound(data)
-        } } map {it.toApiType()}  x database
+            addRound(data).toApiType()
+        } } x database
     }
 }
 
 fun Transaction.addRound(round: PreRound): RoundEntity {
-    val auctionEntity = AuctionEntity.find { Auctions.id eq UUID.fromString(round.auctionId) }.first()
+    val auctionEntity = AuctionEntity.find { Auctions.id eq UUID.fromString(round.roundId) }.first()
     val roundEntity = RoundEntity.new {
         auction = auctionEntity
     }
-    roundEntity.link = generateSecureLink(round.auctionId.toString(), roundEntity.id.value.toString(), UUID.randomUUID().toString())
+    roundEntity.link = generateSecureLink(round.roundId.toString(), roundEntity.id.value.toString(), UUID.randomUUID().toString())
     return roundEntity
 }
 
@@ -93,32 +145,36 @@ val AddBidders = KlAction<List<Bidder>, Result<AuctionEntity>> = KlAction{
 
  */
 
-
-
-fun Transaction.addBidders(auctionId: UUID, bidders: List<NewBidder>): AuctionEntity {
-    val auction = AuctionEntity.find { Auctions.id eq auctionId }.firstOrNull()
-        ?: throw BidRoundException.NoSuchAuction
+fun Transaction.addBidders(auction: AuctionEntity, bidders: List<NewBidder>): AuctionEntity {
 
     bidders.forEach { bidder ->
         val newBidder = BidderEntity.new {
             username = bidder.username
             weblingId = bidder.weblingId
-            this.numberOfParts = bidder.numberOfParts
+            this.numberOfParts = bidder.numberOfShares
         }
         AuctionBidders.insert {
             it[AuctionBidders.auctionId] = auction.id.value
             it[AuctionBidders.bidderId] = newBidder.id.value
         }
     }
+    //commit()
+    //val nextAuction = AuctionEntity.findById(auction.id)!!
+    return auction //nextAuction
+}
 
-    return auction
+fun Transaction.addBidders(auctionId: UUID, bidders: List<NewBidder>): AuctionEntity {
+    val auction = AuctionEntity.find { Auctions.id eq auctionId }.firstOrNull()
+        ?: throw BidRoundException.NoSuchAuction
+
+    return addBidders(auction, bidders)
 }
 
 val ChangeRoundState = KlAction<ChangeRoundState, Result<Round>> {
     roundState -> DbAction {
         database -> coroutineScope {  resultTransaction(database) {
-            changeRoundState(roundState)
-        } } mapSuspend  { it.toApiType() } x database
+            changeRoundState(roundState).toApiType()
+        } }  x database
     }
 }
 

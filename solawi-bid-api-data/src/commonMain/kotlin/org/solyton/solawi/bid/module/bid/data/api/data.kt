@@ -23,7 +23,7 @@ data class Bid(
 data class NewBidder(
     val username: String,
     val weblingId: Int,
-    val numberOfParts: Int
+    val numberOfShares: Int
 ) {
     init {
        // if(numberOfParts < 0) throw BidRoundException.IllegalNumberOfParts(numberOfParts)
@@ -47,7 +47,7 @@ data class Bidder(
 @Serializable
 data class  PreRound(
     //@Serializable(with = UUIDSerializer::class)
-    val auctionId: String//Uuid,
+    val roundId: String//Uuid,
 )
 
 @Serializable
@@ -94,11 +94,35 @@ data class Auctions(
 )
 
 @Serializable
+data class UpdateAuctions(
+    val list: List<Auction> = listOf()
+)
+
+@Serializable
+data class DeleteAuctions(
+    val auctionIds: List<String>
+)
+
+
+@Serializable
 data class BidRound(
     //@Serializable(with = UUIDSerializer::class)
     val id: String, //Uuid, //= ZeroUUID,
     val round: Round,
     val auction: Auction,
     val amount: Double?
+)
+
+
+@Serializable
+data class ImportBidders(
+    val auctionId: String,
+    val bidders: List<NewBidder>
+)
+
+@Serializable
+data class DeleteBidders(
+    val auctionId: String?,
+    val bidderIds: List<String>
 )
 

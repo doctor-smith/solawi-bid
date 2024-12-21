@@ -18,6 +18,6 @@ fun generateSecureLink(roundId: String, auctionId: String, secretKey: String): S
     val signatureBytes = hmac.doFinal(encodedData.toByteArray())
     val signature = Base64.getUrlEncoder().withoutPadding().encodeToString(signatureBytes)
 
-    // Generate the final secure link
-    return "https://example.com/auction?data=$encodedData&signature=$signature"
+    // Generate the crypto portion of the final secure link
+    return "auction?data=$encodedData&signature=$signature"
 }
