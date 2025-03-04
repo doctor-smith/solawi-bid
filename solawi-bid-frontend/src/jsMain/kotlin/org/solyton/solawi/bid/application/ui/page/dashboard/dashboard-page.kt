@@ -60,11 +60,13 @@ fun DashboardPage(storage: Storage<Application>) {
                  */
             }
             Card({
-                navigate("solyton/management")
+                navigate("/solyton/management")
             }) {
                 Wrap { H3 { Text("User Management") } }
             }
-            Card({}){
+            Card({
+                navigate("/solyton/auctions/search-bidders")
+            }){
                 Wrap { H3 { Text("Bieter Suche") } }
             }
             /*

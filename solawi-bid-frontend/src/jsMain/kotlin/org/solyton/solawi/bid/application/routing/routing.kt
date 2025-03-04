@@ -13,10 +13,7 @@ import org.solyton.solawi.bid.application.data.environment
 import org.solyton.solawi.bid.application.data.navbar.navBar
 import org.solyton.solawi.bid.application.data.userData
 import org.solyton.solawi.bid.application.service.seemsToBeLoggerIn
-import org.solyton.solawi.bid.application.ui.page.auction.AuctionPage
-import org.solyton.solawi.bid.application.ui.page.auction.AuctionsPage
-import org.solyton.solawi.bid.application.ui.page.auction.BidRoundEvaluationPage
-import org.solyton.solawi.bid.application.ui.page.auction.RoundPage
+import org.solyton.solawi.bid.application.ui.page.auction.*
 import org.solyton.solawi.bid.application.ui.page.dashboard.DashboardPage
 import org.solyton.solawi.bid.application.ui.page.login.LoginPage
 import org.solyton.solawi.bid.application.ui.page.login.effect.LaunchLogoutEffect
@@ -109,6 +106,14 @@ fun Routing(storage: Storage<Application>): Routes = Routing("/") {
                         }
                     }
                 }
+                route("search-bidders") {
+                    component {
+                        SearchBiddersPage(
+                            storage
+                        )
+                    }
+                }
+
             }
             route("logout") {
                 component {
