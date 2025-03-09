@@ -1,47 +1,44 @@
 package org.solyton.solawi.bid.module.user.action
 
-import io.ktor.server.response.*
 import org.evoleq.exposedx.transaction.resultTransaction
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
-import org.evoleq.math.state.bind
-import org.evoleq.math.state.map
+import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.evoleq.util.Action
-import org.evoleq.util.ApiAction
 import org.evoleq.util.DbAction
-import org.jetbrains.exposed.sql.SizedIterable
-import org.jetbrains.exposed.sql.transactions.transaction
-import org.solyton.solawi.bid.module.db.schema.Users
+import org.evoleq.util.KlAction
+import org.solyton.solawi.bid.module.db.schema.UsersTable
+import org.solyton.solawi.bid.module.user.data.api.GetUsers
 import org.solyton.solawi.bid.module.user.data.api.User
+import org.solyton.solawi.bid.module.user.data.api.Users
 import java.util.*
+import kotlin.collections.first
+import kotlin.collections.map
 import org.solyton.solawi.bid.module.db.schema.User as UserEntity
 
 /**
  * Get all users in the database
  */
 // val GetAllUsers =
-suspend fun getAllUsers() = DbAction {
-    database -> transaction(database) {
-        UserEntity.all()
-    } x database
- } map { userEntities: SizedIterable<UserEntity> ->
-    userEntities.map { userEntity ->
+@MathDsl
+val GetAllUsers: KlAction<Result<GetUsers>, Result<Users>> = KlAction{result -> DbAction {
+    database -> resultTransaction(database) {
+    Users(UserEntity.all().map { userEntity ->
         User(
-            userEntity.id.value,
-            userEntity.username,
-            userEntity.password
+            userEntity.id.value.toString(),
+            userEntity.username
         )
-    }
- } bind { users -> ApiAction{ call ->
-    call.respond(users) x call
-} }
+    })
+    } x database
+ } }
 
+@MathDsl
 val GetUserById: suspend (Result<UUID>)->Action<Result<UserEntity>> = {id -> DbAction {
     database -> id bindSuspend { uuid ->
         resultTransaction(database) {
             UserEntity.find {
-                Users.id eq uuid
+                UsersTable.id eq uuid
             }.first()
         }
     } x database

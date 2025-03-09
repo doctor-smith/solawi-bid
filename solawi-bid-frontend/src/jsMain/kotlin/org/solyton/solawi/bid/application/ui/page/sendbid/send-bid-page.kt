@@ -55,7 +55,6 @@ fun SendBidPage(storage: Storage<Application>, link: String) = Div/*(attrs = {st
             round = roundLens,
             texts = texts,
             device = (storage * deviceData * mediaType.get),
-            cancel = { (storage * roundLens * showSuccessMessage ).write(false) },
             update = { (storage * roundLens * showSuccessMessage ).write(false) }
         )
     }

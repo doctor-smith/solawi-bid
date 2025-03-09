@@ -45,7 +45,7 @@ fun RoundPage(storage: Storage<Application>, auctionId: String, roundId: String)
             justifyContent(JustifyContent.Center)
         }) {
             QRCodeSvg(
-                size = 50.vh,
+                size = 80.vh,
                 id = roundId,
                 data = fullLink,
                 download = false
@@ -87,6 +87,5 @@ fun RoundPage(storage: Storage<Application>, auctionId: String, roundId: String)
 
         Text(preEvaluation.toString())
     }
-
-     */
+    */
 }

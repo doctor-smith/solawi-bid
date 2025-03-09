@@ -4,7 +4,7 @@ import org.evoleq.compose.routing.navigate
 import org.evoleq.optics.storage.Storage
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.module.localstorage.api.write
-import org.solyton.solawi.bid.module.user.User
+import org.solyton.solawi.bid.module.user.data.User
 
 fun Storage<Application>.onLogin(oldApplication: Application, newApplication: Application) {
 

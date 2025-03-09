@@ -8,7 +8,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 
-class UserTest {
+class UserDTest {
     @Schema@Test
     fun readAndWriteUser() = runSimpleH2Test(Users){
         User.new {

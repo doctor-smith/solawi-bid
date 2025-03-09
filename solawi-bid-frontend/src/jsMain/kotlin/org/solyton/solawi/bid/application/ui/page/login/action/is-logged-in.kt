@@ -7,9 +7,9 @@ import org.solyton.solawi.bid.application.data.userData
 import org.solyton.solawi.bid.module.authentication.data.api.IsLoggedIn
 import org.solyton.solawi.bid.module.authentication.data.api.LoggedInAs
 import org.solyton.solawi.bid.module.localstorage.api.write
-import org.solyton.solawi.bid.module.user.accessToken
-import org.solyton.solawi.bid.module.user.refreshToken
-import org.solyton.solawi.bid.module.user.username
+import org.solyton.solawi.bid.module.user.data.accessToken
+import org.solyton.solawi.bid.module.user.data.refreshToken
+import org.solyton.solawi.bid.module.user.data.username
 
 
 @Markup

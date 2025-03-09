@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Vertical
+import org.evoleq.compose.routing.navigate
 import org.evoleq.language.Lang
 import org.evoleq.language.subComp
 import org.evoleq.math.Reader
@@ -33,6 +34,7 @@ import org.solyton.solawi.bid.module.bid.data.Round
 import org.solyton.solawi.bid.module.bid.data.api.RoundState
 import org.solyton.solawi.bid.module.bid.data.reader.roundAccepted
 import org.solyton.solawi.bid.module.bid.data.rounds
+import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.bid.data.reader.rounds as roundsKey
 
 @Markup
@@ -142,6 +144,10 @@ fun BidRoundListItem(
                 round = round,
                 //texts = (texts * subComp("bidRoundList") * subComp("item") * subComp("buttons") * subComp("exportResults"))
             )
+            // todo:i18n
+            StdButton({ "Bieten" }, storage * deviceData * mediaType.get) {
+                navigate("/bid/send/$${round.link}")
+            }
         }
     }
 }

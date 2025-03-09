@@ -10,17 +10,16 @@ import org.evoleq.language.Lang
 import org.evoleq.language.get
 import org.evoleq.math.Reader
 import org.evoleq.math.Source
+import org.evoleq.math.emit
 import org.evoleq.math.times
 import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
-import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.application.data.actions
+import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.data.device.mediaType
-import org.solyton.solawi.bid.application.data.deviceData
-import org.solyton.solawi.bid.application.data.modals
+import org.solyton.solawi.bid.application.permission.Right
 import org.solyton.solawi.bid.application.ui.page.auction.action.changeRoundState
 import org.solyton.solawi.bid.module.bid.data.Auction
 import org.solyton.solawi.bid.module.bid.data.Round
@@ -30,6 +29,7 @@ import org.solyton.solawi.bid.module.bid.data.rounds
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.error.component.showErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
+import org.solyton.solawi.bid.module.user.isNotGranted
 
 @Markup
 @Composable
@@ -56,8 +56,9 @@ fun ChangeRoundStateButton(
     } }
 
     StdButton(
-        texts * commandName(RoundState.fromString(round.state).commandName),
-            storage * deviceData * mediaType.get
+        texts = texts * commandName(RoundState.fromString(round.state).commandName),
+        deviceType = storage * deviceData * mediaType.get,
+        disabled = (storage * userData.get).emit().isNotGranted(Right.BidRound.manage)
     ) {
         // todo:refactor:extract trigger
         CoroutineScope(Job()).launch {

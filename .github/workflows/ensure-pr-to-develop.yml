@@ -38,6 +38,6 @@ jobs:
       - name: Create PR if none exists
         if: env.PR_COUNT == '0'
         run: |
-          gh pr create --base develop --head ${{ env.SOURCE_BRANCH }} --title "Merge ${{ env.SOURCE_BRANCH }} into develop" --body "This PR merges the ${{env.SOURCE_BRANCH}} branch into develop."
+          gh pr create --base develop --head ${{ env.SOURCE_BRANCH }} --title "Feature -> Develop: Merge ${{ env.SOURCE_BRANCH }} into develop" --body "This PR merges the ${{env.SOURCE_BRANCH}} branch into develop."
         env:
           GH_TOKEN: ${{ secrets.PR_ACCESS_TOKEN }}

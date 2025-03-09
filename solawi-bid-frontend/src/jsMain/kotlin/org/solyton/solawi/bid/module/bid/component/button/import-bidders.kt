@@ -16,17 +16,19 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.data.device.mediaType
+import org.solyton.solawi.bid.application.permission.Right
 import org.solyton.solawi.bid.application.ui.page.auction.action.addBidders
 import org.solyton.solawi.bid.application.ui.page.auction.action.importBidders
 import org.solyton.solawi.bid.module.bid.component.modal.showImportBiddersModal
 import org.solyton.solawi.bid.module.bid.data.Auction
 import org.solyton.solawi.bid.module.bid.data.api.AddBidders
 import org.solyton.solawi.bid.module.bid.data.api.NewBidder
-import org.solyton.solawi.bid.module.bid.data.reader.existRounds
 import org.solyton.solawi.bid.module.bid.data.reader.auctionAccepted
+import org.solyton.solawi.bid.module.bid.data.reader.existRounds
 import org.solyton.solawi.bid.module.bid.data.rounds
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.language
+import org.solyton.solawi.bid.module.user.isNotGranted
 
 @Markup
 @Composable
@@ -39,7 +41,8 @@ fun ImportBiddersButton(
     texts : Reader<Unit, Lang.Block>
 ) {
     val isDisabled = (storage * auction * rounds * existRounds).emit() ||
-        (storage * auction * auctionAccepted).emit()
+        (storage * auction * auctionAccepted).emit()||
+        (storage * userData.get).emit().isNotGranted(Right.Auction.manage)
 
     StdButton(
         texts * text,

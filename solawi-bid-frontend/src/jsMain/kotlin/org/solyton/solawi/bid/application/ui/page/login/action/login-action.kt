@@ -6,8 +6,8 @@ import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.userData
 import org.solyton.solawi.bid.module.authentication.data.api.LoggedIn
 import org.solyton.solawi.bid.module.authentication.data.api.Login
-import org.solyton.solawi.bid.module.user.accessToken
-import org.solyton.solawi.bid.module.user.refreshToken
+import org.solyton.solawi.bid.module.user.data.accessToken
+import org.solyton.solawi.bid.module.user.data.refreshToken
 
 @Markup
 val loginAction: Action<Application, Login, LoggedIn> by lazy {

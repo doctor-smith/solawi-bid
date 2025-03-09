@@ -1,8 +1,12 @@
 package org.solyton.solawi.bid.application.api
 
+
 import org.evoleq.ktorx.api.Api
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
+import org.solyton.solawi.bid.module.user.data.api.CreateUser
+import org.solyton.solawi.bid.module.user.data.api.GetUsers
+import org.solyton.solawi.bid.module.user.data.api.Users
 
 val solawiApi by lazy {
     // Authentication
@@ -88,5 +92,15 @@ val solawiApi by lazy {
     )
     .post<AddBidders, Unit>(
         key = AddBidders::class, "bidders/add"
+    )
+
+    // User Management
+    .post<CreateUser, Unit>(
+        key = CreateUser::class,
+        url = "users/create"
+    )
+    .get<GetUsers, Users>(
+        key = GetUsers::class,
+        url = "users/all"
     )
 }

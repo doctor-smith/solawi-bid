@@ -6,10 +6,10 @@ import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.userData
 import org.solyton.solawi.bid.module.authentication.data.api.Logout
 import org.solyton.solawi.bid.module.localstorage.api.write
-import org.solyton.solawi.bid.module.user.accessToken
-import org.solyton.solawi.bid.module.user.password
-import org.solyton.solawi.bid.module.user.refreshToken
-import org.solyton.solawi.bid.module.user.username
+import org.solyton.solawi.bid.module.user.data.accessToken
+import org.solyton.solawi.bid.module.user.data.password
+import org.solyton.solawi.bid.module.user.data.refreshToken
+import org.solyton.solawi.bid.module.user.data.username
 
 @Markup
 val logoutAction: Action<Application, Logout, Unit> by lazy {

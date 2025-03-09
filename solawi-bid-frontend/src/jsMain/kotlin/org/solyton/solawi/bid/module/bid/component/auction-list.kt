@@ -7,7 +7,6 @@ import org.evoleq.compose.date.format
 import org.evoleq.compose.modal.Modals
 import org.evoleq.compose.routing.navigate
 import org.evoleq.language.*
-import org.evoleq.math.Reader
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.times
@@ -21,6 +20,7 @@ import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.device.DeviceType
+import org.solyton.solawi.bid.application.permission.Right
 import org.solyton.solawi.bid.application.ui.page.auction.action.configureAuction
 import org.solyton.solawi.bid.module.bid.action.deleteAuctionAction
 import org.solyton.solawi.bid.module.bid.component.form.showUpdateAuctionModal
@@ -31,6 +31,8 @@ import org.solyton.solawi.bid.module.bid.data.reader.auctionAccepted
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.I18N
 import org.solyton.solawi.bid.module.i18n.data.language
+import org.solyton.solawi.bid.module.user.data.User
+import org.solyton.solawi.bid.module.user.isNotGranted
 import org.solyton.solawi.bid.application.data.auctions as auctionLens
 
 @Markup
@@ -38,6 +40,7 @@ import org.solyton.solawi.bid.application.data.auctions as auctionLens
 @Suppress("FunctionName")
 fun AuctionList(
     auctions: Storage<List<Auction>>,
+    user: Source<User>,
     i18n: Storage<I18N>,
     modals: Storage<Modals<Int>>,
     device: Source<DeviceType>,
@@ -50,6 +53,7 @@ fun AuctionList(
         forEach{ auction ->
             AuctionListItem(
                 auctions * FirstBy<Auction> { it.auctionId == auction.auctionId},
+                user,
                 i18n,
                 modals,
                 device,
@@ -67,6 +71,7 @@ fun AuctionList(
 @Suppress("FunctionName") // actions: (Auction)->Actions = auctionListItemActions
 fun AuctionListItem(
     auction: Storage<Auction>,
+    user: Source<User>,
     i18n: Storage<I18N>,
     modals: Storage<Modals<Int>>,
     device: Source<DeviceType>,
@@ -122,7 +127,7 @@ fun AuctionListItem(
         StdButton(
             buttons * subComp("edit") * title,
             device,
-            (auction * auctionAccepted).emit()
+            (auction * auctionAccepted).emit() || user.emit().isNotGranted(Right.Auction.manage),
         ) {
             // open edit dialog
             (modals).showUpdateAuctionModal(
@@ -139,7 +144,7 @@ fun AuctionListItem(
         StdButton(
             buttons * subComp("delete") * title,
             device,
-            (auction * auctionAccepted).emit()
+            (auction * auctionAccepted).emit() || user.emit().isNotGranted(Right.Auction.manage)
         ) {
             dispatchDelete()
         }

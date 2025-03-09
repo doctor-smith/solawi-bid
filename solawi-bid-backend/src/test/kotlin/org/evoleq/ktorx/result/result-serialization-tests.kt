@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.solyton.solawi.bid.Unit
-import org.solyton.solawi.bid.module.user.data.api.User
+import org.solyton.solawi.bid.module.user.data.api.UserD
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.test.assertEquals
@@ -16,7 +16,7 @@ class ResultSerializationTests {
     // This test arose during tdd -> keep it
     @Unit@Test
     fun testSerializationInGeneral() {
-        val user = User(
+        val user = UserD(
             UUID.randomUUID(),
             "test-user",
             "test-password"
@@ -24,7 +24,7 @@ class ResultSerializationTests {
 
         val serialized = Json.encodeToString(user)
 
-        val deserialized = Json.decodeFromString<User>(serialized)
+        val deserialized = Json.decodeFromString<UserD>(serialized)
 
         assertEquals(user, deserialized)
     }
@@ -32,7 +32,7 @@ class ResultSerializationTests {
     // This is exaggerated, but we keep it as an example
     @Unit@ParameterizedTest
     @MethodSource("userInputProvider")
-    fun serialize(input: TestData<User>) {
+    fun serialize(input: TestData<UserD>) {
         val (clazz, serializer, data) = input
 
         serializers[clazz] = serializer
@@ -40,7 +40,7 @@ class ResultSerializationTests {
         val success = Result.Success(data)
 
         val serialized = Json.encodeToString(success)
-        val deserialized = Json.decodeFromString<Result.Success<User>>(serialized)
+        val deserialized = Json.decodeFromString<Result.Success<UserD>>(serialized)
 
         assertEquals(success, deserialized)
     }
@@ -49,27 +49,27 @@ class ResultSerializationTests {
         @JvmStatic
         fun userInputProvider() = listOf(
             TestData(
-                User::class,
-                User.serializer(),
-                User(
+                UserD::class,
+                UserD.serializer(),
+                UserD(
                     UUID.randomUUID(),
                     "test-user",
                     "test-password"
                 )
             ),
             TestData(
-                User::class,
-                User.serializer(),
-                User(
+                UserD::class,
+                UserD.serializer(),
+                UserD(
                     UUID.randomUUID(),
                     "test-user-2",
                     "test-password"
                 )
             ),
             TestData(
-                User::class,
-                User.serializer(),
-                User(
+                UserD::class,
+                UserD.serializer(),
+                UserD(
                     UUID.randomUUID(),
                     "test-user-3",
                     "test-password"

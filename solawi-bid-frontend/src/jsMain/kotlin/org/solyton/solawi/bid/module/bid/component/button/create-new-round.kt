@@ -13,15 +13,18 @@ import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.device.mediaType
 import org.solyton.solawi.bid.application.data.deviceData
+import org.solyton.solawi.bid.application.data.userData
+import org.solyton.solawi.bid.application.permission.Right
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerCreateNewRound
 import org.solyton.solawi.bid.module.bid.data.Auction
 import org.solyton.solawi.bid.module.bid.data.auctionDetails
 import org.solyton.solawi.bid.module.bid.data.reader.areNotConfigured
+import org.solyton.solawi.bid.module.bid.data.reader.auctionAccepted
 import org.solyton.solawi.bid.module.bid.data.reader.biddersHaveNotBeenImported
 import org.solyton.solawi.bid.module.bid.data.reader.existsRunning
-import org.solyton.solawi.bid.module.bid.data.reader.auctionAccepted
 import org.solyton.solawi.bid.module.bid.data.rounds
 import org.solyton.solawi.bid.module.control.button.StdButton
+import org.solyton.solawi.bid.module.user.isNotGranted
 
 @Markup
 @Composable
@@ -39,7 +42,8 @@ fun CreateNewRoundButton(
     val isDisabled = (storage * auction * rounds * existsRunning).emit() ||
         (storage * auction * auctionDetails * areNotConfigured).emit() ||
         (storage * auction * biddersHaveNotBeenImported).emit() ||
-        (storage * auction * auctionAccepted).emit()
+        (storage * auction * auctionAccepted).emit() ||
+        (storage * userData.get).emit().isNotGranted(Right.Auction.manage)
 
     StdButton(
         texts * text,

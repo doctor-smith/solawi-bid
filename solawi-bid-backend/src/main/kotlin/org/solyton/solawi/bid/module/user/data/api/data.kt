@@ -5,7 +5,7 @@ import org.evoleq.serializationx.UUIDSerializer
 import java.util.*
 
 @Serializable
-data class User(
+data class UserD(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID,
     val username: String,

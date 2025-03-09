@@ -27,8 +27,8 @@ import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.data.device.mediaType
 import org.solyton.solawi.bid.application.ui.page.auction.action.readAuctions
-import org.solyton.solawi.bid.application.ui.style.wrap.Wrap
 import org.solyton.solawi.bid.application.ui.style.page.verticalPageStyle
+import org.solyton.solawi.bid.application.ui.style.wrap.Wrap
 import org.solyton.solawi.bid.module.bid.component.AuctionList
 import org.solyton.solawi.bid.module.bid.component.button.CreateAuctionButton
 import org.solyton.solawi.bid.module.bid.component.form.DEFAULT_AUCTION_ID
@@ -69,6 +69,7 @@ fun AuctionsPage(storage: Storage<Application>) = Div {
         }
         Wrap{ AuctionList(
             storage * auctions,
+            storage * userData.get,
             storage * i18N,
             storage * modals,
             storage * deviceData * mediaType.get

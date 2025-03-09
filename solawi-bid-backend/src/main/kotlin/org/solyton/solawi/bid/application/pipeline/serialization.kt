@@ -7,6 +7,10 @@ import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.ktorx.result.serializers
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
+import org.solyton.solawi.bid.module.user.data.api.CreateUser
+import org.solyton.solawi.bid.module.user.data.api.GetUsers
+import org.solyton.solawi.bid.module.user.data.api.User
+import org.solyton.solawi.bid.module.user.data.api.Users
 
 fun Application.installSerializers() {
     // primitive serializers
@@ -74,4 +78,10 @@ fun Application.installSerializers() {
     serializers[BidderData::class] = BidderData.serializer()
     serializers[SearchBidderData::class] = SearchBidderData.serializer()
     serializers[AddBidders::class] = AddBidders.serializer()
+
+    // UserManagement
+    serializers[CreateUser::class] = CreateUser.serializer()
+    serializers[User::class] = User.serializer()
+    serializers[Users::class] = Users.serializer()
+    serializers[GetUsers::class] = GetUsers.serializer()
 }

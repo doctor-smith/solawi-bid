@@ -5,8 +5,8 @@ import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.userData
 import org.solyton.solawi.bid.module.localstorage.api.read
-import org.solyton.solawi.bid.module.user.accessToken
-import org.solyton.solawi.bid.module.user.refreshToken
+import org.solyton.solawi.bid.module.user.data.accessToken
+import org.solyton.solawi.bid.module.user.data.refreshToken
 
 
 fun Storage<Application>.checkUserData() {

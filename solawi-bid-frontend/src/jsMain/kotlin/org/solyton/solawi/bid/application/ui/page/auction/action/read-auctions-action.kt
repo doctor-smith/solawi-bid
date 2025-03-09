@@ -12,7 +12,7 @@ import org.solyton.solawi.bid.application.data.userData
 import org.solyton.solawi.bid.module.bid.data.api.ApiAuctions
 import org.solyton.solawi.bid.module.bid.data.api.GetAuctions
 import org.solyton.solawi.bid.module.bid.data.toDomainType
-import org.solyton.solawi.bid.module.user.User
+import org.solyton.solawi.bid.module.user.data.User
 
 @Markup
 fun readAuctions(): Action<Application, GetAuctions, ApiAuctions> = Action(

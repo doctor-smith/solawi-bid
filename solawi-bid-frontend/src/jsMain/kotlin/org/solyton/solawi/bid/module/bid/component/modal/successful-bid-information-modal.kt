@@ -37,7 +37,7 @@ fun SuccessfulBidInformationModal(
     storage: Storage<Application>,
     round: Lens<Application, BidRound>,
     device: Source<DeviceType>,
-    cancel: ()->Unit,
+    // cancel: ()->Unit,
     update: ()->Unit
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
     id,
@@ -46,9 +46,7 @@ fun SuccessfulBidInformationModal(
     onOk = {
         update()
     },
-    onCancel = {
-        cancel()
-    },
+    onCancel = null,
     texts = texts,
     styles = auctionModalStyles(device),
 ) {
@@ -67,7 +65,6 @@ fun Storage<Modals<Int>>.showSuccessfulBidInformationModal(
     round: Lens<Application, BidRound>,
     texts: Lang.Block,
     device: Source<DeviceType>,
-    cancel: ()->Unit,
     update: ()->Unit
 ) = with(nextId()) {
     put(this to ModalData(
@@ -79,8 +76,7 @@ fun Storage<Modals<Int>>.showSuccessfulBidInformationModal(
             storage,
             round,
             device,
-            cancel,
-            update
+            update = update
         )
     ) )
 }

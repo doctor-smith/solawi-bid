@@ -5,8 +5,8 @@ import org.evoleq.optics.lens.Lens
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.userData
 import org.solyton.solawi.bid.module.authentication.data.LoginForm
-import org.solyton.solawi.bid.module.user.password
-import org.solyton.solawi.bid.module.user.username
+import org.solyton.solawi.bid.module.user.data.password
+import org.solyton.solawi.bid.module.user.data.username
 import org.solyton.solawi.bid.module.authentication.data.User as LoginUser
 
 /*

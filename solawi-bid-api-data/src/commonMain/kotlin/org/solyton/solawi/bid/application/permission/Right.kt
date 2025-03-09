@@ -2,6 +2,8 @@ package org.solyton.solawi.bid.application.permission
 
 import org.solyton.solawi.bid.shared.ValueWithDescription
 
+// typealias Right = ValueWithDescription
+
 object Right{
     val create = Create
     val read = Read
@@ -25,6 +27,30 @@ object Right{
         val delete = object : ValueWithDescription {
             override val value: String= "DELETE_ORGANIZATION"
             override val description: String = "Delete organization in a context"
+        }
+    }
+
+    object Application {
+        object Users {
+            val manage = object : ValueWithDescription {
+                override val value: String = "MANAGE_USERS"
+                override val description: String = "Manage Users"
+            }
+        }
+
+    }
+
+    object BidRound {
+        val manage = object : ValueWithDescription {
+            override val value: String= "MANAGE_BID_ROUND"
+            override val description: String = "Manage Bid round"
+        }
+
+    }
+    object Auction {
+        val manage = object : ValueWithDescription {
+            override val value: String= "MANAGE_AUCTION"
+            override val description: String = "Manage Auction"
         }
     }
 }
