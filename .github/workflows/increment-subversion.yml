@@ -1,0 +1,49 @@
+name: Auto Increment version Tag
+
+on:
+  push:
+    branches:
+      - develop  # Runs only when PRs are merged into 'dev'
+  workflow_call:
+
+permissions:
+  contents: write  # Grants permission to push tags
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for proper tag sorting
+
+      - name: Get latest version tag
+        id: get-tag
+        run: |
+          # Fetch latest tag matching vX.Y.Z.A pattern
+          LATEST_TAG=$(git tag -l "v*.*.*.*" --sort=-v:refname | head -n 1)
+          
+          if [[ -z "$LATEST_TAG" ]]; then
+            echo "No previous tag found!"
+            exit 1
+          fi
+          
+          echo "Latest tag found: $LATEST_TAG"
+
+          # Extract X.Y.Z from latest tag
+          BASE_VERSION=$(echo $LATEST_TAG | grep -oE "v[0-9]+\.[0-9]+\.[0-9]+")
+          LATEST_NUM=$(echo $LATEST_TAG | grep -oE "[0-9]+$")
+
+          # Increment subversion (A)
+          NEW_NUM=$((LATEST_NUM + 1))
+          NEW_TAG="$BASE_VERSION.$NEW_NUM"
+
+          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
+
+      - name: Create and push new tag
+        env:
+          TOKEN: ${{ secrets.PUSH_TAGS_PAT }}
+        run: |
+          git tag $NEW_TAG
+          git push https://x-access-token:${TOKEN}@github.com/doctor-smith/solawi-bid.git $NEW_TAG

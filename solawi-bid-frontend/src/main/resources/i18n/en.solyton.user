@@ -79,8 +79,8 @@ en {
                         }
                         errors {
                             wrongPassword: "Wrong Password"
-                            requirementsViolated: "Passwordrequirements violated"
-                            repeatedPasswordMismatch: "Passwword mismatch"
+                            requirementsViolated: "Password requirements violated"
+                            repeatedPasswordMismatch: "Password mismatch"
                             newPasswordEqualsOld: "New password must be different from old password"
                         }
                         okButton {
