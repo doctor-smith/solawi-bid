@@ -109,7 +109,7 @@ jobs:
           mv deploy/solawi-bid-frontend/e.env deploy/solawi-bid-frontend/.env
           mv deploy/solawi-bid-database/e.env deploy/solawi-bid-database/.env
           # '-e ssh -p ${{ secrets.SOLYTON_SSH_PORT }}'
-          rsync -avre deploy/ ${{ vars.SOLYTON }}
+          rsync -avr '-e ssh -p ${{ secrets.SOLYTON_SSH_PORT }}' deploy/ ${{ vars.SOLYTON }}
       - name: Cleanup
         if: always()
         run: |
