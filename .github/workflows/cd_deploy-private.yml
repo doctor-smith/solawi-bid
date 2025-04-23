@@ -104,12 +104,22 @@ jobs:
         with:
           name: deploy
           path: deploy/
-      - name: Rsync
+
+      - name: Move env files
         run: |
           mv deploy/solawi-bid-frontend/e.env deploy/solawi-bid-frontend/.env
           mv deploy/solawi-bid-database/e.env deploy/solawi-bid-database/.env
-          # '-e ssh -p ${{ secrets.SOLYTON_SSH_PORT }}'
-          rsync -avr '-e ssh -p ${{ secrets.SOLYTON_SSH_PORT }}' deploy/ ${{ vars.SOLYTON }}
+          
+      - name: Rsync
+        uses: doctor-smith/axions/rsync
+        with:
+          HOST: dev.solyton.org
+          PORT: ${{ secrets.SSH_SOLYTON_PORT }}
+          USER: drx
+          OPTIONS: rz
+          SOURCE_FOLDER: deploy/
+          TARGET_FOLDER: /home/solawi-bid/
+          
       - name: Cleanup
         if: always()
         run: |
