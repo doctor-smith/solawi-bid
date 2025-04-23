@@ -111,7 +111,7 @@ jobs:
           mv deploy/solawi-bid-database/e.env deploy/solawi-bid-database/.env
           
       - name: Rsync
-        uses: doctor-smith/axions/rsync
+        uses: doctor-smith/axions/rsync@latest
         with:
           HOST: dev.solyton.org
           PORT: ${{ secrets.SSH_SOLYTON_PORT }}
