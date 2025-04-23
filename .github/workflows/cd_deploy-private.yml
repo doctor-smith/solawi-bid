@@ -51,9 +51,9 @@ jobs:
         uses: ./.github/actions/set-env-vars-frontend
         with:
           environment: prod #${{ vars.ENVIRONMENT }}
-          frontendUrl: https://solyton.org
+          frontendUrl: ${{ vars.FRONTEND_URL }}
           frontendPort: 443 # 80
-          backendUrl: https://bid.solyton.org
+          backendUrl: ${{ vars.BACKEND_URL }}
           backendPort: 443 # 8080
 
       - name: Setup JDK, Gradle and Caches
