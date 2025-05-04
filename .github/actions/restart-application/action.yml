@@ -22,6 +22,7 @@ runs:
     - name: Get Info
       shell: bash
       run: |
+        echo "${{ inputs.pw }}" | sudo -S -i
         sudo whoami
         whoami
         id
