@@ -23,14 +23,17 @@ runs:
       shell: bash
       run: |
         whoami
+        id
+        who
+        echo $USER
         set timeout -1
         set user "${{ inputs.user }}"
         set password "${{ inputs.pw }}"
 
-        spawn su - $user
-        expect "Password:"
-        send "$password\r"
-        interact
+        #spawn su - $user
+        #expect "Password:"
+        #send "$password\r"
+        #interact
         
         sudo fail2ban-client status sshd
         cat /etc/ssh/sshd_config
