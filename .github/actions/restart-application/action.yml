@@ -4,9 +4,14 @@ runs:
   using: composite
   steps:
     - name: Restart
+      if: false
       shell: bash
       run: |
          cd /home/solawi-bid
          docker-compose down --remove-orphans  # Stop running containers
          docker-compose up --build -d  # Rebuild and restart containers
          docker system prune -f  # Cleanup unused Docker images
+    - name: Get Info
+      shell: bash
+      run: |
+        cat /etc/ssh/sshd_config
