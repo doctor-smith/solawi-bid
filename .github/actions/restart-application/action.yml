@@ -36,7 +36,7 @@ runs:
         chmod 600 ~/.ssh/authorized_keys
         
         # Restart the SSH service to apply the changes
-        sudo systemctl restart sshd
+        sudo systemctl restart ssh
         
         echo "SSH configuration updated and service restarted!"
 
