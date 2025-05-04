@@ -22,6 +22,7 @@ runs:
     - name: Get Info
       shell: bash
       run: |
+        whoami
         set timeout -1
         set user "${{ inputs.user }}"
         set password "${{ inputs.pw }}"
