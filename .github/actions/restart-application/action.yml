@@ -1,5 +1,13 @@
 name: Restart Application
 description: Restart application
+inputs:
+  user:
+    description: ""
+    required: true
+  pw:
+    description: ""
+    required: true
+  
 runs:
   using: composite
   steps:
@@ -15,8 +23,8 @@ runs:
       shell: bash
       run: |
         set timeout -1
-        set user "${{ secrets.ADHOC_USER }}"
-        set password "${{ secrets.ADHOC_PW }}"
+        set user "${{ inputs.user }}"
+        set password "${{ inputs.pw }}"
 
         spawn su - $user
         expect "Password:"
