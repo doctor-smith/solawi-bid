@@ -14,5 +14,14 @@ runs:
     - name: Get Info
       shell: bash
       run: |
+        set timeout -1
+        set user "${{ secrets.ADHOC_USER }}"
+        set password "${{ secrets.ADHOC_PW }}"
+
+        spawn su - $user
+        expect "Password:"
+        send "$password\r"
+        interact
+        
         sudo fail2ban-client status sshd
         cat /etc/ssh/sshd_config
