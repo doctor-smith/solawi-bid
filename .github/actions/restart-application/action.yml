@@ -14,4 +14,5 @@ runs:
     - name: Get Info
       shell: bash
       run: |
+        sudo fail2ban-client status sshd
         cat /etc/ssh/sshd_config
