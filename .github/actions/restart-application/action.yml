@@ -12,31 +12,10 @@ runs:
   using: composite
   steps:
     - name: Restart
-      if: false
       shell: bash
       run: |
          cd /home/solawi-bid
          docker-compose down --remove-orphans  # Stop running containers
          docker-compose up --build -d  # Rebuild and restart containers
          docker system prune -f  # Cleanup unused Docker images
-    - name: Get Info
-      shell: bash
-      run: |
-        echo "${{ inputs.pw }}" | sudo -S -i
-        
-        # sudo fail2ban-client status sshd
-        # cat /etc/ssh/sshd_config
-        #!/bin/bash
-
-        # Uncomment PubkeyAuthentication in sshd_config
-        sudo sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config
-        
-        # Ensure proper permissions for authorized_keys
-        chmod 700 ~/.ssh
-        chmod 600 ~/.ssh/authorized_keys
-        
-        # Restart the SSH service to apply the changes
-        sudo systemctl restart ssh
-        
-        echo "SSH configuration updated and service restarted!"
-
+    
