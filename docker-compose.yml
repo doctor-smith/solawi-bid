@@ -1,55 +1,54 @@
-version: '3.8'
-
-networks:
-  frontend:
-    driver: bridge
-  backend:
-
 services:
-  solawi-bid_frontend:
-    build:
-      context: .
-      dockerfile: solawi-bid-frontend/docker/Dockerfile
-    ports:
-      - "8080:80"
-    container_name: solawi-bid_frontend
-    hostname: solawi-bid_frontend
-    env_file:
-      - solawi-bid-frontend/.env
 
-    depends_on:
-      - solawi-bid_backend
-    networks:
-      - frontend
-      - backend
-  solawi-bid_backend:
+  solawi-bid_frontend:
+    pull_policy: build
     build:
       context: .
-      dockerfile: solawi-bid-backend/docker/Dockerfile
+      dockerfile: infrastructure/docker/Dockerfile-Frontend
     ports:
-      - "8081:8081"
+      - "80:80"
+    container_name: solawi-bid_frontend
+
+  solawi-bid_backend:
+    pull_policy: build
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile-Backend
+    ports:
+      - "8080:8080"
+    environment:
+      - KTOR_ENV=dev
+      - BACKEND_PORT=8080
+      - JWT_DOMAIN=solawi-bid_backend
+      - JWT_AUDIENCE=solawi-bid_backend
+      - JWT_REALM=solawi-bid_backend
+      - JWT_SECRET=super-test-secret-for-solawi-bid
+      - DATABASE_URL=jdbc:mysql://solawi-bid_database:3306/solawi-bid
+      - DATABASE_DRIVER=com.mysql.jdbc.Driver
+      - DATABASE_USER=solawi-bid
+      - DATABASE_PASSWORD=secure
+      - APPLICATION_OWNER_USERNAME=schmidt@alpha-structure.com
+      - APPLICATION_OWNER_PASSWORD=\$2a\$10\$5EENEnXKE4oNT0AejWzy8Oa09DkBDiQTnk2LyqtqpBa3DrZijo51O
     container_name: solawi-bid_backend
-    hostname: solawi-bid_backend
-    env_file:
-      - solawi-bid-backend/.env
     depends_on:
-      - solawi-bid_database
-    networks:
-       - backend
+      solawi-bid_database:
+        condition: service_healthy
 
   solawi-bid_database:
-    build:
-      context: .
-      dockerfile: solawi-bid-database/docker/Dockerfile
-    container_name: solawi-bid_database
-    hostname: solawi-bid_database
+    image: mysql:9
     ports:
       - "3306:3306"
-    env_file:
-      - solawi-bid-database/.env
-    networks:
-      - backend
-
+    volumes:
+      - ./infrastructure/database/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+    environment:
+      - MYSQL_DATABASE=solawi-bid
+      - MYSQL_USER=solawi-bid
+      - MYSQL_PASSWORD=secure
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 5s
+      retries: 20
 
   adminer:
     image: adminer
@@ -57,7 +56,4 @@ services:
     #container_name: adminer
     restart: always
     ports:
-     - "8082:8080"
-    networks:
-      - frontend
-      - backend
+     - "8081:8080"
