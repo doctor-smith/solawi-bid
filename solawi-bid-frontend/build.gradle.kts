@@ -21,7 +21,7 @@ repositories {
 }
 
 group = libs.versions.solytonGroup
-version = libs.versions.solawi
+version = libs.versions.solawi.get()
 
 kotlin {
     js(IR) {

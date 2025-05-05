@@ -7,7 +7,7 @@ plugins {
 
 
 group = libs.versions.solytonGroup
-version = libs.versions.solawi
+version = libs.versions.solawi.get()
 val kotlinVersion = libs.versions.kotlin
 
 repositories {
