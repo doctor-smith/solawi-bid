@@ -10,7 +10,7 @@ plugins {
 }
 
 group = libs.versions.solytonGroup
-version = libs.versions.solawi
+version = libs.versions.solawi.get()
 val solawiBackendMainClassName = "org.solyton.solawi.bid.MainKt"
 java {
     toolchain {
