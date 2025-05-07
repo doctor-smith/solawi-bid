@@ -9,22 +9,17 @@ First, install Docker on your system.
 ### Start Project
 Open a terminal, move to the root folder of the project and run the commands 
 ```shell
-./gradlew solawi-bid-backend:clean && \
-./gradlew solawi-bid-backend:build && \
-./gradlew solawi-bid-backend:buildFatJar && \
-./gradlew solawi-bid-frontend:clean && \
-./gradlew solawi-bid-frontend:build && \
 docker compose -p solawi-bid down --remove-orphans && \
-docker compose -p solawi-bid up -d 
+docker compose -p solawi-bid up -d
 ```
 
 Access the frontend on
 ```
-localhost:8080
+localhost:80
 ```
 Access the backend on
 ```
-localhost:8081
+localhost:8080
 ```
 
 If you need to rebuild frontend or backend use one of the bash scripts in the scripts folder:
