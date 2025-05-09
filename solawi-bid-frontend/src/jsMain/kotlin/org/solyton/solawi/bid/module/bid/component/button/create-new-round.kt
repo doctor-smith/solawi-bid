@@ -24,7 +24,7 @@ import org.solyton.solawi.bid.module.bid.data.reader.biddersHaveNotBeenImported
 import org.solyton.solawi.bid.module.bid.data.reader.existsRunning
 import org.solyton.solawi.bid.module.bid.data.rounds
 import org.solyton.solawi.bid.module.control.button.StdButton
-import org.solyton.solawi.bid.module.user.isNotGranted
+import org.solyton.solawi.bid.module.permissions.service.isNotGranted
 
 @Markup
 @Composable

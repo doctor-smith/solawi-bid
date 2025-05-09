@@ -44,7 +44,7 @@ fun CookieDisclaimer(
                     texts,
                     modals,
                     cookieDisclaimer,
-                    device
+                    device,
                 )
             )
         }
@@ -67,6 +67,7 @@ fun CookieDisclaimerModal(
         id,
         modals,
         device,
+        dataId = "cookie-disclaimer",
         onOk = {
             (cookieDisclaimer * isConfirmed).write(true)
             (cookieDisclaimer * isShown).write(false)
