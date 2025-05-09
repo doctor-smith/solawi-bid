@@ -38,7 +38,8 @@ fun ImportBiddersButton(
     newBidders: Storage<List<NewBidder>>,
     addBidders: Storage<AddBidders>,
     auction: Lens<Application, Auction>,
-    texts : Reader<Unit, Lang.Block>
+    texts : Reader<Unit, Lang.Block>,
+    dataId: String
 ) {
     val isDisabled = (storage * auction * rounds * existRounds).emit() ||
         (storage * auction * auctionAccepted).emit()||
@@ -47,7 +48,8 @@ fun ImportBiddersButton(
     StdButton(
         texts * text,
         storage * deviceData * mediaType.get,
-        isDisabled
+        isDisabled,
+        dataId
     ) {
         (storage * modals).showImportBiddersModal(
             storage * auction,
