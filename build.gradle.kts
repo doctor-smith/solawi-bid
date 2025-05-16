@@ -14,15 +14,6 @@ plugins{
     alias(libs.plugins.compose) apply false
     alias(libs.plugins.shadow) apply false
     id("org.evoleq.exposedx.migration") apply false
+    alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.kover) apply false
 }
-/*
-configurations.all {
-    exclude(group = "org.gradle.api.plugins", module = "MavenPlugin")
-}
-
- */
-
-
-
-
-

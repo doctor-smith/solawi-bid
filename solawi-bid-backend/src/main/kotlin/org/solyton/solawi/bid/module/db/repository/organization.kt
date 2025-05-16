@@ -27,7 +27,7 @@ fun OrganizationEntity.descendants(): SizedIterable<OrganizationEntity> = with(r
     }.orderBy(OrganizationsTable.left to SortOrder.ASC)
 }
 
-fun createRootOrganization(organizationName: String, user: UserEntity): OrganizationEntity {
+fun createRootOrganization(organizationName: String): OrganizationEntity {
     val finalOrganizationName = organizationName.replace(" ", "_").uppercase()
     val exists = !ContextEntity.find { ContextsTable.name eq finalOrganizationName and (ContextsTable.rootId eq null) }.empty()
 

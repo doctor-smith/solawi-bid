@@ -23,7 +23,6 @@ import org.solyton.solawi.bid.module.db.migrations.Migration1743235367945
 import org.solyton.solawi.bid.module.db.migrations.Migration1743786680319
 import org.solyton.solawi.bid.module.db.repository.parent
 import org.solyton.solawi.bid.module.db.schema.*
-import org.solyton.solawi.bid.module.permission.action.db.getRoleRightContexts
 import org.solyton.solawi.bid.module.permission.action.db.isGranted
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -53,12 +52,14 @@ class MigrationTests {
             { Migration1743786680319(database) }
         )
 
-        val r = suspendedTransactionAsync {
+        // val r =
+        suspendedTransactionAsync {
             SchemaUtils.drop(*neededTables)
             migrations.runOn(database)
          }.await()
         delay(1000)
-        val s = suspendedTransactionAsync {
+        // val s =
+        suspendedTransactionAsync {
             // Application Context
             // Exists:  APPLICATION, ORGANIZATION
             // Deleted: APPLICATION/ORGANIZATION

@@ -116,4 +116,6 @@ val solawiApi by lazy {
         key = ChangePassword::class,
         url = "users/change-password"
     )
+    // Organizations
+
 }

@@ -47,6 +47,20 @@ object Right{
             }
         }
 
+        object Subscriptions {
+            val readAvailableApplications = object : ValueWithDescription {
+                override val value: String = "READ_AVAILABLE_APPLICATIONS"
+                override val description: String = "Read available application subscriptions"
+            }
+            val subscribeApplications = object : ValueWithDescription {
+                override val value: String = "SUBSCRIBE_APPLICATIONS"
+                override val description: String = "available applications"
+            }
+            val unsubscribeApplications = object : ValueWithDescription {
+                override val value: String = "UNSUBSCRIBE_APPLICATIONS"
+                override val description: String = "unsubscribe applications"
+            }
+        }
     }
 
     object BidRound {

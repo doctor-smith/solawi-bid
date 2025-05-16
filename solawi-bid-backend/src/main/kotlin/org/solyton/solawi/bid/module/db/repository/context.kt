@@ -2,7 +2,6 @@ package org.solyton.solawi.bid.module.db.repository
 
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.solyton.solawi.bid.module.db.ContextException
 import org.solyton.solawi.bid.module.db.schema.*
 import java.util.*
@@ -18,7 +17,7 @@ fun ContextEntity.ancestors(): SizedIterable<ContextEntity> {
     val ancs = ContextEntity.find {
         (ContextsTable.rootId eq rootId or (ContextsTable.id eq rootId)) and (ContextsTable.left less this@ancestors.left) and (ContextsTable.right greater this@ancestors.right)
     }
-    return ancs.orderBy(ContextsTable.left to org.jetbrains.exposed.sql.SortOrder.ASC)
+    return ancs.orderBy(ContextsTable.left to SortOrder.ASC)
 }
 
 fun ContextEntity.descendants(): SizedIterable<ContextEntity> = with(root?.id?:id) {
@@ -28,28 +27,9 @@ fun ContextEntity.descendants(): SizedIterable<ContextEntity> = with(root?.id?:i
     }.orderBy(ContextsTable.left to org.jetbrains.exposed.sql.SortOrder.ASC)
 }
 
-fun createRootContext(ContextName: String, user: UserEntity): ContextEntity {
-    val ContextContext = ContextEntity.new {
-        name = "Context/${ContextName.replace(" ", "_").uppercase()}"
-    }
-    val manager = RoleEntity.find { Roles.name eq "MANAGER" }.first()
-    val read = RightEntity.find { Rights.name eq "READ" }.first()
-    val write = RightEntity.find { Rights.name eq "UPDATE" }.first()
-
-    RoleRightContexts.insert {
-        it[roleId] = manager.id
-        it[rightId] = read.id
-        it[contextId] = ContextContext.id
-    }
-
-    RoleRightContexts.insert {
-        it[roleId] = manager.id
-        it[rightId] = write.id
-        it[contextId] = ContextContext.id
-    }
-
+fun createRootContext(contextName: String): ContextEntity {
     return ContextEntity.new {
-        name = ContextName
+        name = contextName.replace(" ", "_")
     }
 }
 
@@ -209,6 +189,38 @@ fun ContextToNest.nest(): ContextToNest = when{
 
     }
 }
+
+/**
+ * Clone a context together with all its children
+ */
+fun Transaction.cloneContext(contextId: UUID, identifier: String): List<ContextEntity> {
+
+    val contextToClone = ContextEntity.findById(contextId)?: throw ContextException.NoSuchContext(contextId.toString())
+    if(contextToClone.root != null) throw ContextException.NoSuchRootContext(contextId.toString())
+
+    val descendants = contextToClone.descendants().toList()
+
+    val rootContext = ContextEntity.new {
+        name = contextToClone.name + identifier
+        level = contextToClone.level
+        left = contextToClone.left
+        right = contextToClone.right
+    }
+    val contexts =descendants.map { context ->
+        ContextEntity.new{
+            name = context.name + identifier
+            root = rootContext
+            level = context.level
+            left = context.left
+            right = context.right
+        }
+    }
+    return listOf(
+        rootContext,
+        *contexts.toTypedArray()
+    )
+}
+
 /*
 data class IndexedSegment(val index: Int, val segment: String)
 

@@ -4,6 +4,7 @@ import org.evoleq.exposedx.test.runSimpleH2Test
 import org.jetbrains.exposed.sql.insert
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
+import org.solyton.solawi.bid.module.db.repository.cloneRightRoleContext
 import org.solyton.solawi.bid.module.db.schema.*
 import org.solyton.solawi.bid.module.permission.action.db.isGranted
 import kotlin.test.assertEquals
@@ -190,5 +191,55 @@ class PermissionTests {
         } catch (exception : Exception) {
             assertEquals(PermissionException.NoSuchContext(updateRight.id.value.toString()), exception)
         }
+    }
+
+    @DbFunctional@Test
+    fun cloneRightRoleContextTest() = runSimpleH2Test(
+        RoleRightContexts,
+        UserRoleContext,
+        UsersTable,
+        ContextsTable,
+        RightsTable,
+        RolesTable,
+    ) {
+        val ts = System.currentTimeMillis()
+        // Setup database entries
+        val user = UserEntity.new {
+            username = "x-$ts"
+            password = "y"
+        }
+        val readRight = RightEntity.new {
+            name = "READ-$ts"
+            description = ""
+        }
+        val updateRight = RightEntity.new {
+            name = "UPDATE-$ts"
+            description = ""
+        }
+        val role = RoleEntity.new {
+            name = "READER-$ts"
+            description = ""
+        }
+        val context = ContextEntity.new {
+            name = "APP-$ts"
+
+        }
+        RoleRightContexts.insert {
+            it[roleId] = role.id
+            it[contextId] = context.id
+            it[rightId] = readRight.id
+        }
+        RoleRightContexts.insert {
+            it[roleId] = role.id
+            it[contextId] = context.id
+            it[rightId] = updateRight.id
+        }
+        val context1 = ContextEntity.new {
+            name = "APP1-$ts"
+
+        }
+
+        val cloned = cloneRightRoleContext(context.id.value, context1.id.value)
+        assertTrue { cloned.distinctBy { it.rightId }.size == 2 }
     }
 }

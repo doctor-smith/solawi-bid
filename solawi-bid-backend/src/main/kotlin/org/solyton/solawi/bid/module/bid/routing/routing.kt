@@ -24,6 +24,7 @@ fun Routing.sendBid(environment: Environment) =  route("bid") {
 
 
 @KtorDsl
+@Suppress("UNUSED_PARAMETER")
 fun Routing.bid(environment: Environment, authenticate: Routing.(Route.() -> Route)-> Route) =
      authenticate {
 

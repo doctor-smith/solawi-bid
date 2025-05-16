@@ -57,7 +57,8 @@ fun setupBasicRolesAndRights() {
     val applicationContextId = Contexts.insertAndGetId {
         it[name] = Context.Application.value
     }
-    val applicationOrganizationContextId = Contexts.insertAndGetId {
+    // val applicationOrganizationContextId =
+    Contexts.insertAndGetId {
         it[name] = Context.Application.Organization.value
     }
     Contexts.insert {
@@ -78,7 +79,8 @@ fun setupBasicRolesAndRights() {
         it[name] = Role.owner.value
         it[description] = Role.owner.description
     }
-    val managerRoleId = Roles.insertAndGetId {
+    // val managerRoleId =
+    Roles.insertAndGetId {
         it[name] = Role.manager.value
         it[description] = Role.manager.description
     }
@@ -88,7 +90,8 @@ fun setupBasicRolesAndRights() {
         it[description] = Role.user.description
     }
 
-    val bidderRoleId = Roles.insertAndGetId {
+    // val bidderRoleId =
+    Roles.insertAndGetId {
         it[name] = Role.bidder.value
         it[description] = Role.bidder.description
     }
@@ -115,15 +118,18 @@ fun setupBasicRolesAndRights() {
         it[name] = Right.Organization.create.value
         it[description] = Right.Organization.create.description
     }
-    val readOrganizationId = Rights.insertAndGetId {
+    // val readOrganizationId =
+    Rights.insertAndGetId {
         it[name] = Right.Organization.read.value
         it[Roles.description] = Right.Organization.read.description
     }
-    val updateOrganizationId = Rights.insertAndGetId {
+    // val updateOrganizationId =
+    Rights.insertAndGetId {
         it[name] = Right.Organization.update.value
         it[Roles.description] = Right.Organization.update.description
     }
-    val deleteOrganizationId = Rights.insertAndGetId {
+    // val deleteOrganizationId =
+    Rights.insertAndGetId {
         it[name] = Right.Organization.delete.value
         it[Roles.description] = Right.Organization.delete.description
     }

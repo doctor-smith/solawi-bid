@@ -23,11 +23,11 @@ import org.solyton.solawi.bid.module.permissions.data.Permissions
  * If not, just omit the annotation or annotate it with @Ignore.
  */
 @Lensify data class User(
-    @ReadWrite val username: String,
-    @ReadWrite val password: String,
-    @ReadWrite val accessToken: String,
-    @ReadWrite val refreshToken: String,
-    @ReadOnly val permissions: Permissions
+    @ReadWrite val username: String = "",
+    @ReadWrite val password: String = "",
+    @ReadWrite val accessToken: String = "",
+    @ReadWrite val refreshToken: String = "",
+    @ReadOnly val permissions: Permissions = Permissions()
 )
 
 /**

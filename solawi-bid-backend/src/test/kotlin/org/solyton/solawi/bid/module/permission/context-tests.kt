@@ -9,6 +9,7 @@ import org.solyton.solawi.bid.module.db.schema.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
+@Suppress("VariableNaming")
 class ContextTests {
 
     val neededTables = arrayOf (
@@ -111,7 +112,8 @@ class ContextTests {
         contextsToMigrate.forEach {
             val names =it.name.split("/")
 
-            val contexts = ContextToNest(it, names, setOf(root)).nest()
+            // val contexts =
+            ContextToNest(it, names, setOf(root)).nest()
         }
         val rootContext = ContextEntity.find{Contexts.name eq "ROOT"}
         assertEquals(1, rootContext.count())
@@ -190,5 +192,20 @@ class ContextTests {
         assertEquals(1,child2.level)
         assertEquals(2, root.level)
         assertEquals(3,child.level)
+    }
+
+
+    @DbFunctional@Test
+    fun cloneContextTest() = runSimpleH2Test(*neededTables) {
+
+        val context = createRootContext("c_root", )
+        val child = context.createChild("child")
+
+        val cloned = cloneContext(context.id.value, "_clone")
+
+        assertEquals(2, cloned.size)
+        cloned.forEach {
+            assertTrue{it.name.endsWith("_clone")}
+        }
     }
 }

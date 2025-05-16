@@ -43,7 +43,8 @@ class Migration1730372270555(
 
              */
         )
-        val smith = User.new {
+        // val smith =
+        User.new {
             username = "developer@alpha-structure.com"
             password = "$2a$10$5EENEnXKE4oNT0AejWzy8Oa09DkBDiQTnk2LyqtqpBa3DrZijo51O"
         }

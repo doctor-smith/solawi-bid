@@ -45,6 +45,7 @@ fun RoundEntity.toApiType(): Round = Round(
     state
 )
 
+@Suppress("UNUSED_PARAMETER")
 fun BidRoundEntity.toApiType(fullInfo: Unit? = null): BidRound = BidRound(
     id.value.toString(),
     round.toApiType(),

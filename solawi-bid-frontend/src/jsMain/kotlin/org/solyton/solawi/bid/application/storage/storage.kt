@@ -24,8 +24,8 @@ fun Storage(): Storage<Application> {
     var pulse by remember { mutableStateOf<Int>(0) }
 
     var application by remember{ mutableStateOf<Application>(Application(
-        environment = Environment(),// Environment("DEV"),
-        userData = User("", "","", "", Permissions())
+        environment = Environment(),
+        userData = User()
     ))}
 
     return Storage<Application>(
@@ -44,7 +44,7 @@ fun Storage(): Storage<Application> {
         onLogin(oldApplication, newApplication)
         pulse++
     }.onDispatch {
-        (this@onDispatch * actions).read().collect { action : Action<Application, *, *> ->
+        (this@onDispatch * actions).read().flow.collect { action : Action<Application, *, *> ->
             CallApi( action ) runOn this
         }
     }

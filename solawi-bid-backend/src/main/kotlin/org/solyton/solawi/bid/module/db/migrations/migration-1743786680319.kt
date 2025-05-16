@@ -73,6 +73,20 @@ class Migration1743786680319(
             description = Right.readRightRoleContexts.description
         }
 
+        // Application Subscriptions
+        val readAvailableApplications = RightEntity.new {
+            name = Right.Application.Subscriptions.readAvailableApplications.value
+            description = Right.Application.Subscriptions.readAvailableApplications.description
+        }
+        val subscribeApplications = RightEntity.new {
+            name = Right.Application.Subscriptions.subscribeApplications.value
+            description = Right.Application.Subscriptions.subscribeApplications.description
+        }
+        val unsubscribeApplications = RightEntity.new {
+            name = Right.Application.Subscriptions.unsubscribeApplications.value
+            description = Right.Application.Subscriptions.unsubscribeApplications.description
+        }
+
         // Grant owner rights in context APPLICATION
         ////////////////////////////////////////
         // Already granted:
@@ -143,7 +157,11 @@ class Migration1743786680319(
             updateOrganization,
             deleteOrganization,
             // users
-            manageUsers
+            manageUsers,
+            // application subscriptions
+            readAvailableApplications,
+            subscribeApplications,
+            unsubscribeApplications
         )
 
         //val applicationOwner = UserEntity.find {  }
@@ -153,14 +171,16 @@ class Migration1743786680319(
         val organizationContext = ContextEntity.find {
             ContextsTable.name eq Context.Organization.value and (ContextsTable.rootId eq null)
         }.first()
-        val applicationManagementContext = ContextEntity.find {
+        // val applicationManagementContext =
+        ContextEntity.find {
             ContextsTable.name eq Value.MANAGEMENT and (ContextsTable.rootId eq organizationContext.id)
         }.first()
 
 
         // Setup Auction Context
         val auctionContext = ContextEntity.find { ContextsTable.name eq Context.Application.value }.first()
-        val auctionOrganizationContext = ContextEntity.find {
+        // val auctionOrganizationContext =
+        ContextEntity.find {
             ContextsTable.name eq Value.ORGANIZATION and (ContextsTable.rootId eq auctionContext.id)
         }.first()
 

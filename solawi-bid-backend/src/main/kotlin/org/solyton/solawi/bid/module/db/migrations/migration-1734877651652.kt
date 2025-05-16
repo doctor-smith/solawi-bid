@@ -39,7 +39,8 @@ class Migration1734877651652(
             BidderDetailsSolawiTuebingenTable
         )
 
-        var solawiTuebingenAuctionType = AuctionType.new {
+        // var solawiTuebingenAuctionType =
+        AuctionType.new {
             type = "SOLAWI_TUEBINGEN"
         }
     }
