@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>NewLineAtEndOfFile:transform.kt$org.solyton.solawil.bid.module.bid.data.api.transform.kt</ID>
+  </CurrentIssues>
+</SmellBaseline>

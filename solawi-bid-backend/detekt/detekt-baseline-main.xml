@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>InjectDispatcher:migrations.kt$Migration$Default</ID>
+    <ID>InjectDispatcher:result-transaction.kt$Default</ID>
+    <ID>InjectDispatcher:result-transaction.kt$IO</ID>
+    <ID>NoNameShadowing:bidders.kt${ it.id }</ID>
+    <ID>RedundantSuspendModifier:io.kt$suspend</ID>
+    <ID>UnsafeCallOnNullableType:bidders.kt$item!!</ID>
+    <ID>UnsafeCallOnNullableType:context.kt$root!!</ID>
+    <ID>UnsafeCallOnNullableType:io.kt$call.request.headers[Header.CONTEXT]!!</ID>
+    <ID>UnsafeCallOnNullableType:organization.kt$root!!</ID>
+    <ID>UseAnyOrNoneInsteadOfFind:environment.kt$Environment$firstOrNull()</ID>
+    <ID>UseRequireNotNull:context.kt$require(root != null)</ID>
+    <ID>UseRequireNotNull:organization.kt$require(root != null)</ID>
+  </CurrentIssues>
+</SmellBaseline>
