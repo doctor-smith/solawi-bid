@@ -31,6 +31,7 @@ import org.solyton.solawi.bid.module.bid.component.effect.LaunchExportOfBidRound
 import org.solyton.solawi.bid.module.bid.component.effect.LaunchPresentationOfBidRoundEvaluationInModal
 import org.solyton.solawi.bid.module.bid.data.Auction
 import org.solyton.solawi.bid.module.bid.data.Round
+import org.solyton.solawi.bid.module.bid.data.acceptedRoundId
 import org.solyton.solawi.bid.module.bid.data.api.RoundState
 import org.solyton.solawi.bid.module.bid.data.reader.roundAccepted
 import org.solyton.solawi.bid.module.bid.data.rounds
@@ -93,7 +94,15 @@ fun BidRoundListItem(
         is RoundState.Opened,
         is RoundState.Started,
 
-        is RoundState.Frozen  -> Unit
+        is RoundState.Frozen  -> {
+            val acceptedRoundId = (storage * auction * acceptedRoundId).read()
+            val roundDataLoaded = round.bidRoundEvaluation.weightedBids.isNotEmpty()
+            if (!(acceptedRoundId == null || roundDataLoaded)) LaunchBidRoundEvaluation(
+                storage = storage,
+                auction = auction,
+                round = round
+            )
+        }
     }
 
     // Markup
