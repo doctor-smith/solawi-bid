@@ -15,6 +15,7 @@
     <ID>NewLineAtEndOfFile:login-form.kt$org.solyton.solawi.bid.module.authentication.component.login-form.kt</ID>
     <ID>NewLineAtEndOfFile:storage.kt$org.solyton.solawi.bid.test.storage.storage.kt</ID>
     <ID>NewLineAtEndOfFile:user-action-test.kt$org.solyton.solawi.bid.module.user.action.user-action-test.kt</ID>
+    <ID>PackageNaming:bid-automatically.kt$package org.solyton.solawi.bid.module._dev</ID>
     <ID>UnusedPrivateProperty:action-tests.kt$AuthorizationActionTests$val logout = logoutAction</ID>
     <ID>UnusedPrivateProperty:action-tests.kt$AuthorizationActionTests$val name = "name"</ID>
     <ID>UnusedPrivateProperty:action-tests.kt$AuthorizationActionTests$val storage = TestStorage()</ID>
