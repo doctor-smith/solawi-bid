@@ -15,4 +15,3 @@ fun LocalDate.format(locale: Locale): String = when(locale) {
     Locale.En -> "$year/$monthNumber/$dayOfMonth"
     Locale.Iso -> "$year-$monthNumber-$dayOfMonth"
 }
-

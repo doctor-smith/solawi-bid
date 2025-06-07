@@ -27,4 +27,3 @@ fun ManualPage(application: Storage<Application>) {
         }
     }
 }
-

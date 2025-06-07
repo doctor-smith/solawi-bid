@@ -102,4 +102,3 @@ fun EndState(device: Source<DeviceType>, title:String, state: String, currentSta
     }
     else -> StdButton({ "?" }, device.emit(),) {}
 }
-

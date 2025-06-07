@@ -69,4 +69,3 @@ fun LoginForm(storage: Storage<LoginForm>, login: ()->Unit) {
         }
     }
 }
-

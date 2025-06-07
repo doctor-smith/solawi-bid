@@ -27,4 +27,3 @@ fun createRound(auction: Lens<Application, Auction>) =
                 }
         }
     )
-

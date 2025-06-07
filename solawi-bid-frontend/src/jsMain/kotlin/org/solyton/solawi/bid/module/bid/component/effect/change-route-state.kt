@@ -55,7 +55,6 @@ suspend fun changeRouteState(
         (storage * modals).showErrorModal(
             errorModalTexts(exception.message?:exception.cause?.message?:"Cannot Emit action 'ChangeRoundState'"),
             storage * deviceData * mediaType.get
-
         )
     }
 }
