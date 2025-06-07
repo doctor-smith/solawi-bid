@@ -3,19 +3,6 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <ID>EmptyFunctionBlock:parser.kt$ParserTest${ }</ID>
-    <ID>NewLineAtEndOfFile:actions-test.kt$org.evoleq.optics.storage.actions-test.kt</ID>
-    <ID>NewLineAtEndOfFile:csv-parser-test.kt$org.evoleq.csv.csv-parser-test.kt</ID>
-    <ID>NewLineAtEndOfFile:data.kt$org.evoleq.optics.data.kt</ID>
-    <ID>NewLineAtEndOfFile:iso.kt$org.evoleq.optics.iso.iso.kt</ID>
-    <ID>NewLineAtEndOfFile:language-dsl-test.kt$org.evoleq.language.language-dsl-test.kt</ID>
-    <ID>NewLineAtEndOfFile:language-test.kt$org.evoleq.language.language-test.kt</ID>
-    <ID>NewLineAtEndOfFile:lens.kt$org.evoleq.optics.lens.lens.kt</ID>
-    <ID>NewLineAtEndOfFile:math-test.kt$org.evoleq.language.math-test.kt</ID>
-    <ID>NewLineAtEndOfFile:parser.kt$org.evoleq.language.parser.kt</ID>
-    <ID>NewLineAtEndOfFile:parser.kt$org.evoleq.parser.parser.kt</ID>
-    <ID>NewLineAtEndOfFile:prism.kt$org.evoleq.optics.prism.prism.kt</ID>
-    <ID>NewLineAtEndOfFile:sg-pair.kt$org.evoleq.optics.sg.sg-pair.kt</ID>
-    <ID>NewLineAtEndOfFile:storage.kt$org.evoleq.optics.storage.storage.kt</ID>
     <ID>UnusedPrivateProperty:language-test.kt$LanguageTest$val r = lang.merge(l)</ID>
     <ID>UnusedPrivateProperty:parser.kt$ParserTest$val TillLeftOrRight = CollectWhile { it != left &amp;&amp; it != right}</ID>
     <ID>UnusedPrivateProperty:parser.kt$ParserTest$val c1 = "{ how {do {you{ feel } }} }---{}"</ID>
