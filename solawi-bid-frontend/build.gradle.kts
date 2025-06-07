@@ -23,7 +23,7 @@ repositories {
 }
 
 group = libs.versions.solytonGroup
-version = libs.versions.solawi
+version = libs.versions.solawi.get()
 
 kotlin {
     js(IR) {
@@ -148,4 +148,18 @@ detekt {
     config = files("$rootDir/detekt/detekt.yml")
     buildUponDefaultConfig = true
     allRules = false
+
+}
+tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineJsMain") {
+    baseline.set(file("detekt/detekt-baseline-js-main.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektJsMain") {
+    baseline.set(file("detekt/detekt-baseline-js-main.xml"))
+}
+
+tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineJsTest") {
+    baseline.set(file("detekt/detekt-baseline-js-test.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektJsTest") {
+    baseline.set(file("detekt/detekt-baseline-js-test.xml"))
 }

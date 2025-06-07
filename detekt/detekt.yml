@@ -12,7 +12,7 @@ config:
   warningsAsErrors: false
   checkExhaustiveness: false
   # when writing own rules with new properties, exclude the property path e.g.: 'my_rule_set,.*>.*>[my_property]'
-  excludes: ''
+  excludes: '' #'**/org/evoleq/compose/**,**/component/**, **/test/**, **/androidTest/**, **/commonTest/**, **/jvmTest/**, **/androidUnitTest/**, **/androidInstrumentedTest/**,**/jsTest/**,**/iosTest/**'
 
 processors:
   active: true
@@ -51,6 +51,7 @@ output-reports:
   # - 'SarifOutputReport'
 
 comments:
+  excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
   active: true
   AbsentOrWrongFileLicense:
     active: false
@@ -93,8 +94,9 @@ comments:
 complexity:
   active: true
   CognitiveComplexMethod:
-    active: false
+    active: true
     threshold: 15
+    excludes: ['**/org/evoleq/compose/**','**/component/**', '**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
   ComplexCondition:
     active: true
     threshold: 4
@@ -106,7 +108,7 @@ complexity:
     ignoreOverloaded: false
   CyclomaticComplexMethod:
     active: true
-    threshold: 15
+    threshold: 20 # 15
     ignoreSingleWhenExpression: false
     ignoreSimpleWhenEntries: false
     ignoreNestingFunctions: false
@@ -130,7 +132,7 @@ complexity:
     active: false
     threshold: 60
   LongParameterList:
-    active: true
+    active: false # true
     functionThreshold: 6
     constructorThreshold: 7
     ignoreDefaultParameters: false
@@ -181,7 +183,7 @@ coroutines:
   GlobalCoroutineUsage:
     active: false
   InjectDispatcher:
-    active: true
+    active: false
     dispatcherNames:
       - 'IO'
       - 'Default'

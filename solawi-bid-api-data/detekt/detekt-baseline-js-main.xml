@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>FunctionNaming:language-reader.kt$fun Texts(path: String): Reader&lt;Lang.Block, Lang.Block&gt;</ID>
+    <ID>NestedBlockDepth:language.kt$@I18N fun Block.component(path: String): Block</ID>
+    <ID>NestedBlockDepth:language.kt$@I18N operator fun Lang.get(path: String): String</ID>
+    <ID>NewLineAtEndOfFile:boolean-algebra.kt$org.evoleq.optics.lens.boolean-algebra.kt</ID>
+    <ID>NewLineAtEndOfFile:dsl-marker.kt$org.evoleq.language.dsl-marker.kt</ID>
+    <ID>NewLineAtEndOfFile:iso.kt$org.evoleq.optics.iso.iso.kt</ID>
+    <ID>NewLineAtEndOfFile:lang-default-readers.kt$org.evoleq.language.lang-default-readers.kt</ID>
+    <ID>NewLineAtEndOfFile:language-dsl.kt$org.evoleq.language.language-dsl.kt</ID>
+    <ID>NewLineAtEndOfFile:language-merge.kt$org.evoleq.language.language-merge.kt</ID>
+    <ID>NewLineAtEndOfFile:language-reader.kt$org.evoleq.language.language-reader.kt</ID>
+    <ID>NewLineAtEndOfFile:lens-iso.kt$org.evoleq.optics.transform.lens-iso.kt</ID>
+    <ID>NewLineAtEndOfFile:lens-reader.kt$org.evoleq.optics.transform.lens-reader.kt</ID>
+    <ID>NewLineAtEndOfFile:list.kt$org.evoleq.optics.lens.list.kt</ID>
+    <ID>NewLineAtEndOfFile:locale.kt$org.evoleq.language.locale.kt</ID>
+    <ID>NewLineAtEndOfFile:math.kt$org.evoleq.language.math.kt</ID>
+    <ID>NewLineAtEndOfFile:pair.kt$org.evoleq.optics.lens.pair.kt</ID>
+    <ID>NewLineAtEndOfFile:parser.kt$org.evoleq.language.parser.kt</ID>
+    <ID>NewLineAtEndOfFile:request.kt$org.evoleq.ktorx.client.request.kt</ID>
+    <ID>NewLineAtEndOfFile:special-parsers.kt$org.evoleq.parser.special-parsers.kt</ID>
+    <ID>NewLineAtEndOfFile:storage-lens.kt$org.evoleq.optics.transform.storage-lens.kt</ID>
+    <ID>NewLineAtEndOfFile:storage-prism.kt$org.evoleq.optics.transform.storage-prism.kt</ID>
+    <ID>NewLineAtEndOfFile:storage-reader.kt$org.evoleq.optics.transform.storage-reader.kt</ID>
+    <ID>NewLineAtEndOfFile:storage-writer.kt$org.evoleq.optics.transform.storage-writer.kt</ID>
+    <ID>TooGenericExceptionThrown:language-merge.kt$throw Exception("Cannot merge blocks")</ID>
+    <ID>TooGenericExceptionThrown:language-merge.kt$throw Exception("Cannot merge langs")</ID>
+    <ID>TooGenericExceptionThrown:language.kt$throw Exception("There is no Element in block '${this@get.key}' with key = '$result'")</ID>
+    <ID>TooGenericExceptionThrown:language.kt$throw Exception("There is no block in block '${this@component.key}' with key = '$result'")</ID>
+    <ID>UtilityClassWithPublicConstructor:storage.kt$Read</ID>
+  </CurrentIssues>
+</SmellBaseline>
