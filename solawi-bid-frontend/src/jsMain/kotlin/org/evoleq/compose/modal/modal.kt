@@ -2,6 +2,7 @@ package org.evoleq.compose.modal
 
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.language.Block
 import org.evoleq.language.get
 import org.evoleq.math.Source
@@ -119,6 +120,7 @@ fun <Id> Modal(
     onCancel: (()->Unit)?,
     texts: Block,
     styles: ModalStyles = ModalStyles(),
+    dataId: String? = null,
     content: @Composable ElementScope<HTMLElement>.()->Unit
 ):  @Composable ElementScope<HTMLElement>.()->Unit = {
 
@@ -153,6 +155,7 @@ fun <Id> Modal(
                 }
             }) {
                 Button({
+                    if(dataId != null) dataId("$dataId.modal.close-x")
                         //classes("button")
                     style{
                         symbolicButtonStyle(device.emit())()
@@ -168,6 +171,7 @@ fun <Id> Modal(
         }
 
         H3({
+            if(dataId != null) dataId("$dataId.modal.title")
             style {
                 marginTop(10.px)
                 marginLeft(10.px)
@@ -181,6 +185,8 @@ fun <Id> Modal(
         // Content area
         //
         Div({
+
+            if(dataId != null) dataId("$dataId.modal.content-wrapper")
             style {
                 maxWidth(80.pc)
                 marginLeft(10.px)
@@ -207,7 +213,8 @@ fun <Id> Modal(
             if(onCancel != null) {
                 CancelButton(
                     {texts["cancelButton.title"]},
-                    device.emit()
+                    device.emit(),
+                    dataId = "$dataId.modal.close-button",
                 ) {
                     onCancel()
                     id.close()
@@ -215,7 +222,8 @@ fun <Id> Modal(
             }
             SubmitButton(
                 {texts["okButton.title"]},
-                device.emit()
+                device.emit(),
+                dataId = "$dataId.modal.submit-button",
             ) {
                 onOk()
                 id.close()

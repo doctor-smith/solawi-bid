@@ -3,7 +3,7 @@ package org.solyton.solawi.bid.application.ui.page.user.action
 import org.evoleq.compose.Markup
 import org.evoleq.math.Reader
 import org.evoleq.optics.storage.Action
-import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.module.user.data.Application
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
 import org.solyton.solawi.bid.module.user.data.api.User
 

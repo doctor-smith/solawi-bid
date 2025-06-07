@@ -76,7 +76,8 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div {
                 UpdateAuctionButton(
                     storage = storage,
                     auction = auction,
-                    texts = buttons * subComp("updateAuction")
+                    texts = buttons * subComp("updateAuction"),
+                    dataId = "auction-page.button.configure-auction"
                 )
                 ImportBiddersButton(
                     storage = storage,
@@ -89,12 +90,14 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div {
                         write = { addBidders = it }
                     ),
                     auction = auction,
-                    texts = buttons * subComp("importBidders")
+                    texts = buttons * subComp("importBidders"),
+                    dataId = "auction-page.button.import-bidders"
                 )
                 CreateNewRoundButton(
                     storage = storage,
                     auction = auction,
-                    texts = buttons * subComp("createRound")
+                    texts = buttons * subComp("createRound"),
+                    dataId = "auction-page.button.create-round"
                 )
             }
         } }

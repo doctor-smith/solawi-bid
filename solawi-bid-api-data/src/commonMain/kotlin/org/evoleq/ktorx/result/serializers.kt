@@ -2,6 +2,8 @@ package org.evoleq.ktorx.result
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.MapEntrySerializer
+import kotlinx.serialization.builtins.MapSerializer
 import kotlin.reflect.KClass
 
 /**
@@ -42,6 +44,10 @@ inline fun <reified T : Any> ResultSerializer(): KSerializer<Result<T>> =
 @Suppress("FunctionName","UNCHECKED_CAST")
 inline fun <reified T : Any> ResultListSerializer(): KSerializer<Result<List<T>>> =
     Result.serializer(ListSerializer(Serializer<T>()))
+
+@Suppress("FunctionName","UNCHECKED_CAST")
+inline fun <reified K : Any, reified V : Any> ResultMapSerializer(): KSerializer<Result<Map<K, V>>> =
+    Result.serializer(MapSerializer(Serializer<K>(), Serializer<V>()))
 
 //@
 fun serializers(collect: HashMap<KClass<*>, KSerializer<*>>.()->Unit) {

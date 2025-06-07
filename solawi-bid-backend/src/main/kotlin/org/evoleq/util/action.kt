@@ -22,6 +22,7 @@ data class BaseState(
 fun Base(call: ApplicationCall, environment: Environment): BaseState = Base(call, environment.connectToDatabase())
 
 @MathDsl
+@Suppress("FunctionName")
 fun <T> Action(state: suspend (b: Base) -> Pair<T, Base>): Action<T> = State{ b -> state(b)}
 
 @MathDsl
@@ -37,6 +38,7 @@ fun <T> ApiAction(state: suspend (ApplicationCall) -> Pair<T, ApplicationCall>):
 }
 
 @MathDsl
+@Suppress("FunctionName")
 fun <S, T> KlAction(kleisli: suspend (S)-> Action< T>): KlAction<S, T> = KlState(kleisli)
 
 @MathDsl

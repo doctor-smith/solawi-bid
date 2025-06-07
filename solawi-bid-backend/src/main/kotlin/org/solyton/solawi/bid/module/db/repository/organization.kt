@@ -2,9 +2,11 @@ package org.solyton.solawi.bid.module.db.repository
 
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.solyton.solawi.bid.module.db.ContextException
 import org.solyton.solawi.bid.module.db.UserManagementException
 import org.solyton.solawi.bid.module.db.schema.*
 import java.util.UUID
+import kotlin.reflect.jvm.internal.impl.resolve.scopes.receivers.ContextClassReceiver
 
 fun OrganizationEntity.ancestors(): SizedIterable<OrganizationEntity> {
     if(root == null) {
@@ -25,9 +27,14 @@ fun OrganizationEntity.descendants(): SizedIterable<OrganizationEntity> = with(r
     }.orderBy(OrganizationsTable.left to SortOrder.ASC)
 }
 
-fun createRootOrganization(organizationName: String, user: UserEntity): OrganizationEntity {
+fun createRootOrganization(organizationName: String): OrganizationEntity {
+    val finalOrganizationName = organizationName.replace(" ", "_").uppercase()
+    val exists = !ContextEntity.find { ContextsTable.name eq finalOrganizationName and (ContextsTable.rootId eq null) }.empty()
+
+    if(exists) throw ContextException.PathAlreadyExists(finalOrganizationName)
+
     val organizationContext = ContextEntity.new {
-        name = "ORGANIZATION/${organizationName.replace(" ", "_").uppercase()}"
+        name = finalOrganizationName
     }
     val manager = RoleEntity.find { Roles.name eq "MANAGER" }.first()
     val read = RightEntity.find { Rights.name eq "READ" }.first()

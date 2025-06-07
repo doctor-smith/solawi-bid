@@ -21,5 +21,3 @@ suspend fun <T : Any> resultTransaction(database: Database, statement: Transacti
         Result.Failure.Exception(e)
     }
 }
-
-

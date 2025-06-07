@@ -28,7 +28,7 @@ import org.solyton.solawi.bid.module.bid.data.reader.existRounds
 import org.solyton.solawi.bid.module.bid.data.rounds
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.language
-import org.solyton.solawi.bid.module.user.isNotGranted
+import org.solyton.solawi.bid.module.permissions.service.isNotGranted
 
 @Markup
 @Composable
@@ -38,7 +38,8 @@ fun ImportBiddersButton(
     newBidders: Storage<List<NewBidder>>,
     addBidders: Storage<AddBidders>,
     auction: Lens<Application, Auction>,
-    texts : Reader<Unit, Lang.Block>
+    texts : Reader<Unit, Lang.Block>,
+    dataId: String
 ) {
     val isDisabled = (storage * auction * rounds * existRounds).emit() ||
         (storage * auction * auctionAccepted).emit()||
@@ -47,7 +48,8 @@ fun ImportBiddersButton(
     StdButton(
         texts * text,
         storage * deviceData * mediaType.get,
-        isDisabled
+        isDisabled,
+        dataId
     ) {
         (storage * modals).showImportBiddersModal(
             storage * auction,

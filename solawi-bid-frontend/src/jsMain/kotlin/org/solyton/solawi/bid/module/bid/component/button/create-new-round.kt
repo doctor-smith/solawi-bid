@@ -24,7 +24,7 @@ import org.solyton.solawi.bid.module.bid.data.reader.biddersHaveNotBeenImported
 import org.solyton.solawi.bid.module.bid.data.reader.existsRunning
 import org.solyton.solawi.bid.module.bid.data.rounds
 import org.solyton.solawi.bid.module.control.button.StdButton
-import org.solyton.solawi.bid.module.user.isNotGranted
+import org.solyton.solawi.bid.module.permissions.service.isNotGranted
 
 @Markup
 @Composable
@@ -32,7 +32,8 @@ import org.solyton.solawi.bid.module.user.isNotGranted
 fun CreateNewRoundButton(
     storage: Storage<Application>,
     auction: Lens<Application, Auction>,
-    texts : Reader<Unit, Lang.Block>
+    texts : Reader<Unit, Lang.Block>,
+    dataId: String
 ) {
     // New rounds can only be created when
     // 1. the auction is configured,
@@ -48,7 +49,8 @@ fun CreateNewRoundButton(
     StdButton(
         texts * text,
         storage * deviceData * mediaType.get,
-        isDisabled
+        isDisabled,
+        dataId
     ) {
         TriggerCreateNewRound(
             storage = storage,

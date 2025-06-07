@@ -102,7 +102,8 @@ class AuctionTests {
             NewBidder("name6",4,1)
         )
 
-        val auctionWithNewBidders = addBidders(
+        // val auctionWithNewBidders =
+        addBidders(
             auctionId = UUID.fromString( auction.id),
             newBidders
         ).toApiType()

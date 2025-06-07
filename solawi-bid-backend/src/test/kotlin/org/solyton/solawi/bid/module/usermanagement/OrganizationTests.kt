@@ -27,11 +27,8 @@ class OrganizationTests {
 
     @DbFunctional@Test fun createOrganization() = runSimpleH2Test(*neededTables){
         setupBasicRolesAndRights()
-        val user = UserEntity.new {
-            password = "password"
-            username = "username"
-        }
-        val organization = createRootOrganization(organizationName, user)
+
+        val organization = createRootOrganization(organizationName)
 
 
         assertEquals(0, organization.left)
@@ -47,7 +44,7 @@ class OrganizationTests {
             password = "password"
             username = "username"
         }
-        val organization = createRootOrganization(organizationName, user)
+        val organization = createRootOrganization(organizationName)
 
         organization.addUser(user)
 
@@ -58,11 +55,8 @@ class OrganizationTests {
 
     @DbFunctional@Test fun createChild() = runSimpleH2Test(*neededTables){
         setupBasicRolesAndRights()
-        val user = UserEntity.new {
-            password = "password"
-            username = "username"
-        }
-        var organization = createRootOrganization(organizationName, user)
+
+        var organization = createRootOrganization(organizationName)
 
         val childOrganization = "TEST_CHILD_ORGANIZATION"
         val child = organization.createChild(childOrganization)
@@ -105,11 +99,8 @@ class OrganizationTests {
 
     @DbFunctional@Test fun ancestors() = runSimpleH2Test(*neededTables){
         setupBasicRolesAndRights()
-        val user = UserEntity.new {
-            password = "password"
-            username = "username"
-        }
-        val organization = createRootOrganization(organizationName, user)
+
+        val organization = createRootOrganization(organizationName)
         val childOrganization = "TEST_CHILD_ORGANIZATION"
         val child = organization.createChild(childOrganization)
         val ancestors = child.ancestors().map{it.name}
@@ -120,11 +111,8 @@ class OrganizationTests {
 
     @DbFunctional@Test fun removeChild() = runSimpleH2Test(*neededTables){
         setupBasicRolesAndRights()
-        val user = UserEntity.new {
-            password = "password"
-            username = "username"
-        }
-        val organization = createRootOrganization(organizationName, user)
+
+        val organization = createRootOrganization(organizationName)
         val childOrganization = "TEST_CHILD_ORGANIZATION"
         val child = organization.createChild(childOrganization)
 

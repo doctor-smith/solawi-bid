@@ -32,9 +32,10 @@ runs:
         path: solawi-bid-backend/build/test-results/${{inputs.testSuite}}
       if: always()
     - name: Upload ${{inputs.reportName}} test results
-      uses: dorny/test-reporter@v1.9.1
+      uses: dorny/test-reporter@v2
       with:
         name: ${{inputs.reportName}} Test Results
+        badge-title: ${{inputs.reportName}}Tests
         artifact: ${{inputs.reportName}}-Test-Report
         path: "*.xml"
         reporter: java-junit

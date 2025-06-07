@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.user.modal
+package org.solyton.solawi.bid.module.user.component.modal
 
 import org.evoleq.language.Lang
 import org.evoleq.math.Source

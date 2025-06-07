@@ -8,7 +8,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.util.*
 import kotlinx.serialization.json.Json
-import org.evoleq.exposedx.NoMessageProvided
+import org.evoleq.exposedx.NO_MESSAGE_PROVIDED
 import org.evoleq.ktorx.result.*
 import org.evoleq.math.state.times
 import org.evoleq.math.x
@@ -133,7 +133,7 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
         else -> HttpStatusCode.InternalServerError
     } x this.value.toMessage()
 
-fun Throwable.toMessage(): Result.Failure.Message = Result.Failure.Message(message?: NoMessageProvided)
+fun Throwable.toMessage(): Result.Failure.Message = Result.Failure.Message(message?: NO_MESSAGE_PROVIDED)
 
 @KtorDsl
 @Suppress("FunctionName")

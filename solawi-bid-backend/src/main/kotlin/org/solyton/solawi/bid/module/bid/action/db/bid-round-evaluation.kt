@@ -46,7 +46,7 @@ fun Transaction.getResults(auctionId: UUID, roundId: UUID):BidRoundResults {
     // Collect auxiliary data
     val auction = AuctionEntity.find {
         AuctionsTable.id eq auctionId
-    }.firstOrNull()?: throw Exception()
+    }.firstOrNull()?: throw BidRoundException.NoSuchAuction
 
     val bidderDetails = getBidderDetails(auction).map { it as BidderDetails.SolawiTuebingen }
 

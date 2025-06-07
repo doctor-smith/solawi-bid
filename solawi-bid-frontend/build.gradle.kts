@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.compose)
     alias(libs.plugins.serialization)
     id("org.evoleq.math.cat.gradle.optics")
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.kover)
 }
 
 repositories {
@@ -21,7 +23,7 @@ repositories {
 }
 
 group = libs.versions.solytonGroup
-version = libs.versions.solawi
+version = libs.versions.solawi.get()
 
 kotlin {
     js(IR) {
@@ -139,4 +141,25 @@ afterEvaluate {
         versions.webpackDevServer.version = "4.10.0"//"4.0.0"
         versions.webpackCli.version = "5.1.0"//""4.10.0"
     }
+}
+
+detekt {
+    toolVersion = libs.versions.detekt.get()
+    config = files("$rootDir/detekt/detekt.yml")
+    buildUponDefaultConfig = true
+    allRules = false
+
+}
+tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineJsMain") {
+    baseline.set(file("detekt/detekt-baseline-js-main.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektJsMain") {
+    baseline.set(file("detekt/detekt-baseline-js-main.xml"))
+}
+
+tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineJsTest") {
+    baseline.set(file("detekt/detekt-baseline-js-test.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektJsTest") {
+    baseline.set(file("detekt/detekt-baseline-js-test.xml"))
 }

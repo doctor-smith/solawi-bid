@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>NoNameShadowing:application.kt${ it.map { jwtPrincipal -&gt; UUID.fromString(jwtPrincipal.payload.subject) } }</ID>
+    <ID>UnnecessaryFilter:auction-routing-tests.kt$AuctionRoutingTests$filter { it.name == "test-name" }</ID>
+    <ID>UnnecessaryFilter:auction-routing-tests.kt$AuctionRoutingTests$filter { it.name == "test-name-1" }</ID>
+  </CurrentIssues>
+</SmellBaseline>

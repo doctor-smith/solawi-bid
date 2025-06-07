@@ -6,3 +6,6 @@ import org.w3c.dom.Element
 
 @Markup
 fun <T: Element> AttrsScope<T>.disabled(): AttrsScope<T> = attr("disabled","true")
+
+@Markup
+fun <T: Element> AttrsScope<T>.dataId(dataId: String): AttrsScope<T> = attr("data-id",dataId)

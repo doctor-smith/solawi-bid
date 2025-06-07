@@ -7,6 +7,7 @@ import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.ktorx.result.serializers
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
+import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
 
 fun Application.installSerializers() {
@@ -82,4 +83,11 @@ fun Application.installSerializers() {
     serializers[Users::class] = Users.serializer()
     serializers[GetUsers::class] = GetUsers.serializer()
     serializers[ChangePassword::class] = ChangePassword.serializer()
+
+    // Permissions
+    serializers[ReadRightRoleContextsOfUser::class] = ReadRightRoleContextsOfUser.serializer()
+    serializers[ReadRightRoleContextsOfUsers::class] = ReadRightRoleContextsOfUsers.serializer()
+    serializers[Context::class] = Context.serializer()
+    serializers[Role::class] = Role.serializer()
+    serializers[Right::class] = Right.serializer()
 }

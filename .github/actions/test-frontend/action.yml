@@ -29,10 +29,11 @@ runs:
         path: solawi-bid-frontend/build/test-results/jsBrowserTest
       if: steps.changes.outputs.frontend == 'true'
     - name: Upload ${{inputs.reportName}} test results
-      uses: dorny/test-reporter@v1.9.1
+      uses: dorny/test-reporter@v2
       with:
         name: JS Test Results
         artifact: JS-Test-Report
         path: "*.xml"
         reporter: java-junit
+        badge-title: JsTests
       if: steps.changes.outputs.frontend == 'true'

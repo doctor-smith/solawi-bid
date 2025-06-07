@@ -18,6 +18,8 @@ docker compose -p solawi-bid down --remove-orphans && \
 docker compose -p solawi-bid up -d 
 ```
 
+
+
 Access the frontend on
 ```
 localhost:8080

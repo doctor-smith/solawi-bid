@@ -10,6 +10,7 @@ import org.solyton.solawi.bid.module.health.action.checkApplicationHealth
 import kotlin.system.exitProcess
 
 @KtorDsl
+@Suppress("UNUSED_PARAMETER")
 fun Routing.health(environment: Environment) {
     route("/health") {
         get("/check") {

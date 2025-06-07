@@ -1,5 +1,6 @@
 package org.solyton.solawi.bid.module.db
 
+@Suppress("UnusedPrivateMember")
 sealed class BidRoundException(override val message: String) : Exception(message)
 {
     data object NoSuchRound: BidRoundException("Round not found") {
@@ -27,4 +28,8 @@ sealed class BidRoundException(override val message: String) : Exception(message
     data class NoSuchAuctionType(val type: String) : BidRoundException("No such auction type: '$type'")
 
     data class IllegalNumberOfParts(val value: Int): BidRoundException("Illegal number of parts: $value")
+
+    data object NoSuchAcceptedRound: BidRoundException("AcceptedRound not found") {
+        private fun readResolve(): Any = NoSuchAcceptedRound
+    }
 }

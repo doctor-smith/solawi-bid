@@ -7,10 +7,12 @@ plugins {
     alias(libs.plugins.shadow)
     id("org.evoleq.exposedx.migration")
     // id("jacoco") // JaCoCo plugin <-
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.kover)
 }
 
 group = libs.versions.solytonGroup
-version = libs.versions.solawi
+version = libs.versions.solawi.get()
 val solawiBackendMainClassName = "org.solyton.solawi.bid.MainKt"
 java {
     toolchain {
@@ -202,5 +204,38 @@ migrations {
         migrations = "migrations"
         sourceSet = "test"
     }
+}
+
+detekt {
+    toolVersion = libs.versions.detekt.get()
+    config.from( files("$rootDir/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
+    allRules = false
+ //   source.from( files("src/main/kotlin", "src/test/kotlin"))
+
+}
+
+
+/*
+tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaseline") {
+    baseline.set(file("detekt/detekt-baseline.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detekt") {
+    baseline.set(file("detekt/detekt-baseline.xml"))
+}
+*/
+
+tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineMain") {
+    baseline.set(file("detekt/detekt-baseline-main.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektMain") {
+    baseline.set(file("detekt/detekt-baseline-main.xml"))
+}
+
+tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineTest") {
+    baseline.set(file("detekt/detekt-baseline-test.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektTest") {
+    baseline.set(file("detekt/detekt-baseline-test.xml"))
 }
 

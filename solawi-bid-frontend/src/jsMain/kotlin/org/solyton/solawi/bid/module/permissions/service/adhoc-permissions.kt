@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.user
+package org.solyton.solawi.bid.module.permissions.service
 
 import org.solyton.solawi.bid.application.permission.Right
 import org.solyton.solawi.bid.module.user.data.User
