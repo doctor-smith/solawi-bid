@@ -18,6 +18,8 @@ fun fixDoubleString(value:String):String =
 
 
 val digits = listOf( "0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+
+ @Suppress("ReturnCount")
 fun String.isDouble(precision: Int = 2, dotHit: Boolean = false): Boolean {
     return when {
         isEmpty() -> true

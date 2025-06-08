@@ -4,6 +4,7 @@ import org.evoleq.math.MathDsl
 import org.evoleq.math.Reader
 import kotlin.reflect.KClass
 
+@Suppress("TooManyFunctions")
 data class Api(
     val endPoints: HashMap<KClass<*>, EndPoint<*,*>> = hashMapOf()
 ): Map<KClass<*>, EndPoint<*,*>> by endPoints {
