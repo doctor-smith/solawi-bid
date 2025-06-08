@@ -1,19 +1,7 @@
 <?xml version="1.0" ?>
 <SmellBaseline>
-  <ManuallySuppressedIssues/>
+  <ManuallySuppressedIssues>
+  </ManuallySuppressedIssues>
   <CurrentIssues>
-    <ID>EmptyFunctionBlock:parser.kt$ParserTest${ }</ID>
-    <ID>UnusedPrivateProperty:language-test.kt$LanguageTest$val r = lang.merge(l)</ID>
-    <ID>UnusedPrivateProperty:parser.kt$ParserTest$val TillLeftOrRight = CollectWhile { it != left &amp;&amp; it != right}</ID>
-    <ID>UnusedPrivateProperty:parser.kt$ParserTest$val c1 = "{ how {do {you{ feel } }} }---{}"</ID>
-    <ID>UnusedPrivateProperty:storage.kt$StorageTest$val unit: Unit = dispatcher dispatch newName</ID>
-    <ID>VariableNaming:parser.kt$ParserTest$val IsLeft = When{it == left}</ID>
-    <ID>VariableNaming:parser.kt$ParserTest$val Left = White dL (FirstMatches(left) map {"$it"}) dR White</ID>
-    <ID>VariableNaming:parser.kt$ParserTest$val Right = White dL FirstMatches(right) map {"$it"} dR White</ID>
-    <ID>VariableNaming:parser.kt$ParserTest$val TillLeft = CollectWhile { it != left }</ID>
-    <ID>VariableNaming:parser.kt$ParserTest$val TillLeftOrRight = CollectWhile { it != left &amp;&amp; it != right}</ID>
-    <ID>VariableNaming:parser.kt$ParserTest$val TillRight = CollectWhile { it != right }</ID>
-    <ID>VariableNaming:parser.kt$ParserTest$val White = DropAllWhitespace()</ID>
-    <ID>VariableNaming:storage.kt$StorageTest$val X = Read from storage</ID>
   </CurrentIssues>
 </SmellBaseline>

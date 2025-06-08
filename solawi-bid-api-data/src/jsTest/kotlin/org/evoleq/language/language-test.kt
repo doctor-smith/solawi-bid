@@ -398,5 +398,7 @@ class LanguageTest {
         val l = LanguageP().run(c2).result!!
 
         val r = lang.merge(l)
+        println(r)
+        // todo finish test
     }
 }

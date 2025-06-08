@@ -24,13 +24,16 @@ fun Lang?.find(name: String): Lang? = when(this) {
 }
 
 @I18N
-operator fun Lang.get(path: String): String = with(Segment().run(path)) {
-    when(this@get) {
+tailrec operator fun Lang.get(path: String): String {
+    val (result, rest) = Segment().run(path)
+
+    return when (this@get) {
         is Var -> this@get.value
-        is Block -> with(this@get.value.find { it.key.equals( result!! ) }) {
-            when(this)  {
-                null -> throw Exception("There is no Element in block '${this@get.key}' with key = '$result'")
-                else -> this[rest]
+        is Block -> {
+            val found = this@get.value.find { it.key.equals(result!!) }
+            when (found) {
+                null -> throw LanguageException.ElementNotFoundInBlock(key = result!!, block = this@get.key)
+                else -> found[rest]
             }
         }
     }
@@ -43,14 +46,15 @@ infix fun String.ofComponent(component: Block): Block = component.component(this
 infix fun String.of(component: Block): Block = component.component(this)
 
 @I18N
-fun Block.component(path: String): Block = with(Segment().run(path)) {
-    with(this@component.value.find { it.key.equals( result!! ) }) {
-        when(this)  {
-            null, is Var -> throw Exception("There is no block in block '${this@component.key}' with key = '$result'")
-            is Block -> when(rest == ""){
-                true -> this
-                false -> this.component(rest)
-            }
+tailrec fun Block.component(path: String): Block {
+    val (head, rest) = with(Segment().run(path)) { result!! to rest }
+    val found = this@component.value.find { it.key.equals( head ) }
+
+    return when(found)  {
+        null, is Var -> throw LanguageException.BlockNotFoundInBlock(block = this@component.key ,key = head)
+        is Block -> when(rest == ""){
+            true -> found
+            false -> found.component(rest)
         }
     }
 }

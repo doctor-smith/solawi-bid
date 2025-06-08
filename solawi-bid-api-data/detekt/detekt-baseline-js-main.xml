@@ -2,13 +2,5 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>FunctionNaming:language-reader.kt$fun Texts(path: String): Reader&lt;Lang.Block, Lang.Block&gt;</ID>
-    <ID>NestedBlockDepth:language.kt$@I18N fun Block.component(path: String): Block</ID>
-    <ID>NestedBlockDepth:language.kt$@I18N operator fun Lang.get(path: String): String</ID>
-    <ID>TooGenericExceptionThrown:language-merge.kt$throw Exception("Cannot merge blocks")</ID>
-    <ID>TooGenericExceptionThrown:language-merge.kt$throw Exception("Cannot merge langs")</ID>
-    <ID>TooGenericExceptionThrown:language.kt$throw Exception("There is no Element in block '${this@get.key}' with key = '$result'")</ID>
-    <ID>TooGenericExceptionThrown:language.kt$throw Exception("There is no block in block '${this@component.key}' with key = '$result'")</ID>
-    <ID>UtilityClassWithPublicConstructor:storage.kt$Read</ID>
   </CurrentIssues>
 </SmellBaseline>

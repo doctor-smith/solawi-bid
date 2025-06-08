@@ -159,6 +159,7 @@ class ParserTest {
 
 
     // @Test
+    @Suppress("VariableNaming", "UnusedPrivateProperty")
     fun play() {
 
         val left = '{'
@@ -206,8 +207,5 @@ class ParserTest {
 
         //println(Balance(left, right).run(c1))
        // println(BetweenNested(left, right).run(c1))
-    }
-
-    @Test fun getResource() {
     }
 }

@@ -7,7 +7,7 @@ import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 
-
+@Suppress("FunctionName")
 fun Texts(path: String): Reader<Lang.Block, Lang.Block> = {
     block -> block.component(path)
 }

@@ -6,7 +6,7 @@ data class Storage<P>(
     val write: (P)->Unit
 )
 
-
+@Suppress("UtilityClassWithPublicConstructor")
 class  Read {companion object {
 
     infix fun <P> from(storage: Storage<P>): P = storage.read()

@@ -37,7 +37,7 @@ fun Block.merge(block: Block): Block = when{
         key,
         value.merge(block.value)
     )
-    else -> throw Exception("Cannot merge blocks")
+    else -> throw LanguageException.CannotMergeBlocks
 }
 
 fun Lang.merge(lang: Lang): Lang = when{
@@ -48,5 +48,5 @@ fun Lang.merge(lang: Lang): Lang = when{
         }
         else -> lang
     }
-    else -> throw Exception("Cannot merge langs")
+    else -> throw LanguageException.CannotMergeLangs
 }
