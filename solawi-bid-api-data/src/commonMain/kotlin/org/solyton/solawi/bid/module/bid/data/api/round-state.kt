@@ -39,10 +39,9 @@ sealed class RoundState : Command {
             RoundState.Evaluated.toString() -> RoundState.Evaluated
             RoundState.Closed.toString() -> RoundState.Closed
             RoundState.Frozen.toString() -> RoundState.Frozen
-            else -> throw Exception("No such RoundState")
+            else -> throw RoundStateException.NoSuchRoundState(state)
         }
     }
-
 }
 
 fun RoundState.nextState(): RoundState = when(this) {

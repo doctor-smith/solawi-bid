@@ -33,4 +33,3 @@ fun LoginPage(storage: Storage<Application>) {
         }
     }
 }
-

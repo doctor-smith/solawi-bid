@@ -49,5 +49,4 @@ fun TestPage() {
             DistributionConfiguration(0.0, 11.0, 10)
         )
     }
-
 }

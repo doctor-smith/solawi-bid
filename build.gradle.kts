@@ -37,6 +37,7 @@ tasks.register("detektAll") {
     )
 }
 
+/*
 tasks.register("detektBaselineAll") {
     group = "verification"
     description = "Runs all detekt tasks in all projects"
@@ -45,13 +46,6 @@ tasks.register("detektBaselineAll") {
         "detektBaselineJs" , "detektBaselineJsMain", "detektBaselineJsTest",
         "detektBaselineJvm" , "detektBaselineJvmMain", "detektJvmTest",
     )
-/*
-    detektTasks.forEach { taskName ->
-        tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>(taskName).configure {
-            baseline.set(file("config/detekt/$taskName.xml"))
-        }
-    }
-*/
     dependsOn(
         rootProject.allprojects.flatMap { project ->
             project.tasks.matching {
@@ -60,4 +54,30 @@ tasks.register("detektBaselineAll") {
             }
         }
     )
+}
+
+ */
+tasks.register("addNewlineToFiles") {
+    group = "custom"
+    description = "Adds a newline at the end of each file in a target directory if not present."
+
+    // Customize this path as needed
+    val targetDir = project.rootDir
+
+    doLast {
+        if (!targetDir.exists() || !targetDir.isDirectory) {
+            println("Directory does not exist: ${targetDir.absolutePath}")
+            return@doLast
+        }
+
+        targetDir.walkTopDown()
+            .filter { it.isFile }
+            .forEach { file ->
+                val content = file.readText()
+                if (!content.endsWith("\n")) {
+                    file.appendText("\n")
+                    println("Added newline to: ${file.absolutePath}")
+                }
+            }
+    }
 }

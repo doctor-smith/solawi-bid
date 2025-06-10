@@ -2,96 +2,10 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>EmptyKtFile:constants.kt$.constants.kt</ID>
-    <ID>FunctionNaming:util.kt$@RoutingDsl @Composable fun Page404()</ID>
     <ID>MaxLineLength:how-to-bid-page.kt$P{Text("Du erhälts dann ein Feedback, ob dein Gebot angenommen wurde oder nicht. Falls dein Gebot nicht angenommen werden kann, überprüfe bitte deine Angaben. Wenn es dennoch nicht funktioniert, dann wende dich bitte ans Personal")}</ID>
     <ID>MayBeConst:adhoc-permissions.kt$private val fs = "schmidt@alpha-structure.com"</ID>
     <ID>MayBeConst:adhoc-permissions.kt$private val owner = "owner@solyton.org"</ID>
-    <ID>NewLineAtEndOfFile:accept-round-action.kt$org.solyton.solawi.bid.application.ui.page.auction.action.accept-round-action.kt</ID>
-    <ID>NewLineAtEndOfFile:action-types.kt$org.solyton.solawi.bid.module.bid.action.action-types.kt</ID>
-    <ID>NewLineAtEndOfFile:add-bidder-data-action.kt$org.solyton.solawi.bid.application.ui.page.auction.action.add-bidder-data-action.kt</ID>
-    <ID>NewLineAtEndOfFile:application.kt$org.solyton.solawi.bid.application.application.kt</ID>
-    <ID>NewLineAtEndOfFile:bid-round-evaluation-page.kt$org.solyton.solawi.bid.application.ui.page.auction.bid-round-evaluation-page.kt</ID>
-    <ID>NewLineAtEndOfFile:button.kt$org.solyton.solawi.bid.module.control.button.button.kt</ID>
-    <ID>NewLineAtEndOfFile:card.kt$org.evoleq.compose.card.card.kt</ID>
-    <ID>NewLineAtEndOfFile:change-password-action.kt$org.solyton.solawi.bid.application.ui.page.user.action.change-password-action.kt</ID>
-    <ID>NewLineAtEndOfFile:change-password-effect.kt$org.solyton.solawi.bid.application.ui.page.user.effect.change-password-effect.kt</ID>
-    <ID>NewLineAtEndOfFile:change-round-state-action.kt$org.solyton.solawi.bid.application.ui.page.auction.action.change-round-state-action.kt</ID>
-    <ID>NewLineAtEndOfFile:change-route-state.kt$org.solyton.solawi.bid.module.bid.component.effect.change-route-state.kt</ID>
-    <ID>NewLineAtEndOfFile:common-styles.kt$org.solyton.solawi.bid.application.ui.style.button.common-styles.kt</ID>
-    <ID>NewLineAtEndOfFile:common-styles.kt$org.solyton.solawi.bid.application.ui.style.modal.common-styles.kt</ID>
-    <ID>NewLineAtEndOfFile:configure-auction-action.kt$org.solyton.solawi.bid.application.ui.page.auction.action.configure-auction-action.kt</ID>
-    <ID>NewLineAtEndOfFile:constants.kt$org.solyton.solawi.bid.application.ui.style.constants.kt</ID>
-    <ID>NewLineAtEndOfFile:container.kt$org.evoleq.compose.layout.container.kt</ID>
-    <ID>NewLineAtEndOfFile:context-role-table.kt$org.solyton.solawi.bid.module.user.component.table.context-role-table.kt</ID>
-    <ID>NewLineAtEndOfFile:cookie.kt$org.solyton.solawi.bid.module.cookie.api.cookie.kt</ID>
-    <ID>NewLineAtEndOfFile:create-new-round.kt$org.solyton.solawi.bid.module.bid.component.effect.create-new-round.kt</ID>
-    <ID>NewLineAtEndOfFile:create-user-action.kt$org.solyton.solawi.bid.application.ui.page.user.action.create-user-action.kt</ID>
-    <ID>NewLineAtEndOfFile:dashboard-page.kt$org.solyton.solawi.bid.application.ui.page.dashboard.dashboard-page.kt</ID>
-    <ID>NewLineAtEndOfFile:data.kt$org.evoleq.compose.routing.data.kt</ID>
-    <ID>NewLineAtEndOfFile:desktop-styles.kt$org.solyton.solawi.bid.application.ui.style.button.desktop-styles.kt</ID>
-    <ID>NewLineAtEndOfFile:distribution.kt$org.solyton.solawi.bid.module.statistics.component.distribution.kt</ID>
-    <ID>NewLineAtEndOfFile:double.kt$org.solyton.solawi.bid.module.bid.service.double.kt</ID>
-    <ID>NewLineAtEndOfFile:dropzone.kt$org.evoleq.compose.dnd.dropzone.kt</ID>
-    <ID>NewLineAtEndOfFile:dsl-marker.kt$org.evoleq.compose.dsl-marker.kt</ID>
-    <ID>NewLineAtEndOfFile:env.kt$org.solyton.solawi.bid.module.i18n.data.env.kt</ID>
-    <ID>NewLineAtEndOfFile:error-lang.kt$org.solyton.solawi.bid.module.error.lang.error-lang.kt</ID>
-    <ID>NewLineAtEndOfFile:error-modal.kt$org.solyton.solawi.bid.module.error.component.error-modal.kt</ID>
-    <ID>NewLineAtEndOfFile:error.kt$org.evoleq.compose.error.error.kt</ID>
-    <ID>NewLineAtEndOfFile:evaluate-bid-round-action.kt$org.solyton.solawi.bid.application.ui.page.auction.action.evaluate-bid-round-action.kt</ID>
-    <ID>NewLineAtEndOfFile:exception.kt$org.evoleq.compose.date.exception.kt</ID>
-    <ID>NewLineAtEndOfFile:failure.kt$org.solyton.solawi.bid.application.data.failure.failure.kt</ID>
-    <ID>NewLineAtEndOfFile:flex.kt$org.evoleq.compose.layout.flex.kt</ID>
-    <ID>NewLineAtEndOfFile:get-resource-on-demand.kt$org.solyton.solawi.bid.module.i18n.service.get-resource-on-demand.kt</ID>
-    <ID>NewLineAtEndOfFile:get-users-action.kt$org.solyton.solawi.bid.application.ui.page.user.action.get-users-action.kt</ID>
-    <ID>NewLineAtEndOfFile:horizontal-separator.kt$org.solyton.solawi.bid.module.separator.horizontal-separator.kt</ID>
-    <ID>NewLineAtEndOfFile:horizontal.kt$org.evoleq.compose.layout.horizontal.kt</ID>
-    <ID>NewLineAtEndOfFile:i18n.kt$org.solyton.solawi.bid.module.i18n.api.i18n.kt</ID>
-    <ID>NewLineAtEndOfFile:import-bidders-modal.kt$org.solyton.solawi.bid.module.bid.component.modal.import-bidders-modal.kt</ID>
-    <ID>NewLineAtEndOfFile:is-logged-in.kt$org.solyton.solawi.bid.application.ui.page.login.action.is-logged-in.kt</ID>
-    <ID>NewLineAtEndOfFile:label.kt$org.evoleq.compose.label.label.kt</ID>
-    <ID>NewLineAtEndOfFile:lang-components.kt$org.solyton.solawi.bid.application.ui.page.user.i18n.lang-components.kt</ID>
-    <ID>NewLineAtEndOfFile:launch-export-of-bidround-results.kt$org.solyton.solawi.bid.module.bid.component.effect.launch-export-of-bidround-results.kt</ID>
-    <ID>NewLineAtEndOfFile:launch-presentation-of-bid-round-evaluation-in-modal.kt$org.solyton.solawi.bid.module.bid.component.effect.launch-presentation-of-bid-round-evaluation-in-modal.kt</ID>
-    <ID>NewLineAtEndOfFile:loading.kt$org.solyton.solawi.bid.module.loading.component.loading.kt</ID>
-    <ID>NewLineAtEndOfFile:local-storage.kt$org.solyton.solawi.bid.module.localstorage.api.local-storage.kt</ID>
-    <ID>NewLineAtEndOfFile:login-action.kt$org.solyton.solawi.bid.application.ui.page.login.action.login-action.kt</ID>
-    <ID>NewLineAtEndOfFile:login.kt$org.solyton.solawi.bid.application.storage.event.login.kt</ID>
-    <ID>NewLineAtEndOfFile:logout-action.kt$org.solyton.solawi.bid.application.ui.page.login.action.logout-action.kt</ID>
-    <ID>NewLineAtEndOfFile:media-type.kt$org.solyton.solawi.bid.application.data.device.media-type.kt</ID>
-    <ID>NewLineAtEndOfFile:mobile-fonts.kt$org.solyton.solawi.bid.application.ui.style.font.mobile-fonts.kt</ID>
-    <ID>NewLineAtEndOfFile:mobile-styles.kt$org.solyton.solawi.bid.application.ui.style.button.mobile-styles.kt</ID>
-    <ID>NewLineAtEndOfFile:moblie-device.kt$org.solyton.solawi.bid.module.mobile.component.moblie-device.kt</ID>
-    <ID>NewLineAtEndOfFile:moblie-test-page.kt$org.solyton.solawi.bid.application.ui.page.test.moblie-test-page.kt</ID>
-    <ID>NewLineAtEndOfFile:navbar.kt$org.solyton.solawi.bid.application.data.navbar.navbar.kt</ID>
-    <ID>NewLineAtEndOfFile:navbar.kt$org.solyton.solawi.bid.module.navbar.component.navbar.kt</ID>
-    <ID>NewLineAtEndOfFile:parser.kt$org.evoleq.compose.date.parser.kt</ID>
-    <ID>NewLineAtEndOfFile:permissions.kt$org.solyton.solawi.bid.module.permissions.service.permissions.kt</ID>
-    <ID>NewLineAtEndOfFile:pre-evaluate-bid-round-action.kt$org.solyton.solawi.bid.application.ui.page.auction.action.pre-evaluate-bid-round-action.kt</ID>
-    <ID>NewLineAtEndOfFile:read-auctions-action.kt$org.solyton.solawi.bid.application.ui.page.auction.action.read-auctions-action.kt</ID>
-    <ID>NewLineAtEndOfFile:read-device-data-effect.kt$org.solyton.solawi.bid.application.ui.effect.read-device-data-effect.kt</ID>
-    <ID>NewLineAtEndOfFile:read-environment-effect.kt$org.solyton.solawi.bid.application.ui.effect.read-environment-effect.kt</ID>
-    <ID>NewLineAtEndOfFile:read-round-action.kt$org.solyton.solawi.bid.application.ui.page.auction.action.read-round-action.kt</ID>
-    <ID>NewLineAtEndOfFile:round-page.kt$org.solyton.solawi.bid.application.ui.page.auction.round-page.kt</ID>
-    <ID>NewLineAtEndOfFile:scrollable.kt$org.evoleq.compose.layout.scrollable.kt</ID>
-    <ID>NewLineAtEndOfFile:search-bidder-action.kt$org.solyton.solawi.bid.application.ui.page.auction.action.search-bidder-action.kt</ID>
-    <ID>NewLineAtEndOfFile:send-bid-page.kt$org.solyton.solawi.bid.application.ui.page.sendbid.send-bid-page.kt</ID>
-    <ID>NewLineAtEndOfFile:service.kt$org.solyton.solawi.bid.application.data.env.service.kt</ID>
-    <ID>NewLineAtEndOfFile:space.kt$org.evoleq.compose.layout.space.kt</ID>
-    <ID>NewLineAtEndOfFile:structure.kt$org.evoleq.compose.structure.structure.kt</ID>
-    <ID>NewLineAtEndOfFile:styles.kt$org.evoleq.compose.modal.styles.kt</ID>
-    <ID>NewLineAtEndOfFile:styles.kt$org.solyton.solawi.bid.module.bid.component.styles.styles.kt</ID>
-    <ID>NewLineAtEndOfFile:successful-bid-information-modal.kt$org.solyton.solawi.bid.module.bid.component.modal.successful-bid-information-modal.kt</ID>
-    <ID>NewLineAtEndOfFile:test-page.kt$org.solyton.solawi.bid.application.ui.page.test.test-page.kt</ID>
-    <ID>NewLineAtEndOfFile:text.kt$org.evoleq.compose.i18n.text.kt</ID>
-    <ID>NewLineAtEndOfFile:transform.kt$org.solyton.solawi.bid.application.service.transform.kt</ID>
-    <ID>NewLineAtEndOfFile:trigger.kt$org.solyton.solawi.bid.application.ui.page.user.effect.trigger.kt</ID>
-    <ID>NewLineAtEndOfFile:ui.kt$org.solyton.solawi.bid.application.ui.ui.kt</ID>
-    <ID>NewLineAtEndOfFile:user-management-page.kt$org.solyton.solawi.bid.application.ui.page.user.user-management-page.kt</ID>
-    <ID>NewLineAtEndOfFile:user.kt$org.solyton.solawi.bid.application.service.user.kt</ID>
-    <ID>NewLineAtEndOfFile:util.kt$org.evoleq.compose.modal.util.kt</ID>
-    <ID>NewLineAtEndOfFile:vertical.kt$org.evoleq.compose.layout.vertical.kt</ID>
-    <ID>NewLineAtEndOfFile:wrap.kt$org.solyton.solawi.bid.application.ui.style.wrap.wrap.kt</ID>
+
     <ID>TooGenericExceptionThrown:double.kt$throw Exception("Not a Double")</ID>
     <ID>TooGenericExceptionThrown:util.kt$throw Exception("Cannot merge Roots into other")</ID>
     <ID>TopLevelPropertyNaming:lang-components.kt$private const val basePath = "solyton.user"</ID>

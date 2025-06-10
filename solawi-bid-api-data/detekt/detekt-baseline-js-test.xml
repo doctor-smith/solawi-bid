@@ -1,32 +1,7 @@
 <?xml version="1.0" ?>
 <SmellBaseline>
-  <ManuallySuppressedIssues/>
+  <ManuallySuppressedIssues>
+  </ManuallySuppressedIssues>
   <CurrentIssues>
-    <ID>EmptyFunctionBlock:parser.kt$ParserTest${ }</ID>
-    <ID>NewLineAtEndOfFile:actions-test.kt$org.evoleq.optics.storage.actions-test.kt</ID>
-    <ID>NewLineAtEndOfFile:csv-parser-test.kt$org.evoleq.csv.csv-parser-test.kt</ID>
-    <ID>NewLineAtEndOfFile:data.kt$org.evoleq.optics.data.kt</ID>
-    <ID>NewLineAtEndOfFile:iso.kt$org.evoleq.optics.iso.iso.kt</ID>
-    <ID>NewLineAtEndOfFile:language-dsl-test.kt$org.evoleq.language.language-dsl-test.kt</ID>
-    <ID>NewLineAtEndOfFile:language-test.kt$org.evoleq.language.language-test.kt</ID>
-    <ID>NewLineAtEndOfFile:lens.kt$org.evoleq.optics.lens.lens.kt</ID>
-    <ID>NewLineAtEndOfFile:math-test.kt$org.evoleq.language.math-test.kt</ID>
-    <ID>NewLineAtEndOfFile:parser.kt$org.evoleq.language.parser.kt</ID>
-    <ID>NewLineAtEndOfFile:parser.kt$org.evoleq.parser.parser.kt</ID>
-    <ID>NewLineAtEndOfFile:prism.kt$org.evoleq.optics.prism.prism.kt</ID>
-    <ID>NewLineAtEndOfFile:sg-pair.kt$org.evoleq.optics.sg.sg-pair.kt</ID>
-    <ID>NewLineAtEndOfFile:storage.kt$org.evoleq.optics.storage.storage.kt</ID>
-    <ID>UnusedPrivateProperty:language-test.kt$LanguageTest$val r = lang.merge(l)</ID>
-    <ID>UnusedPrivateProperty:parser.kt$ParserTest$val TillLeftOrRight = CollectWhile { it != left &amp;&amp; it != right}</ID>
-    <ID>UnusedPrivateProperty:parser.kt$ParserTest$val c1 = "{ how {do {you{ feel } }} }---{}"</ID>
-    <ID>UnusedPrivateProperty:storage.kt$StorageTest$val unit: Unit = dispatcher dispatch newName</ID>
-    <ID>VariableNaming:parser.kt$ParserTest$val IsLeft = When{it == left}</ID>
-    <ID>VariableNaming:parser.kt$ParserTest$val Left = White dL (FirstMatches(left) map {"$it"}) dR White</ID>
-    <ID>VariableNaming:parser.kt$ParserTest$val Right = White dL FirstMatches(right) map {"$it"} dR White</ID>
-    <ID>VariableNaming:parser.kt$ParserTest$val TillLeft = CollectWhile { it != left }</ID>
-    <ID>VariableNaming:parser.kt$ParserTest$val TillLeftOrRight = CollectWhile { it != left &amp;&amp; it != right}</ID>
-    <ID>VariableNaming:parser.kt$ParserTest$val TillRight = CollectWhile { it != right }</ID>
-    <ID>VariableNaming:parser.kt$ParserTest$val White = DropAllWhitespace()</ID>
-    <ID>VariableNaming:storage.kt$StorageTest$val X = Read from storage</ID>
   </CurrentIssues>
 </SmellBaseline>

@@ -104,6 +104,5 @@ fun Storage<Modals<Int>>.showImportBiddersModal(
             cancel,
             update
         )
-    )
-    )
+    ) )
 }

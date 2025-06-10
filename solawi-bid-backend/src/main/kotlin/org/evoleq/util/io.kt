@@ -49,7 +49,7 @@ suspend inline fun <reified T : Any>  ReceiveContextual(): Action<Result<Context
     } x call }
 }
 @KtorDsl
-@Suppress("FunctionName")
+@Suppress("FunctionName", "UnsafeCallOnNullableType")
 suspend inline fun   Context(): Action<Result<Contextual<Unit>>> = Principle() * {
     principle -> ApiAction { call -> principle mapSuspend  { jwtp ->
 
@@ -60,8 +60,9 @@ suspend inline fun   Context(): Action<Result<Contextual<Unit>>> = Principle() *
 }
 
 @KtorDsl
-@Suppress("FunctionName")
-suspend inline fun <reified T : Any>  Receive(): Action<Result<T>> = ApiAction {
+@Suppress("FunctionName", "RedundantSuspendModifier")
+// suspend
+inline fun <reified T : Any>  Receive(): Action<Result<T>> = ApiAction {
     call -> try{
         Result.Success(Json.decodeFromString(Serializer<T>(), call.receive<String>()))
     } catch (e: Exception) {

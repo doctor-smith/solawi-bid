@@ -41,6 +41,7 @@ class StorageTest {
     }
 
     @Test
+    @Suppress("VariableNaming")
     fun storageDSL() {
         var x = 1
         val storage = Storage(
@@ -93,7 +94,7 @@ class StorageTest {
 
         assertIs<Writer<Unit, String>>(dispatcher)
         assertIs<Dispatcher<String>>(dispatcher)
-        val unit: Unit = dispatcher dispatch newName
+        dispatcher dispatch newName
 
         assertEquals(newWhole, storage.read())
     }

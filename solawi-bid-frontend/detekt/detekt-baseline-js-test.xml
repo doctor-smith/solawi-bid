@@ -4,17 +4,7 @@
   <CurrentIssues>
     <ID>MemberNameEqualsClassName:failure-writer-test.kt$FailureWriterTest$@OptIn(ComposeWebExperimentalTestsApi::class) @Test fun failureWriterTest()</ID>
     <ID>MemberNameEqualsClassName:storage.kt$TestStorageTest$@OptIn(ComposeWebExperimentalTestsApi::class) @Test fun testStorageTest()</ID>
-    <ID>NewLineAtEndOfFile:action-tests.kt$org.solyton.solawi.bid.application.ui.page.auction.action.action-tests.kt</ID>
-    <ID>NewLineAtEndOfFile:action-tests.kt$org.solyton.solawi.bid.module.authentication.action.action-tests.kt</ID>
-    <ID>NewLineAtEndOfFile:application.kt$.application.kt</ID>
-    <ID>NewLineAtEndOfFile:dall-api-test.kt$org.solyton.solawi.bid.application.api.dall-api-test.kt</ID>
-    <ID>NewLineAtEndOfFile:date-test.kt$org.evoleq.compose.date.date-test.kt</ID>
-    <ID>NewLineAtEndOfFile:distribution-test.kt$org.solyton.solawi.bid.module.statistics.distribution-test.kt</ID>
-    <ID>NewLineAtEndOfFile:failure-writer-test.kt$org.solyton.solawi.bid.application.api.failure-writer-test.kt</ID>
-    <ID>NewLineAtEndOfFile:http-request-test.kt$org.evoleq.ktorx.client.http-request-test.kt</ID>
-    <ID>NewLineAtEndOfFile:login-form.kt$org.solyton.solawi.bid.module.authentication.component.login-form.kt</ID>
-    <ID>NewLineAtEndOfFile:storage.kt$org.solyton.solawi.bid.test.storage.storage.kt</ID>
-    <ID>NewLineAtEndOfFile:user-action-test.kt$org.solyton.solawi.bid.module.user.action.user-action-test.kt</ID>
+    <ID>PackageNaming:bid-automatically.kt$package org.solyton.solawi.bid.module._dev</ID>
     <ID>UnusedPrivateProperty:action-tests.kt$AuthorizationActionTests$val logout = logoutAction</ID>
     <ID>UnusedPrivateProperty:action-tests.kt$AuthorizationActionTests$val name = "name"</ID>
     <ID>UnusedPrivateProperty:action-tests.kt$AuthorizationActionTests$val storage = TestStorage()</ID>

@@ -174,6 +174,7 @@ fun Routes.compose(path: String): Boolean = with(match(path) ) {
 
 @RoutingDsl
 @Composable
+@Suppress("FunctionName")
 fun Page404() {
     H1{ Text("404 - Page not found") }
 }

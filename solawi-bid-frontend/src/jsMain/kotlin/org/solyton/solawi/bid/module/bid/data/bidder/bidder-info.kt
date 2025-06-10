@@ -23,5 +23,3 @@ import org.evoleq.optics.lens.Lens
     val bidderId: String,
     val numberOfShares: Int
 )
-
-

@@ -57,7 +57,7 @@ data class Environment(
         transaction(database) {
             SchemaUtils.create(Users)
 
-            val appOwnerExists = UserEntity.find{ Users.username eq applicationOwner.username }.firstOrNull() != null
+            val appOwnerExists = UserEntity.find{ Users.username eq applicationOwner.username }.empty().not()
             if(appOwnerExists) return@transaction
 
             val applicationOwner = UserEntity.new {
