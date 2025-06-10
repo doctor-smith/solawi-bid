@@ -62,7 +62,7 @@ tasks.register("addNewlineToFiles") {
     description = "Adds a newline at the end of each file in a target directory if not present."
 
     // Customize this path as needed
-    val targetDir = project.rootDir // or replace with any directory
+    val targetDir = project.rootDir
 
     doLast {
         if (!targetDir.exists() || !targetDir.isDirectory) {
