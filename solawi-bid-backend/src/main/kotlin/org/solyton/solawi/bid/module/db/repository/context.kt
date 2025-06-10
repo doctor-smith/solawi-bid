@@ -12,7 +12,7 @@ fun ContextEntity.ancestors(): SizedIterable<ContextEntity> {
     if(root == null) {
         return emptySized()
     }
-    require(root != null)
+    requireNotNull(root)
     val rootId = root!!.id
     val ancs = ContextEntity.find {
         (ContextsTable.rootId eq rootId or (ContextsTable.id eq rootId)) and (ContextsTable.left less this@ancestors.left) and (ContextsTable.right greater this@ancestors.right)

@@ -12,7 +12,7 @@ fun OrganizationEntity.ancestors(): SizedIterable<OrganizationEntity> {
     if(root == null) {
         return emptySized()
     }
-    require(root != null)
+    requireNotNull(root)
     val rootId = root!!.id
     val ancs = OrganizationEntity.find {
         (OrganizationsTable.rootId eq rootId or (OrganizationsTable.id eq rootId)) and (OrganizationsTable.left less this@ancestors.left) and (OrganizationsTable.right greater this@ancestors.right)

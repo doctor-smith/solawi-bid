@@ -32,7 +32,7 @@ inline fun <reified T> Serializer(): KSerializer<T> {
     }
 }
 
-@Suppress("FunctionName")
+@Suppress("FunctionName","UNCHECKED_CAST")
 fun <T : Any> Serializer(t: T): KSerializer<T> {
     return serializers[t::class]!! as KSerializer<T>
 }

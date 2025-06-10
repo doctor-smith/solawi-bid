@@ -39,7 +39,7 @@ sealed class RoundState : Command {
             RoundState.Evaluated.toString() -> RoundState.Evaluated
             RoundState.Closed.toString() -> RoundState.Closed
             RoundState.Frozen.toString() -> RoundState.Frozen
-            else -> throw RoundStateException.NoSuchRoundState(string)
+            else -> throw RoundStateException.NoSuchRoundState(state)
         }
     }
 }
@@ -65,7 +65,3 @@ val roundStates: List<RoundState> = listOf(
 val roundStateNames: List<String> = roundStates.map { it.toString() }
 
 fun String.isValidRoundStateName(): Boolean = roundStateNames.contains(this)
-
-sealed class RoundStateException(val message: String): Exception(message) {
-    data object NoSuchRoundState(val state: String) : RoundStateException("No such Roundstate: $state")
-}
