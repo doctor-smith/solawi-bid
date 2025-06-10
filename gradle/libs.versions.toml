@@ -1,13 +1,13 @@
 [versions]
 benasher-uuid = "0.6.0"
-ktor-plugin = "2.3.13"
-ktor = "2.3.13"
+ktor-plugin = "2.3.12"
+ktor = "2.3.12"
 kotlin = "1.9.22"
 compose = "1.5.12"
 shadow = "8.1.0"
 solawi = "1.0.4"
 logback = "1.5.13"
-exposed = "0.49.0" #"1.0.0-beta-2" #
+exposed = "0.48.0" #"1.0.0-beta-2" #
 solytonGroup = "org.solyton"
 mysql-connector = "8.0.33"
 #"8.0.28"
