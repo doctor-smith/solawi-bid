@@ -52,7 +52,8 @@ class Migration1743786680319(
         val owner = RoleEntity.find { RolesTable.name eq Role.owner.value }.first()
         val manager = RoleEntity.find { RolesTable.name eq Role.manager.value }.first()
         val user = RoleEntity.find { RolesTable.name eq Role.user.value }.first()
-        val bidder = RoleEntity.find { RolesTable.name eq Role.bidder.value }.first()
+        // For later usage
+        // val bidder = RoleEntity.find { RolesTable.name eq Role.bidder.value }.first()
 
         //Setup Application Context
         val applicationContext = ContextEntity.find { ContextsTable.name eq Context.Application.value }.first()

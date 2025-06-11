@@ -76,7 +76,6 @@ class AuctionTests {
         Rounds
     ) {
         val name = "TestAuction"
-        val link = "TestLink"
         AuctionType.new {
             type = "SOLAWI_TUEBINGEN"
         }
@@ -121,7 +120,6 @@ class AuctionTests {
         Rounds
     ) {
         val name = "TestAuction"
-        val link = "TestLink"
         AuctionType.new {
             type = "SOLAWI_TUEBINGEN"
         }

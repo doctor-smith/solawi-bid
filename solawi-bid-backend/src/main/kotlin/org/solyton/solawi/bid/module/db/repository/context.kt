@@ -83,7 +83,6 @@ fun ContextEntity.addChild(newChild: ContextEntity): ContextEntity {
         level == 0 -> this
         else -> root!!
     }
-    val childLevel = level + 1
     val childLevelDiff = level - newChild.level + 1
     val shift = oldRight - newChild.left
 

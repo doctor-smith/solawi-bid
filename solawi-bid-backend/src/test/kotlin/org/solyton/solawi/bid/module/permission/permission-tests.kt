@@ -204,7 +204,7 @@ class PermissionTests {
     ) {
         val ts = System.currentTimeMillis()
         // Setup database entries
-        val user = UserEntity.new {
+        UserEntity.new {
             username = "x-$ts"
             password = "y"
         }

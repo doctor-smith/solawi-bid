@@ -22,7 +22,7 @@ import org.solyton.solawi.bid.module.db.schema.User as UserEntity
  */
 // val GetAllUsers =
 @MathDsl
-val GetAllUsers: KlAction<Result<GetUsers>, Result<Users>> = KlAction{result -> DbAction {
+val GetAllUsers: KlAction<Result<GetUsers>, Result<Users>> = KlAction{_ -> DbAction {
     database -> resultTransaction(database) {
     Users(UserEntity.all().map { userEntity ->
         User(

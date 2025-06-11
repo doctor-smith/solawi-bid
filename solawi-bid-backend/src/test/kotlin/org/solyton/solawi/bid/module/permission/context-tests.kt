@@ -199,7 +199,7 @@ class ContextTests {
     fun cloneContextTest() = runSimpleH2Test(*neededTables) {
 
         val context = createRootContext("c_root", )
-        val child = context.createChild("child")
+        context.createChild("child")
 
         val cloned = cloneContext(context.id.value, "_clone")
 
