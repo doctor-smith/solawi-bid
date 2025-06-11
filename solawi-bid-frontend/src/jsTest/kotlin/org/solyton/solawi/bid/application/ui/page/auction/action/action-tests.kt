@@ -29,7 +29,7 @@ class AuctionTests {
             set = {{it}}
         )
 
-        val action = createAuction(auctionLens)
+        createAuction(auctionLens)
     }
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
@@ -38,7 +38,7 @@ class AuctionTests {
         installSerializers()
         val action = readAuctions()
 
-        val apiAuction = ApiAuction("id","name", LocalDate(1,1,1))
+        val apiAuction = ApiAuction("id", name, LocalDate(1,1,1))
         val apiAuctions = ApiAuctions(listOf(apiAuction))
 
         val application = Application(Environment())

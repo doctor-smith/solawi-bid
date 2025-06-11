@@ -10,6 +10,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @OptIn(ComposeWebExperimentalTestsApi::class)
 class RoutingTest {
@@ -52,6 +53,7 @@ class RoutingTest {
             }
             route("alfred/E/neumann") {}
         }
+        assertTrue(routes != null)
     }
 
     @Test

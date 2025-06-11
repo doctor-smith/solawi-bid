@@ -113,8 +113,7 @@ fun BidRoundListItem(
             storage = storage,
             auction = auction,
             round = round,
-            frontendBaseUrl= frontendBaseUrl,
-            texts = texts
+            frontendBaseUrl= frontendBaseUrl
         )
         Horizontal {
             ChangeRoundStateButton(

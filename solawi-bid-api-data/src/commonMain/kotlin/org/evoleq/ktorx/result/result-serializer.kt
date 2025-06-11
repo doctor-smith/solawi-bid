@@ -18,6 +18,7 @@ object ResultSerializer : KSerializer<Result<*>> {
         element<String>("message", isOptional = true)
     }
 
+    @Suppress("UNNECESSARY_NOT_NULL_ASSERTION", "UNCHECKED_CAST")
     override fun serialize(encoder: Encoder, value: Result<*>) {
         val compositeEncoder = encoder.beginStructure(descriptor)
         when (value) {
@@ -42,6 +43,7 @@ object ResultSerializer : KSerializer<Result<*>> {
         compositeEncoder.endStructure(descriptor)
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun deserialize(decoder: Decoder): Result<*> {
         val dec = decoder.beginStructure(descriptor)
         var type: String? = null

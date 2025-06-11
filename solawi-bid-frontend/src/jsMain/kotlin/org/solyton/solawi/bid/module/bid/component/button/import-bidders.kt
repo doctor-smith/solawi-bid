@@ -52,7 +52,6 @@ fun ImportBiddersButton(
         dataId
     ) {
         (storage * modals).showImportBiddersModal(
-            storage * auction,
             texts = ((storage * i18N * language).read() as Lang.Block).component("solyton.auction.importBiddersDialog"),
             setBidders = { newBidders.write(it) },
             addBidders = {addBidders.write(it)},

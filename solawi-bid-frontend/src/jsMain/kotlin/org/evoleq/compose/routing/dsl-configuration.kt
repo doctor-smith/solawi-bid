@@ -93,6 +93,7 @@ class RoutesConfiguration : Configuration<Routes> {
     }
 
     @Markup
+    @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
     fun wrap(routesConfiguration: RoutesConfiguration.() -> Unit) {
         //with(RoutesConfiguration()) {
             val wRC = RoutesConfiguration()

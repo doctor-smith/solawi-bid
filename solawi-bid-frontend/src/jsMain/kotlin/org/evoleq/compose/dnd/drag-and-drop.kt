@@ -100,11 +100,11 @@ fun DragDropEnvironment(
         dropAllowed = dropAllowedStorage,
         mouseCoordinates = coordinatesStorage,
         mouseVelocity = velocityStorage,
-        onMouseMove = { syntheticMouseEvent: SyntheticMouseEvent ->
+        onMouseMove = { _: SyntheticMouseEvent ->
            // dragging = true
         },
         onMouseDown = {
-            name, src,  syntheticMouseEvent ->
+            name, src,  _ ->
                 draggedStorage.add(name)
                 source = src
                 if(allowDrag(name, source)) {
@@ -112,7 +112,7 @@ fun DragDropEnvironment(
                 }
         },
         onMouseUp = {
-            name, syntheticMouseEvent ->
+            _, _ ->
                 dragging = false
         },
         onDrag = onDrag,
@@ -177,7 +177,7 @@ fun DragDropEnvironment(
             mouseVelocity.write(Velocity(0.0,0.0))
         }
         content()
-        this
+        // this
     }
 }
 

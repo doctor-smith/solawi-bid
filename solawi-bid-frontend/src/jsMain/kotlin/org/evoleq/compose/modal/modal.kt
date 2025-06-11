@@ -89,7 +89,7 @@ fun ModalBackground(zIndex: Int) = Div({
 
 @Markup
 @Composable
-@Suppress("FunctionName", "UnusedVariable")
+@Suppress("FunctionName", "UnusedVariable", "UNUSED_PARAMETER")
 fun SubLayer(name: String, index: Int, modals: List<@Composable ElementScope<HTMLElement>.()->Unit>, styles: StyleScope.()->Unit, ) {
     if(modals.isNotEmpty()) {Div({
         style {
