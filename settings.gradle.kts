@@ -1,5 +1,7 @@
 rootProject.name = "solawi-bid"
 
+
+include(":evoleq")
 include(":solawi-bid-frontend")
 include(":solawi-bid-database")
 include(":solawi-bid-api-data")
@@ -13,3 +15,5 @@ pluginManagement {
         maven ("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
     }
 }
+
+include("evoleq")
