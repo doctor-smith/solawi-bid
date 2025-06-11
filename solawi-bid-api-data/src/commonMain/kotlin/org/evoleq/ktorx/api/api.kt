@@ -60,9 +60,9 @@ data class Api(
         this
 
     }
-
-    operator fun invoke(configure: Api.()->Api): Api = Api().configure()
-
+    companion object {
+        operator fun invoke(configure: Api.() -> Api): Api = Api().configure()
+    }
 }
 
 @MathDsl
@@ -77,4 +77,3 @@ sealed class EndPoint<in S, out T>(open val url: String) {
     data class Delete<in S, out T>(override val url: String) : EndPoint<S, T>(url)
     data class Head<in S, out T>(override val url: String) : EndPoint<S, T>(url)
 }
-
