@@ -52,6 +52,7 @@ class RoutingTest {
             }
             route("alfred/E/neumann") {}
         }
+        assertTrue(routes != null)
     }
 
     @Test

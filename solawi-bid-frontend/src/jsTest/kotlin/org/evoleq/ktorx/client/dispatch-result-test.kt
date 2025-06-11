@@ -37,7 +37,7 @@ class DispatchResultTest {
         val applicative = Result.Return((storage * writer).dispatch())
         // val applicative = Result.Return{n: String -> (storage * writer).dispatch(n)}
         val u = applicative.apply() on result
-
+        assertIs<Unit>(u)
         assertEquals(Whole(0,name), whole)
     }
 
@@ -61,10 +61,10 @@ class DispatchResultTest {
                 } x storage
             }
         }
-        val u = DispatchState(result) runOn storage
+        DispatchState(result) runOn storage
         assertEquals(Whole(0,name), whole)
 
-        val e = DispatchState(Result.Failure.Message("error")) runOn storage
+        DispatchState(Result.Failure.Message("error")) runOn storage
         assertEquals(Whole(0,name, "error"), whole)
     }
 }

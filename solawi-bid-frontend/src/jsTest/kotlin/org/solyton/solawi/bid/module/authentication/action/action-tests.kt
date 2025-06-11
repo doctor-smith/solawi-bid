@@ -13,6 +13,7 @@ class AuthorizationActionTests {
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
     fun logoutActionTest() = runTest{
+
         val name = "name"
         installSerializers()
 
