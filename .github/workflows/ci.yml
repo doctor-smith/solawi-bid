@@ -37,6 +37,10 @@ jobs:
       - name: Setup JDK, Gradle and Caches
         uses: ./.github/actions/setup
 
+      - name: Run Detekt
+        run: |
+          ./gradlew detektAll
+
       - name: Run Backend tests
         uses: ./.github/actions/test-backend
 
