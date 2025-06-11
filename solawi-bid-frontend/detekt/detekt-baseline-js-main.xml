@@ -5,32 +5,13 @@
     <ID>MaxLineLength:how-to-bid-page.kt$P{Text("Du erhälts dann ein Feedback, ob dein Gebot angenommen wurde oder nicht. Falls dein Gebot nicht angenommen werden kann, überprüfe bitte deine Angaben. Wenn es dennoch nicht funktioniert, dann wende dich bitte ans Personal")}</ID>
     <ID>MayBeConst:adhoc-permissions.kt$private val fs = "schmidt@alpha-structure.com"</ID>
     <ID>MayBeConst:adhoc-permissions.kt$private val owner = "owner@solyton.org"</ID>
-
     <ID>TooGenericExceptionThrown:double.kt$throw Exception("Not a Double")</ID>
     <ID>TooGenericExceptionThrown:util.kt$throw Exception("Cannot merge Roots into other")</ID>
     <ID>TopLevelPropertyNaming:lang-components.kt$private const val basePath = "solyton.user"</ID>
     <ID>TopLevelPropertyNaming:mobile-styles.kt$const val mobileFontSizeFactor = 1.6</ID>
-    <ID>UnusedParameter:bid-process-state.kt$title:String</ID>
-    <ID>UnusedParameter:bid-round-evaluation-page.kt$bidRoundId: String</ID>
-    <ID>UnusedParameter:bid-round-evaluation-page.kt$storage: Storage&lt;Application&gt;</ID>
-    <ID>UnusedParameter:client.kt$serializer: KSerializer&lt;S&gt;</ID>
-    <ID>UnusedParameter:common-styles.kt$device: DeviceType</ID>
-    <ID>UnusedParameter:common-styles.kt$deviceType: DeviceType</ID>
-    <ID>UnusedParameter:how-to-bid-page.kt$application: Storage&lt;Application&gt;</ID>
-    <ID>UnusedParameter:import-bidders-modal.kt$auction: Storage&lt;Auction&gt;</ID>
-    <ID>UnusedParameter:launch-download-of-bid-round-results.kt$texts: Source&lt;Lang.Block&gt;</ID>
-    <ID>UnusedParameter:manual-page.kt$application: Storage&lt;Application&gt;</ID>
-    <ID>UnusedParameter:modal.kt$name: String</ID>
-    <ID>UnusedParameter:permissions.kt$path: String</ID>
-    <ID>UnusedParameter:qr-link-to-round-page.kt$texts: Source&lt;Lang.Block&gt;</ID>
     <ID>UnusedParameter:qrcode-gen-compose.kt$QRCode$callback: (error: String?, svg: String?) -&gt; Unit</ID>
     <ID>UnusedParameter:qrcode-gen-compose.kt$QRCode$options: dynamic</ID>
     <ID>UnusedParameter:qrcode-gen-compose.kt$QRCode$text: String</ID>
-    <ID>UnusedParameter:qrcode-gen-compose.kt$svgString: String</ID>
-    <ID>UnusedParameter:structure.kt$name: String</ID>
-    <ID>UnusedPrivateProperty:dashboard-page.kt$val auctionsCard = texts * subComp("auctionsCard")</ID>
     <ID>UnusedPrivateProperty:evaluate-bid-round.kt$val isDisabled = round.state !in listOf(RoundState.Evaluated.toString(), RoundState.Closed.toString(), RoundState.Frozen.toString())</ID>
-    <ID>UnusedPrivateProperty:how-to-bid-page.kt$val link = "demo-link"</ID>
-    <ID>UnusedPrivateProperty:qrcode-gen-compose.kt$val blob = js("new Blob([svgString], {type: 'image/svg+xml'})")</ID>
   </CurrentIssues>
 </SmellBaseline>
