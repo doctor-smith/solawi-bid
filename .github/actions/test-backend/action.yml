@@ -46,3 +46,15 @@ runs:
         testSuite: apiTest
         reportName: Api
       if: steps.changes.outputs.backend == 'true'
+
+    - name: Kover
+      shell: bash
+      if: steps.changes.outputs.backend == 'true'
+      run: ./gradlew solawi-bid-backend:koverHtmlReport
+
+    - name: Upload Coverage Report
+      if: steps.changes.outputs.backend == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: Coverage-Report-Backend
+        path: solawi-bid-backend/build/reports/kover/html
