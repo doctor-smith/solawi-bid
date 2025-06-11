@@ -16,6 +16,7 @@ import org.jetbrains.compose.web.testutils.ComposeWebExperimentalTestsApi
 import org.jetbrains.compose.web.testutils.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 
 
 class DispatchResultTest {
@@ -37,7 +38,7 @@ class DispatchResultTest {
         val applicative = Result.Return((storage * writer).dispatch())
         // val applicative = Result.Return{n: String -> (storage * writer).dispatch(n)}
         val u = applicative.apply() on result
-        assertIs<Unit>(u)
+        assertIs<Result.Success<String>>(u)
         assertEquals(Whole(0,name), whole)
     }
 
