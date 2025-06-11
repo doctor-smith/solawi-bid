@@ -39,7 +39,7 @@ fun Application.authenticationTest() {
         }
         authenticate ("auth-jwt") {
             get("test-user-principle") {
-                (Principle() map {it.map { jwtPrincipal -> UUID.fromString(jwtPrincipal.payload.subject) } }) *
+                (Principle() map {r -> r.map { jwtPrincipal -> UUID.fromString(jwtPrincipal.payload.subject) } }) *
                 GetUserById * { result -> { database ->
                     result.map { user ->
                         Login(user.username, "")
