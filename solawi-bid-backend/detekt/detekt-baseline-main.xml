@@ -6,6 +6,7 @@
     <ID>RedundantSuspendModifier:io.kt$suspend</ID>
     <ID>UnsafeCallOnNullableType:bidders.kt$item!!</ID>
     <ID>UnsafeCallOnNullableType:context.kt$root!!</ID>
+    <ID>UnsafeCallOnNullableType:io.kt$call.request.headers[Header.CONTEXT]!!</ID>
     <ID>UnsafeCallOnNullableType:organization.kt$root!!</ID>
   </CurrentIssues>
 </SmellBaseline>
