@@ -53,6 +53,7 @@ runs:
       run: ./gradlew solawi-bid-backend:koverHtmlReport
 
     - name: Upload Coverage Report
+      if: steps.changes.outputs.backend == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: Coverage-Report-Backend
