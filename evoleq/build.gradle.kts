@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.mpp)
     alias(libs.plugins.serialization)
-     `maven-publish`
+    `maven-publish`
     alias(libs.plugins.detekt)
     alias(libs.plugins.kover)
 }
@@ -46,8 +46,6 @@ kotlin{
 
                 // datetime
                 implementation(libs.kotlinx.datetime)
-
-                api(project(":evoleq"))
             }
         }
         val commonTest by getting {
@@ -107,7 +105,7 @@ detekt {
         "src/jvmMain/kotlin",
         "src/jvmTest/kotlin",
 
-    )
+        )
 }
 
 tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaseline") {

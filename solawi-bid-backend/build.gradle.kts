@@ -69,6 +69,7 @@ dependencies {
     // own dependencies
     //implementation("org.solyton:solawi-bid-api-data-jvm:0.0.1")
     api(project(":solawi-bid-api-data"))
+    api(project(":evoleq"))
 
     // serialization
     implementation(libs.ktor.serialization.kotlinx.json)

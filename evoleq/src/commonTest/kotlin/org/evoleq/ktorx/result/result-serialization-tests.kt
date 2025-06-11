@@ -3,11 +3,18 @@ package org.evoleq.ktorx.result
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.solyton.solawi.bid.module.bid.data.api.Bid
+
+import kotlinx.serialization.Serializable
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
+@Serializable
+data class Bid(
+    val username: String,
+    val link: String,
+    val amount: Double
+)
 
 class ResultSerializationTests {
 

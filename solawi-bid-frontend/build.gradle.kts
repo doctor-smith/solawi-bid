@@ -48,6 +48,7 @@ kotlin {
 
                 // own dependencies
                 api(project(":solawi-bid-api-data"))
+                api(project(":evoleq"))
 
                 // Serialization
                 implementation(libs.kotlinx.serialization.json)
