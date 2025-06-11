@@ -159,7 +159,7 @@ class ParserTest {
 
 
     // @Test
-    @Suppress("VariableNaming", "UnusedPrivateProperty")
+    @Suppress("VariableNaming", "UNUSED_VARIABLE")
     fun play() {
 
         val left = '{'

@@ -28,12 +28,12 @@ class StorageTest {
         assertEquals(w1, storage.read())
 
         val p = storage * Lens<W, P>(
-            {w -> w.p},
-            {p -> {w -> w.copy(p = p)}}
+            {whole -> whole.p},
+            {part -> {whole -> whole.copy(p = part)}}
         )
         val name = p * Lens(
-            {p -> p.name},
-            {name -> {p -> p.copy(name = name)}}
+            {part -> part.name},
+            {name -> {part -> part.copy(name = name)}}
         )
         name.write("flo")
 
@@ -63,8 +63,8 @@ class StorageTest {
             {w = it}
         )
         val pLens = Lens<W, P>(
-            {w -> w.p},
-            {p -> {w -> w.copy(p = p)}}
+            {whole -> whole.p},
+            {part -> {whole -> whole.copy(p = part)}}
         )
 
         val reader: Reader<P, String> = {p -> p.name}
@@ -82,8 +82,8 @@ class StorageTest {
             {w = it}
         )
         val pLens = Lens<W, P>(
-            {w -> w.p},
-            {p -> {w -> w.copy(p = p)}}
+            {whole -> whole.p},
+            {p -> {whole -> whole.copy(p = p)}}
         )
 
         val writer: Writer<P, String> = {s -> {p -> p.copy(name = s)}}

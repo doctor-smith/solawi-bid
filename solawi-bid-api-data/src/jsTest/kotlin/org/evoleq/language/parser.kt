@@ -41,7 +41,7 @@ class ParserTest {
       //  println(result)
 
       //  println(LanguageP().run(arg))
-        assertTrue{true}
+        assertTrue{result.result != null }
         //val value3 = result.result!!["name.block.key3"]
        // println(value3)
         //assertNotNull(value3 is Var)
