@@ -22,6 +22,7 @@ fun buttonStyle(deviceType: DeviceType): StyleScope.()->Unit = {
 }
 
 @Style
+@Suppress("UNUSED_PARAMETER") // todo:style use parameter !!
 fun symbolicButtonStyle(deviceType: DeviceType): StyleScope.()->Unit = {
     backgroundColor(Color.white)
     borderRadius(5.px)

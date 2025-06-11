@@ -28,16 +28,15 @@ import org.solyton.solawi.bid.module.qrcode.QRCodeSvg
 
 @Markup
 @Composable
-@Suppress("FunctionName")
+@Suppress("FunctionName", "UNUSED_PARAMETER")
 fun HowToBidPage(application: Storage<Application>) {
     val scale = 1.0
-    val link = "demo-link"
     val storage = Storage(
         read = {Application(
             environment = Environment(),
             deviceData = Device(mediaType =  DeviceType.Tablet),
         )},
-        write = {{}}
+        write = {}
     )
 
     var email by remember { mutableStateOf("") }

@@ -24,7 +24,6 @@ fun QRLinkToRoundPageButton(
     auction: Lens<Application, Auction>,
     round: Round,
     frontendBaseUrl: String,
-    texts: Source<Lang.Block>,
 
 ) {
     val auctionId = (storage * auction * auctionId).read()

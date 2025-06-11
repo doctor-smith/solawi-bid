@@ -29,7 +29,6 @@ fun ImportBiddersModal(
     id: Int,
     texts: Lang.Block,
     modals: Storage<Modals<Int>>,
-    auction: Storage<Auction>,
     device: Source<DeviceType>,
     setBidders: (List<NewBidder>)->Unit,
     addBidders: (AddBidders)->Unit,
@@ -62,6 +61,7 @@ fun ImportBiddersModal(
                     setBidders(parsed.map {
                         NewBidder(it["Email"]!!,0, it["Anteile"]!!.toInt())
                     })
+                    // todo:i18n
                     addBidders(AddBidders(parsed.map{
                         BidderData(
                             it["Vorname"]!!,
@@ -83,7 +83,6 @@ fun ImportBiddersModal(
 
 @Markup
 fun Storage<Modals<Int>>.showImportBiddersModal(
-    auction: Storage<Auction>,
     texts: Lang.Block,
     device: Source<DeviceType>,
     setBidders: (List<NewBidder>)->Unit,
@@ -97,7 +96,6 @@ fun Storage<Modals<Int>>.showImportBiddersModal(
             this,
             texts,
             this@showImportBiddersModal,
-            auction,
             device,
             setBidders,
             addBidders,

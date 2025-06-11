@@ -94,7 +94,7 @@ fun State(device: Source<DeviceType>, title:String, state: String, currentState:
 
 @Markup
 @Composable
-@Suppress("FunctionName")
+@Suppress("FunctionName", "UNUSED_PARAMETER" /* todo:i18n title needs to be injected  */)
 fun EndState(device: Source<DeviceType>, title:String, state: String, currentState: String , accepted: Boolean) = when(state) {
     currentState -> when{
         accepted -> ColoredButton(Color.seagreen,{ "Angenommen" }, device.emit(),) {}

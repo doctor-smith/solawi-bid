@@ -52,10 +52,11 @@ fun Storage(): Storage<Application> {
 
 
 inline fun <reified T> type(obj: Any): T? = when(obj) {
-    is T -> obj as T
+    is T -> obj
     else -> null
 }
 
+@Suppress("UNCHECKED_CAST")
 inline fun <T : Any> type(obj: Any, clazz: KClass<T>): T? = when {
     obj::class == clazz -> obj as T
     else -> null

@@ -76,7 +76,9 @@ fun DownloadSvgButton(svgString: String?) {
     }
 }
 
+@Suppress("UNUSED_PARAMETER")
 fun downloadSvg(svgString: String) {
+    @Suppress("UNUSED_VARIABLE")
     val blob = js("new Blob([svgString], {type: 'image/svg+xml'})")
     val url = js("URL.createObjectURL(blob)")
 

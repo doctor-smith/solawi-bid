@@ -38,7 +38,7 @@ fun DashboardPage(storage: Storage<Application>) {
 
     // Texts
     val texts = (storage * i18N * language * component(DashboardComponent.Page))
-    val auctionsCard = texts * subComp("auctionsCard")
+    // val auctionsCard = texts * subComp("auctionsCard")
 
     Vertical(verticalPageStyle) {
         Wrap{

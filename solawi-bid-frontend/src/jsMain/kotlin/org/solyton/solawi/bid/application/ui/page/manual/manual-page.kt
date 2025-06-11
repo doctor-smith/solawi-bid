@@ -15,12 +15,12 @@ import org.solyton.solawi.bid.application.ui.style.page.verticalPageStyle
 
 @Composable
 @Markup
-@Suppress("FunctionName")
+@Suppress("FunctionName", "UNUSED_PARAMETER")
 fun ManualPage(application: Storage<Application>) {
     Vertical(verticalPageStyle) {
         H1 { Text("Betriebsanleitung") }
 
-        H2 { "Inhaltsverzeichnis" }
+        H2 { Text("Inhaltsverzeichnis") }
 
         Horizontal {
             P({onClick { navigate("/manual/how-to-bid") }}){Text("Wie man bietet")}

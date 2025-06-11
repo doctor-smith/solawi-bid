@@ -33,7 +33,6 @@ fun RoundPage(storage: Storage<Application>, auctionId: String, roundId: String)
     val auction = storage * auctions * FirstBy { it.auctionId == auctionId }
     val round = auction * rounds * FirstBy { it.roundId == roundId }
     val link = round * link
-    val state = round * state
     val frontendBaseUrl = with((storage * environment).read()){
         "$frontendUrl:$frontendPort"
     }

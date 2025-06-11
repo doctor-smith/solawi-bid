@@ -20,6 +20,7 @@ fun formPageStyle(device: DeviceType): StyleScope.()->Unit = {
 }
 
 @Style
+@Suppress("UNUSED_PARAMETER") // todo:style use parameter !!
 fun fieldStyle(device: DeviceType): StyleScope.()->Unit = {
     width(100.percent)
     display(DisplayStyle.Flex)

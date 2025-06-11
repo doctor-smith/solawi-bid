@@ -17,7 +17,7 @@ import org.solyton.solawi.bid.module.user.data.User
 @Markup
 fun readAuctions(): Action<Application, GetAuctions, ApiAuctions> = Action(
     name ="ReadAuctions",
-    reader = userData * Reader { user: User -> GetAuctions },
+    reader = userData * Reader { _: User -> GetAuctions },
     endPoint = GetAuctions::class,
     writer = auctions
         merge { given, incoming -> given.auctionId == incoming.auctionId }

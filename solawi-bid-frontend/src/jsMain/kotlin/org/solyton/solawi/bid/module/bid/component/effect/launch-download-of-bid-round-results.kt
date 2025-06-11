@@ -21,7 +21,7 @@ import kotlin.js.Date
 
 @Markup
 @Composable
-@Suppress("FunctionName")
+@Suppress("FunctionName", "UNUSED_PARAMETER" /* todo:dev remove after finishing i18n */)
 fun LaunchDownloadOfBidRoundResults(
     storage: Storage<Application>,
     auction: Lens<Application, Auction>,
@@ -30,6 +30,7 @@ fun LaunchDownloadOfBidRoundResults(
 ) {
     if(round.rawResults.startDownloadOfBidRoundResults) {
         LaunchedEffect(Unit) {
+            // todo:i18n
             val fileName = "results_${Date.now()}.csv"
             val csvContent = round.rawResults.toCsvContent()
             downloadCsv(csvContent, fileName)
