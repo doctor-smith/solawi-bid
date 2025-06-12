@@ -13,6 +13,7 @@ version = libs.versions.solawi.get()
 val kotlinVersion = libs.versions.kotlin
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -40,6 +41,7 @@ kotlin{
             kotlin.srcDir("/src/commonMain/kotlin")
 
             dependencies {
+                implementation(kotlin("stdlib"))
                 implementation(libs.benasher.uuid)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.serialization.json)
@@ -50,7 +52,7 @@ kotlin{
         }
         val commonTest by getting {
             dependencies {
-                implementation(libs.kotlin.test.junit) // Adds kotlin.test for multiplatform
+                implementation(kotlin("test")) // Adds kotlin.test for multiplatform
             }
         }
         val jvmMain by getting {
@@ -75,7 +77,7 @@ kotlin{
         }
         val jsTest by getting {
             dependencies {
-                implementation(libs.kotlin.test.junit) // Adds kotlin.test for multiplatform
+                implementation(libs.kotlin.test.js) // Adds kotlin.test for multiplatform
             }
         }
 
