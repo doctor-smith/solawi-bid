@@ -10,12 +10,11 @@ import org.evoleq.compose.routing.navigate
 import org.evoleq.math.Reader
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
-import org.evoleq.parser.Whitespace
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.device.Device
-import org.solyton.solawi.bid.application.data.device.DeviceType
+import org.evoleq.compose.style.data.device.DeviceType
 import org.solyton.solawi.bid.application.data.device.mediaType
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.env.Environment

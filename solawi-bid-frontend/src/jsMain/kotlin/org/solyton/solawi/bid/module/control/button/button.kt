@@ -10,7 +10,7 @@ import org.jetbrains.compose.web.css.CSSColorValue
 import org.jetbrains.compose.web.css.backgroundColor
 import org.jetbrains.compose.web.dom.Button
 import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.application.data.device.DeviceType
+import org.evoleq.compose.style.data.device.DeviceType
 import org.solyton.solawi.bid.application.ui.style.button.buttonStyle
 import org.solyton.solawi.bid.application.ui.style.button.cancelButtonStyle
 import org.solyton.solawi.bid.application.ui.style.button.submitButtonStyle

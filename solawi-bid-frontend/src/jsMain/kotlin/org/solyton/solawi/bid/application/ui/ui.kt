@@ -38,7 +38,7 @@ import org.solyton.solawi.bid.module.i18n.data.language
             excluded = currentPath().startsWith("/bid") || currentPath().startsWith("/manual")
         )
         // All pages shall be wrapped in a container
-        Container(storage * deviceData.get ){
+        Container(storage * deviceData * mediaType.get ){
             // Routing
             Routing(storage)
         }

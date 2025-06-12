@@ -10,18 +10,17 @@ import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.ElementScope
-import org.solyton.solawi.bid.application.data.device.Device
-import org.solyton.solawi.bid.application.data.device.DeviceType
-import org.solyton.solawi.bid.application.data.device.compareTo
+import org.evoleq.compose.style.data.device.DeviceType
+import org.evoleq.compose.style.data.device.compareTo
 import org.w3c.dom.HTMLElement
 
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun Container(device: Source<Device>, content: @Composable ElementScope<HTMLElement>.()->Unit) {
+fun Container(device: Source<DeviceType>, content: @Composable ElementScope<HTMLElement>.()->Unit) {
     Div({
         style {
-            if(device.emit().mediaType > DeviceType.Tablet) {
+            if(device.emit() > DeviceType.Tablet) {
                 width(80.percent)
                 marginLeft(10.percent)
                 marginRight(10.percent)

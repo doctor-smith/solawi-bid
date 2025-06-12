@@ -11,7 +11,7 @@ import org.evoleq.optics.Lensify
 import org.evoleq.optics.ReadOnly
 import org.evoleq.optics.ReadWrite
 import org.evoleq.optics.lens.Lens
-import org.solyton.solawi.bid.application.data.device.DeviceType
+import org.evoleq.compose.style.data.device.DeviceType
 
 /**
  * Generator class.

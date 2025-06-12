@@ -5,7 +5,6 @@ import kotlinx.browser.document
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.jetbrains.compose.web.css.CSSNumeric
-import org.jetbrains.compose.web.css.CSSNumericValue
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.Button

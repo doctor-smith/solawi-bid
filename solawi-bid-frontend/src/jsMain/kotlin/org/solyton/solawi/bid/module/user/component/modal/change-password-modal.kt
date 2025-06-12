@@ -23,7 +23,7 @@ import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.PasswordInput
 import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.application.data.device.DeviceType
+import org.evoleq.compose.style.data.device.DeviceType
 import org.solyton.solawi.bid.application.ui.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.application.ui.style.form.formDesktopStyle
 import org.solyton.solawi.bid.application.ui.style.form.formLabelDesktopStyle

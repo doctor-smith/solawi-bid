@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.mpp)
+    alias(libs.plugins.compose)
     alias(libs.plugins.serialization)
     `maven-publish`
     alias(libs.plugins.detekt)
@@ -15,6 +16,7 @@ val kotlinVersion = libs.versions.kotlin
 repositories {
     mavenLocal()
     mavenCentral()
+    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
 
 configurations.all {
@@ -48,6 +50,9 @@ kotlin{
 
                 // datetime
                 implementation(libs.kotlinx.datetime)
+
+                implementation(compose.runtime)
+                implementation(compose.foundation)
             }
         }
         val commonTest by getting {
@@ -55,6 +60,7 @@ kotlin{
                 implementation(kotlin("test")) // Adds kotlin.test for multiplatform
             }
         }
+        /*
         val jvmMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") // Specific for JVM
@@ -65,6 +71,8 @@ kotlin{
                 implementation(libs.kotlin.test.junit)
             }
         }
+
+         */
         val jsMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-html-js:0.8.0") // Example for JS
@@ -73,6 +81,10 @@ kotlin{
                 implementation(libs.ktor.client.js)
                 implementation(libs.ktor.http)
                 implementation(libs.ktor.http.cio)
+
+                // compose
+                implementation(compose.html.core)
+                implementation(compose.runtime)
             }
         }
         val jsTest by getting {
@@ -104,8 +116,6 @@ detekt {
         "src/commonTest/kotlin",
         "src/jsMain/kotlin",
         "src/jsTest/kotlin",
-        "src/jvmMain/kotlin",
-        "src/jvmTest/kotlin",
 
         )
 }
@@ -118,33 +128,7 @@ tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detekt") {
 }
 
 
-tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineJvmMain") {
-    baseline.set(file("detekt/detekt-baseline-jvm-main.xml"))
-}
-tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektJvmMain") {
-    baseline.set(file("detekt/detekt-baseline-jvm-main.xml"))
-}
 
-/*
-tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineMetadataCommonMain") {
-    baseline.set(file("detekt/detekt-baseline-common-main.xml"))
-}
-tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektMetadataCommonMain") {
-    baseline.set(file("detekt/detekt-baseline-common-main.xml"))
-}
-tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineCommonTest") {
-    baseline.set(file("detekt/detekt-baseline-common-test.xml"))
-}
-tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektCommonTest") {
-    baseline.set(file("detekt/detekt-baseline-common-test.xml"))
-}
-*/
-tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineJvmTest") {
-    baseline.set(file("detekt/detekt-baseline-jvm-test.xml"))
-}
-tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektJvmTest") {
-    baseline.set(file("detekt/detekt-baseline-jvm-test.xml"))
-}
 
 tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineJsMain") {
     baseline.set(file("detekt/detekt-baseline-js-main.xml"))
