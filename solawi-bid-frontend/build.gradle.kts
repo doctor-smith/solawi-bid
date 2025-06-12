@@ -95,8 +95,8 @@ kotlin {
                 implementation(libs.ktor.http.cio)
 
                 // own dependencies
-                api(project(":solawi-bid-api-data"))
-
+                implementation(project(":solawi-bid-api-data"))
+                implementation(project(":evoleq"))
                 // Serialization
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.ktor.client.serialization)
@@ -116,6 +116,7 @@ kotlin {
 
 
 }
+
 optics{
     sourceSet = "jsMain"
     defaultPackage = "org.solyton.solawi.bid.data"
@@ -131,10 +132,13 @@ tasks.register<Test>("commonTest") {
     testClassesDirs =  files("src/commonTest/kotlin")
  //   classpath = sourceSets["commonTest"].runtimeClasspath
 }
-
+/*
 compose {
-     //kotlinCompilerPlugin.set("androidx.compose.compiler:compiler:$composeCompiler")
+    // composeCompilerPlugin.set("1.5.12")
+     kotlinCompilerPlugin.set("androidx.compose.compiler:compiler:1.5.12")
 }
+
+ */
 // a temporary workaround for a bug in jsRun invocation - see https://youtrack.jetbrains.com/issue/KT-48273
 afterEvaluate {
     rootProject.extensions.configure<NodeJsRootExtension> {
