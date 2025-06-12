@@ -21,7 +21,6 @@ import org.solyton.solawi.bid.application.data.device.mediaType
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.i18N
 import org.solyton.solawi.bid.application.ui.page.dashboard.data.DashboardComponent
-import org.solyton.solawi.bid.application.ui.style.GlobalStyles.style
 import org.solyton.solawi.bid.application.ui.style.page.verticalPageStyle
 import org.solyton.solawi.bid.application.ui.style.wrap.Wrap
 import org.solyton.solawi.bid.module.control.button.StdButton

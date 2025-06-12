@@ -19,7 +19,7 @@ import org.evoleq.optics.storage.put
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.color
 import org.jetbrains.compose.web.dom.*
-import org.solyton.solawi.bid.application.data.device.DeviceType
+import org.evoleq.compose.style.data.device.DeviceType
 import org.solyton.solawi.bid.application.ui.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.application.ui.style.form.formDesktopStyle
 import org.solyton.solawi.bid.application.ui.style.form.formLabelDesktopStyle

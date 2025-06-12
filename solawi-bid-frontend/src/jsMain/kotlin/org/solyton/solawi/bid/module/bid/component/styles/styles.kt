@@ -4,7 +4,7 @@ import org.evoleq.compose.Style
 import org.evoleq.compose.modal.ModalStyles
 import org.evoleq.math.Source
 import org.jetbrains.compose.web.css.*
-import org.solyton.solawi.bid.application.data.device.DeviceType
+import org.evoleq.compose.style.data.device.DeviceType
 
 @Style
 fun auctionModalStyles(device : Source<DeviceType>): ModalStyles = ModalStyles(

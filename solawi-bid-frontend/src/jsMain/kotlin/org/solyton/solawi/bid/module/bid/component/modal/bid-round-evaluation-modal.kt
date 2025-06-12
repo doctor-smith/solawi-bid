@@ -10,12 +10,10 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
-import org.jetbrains.compose.web.css.height
-import org.jetbrains.compose.web.css.vh
 import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.application.data.device.DeviceType
+import org.evoleq.compose.style.data.device.DeviceType
 import org.solyton.solawi.bid.application.data.device.mediaType
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.module.bid.component.BidRoundEvaluation

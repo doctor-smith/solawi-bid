@@ -8,7 +8,7 @@ import org.evoleq.compose.Markup
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.application.data.device.Device
-import org.solyton.solawi.bid.application.data.device.DeviceType
+import org.evoleq.compose.style.data.device.DeviceType
 import org.solyton.solawi.bid.application.data.device.mediaType
 import org.solyton.solawi.bid.application.data.device.screenWidth
 

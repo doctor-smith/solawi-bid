@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.application.api
 
 import org.evoleq.compose.modal.ModalData
 import org.evoleq.compose.modal.ModalType
+import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.ktorx.api.EndPoint
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.Return
@@ -106,7 +107,7 @@ fun <T: Any> DebugResult(debug: Result<T>.()->Unit): KlState<Storage<Application
 }
 
 
-
+@Suppress("UNCHECKED_CAST")
 fun Storage<Application>.failureWriter(): Writer<Unit, Failure> = Writer{
     failure: Failure -> {
         val modals = this * modals
@@ -119,7 +120,7 @@ fun Storage<Application>.failureWriter(): Writer<Unit, Failure> = Writer{
                     texts = errorModalTexts(failure.message),
                     modals = modals,
 
-                    device = this@failureWriter * deviceData * mediaType.get,
+                    device = (this@failureWriter * deviceData * mediaType.get) as Source<DeviceType>,
                 )
             )
         )

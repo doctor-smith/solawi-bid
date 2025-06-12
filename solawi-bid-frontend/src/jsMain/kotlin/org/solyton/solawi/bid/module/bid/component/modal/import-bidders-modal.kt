@@ -15,9 +15,8 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.jetbrains.compose.web.dom.ElementScope
-import org.solyton.solawi.bid.application.data.device.DeviceType
+import org.evoleq.compose.style.data.device.DeviceType
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
-import org.solyton.solawi.bid.module.bid.data.Auction
 import org.solyton.solawi.bid.module.bid.data.api.AddBidders
 import org.solyton.solawi.bid.module.bid.data.api.BidderData
 import org.solyton.solawi.bid.module.bid.data.api.NewBidder

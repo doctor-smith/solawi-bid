@@ -21,10 +21,7 @@ import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 //import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.data.device.mediaType
-import org.solyton.solawi.bid.application.data.i18N
-import org.solyton.solawi.bid.application.effect.trigger
 import org.solyton.solawi.bid.application.permission.Right
-import org.solyton.solawi.bid.application.service.useI18nTransform
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.user.action.createUser
 import org.solyton.solawi.bid.application.ui.page.user.action.getUsers
@@ -33,8 +30,6 @@ import org.solyton.solawi.bid.application.ui.page.user.i18n.UserLangComponent
 import org.solyton.solawi.bid.application.ui.style.page.verticalPageStyle
 import org.solyton.solawi.bid.application.ui.style.wrap.Wrap
 import org.solyton.solawi.bid.module.control.button.StdButton
-import org.solyton.solawi.bid.module.error.component.showErrorModal
-import org.solyton.solawi.bid.module.error.lang.errorModalTexts
 import org.solyton.solawi.bid.module.i18n.data.componentLoaded
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.user.data.api.CreateUser

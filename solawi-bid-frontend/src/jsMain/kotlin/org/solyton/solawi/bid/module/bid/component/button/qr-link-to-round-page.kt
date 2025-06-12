@@ -3,8 +3,6 @@ package org.solyton.solawi.bid.module.bid.component.button
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
 import org.evoleq.compose.routing.navigate
-import org.evoleq.language.Lang
-import org.evoleq.math.Source
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times

@@ -13,7 +13,7 @@ import org.jetbrains.compose.web.dom.H4
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.dom.TextInput
 import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.application.data.device.DeviceType
+import org.evoleq.compose.style.data.device.DeviceType
 import org.solyton.solawi.bid.application.ui.style.form.formLabelStyle
 import org.solyton.solawi.bid.application.ui.style.form.textInputStyle
 import org.solyton.solawi.bid.application.ui.style.wrap.Wrap

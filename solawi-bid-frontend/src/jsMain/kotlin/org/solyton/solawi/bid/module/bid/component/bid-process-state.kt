@@ -10,7 +10,7 @@ import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.times
 import org.jetbrains.compose.web.css.Color
-import org.solyton.solawi.bid.application.data.device.DeviceType
+import org.evoleq.compose.style.data.device.DeviceType
 import org.solyton.solawi.bid.module.bid.data.Round
 import org.solyton.solawi.bid.module.bid.data.api.RoundState
 import org.solyton.solawi.bid.module.control.button.ColoredButton
