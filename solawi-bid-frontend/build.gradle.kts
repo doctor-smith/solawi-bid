@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 plugins {
     alias(libs.plugins.mpp)
     alias(libs.plugins.compose)
+//    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.serialization)
     id("org.evoleq.math.cat.gradle.optics")
     alias(libs.plugins.detekt)

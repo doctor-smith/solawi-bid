@@ -12,6 +12,7 @@ plugins{
     alias(libs.plugins.mpp) apply false
     alias(libs.plugins.ktor) apply false
     alias(libs.plugins.compose) apply false
+  //  alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.shadow) apply false
     id("org.evoleq.exposedx.migration") apply false
     alias(libs.plugins.detekt) apply false
