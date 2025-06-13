@@ -4,7 +4,12 @@ import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.insert
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.bid.action.db.BidBests.BidProcessSetup
-import org.solyton.solawi.bid.module.db.schema.*
+import org.solyton.solawi.bid.module.bid.schema.Auction
+import org.solyton.solawi.bid.module.bid.schema.AuctionBidders
+import org.solyton.solawi.bid.module.bid.schema.AuctionType
+import org.solyton.solawi.bid.module.bid.schema.Bidder
+import org.solyton.solawi.bid.module.bid.schema.BidderDetailsSolawiTuebingenTable
+import org.solyton.solawi.bid.module.bid.schema.Round
 
 fun Transaction.setupBidProcess(): BidProcessSetup {
     // db setup

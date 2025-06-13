@@ -15,7 +15,7 @@ import org.evoleq.math.x
 import org.solyton.solawi.bid.application.permission.Header
 import org.solyton.solawi.bid.module.authentication.exception.AuthenticationException
 import org.solyton.solawi.bid.module.bid.data.api.RoundStateException
-import org.solyton.solawi.bid.module.db.BidRoundException
+import org.solyton.solawi.bid.module.bid.exception.BidRoundException
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
 import java.util.*

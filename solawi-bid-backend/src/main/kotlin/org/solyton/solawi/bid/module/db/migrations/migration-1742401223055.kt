@@ -3,11 +3,9 @@ package org.solyton.solawi.bid.module.db.migrations
 import org.evoleq.exposedx.migrations.Migration
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Transaction
-import org.jetbrains.exposed.sql.insert
-import org.solyton.solawi.bid.module.db.schema.AcceptedRoundEntity
-import org.solyton.solawi.bid.module.db.schema.AcceptedRoundsTable
-import org.solyton.solawi.bid.module.db.schema.AuctionEntity
-import org.solyton.solawi.bid.module.db.schema.RoundEntity
+import org.solyton.solawi.bid.module.bid.schema.AcceptedRoundEntity
+import org.solyton.solawi.bid.module.bid.schema.AuctionEntity
+import org.solyton.solawi.bid.module.bid.schema.RoundEntity
 import java.util.UUID
 
 /**

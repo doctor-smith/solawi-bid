@@ -8,8 +8,14 @@ import org.evoleq.util.Contextual
 import org.evoleq.util.DbAction
 import org.evoleq.util.KlAction
 import org.jetbrains.exposed.sql.*
-import org.solyton.solawi.bid.module.db.schema.*
+import org.solyton.solawi.bid.module.permission.schema.Contexts
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.permission.schema.Rights
+import org.solyton.solawi.bid.module.permission.schema.RightsTable
+import org.solyton.solawi.bid.module.user.schema.UserRoleContext
 import org.solyton.solawi.bid.module.permission.PermissionException
+import org.solyton.solawi.bid.module.permission.schema.ContextEntity
+import org.solyton.solawi.bid.module.permission.schema.RightEntity
 import org.solyton.solawi.bid.shared.ValueWithDescription
 import java.util.UUID
 

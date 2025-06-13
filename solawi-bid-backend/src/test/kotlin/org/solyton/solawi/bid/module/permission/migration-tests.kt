@@ -1,6 +1,5 @@
 package org.solyton.solawi.bid.module.permission
 
-import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.evoleq.exposedx.migrations.Migration
@@ -21,9 +20,21 @@ import org.solyton.solawi.bid.application.permission.Right
 import org.solyton.solawi.bid.module.db.migrations.Migration1730143239225
 import org.solyton.solawi.bid.module.db.migrations.Migration1743235367945
 import org.solyton.solawi.bid.module.db.migrations.Migration1743786680319
-import org.solyton.solawi.bid.module.db.repository.parent
+import org.solyton.solawi.bid.module.permission.schema.repository.parent
 import org.solyton.solawi.bid.module.db.schema.*
+import org.solyton.solawi.bid.module.permission.schema.Contexts
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.permission.schema.Rights
+import org.solyton.solawi.bid.module.permission.schema.RightsTable
+import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
+import org.solyton.solawi.bid.module.permission.schema.Roles
+import org.solyton.solawi.bid.module.user.schema.UserRoleContext
+import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.permission.action.db.isGranted
+import org.solyton.solawi.bid.module.permission.schema.ContextEntity
+import org.solyton.solawi.bid.module.permission.schema.RightEntity
+import org.solyton.solawi.bid.module.permission.schema.RoleEntity
+import org.solyton.solawi.bid.module.user.schema.UserEntity
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
