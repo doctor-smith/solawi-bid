@@ -47,7 +47,7 @@ kotlin{
                 // datetime
                 implementation(libs.kotlinx.datetime)
 
-                api(project(":evoleq"))
+                implementation(project(":evoleq"))
             }
         }
         val commonTest by getting {
@@ -80,7 +80,6 @@ kotlin{
                 implementation(libs.kotlin.test.js) // Adds kotlin.test for multiplatform
             }
         }
-
     }
 }
 
