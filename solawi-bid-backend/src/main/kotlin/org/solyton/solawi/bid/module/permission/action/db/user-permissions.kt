@@ -11,11 +11,18 @@ import org.evoleq.util.KlAction
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.selectAll
-import org.solyton.solawi.bid.module.db.schema.*
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.permission.schema.RightsTable
+import org.solyton.solawi.bid.module.permission.schema.RoleEntity
+import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
+import org.solyton.solawi.bid.module.permission.schema.RolesTable
+import org.solyton.solawi.bid.module.user.schema.UserRoleContext
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.Context
 import org.solyton.solawi.bid.module.permission.data.api.Right
 import org.solyton.solawi.bid.module.permission.data.api.Role
+import org.solyton.solawi.bid.module.permission.schema.ContextEntity
+import org.solyton.solawi.bid.module.permission.schema.RightEntity
 import java.util.UUID
 
 @MathDsl

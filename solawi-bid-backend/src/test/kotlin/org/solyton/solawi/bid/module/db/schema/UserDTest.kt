@@ -4,6 +4,8 @@ package org.solyton.solawi.bid.module.db.schema
 import org.evoleq.exposedx.test.runSimpleH2Test
 import org.junit.Test
 import org.solyton.solawi.bid.Schema
+import org.solyton.solawi.bid.module.user.schema.User
+import org.solyton.solawi.bid.module.user.schema.Users
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 

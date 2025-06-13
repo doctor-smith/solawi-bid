@@ -14,8 +14,8 @@ import org.solyton.solawi.bid.module.authentication.data.api.IsLoggedIn
 import org.solyton.solawi.bid.module.authentication.data.api.LoggedInAs
 import org.solyton.solawi.bid.module.authentication.service.generateAccessToken
 import org.solyton.solawi.bid.module.authentication.service.isUuid
-import org.solyton.solawi.bid.module.db.schema.TokenEntity
-import org.solyton.solawi.bid.module.db.schema.TokensTable
+import org.solyton.solawi.bid.module.user.schema.TokenEntity
+import org.solyton.solawi.bid.module.user.schema.TokensTable
 import java.util.UUID
 
 @KtorDsl

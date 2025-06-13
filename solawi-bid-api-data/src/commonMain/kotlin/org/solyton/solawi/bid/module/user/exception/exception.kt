@@ -6,4 +6,6 @@ sealed class UserManagementException(override val message: String?) : Exception(
          data class Username(val username: String) : UserDoesNotExist("User with username $username does not exists")
      }
     data object WrongCredentials : UserManagementException("Wrong credentials")
+
+    data class NoSuchChildOrganization(val id: String) : UserManagementException("No such child organization; id = $id")
 }

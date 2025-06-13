@@ -8,14 +8,14 @@ import org.evoleq.math.x
 import org.evoleq.util.Action
 import org.evoleq.util.DbAction
 import org.evoleq.util.KlAction
-import org.solyton.solawi.bid.module.db.schema.UsersTable
+import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.user.data.api.GetUsers
 import org.solyton.solawi.bid.module.user.data.api.User
 import org.solyton.solawi.bid.module.user.data.api.Users
 import java.util.*
 import kotlin.collections.first
 import kotlin.collections.map
-import org.solyton.solawi.bid.module.db.schema.User as UserEntity
+import org.solyton.solawi.bid.module.user.schema.User as UserEntity
 
 /**
  * Get all users in the database

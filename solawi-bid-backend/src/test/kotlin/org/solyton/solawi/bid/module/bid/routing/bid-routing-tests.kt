@@ -12,7 +12,7 @@ import org.evoleq.ktorx.result.Result
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
 import org.solyton.solawi.bid.module.bid.data.api.Bid
-import org.solyton.solawi.bid.module.db.BidRoundException
+import org.solyton.solawi.bid.module.bid.exception.BidRoundException
 import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertIs

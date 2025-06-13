@@ -16,8 +16,14 @@ import org.jetbrains.exposed.sql.deleteWhere
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.data.toApiType
-import org.solyton.solawi.bid.module.db.BidRoundException
-import org.solyton.solawi.bid.module.db.schema.*
+import org.solyton.solawi.bid.module.bid.schema.AuctionDetailsSolawiTuebingen
+import org.solyton.solawi.bid.module.bid.schema.AuctionDetailsSolawiTuebingenTable
+import org.solyton.solawi.bid.module.bid.schema.AuctionEntity
+import org.solyton.solawi.bid.module.bid.schema.AuctionType
+import org.solyton.solawi.bid.module.bid.schema.AuctionTypes
+import org.solyton.solawi.bid.module.bid.schema.Auctions
+import org.solyton.solawi.bid.module.bid.schema.BidderDetails
+import org.solyton.solawi.bid.module.bid.exception.BidRoundException
 import java.util.*
 import org.solyton.solawi.bid.module.bid.data.api.Auctions as ApiAuctions
 

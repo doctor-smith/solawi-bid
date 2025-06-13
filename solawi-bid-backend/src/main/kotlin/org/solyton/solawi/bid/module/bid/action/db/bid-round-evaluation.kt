@@ -10,8 +10,12 @@ import org.evoleq.util.DbAction
 import org.evoleq.util.KlAction
 import org.jetbrains.exposed.sql.Transaction
 import org.solyton.solawi.bid.module.bid.data.api.*
-import org.solyton.solawi.bid.module.db.BidRoundException
-import org.solyton.solawi.bid.module.db.schema.*
+import org.solyton.solawi.bid.module.bid.schema.AuctionsTable
+import org.solyton.solawi.bid.module.bid.schema.BidRoundsTable
+import org.solyton.solawi.bid.module.bid.schema.BidderDetails
+import org.solyton.solawi.bid.module.bid.exception.BidRoundException
+import org.solyton.solawi.bid.module.bid.schema.AuctionEntity
+import org.solyton.solawi.bid.module.bid.schema.BidRoundEntity
 import java.util.*
 
 @MathDsl
@@ -94,7 +98,7 @@ fun Transaction.getResults(auctionId: UUID, roundId: UUID):BidRoundResults {
 
 fun Transaction.preEvaluateBidRound(auctionId: UUID, roundId: UUID): BidRoundPreEvaluation {
     // Collect data
-    val auction = AuctionEntity.find{AuctionsTable.id eq auctionId}.firstOrNull()
+    val auction = AuctionEntity.find{ AuctionsTable.id eq auctionId}.firstOrNull()
         ?: throw BidRoundException.NoSuchAuction
     val bidRoundResults = getResults(auctionId, roundId)
     val auctionDetails = getAuctionDetails(auction) as AuctionDetails.SolawiTuebingen
@@ -112,7 +116,7 @@ fun Transaction.preEvaluateBidRound(auctionId: UUID, roundId: UUID): BidRoundPre
 
 fun Transaction.evaluateBidRound(auctionId: UUID, roundId: UUID): BidRoundEvaluation {
     // Collect data
-    val auction = AuctionEntity.find{AuctionsTable.id eq auctionId}.firstOrNull()
+    val auction = AuctionEntity.find{ AuctionsTable.id eq auctionId}.firstOrNull()
         ?: throw BidRoundException.NoSuchAuction
     val bidRoundResults = getResults(auctionId, roundId)
     val auctionDetails = getAuctionDetails(auction) as AuctionDetails.SolawiTuebingen

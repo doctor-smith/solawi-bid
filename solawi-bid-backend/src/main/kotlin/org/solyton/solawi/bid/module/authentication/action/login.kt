@@ -1,6 +1,5 @@
 package org.solyton.solawi.bid.module.authentication.action
 
-import io.ktor.util.*
 import org.evoleq.exposedx.transaction.resultTransaction
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
@@ -19,10 +18,10 @@ import org.solyton.solawi.bid.module.authentication.exception.AuthenticationExce
 import org.solyton.solawi.bid.module.authentication.service.generateAccessToken
 import org.solyton.solawi.bid.module.authentication.service.generateRefreshToken
 import org.solyton.solawi.bid.module.authentication.service.isUuid
-import org.solyton.solawi.bid.module.db.schema.Token
-import org.solyton.solawi.bid.module.db.schema.Tokens
-import org.solyton.solawi.bid.module.db.schema.User
-import org.solyton.solawi.bid.module.db.schema.Users
+import org.solyton.solawi.bid.module.user.schema.Token
+import org.solyton.solawi.bid.module.user.schema.Tokens
+import org.solyton.solawi.bid.module.user.schema.User
+import org.solyton.solawi.bid.module.user.schema.Users
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
 import org.solyton.solawi.bid.module.user.service.credentialsAreOK
 import java.util.*
