@@ -12,6 +12,7 @@ typealias BankAccountEntity = BankAccount
 object BankAccounts : UUIDTable("bank_accounts") {
     val iban = varchar("iban", 30)
     val bic = varchar("bic", 20)
+    val userId = uuid("user_id")
 }
 
 class BankAccount(id: EntityID<UUID>) : UUIDEntity(id) {
@@ -19,4 +20,5 @@ class BankAccount(id: EntityID<UUID>) : UUIDEntity(id) {
 
     var iban by BankAccounts.iban
     var bic by BankAccounts.bic
+    var userId by BankAccounts.userId
 }

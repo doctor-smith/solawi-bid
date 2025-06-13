@@ -4,11 +4,6 @@ import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.UUIDTable
-import org.jetbrains.exposed.sql.SizedIterable
-import org.solyton.solawi.bid.module.bid.schema.Share
-import org.solyton.solawi.bid.module.bid.schema.Shares
-import org.solyton.solawi.bid.module.banking.schema.BankAccount
-import org.solyton.solawi.bid.module.banking.schema.BankAccounts
 import java.util.*
 
 typealias UserProfilesTable = UserProfiles
@@ -22,7 +17,7 @@ object UserProfiles : UUIDTable("user_profiles") {
 
     val phoneNumber = varchar("phone_number", 15).nullable()
 
-    val bankAccountId = reference("bank_account_id", BankAccounts).nullable()// nullable default
+    // val bankAccountId = reference("bank_account_id", BankAccounts).nullable()// nullable default
 }
 
 class UserProfile(id: EntityID<UUID>) : UUIDEntity(id) {
@@ -34,7 +29,7 @@ class UserProfile(id: EntityID<UUID>) : UUIDEntity(id) {
 
     var phoneNumber by UserProfiles.phoneNumber
 
-    var bankAccount by BankAccount optionalReferencedOn UserProfiles.bankAccountId
+    // var bankAccount by BankAccount optionalReferencedOn UserProfiles.bankAccountId
 
-    val shares: SizedIterable<Share> by Share.Companion referrersOn Shares.userProfileId
+    // val shares: SizedIterable<Share> by Share.Companion referrersOn Shares.userProfileId
 }
