@@ -43,6 +43,7 @@ fun ChangeRoundStateButton(
     val commandName: (String) -> Reader<Lang.Block, String> = {name -> Reader {lang:Lang.Block ->
         console.log(name)
         when (name) {
+            // todo:i18n
             RoundState.Evaluated.commandName -> "Bewerten"
             /*
             RoundState.Closed.commandName, RoundState.Frozen.commandName -> when{
