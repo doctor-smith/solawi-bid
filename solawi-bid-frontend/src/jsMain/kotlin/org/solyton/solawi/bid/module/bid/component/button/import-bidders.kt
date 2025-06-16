@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.module.bid.component.button
 
 import androidx.compose.runtime.Composable
+import io.ktor.util.toLowerCasePreservingASCIIRules
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -24,8 +25,10 @@ import org.solyton.solawi.bid.module.bid.data.Auction
 import org.solyton.solawi.bid.module.bid.data.api.AddBidders
 import org.solyton.solawi.bid.module.bid.data.api.NewBidder
 import org.solyton.solawi.bid.module.bid.data.reader.auctionAccepted
+import org.solyton.solawi.bid.module.bid.data.reader.emailAddress
 import org.solyton.solawi.bid.module.bid.data.reader.existRounds
 import org.solyton.solawi.bid.module.bid.data.rounds
+import org.solyton.solawi.bid.module.bid.data.username
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.permissions.service.isNotGranted
@@ -53,8 +56,12 @@ fun ImportBiddersButton(
     ) {
         (storage * modals).showImportBiddersModal(
             texts = ((storage * i18N * language).read() as Lang.Block).component("solyton.auction.importBiddersDialog"),
-            setBidders = { newBidders.write(it) },
-            addBidders = {addBidders.write(it)},
+            setBidders = { newBidders.write(it.map { bidder -> bidder.copy(
+                username = bidder.username.trim().toLowerCasePreservingASCIIRules()
+            )})},
+            addBidders = {addBidders.write(AddBidders(it.bidders. map { bidder -> bidder.copy(
+                email = bidder.email.trim().toLowerCasePreservingASCIIRules()
+            )}))},
             device = storage * deviceData * mediaType.get,
             cancel = {},
             update = {

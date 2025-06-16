@@ -67,7 +67,7 @@ fun SendBidForm(device: DeviceType, sendBid: (Bid)->Unit)  {
                 ) {
                     sendBid(
                         Bid(
-                            email.toLowerCasePreservingASCIIRules(),
+                            email.toLowerCasePreservingASCIIRules().trim(),
                             amount.toDecimal()
                         )
                     )

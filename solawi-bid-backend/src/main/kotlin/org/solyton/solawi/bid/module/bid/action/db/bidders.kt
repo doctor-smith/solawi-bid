@@ -183,11 +183,11 @@ val SearchBidderMails: KlAction<Result<SearchBidderData>, Result<BidderMails>> =
 
 fun Transaction.searchBidderMails(searchBidderData: SearchBidderData): List<String> {
     val operations = listOf<Op<Boolean>?>(
-        if(searchBidderData.firstname.isNotBlank()){ SearchBiddersTable.firstname eq searchBidderData.firstname } else {null},
-        if(searchBidderData.lastname.isNotBlank()){ SearchBiddersTable.lastname eq searchBidderData.lastname } else {null},
-        if(searchBidderData.email.isNotBlank()){ SearchBiddersTable.email eq searchBidderData.email } else {null},
-        if(searchBidderData.relatedEmails.isNotEmpty()) { SearchBiddersTable.relatedEmails columnContainsAny searchBidderData.relatedEmails} else {null},
-        if(searchBidderData.relatedNames.isNotEmpty()) { SearchBiddersTable.relatedNames columnContainsAny searchBidderData.relatedNames} else {null}
+        if(searchBidderData.firstname.isNotBlank()){ SearchBiddersTable.firstname.lowerCase() like "%${searchBidderData.firstname.lowercase() }%"} else {null},
+        if(searchBidderData.lastname.isNotBlank()){ SearchBiddersTable.lastname.lowerCase() like "%${ searchBidderData.lastname.lowercase() }%" } else {null},
+        if(searchBidderData.email.isNotBlank()){ SearchBiddersTable.email.lowerCase() like "%${ searchBidderData.email.lowercase() }%" } else {null},
+        if(searchBidderData.relatedEmails.isNotEmpty()) { SearchBiddersTable.relatedEmails columnContainsAny searchBidderData.relatedEmails } else {null},
+        if(searchBidderData.relatedNames.isNotEmpty()) { SearchBiddersTable.relatedNames columnContainsAny searchBidderData.relatedNames } else {null}
     )
     .filter{it != null}
     .reduceOrNull{
@@ -217,13 +217,13 @@ val AddBidders: KlAction<Result<AddBidders>, Result<Unit>> = KlAction{ bidders: 
     database: Database -> bidders bindSuspend  { data ->
         resultTransaction(database) {
             SearchBiddersTable.deleteAll()
-            data.bidders.forEach {
+            data.bidders.forEach { bidder ->
                 SearchBidderEntity.new {
-                    firstname = it.firstname
-                    lastname = it.lastname
-                    email = it.email
-                    relatedEmails = it.relatedEmails.joinToString(",") { it }
-                    relatedNames = it.relatedNames.joinToString(",") { it }
+                    firstname = bidder.firstname.trim()
+                    lastname = bidder.lastname.trim()
+                    email = bidder.email.trim().toLowerCasePreservingASCIIRules()
+                    relatedEmails = bidder.relatedEmails.joinToString(",") { it.trim() }
+                    relatedNames = bidder.relatedNames.joinToString(",") { it.trim() }
                 }
             }
         }
