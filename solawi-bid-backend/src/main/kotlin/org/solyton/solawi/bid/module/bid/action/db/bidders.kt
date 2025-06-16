@@ -221,7 +221,7 @@ val AddBidders: KlAction<Result<AddBidders>, Result<Unit>> = KlAction{ bidders: 
                 SearchBidderEntity.new {
                     firstname = bidder.firstname.trim()
                     lastname = bidder.lastname.trim()
-                    email = bidder.email.trim()
+                    email = bidder.email.trim().toLowerCasePreservingASCIIRules()
                     relatedEmails = bidder.relatedEmails.joinToString(",") { it.trim() }
                     relatedNames = bidder.relatedNames.joinToString(",") { it.trim() }
                 }
