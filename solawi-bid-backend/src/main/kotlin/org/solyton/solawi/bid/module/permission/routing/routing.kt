@@ -14,6 +14,7 @@ import org.solyton.solawi.bid.module.permission.action.db.GetRoleRightContexts
 import org.solyton.solawi.bid.module.permission.action.db.GetRoleRightContextsOfUsers
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
 import org.solyton.solawi.bid.module.permission.data.api.Context
+import org.solyton.solawi.bid.module.permission.data.api.Contexts
 import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContextsOfUser
 import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContextsOfUsers
 
@@ -28,7 +29,7 @@ fun Routing.permissions(environment: Environment, authenticate: Routing.(Route.(
                         context.data.userId != context.userId.toString()
                     } *
                     GetRoleRightContexts *
-                    Respond<List<Context>>() runOn Base(call, environment)
+                    Respond<Contexts>() runOn Base(call, environment)
                 }
             }
 

@@ -3,6 +3,11 @@ package org.solyton.solawi.bid.module.permission.data.api
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class Contexts(
+    val list: List<Context>
+)
+
+@Serializable
 data class Context(
     val id: String,
     val name: String,

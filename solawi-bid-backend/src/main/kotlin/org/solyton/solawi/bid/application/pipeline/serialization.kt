@@ -87,6 +87,7 @@ fun Application.installSerializers() {
     // Permissions
     serializers[ReadRightRoleContextsOfUser::class] = ReadRightRoleContextsOfUser.serializer()
     serializers[ReadRightRoleContextsOfUsers::class] = ReadRightRoleContextsOfUsers.serializer()
+    serializers[Contexts::class] = Contexts.serializer()
     serializers[Context::class] = Context.serializer()
     serializers[Role::class] = Role.serializer()
     serializers[Right::class] = Right.serializer()

@@ -5,6 +5,7 @@ import org.evoleq.ktorx.api.Api
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.Context
+import org.solyton.solawi.bid.module.permission.data.api.Contexts
 import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContextsOfUser
 import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContextsOfUsers
 import org.solyton.solawi.bid.module.user.data.api.*
@@ -30,11 +31,11 @@ val solawiApi by lazy {
         )
 
         // Permissions
-        patch<ReadRightRoleContextsOfUser, List<Context>>(
+        patch<ReadRightRoleContextsOfUser, Contexts>(
             key = ReadRightRoleContextsOfUser::class,
             url = "permissions/user/role-right-contexts"
         )
-        patch<ReadRightRoleContextsOfUsers, List<Context>>(
+        patch<ReadRightRoleContextsOfUsers, Map<String,List<Context>>>(
             key = ReadRightRoleContextsOfUsers::class,
             url = "permissions/users/role-right-contexts"
         )

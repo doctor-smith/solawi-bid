@@ -93,6 +93,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<ReadRightRoleContextsOfUser>(ReadRightRoleContextsOfUser.serializer())
         add<ReadRightRoleContextsOfUsers>(ReadRightRoleContextsOfUsers.serializer())
         add<Context>(Context.serializer())
+        add<Contexts>(Contexts.serializer())
         add<Role>(Role.serializer())
         add<Right>(Right.serializer())
     }

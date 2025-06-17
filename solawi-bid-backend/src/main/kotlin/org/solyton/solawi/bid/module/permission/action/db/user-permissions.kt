@@ -27,10 +27,10 @@ import java.util.UUID
 
 @MathDsl
 @Suppress("FunctionName")
-val GetRoleRightContexts: KlAction<Result<Contextual<ReadRightRoleContextsOfUser>>, Result<List<Context>>> = KlAction {
+val GetRoleRightContexts: KlAction<Result<Contextual<ReadRightRoleContextsOfUser>>, Result<Contexts>> = KlAction {
     result ->  DbAction { database -> result bindSuspend { data: Contextual<ReadRightRoleContextsOfUser> ->
         resultTransaction(database){
-            getRoleRightContexts(UUID.fromString(data.data.userId))
+            Contexts(getRoleRightContexts(UUID.fromString(data.data.userId)))
     } } x database }
 }
 @MathDsl
@@ -68,7 +68,7 @@ fun Transaction.getRoleRightContexts(userId: UUID): List<Context> {
     }.toList()
 
     val contexts =  ContextEntity
-        .find { ContextsTable.id inList contextIds }
+        .find { ContextsTable.id inList contextIds }.toList()
         .map { context -> Context(
             context.id.value.toString(),
             context.name,
