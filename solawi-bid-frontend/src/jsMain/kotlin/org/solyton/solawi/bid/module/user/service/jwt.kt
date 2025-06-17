@@ -23,7 +23,7 @@ fun decodeBase64Url(base64Url: String): String {
 fun getSubjectFromJwt(token: String): String? {
     val parts = token.split(".")
     require(parts.size == 3)
-    
+
     val payloadJson = decodeBase64Url(parts[1])
     val jsonElement = Json.parseToJsonElement(payloadJson)
     return jsonElement.jsonObject["sub"]?.jsonPrimitive?.content
