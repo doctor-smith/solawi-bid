@@ -75,28 +75,41 @@ inline fun <reified T : Any>  Receive(): Action<Result<T>> = ApiAction {
 @KtorDsl
 @Suppress("FunctionName")
 suspend inline fun <reified T : Any>  Receive(d: T): Action<Result<T>> = ApiAction {
-        call -> try{
-            Result.Return(d)
-    //Result.Success(Json.decodeFromString(Serializer<T>(), call.receive<String>()))
-} catch (e: Exception) {
-    Result.Failure.Exception(e)
-} x call
+    call -> try{
+        Result.Return(d)
+    } catch (e: Exception) {
+        Result.Failure.Exception(e)
+    } x call
 }
 
 @KtorDsl
 @Suppress("FunctionName")
-suspend inline fun <reified T : Any>  Respond(): KlAction<Result<T>, Unit> = {result -> ApiAction {
-        call-> when(result){
-            is Result.Success<T> ->  call.respond(
-                HttpStatusCode.OK,
-                Json.encodeToString( ResultSerializer(), result)
+suspend inline fun <reified T : Any>  Respond(): KlAction<Result<T>, Unit> = {result ->
+    ApiAction { call->
+        when(result){
+            is Result.Success<T> -> try{
+                call.respond(
+                    HttpStatusCode.OK,
+                    Json.encodeToString( ResultSerializer(), result)
+                )
+            } catch (exception: Exception) {
+                call.respond(
+                    HttpStatusCode.InternalServerError,
+                    exception.message?: "Serialization Error"
+                )
+            }
+
+            is Result.Failure.Message ->  call.respond(
+                HttpStatusCode.InternalServerError,
+                result
             )
-            is Result.Failure.Message ->  call.respond(HttpStatusCode.InternalServerError, result)
+
             is Result.Failure.Exception -> with(result.transform()){
                 call.respond(first, second)
             }
         } x call
-} }
+    }
+}
 
 @KtorDsl
 @Suppress("FunctionName")
