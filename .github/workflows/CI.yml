@@ -1,0 +1,84 @@
+name: Continuous Integration
+on:
+  push:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push-Frontend:
+    name: Build and Push Frontend Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker Frontend
+        id: meta-Frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend
+      - name: Build and push Docker image Frontend
+        id: push-Frontend
+        uses: docker/build-push-action@v6
+        with:
+          file: infrastructure/docker/Dockerfile-Frontend
+          push: true
+          tags: ${{ steps.meta-Frontend.outputs.tags }}
+          labels: ${{ steps.meta-Frontend.outputs.labels }}
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}/frontend
+          subject-digest: ${{ steps.push-Frontend.outputs.digest }}
+          push-to-registry: true
+
+  build-and-push-Backend:
+    name: Build and Push Backend Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker Backend
+        id: meta-Backend
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend
+      - name: Build and push Docker image Backend
+        id: push-Backend
+        uses: docker/build-push-action@v6
+        with:
+          file: infrastructure/docker/Dockerfile-Backend
+          push: true
+          tags: ${{ steps.meta-Backend.outputs.tags }}
+          labels: ${{ steps.meta-Backend.outputs.labels }}
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}/backend
+          subject-digest: ${{ steps.push-Backend.outputs.digest }}
+          push-to-registry: true
