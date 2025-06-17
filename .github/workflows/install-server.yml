@@ -9,7 +9,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Setup SSH
-        run: install -D -m 600 <(echo ${{ secrets.SERVER_KEY }}) ~/.ssh/server_key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SERVER_KEY }}" > server_key.pem
+          chmod 600 server_key.pem
       - name: Run Ansible playbook to install server
         env:
           ANSIBLE_HOST_KEY_CHECKING: "false"
@@ -18,5 +21,5 @@ jobs:
           ansible-playbook \
           -i ${{ vars.SERVER_ADDRESS }}, \
           -u ${{ vars.SERVER_USER }} \
-          --private-key ~/.ssh/server_key \
+          --private-key server_key.pem \
           ./infrastructure/ansible/install-server.yml
