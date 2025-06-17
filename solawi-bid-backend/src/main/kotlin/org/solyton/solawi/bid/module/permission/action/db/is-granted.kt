@@ -22,11 +22,11 @@ import java.util.UUID
 @MathDsl
 @Suppress("FunctionName")
 fun <T> IsGranted(right: String, accessCheckNeeded: (Contextual<T>)->Boolean = {true}): KlAction<Result<Contextual<T>>,Result<Contextual<T>>> = KlAction {
-    result -> DbAction { database -> result bindSuspend  { data ->
+    result -> DbAction { database -> result bindSuspend  { contextual ->
         resultTransaction(database) {
             when {
-                !accessCheckNeeded(data) -> data
-                isGranted(data.userId, UUID.fromString(data.context), right) -> data
+                !accessCheckNeeded(contextual) -> contextual
+                isGranted(contextual.userId, UUID.fromString(contextual.context), right) -> contextual
                 else -> throw PermissionException.AccessDenied
             }
         }
