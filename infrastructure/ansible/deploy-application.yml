@@ -1,0 +1,37 @@
+- name: Deploy Application to {{ environment }}
+  hosts: all
+  become: true
+  tasks:
+    - name: Ensure database initialization script for {{ environment }} exists
+      copy:
+        src: {{ playbook_dir }}/../database/setup.sql
+        dest: /var/solawi-bid/{{ environment }}/database/setup.sql
+        owner: root
+        group: root
+        mode: '0644'
+    - name: Ensure solawi-bid-{{ environment }} network exists
+      community.docker.docker_network:
+        name: solawi-bid-{{ environment }}
+    - name: Ensure solawi-bid-{{ environment }} database container is running
+      community.docker.docker_container:
+        name: solawi-bid_database_{{ environment }}
+        image: mysql:9
+        state: started
+        restart_policy: always
+        ports:
+          - "3306:3306"
+        volumes:
+          - /var/solawi-bid/{{ environment }}/database/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+          - /var/solawi-bid/{{ environment }}/database/backups:/backups
+        env:
+          MYSQL_DATABASE: solawi-bid
+          MYSQL_USER: solawi-bid
+          MYSQL_PASSWORD: {{ mysql_password }}
+          MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+        healthcheck:
+          test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+          interval: 30s
+          timeout: 5s
+          retries: 20
+        networks:
+          - name: solawi-bid-{{ environment }}

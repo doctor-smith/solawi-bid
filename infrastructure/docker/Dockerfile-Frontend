@@ -1,0 +1,23 @@
+FROM gradle:8-jdk17-noble AS build
+
+ARG ENVIRONMENT=DEV
+ARG FRONTEND_URL=http://localhost
+ARG FRONTEND_PORT=80
+ARG BACKEND_URL=http://localhost
+ARG BACKEND_PORT=8080
+
+WORKDIR /build
+COPY . /build
+
+RUN echo ENVIRONMENT=${ENVIRONMENT} >> solawi-bid-frontend/.env &&\
+    echo FRONTEND_URL=${FRONTEND_URL} >> solawi-bid-frontend/.env &&\
+    echo FRONTEND_PORT=${FRONTEND_PORT} >> solawi-bid-frontend/.env &&\
+    echo BACKEND_URL=${BACKEND_URL} >> solawi-bid-frontend/.env &&\
+    echo BACKEND_PORT=${BACKEND_PORT} >> solawi-bid-frontend/.env
+
+RUN gradle solawi-bid-frontend:build -x jsBrowserTest
+
+
+
+FROM httpd:2-alpine
+COPY --from=build /build/solawi-bid-frontend/build/dist/js/productionExecutable/ /usr/local/apache2/htdocs
