@@ -41,6 +41,7 @@ import org.solyton.solawi.bid.module.user.data.reader.properties
 import org.solyton.solawi.bid.module.user.data.reader.value
 import org.solyton.solawi.bid.module.user.data.username
 import org.solyton.solawi.bid.module.user.component.modal.showChangePasswordModal
+import org.solyton.solawi.bid.module.user.component.table.ContextRoleTableForUser
 
 @Markup
 @Composable
@@ -99,6 +100,9 @@ fun PrivateUserPage(storage: Storage<Application>) = Div {
             Vertical {
                 ReadOnlyProperty(Property((texts * personalData * properties * org.solyton.solawi.bid.module.user.data.reader.username * value).emit(), (userData * username).read()))
 
+            }
+            Vertical {
+                ContextRoleTableForUser(storage * userIso)
             }
         }
     }

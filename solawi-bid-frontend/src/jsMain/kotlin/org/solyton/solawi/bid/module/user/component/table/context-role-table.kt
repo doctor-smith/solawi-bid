@@ -18,7 +18,7 @@ import org.solyton.solawi.bid.module.user.data.user
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun ContextRoleTableForUser(application: Storage<Application>, ) = Table{
+fun ContextRoleTableForUser(application: Storage<Application>) = Table{
     Thead {
         Td{
             Text("Context")

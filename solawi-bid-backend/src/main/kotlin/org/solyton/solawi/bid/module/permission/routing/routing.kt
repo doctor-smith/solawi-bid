@@ -33,11 +33,11 @@ fun Routing.permissions(environment: Environment, authenticate: Routing.(Route.(
             }
 
             route("users") {
-                patch("right-role-contexts") {
+                patch("role-right-contexts") {
                     ReceiveContextual<ReadRightRoleContextsOfUsers>() *
-                        IsGranted(Right.readRightRoleContexts.value) *
-                        GetRoleRightContextsOfUsers *
-                        Respond<Map<String,List<Context>>>() runOn Base(call, environment)
+                    IsGranted(Right.readRightRoleContexts.value) *
+                    GetRoleRightContextsOfUsers *
+                    Respond<Map<String,List<Context>>>() runOn Base(call, environment)
                 }
             }
         }

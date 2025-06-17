@@ -27,6 +27,7 @@ import org.solyton.solawi.bid.application.ui.page.test.MobileTestPage
 import org.solyton.solawi.bid.application.ui.page.test.TestPage
 import org.solyton.solawi.bid.application.ui.page.user.PrivateUserPage
 import org.solyton.solawi.bid.application.ui.page.user.UserManagementPage
+import org.solyton.solawi.bid.application.ui.page.user.effect.LaunchReadUserPermissionsEffect
 import org.solyton.solawi.bid.module.navbar.component.NavBar
 
 @RoutingDsl
@@ -56,6 +57,7 @@ fun Routing(storage: Storage<Application>): Routes = Routing("/") {
         }
     }
     route("solyton") {
+
         wrap {
             access {
                 // todo:dev improve it

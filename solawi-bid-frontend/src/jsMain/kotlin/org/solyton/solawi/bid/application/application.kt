@@ -9,6 +9,7 @@ import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.env.set
 import org.solyton.solawi.bid.application.data.environment
 import org.solyton.solawi.bid.application.serialization.installSerializers
+import org.solyton.solawi.bid.application.service.seemsToBeLoggerIn
 import org.solyton.solawi.bid.application.storage.Storage
 import org.solyton.solawi.bid.application.storage.event.langLoaded
 import org.solyton.solawi.bid.application.storage.event.loadLanguage
@@ -16,6 +17,7 @@ import org.solyton.solawi.bid.application.ui.UI
 import org.solyton.solawi.bid.application.ui.effect.LaunchReadEnvironmentEffect
 import org.solyton.solawi.bid.application.ui.effect.LaunchSetDeviceData
 import org.solyton.solawi.bid.application.ui.page.login.effect.LaunchIsLoggedInEffect
+import org.solyton.solawi.bid.application.ui.page.user.effect.LaunchReadUserPermissionsEffect
 import org.solyton.solawi.bid.application.ui.style.GlobalStyles
 import org.solyton.solawi.bid.module.loading.component.Loading
 
@@ -36,7 +38,12 @@ fun Application() = renderComposable("root") {
             false -> LaunchReadEnvironmentEffect(this)
         }
         when( langLoaded() && environmentSet ) {
-            true -> UI(this)
+            true -> {
+                // if(this@Store .read().userData.seemsToBeLoggerIn()) LaunchReadUserPermissionsEffect(this@Store)
+
+
+                UI(this)
+            }
             false -> Loading()
         }
     }
