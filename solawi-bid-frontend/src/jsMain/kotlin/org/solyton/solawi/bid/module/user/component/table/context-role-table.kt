@@ -2,7 +2,12 @@ package org.solyton.solawi.bid.module.user.component.table
 
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
+import org.evoleq.language.Lang
+import org.evoleq.language.subComp
+import org.evoleq.language.title
+import org.evoleq.math.Source
 import org.evoleq.math.emit
+import org.evoleq.math.times
 import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Storage
@@ -18,23 +23,26 @@ import org.solyton.solawi.bid.module.user.data.user
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun ContextRoleTableForUser(application: Storage<Application>) = Table{
-    Thead {
-        Td{
-            Text("Context")
+fun ContextRoleTableForUser(application: Storage<Application>, texts: Source<Lang.Block>) {
+    val columns = texts * subComp("columns")
+    Table{
+        Thead {
+            Td{
+                Text((columns * subComp("context") * title).emit())
+            }
+            Td {
+                Text((columns * subComp("roles") * title).emit())
+            }
         }
-        Td {
-            Text("Roles")
-        }
-    }
-    Tbody {
-        (application * user * permissions * contexts.get).emit().forEach {
-            Tr {
-                Td{
-                    Text(it.contextName)
-                }
-                Td{
-                    Text(it.roles.joinToString(", ") { it.roleName })
+        Tbody {
+            (application * user * permissions * contexts.get).emit().forEach {
+                Tr {
+                    Td{
+                        Text(it.contextName)
+                    }
+                    Td{
+                        Text(it.roles.joinToString(", ") { it.roleName })
+                    }
                 }
             }
         }

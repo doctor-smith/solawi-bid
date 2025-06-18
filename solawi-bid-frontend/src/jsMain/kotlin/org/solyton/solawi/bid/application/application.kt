@@ -39,7 +39,7 @@ fun Application() = renderComposable("root") {
         }
         when( langLoaded() && environmentSet ) {
             true -> {
-                // if(this@Store .read().userData.seemsToBeLoggerIn()) LaunchReadUserPermissionsEffect(this@Store)
+                if(this@Store .read().userData.seemsToBeLoggerIn()) LaunchReadUserPermissionsEffect(this@Store)
 
 
                 UI(this)

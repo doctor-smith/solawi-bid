@@ -33,7 +33,7 @@ import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.componentLoaded
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
-import org.solyton.solawi.bid.module.permissions.service.isNotGranted
+import org.solyton.solawi.bid.module.user.data.reader.isNotGranted
 import org.solyton.solawi.bid.module.user.component.modal.showCreateUserModal
 import org.solyton.solawi.bid.module.user.data.*
 
@@ -78,7 +78,7 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
                     StdButton(
                         buttons * subComp("createUser") * title,
                         (storage * deviceData * mediaType.get),
-                        (storage * user.get ).emit().isNotGranted(Right.Application.Users.manage)
+                        (storage * isNotGranted(Right.Application.Users.manage, "")).emit()
                     ) {
                         (storage * modals).showCreateUserModal(
                             texts = dialogs * subComp("createUser"),
@@ -106,7 +106,8 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
                         StdButton(
                             registeredUsers * subComp("buttons") * subComp("edit") * title,
                             storage * deviceData * mediaType.get,
-                            true
+                            (storage * isNotGranted(Right.Application.Users.manage, "")).emit()
+                            //(storage * user.get ).emit().isNotGranted(Right.Application.Users.manage)
                         ){}
                         StdButton(
                             registeredUsers * subComp("buttons") * subComp("delete") * title,

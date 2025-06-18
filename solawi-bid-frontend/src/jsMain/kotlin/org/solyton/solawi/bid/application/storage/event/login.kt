@@ -20,7 +20,7 @@ fun Storage<Application>.onLogin(oldApplication: Application, newApplication: Ap
                 oldApplication.userData.accessToken == "" &&
                 oldApplication.userData.refreshToken == ""
             ) {
-                TriggerReadUserPermissions(this)
+                // TriggerReadUserPermissions(this)
                 navigate("/solyton/dashboard")
             }
         } else {
