@@ -8,6 +8,7 @@ import org.solyton.solawi.bid.module.permission.data.api.Context
 import org.solyton.solawi.bid.module.permission.data.api.Contexts
 import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContextsOfUser
 import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContextsOfUsers
+import org.solyton.solawi.bid.module.permission.data.api.UserToContextsMap
 import org.solyton.solawi.bid.module.user.data.api.*
 
 val solawiApi by lazy {
@@ -35,7 +36,7 @@ val solawiApi by lazy {
             key = ReadRightRoleContextsOfUser::class,
             url = "permissions/user/role-right-contexts"
         )
-        patch<ReadRightRoleContextsOfUsers, Map<String,List<Context>>>(
+        patch<ReadRightRoleContextsOfUsers, UserToContextsMap>(
             key = ReadRightRoleContextsOfUsers::class,
             url = "permissions/users/role-right-contexts"
         )

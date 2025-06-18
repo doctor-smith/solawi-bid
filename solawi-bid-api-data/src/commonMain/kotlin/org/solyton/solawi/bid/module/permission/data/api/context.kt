@@ -7,6 +7,15 @@ data class Contexts(
     val list: List<Context>
 )
 
+/**
+ * Maps uuids to a list of contexts
+ * uuids are given as [String]s
+ */
+@Serializable
+data class UserToContextsMap(
+    val map: Map<String, List<Context>>
+)
+
 @Serializable
 data class Context(
     val id: String,

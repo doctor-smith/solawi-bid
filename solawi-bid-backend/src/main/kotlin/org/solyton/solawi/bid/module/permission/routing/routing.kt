@@ -13,10 +13,10 @@ import org.solyton.solawi.bid.application.permission.Right
 import org.solyton.solawi.bid.module.permission.action.db.GetRoleRightContexts
 import org.solyton.solawi.bid.module.permission.action.db.GetRoleRightContextsOfUsers
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
-import org.solyton.solawi.bid.module.permission.data.api.Context
 import org.solyton.solawi.bid.module.permission.data.api.Contexts
 import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContextsOfUser
 import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContextsOfUsers
+import org.solyton.solawi.bid.module.permission.data.api.UserToContextsMap
 
 @KtorDsl
 fun Routing.permissions(environment: Environment, authenticate: Routing.(Route.() -> Route)-> Route) {
@@ -38,7 +38,7 @@ fun Routing.permissions(environment: Environment, authenticate: Routing.(Route.(
                     ReceiveContextual<ReadRightRoleContextsOfUsers>() *
                     IsGranted(Right.readRightRoleContexts.value) *
                     GetRoleRightContextsOfUsers *
-                    Respond<Map<String,List<Context>>>() runOn Base(call, environment)
+                    Respond<UserToContextsMap>() runOn Base(call, environment)
                 }
             }
         }

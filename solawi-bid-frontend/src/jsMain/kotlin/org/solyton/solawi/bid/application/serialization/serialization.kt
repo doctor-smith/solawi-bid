@@ -96,5 +96,6 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<Contexts>(Contexts.serializer())
         add<Role>(Role.serializer())
         add<Right>(Right.serializer())
+        add<UserToContextsMap>(UserToContextsMap.serializer())
     }
 } }

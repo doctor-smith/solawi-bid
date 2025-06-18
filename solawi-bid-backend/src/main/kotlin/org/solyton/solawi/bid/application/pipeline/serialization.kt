@@ -91,4 +91,5 @@ fun Application.installSerializers() {
     serializers[Context::class] = Context.serializer()
     serializers[Role::class] = Role.serializer()
     serializers[Right::class] = Right.serializer()
+    serializers[UserToContextsMap::class] = UserToContextsMap.serializer()
 }

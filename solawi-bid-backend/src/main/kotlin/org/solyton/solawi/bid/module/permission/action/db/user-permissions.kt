@@ -35,13 +35,18 @@ val GetRoleRightContexts: KlAction<Result<Contextual<ReadRightRoleContextsOfUser
 }
 @MathDsl
 @Suppress("FunctionName")
-val GetRoleRightContextsOfUsers: KlAction<Result<Contextual<ReadRightRoleContextsOfUsers>>, Result<Map<String,List<Context>>>> = KlAction {
+val GetRoleRightContextsOfUsers: KlAction<Result<Contextual<ReadRightRoleContextsOfUsers>>, Result<UserToContextsMap>> = KlAction {
     result ->  DbAction { database -> result bindSuspend { data: Contextual<ReadRightRoleContextsOfUsers> ->
         resultTransaction(database){
-            getRoleRightContexts(data.data.userIds.map { UUID.fromString(it) }).mapKeys { it.value.toString() }
+            UserToContextsMap(getRoleRightContexts(data.data.userIds.map { UUID.fromString(it) }).mapKeys { it.value.toString() })
     } } x database }
 }
 
+/**
+ * Returns a complete list of cumulated right-role-contexts [Context] of a user
+ * Note:
+ * - structure is flat: no parent-child structure of contexts is established
+ */
 fun Transaction.getRoleRightContexts(userId: UUID): List<Context> {
     val userRoleContexts = UserRoleContext.selectAll().where {
         UserRoleContext.userId eq userId
@@ -99,6 +104,11 @@ fun Transaction.getRoleRightContexts(userId: UUID): List<Context> {
     return contexts
 }
 
+/**
+ * Returns a complete map of cumulated user-right-role-contexts [Context]
+ * Note:
+ * - structure is flat: no parent-child structure of contexts is established
+ */
 fun Transaction.getRoleRightContexts(userIds: List<UUID>): Map<UUID, List<Context>> {
     val userRoleContexts = UserRoleContext.selectAll().where {
         UserRoleContext.userId inList  userIds
