@@ -7,7 +7,7 @@ RUN gradle solawi-bid-backend:buildFatJar
 
 
 
-FROM eclipse-temurin:17-alpine
+FROM eclipse-temurin:17
 
 WORKDIR /app
 COPY --from=build /build/solawi-bid-backend/build/resources/main/application.env.conf /app/application.conf

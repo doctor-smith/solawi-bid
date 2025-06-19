@@ -2,10 +2,6 @@ services:
 
   solawi-bid_frontend:
     image: ghcr.io/joystick01/solawi-bid/frontend:latest
-    build:
-      context: .
-      dockerfile: infrastructure/docker/Dockerfile-Frontend
-    pull_policy: build
     ports:
       - "80:80"
     healthcheck:
@@ -17,10 +13,6 @@ services:
 
   solawi-bid_backend:
     image: ghcr.io/joystick01/solawi-bid/backend:latest
-    build:
-      context: .
-      dockerfile: infrastructure/docker/Dockerfile-Backend
-    pull_policy: build
     ports:
       - "8080:8080"
     environment:
@@ -60,7 +52,7 @@ services:
       - MYSQL_ALLOW_EMPTY_PASSWORD=true
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent" ]
-      interval: 5s
+      interval: 2s
       timeout: 3s
-      retries: 2
-      start_period: 0s
+      retries: 3
+      start_period: 2m
