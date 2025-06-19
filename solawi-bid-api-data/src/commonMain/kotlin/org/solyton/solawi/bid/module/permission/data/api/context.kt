@@ -2,6 +2,11 @@ package org.solyton.solawi.bid.module.permission.data.api
 
 import kotlinx.serialization.Serializable
 
+typealias ApiContext = Context
+typealias ApiContexts = Contexts
+typealias ApiRole = Role
+typealias ApiRight = Right
+
 @Serializable
 data class Contexts(
     val list: List<Context>
@@ -38,6 +43,12 @@ data class Right(
     val description: String
 )
 
+
+@Serializable
+data class ReadRightRoleContexts(
+    val contextIds: List<String>
+)
+
 @Serializable
 data class ReadRightRoleContextsOfUser(
     // string representation of a UUID
@@ -50,8 +61,26 @@ data class ReadRightRoleContextsOfUsers(
     val userIds: List<String>
 )
 
+
 @Serializable
 data class ReadRolesAndRightsOfUsers(
     val userIds: List<String>
 )
 
+@Serializable
+data class ReadParentChildRelationsOfContexts(
+    val contextIds: List<String>
+)
+
+@Serializable
+data class ParentChildRelationsOfContexts(
+    val list: List<ParentChildRelationsOfContext>
+)
+
+@Serializable
+data class ParentChildRelationsOfContext(
+    val contextId: String,
+    val name: String,
+    val rootId: String?,
+    val children: List<String>
+)

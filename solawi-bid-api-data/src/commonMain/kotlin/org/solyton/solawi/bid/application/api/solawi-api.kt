@@ -6,6 +6,9 @@ import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.Context
 import org.solyton.solawi.bid.module.permission.data.api.Contexts
+import org.solyton.solawi.bid.module.permission.data.api.ParentChildRelationsOfContext
+import org.solyton.solawi.bid.module.permission.data.api.ReadParentChildRelationsOfContexts
+import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContexts
 import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContextsOfUser
 import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContextsOfUsers
 import org.solyton.solawi.bid.module.permission.data.api.UserToContextsMap
@@ -39,6 +42,14 @@ val solawiApi by lazy {
         patch<ReadRightRoleContextsOfUsers, UserToContextsMap>(
             key = ReadRightRoleContextsOfUsers::class,
             url = "permissions/users/role-right-contexts"
+        )
+        patch<ReadParentChildRelationsOfContexts, ParentChildRelationsOfContext>(
+            key = ReadParentChildRelationsOfContexts::class,
+            url = "permissions/contexts/parent-child-relations"
+        )
+        patch<ReadRightRoleContexts, Contexts>(
+            key = ReadRightRoleContexts::class,
+            url = "permissions/contexts/roles-and-rights"
         )
         // Auction
         post<CreateAuction, Auction>(

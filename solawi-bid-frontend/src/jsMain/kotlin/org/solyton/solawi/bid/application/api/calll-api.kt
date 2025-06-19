@@ -1,5 +1,9 @@
 package org.solyton.solawi.bid.application.api
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import org.evoleq.compose.modal.ModalData
 import org.evoleq.compose.modal.ModalType
 import org.evoleq.compose.style.data.device.DeviceType
@@ -24,8 +28,16 @@ import org.solyton.solawi.bid.application.data.env.backendUrl
 import org.solyton.solawi.bid.application.data.failure.Failure
 import org.solyton.solawi.bid.application.data.failure.accept
 import org.solyton.solawi.bid.application.service.seemsToBeLoggerIn
+import org.solyton.solawi.bid.application.ui.page.user.action.readParentChildRelationsOfContextsAction
+import org.solyton.solawi.bid.application.ui.page.user.action.readRightRoleContextsAction
+import org.solyton.solawi.bid.application.ui.page.user.action.readUserPermissionsAction
+import org.solyton.solawi.bid.module.context.data.current
 import org.solyton.solawi.bid.module.error.component.ErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
+import org.solyton.solawi.bid.module.permission.data.api.Contexts
+import org.solyton.solawi.bid.module.permission.data.api.ParentChildRelationsOfContext
+import org.solyton.solawi.bid.module.permission.data.api.ParentChildRelationsOfContexts
+import org.solyton.solawi.bid.module.permission.data.api.ReadParentChildRelationsOfContexts
 
 
 @MathDsl
@@ -33,7 +45,8 @@ import org.solyton.solawi.bid.module.error.lang.errorModalTexts
 suspend inline fun <S: Any, T: Any> CallApi(action: Action<Application, S, T>) =
     Read<S>(action.reader) *
     Call<S, T>(action)  *
-    Dispatch<T>(action.writer)
+    Dispatch<T>(action.writer) *
+    React<S, T>(action)
 
 
 
@@ -47,6 +60,7 @@ fun <T> Read(reader: Reader<Application, T>): State<Storage<Application>, T> = S
 @Suppress("FunctionName")
 fun <S : Any,T : Any> Call(action: Action<Application, S, T>): KlState<Storage<Application>, S, Result<T>> = {
     s -> State{ storage ->
+        console.log("Calling Action: ${action.name}")
         val application = storage.read()
         val call = (storage * api ).read()[action.endPoint]!!
         val baseUrl = (storage * environment * backendUrl).read()
@@ -79,6 +93,37 @@ fun <T: Any> Dispatch(writer: Writer<Application, T>): KlState<Storage<Applicati
         when(result) {
             is Result.Success -> Result.Return((storage * writer).dispatch()).apply() on result
             is Result.Failure -> Result.Return((storage.failureWriter()).dispatch()).apply() on result.accept()
+        }
+        result x storage
+    }
+}
+
+@MathDsl
+@Suppress("FunctionName")
+fun <S: Any, T: Any> React(action: Action<Application, S, T>): KlState<Storage<Application>, Result<T>, Result<T>> = {
+    result -> State { storage ->
+        if(result is Result.Success) with((storage * actions).read()) react@{
+            when(action.name) {
+                // POC for the current usecase (SMA-230)
+                // 1. Read right role contexts of a user
+                // 2. Read parent-child-relations
+                // 3. Read right role contexts of all returned contexts
+                "ReadUserPermissions" -> CoroutineScope(Job()).launch{
+                    val contextId = (result.data as Contexts).list.first { it.name == "APPLICATION" }.id
+                    (storage * context * current).write(contextId)
+                    console.log("Emitting readParentChildRelationsOfContextsAction")
+                    emit(readParentChildRelationsOfContextsAction("React"))
+                }
+                "ReadParentChildRelationsOfContextsReact" -> CoroutineScope(Job()).launch{
+                    console.log("Emitting readParentChildRelationsOfContextsAction")
+                    emit(readRightRoleContextsAction(
+                        "React",
+                        result.data as ParentChildRelationsOfContexts
+                    ))
+                }
+                else -> Unit
+                // One could also use this mechanism to establish pagination
+            }
         }
         result x storage
     }

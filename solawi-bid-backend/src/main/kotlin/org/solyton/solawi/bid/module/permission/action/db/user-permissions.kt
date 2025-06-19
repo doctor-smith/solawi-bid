@@ -1,5 +1,6 @@
 package org.solyton.solawi.bid.module.permission.action.db
 
+import io.ktor.client.plugins.convertLongTimeoutToIntWithInfiniteAsZero
 import org.evoleq.exposedx.transaction.resultTransaction
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
@@ -23,7 +24,19 @@ import org.solyton.solawi.bid.module.permission.data.api.Right
 import org.solyton.solawi.bid.module.permission.data.api.Role
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
+import org.solyton.solawi.bid.module.permission.schema.repository.descendants
+import org.solyton.solawi.bid.module.permission.schema.repository.getChildren
 import java.util.UUID
+
+@MathDsl
+@Suppress("FunctionName")
+val ReadAvailableRightRoleContexts: KlAction<Result<Contextual<ReadRightRoleContexts>>, Result<Contexts>> = KlAction {
+    result ->  DbAction { database -> result bindSuspend { data: Contextual<ReadRightRoleContexts> ->
+        resultTransaction(database){
+            Contexts(getRightRoleContexts(data.data.contextIds.map {  UUID.fromString(it) }))
+        }
+    } x database }
+}
 
 @MathDsl
 @Suppress("FunctionName")
@@ -41,6 +54,46 @@ val GetRoleRightContextsOfUsers: KlAction<Result<Contextual<ReadRightRoleContext
             UserToContextsMap(getRoleRightContexts(data.data.userIds.map { UUID.fromString(it) }).mapKeys { it.value.toString() })
     } } x database }
 }
+
+@MathDsl
+@Suppress("FunctionName", "UnsafeCallOnNullableType")
+val ReadParentChildRelationsOfContexts: KlAction<Result<Contextual<ReadParentChildRelationsOfContexts>>, Result<ParentChildRelationsOfContexts>> =
+    KlAction { result ->
+        DbAction { database ->
+            result bindSuspend {contextual: Contextual<ReadParentChildRelationsOfContexts> ->
+                resultTransaction(database) {
+                    val contextUuids = contextual.data.contextIds.map{ UUID.fromString(it) }
+                    val contextEntities = ContextEntity.find {
+                        ContextsTable.id inList contextUuids
+                    }.toList()
+                    val roots = contextEntities.filter { it.root == null }
+                    val otherRoots = contextEntities.filter { it.root != null }.map { it.root!! }
+                    val contextRoots = listOf(
+                        *roots.toTypedArray(),
+                        *otherRoots.toTypedArray()
+                    ).distinctBy { root -> root.id }
+
+                    val allContexts: List<ContextEntity> = listOf(
+                        *contextRoots.toTypedArray(),
+                        *contextRoots.map {
+                            root -> root.descendants()
+                        }.flatten().toTypedArray(),
+                    ).distinctBy{context -> context.id}
+
+                    ParentChildRelationsOfContexts(
+                        list = allContexts.map { contextEntity ->
+                            ParentChildRelationsOfContext(
+                                contextId = contextEntity.id.value.toString(),
+                                name = contextEntity.name,
+                                rootId = contextEntity.root?.id?.value?.toString(),
+                                children = contextEntity.getChildren().map { child -> child.id.value.toString() }
+                            )
+                        }
+                    )
+                }
+            } x database
+        }
+    }
 
 /**
  * Returns a complete list of cumulated right-role-contexts [Context] of a user
@@ -279,3 +332,29 @@ fun Transaction.getUserRolesAndRights(contextId: UUID): Map<String, List<Role>> 
     return userRolesMap
 }
 
+/**
+ * Give a list of context ids return the associated contexts together with roles and rights
+ */
+fun Transaction.getRightRoleContexts(contextsIds: List<UUID>): List<Context> {
+    val contexts = ContextEntity.find { ContextsTable.id inList contextsIds }.map { contextEntity ->
+        Context(
+            id = contextEntity.id.value.toString(),
+            name = contextEntity.name,
+            roles = contextEntity.roles.map { role ->
+                Role(
+                    id = role.id.value.toString(),
+                    name = role.name,
+                    description = role.description,
+                    rights = role.rights.map{right ->
+                        Right(
+                            id = right.id.value.toString(),
+                            name = right.name,
+                            description = right.description
+                        )
+                    }
+                )
+            }
+        )
+    }
+    return contexts
+}
