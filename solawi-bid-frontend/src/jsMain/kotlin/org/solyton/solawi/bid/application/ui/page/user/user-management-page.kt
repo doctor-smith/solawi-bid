@@ -19,6 +19,8 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
+import org.solyton.solawi.bid.application.data.context
+import org.solyton.solawi.bid.application.data.context as readContext
 //import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.data.device.mediaType
 import org.solyton.solawi.bid.application.permission.Right
@@ -29,6 +31,7 @@ import org.solyton.solawi.bid.application.ui.page.user.effect.trigger
 import org.solyton.solawi.bid.application.ui.page.user.i18n.UserLangComponent
 import org.solyton.solawi.bid.application.ui.style.page.verticalPageStyle
 import org.solyton.solawi.bid.application.ui.style.wrap.Wrap
+import org.solyton.solawi.bid.module.context.data.current
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.componentLoaded
 import org.solyton.solawi.bid.module.i18n.data.language
@@ -40,11 +43,10 @@ import org.solyton.solawi.bid.module.user.data.*
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun UserManagementPage(storage: Storage<Application>) = Div {
+fun UserManagementPage(storage: Storage<Application>, applicationContextId: String) = Div {
 
     // Data
     val environment = storage * environment
-
     // Data / I18N
     val texts = storage * i18n * language * component(UserLangComponent.UserManagementPage)
     val buttons = texts * subComp("buttons")
@@ -78,7 +80,8 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
                     StdButton(
                         buttons * subComp("createUser") * title,
                         (storage * deviceData * mediaType.get),
-                        (storage * isNotGranted(Right.Application.Users.manage, "")).emit()
+                        // (storage * context * current).read()
+                        (storage * isNotGranted(Right.Application.Users.manage, applicationContextId)).emit()
                     ) {
                         (storage * modals).showCreateUserModal(
                             texts = dialogs * subComp("createUser"),
@@ -106,7 +109,7 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
                         StdButton(
                             registeredUsers * subComp("buttons") * subComp("edit") * title,
                             storage * deviceData * mediaType.get,
-                            (storage * isNotGranted(Right.Application.Users.manage, "")).emit()
+                            (storage * isNotGranted(Right.Application.Users.manage, applicationContextId)).emit()
                             //(storage * user.get ).emit().isNotGranted(Right.Application.Users.manage)
                         ){}
                         StdButton(

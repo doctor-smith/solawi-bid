@@ -6,6 +6,7 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.application.data.context
 import org.solyton.solawi.bid.application.data.device.mediaType
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.env.type
@@ -28,6 +29,7 @@ import org.solyton.solawi.bid.application.ui.page.test.TestPage
 import org.solyton.solawi.bid.application.ui.page.user.PrivateUserPage
 import org.solyton.solawi.bid.application.ui.page.user.UserManagementPage
 import org.solyton.solawi.bid.application.ui.page.user.effect.LaunchReadUserPermissionsEffect
+import org.solyton.solawi.bid.module.context.data.current
 import org.solyton.solawi.bid.module.navbar.component.NavBar
 
 @RoutingDsl
@@ -91,7 +93,11 @@ fun Routing(storage: Storage<Application>): Routes = Routing("/") {
             }
             route("management") {
                 component{
-                    UserManagementPage(storage * userIso)
+                    UserManagementPage(
+                        storage * userIso,
+                        // todo:dev improve context management
+                        (storage * context * current).read()
+                    )
                 }
             }
 
