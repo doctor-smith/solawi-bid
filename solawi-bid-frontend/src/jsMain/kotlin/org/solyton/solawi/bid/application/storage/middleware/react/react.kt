@@ -19,6 +19,7 @@ import org.solyton.solawi.bid.application.ui.page.user.action.readRightRoleConte
 import org.solyton.solawi.bid.module.context.data.current
 import org.solyton.solawi.bid.module.permission.data.api.Contexts
 import org.solyton.solawi.bid.module.permission.data.api.ParentChildRelationsOfContexts
+import org.solyton.solawi.bid.module.user.data.availablePermissions
 
 
 @MathDsl
@@ -38,12 +39,18 @@ fun <S: Any, T: Any> React(action: Action<Application, S, T>): KlState<Storage<A
                 emit(readParentChildRelationsOfContextsAction("React"))
             }
             "ReadParentChildRelationsOfContextsReact" -> CoroutineScope(Job()).launch{
-                console.log("Emitting readParentChildRelationsOfContextsAction")
+                console.log("Emitting readRightRoleContextsAction")
                 emit(readRightRoleContextsAction(
                     "React",
                     result.data as ParentChildRelationsOfContexts
                 ))
             }
+            /*
+            "ReadRightRoleContextsReact" -> console.log("root contexts:",
+                storage.read().availablePermissions.contexts.map { it.contextName }
+            )
+
+             */
             else -> Unit
             // One could also use this mechanism to establish pagination
         }

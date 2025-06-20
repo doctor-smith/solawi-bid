@@ -94,9 +94,7 @@ fun Routing(storage: Storage<Application>): Routes = Routing("/") {
             route("management") {
                 component{
                     UserManagementPage(
-                        storage * userIso,
-                        // todo:dev improve context management
-                        (storage * context * current).read()
+                        storage * userIso
                     )
                 }
             }

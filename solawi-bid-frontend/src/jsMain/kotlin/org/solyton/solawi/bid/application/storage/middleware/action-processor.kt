@@ -13,6 +13,6 @@ import org.solyton.solawi.bid.application.storage.middleware.react.React
 @Suppress("FunctionName")
 suspend inline fun <S: Any, T: Any> ProcessAction(action: Action<Application, S, T>) =
     Read<S>(action.reader) *
-            Call<S, T>(action) *
-            Dispatch<T>(action.writer) *
+    Call<S, T>(action) *
+    Dispatch<T>(action.writer) *
     React(action)

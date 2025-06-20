@@ -12,6 +12,7 @@ import org.evoleq.language.component
 import org.evoleq.language.subComp
 import org.evoleq.language.title
 import org.evoleq.math.Reader
+import org.evoleq.math.assureValue
 import org.evoleq.math.emit
 import org.evoleq.math.on
 import org.evoleq.math.times
@@ -31,10 +32,11 @@ import org.solyton.solawi.bid.application.ui.page.user.effect.trigger
 import org.solyton.solawi.bid.application.ui.page.user.i18n.UserLangComponent
 import org.solyton.solawi.bid.application.ui.style.page.verticalPageStyle
 import org.solyton.solawi.bid.application.ui.style.wrap.Wrap
-import org.solyton.solawi.bid.module.context.data.current
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.componentLoaded
 import org.solyton.solawi.bid.module.i18n.data.language
+import org.solyton.solawi.bid.module.permissions.data.contextId
+import org.solyton.solawi.bid.module.permissions.service.contextFromPath
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
 import org.solyton.solawi.bid.module.user.data.reader.isNotGranted
 import org.solyton.solawi.bid.module.user.component.modal.showCreateUserModal
@@ -43,15 +45,17 @@ import org.solyton.solawi.bid.module.user.data.*
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun UserManagementPage(storage: Storage<Application>, applicationContextId: String) = Div {
+fun UserManagementPage(storage: Storage<Application>) = Div {
 
     // Data
     val environment = storage * environment
+    val applicationContext = storage * availablePermissions * contextFromPath("APPLICATION") * assureValue() * contextId.get
     // Data / I18N
     val texts = storage * i18n * language * component(UserLangComponent.UserManagementPage)
     val buttons = texts * subComp("buttons")
     val dialogs = texts * subComp("dialogs")
     val registeredUsers = texts * subComp("registeredUsers")
+
 
     // Effect
     LaunchComponentLookup(
@@ -81,7 +85,7 @@ fun UserManagementPage(storage: Storage<Application>, applicationContextId: Stri
                         buttons * subComp("createUser") * title,
                         (storage * deviceData * mediaType.get),
                         // (storage * context * current).read()
-                        (storage * isNotGranted(Right.Application.Users.manage, applicationContextId)).emit()
+                        (storage * isNotGranted(Right.Application.Users.manage, applicationContext.emit())).emit()
                     ) {
                         (storage * modals).showCreateUserModal(
                             texts = dialogs * subComp("createUser"),
@@ -109,7 +113,7 @@ fun UserManagementPage(storage: Storage<Application>, applicationContextId: Stri
                         StdButton(
                             registeredUsers * subComp("buttons") * subComp("edit") * title,
                             storage * deviceData * mediaType.get,
-                            (storage * isNotGranted(Right.Application.Users.manage, applicationContextId)).emit()
+                            (storage * isNotGranted(Right.Application.Users.manage, applicationContext.emit())).emit()
                             //(storage * user.get ).emit().isNotGranted(Right.Application.Users.manage)
                         ){}
                         StdButton(
