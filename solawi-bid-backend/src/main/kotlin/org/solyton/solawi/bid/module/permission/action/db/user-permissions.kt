@@ -336,17 +336,20 @@ fun Transaction.getUserRolesAndRights(contextId: UUID): Map<String, List<Role>> 
  * Give a list of context ids return the associated contexts together with roles and rights
  */
 fun Transaction.getRightRoleContexts(contextsIds: List<UUID>): List<Context> {
-    val contexts = ContextEntity.find { ContextsTable.id inList contextsIds }.map { contextEntity ->
-        Context(
+    val contexts = ContextEntity
+        .find { ContextsTable.id inList contextsIds }
+        .map { contextEntity -> Context(
             id = contextEntity.id.value.toString(),
             name = contextEntity.name,
-            roles = contextEntity.roles.map { role ->
-                Role(
+            roles = contextEntity.roles
+                .distinctBy { role -> role.id.value }
+                .map { role -> Role(
                     id = role.id.value.toString(),
                     name = role.name,
                     description = role.description,
-                    rights = role.rights.map{right ->
-                        Right(
+                    rights = role.rights
+                        .distinctBy { right -> right.id.value }
+                        .map{right -> Right(
                             id = right.id.value.toString(),
                             name = right.name,
                             description = right.description

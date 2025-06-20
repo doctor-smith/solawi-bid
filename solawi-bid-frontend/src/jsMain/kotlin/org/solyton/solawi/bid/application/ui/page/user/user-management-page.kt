@@ -20,8 +20,6 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
-import org.solyton.solawi.bid.application.data.context
-import org.solyton.solawi.bid.application.data.context as readContext
 //import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.data.device.mediaType
 import org.solyton.solawi.bid.application.permission.Right
@@ -49,7 +47,7 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
 
     // Data
     val environment = storage * environment
-    val applicationContext = storage * availablePermissions * contextFromPath("APPLICATION") * assureValue() * contextId.get
+    val applicationContextId = storage * availablePermissions * contextFromPath("APPLICATION") * assureValue() * contextId.get
     // Data / I18N
     val texts = storage * i18n * language * component(UserLangComponent.UserManagementPage)
     val buttons = texts * subComp("buttons")
@@ -85,7 +83,7 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
                         buttons * subComp("createUser") * title,
                         (storage * deviceData * mediaType.get),
                         // (storage * context * current).read()
-                        (storage * isNotGranted(Right.Application.Users.manage, applicationContext.emit())).emit()
+                        (storage * isNotGranted(Right.Application.Users.manage, applicationContextId)).emit()
                     ) {
                         (storage * modals).showCreateUserModal(
                             texts = dialogs * subComp("createUser"),
@@ -113,8 +111,7 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
                         StdButton(
                             registeredUsers * subComp("buttons") * subComp("edit") * title,
                             storage * deviceData * mediaType.get,
-                            (storage * isNotGranted(Right.Application.Users.manage, applicationContext.emit())).emit()
-                            //(storage * user.get ).emit().isNotGranted(Right.Application.Users.manage)
+                            (storage * isNotGranted(Right.Application.Users.manage, applicationContextId)).emit()
                         ){}
                         StdButton(
                             registeredUsers * subComp("buttons") * subComp("delete") * title,
