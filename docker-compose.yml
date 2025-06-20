@@ -1,51 +1,11 @@
 services:
 
   solawi-bid_frontend:
-    image: ghcr.io/joystick01/solawi-bid/frontend:latest
-    build:
-      context: .
-      dockerfile: infrastructure/docker/Dockerfile-Frontend
-    pull_policy: build
+    image: httpd:2-alpine
     ports:
       - "80:80"
-    healthcheck:
-      test: "wget --no-verbose --tries=1 --spider http://localhost:80 || exit 1"
-      interval: 2s
-      timeout: 3s
-      retries: 3
-      start_period: 2m
-
-  solawi-bid_backend:
-    image: ghcr.io/joystick01/solawi-bid/backend:latest
-    build:
-      context: .
-      dockerfile: infrastructure/docker/Dockerfile-Backend
-    pull_policy: build
-    ports:
-      - "8080:8080"
-    environment:
-      - KTOR_ENV=dev
-      - BACKEND_PORT=8080
-      - JWT_DOMAIN=solawi-bid_backend
-      - JWT_AUDIENCE=solawi-bid_backend
-      - JWT_REALM=solawi-bid_backend
-      - JWT_SECRET=super-test-secret-for-solawi-bid
-      - DATABASE_URL=jdbc:mysql://solawi-bid_database:3306/solawi-bid
-      - DATABASE_DRIVER=com.mysql.jdbc.Driver
-      - DATABASE_USER=solawi-bid
-      - DATABASE_PASSWORD=secure
-      - APPLICATION_OWNER_USERNAME=schmidt@alpha-structure.com
-      - APPLICATION_OWNER_PASSWORD=\$2a\$10\$5EENEnXKE4oNT0AejWzy8Oa09DkBDiQTnk2LyqtqpBa3DrZijo51O
-    container_name: solawi-bid_backend
-    depends_on:
-      solawi-bid_database:
-        condition: service_healthy
-    healthcheck:
-      test: "curl 'http://localhost:8080/login' -f -X OPTIONS -H 'Access-Control-Request-Method: POST' -H 'Origin: http://localhost'"
-      interval: 2s
-      timeout: 3s
-      retries: 3
-      start_period: 2m
+    volumes:
+      - ./solawi-bid-frontend/build/dist/js/productionExecutable/:/usr/local/apache2/htdocs/
 
   solawi-bid_database:
     image: mysql:9
