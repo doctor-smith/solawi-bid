@@ -171,7 +171,7 @@ de{
                                 title: "Bearbeiten"
                             }
                             delete {
-                                title: "Loschen"
+                                title: "Löschen"
                             }
                         }
                     }
