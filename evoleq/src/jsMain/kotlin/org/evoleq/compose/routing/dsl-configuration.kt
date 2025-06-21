@@ -8,6 +8,7 @@ import org.evoleq.configuration.Configuration
 // @DslMarker annotation class RoutingDsl
 typealias RoutingDsl = Markup
 
+/*
 class RouteConfiguration : Configuration<Route> {
 
     private val segments : ArrayList<RouteSegment> = arrayListOf()
@@ -18,6 +19,8 @@ class RouteConfiguration : Configuration<Route> {
         queryParameters
     )
 }
+
+ */
 
 class RoutesConfiguration : Configuration<Routes> {
 
@@ -31,11 +34,9 @@ class RoutesConfiguration : Configuration<Routes> {
 
     override fun configure(): Routes = Routes(
         segment,
-        routes,
+        routes.merge(),
         component
     )
-
-    private fun extract(name: String): String = name.dropWhile { it == '/' }.dropLastWhile { it == '/' }
 
     @RoutingDsl
     fun route(path: String, routesConfiguration: RoutesConfiguration.()->Unit) {
@@ -55,13 +56,6 @@ class RoutesConfiguration : Configuration<Routes> {
             if (newSegment is RouteSegment.Static) {
                 routes.add(0, newRoutes)
             }
-        }
-    }
-
-    @RoutingDsl
-    fun nonProdRoute(path: String, env: String, routesConfiguration: RoutesConfiguration.()->Unit) {
-        if(env.toLowerCasePreservingASCIIRules() !in listOf( "prod", "production" ) ) {
-            route(path,routesConfiguration)
         }
     }
 
@@ -87,6 +81,15 @@ class RoutesConfiguration : Configuration<Routes> {
         }
     }
 
+
+    @RoutingDsl
+    fun nonProdRoute(path: String, env: String, routesConfiguration: RoutesConfiguration.()->Unit) {
+        if(env.toLowerCasePreservingASCIIRules() !in listOf( "prod", "production" ) ) {
+            route(path,routesConfiguration)
+        }
+    }
+
+
     @Markup
     fun component(content: @Composable ComposableRoute.()->Unit) {
         component = content
@@ -95,27 +98,28 @@ class RoutesConfiguration : Configuration<Routes> {
     @Markup
     @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
     fun wrap(routesConfiguration: RoutesConfiguration.() -> Unit) {
-        //with(RoutesConfiguration()) {
-            val wRC = RoutesConfiguration()
+        val wRC = RoutesConfiguration()
 
-            wRC.routesConfiguration()
-            val wrap = wRC.wrap
-            val wrappedRoutes = wRC.routes.map { r -> Routes(
-                segment = r.segment,
-                children = r.children
-            ) {
-                if(r.component != null && accessGranted) {
-                    if (wrap != null) {
-                        this.wrap(r.component)() }
-                    else {
-                        r.component!!(this)
+        wRC.routesConfiguration()
+        val wrapper = wRC.wrap
+        val wrappedRoutes = wRC.routes.map { r -> Routes(
+            segment = r.segment,
+            children = when{
+                wrapper == null -> r.children
+                else -> r.children .map { child -> child.wrap(wrapper) }
+            } ) {
+                    if(r.component != null && accessGranted) {
+                        if (wrapper != null) {
+                            this.wrapper(r.component)() }
+                        else {
+                            r.component!!(this)
+                        }
                     }
                 }
-            }}
-            this@RoutesConfiguration.routes.addAll(wrappedRoutes)
-
-        //}
+            }
+        this@RoutesConfiguration.routes.addAll(wrappedRoutes)
     }
+
     @Markup
     fun layout(childrenOnly: Boolean = true, wrapper: @Composable ComposableRoute.(ch: @Composable ComposableRoute.()->Unit) -> @Composable ComposableRoute.()->Unit) {
         layoutChildrenOnly = childrenOnly
@@ -127,6 +131,7 @@ class RoutesConfiguration : Configuration<Routes> {
     fun access(claim: ()->Boolean) {
         accessGranted = claim()
     }
+
 }
 
 @RoutingDsl
