@@ -28,3 +28,5 @@ operator fun <E, F, T> Reader<E, F>.times(other: Reader<F, T>): Reader<E, T> = t
 fun <T> FirstOrNull(predicate: (T)->Boolean): Reader<List<T>,T?> = Reader{
     it.firstOrNull(predicate)
 }
+
+fun <T> assureValue(): Reader<T?, T> = Reader{value -> require(value != null); value}

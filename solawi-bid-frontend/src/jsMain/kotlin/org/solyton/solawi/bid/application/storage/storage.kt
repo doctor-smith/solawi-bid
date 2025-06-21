@@ -8,7 +8,7 @@ import org.evoleq.optics.storage.Action
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.onChange
 import org.evoleq.optics.transform.times
-import org.solyton.solawi.bid.application.api.CallApi
+import org.solyton.solawi.bid.application.storage.middleware.ProcessAction
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.actions
 import org.solyton.solawi.bid.application.data.env.Environment
@@ -44,7 +44,7 @@ fun Storage(): Storage<Application> {
         pulse++
     }.onDispatch {
         (this@onDispatch * actions).read().flow.collect { action : Action<Application, *, *> ->
-            CallApi( action ) runOn this
+            ProcessAction( action ) runOn this
         }
     }
 }

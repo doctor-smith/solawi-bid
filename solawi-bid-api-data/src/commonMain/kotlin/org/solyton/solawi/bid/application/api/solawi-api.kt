@@ -5,7 +5,13 @@ import org.evoleq.ktorx.api.Api
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.Context
+import org.solyton.solawi.bid.module.permission.data.api.Contexts
+import org.solyton.solawi.bid.module.permission.data.api.ParentChildRelationsOfContext
+import org.solyton.solawi.bid.module.permission.data.api.ReadParentChildRelationsOfContexts
+import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContexts
 import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContextsOfUser
+import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContextsOfUsers
+import org.solyton.solawi.bid.module.permission.data.api.UserToContextsMap
 import org.solyton.solawi.bid.module.user.data.api.*
 
 val solawiApi by lazy {
@@ -29,13 +35,21 @@ val solawiApi by lazy {
         )
 
         // Permissions
-        patch<ReadRightRoleContextsOfUser, List<Context>>(
+        patch<ReadRightRoleContextsOfUser, Contexts>(
             key = ReadRightRoleContextsOfUser::class,
             url = "permissions/user/role-right-contexts"
         )
-        patch<ReadRightRoleContextsOfUser, List<Context>>(
-            key = ReadRightRoleContextsOfUser::class,
+        patch<ReadRightRoleContextsOfUsers, UserToContextsMap>(
+            key = ReadRightRoleContextsOfUsers::class,
             url = "permissions/users/role-right-contexts"
+        )
+        patch<ReadParentChildRelationsOfContexts, ParentChildRelationsOfContext>(
+            key = ReadParentChildRelationsOfContexts::class,
+            url = "permissions/contexts/parent-child-relations"
+        )
+        patch<ReadRightRoleContexts, Contexts>(
+            key = ReadRightRoleContexts::class,
+            url = "permissions/contexts/roles-and-rights"
         )
         // Auction
         post<CreateAuction, Auction>(

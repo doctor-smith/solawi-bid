@@ -32,6 +32,7 @@ import org.solyton.solawi.bid.application.ui.page.user.i18n.UserLangComponent
 import org.solyton.solawi.bid.application.ui.style.page.verticalPageStyle
 import org.solyton.solawi.bid.application.ui.style.wrap.Wrap
 import org.solyton.solawi.bid.module.control.button.StdButton
+import org.solyton.solawi.bid.module.i18n.data.componentLoaded
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.user.data.api.ChangePassword
 import org.solyton.solawi.bid.module.user.data.password
@@ -41,6 +42,8 @@ import org.solyton.solawi.bid.module.user.data.reader.properties
 import org.solyton.solawi.bid.module.user.data.reader.value
 import org.solyton.solawi.bid.module.user.data.username
 import org.solyton.solawi.bid.module.user.component.modal.showChangePasswordModal
+import org.solyton.solawi.bid.module.user.component.table.ContextRoleTableForUser
+import org.solyton.solawi.bid.module.user.data.reader.table
 
 @Markup
 @Composable
@@ -55,6 +58,7 @@ fun PrivateUserPage(storage: Storage<Application>) = Div {
     val texts = storage * i18N * language * component(UserLangComponent.UserPrivatePage)
     val buttons = texts * subComp("buttons")
     val dialogs = texts * subComp("dialogs")
+    val permissions = texts * subComp("permissions")
 
     // Effect
     LaunchComponentLookup(
@@ -65,6 +69,8 @@ fun PrivateUserPage(storage: Storage<Application>) = Div {
 
     // State
     var user by remember { mutableStateOf(ChangePassword("","")) }
+    val loaded = (i18n * componentLoaded(UserLangComponent.UserPrivatePage)).emit()
+    if(!loaded) return@Div
 
     // Markup
     Vertical(verticalPageStyle) {
@@ -99,6 +105,11 @@ fun PrivateUserPage(storage: Storage<Application>) = Div {
             Vertical {
                 ReadOnlyProperty(Property((texts * personalData * properties * org.solyton.solawi.bid.module.user.data.reader.username * value).emit(), (userData * username).read()))
 
+            }
+            H2{ Text((permissions * title).emit())}
+            Vertical {
+
+                ContextRoleTableForUser(storage * userIso, permissions * table)
             }
         }
     }
