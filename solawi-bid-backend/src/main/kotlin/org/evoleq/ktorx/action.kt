@@ -1,4 +1,4 @@
-package org.evoleq.util
+package org.evoleq.ktorx
 
 import io.ktor.server.application.*
 import org.evoleq.math.MathDsl

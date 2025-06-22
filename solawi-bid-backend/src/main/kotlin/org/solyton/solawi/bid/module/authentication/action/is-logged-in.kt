@@ -5,7 +5,7 @@ import io.ktor.util.*
 import org.evoleq.exposedx.transaction.resultTransaction
 import org.evoleq.ktorx.result.Result
 import org.evoleq.math.x
-import org.evoleq.util.Action
+import org.evoleq.ktorx.Action
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.joda.time.DateTime
