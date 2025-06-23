@@ -1,0 +1,25 @@
+name: deploy_d_temp_test.yml
+on:
+  workflow_dispatch:
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Checkout repository
+          uses: actions/checkout@v3
+        - name: Deploy Application
+          uses: ./.github/actions/deploy-application
+          with:
+              mysql_password: ${{ secrets.MYSQL_PASSWORD_D }}
+              backend_image_name: 'ghcr.io/joystick01/solawi-bid/backend:latest'
+              frontend_image_name: 'ghcr.io/joystick01/solawi-bid/frontend:latest'
+              frontend_domain: 'd.solyton.org'
+              backend_domain: 'api.d.solyton.org'
+              jwt_secret: ${{ secrets.JWT_SECRET_D }}
+              application_owner_username: 'owner@solyton.org'
+              application_owner_password: ${{ secrets.APPLICATION_OWNER_PASSWORD_D }}
+              environment: 'd'
+              server_address: '${{ vars.SERVER_ADDRESS }}'
+              server_user: ${{ vars.SERVER_USER }}
+              server_key: ${{ secrets.SERVER_KEY }}
