@@ -37,3 +37,15 @@ users {
         password = "APPLICATION_OWNER_PASSWORD"
     }
 }
+
+mail {
+    smtp {
+        host = "smtp.strato.de"
+        port = 587
+        auth = true
+        user = "info@solyton.org"
+        password = ${?SMTP_PASSWORD}
+        startTslEnabled = true
+    }
+    defaultResponseAddress = "developer@alpha-structure.com"
+}

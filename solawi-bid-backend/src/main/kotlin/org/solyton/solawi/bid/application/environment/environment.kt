@@ -35,17 +35,31 @@ fun Application.setupEnvironment(): Environment = with(environment.config){
         password = property("users.owner.password").getString()
     )
 
+    val mailService = MailService(
+        Smtp(
+            property("mail.smtp.host").getString(),
+            property("mail.smtp.port").getString().toInt(),
+            property("mail.smtp.auth").getString().toBoolean(),
+            property("mail.smtp.user").getString(),
+            property("mail.smtp.password").getString(),
+            property("mail.smtp.startTslEnabled").getString().toBoolean()
+        ),
+        property("mail.defaultResponseAddress").getString()
+    )
+
     Environment(
         database,
         jwt,
-        applicationOwner
+        applicationOwner,
+        mailService
     )
 }
 
 data class Environment(
     val database: Database,
     val jwt: JWT,
-    val applicationOwner: User
+    val applicationOwner: User,
+    val mailService: MailService
 ) {
     lateinit var db: SqlDatabase
 
@@ -116,3 +130,16 @@ data class User(
     val password: String
 )
 
+data class MailService(
+    val smtp: Smtp,
+    val defaultResponseAddress: String?
+)
+
+data class Smtp(
+    val host: String,
+    val port: Int,
+    val auth: Boolean,
+    val user: String,
+    val password: String,
+    val startTslEnabled: Boolean
+)

@@ -91,6 +91,9 @@ dependencies {
 
     // slf4j
     implementation (libs.slf4j.nop)
+
+    // mail
+    implementation("org.simplejavamail:simple-java-mail:8.0.0")
 }
 /*
 jacoco {
