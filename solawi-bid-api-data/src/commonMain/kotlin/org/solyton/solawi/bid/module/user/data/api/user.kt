@@ -16,17 +16,7 @@ data class Users(
     val all: List<User>
 )
 
-@Serializable
-data class CreateUser(
-    val username: String,
-    val password: String
-)
 
-@Serializable
-data class ChangePassword(
-    val username: String,
-    val password: String
-)
 
 @Serializable
 data object GetUsers
