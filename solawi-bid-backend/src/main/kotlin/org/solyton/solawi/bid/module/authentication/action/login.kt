@@ -23,7 +23,7 @@ import org.solyton.solawi.bid.module.user.schema.Tokens
 import org.solyton.solawi.bid.module.user.schema.User
 import org.solyton.solawi.bid.module.user.schema.Users
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
-import org.solyton.solawi.bid.module.user.service.credentialsAreOK
+import org.solyton.solawi.bid.module.user.service.bcrypt.credentialsAreOK
 import java.util.*
 
 

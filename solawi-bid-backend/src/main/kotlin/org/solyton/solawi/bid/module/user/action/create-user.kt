@@ -22,7 +22,7 @@ import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
 import org.solyton.solawi.bid.module.user.data.api.User
 import org.solyton.solawi.bid.module.user.schema.UserEntity
-import org.solyton.solawi.bid.module.user.service.hashPassword
+import org.solyton.solawi.bid.module.user.service.bcrypt.hashPassword
 
 @MathDsl
 @Suppress("FunctionName")

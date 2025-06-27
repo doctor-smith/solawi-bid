@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.user.service
+package org.solyton.solawi.bid.module.user.service.bcrypt
 
 import org.mindrot.jbcrypt.BCrypt
 
