@@ -1,0 +1,46 @@
+name: build-and-push-docker
+description: Push Docker images
+
+inputs:
+    registry:
+        description: 'Container registry URL'
+        required: true
+        default: 'ghcr.io'
+    username:
+        description: 'Username'
+        required: true
+    password:
+        description: 'Password for the registry'
+        required: true
+    image_name:
+      description: 'Image name'
+      required: true
+    full_image_name:
+        description: 'Image name'
+        required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Log in to the Container registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ inputs.username }}
+        password: ${{ inputs.password }}
+
+    - name: Download Docker Image Artifact
+      uses: actions/download-artifact@v4
+      with:
+          name: docker-image-${{ inputs.image_name }}
+
+    - name: Load Docker Image
+      id: load
+      shell: bash
+      run: |
+        docker load --input docker_image_${{ inputs.image_name }}.tar
+
+    - name: Push Docker image
+      id: push
+      shell: bash
+      run: docker push -a ${{ inputs.full_image_name }}

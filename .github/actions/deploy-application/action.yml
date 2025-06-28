@@ -1,0 +1,78 @@
+name: build-and-push-docker
+description: Build Docker images
+
+inputs:
+  environment:
+    description: 'Deployment environment (e.g., D, Q, P)'
+    required: true
+    default: 'D'
+  mysql_password:
+    description: 'MySQL password for the database container'
+    required: true
+  backend_image_name:
+    description: 'Name of the backend Docker image'
+    required: true
+    default: 'ghcr.io/joystick01/solawi-bid/frontend:latest'
+  frontend_image_name:
+    description: 'Name of the frontend Docker image'
+    required: true
+    default: 'ghcr.io/joystick01/solawi-bid/backend:latest'
+  frontend_domain:
+    description: 'Domain for the frontend service'
+    required: true
+    default: 'd.solyton.org'
+  backend_domain:
+    description: 'Domain for the backend service'
+    required: true
+    default: 'api.d.solyton.org'
+  jwt_secret:
+    description: 'JWT secret for the backend service'
+    required: true
+  application_owner_username:
+    description: 'Username of the application owner'
+    required: true
+  application_owner_password:
+    description: 'Password of the application owner'
+    required: true
+  server_address:
+    description: 'Address of the server to deploy to'
+    required: true
+    default: 'solyton.org'
+  server_user:
+    description: 'SSH user for the server'
+    required: true
+  server_key:
+    description: 'SSH private key for the server'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Setup SSH
+      shell: bash
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ inputs.server_key }}" > server_key.pem
+        chmod 600 server_key.pem
+    - name: Run Ansible playbook to deploy application
+      shell: bash
+      env:
+        ANSIBLE_HOST_KEY_CHECKING: "false"
+      run: |
+        ansible-galaxy install -r ./infrastructure/ansible/install-server.requirements.yml
+        ansible-playbook \
+        -i ${{ inputs.server_address }}, \
+        -u ${{ inputs.server_user }} \
+        --private-key server_key.pem \
+        -e "environment_letter=${{ inputs.environment }}" \
+        -e "mysql_password=${{ inputs.mysql_password }}" \
+        -e "backend_image_name=${{ inputs.backend_image_name }}" \
+        -e "frontend_image_name=${{ inputs.frontend_image_name }}" \
+        -e "frontend_domain=${{ inputs.frontend_domain }}" \
+        -e "backend_domain=${{ inputs.backend_domain }}" \
+        -e "jwt_secret=${{ inputs.jwt_secret }}" \
+        -e "application_owner_username=${{ inputs.application_owner_username }}" \
+        -e "application_owner_password=${{ inputs.application_owner_password }}" \
+        ./infrastructure/ansible/deploy-application.yml

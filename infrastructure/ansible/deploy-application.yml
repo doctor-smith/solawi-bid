@@ -1,0 +1,103 @@
+- name: Deploy Application to {{ environment_letter }}
+  hosts: all
+  become: true
+  tasks:
+    - name: Ensure /var/solawi-bid/{{ environment_letter }}/database directory exists
+      file:
+        path: "/var/solawi-bid/{{ environment_letter }}/database"
+        state: directory
+    - name: Ensure database initialization script for {{ environment_letter }} exists
+      copy:
+        src: "{{ playbook_dir }}/../database/setup.sql"
+        dest: "/var/solawi-bid/{{ environment_letter }}/database/setup.sql"
+        owner: root
+        group: root
+        mode: '0644'
+    - name: Ensure solawi-bid-{{ environment_letter }} network exists
+      community.docker.docker_network:
+        name: "solawi-bid-{{ environment_letter }}"
+    - name: Ensure solawi-bid-{{ environment_letter }} database container is running
+      community.docker.docker_container:
+        name: "solawi-bid_database_{{ environment_letter }}"
+        image: "mysql:9"
+        state: started
+        restart_policy: always
+        ports:
+          - "3306:3306"
+        volumes:
+          - "/var/solawi-bid/{{ environment_letter }}/database/setup.sql:/docker-entrypoint-initdb.d/setup.sql"
+          - "/var/solawi-bid/{{ environment_letter }}/database/backups:/backups"
+        env:
+          MYSQL_DATABASE: solawi-bid
+          MYSQL_USER: solawi-bid
+          MYSQL_PASSWORD: "{{ mysql_password }}"
+          MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+        healthcheck:
+          test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent" ]
+          interval: 2s
+          timeout: 3s
+          retries: 3
+          start_period: 2m
+        networks:
+          - name: "solawi-bid-{{ environment_letter }}"
+    - name: Deploy Frontend container for {{ environment_letter }}
+      community.docker.docker_container:
+        name: "solawi-bid_frontend_{{ environment_letter }}"
+        image: "{{ frontend_image_name }}"
+        state: started
+        restart_policy: always
+        labels:
+          traefik.enable: "true"
+          traefik.http.routers.solawi-bid_frontend_{{ environment_letter }}.rule: "Host(`{{ frontend_domain }}`)"
+          traefik.http.routers.solawi-bid_frontend_{{ environment_letter }}.entrypoints: "web, websecure"
+          traefik.http.services.solawi-bid_frontend_{{ environment_letter }}.loadbalancer.server.port: "80"
+        healthcheck:
+          test: "wget --no-verbose --tries=1 --spider http://localhost:80 || exit 1"
+          interval: 2s
+          timeout: 3s
+          retries: 3
+          start_period: 2m
+        networks:
+          - name: reverse-proxy
+
+    - name: Wait for MySQL to be healthy
+      community.docker.docker_container_info:
+        name: "solawi-bid_database_{{ environment_letter }}"
+      register: db_info
+      until: db_info.container.State.Health.Status == "healthy"
+      retries: 30
+      delay: 4
+
+    - name: Deploy Backend container for {{ environment_letter }}
+      community.docker.docker_container:
+        name: "solawi-bid_backend_{{ environment_letter }}"
+        image: "{{ backend_image_name }}"
+        state: started
+        restart_policy: always
+        env:
+          KTOR_ENV: "{{ environment_letter }}"
+          BACKEND_PORT: "8080"
+          JWT_DOMAIN: solawi-bid_backend
+          JWT_AUDIENCE: solawi-bid_backend
+          JWT_REALM: solawi-bid_backend
+          JWT_SECRET: "{{ jwt_secret }}"
+          DATABASE_URL: "jdbc:mysql://solawi-bid_database_{{ environment_letter }}:3306/solawi-bid"
+          DATABASE_DRIVER: com.mysql.jdbc.Driver
+          DATABASE_USER: solawi-bid
+          DATABASE_PASSWORD: "{{ mysql_password }}"
+          APPLICATION_OWNER_USERNAME: "{{ application_owner_username }}"
+          APPLICATION_OWNER_PASSWORD: "{{ application_owner_password }}"
+        labels:
+          traefik.enable: "true"
+          traefik.http.routers.solawi-bid_backend_{{ environment_letter }}.rule: "Host(`{{ backend_domain }}`)"
+          traefik.http.routers.solawi-bid_backend_{{ environment_letter }}.entrypoints: "web, websecure"
+          traefik.http.services.solawi-bid_backend_{{ environment_letter }}.loadbalancer.server.port: "8080"
+        healthcheck:
+          test: "curl 'http://localhost:8080/login' -f -X OPTIONS -H 'Access-Control-Request-Method: POST' -H 'Origin: http://localhost'"
+          interval: 2s
+          timeout: 3s
+          retries: 3
+          start_period: 2m
+        networks:
+          - name: "solawi-bid-{{ environment_letter }}"
+          - name: reverse-proxy
