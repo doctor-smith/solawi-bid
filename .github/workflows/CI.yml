@@ -64,10 +64,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            libgtk-4-1 libgraphene-1.0-0 libwoff1 libvpx6 libevent-2.1-7 libopus0 \
-            gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
-            gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools \
-            libflite1 libavif16 libharfbuzz-icu0 libsecret-1-0 libhyphen0 libgles2-mesa libx264-160
+          libgtk-4-1 libgraphene-1.0-0 libwoff1 libvpx5 libevent-2.1-7 libopus0 \
+          gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
+          gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools \
+          libflite1 libavif16 libharfbuzz-icu0 libsecret-1-0 libhyphen0 \
+          mesa-utils mesa-utils-extra libgl1-mesa-glx libx264-dev
 
       - name: Start E2E Test Environment
         run: docker compose -f docker-compose.e2e.yml up -d --wait --quiet-pull
