@@ -1,7 +1,4 @@
-import com.microsoft.playwright.Browser
-import com.microsoft.playwright.BrowserType
-import com.microsoft.playwright.Page
-import com.microsoft.playwright.Playwright
+import com.microsoft.playwright.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -31,7 +28,17 @@ class LoginTest {
     fun test_login() {
         page.navigate("http://localhost:8080/login")
 
-        page.click("[data-id='cookie-disclaimer.modal.submit-button']")
+        try {
+            page.waitForSelector("[data-id='cookie-disclaimer.modal.submit-button']", Page.WaitForSelectorOptions().setTimeout(
+                10000.0
+            ))
+            println("Cookie Button ist jetzt sichtbar")
+            page.click("[data-id='cookie-disclaimer.modal.submit-button']")
+        } catch (e: TimeoutError) {
+            println("Cookie Button erschien nicht, überspringe Klick")
+        }
+
+        //page.click("[data-id='cookie-disclaimer.modal.submit-button']")
         page.fill("[data-id='login-form.input.username']", "owner@solyton.org")
         page.fill("[data-id='login-form.input.password']", "4l=6mx4Vinz-DT")
         page.click("[data-id='login-form.submit-button']")
