@@ -29,10 +29,10 @@ class NavigationTest {
     }
 
     @Test
-    fun test1_useStoredState() {
+    fun test_useStoredState() {
         val jsonString = java.nio.file.Files.readString(TestUtils().storageStatePath)
         val context = browser.newContext(
-            Browser.NewContextOptions().setStorageState(jsonString)
+            Browser.NewContextOptions().setStorageState(jsonString).setViewportSize(1280,720)
         )
 
         val page = context.newPage()

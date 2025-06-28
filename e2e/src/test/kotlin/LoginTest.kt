@@ -3,6 +3,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.nio.file.Paths
 
 class LoginTest {
 
@@ -27,6 +28,10 @@ class LoginTest {
     @Test
     fun test_login() {
         page.navigate("http://localhost:8080/login")
+        page.screenshot(Page.ScreenshotOptions().setPath(Paths.get("screenshot_before_click.png")))
+        val html = page.content()
+        println("Page HTML snapshot:\n$html")
+
 
         try {
             page.waitForSelector("[data-id='cookie-disclaimer.modal.submit-button']", Page.WaitForSelectorOptions().setTimeout(
