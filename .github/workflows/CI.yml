@@ -60,20 +60,22 @@ jobs:
         run: |
           docker load --input docker_image_frontend.tar
           docker load --input docker_image_backend.tar
-      - name: Install Playwright dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-          libgtk-4-1 libgraphene-1.0-0 libwoff1 libvpx6 libevent-2.1-7 libopus0 \
-          gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
-          gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools \
-          libflite1 libavif16 libharfbuzz-icu0 libsecret-1-0 libhyphen0 \
-          mesa-utils mesa-utils-extra libgl1 libx264-dev
 
       - name: Start E2E Test Environment
         run: docker compose -f docker-compose.e2e.yml up -d --wait --quiet-pull
-      - name: Run E2E Tests
-        run: ./gradlew :e2e:test --info
+
+      - name: Give gradlew permissions
+        run: chmod +x ./gradlew
+
+      - name: Build project (skip tests)
+        run: ./gradlew build -x test
+
+      - name: Install Playwright Browsers
+        run: ./gradlew :e2e:installPlaywright
+
+      - name: Run Playwright E2E tests
+        run: ./gradlew :e2e:test
+
 
 
   push-Frontend:

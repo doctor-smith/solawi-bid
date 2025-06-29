@@ -11,11 +11,16 @@ class LoginTest {
     private lateinit var browser: Browser
     private lateinit var page: Page
 
+//    companion object {
+//        // URLs aus Umgebungsvariablen lesen, mit Fallback auf localhost
+//        //private val FRONTEND_URL = System.getenv("FRONTEND_URL") ?: "http://localhost:80"
+//    }
+
     @BeforeEach
     fun beforeEach() {
         println("Starting test setup...")
         playwright = Playwright.create()
-        browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
+        browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(false))
         page = browser.newPage()
     }
 
@@ -27,21 +32,8 @@ class LoginTest {
 
     @Test
     fun test_login() {
-        page.navigate("http://localhost:8080/login")
-        page.screenshot(Page.ScreenshotOptions().setPath(Paths.get("screenshot_before_click.png")))
-        val html = page.content()
-        println("Page HTML snapshot:\n$html")
-
-
-        try {
-            page.waitForSelector("[data-id='cookie-disclaimer.modal.submit-button']", Page.WaitForSelectorOptions().setTimeout(
-                10000.0
-            ))
-            println("Cookie Button ist jetzt sichtbar")
-            page.click("[data-id='cookie-disclaimer.modal.submit-button']")
-        } catch (e: TimeoutError) {
-            println("Cookie Button erschien nicht, überspringe Klick")
-        }
+        page.navigate("http://localhost:8080")
+        page.waitForSelector("[data-id='cookie-disclaimer.modal.submit-button']").click()
 
         //page.click("[data-id='cookie-disclaimer.modal.submit-button']")
         page.fill("[data-id='login-form.input.username']", "owner@solyton.org")

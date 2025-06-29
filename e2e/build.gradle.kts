@@ -24,3 +24,11 @@ tasks.test {
         events("passed", "skipped", "failed")
     }
 }
+tasks.register<JavaExec>("installPlaywright") {
+    group = "playwright"
+    description = "Installiert die Playwright-Browser"
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("com.microsoft.playwright.CLI")
+    args = listOf("install", "--with-deps")
+}
+

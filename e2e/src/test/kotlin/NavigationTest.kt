@@ -10,6 +10,8 @@ class NavigationTest {
         private lateinit var playwright: Playwright
         private lateinit var browser: Browser
 
+        private val FRONTEND_URL = System.getenv("FRONTEND_URL") ?: "http://localhost:8080"
+
 
         @JvmStatic
         @BeforeAll
@@ -37,7 +39,7 @@ class NavigationTest {
 
         val page = context.newPage()
 
-        page.navigate("http://localhost:8080/solyton/dashboard")
+        page.navigate("$FRONTEND_URL/solyton/dashboard")
 
         assertTrue(page.url().contains("/dashboard"))
 
@@ -59,7 +61,7 @@ class NavigationTest {
 
         val page = context.newPage()
 
-        page.navigate("http://localhost:8080/solyton/dashboard")
+        page.navigate("$FRONTEND_URL/solyton/dashboard")
         page.waitForURL("**/login")
 
         assertTrue(
