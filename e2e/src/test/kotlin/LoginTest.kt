@@ -11,16 +11,11 @@ class LoginTest {
     private lateinit var browser: Browser
     private lateinit var page: Page
 
-//    companion object {
-//        // URLs aus Umgebungsvariablen lesen, mit Fallback auf localhost
-//        //private val FRONTEND_URL = System.getenv("FRONTEND_URL") ?: "http://localhost:80"
-//    }
-
     @BeforeEach
     fun beforeEach() {
         println("Starting test setup...")
         playwright = Playwright.create()
-        browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(false))
+        browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
         page = browser.newPage()
     }
 
