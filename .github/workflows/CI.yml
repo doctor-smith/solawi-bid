@@ -106,26 +106,26 @@ jobs:
         id: collect-env-config
         run: |
           if [[ "/tags/" == *"${GITHUB_REF}"* ]]; then
-            echo "environment=P" >> $GITHUB_OUTPUT
-            echo "frontend_domain=solyton.org" >> $GITHUB_OUTPUT
-            echo "backend_domain=api.solyton.org" >> $GITHUB_OUTPUT
-            echo "mysql_password=${{ secrets.MYSQL_PASSWORD_P }}" >> $GITHUB_OUTPUT
-            echo "jwt_secret=${{ secrets.JWT_SECRET_P }}" >> $GITHUB_OUTPUT
-            echo "application_owner_password=${{ secrets.APPLICATION_OWNER_PASSWORD_P }}" >> $GITHUB_OUTPUT
+            echo 'environment=P' >> $GITHUB_OUTPUT
+            echo 'frontend_domain=solyton.org' >> $GITHUB_OUTPUT
+            echo 'backend_domain=api.solyton.org' >> $GITHUB_OUTPUT
+            echo 'mysql_password=${{ secrets.MYSQL_PASSWORD_P }}' >> $GITHUB_OUTPUT
+            echo 'jwt_secret=${{ secrets.JWT_SECRET_P }}' >> $GITHUB_OUTPUT
+            echo 'application_owner_password=${{ secrets.APPLICATION_OWNER_PASSWORD_P }}' >> $GITHUB_OUTPUT
           elif [[ "/refs/heads/main" == *"${GITHUB_REF}"* ]]; then
-            echo "environment=Q" >> $GITHUB_OUTPUT
-            echo "frontend_domain=q.solyton.org" >> $GITHUB_OUTPUT
-            echo "backend_domain=api.q.solyton.org" >> $GITHUB_OUTPUT
-            echo "mysql_password=${{ secrets.MYSQL_PASSWORD_Q }}" >> $GITHUB_OUTPUT
-            echo "jwt_secret=${{ secrets.JWT_SECRET_Q }}" >> $GITHUB_OUTPUT
-            echo "application_owner_password=${{ secrets.APPLICATION_OWNER_PASSWORD_Q }}" >> $GITHUB_OUTPUT
+            echo 'environment=Q' >> $GITHUB_OUTPUT
+            echo 'frontend_domain=q.solyton.org' >> $GITHUB_OUTPUT
+            echo 'backend_domain=api.q.solyton.org' >> $GITHUB_OUTPUT
+            echo 'mysql_password=${{ secrets.MYSQL_PASSWORD_Q }}' >> $GITHUB_OUTPUT
+            echo 'jwt_secret=${{ secrets.JWT_SECRET_Q }}' >> $GITHUB_OUTPUT
+            echo 'application_owner_password=${{ secrets.APPLICATION_OWNER_PASSWORD_Q }}' >> $GITHUB_OUTPUT
           else
-            echo "environment=D" >> $GITHUB_OUTPUT
-            echo "frontend_domain=d.solyton.org" >> $GITHUB_OUTPUT
-            echo "backend_domain=api.d.solyton.org" >> $GITHUB_OUTPUT
-            echo "mysql_password=${{ secrets.MYSQL_PASSWORD_D }}" >> $GITHUB_OUTPUT
-            echo "jwt_secret=${{ secrets.JWT_SECRET_D }}" >> $GITHUB_OUTPUT
-            echo "application_owner_password=${{ secrets.APPLICATION_OWNER_PASSWORD_D }}" >> $GITHUB_OUTPUT
+            echo 'environment=D' >> $GITHUB_OUTPUT
+            echo 'frontend_domain=d.solyton.org' >> $GITHUB_OUTPUT
+            echo 'backend_domain=api.d.solyton.org' >> $GITHUB_OUTPUT
+            echo 'mysql_password=${{ secrets.MYSQL_PASSWORD_D }}' >> $GITHUB_OUTPUT
+            echo 'jwt_secret=${{ secrets.JWT_SECRET_D }}' >> $GITHUB_OUTPUT
+            echo 'application_owner_password=${{ secrets.APPLICATION_OWNER_PASSWORD_D }}' >> $GITHUB_OUTPUT
           fi
       - name: Deploy Application
         uses: ./.github/actions/deploy-application

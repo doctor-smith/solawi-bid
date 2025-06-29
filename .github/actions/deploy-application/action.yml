@@ -66,13 +66,13 @@ runs:
         -i ${{ inputs.server_address }}, \
         -u ${{ inputs.server_user }} \
         --private-key server_key.pem \
-        -e "environment_letter=${{ inputs.environment }}" \
-        -e "mysql_password=${{ inputs.mysql_password }}" \
-        -e "backend_image_name=${{ inputs.backend_image_name }}" \
-        -e "frontend_image_name=${{ inputs.frontend_image_name }}" \
-        -e "frontend_domain=${{ inputs.frontend_domain }}" \
-        -e "backend_domain=${{ inputs.backend_domain }}" \
-        -e "jwt_secret=${{ inputs.jwt_secret }}" \
-        -e "application_owner_username=${{ inputs.application_owner_username }}" \
-        -e "application_owner_password=${{ inputs.application_owner_password }}" \
+        -e 'environment_letter=${{ inputs.environment }}' \
+        -e 'mysql_password=${{ inputs.mysql_password }}' \
+        -e 'backend_image_name=${{ inputs.backend_image_name }}' \
+        -e 'frontend_image_name=${{ inputs.frontend_image_name }}' \
+        -e 'frontend_domain=${{ inputs.frontend_domain }}' \
+        -e 'backend_domain=${{ inputs.backend_domain }}' \
+        -e 'jwt_secret=${{ inputs.jwt_secret }}' \
+        -e 'application_owner_username=${{ inputs.application_owner_username }}' \
+        -e 'application_owner_password=${{ inputs.application_owner_password }}' \
         ./infrastructure/ansible/deploy-application.yml
