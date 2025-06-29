@@ -41,16 +41,23 @@
         networks:
           - name: "solawi-bid-{{ environment_letter }}"
     - name: Deploy Frontend container for {{ environment_letter }}
+      vars:
+        keys: ["traefik.enable", "traefik.http.routers.solawi-bid_frontend_{{ environment_letter }}.rule", "traefik.http.routers.solawi-bid_frontend_{{ environment_letter }}.entrypoints", "traefik.http.services.solawi-bid_frontend_{{ environment_letter }}.loadbalancer.server.port"]
+        values: ["true", "Host(`{{ frontend_domain }}`)", "web, websecure", "80"]
+        dynamic_dict: "{{ dict(keys | zip(values)) }}"
       community.docker.docker_container:
         name: "solawi-bid_frontend_{{ environment_letter }}"
         image: "{{ frontend_image_name }}"
         state: started
         restart_policy: always
-        labels:
-          traefik.enable: "true"
-          traefik.http.routers.solawi-bid_frontend_{{ environment_letter }}.rule: "Host(`{{ frontend_domain }}`)"
-          traefik.http.routers.solawi-bid_frontend_{{ environment_letter }}.entrypoints: "web, websecure"
-          traefik.http.services.solawi-bid_frontend_{{ environment_letter }}.loadbalancer.server.port: "80"
+        env:
+          ENVIRONMENT: "{{ environment_letter }}"
+          FRONTEND_URL: "http://{{ frontend_domain }}"
+          FRONTEND_PORT: "80"
+          BACKEND_URL: "http://{{ backend_domain }}"
+          BACKEND_PORT: "80"
+
+        labels: "{{ dynamic_dict }}"
         healthcheck:
           test: "wget --no-verbose --tries=1 --spider http://localhost:80 || exit 1"
           interval: 2s
@@ -69,6 +76,10 @@
       delay: 4
 
     - name: Deploy Backend container for {{ environment_letter }}
+      vars:
+        keys: ["traefik.enable", "traefik.http.routers.solawi-bid_backend_{{ environment_letter }}.rule", "traefik.http.routers.solawi-bid_backend_{{ environment_letter }}.entrypoints", "traefik.http.services.solawi-bid_backend_{{ environment_letter }}.loadbalancer.server.port"]
+        values: ["true", "Host(`{{ backend_domain }}`)", "web, websecure", "8080"]
+        dynamic_dict: "{{ dict(keys | zip(values)) }}"
       community.docker.docker_container:
         name: "solawi-bid_backend_{{ environment_letter }}"
         image: "{{ backend_image_name }}"
@@ -87,11 +98,7 @@
           DATABASE_PASSWORD: "{{ mysql_password }}"
           APPLICATION_OWNER_USERNAME: "{{ application_owner_username }}"
           APPLICATION_OWNER_PASSWORD: "{{ application_owner_password }}"
-        labels:
-          traefik.enable: "true"
-          traefik.http.routers.solawi-bid_backend_{{ environment_letter }}.rule: "Host(`{{ backend_domain }}`)"
-          traefik.http.routers.solawi-bid_backend_{{ environment_letter }}.entrypoints: "web, websecure"
-          traefik.http.services.solawi-bid_backend_{{ environment_letter }}.loadbalancer.server.port: "8080"
+        labels: "{{ dynamic_dict }}"
         healthcheck:
           test: "curl 'http://localhost:8080/login' -f -X OPTIONS -H 'Access-Control-Request-Method: POST' -H 'Origin: http://localhost'"
           interval: 2s
