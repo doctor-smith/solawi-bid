@@ -75,6 +75,16 @@
       retries: 30
       delay: 4
 
+
+    - name: Create database backup
+      community.docker.docker_container_exec:
+        container: "solawi-bid_database_{{ environment_letter }}"
+        command: "sh -c 'mysqldump -u root --all-databases > /backups/{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}.sql'"
+      register: backup_result
+      until: backup_result.rc == 0
+      retries: 5
+      delay: 10
+
     - name: Deploy Backend container for {{ environment_letter }}
       vars:
         keys: ["traefik.enable", "traefik.http.routers.solawi-bid_backend_{{ environment_letter }}.rule", "traefik.http.routers.solawi-bid_backend_{{ environment_letter }}.entrypoints", "traefik.http.services.solawi-bid_backend_{{ environment_letter }}.loadbalancer.server.port"]
