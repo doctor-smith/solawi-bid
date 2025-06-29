@@ -27,7 +27,7 @@ class LoginTest {
 
     @Test
     fun test_login() {
-        page.navigate("http://localhost:8080")
+        page.navigate("http://localhost:8080/login")
         page.waitForSelector("[data-id='cookie-disclaimer.modal.submit-button']").click()
 
         //page.click("[data-id='cookie-disclaimer.modal.submit-button']")

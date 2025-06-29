@@ -10,8 +10,6 @@ class NavigationTest {
         private lateinit var playwright: Playwright
         private lateinit var browser: Browser
 
-        private val FRONTEND_URL = System.getenv("FRONTEND_URL") ?: "http://localhost:8080"
-
 
         @JvmStatic
         @BeforeAll
@@ -34,12 +32,12 @@ class NavigationTest {
     fun test_useStoredState() {
         val jsonString = java.nio.file.Files.readString(TestUtils().storageStatePath)
         val context = browser.newContext(
-            Browser.NewContextOptions().setStorageState(jsonString).setViewportSize(1280,720)
+            Browser.NewContextOptions().setStorageState(jsonString)
         )
 
         val page = context.newPage()
 
-        page.navigate("$FRONTEND_URL/solyton/dashboard")
+        page.navigate("http://localhost:8080/solyton/dashboard")
 
         assertTrue(page.url().contains("/dashboard"))
 
@@ -61,7 +59,7 @@ class NavigationTest {
 
         val page = context.newPage()
 
-        page.navigate("$FRONTEND_URL/solyton/dashboard")
+        page.navigate("http://localhost:8080/solyton/dashboard")
         page.waitForURL("**/login")
 
         assertTrue(
