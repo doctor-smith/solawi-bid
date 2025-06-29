@@ -3,7 +3,7 @@ services:
   solawi-bid_frontend:
     image: ghcr.io/joystick01/solawi-bid/frontend:latest
     ports:
-      - "80:80"
+      - "8080:80"
     healthcheck:
       test: "wget --no-verbose --tries=1 --spider http://localhost:80 || exit 1"
       interval: 2s
@@ -14,7 +14,7 @@ services:
   solawi-bid_backend:
     image: ghcr.io/joystick01/solawi-bid/backend:latest
     ports:
-      - "8080:8080"
+      - "8081:8080"
     environment:
       - KTOR_ENV=dev
       - BACKEND_PORT=8080

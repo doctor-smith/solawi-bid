@@ -67,14 +67,11 @@ jobs:
       - name: Give gradlew permissions
         run: chmod +x ./gradlew
 
-      - name: Build project (skip tests)
-        run: ./gradlew build -x test
-
       - name: Install Playwright Browsers
         run: ./gradlew :e2e:installPlaywright
 
       - name: Run Playwright E2E tests
-        run: ./gradlew :e2e:test
+        run: ./gradlew :e2e:test --info
 
 
 
