@@ -2,6 +2,7 @@ import com.microsoft.playwright.*
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.nio.file.Files
 
 
 class NavigationTest {
@@ -25,12 +26,13 @@ class NavigationTest {
         fun afterAll() {
             browser.close()
             playwright.close()
+            TestUtils().deleteStorageStateFile()
         }
     }
 
     @Test
     fun test_useStoredState() {
-        val jsonString = java.nio.file.Files.readString(TestUtils().storageStatePath)
+        val jsonString = Files.readString(TestUtils().storageStatePath)
         val context = browser.newContext(
             Browser.NewContextOptions().setStorageState(jsonString)
         )

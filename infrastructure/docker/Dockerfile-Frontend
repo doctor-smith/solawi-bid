@@ -14,5 +14,6 @@ ENV BACKEND_URL="http://localhost"
 ENV BACKEND_PORT="8081"
 
 RUN apk add --no-cache envsubst
+COPY --from=build /build/infrastructure/apache/httpd.conf /usr/local/apache2/conf/httpd.conf
 COPY --from=build /build/solawi-bid-frontend/build/dist/js/productionExecutable/ /usr/local/apache2/htdocs
 CMD ["sh", "-c", "envsubst < /usr/local/apache2/htdocs/config.json.template > /usr/local/apache2/htdocs/config.json && httpd-foreground"]

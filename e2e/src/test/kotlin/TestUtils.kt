@@ -1,5 +1,6 @@
 import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserContext
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -27,6 +28,14 @@ class TestUtils {
             } finally {
                 context.close()
             }
+    }
+
+    fun deleteStorageStateFile() {
+        try {
+            Files.deleteIfExists(storageStatePath)
+        } catch (e: Exception) {
+            println("Error deleting storage state file: ${e.message}")
+        }
     }
 
 }
