@@ -1,11 +1,44 @@
 services:
 
   solawi-bid_frontend:
-    image: httpd:2-alpine
+    build:
+      dockerfile_inline: |
+        FROM gradle:jdk17
+        WORKDIR /app
+        COPY . .
+        CMD gradle solawi-bid-frontend:jsBrowserProductionRun
+    pull_policy: build
     ports:
-      - "80:80"
+      - "8080:8080"
     volumes:
-      - ./solawi-bid-frontend/build/dist/js/productionExecutable/:/usr/local/apache2/htdocs/
+      - gradle_cache-frontend:/home/gradle/.gradle
+    healthcheck:
+      test: curl --fail http://localhost:8080
+      interval: 5s
+      timeout: 3s
+      retries: 2
+      start_period: 60s
+
+  solawi-bid_backend:
+    build:
+      dockerfile_inline: |
+        FROM gradle:jdk17
+        WORKDIR /app
+        COPY . .
+        CMD gradle solawi-bid-backend:run
+    pull_policy: build
+    ports:
+      - "8081:8081"
+    volumes:
+      - gradle_cache-backend:/home/gradle/.gradle
+    depends_on:
+      - solawi-bid_database
+    healthcheck:
+      test: "curl 'http://localhost:8081/login' -f -X OPTIONS -H 'Access-Control-Request-Method: POST' -H 'Origin: http://localhost'"
+      interval: 2s
+      timeout: 3s
+      retries: 3
+      start_period: 2m
 
   solawi-bid_database:
     image: mysql:9
@@ -24,3 +57,7 @@ services:
       timeout: 3s
       retries: 2
       start_period: 0s
+
+volumes:
+  gradle_cache-frontend:
+  gradle_cache-backend:
