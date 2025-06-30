@@ -53,7 +53,7 @@ class NavigationTest {
           "cookies": [],
           "origins": []
         }
-    """.trimIndent()
+    """
 
         val context = browser.newContext(
             Browser.NewContextOptions().setStorageState(invalidStorageState)
@@ -65,8 +65,7 @@ class NavigationTest {
         page.waitForURL("**/login")
 
         assertTrue(
-            !page.url().contains("/dashboard"),
-            "The user should not enter the dashboard with an invalid storage state."
+            !page.url().contains("/dashboard"), "The user should not enter the dashboard with an invalid storage state."
         )
 
         context.close()
