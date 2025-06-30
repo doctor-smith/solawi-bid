@@ -42,8 +42,20 @@
           - name: "solawi-bid-{{ environment_letter }}"
     - name: Deploy Frontend container for {{ environment_letter }}
       vars:
-        keys: ["traefik.enable", "traefik.http.routers.solawi-bid_frontend_{{ environment_letter }}.rule", "traefik.http.routers.solawi-bid_frontend_{{ environment_letter }}.entrypoints", "traefik.http.services.solawi-bid_frontend_{{ environment_letter }}.loadbalancer.server.port"]
-        values: ["true", "Host(`{{ frontend_domain }}`)", "web, websecure", "80"]
+        keys:
+          - "traefik.enable"
+          - "traefik.http.routers.solawi-bid_frontend_{{ environment_letter }}.rule"
+          - "traefik.http.routers.solawi-bid_frontend_{{ environment_letter }}.entrypoints"
+          - "traefik.http.services.solawi-bid_frontend_{{ environment_letter }}.loadbalancer.server.port"
+          - "traefik.http.routers.solawi-bid_frontend_{{ environment_letter }}.tls"
+          - "traefik.http.routers.solawi-bid_frontend_{{ environment_letter }}.tls.certresolver"
+        values:
+          - "true"
+          - "Host(`{{ frontend_domain }}`)"
+          - "web, websecure"
+          - "80"
+          - "true"
+          - "letsencrypt"
         dynamic_dict: "{{ dict(keys | zip(values)) }}"
       community.docker.docker_container:
         name: "solawi-bid_frontend_{{ environment_letter }}"
@@ -52,10 +64,10 @@
         restart_policy: always
         env:
           ENVIRONMENT: "{{ environment_letter }}"
-          FRONTEND_URL: "http://{{ frontend_domain }}"
-          FRONTEND_PORT: "80"
-          BACKEND_URL: "http://{{ backend_domain }}"
-          BACKEND_PORT: "80"
+          FRONTEND_URL: "https://{{ frontend_domain }}"
+          FRONTEND_PORT: "443"
+          BACKEND_URL: "https://{{ backend_domain }}"
+          BACKEND_PORT: "443"
 
         labels: "{{ dynamic_dict }}"
         healthcheck:
@@ -87,8 +99,20 @@
 
     - name: Deploy Backend container for {{ environment_letter }}
       vars:
-        keys: ["traefik.enable", "traefik.http.routers.solawi-bid_backend_{{ environment_letter }}.rule", "traefik.http.routers.solawi-bid_backend_{{ environment_letter }}.entrypoints", "traefik.http.services.solawi-bid_backend_{{ environment_letter }}.loadbalancer.server.port"]
-        values: ["true", "Host(`{{ backend_domain }}`)", "web, websecure", "8080"]
+        keys:
+          - "traefik.enable"
+          - "traefik.http.routers.solawi-bid_backend_{{ environment_letter }}.rule"
+          - "traefik.http.routers.solawi-bid_backend_{{ environment_letter }}.entrypoints"
+          - "traefik.http.services.solawi-bid_backend_{{ environment_letter }}.loadbalancer.server.port"
+          - "traefik.http.routers.solawi-bid_backend_{{ environment_letter }}.tls"
+          - "traefik.http.routers.solawi-bid_backend_{{ environment_letter }}.tls.certresolver"
+        values:
+          - "true"
+          - "Host(`{{ backend_domain }}`)"
+          - "web, websecure"
+          - "8080"
+          - "true"
+          - "letsencrypt"
         dynamic_dict: "{{ dict(keys | zip(values)) }}"
       community.docker.docker_container:
         name: "solawi-bid_backend_{{ environment_letter }}"
