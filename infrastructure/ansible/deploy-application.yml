@@ -23,7 +23,7 @@
         state: started
         restart_policy: always
         ports:
-          - "3306:3306"
+          - "3306"
         volumes:
           - "/var/solawi-bid/{{ environment_letter }}/database/setup.sql:/docker-entrypoint-initdb.d/setup.sql"
           - "/var/solawi-bid/{{ environment_letter }}/database/backups:/backups"

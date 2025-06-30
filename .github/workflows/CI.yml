@@ -105,14 +105,14 @@ jobs:
       - name: collect environment config
         id: collect-env-config
         run: |
-          if [[ "/tags/" == *"${GITHUB_REF}"* ]]; then
+          if [[ "${{github.ref}}" == *"refs/tags/"* ]]; then
             echo 'environment=P' >> $GITHUB_OUTPUT
             echo 'frontend_domain=solyton.org' >> $GITHUB_OUTPUT
             echo 'backend_domain=api.solyton.org' >> $GITHUB_OUTPUT
             echo 'mysql_password=${{ secrets.MYSQL_PASSWORD_P }}' >> $GITHUB_OUTPUT
             echo 'jwt_secret=${{ secrets.JWT_SECRET_P }}' >> $GITHUB_OUTPUT
             echo 'application_owner_password=${{ secrets.APPLICATION_OWNER_PASSWORD_P }}' >> $GITHUB_OUTPUT
-          elif [[ "/refs/heads/main" == *"${GITHUB_REF}"* ]]; then
+          elif [[  "${{github.ref}}" == *"refs/heads/main"* ]]; then
             echo 'environment=Q' >> $GITHUB_OUTPUT
             echo 'frontend_domain=q.solyton.org' >> $GITHUB_OUTPUT
             echo 'backend_domain=api.q.solyton.org' >> $GITHUB_OUTPUT
