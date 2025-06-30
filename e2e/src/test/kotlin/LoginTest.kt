@@ -36,7 +36,7 @@ class LoginTest {
         page.waitForURL("**/dashboard")
 
         val currentUrl = page.url()
-        assertTrue(currentUrl.contains("/dashboard"), "User wurde nicht zum Dashboard weitergeleitet.")
+        assertTrue(currentUrl.contains("/dashboard"), "User was not redirected to the dashboard after login.")
     }
 
     @Test

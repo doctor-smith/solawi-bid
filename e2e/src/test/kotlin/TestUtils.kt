@@ -23,7 +23,6 @@ class TestUtils {
             page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Login")).click()
             page.waitForURL("**/dashboard")
 
-            // Storage-State speichern (Cookies, LocalStorage, etc.)
             context.storageState(
                 BrowserContext.StorageStateOptions().setPath(storageStatePath)
             )
