@@ -28,7 +28,7 @@ import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.error.component.showErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
 import org.solyton.solawi.bid.module.i18n.data.language
-import org.solyton.solawi.bid.module.permissions.service.isNotGranted
+import org.solyton.solawi.bid.module.user.service.isNotGranted
 
 @Markup
 @Composable
