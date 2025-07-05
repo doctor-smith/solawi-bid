@@ -5,17 +5,14 @@ import org.gradle.api.Project
 
 class DependencyPlugin : Plugin<Project> {
 
-
-
     override fun apply(project: Project) {
-
 
         // Create a container for MigrationConfig objects
         val configs = project.container(DependencyAnalyserConfig::class.java)
 
         // Register the extension with the container
         val extension = project.extensions.create(
-            "analyserConfigs",
+            "dependencyAnalyser",
             DependencyAnalyserExtension::class.java,
             configs
         )
@@ -40,5 +37,4 @@ class DependencyPlugin : Plugin<Project> {
             }
         }
     }
-
 }

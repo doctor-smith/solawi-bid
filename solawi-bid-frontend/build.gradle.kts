@@ -162,7 +162,7 @@ tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektJsTest") {
     baseline.set(file("detekt/detekt-baseline-js-test.xml"))
 }
 
-analyserConfigs {
+dependencyAnalyser {
     analyse("frontend") {
         domain = "org.solyton.solawi.bid"
         sourceSet = "jsMain"

@@ -116,24 +116,87 @@ abstract class DependencyAnalyserTask : DefaultTask() {
             """.trimMargin()
         }
 
+        // Dependencies between modules
+        val  moduleDependencies = mutableListOf<Dependency>()
+        modules.forEach { sourceModule ->
+            val kotlinFiles = getAllKtFilesInPackage("$root/$modulePath/$sourceModule")
+            modules.forEach { targetModule ->
+                if(targetModule != sourceModule) {
+                val sourceUsesTarget = kotlinFiles.map {
+                    UsingObj(
+                        it ,
+                        readImportsFromFile(it)
+                            .filter { import -> import.startsWith("$domain.$modulePath.$targetModule") }.toSet()
+                    )
+                }.filter { it.imports.isNotEmpty()}
+
+                if(sourceUsesTarget.isNotEmpty()) {
+                    moduleDependencies.add(
+                        0, Dependency(
+                            "$modulePath.$sourceModule","$modulePath.$targetModule", sourceUsesTarget
+                        )
+                    )
+                }
+
+            }}
+        }
+
+        val moduleArrows = moduleDependencies.joinToString("\n") {
+                dependency -> """ 
+                    |    ${dependency.module} --> ${dependency.dependsOn} 
+                """.trimMargin()
+        }
+        val moduleImportsByModuleAndFile = moduleDependencies.groupBy  { it.module }.entries.joinToString("\n\n") {
+            (module, dependencies) -> """
+                |
+                |### module: $module
+                |
+                |  ${dependencies.joinToString("\n") { dependency -> """
+                |
+                |  * dependency: ${dependency.dependsOn}
+                |  
+                |  ${dependency.uses.joinToString("\n") { obj -> obj.imports.joinToString("\n\n") { import -> 
+                    "    * $import"
+                }}}
+                """.trimMargin()
+                        
+                }}
+            """.trimMargin()
+
+        }
+
         val report = File(root, "$targetFile.$reportType")
         report.writeText("""
             |# Dependency Analysis
             |
-            |## Graph
+            |## Dependency Graph App <-> Modules
+            |Background: App is allowed to depend on modules, but not the other way round
+            |
             |```mermaid
             |graph TD
             |$nodeModules
             |$arrows
             |```
             |
-            |## Critical Imports:
+            |### Critical Dependencies:
             |```mermaid
             |graph TD
             |$renderedCriticalArrows
             |```
             |
+            |<details>
             |$criticalImportsByModuleAndFile
+            |</details>
+            |
+            |## Dependencies between modules
+            |In principle, all dependencies are allowed. But there should be no cycles in the graph 
+            |```mermaid
+            |graph TD
+            |$moduleArrows
+            |```
+            |<details>
+            |$moduleImportsByModuleAndFile
+            |</details>
             |
         """.trimMargin()
 

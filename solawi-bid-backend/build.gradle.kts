@@ -234,7 +234,7 @@ tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektTest") {
 }
 
 
-analyserConfigs {
+dependencyAnalyser {
     analyse("backend") {
         domain = "org.solyton.solawi.bid"
         sourceSet = "main"
