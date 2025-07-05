@@ -12,7 +12,7 @@ import org.solyton.solawi.bid.module.permission.schema.Contexts
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.permission.schema.Rights
 import org.solyton.solawi.bid.module.permission.schema.RightsTable
-import org.solyton.solawi.bid.module.user.schema.UserRoleContext
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.RightEntity

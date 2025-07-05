@@ -11,7 +11,7 @@ import org.solyton.solawi.bid.module.permission.schema.Contexts
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.Roles
 import org.solyton.solawi.bid.module.user.schema.UserEntity
-import org.solyton.solawi.bid.module.user.schema.UserRoleContext
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.schema.Users
 import org.jetbrains.exposed.sql.Database as SqlDatabase
 
@@ -98,13 +98,13 @@ data class Environment(
             }.first().id
 
             UserRoleContext.insert {
-                it[userId] = applicationOwner.id
+                it[userId] = applicationOwner.id.value
                 it[contextId] = applicationContextId
                 it[roleId] = ownerRoleId
             }
 
             UserRoleContext.insert {
-                it[userId] = applicationOwner.id
+                it[userId] = applicationOwner.id.value
                 it[contextId] = applicationContextId
                 it[roleId] = userRoleId
             }

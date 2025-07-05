@@ -2,16 +2,9 @@ package org.solyton.solawi.bid.module.db
 
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.Table
-import org.solyton.solawi.bid.module.user.schema.Addresses
-import org.solyton.solawi.bid.module.user.schema.Organisations
 import org.solyton.solawi.bid.module.user.schema.Sessions
 import org.solyton.solawi.bid.module.user.schema.Tokens
-import org.solyton.solawi.bid.module.user.schema.UserOrganization
-import org.solyton.solawi.bid.module.user.schema.UserProfiles
-import org.solyton.solawi.bid.module.user.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.schema.Users
-import kotlin.reflect.full.*
-import kotlin.reflect.jvm.isAccessible
 
 fun main() {
     val diagram = generateMermaidER(

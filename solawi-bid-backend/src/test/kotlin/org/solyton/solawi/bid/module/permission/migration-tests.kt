@@ -28,7 +28,7 @@ import org.solyton.solawi.bid.module.permission.schema.Rights
 import org.solyton.solawi.bid.module.permission.schema.RightsTable
 import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
 import org.solyton.solawi.bid.module.permission.schema.Roles
-import org.solyton.solawi.bid.module.user.schema.UserRoleContext
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.permission.action.db.isGranted
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
@@ -190,13 +190,13 @@ fun injectApplicationOwner(ownerUsername: String, ownerPassword: String):UUID {
     }.first().id
 
     UserRoleContext.insert {
-        it[userId] = applicationOwner.id
+        it[userId] = applicationOwner.id.value
         it[contextId] = applicationContextId
         it[roleId] = ownerRoleId
     }
 
     UserRoleContext.insert {
-        it[userId] = applicationOwner.id
+        it[userId] = applicationOwner.id.value
         it[contextId] = applicationContextId
         it[roleId] = userRoleId
     }
