@@ -20,7 +20,6 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
-//import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.data.device.mediaType
 import org.solyton.solawi.bid.application.permission.Right
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
@@ -30,6 +29,7 @@ import org.solyton.solawi.bid.application.ui.page.user.effect.trigger
 import org.solyton.solawi.bid.application.ui.page.user.i18n.UserLangComponent
 import org.solyton.solawi.bid.application.ui.style.page.verticalPageStyle
 import org.solyton.solawi.bid.application.ui.style.wrap.Wrap
+import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.componentLoaded
 import org.solyton.solawi.bid.module.i18n.data.language
@@ -88,6 +88,7 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
                         (storage * modals).showCreateUserModal(
                             texts = dialogs * subComp("createUser"),
                             device = storage * deviceData * mediaType.get,
+                            styles = {dev -> auctionModalStyles(dev) },
                             setUserData = {username, password -> useR = CreateUser(username, password) },
                             cancel = {}
                         ) {
