@@ -137,6 +137,16 @@ val solawiApi by lazy {
             key = ChangePassword::class,
             url = "users/change-password"
         )
+
+        post<RegisterUser, UserRegistered> (
+            key = RegisterUser::class,
+            url = "user/register"
+        )
+
+        post<SendMailForRegistrationConfirmation, MailForRegistrationConfirmationSent>(
+            key = SendMailForRegistrationConfirmation::class,
+            url = "user/send-registration-mail"
+        )
     }
     // Organizations
 }

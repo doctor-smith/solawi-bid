@@ -10,7 +10,6 @@ import org.evoleq.ktorx.result.ResultSerializer
 import org.solyton.solawi.bid.application.exception.ApplicationException
 import org.solyton.solawi.bid.application.permission.Context
 import org.solyton.solawi.bid.application.permission.Header
-import org.solyton.solawi.bid.module.user.service.credentialsAreOK
 
 fun Application.interceptAndValidateHeaders() {
     intercept(ApplicationCallPipeline.Plugins) {

@@ -11,7 +11,7 @@ import org.solyton.solawi.bid.module.permission.schema.Contexts
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.Roles
 import org.solyton.solawi.bid.module.user.schema.UserEntity
-import org.solyton.solawi.bid.module.user.schema.UserRoleContext
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.schema.Users
 import org.jetbrains.exposed.sql.Database as SqlDatabase
 
@@ -35,17 +35,31 @@ fun Application.setupEnvironment(): Environment = with(environment.config){
         password = property("users.owner.password").getString()
     )
 
+    val mailService = MailService(
+        Smtp(
+            property("mail.smtp.host").getString(),
+            property("mail.smtp.port").getString().toInt(),
+            property("mail.smtp.auth").getString().toBoolean(),
+            property("mail.smtp.user").getString(),
+            property("mail.smtp.password").getString(),
+            property("mail.smtp.startTslEnabled").getString().toBoolean()
+        ),
+        property("mail.defaultResponseAddress").getString()
+    )
+
     Environment(
         database,
         jwt,
-        applicationOwner
+        applicationOwner,
+        mailService
     )
 }
 
 data class Environment(
     val database: Database,
     val jwt: JWT,
-    val applicationOwner: User
+    val applicationOwner: User,
+    val mailService: MailService
 ) {
     lateinit var db: SqlDatabase
 
@@ -84,13 +98,13 @@ data class Environment(
             }.first().id
 
             UserRoleContext.insert {
-                it[userId] = applicationOwner.id
+                it[userId] = applicationOwner.id.value
                 it[contextId] = applicationContextId
                 it[roleId] = ownerRoleId
             }
 
             UserRoleContext.insert {
-                it[userId] = applicationOwner.id
+                it[userId] = applicationOwner.id.value
                 it[contextId] = applicationContextId
                 it[roleId] = userRoleId
             }
@@ -116,3 +130,16 @@ data class User(
     val password: String
 )
 
+data class MailService(
+    val smtp: Smtp,
+    val defaultResponseAddress: String?
+)
+
+data class Smtp(
+    val host: String,
+    val port: Int,
+    val auth: Boolean,
+    val user: String,
+    val password: String,
+    val startTslEnabled: Boolean
+)

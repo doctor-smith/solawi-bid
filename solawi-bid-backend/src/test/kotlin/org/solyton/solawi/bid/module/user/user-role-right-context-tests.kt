@@ -2,8 +2,6 @@ package org.solyton.solawi.bid.module.user
 
 import org.evoleq.exposedx.test.runSimpleH2Test
 import org.jetbrains.exposed.sql.insert
-import org.solyton.solawi.bid.DbFunctional
-import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.module.permission.action.db.getRoleRightContexts
 import org.solyton.solawi.bid.module.permission.data.api.Context
 import org.solyton.solawi.bid.module.permission.data.api.Right
@@ -16,7 +14,7 @@ import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
 import org.solyton.solawi.bid.module.permission.schema.RolesTable
 import org.solyton.solawi.bid.module.user.schema.UserEntity
-import org.solyton.solawi.bid.module.user.schema.UserRoleContext
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import kotlin.test.assertEquals
 
@@ -91,7 +89,7 @@ class UserRoleRightContextTests {
 
         UserRoleContext.insert {
             it[contextId] = context.id
-            it[userId] = user.id
+            it[userId] = user.id.value
             it[roleId] = updater.id
         }
 

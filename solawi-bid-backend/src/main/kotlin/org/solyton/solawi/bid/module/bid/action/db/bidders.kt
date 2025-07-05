@@ -6,10 +6,9 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
-import org.evoleq.util.DbAction
-import org.evoleq.util.KlAction
+import org.evoleq.ktorx.DbAction
+import org.evoleq.ktorx.KlAction
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.solyton.solawi.bid.module.bid.data.api.*

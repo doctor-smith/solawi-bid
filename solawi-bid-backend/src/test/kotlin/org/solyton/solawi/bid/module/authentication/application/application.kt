@@ -3,11 +3,14 @@ package org.solyton.solawi.bid.module.authentication.application
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.routing.*
+import org.evoleq.ktorx.Base
+import org.evoleq.ktorx.Context
+import org.evoleq.ktorx.Principle
+import org.solyton.solawi.bid.application.action.io.Respond
 import org.evoleq.ktorx.result.map
 import org.evoleq.math.state.map
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
-import org.evoleq.util.*
 import org.solyton.solawi.bid.application.environment.setupEnvironment
 import org.solyton.solawi.bid.application.pipeline.*
 import org.solyton.solawi.bid.module.authentication.data.api.Login
@@ -39,13 +42,13 @@ fun Application.authenticationTest() {
         }
         authenticate ("auth-jwt") {
             get("test-user-principle") {
-                (Principle() map {r -> r.map { jwtPrincipal -> UUID.fromString(jwtPrincipal.payload.subject) } }) *
+                (Principle() map { r -> r.map { jwtPrincipal -> UUID.fromString(jwtPrincipal.payload.subject) } }) *
                 GetUserById * { result -> { database ->
                     result.map { user ->
                         Login(user.username, "")
                     } to database
                 } } *
-                Respond() runOn Base(call, environment)
+                        Respond() runOn Base(call, environment)
             }
             get("test-receive-contextual") {
 
@@ -59,7 +62,7 @@ fun Application.authenticationTest() {
                         Login(it.username, "")
                     } to database
                 } } *
-                Respond() runOn Base(call, environment)
+                        Respond() runOn Base(call, environment)
             }
         }
     }

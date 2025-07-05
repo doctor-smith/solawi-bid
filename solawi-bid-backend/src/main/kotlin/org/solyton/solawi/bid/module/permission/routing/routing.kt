@@ -5,9 +5,9 @@ import io.ktor.server.routing.*
 import io.ktor.util.*
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
-import org.evoleq.util.Base
-import org.evoleq.util.ReceiveContextual
-import org.evoleq.util.Respond
+import org.evoleq.ktorx.Base
+import org.evoleq.ktorx.ReceiveContextual
+import org.solyton.solawi.bid.application.action.io.Respond
 import org.solyton.solawi.bid.application.environment.Environment
 import org.solyton.solawi.bid.application.permission.Right
 import org.solyton.solawi.bid.module.permission.action.db.GetRoleRightContexts
@@ -16,7 +16,6 @@ import org.solyton.solawi.bid.module.permission.action.db.IsGranted
 import org.solyton.solawi.bid.module.permission.action.db.ReadAvailableRightRoleContexts
 import org.solyton.solawi.bid.module.permission.action.db.ReadParentChildRelationsOfContexts
 import org.solyton.solawi.bid.module.permission.data.api.Contexts
-import org.solyton.solawi.bid.module.permission.data.api.ParentChildRelationsOfContext
 import org.solyton.solawi.bid.module.permission.data.api.ParentChildRelationsOfContexts
 import org.solyton.solawi.bid.module.permission.data.api.ReadParentChildRelationsOfContexts
 import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContexts

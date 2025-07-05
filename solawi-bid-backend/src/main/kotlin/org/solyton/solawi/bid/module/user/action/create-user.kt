@@ -6,8 +6,8 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
-import org.evoleq.util.DbAction
-import org.evoleq.util.KlAction
+import org.evoleq.ktorx.DbAction
+import org.evoleq.ktorx.KlAction
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.solyton.solawi.bid.application.permission.Context
@@ -17,12 +17,12 @@ import org.solyton.solawi.bid.module.permission.exception.ContextException
 import org.solyton.solawi.bid.module.permission.exception.PermissionException
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
-import org.solyton.solawi.bid.module.user.schema.UserRoleContext
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
 import org.solyton.solawi.bid.module.user.data.api.User
 import org.solyton.solawi.bid.module.user.schema.UserEntity
-import org.solyton.solawi.bid.module.user.service.hashPassword
+import org.solyton.solawi.bid.module.user.service.bcrypt.hashPassword
 
 @MathDsl
 @Suppress("FunctionName")
@@ -32,7 +32,7 @@ val CreateNewUser: KlAction<Result<CreateUser>, Result<User>> = KlAction{ result
         if(user != null) {
             User(user.id.value.toString(), user.username)
         } else {
-            val applicationContext = ContextEntity.find { ContextsTable.name eq org.solyton.solawi.bid.application.permission.Context.Application.value }.firstOrNull()
+            val applicationContext = ContextEntity.find { ContextsTable.name eq Context.Application.value }.firstOrNull()
                 ?: throw ContextException.NoSuchRootContext(Context.Application.value)
             val applicationOrganizationContext = ContextEntity.find { ContextsTable.name eq Value.ORGANIZATION and (ContextsTable.rootId eq applicationContext.id) }.firstOrNull()
                 ?: throw ContextException.NoSuchContext("${Context.Application.value}/${Value.ORGANIZATION}")

@@ -1,16 +1,13 @@
 package org.solyton.solawi.bid.module.authentication.routing
 
 // import org.solyton.solawi.bid.application.plugin.AuthenticationHolder.Companion.jwtPrincipal
-import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import org.evoleq.ktorx.result.bindSuspend
-import org.evoleq.math.state.bind
+import org.evoleq.ktorx.Base
+import org.evoleq.ktorx.Receive
+import org.solyton.solawi.bid.application.action.io.Respond
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
-import org.evoleq.util.*
 import org.solyton.solawi.bid.application.environment.Environment
 import org.solyton.solawi.bid.module.authentication.action.*
 import org.solyton.solawi.bid.module.authentication.data.api.LoggedInAs

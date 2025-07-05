@@ -5,9 +5,9 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
-import org.evoleq.util.Action
-import org.evoleq.util.DbAction
-import org.evoleq.util.KlAction
+import org.evoleq.ktorx.Action
+import org.evoleq.ktorx.DbAction
+import org.evoleq.ktorx.KlAction
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.user.data.api.GetUsers
 import org.solyton.solawi.bid.module.user.data.api.User
