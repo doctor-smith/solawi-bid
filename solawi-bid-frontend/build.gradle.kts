@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.compose)
     alias(libs.plugins.serialization)
     id("org.evoleq.math.cat.gradle.optics")
+    id("org.evoleq.architecture.dependency")
     alias(libs.plugins.detekt)
     alias(libs.plugins.kover)
 }
@@ -159,4 +160,28 @@ tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselin
 }
 tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektJsTest") {
     baseline.set(file("detekt/detekt-baseline-js-test.xml"))
+}
+
+analyserConfigs {
+    analyse("frontend") {
+        domain = "org.solyton.solawi.bid"
+        sourceSet = "jsMain"
+        modules = setOf(
+            "authentication",
+            "bid",
+            "context",
+            "cookie",
+            "error",
+            "i18n",
+            "loading",
+            "localstorage",
+            "mobile",
+            "navbar",
+            "permissions",
+            "qrcode",
+            "separator",
+            "statistics",
+            "user",
+        )
+    }
 }

@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.serialization)
     alias(libs.plugins.shadow)
     id("org.evoleq.exposedx.migration")
+    id("org.evoleq.architecture.dependency")
     alias(libs.plugins.detekt)
     alias(libs.plugins.kover)
 }
@@ -232,3 +233,19 @@ tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektTest") {
     baseline.set(file("detekt/detekt-baseline-test.xml"))
 }
 
+
+analyserConfigs {
+    analyse("backend") {
+        domain = "org.solyton.solawi.bid"
+        sourceSet = "main"
+        modules = setOf(
+            "authentication",
+            "banking",
+            "bid",
+            "db",
+            "health",
+            "permission",
+            "user",
+        )
+    }
+}
