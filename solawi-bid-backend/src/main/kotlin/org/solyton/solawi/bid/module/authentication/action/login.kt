@@ -12,7 +12,7 @@ import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
-import org.solyton.solawi.bid.application.environment.JWT
+import org.solyton.solawi.bid.module.authentication.environment.JWT
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.authentication.exception.AuthenticationException
 import org.solyton.solawi.bid.module.authentication.service.generateAccessToken

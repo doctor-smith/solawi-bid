@@ -18,7 +18,7 @@ import org.evoleq.optics.storage.add
 import org.evoleq.optics.storage.remove
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.application.data.*
-import org.solyton.solawi.bid.application.data.device.mediaType
+import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.permission.Right
 import org.solyton.solawi.bid.application.ui.page.auction.action.createAuction
 import org.solyton.solawi.bid.module.bid.component.form.DEFAULT_AUCTION_ID

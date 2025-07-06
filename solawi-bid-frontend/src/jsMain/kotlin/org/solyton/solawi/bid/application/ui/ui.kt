@@ -10,7 +10,7 @@ import org.evoleq.language.component
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.application.data.*
-import org.solyton.solawi.bid.application.data.device.mediaType
+import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.routing.Routing
 import org.solyton.solawi.bid.module.cookie.component.CookieDisclaimer
 import org.solyton.solawi.bid.module.i18n.data.language

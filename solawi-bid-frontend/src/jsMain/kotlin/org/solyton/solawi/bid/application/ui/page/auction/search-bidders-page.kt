@@ -21,7 +21,7 @@ import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.*
 import org.solyton.solawi.bid.application.data.*
-import org.solyton.solawi.bid.application.data.device.mediaType
+import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.ui.page.auction.action.searchUsernameOfBidder
 import org.solyton.solawi.bid.application.ui.style.form.fieldStyle
 import org.solyton.solawi.bid.application.ui.style.form.formLabelStyle

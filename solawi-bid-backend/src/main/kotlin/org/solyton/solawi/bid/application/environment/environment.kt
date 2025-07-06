@@ -1,11 +1,19 @@
 package org.solyton.solawi.bid.application.environment
 
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
+import org.evoleq.exposedx.data.Database
+import org.evoleq.exposedx.data.DbEnv
+import org.evoleq.ktorx.data.KTorEnv
+import org.evoleq.ktorx.result.Result
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.solyton.solawi.bid.application.permission.Context
 import org.solyton.solawi.bid.application.permission.Role
+import org.solyton.solawi.bid.application.action.io.transform
+import org.solyton.solawi.bid.module.authentication.environment.JWT
+import org.solyton.solawi.bid.module.authentication.environment.JwtEnv
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.Contexts
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
@@ -57,13 +65,14 @@ fun Application.setupEnvironment(): Environment = with(environment.config){
 
 data class Environment(
     val database: Database,
-    val jwt: JWT,
+    override val jwt: JWT,
     val applicationOwner: User,
-    val mailService: MailService
-) {
+    val mailService: MailService,
+    override val transformException: Result.Failure.Exception.() -> Pair<HttpStatusCode, Result.Failure.Message> = { transform() }
+): KTorEnv, DbEnv, JwtEnv {
     lateinit var db: SqlDatabase
 
-    fun connectToDatabase(): SqlDatabase = when(::db.isInitialized){
+    override fun connectToDatabase(): SqlDatabase = when(::db.isInitialized){
         false-> SqlDatabase.connect(
             database.url,
             database.driver,
@@ -111,19 +120,6 @@ data class Environment(
         }
     }
 }
-
-data class JWT(
-    val domain:String, // issuer
-    val audience: String,
-    val realm: String,
-    val secret: String
-)
-data class Database(
-    val url: String,
-    val driver: String,
-    val user: String,
-    val password: String
-)
 
 data class User(
     val username: String,

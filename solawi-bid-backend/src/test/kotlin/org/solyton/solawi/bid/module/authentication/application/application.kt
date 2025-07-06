@@ -6,7 +6,7 @@ import io.ktor.server.routing.*
 import org.evoleq.ktorx.Base
 import org.evoleq.ktorx.Context
 import org.evoleq.ktorx.Principle
-import org.solyton.solawi.bid.application.action.io.Respond
+import org.evoleq.ktorx.Respond
 import org.evoleq.ktorx.result.map
 import org.evoleq.math.state.map
 import org.evoleq.math.state.runOn
@@ -41,6 +41,7 @@ fun Application.authenticationTest() {
             this.it()
         }
         authenticate ("auth-jwt") {
+            val transform = environment.transformException
             get("test-user-principle") {
                 (Principle() map { r -> r.map { jwtPrincipal -> UUID.fromString(jwtPrincipal.payload.subject) } }) *
                 GetUserById * { result -> { database ->
@@ -48,7 +49,7 @@ fun Application.authenticationTest() {
                         Login(user.username, "")
                     } to database
                 } } *
-                        Respond() runOn Base(call, environment)
+                        Respond{ transform() } runOn Base(call, environment)
             }
             get("test-receive-contextual") {
 
@@ -62,7 +63,7 @@ fun Application.authenticationTest() {
                         Login(it.username, "")
                     } to database
                 } } *
-                        Respond() runOn Base(call, environment)
+                        Respond{ transform() } runOn Base(call, environment)
             }
         }
     }

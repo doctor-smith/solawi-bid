@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.db.migrations
+package org.solyton.solawi.bid.application.data.db.migrations
 
 import kotlinx.coroutines.runBlocking
 import org.evoleq.exposedx.migrations.runOn
@@ -53,7 +53,7 @@ suspend fun migrate(dbConf: DbConf) = with(dbConf) {
             |...    
             |""".trimMargin()
     )
-    dbMigrations.runOn(
+    applicationMigrations.runOn(
         Database.connect(
             url = url,
             driver = driver,

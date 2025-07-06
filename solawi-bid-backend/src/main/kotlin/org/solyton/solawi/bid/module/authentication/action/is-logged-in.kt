@@ -9,7 +9,7 @@ import org.evoleq.ktorx.Action
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.joda.time.DateTime
-import org.solyton.solawi.bid.application.environment.JWT
+import org.solyton.solawi.bid.module.authentication.environment.JWT
 import org.solyton.solawi.bid.module.authentication.data.api.IsLoggedIn
 import org.solyton.solawi.bid.module.authentication.data.api.LoggedInAs
 import org.solyton.solawi.bid.module.authentication.service.generateAccessToken

@@ -1,13 +1,13 @@
 package org.evoleq.ktorx
 
 import io.ktor.server.application.*
+import org.evoleq.exposedx.data.DbEnv
 import org.evoleq.math.MathDsl
 import org.evoleq.math.mapSecond
 import org.evoleq.math.state.KlState
 import org.evoleq.math.state.KlStateF
 import org.evoleq.math.state.State
 import org.jetbrains.exposed.sql.Database
-import org.solyton.solawi.bid.application.environment.Environment
 
 typealias Base = BaseState
 typealias Action<T> = State<Base, T>
@@ -19,7 +19,7 @@ data class BaseState(
 )
 
 @Suppress("FunctionName")
-fun Base(call: ApplicationCall, environment: Environment): BaseState = Base(call, environment.connectToDatabase())
+fun  <E : DbEnv> Base(call: ApplicationCall, environment: E): BaseState = Base(call, environment.connectToDatabase())
 
 @MathDsl
 @Suppress("FunctionName")

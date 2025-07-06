@@ -10,7 +10,7 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.Div
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.actions
-import org.solyton.solawi.bid.application.data.device.mediaType
+import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.ui.page.login.action.loginAction
 import org.solyton.solawi.bid.application.ui.style.form.formPageStyle

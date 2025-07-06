@@ -173,8 +173,8 @@ tasks.jacocoTestReport {
 migrations {
     migration("dbMain") {
         domain = "org.solyton.solawi.bid"
-        module = "db"
-        migrations = "migrations"
+        module = "application"
+        migrations = "data/db/migrations"
         sourceSet = "main"
     }
 
@@ -242,7 +242,6 @@ dependencyAnalyser {
             "authentication",
             "banking",
             "bid",
-            "db",
             "health",
             "permission",
             "user",

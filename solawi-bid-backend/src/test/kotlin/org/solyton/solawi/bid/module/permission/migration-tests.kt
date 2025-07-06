@@ -17,9 +17,9 @@ import org.solyton.solawi.bid.application.permission.Context
 import org.solyton.solawi.bid.application.permission.Role
 import org.solyton.solawi.bid.application.permission.Value
 import org.solyton.solawi.bid.application.permission.Right
-import org.solyton.solawi.bid.module.db.migrations.Migration1730143239225
-import org.solyton.solawi.bid.module.db.migrations.Migration1743235367945
-import org.solyton.solawi.bid.module.db.migrations.Migration1743786680319
+import org.solyton.solawi.bid.application.data.db.migrations.Migration1730143239225
+import org.solyton.solawi.bid.application.data.db.migrations.Migration1743235367945
+import org.solyton.solawi.bid.application.data.db.migrations.Migration1743786680319
 import org.solyton.solawi.bid.module.permission.schema.repository.parent
 import org.solyton.solawi.bid.module.db.schema.*
 import org.solyton.solawi.bid.module.permission.schema.Contexts

@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.db
+package org.solyton.solawi.bid.application.data.db
 
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.Table

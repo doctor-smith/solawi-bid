@@ -3,12 +3,13 @@ package org.solyton.solawi.bid.module.permission.routing
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.util.*
+import org.evoleq.exposedx.data.DbEnv
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
 import org.evoleq.ktorx.Base
 import org.evoleq.ktorx.ReceiveContextual
-import org.solyton.solawi.bid.application.action.io.Respond
-import org.solyton.solawi.bid.application.environment.Environment
+import org.evoleq.ktorx.Respond
+import org.evoleq.ktorx.data.KTorEnv
 import org.solyton.solawi.bid.application.permission.Right
 import org.solyton.solawi.bid.module.permission.action.db.GetRoleRightContexts
 import org.solyton.solawi.bid.module.permission.action.db.GetRoleRightContextsOfUsers
@@ -24,7 +25,11 @@ import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContextsOf
 import org.solyton.solawi.bid.module.permission.data.api.UserToContextsMap
 
 @KtorDsl
-fun Routing.permissions(environment: Environment, authenticate: Routing.(Route.() -> Route)-> Route) {
+fun <PermissionEnv> Routing.permissions(
+    environment: PermissionEnv,
+    authenticate: Routing.(Route.() -> Route)-> Route
+) where PermissionEnv: KTorEnv, PermissionEnv: DbEnv {
+    val transform = environment.transformException
     authenticate {
         route("permissions") {
             route("user") {
@@ -34,7 +39,7 @@ fun Routing.permissions(environment: Environment, authenticate: Routing.(Route.(
                         context.data.userId != context.userId.toString()
                     } *
                     GetRoleRightContexts *
-                    Respond<Contexts>() runOn Base(call, environment)
+                    Respond<Contexts> { transform() } runOn Base(call, environment)
                 }
             }
 
@@ -43,7 +48,7 @@ fun Routing.permissions(environment: Environment, authenticate: Routing.(Route.(
                     ReceiveContextual<ReadRightRoleContextsOfUsers>() *
                     IsGranted(Right.readRightRoleContexts.value) *
                     GetRoleRightContextsOfUsers *
-                    Respond<UserToContextsMap>() runOn Base(call, environment)
+                    Respond<UserToContextsMap>{ transform() } runOn Base(call, environment)
                 }
             }
 
@@ -52,13 +57,13 @@ fun Routing.permissions(environment: Environment, authenticate: Routing.(Route.(
                     ReceiveContextual<ReadParentChildRelationsOfContexts>() *
                     IsGranted(Right.readRightRoleContexts.value) *
                     ReadParentChildRelationsOfContexts *
-                    Respond<ParentChildRelationsOfContexts>() runOn Base(call, environment)
+                    Respond<ParentChildRelationsOfContexts>{ transform() } runOn Base(call, environment)
                 }
                 patch("roles-and-rights") {
                     ReceiveContextual<ReadRightRoleContexts>() *
                     IsGranted(Right.readRightRoleContexts.value) *
                     ReadAvailableRightRoleContexts *
-                    Respond<Contexts>() runOn Base(call, environment)
+                    Respond<Contexts>{ transform() } runOn Base(call, environment)
                 }
             }
         }
