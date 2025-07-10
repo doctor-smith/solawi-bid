@@ -1,8 +1,16 @@
 package org.solyton.solawi.bid.application.permission
 
+import org.evoleq.permission.Create
+import org.evoleq.permission.Delete
+import org.evoleq.permission.Read
+import org.evoleq.permission.Update
 import org.evoleq.value.StringValueWithDescription
+import org.solyton.solawi.bid.module.permission.permission.ReadRightRoleContextsRight
+import org.solyton.solawi.bid.module.permission.permission.ReadRightsAndRolesRight
 
 // typealias Right = ValueWithDescription
+
+
 
 object Right{
     val create = Create
@@ -10,15 +18,9 @@ object Right{
     val update = Update
     val delete = Delete
 
-    val readRightRoleContexts = object : StringValueWithDescription {
-        override val value: String = "READ_ROLE_RIGHT_CONTEXTS"
-        override val description: String = "Read role-right-contexts of users"
-    }
+    data object ReadRightRoleContexts : StringValueWithDescription by ReadRightRoleContextsRight
 
-    val readRightsAndRoles = object : StringValueWithDescription {
-        override val value: String = "READ_ROLES_AND_RIGHTS"
-        override val description: String = "Read roles and rights of users"
-    }
+    data object ReadRightsAndRoles : StringValueWithDescription by ReadRightsAndRolesRight
 
     object Organization {
         val create = object : StringValueWithDescription {
@@ -76,24 +78,4 @@ object Right{
             override val description: String = "Manage Auction"
         }
     }
-}
-
-object Create : StringValueWithDescription {
-    override val value  = "CREATE"
-    override val description: String = "General right to create something in a context"
-}
-
-object Read : StringValueWithDescription {
-    override val value  = "READ"
-    override val description: String = "General right to read something in a context"
-}
-
-object Update : StringValueWithDescription {
-    override val value  = "UPDATE"
-    override val description: String = "General right to update something in a context"
-}
-
-object Delete : StringValueWithDescription {
-    override val value  = "DELETE"
-    override val description: String = "General right to delete something in a context"
 }

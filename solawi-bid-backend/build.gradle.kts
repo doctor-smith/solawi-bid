@@ -239,6 +239,7 @@ dependencyAnalyser {
         domain = "org.solyton.solawi.bid"
         sourceSet = "main"
         modules = setOf(
+            "application",
             "authentication",
             "banking",
             "bid",

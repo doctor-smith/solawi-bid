@@ -10,7 +10,7 @@ import org.evoleq.ktorx.Base
 import org.evoleq.ktorx.ReceiveContextual
 import org.evoleq.ktorx.Respond
 import org.evoleq.ktorx.data.KTorEnv
-import org.solyton.solawi.bid.application.permission.Right
+import org.solyton.solawi.bid.module.permission.permission.Right
 import org.solyton.solawi.bid.module.permission.action.db.GetRoleRightContexts
 import org.solyton.solawi.bid.module.permission.action.db.GetRoleRightContextsOfUsers
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
@@ -35,7 +35,7 @@ fun <PermissionEnv> Routing.permissions(
             route("user") {
                 patch("role-right-contexts") {
                     ReceiveContextual<ReadRightRoleContextsOfUser>() *
-                    IsGranted(Right.readRightRoleContexts.value){ context ->
+                    IsGranted(Right.ReadRightRoleContexts.value){ context ->
                         context.data.userId != context.userId.toString()
                     } *
                     GetRoleRightContexts *
@@ -46,7 +46,7 @@ fun <PermissionEnv> Routing.permissions(
             route("users") {
                 patch("role-right-contexts") {
                     ReceiveContextual<ReadRightRoleContextsOfUsers>() *
-                    IsGranted(Right.readRightRoleContexts.value) *
+                    IsGranted(Right.ReadRightRoleContexts.value) *
                     GetRoleRightContextsOfUsers *
                     Respond<UserToContextsMap>{ transform() } runOn Base(call, environment)
                 }
@@ -55,13 +55,13 @@ fun <PermissionEnv> Routing.permissions(
             route("contexts"){
                 patch("parent-child-relations") {
                     ReceiveContextual<ReadParentChildRelationsOfContexts>() *
-                    IsGranted(Right.readRightRoleContexts.value) *
+                    IsGranted(Right.ReadRightRoleContexts.value) *
                     ReadParentChildRelationsOfContexts *
                     Respond<ParentChildRelationsOfContexts>{ transform() } runOn Base(call, environment)
                 }
                 patch("roles-and-rights") {
                     ReceiveContextual<ReadRightRoleContexts>() *
-                    IsGranted(Right.readRightRoleContexts.value) *
+                    IsGranted(Right.ReadRightRoleContexts.value) *
                     ReadAvailableRightRoleContexts *
                     Respond<Contexts>{ transform() } runOn Base(call, environment)
                 }

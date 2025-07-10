@@ -15,11 +15,13 @@ import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.application.permission.Context
 import org.solyton.solawi.bid.application.permission.Role
-import org.solyton.solawi.bid.application.permission.Value
+import org.solyton.solawi.bid.module.bid.permission.Value
 import org.solyton.solawi.bid.application.permission.Right
 import org.solyton.solawi.bid.application.data.db.migrations.Migration1730143239225
 import org.solyton.solawi.bid.application.data.db.migrations.Migration1743235367945
 import org.solyton.solawi.bid.application.data.db.migrations.Migration1743786680319
+import org.solyton.solawi.bid.module.application.permission.ApplicationContext
+import org.solyton.solawi.bid.module.bid.permission.AuctionContext
 import org.solyton.solawi.bid.module.permission.schema.repository.parent
 import org.solyton.solawi.bid.module.db.schema.*
 import org.solyton.solawi.bid.module.permission.schema.Contexts
@@ -34,6 +36,7 @@ import org.solyton.solawi.bid.module.permission.action.db.isGranted
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
+import org.solyton.solawi.bid.module.user.permission.OrganizationContext
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -79,7 +82,7 @@ class MigrationTests {
             assertNotNull(applicationContext)
 
             val oldApplicationOrganizationContext =
-                ContextEntity.find { ContextsTable.name eq Context.Application.Organization.value }.firstOrNull()
+                ContextEntity.find { ContextsTable.name eq ApplicationContext.Organization.value }.firstOrNull()
             assertNull(oldApplicationOrganizationContext)
 
             val applicationOrganizationContext = ContextEntity.find {
@@ -94,11 +97,11 @@ class MigrationTests {
             // Exists:  ORGANIZATION, MANAGEMENT
             // Deleted: ORGANIZATION/MANAGEMENT
             val oldOrganizationManagementContext = ContextEntity.find{
-                ContextsTable.name eq Context.Organization.Management.value
+                ContextsTable.name eq OrganizationContext.Management.value
             }.firstOrNull()
             assertNull(oldOrganizationManagementContext)
             val organizationContext = ContextEntity.find{
-                ContextsTable.name eq Context.Organization.value and
+                ContextsTable.name eq OrganizationContext.value and
                 (ContextsTable.rootId eq null)
             }.firstOrNull()
             assertNotNull(organizationContext)
@@ -113,7 +116,7 @@ class MigrationTests {
             // Auction Context
             // Exists:  AUCTION, MANAGEMENT
             // Deleted: AUCTION/MANAGEMENT
-            val oldAuctionManagementContext = ContextEntity.find { ContextsTable.name eq Context.Auction.Management.value }.firstOrNull()
+            val oldAuctionManagementContext = ContextEntity.find { ContextsTable.name eq AuctionContext.Management.value }.firstOrNull()
             assertNull(oldAuctionManagementContext)
             val auctionContext = ContextEntity.find { ContextsTable.name eq Context.Auction.value }.firstOrNull()
             assertNotNull(auctionContext)
@@ -161,7 +164,7 @@ class MigrationTests {
             val deleteOrganization = RightEntity.find { RightsTable.name eq Right.Organization.delete.value }.first()
             Assertions.assertTrue(isGranted(applicationOwnerId, applicationContext.id.value, deleteOrganization.id.value))
 
-            val readRightRoleContextsOfUser = RightEntity.find { RightsTable.name eq Right.readRightRoleContexts.value }.first()
+            val readRightRoleContextsOfUser = RightEntity.find { RightsTable.name eq Right.ReadRightRoleContexts.value }.first()
             Assertions.assertTrue(isGranted(applicationOwnerId, applicationContext.id.value, readRightRoleContextsOfUser.id.value))
 
 

@@ -8,11 +8,11 @@ import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.evoleq.ktorx.DbAction
 import org.evoleq.ktorx.KlAction
+import org.evoleq.permission.Role
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
-import org.solyton.solawi.bid.application.permission.Context
-import org.solyton.solawi.bid.application.permission.Role
-import org.solyton.solawi.bid.application.permission.Value
+import org.solyton.solawi.bid.module.application.permission.ApplicationContext
+import org.solyton.solawi.bid.module.user.permission.Value
 import org.solyton.solawi.bid.module.permission.exception.ContextException
 import org.solyton.solawi.bid.module.permission.exception.PermissionException
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
@@ -32,10 +32,10 @@ val CreateNewUser: KlAction<Result<CreateUser>, Result<User>> = KlAction{ result
         if(user != null) {
             User(user.id.value.toString(), user.username)
         } else {
-            val applicationContext = ContextEntity.find { ContextsTable.name eq Context.Application.value }.firstOrNull()
-                ?: throw ContextException.NoSuchRootContext(Context.Application.value)
+            val applicationContext = ContextEntity.find { ContextsTable.name eq ApplicationContext.value }.firstOrNull()
+                ?: throw ContextException.NoSuchRootContext(ApplicationContext.value)
             val applicationOrganizationContext = ContextEntity.find { ContextsTable.name eq Value.ORGANIZATION and (ContextsTable.rootId eq applicationContext.id) }.firstOrNull()
-                ?: throw ContextException.NoSuchContext("${Context.Application.value}/${Value.ORGANIZATION}")
+                ?: throw ContextException.NoSuchContext("${ApplicationContext.value}/${Value.ORGANIZATION}")
             val userRole = applicationContext.roles.find { it.name == Role.user.value }
                 ?: throw PermissionException.NoSuchRole(Role.user.value)
 

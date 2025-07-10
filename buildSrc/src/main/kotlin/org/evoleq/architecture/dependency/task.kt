@@ -82,8 +82,9 @@ abstract class DependencyAnalyserTask : DefaultTask() {
                 )
             }
         }
+        val criticalModules = dependencies.filter { it.dependsOn == appModule }
         val nodeModules = """ subgraph Critical Modules
-            |    ${dependencies.filter { it.dependsOn == appModule }.joinToString("\n") { 
+            |    ${criticalModules.joinToString("\n") { 
                 it.module
             }}
             |end
@@ -174,7 +175,7 @@ abstract class DependencyAnalyserTask : DefaultTask() {
             |
             |```mermaid
             |graph TD
-            |$nodeModules
+            |${if(criticalModules.isNotEmpty()){nodeModules}else{""}}
             |$arrows
             |```
             |

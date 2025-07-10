@@ -1,53 +1,19 @@
 package org.solyton.solawi.bid.application.permission
 
+import org.evoleq.permission.EmptyContext
 import org.evoleq.value.StringValueWithDescription
+import org.solyton.solawi.bid.module.application.permission.ApplicationContext
+import org.solyton.solawi.bid.module.bid.permission.AuctionContext
+import org.solyton.solawi.bid.module.user.permission.OrganizationContext
 
 
 data object Context {
 
-    data object Empty : StringValueWithDescription {
-        override val value = Value.EMPTY
-        override val description = ""
-    }
+    data object Empty : StringValueWithDescription by EmptyContext
 
-    data object Application : StringValueWithDescription {
-        override val value = Value.APPLICATION
-        override val description = ""
+    data object Application : StringValueWithDescription by ApplicationContext
 
-        object Organization : StringValueWithDescription {
-            override val value = combine( Value.APPLICATION, Value.ORGANIZATION )
-            override val description = ""
-        }
-    }
+    data object Organisation : StringValueWithDescription by OrganizationContext
 
-    object Organization : StringValueWithDescription {
-        override val value = Value.ORGANIZATION
-        override val description = ""
-
-        object Management : StringValueWithDescription {
-            override val value = combine( Organization.value, Value.MANAGEMENT)
-            override val description = ""
-        }
-    }
-
-    object Auction  : StringValueWithDescription {
-        override val value = Value.AUCTION
-        override val description = ""
-
-        object Management : StringValueWithDescription {
-            override val value = combine(Auction.value, Value.MANAGEMENT)
-            override val description = ""
-        }
-    }
-}
-
-internal fun combine(vararg contexts: String): String = contexts.joinToString("/") { it }
-
-
-object Value {
-    const val EMPTY = "EMPTY"
-    const val ORGANIZATION = "ORGANIZATION"
-    const val APPLICATION = "APPLICATION"
-    const val MANAGEMENT = "MANAGEMENT"
-    const val AUCTION = "AUCTION"
+    data object Auction : StringValueWithDescription by AuctionContext
 }

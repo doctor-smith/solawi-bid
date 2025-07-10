@@ -1,6 +1,9 @@
 package org.solyton.solawi.bid.application.permission
 
-import org.evoleq.value.StringValueWithDescription
+import org.evoleq.permission.Manager
+import org.evoleq.permission.Owner
+import org.evoleq.permission.User
+import org.solyton.solawi.bid.module.bid.permission.Bidder
 
 object Role {
     val owner = Owner
@@ -8,24 +11,3 @@ object Role {
     val user = User
     val bidder = Bidder
 }
-
-object Owner : StringValueWithDescription {
-    override val value  = "OWNER"
-    override val description: String = "Owner owns a resource or context"
-}
-
-object Manager : StringValueWithDescription {
-    override val value  = "MANAGER"
-    override val description: String = "Manages a resource or context"
-}
-
-object User : StringValueWithDescription {
-    override val value  = "USER"
-    override val description: String = "User of the application, context: APPLICATION"
-}
-
-object Bidder : StringValueWithDescription {
-    override val value  = "BIDDER"
-    override val description: String = "Participant in a bid-round, context: AUCTION"
-}
-
