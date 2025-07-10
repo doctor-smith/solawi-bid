@@ -16,7 +16,7 @@ import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
-import org.solyton.solawi.bid.shared.ValueWithDescription
+import org.evoleq.value.StringValueWithDescription
 import java.util.UUID
 
 @MathDsl
@@ -81,7 +81,7 @@ fun Transaction.isGranted(userId: UUID, contextId: UUID, right: String): Boolean
     return isGranted(userId, contextId, rightId.value)
 }
 
-fun Transaction.isGranted(userId: UUID, contextId: UUID, right: ValueWithDescription): Boolean {
+fun Transaction.isGranted(userId: UUID, contextId: UUID, right: StringValueWithDescription): Boolean {
     val rightId = RightEntity.find { RightsTable.name eq right.value }.firstOrNull()?.id
         ?: throw PermissionException.NoSuchRight(right.value)
 

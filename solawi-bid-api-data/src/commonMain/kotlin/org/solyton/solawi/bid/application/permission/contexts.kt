@@ -1,40 +1,40 @@
 package org.solyton.solawi.bid.application.permission
 
-import org.solyton.solawi.bid.shared.ValueWithDescription
+import org.evoleq.value.StringValueWithDescription
 
 
 data object Context {
 
-    data object Empty : ValueWithDescription {
+    data object Empty : StringValueWithDescription {
         override val value = Value.EMPTY
         override val description = ""
     }
 
-    data object Application : ValueWithDescription {
+    data object Application : StringValueWithDescription {
         override val value = Value.APPLICATION
         override val description = ""
 
-        object Organization : ValueWithDescription {
+        object Organization : StringValueWithDescription {
             override val value = combine( Value.APPLICATION, Value.ORGANIZATION )
             override val description = ""
         }
     }
 
-    object Organization : ValueWithDescription {
+    object Organization : StringValueWithDescription {
         override val value = Value.ORGANIZATION
         override val description = ""
 
-        object Management : ValueWithDescription {
+        object Management : StringValueWithDescription {
             override val value = combine( Organization.value, Value.MANAGEMENT)
             override val description = ""
         }
     }
 
-    object Auction  : ValueWithDescription {
+    object Auction  : StringValueWithDescription {
         override val value = Value.AUCTION
         override val description = ""
 
-        object Management : ValueWithDescription {
+        object Management : StringValueWithDescription {
             override val value = combine(Auction.value, Value.MANAGEMENT)
             override val description = ""
         }
