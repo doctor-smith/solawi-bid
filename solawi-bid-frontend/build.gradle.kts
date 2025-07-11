@@ -183,5 +183,8 @@ dependencyAnalyser {
             "statistics",
             "user",
         )
+        // todo: resolve cyclic dependencies and set to true after++
+
+        checkCyclesBeforeBuild = false
     }
 }

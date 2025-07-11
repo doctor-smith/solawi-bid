@@ -233,7 +233,6 @@ tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektTest") {
     baseline.set(file("detekt/detekt-baseline-test.xml"))
 }
 
-
 dependencyAnalyser {
     analyse("backend") {
         domain = "org.solyton.solawi.bid"
@@ -247,5 +246,13 @@ dependencyAnalyser {
             "permission",
             "user",
         )
+        checkCyclesBeforeBuild = true
     }
 }
+
+/*
+tasks.named("build") {
+    dependsOn("backendDependencyAnalyser")
+}
+
+ */

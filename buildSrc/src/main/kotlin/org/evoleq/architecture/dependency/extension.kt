@@ -4,14 +4,13 @@ import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
 
 open class DependencyAnalyserConfig(var name: String) {
-    //var name: String
     var domain: String = ""
     var sourceSet: String = ""
     var appModule: String = "application"
     var modulePath: String = "module"
     var modules: Set<String> = setOf()
     var targetFile: String = "dependency-analysis"
-
+    var checkCyclesBeforeBuild: Boolean = false
 }
 
 open class DependencyAnalyserExtension(

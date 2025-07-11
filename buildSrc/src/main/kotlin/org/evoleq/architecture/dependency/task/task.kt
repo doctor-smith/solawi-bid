@@ -1,6 +1,11 @@
-package org.evoleq.architecture.dependency
+package org.evoleq.architecture.dependency.task
 
+import org.evoleq.architecture.dependency.task.computation.computeAppToModuleDependencies
+import org.evoleq.architecture.dependency.task.computation.computeModuleDependencies
+import org.evoleq.architecture.dependency.task.computation.hasCyclicAppToModuleDependencies
+import org.evoleq.architecture.dependency.task.computation.hasCyclicModuleDependencies
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import java.io.File
@@ -32,57 +37,20 @@ abstract class DependencyAnalyserTask : DefaultTask() {
 
     @TaskAction
     fun generateGraph() {
-        println(
-            """Generating graph of intermediate dependencies 
-                | domain = $domain
-                | sourceSet = $sourceSet
-                | modules = ${modules.joinToString(", ") { it.toString() }}
-            """.trimMargin()
-        )
 
         // Compute all dependencies between application, module1, ... , moduleN
         // both directions
         // First we look at the deps between app <-> mod
         val root = "${project.rootDir.absolutePath}/${project.path.drop(   1)}/src/$sourceSet/kotlin/${domain.replace(".", "/")}"
+        val appToModuleDependencies = computeAppToModuleDependencies(
+            root,
+            domain,
+            appModule,
+            modulePath,
+            modules
+        )
 
-        val dependencies = mutableListOf<Dependency>()
-
-        val appImports = getAllKtFilesInPackage("$root/$appModule")
-
-        modules.forEach { module ->
-            val kotlinFiles = getAllKtFilesInPackage("$root/$modulePath/$module")
-            val moduleUsesApp = kotlinFiles.map {
-                UsingObj(
-                    it ,
-                    readImportsFromFile(it)
-                        .filter { import -> import.startsWith("$domain.$appModule") }.toSet()
-                )
-            }.filter { it.imports.isNotEmpty()}
-
-            if(moduleUsesApp.isNotEmpty()) {
-                dependencies.add(
-                    0, Dependency(
-                         "$modulePath.$module",appModule, moduleUsesApp
-                    )
-                )
-            }
-
-            val appUsesModule = appImports.map {
-                UsingObj(
-                    it,
-                    readImportsFromFile(it)
-                        .filter { import -> import.startsWith("$domain.$modulePath.$module") }.toSet()
-                )
-            }.filter { it.imports.isNotEmpty()}
-            if(appUsesModule.isNotEmpty()) {
-                dependencies.add(
-                    0, Dependency(
-                        appModule,"$modulePath.$module",  appUsesModule
-                    )
-                )
-            }
-        }
-        val criticalModules = dependencies.filter { it.dependsOn == appModule }
+        val criticalModules = appToModuleDependencies.filter { it.dependsOn == appModule }
         val nodeModules = """ subgraph Critical Modules
             |    ${criticalModules.joinToString("\n") { 
                 it.module
@@ -90,13 +58,13 @@ abstract class DependencyAnalyserTask : DefaultTask() {
             |end
         """.trimMargin()
 
-        val arrows = dependencies.joinToString("\n") {
+        val arrows = appToModuleDependencies.joinToString("\n") {
                 dependency -> """ 
                     |    ${dependency.module} --> ${dependency.dependsOn} 
                 """.trimMargin()
             }
 
-        val criticalArrows = dependencies.filter { it.dependsOn == appModule }
+        val criticalArrows = appToModuleDependencies.filter { it.dependsOn == appModule }
         val renderedCriticalArrows = criticalArrows.joinToString("\n") { "${it.module} --> ${it.dependsOn}" }
 
         val criticalImportsByModuleAndFile = criticalArrows.joinToString("\n\n") {
@@ -117,30 +85,12 @@ abstract class DependencyAnalyserTask : DefaultTask() {
             """.trimMargin()
         }
 
-        // Dependencies between modules
-        val  moduleDependencies = mutableListOf<Dependency>()
-        modules.forEach { sourceModule ->
-            val kotlinFiles = getAllKtFilesInPackage("$root/$modulePath/$sourceModule")
-            modules.forEach { targetModule ->
-                if(targetModule != sourceModule) {
-                val sourceUsesTarget = kotlinFiles.map {
-                    UsingObj(
-                        it ,
-                        readImportsFromFile(it)
-                            .filter { import -> import.startsWith("$domain.$modulePath.$targetModule") }.toSet()
-                    )
-                }.filter { it.imports.isNotEmpty()}
-
-                if(sourceUsesTarget.isNotEmpty()) {
-                    moduleDependencies.add(
-                        0, Dependency(
-                            "$modulePath.$sourceModule","$modulePath.$targetModule", sourceUsesTarget
-                        )
-                    )
-                }
-
-            }}
-        }
+        val moduleDependencies = computeModuleDependencies(
+            root,
+            domain,
+            modulePath,
+            modules
+        )
 
         val moduleArrows = moduleDependencies.joinToString("\n") {
                 dependency -> """ 
@@ -205,35 +155,61 @@ abstract class DependencyAnalyserTask : DefaultTask() {
     }
 }
 
-fun readImportsFromFile(filePath: String): List<String> {
-    val file = File(filePath)
-    return readImportsFromFile(file)
-}
-fun readImportsFromFile(file: File): List<String> {
 
-    return file.readLines()
-        .filter { it.trim().startsWith("import ") }
-        .map { it.replace("import ", "") }
-}
+abstract class DetectCyclicDependenciesTask : DefaultTask() {
+    @Input
+    var nameOf: String = ""
 
-fun getAllKtFilesInPackage(packagePath: String): List<File> {
-    val dir = File(packagePath)
-    if (!dir.exists() || !dir.isDirectory) {
-        error("Invalid package path: $packagePath")
+    @Input
+    var domain: String = ""
+
+    @Input
+    var modulePath: String = ""
+
+    @Input
+    var appModule: String = ""
+
+    @Input
+    var modules: Set<String> = setOf()
+
+    @Input
+    var sourceSet: String = ""
+
+    @Input
+    var targetFile: String = ""
+
+    @Input
+    var reportType: String = "md"
+
+    @TaskAction
+    fun hasCyclicDependencies() {
+        // Compute all dependencies between application, module1, ... , moduleN
+        // both directions
+        // First we look at the deps between app <-> mod
+        val root =
+            "${project.rootDir.absolutePath}/${project.path.drop(1)}/src/$sourceSet/kotlin/${domain.replace(".", "/")}"
+        val appToModuleDependencies = computeAppToModuleDependencies(
+            root,
+            domain,
+            appModule,
+            modulePath,
+            modules
+        )
+
+        val moduleDependencies = computeModuleDependencies(
+            root,
+            domain,
+            modulePath,
+            modules
+        )
+
+        val hasCyclicAppToModuleDependencies = appToModuleDependencies.hasCyclicAppToModuleDependencies(appModule)
+        val hasCyclicModuleDependencies = moduleDependencies.hasCyclicModuleDependencies()
+
+        when{
+            hasCyclicAppToModuleDependencies && hasCyclicModuleDependencies -> throw GradleException("There are cyclic module dependencies and some modules depend on $appModule")
+            hasCyclicAppToModuleDependencies -> throw GradleException("Some module depends on $appModule")
+            hasCyclicModuleDependencies -> throw GradleException("There are cyclic module dependencies")
+        }
     }
-
-    return dir.walkTopDown()
-        .filter { it.isFile && it.extension == "kt" }
-        .toList()
 }
-
-data class Dependency(
-    val module: String,
-    val dependsOn: String,
-    val uses: List<UsingObj>
-)
-
-data class UsingObj(
-    val file: File,
-    val imports: Set<String>
-)
