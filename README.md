@@ -110,3 +110,33 @@ the following inputs are required:
 - secrets.MYSQL_PASSWORD_P
 - secrets.MYSQL_PASSWORD_Q
 - secrets.SERVER_KEY
+
+# Troubleshooting
+
+## Connecting to the traefik dashboard
+
+Because the traefik dashboard is not secured, it is only accessible over an ssh tunnel.
+
+```shell
+ssh <user>@solyton.org -L 8080:localhost:8080
+```
+
+Then you can access the dashboard at `http://localhost:8080/dashborad` in your browser.
+
+## Accessing the MySQL databases
+
+For the same reason as the traefik dashboard, the MySQL databases are only accessible over an ssh tunnel.
+Because we have three databases, docker maps the databases to different random ports.
+To find out which port is mapped to which database, you can use the following command after logging into the server:
+
+```shell
+docker ps --filter "name=solawi-bid_database" --format "table {{.Names}}\t{{.Ports}}"
+```
+
+Then you can create an ssh tunnel for the database you want to access:
+
+```shell
+ssh <user>@solyton.org -L 3306:localhost:<port>
+```
+
+Then you can access the database with your favorite MySQL client e.g. DBeaver on `localhost:3306`.
