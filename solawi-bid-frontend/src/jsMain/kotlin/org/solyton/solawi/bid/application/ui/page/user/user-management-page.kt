@@ -27,8 +27,8 @@ import org.solyton.solawi.bid.application.ui.page.user.action.createUser
 import org.solyton.solawi.bid.application.ui.page.user.action.getUsers
 import org.solyton.solawi.bid.application.ui.page.user.effect.trigger
 import org.solyton.solawi.bid.application.ui.page.user.i18n.UserLangComponent
-import org.solyton.solawi.bid.application.ui.style.page.verticalPageStyle
-import org.solyton.solawi.bid.application.ui.style.wrap.Wrap
+import org.solyton.solawi.bid.module.style.page.verticalPageStyle
+import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.componentLoaded

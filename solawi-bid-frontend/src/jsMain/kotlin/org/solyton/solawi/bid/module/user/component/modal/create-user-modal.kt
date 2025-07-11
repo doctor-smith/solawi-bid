@@ -21,10 +21,10 @@ import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.color
 import org.jetbrains.compose.web.dom.*
 import org.evoleq.compose.style.data.device.DeviceType
-import org.solyton.solawi.bid.application.ui.style.form.fieldDesktopStyle
-import org.solyton.solawi.bid.application.ui.style.form.formDesktopStyle
-import org.solyton.solawi.bid.application.ui.style.form.formLabelDesktopStyle
-import org.solyton.solawi.bid.application.ui.style.form.textInputDesktopStyle
+import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
+import org.solyton.solawi.bid.module.style.form.formDesktopStyle
+import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
+import org.solyton.solawi.bid.module.style.form.textInputDesktopStyle
 import org.solyton.solawi.bid.module.user.data.reader.errors
 import org.solyton.solawi.bid.module.user.data.reader.inputs
 import org.solyton.solawi.bid.module.user.data.reader.repeatPassword

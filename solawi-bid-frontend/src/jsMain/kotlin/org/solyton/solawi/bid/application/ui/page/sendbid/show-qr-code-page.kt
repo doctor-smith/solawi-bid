@@ -12,8 +12,8 @@ import org.solyton.solawi.bid.application.data.Application
 import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.environment
-import org.solyton.solawi.bid.application.ui.style.form.formPageDesktopStyle
-import org.solyton.solawi.bid.application.ui.style.page.verticalPageStyle
+import org.solyton.solawi.bid.module.style.form.formPageDesktopStyle
+import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.qrcode.QRCodeSvg
 

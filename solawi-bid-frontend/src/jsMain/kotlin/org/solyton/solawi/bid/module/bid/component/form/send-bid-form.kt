@@ -11,7 +11,7 @@ import org.jetbrains.compose.web.dom.P
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.dom.TextInput
 import org.evoleq.compose.style.data.device.DeviceType
-import org.solyton.solawi.bid.application.ui.style.form.*
+import org.solyton.solawi.bid.module.style.form.*
 import org.solyton.solawi.bid.module.bid.data.Bid
 import org.solyton.solawi.bid.module.bid.service.isDecimal
 import org.solyton.solawi.bid.module.bid.service.toDecimal

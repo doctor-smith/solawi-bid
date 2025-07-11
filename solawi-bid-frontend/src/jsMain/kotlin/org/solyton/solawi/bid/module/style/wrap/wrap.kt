@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.application.ui.style.wrap
+package org.solyton.solawi.bid.module.style.wrap
 
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup

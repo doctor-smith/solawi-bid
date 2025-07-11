@@ -18,8 +18,8 @@ import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.env.Environment
-import org.solyton.solawi.bid.application.ui.style.page.verticalPageStyle
-import org.solyton.solawi.bid.application.ui.style.wrap.Wrap
+import org.solyton.solawi.bid.module.style.page.verticalPageStyle
+import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.bid.component.form.SendBidForm
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.mobile.component.MobileDevice

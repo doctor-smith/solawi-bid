@@ -27,8 +27,8 @@ import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.*
 import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.ui.page.auction.action.readAuctions
-import org.solyton.solawi.bid.application.ui.style.page.verticalPageStyle
-import org.solyton.solawi.bid.application.ui.style.wrap.Wrap
+import org.solyton.solawi.bid.module.style.page.verticalPageStyle
+import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.bid.component.AuctionList
 import org.solyton.solawi.bid.module.bid.component.button.CreateAuctionButton
 import org.solyton.solawi.bid.module.bid.component.form.DEFAULT_AUCTION_ID

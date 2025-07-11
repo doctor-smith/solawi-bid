@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.application.ui.style.form
+package org.solyton.solawi.bid.module.style.form
 
 import org.jetbrains.compose.web.css.*
 

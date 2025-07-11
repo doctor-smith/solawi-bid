@@ -42,7 +42,7 @@ import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.I
 import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.application.ui.style.button.symbolicButtonStyle
+import org.solyton.solawi.bid.module.style.button.symbolicButtonStyle
 import org.solyton.solawi.bid.module.control.button.CancelButton
 import org.solyton.solawi.bid.module.control.button.SubmitButton
 import org.w3c.dom.HTMLDivElement

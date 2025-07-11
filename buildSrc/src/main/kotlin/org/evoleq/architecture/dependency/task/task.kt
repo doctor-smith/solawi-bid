@@ -4,6 +4,7 @@ import org.evoleq.architecture.dependency.task.computation.computeAppToModuleDep
 import org.evoleq.architecture.dependency.task.computation.computeModuleDependencies
 import org.evoleq.architecture.dependency.task.computation.hasCyclicAppToModuleDependencies
 import org.evoleq.architecture.dependency.task.computation.hasCyclicModuleDependencies
+import org.evoleq.architecture.dependency.task.computation.toIO
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.Input
@@ -90,9 +91,10 @@ abstract class DependencyAnalyserTask : DefaultTask() {
             domain,
             modulePath,
             modules
-        )
-
-        val moduleArrows = moduleDependencies.joinToString("\n") {
+        )// .sortedBy { dependency -> dependency. }
+        val order = moduleDependencies.toIO().withIndex().associateBy { it.value.module }
+        val moduleArrows = moduleDependencies.sortedBy{ order[it.module]!!.index }
+            .joinToString("\n") {
                 dependency -> """ 
                     |    ${dependency.module} --> ${dependency.dependsOn} 
                 """.trimMargin()

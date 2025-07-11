@@ -1,6 +1,9 @@
 package org.evoleq.architecture.dependency.task.computation
 
 import org.evoleq.architecture.dependency.task.data.Dependency
+import org.evoleq.architecture.dependency.task.data.IO
+import org.evoleq.architecture.dependency.task.data.Node
+import org.evoleq.architecture.dependency.task.data.Nodes
 import org.evoleq.architecture.dependency.task.data.UsingObj
 
 /**
@@ -109,6 +112,22 @@ fun List<Dependency>.toNodes(): Nodes = Nodes(
     )}
 )
 
+fun List<Dependency>.toIO(): List<IO> = groupBy { it.module }.map { IO(
+    it.key,
+    inputs = this@toIO.filter { dependency ->  dependency.dependsOn == it.key }
+        .map { dependency -> dependency.module}
+        .toSet(),
+    it.value.map { it.dependsOn }.toSet()
+) }.sortedWith(
+    compareByDescending<IO>{
+        - it.inputs.size
+    }.thenBy {
+        - it.outputs.size
+    }/*.thenBy {
+        it.module
+    }*/
+)
+
 fun Nodes.hasCycles(): Boolean = reduce().nodes.isNotEmpty()
 
 tailrec fun Nodes.reduce(): Nodes {
@@ -131,20 +150,3 @@ tailrec fun Nodes.reduce(): Nodes {
         )
     }).reduce()
 }
-
-data class Node(
-    val source: String,
-    val targets: List<String>
-)
-
-data class Nodes(
-    val nodes: List<Node>
-)
-
-data class Path(
-    val nodes: List<Node>
-)
-
-data class Paths(
-    val list: List<Path>
-)

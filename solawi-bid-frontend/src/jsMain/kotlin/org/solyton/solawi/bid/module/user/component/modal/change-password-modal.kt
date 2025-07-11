@@ -25,10 +25,10 @@ import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.PasswordInput
 import org.jetbrains.compose.web.dom.Text
 import org.evoleq.compose.style.data.device.DeviceType
-import org.solyton.solawi.bid.application.ui.style.form.fieldDesktopStyle
-import org.solyton.solawi.bid.application.ui.style.form.formDesktopStyle
-import org.solyton.solawi.bid.application.ui.style.form.formLabelDesktopStyle
-import org.solyton.solawi.bid.application.ui.style.form.textInputDesktopStyle
+import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
+import org.solyton.solawi.bid.module.style.form.formDesktopStyle
+import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
+import org.solyton.solawi.bid.module.style.form.textInputDesktopStyle
 import org.solyton.solawi.bid.module.user.data.reader.*
 import org.solyton.solawi.bid.module.user.service.PasswordCombinationCheck
 import org.solyton.solawi.bid.module.user.service.onPasswordCombinationValid

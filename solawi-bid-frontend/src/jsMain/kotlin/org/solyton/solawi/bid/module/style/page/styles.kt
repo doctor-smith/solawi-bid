@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.application.ui.style.page
+package org.solyton.solawi.bid.module.style.page
 
 import org.evoleq.compose.layout.scrollableStyle
 import org.jetbrains.compose.web.css.StyleScope

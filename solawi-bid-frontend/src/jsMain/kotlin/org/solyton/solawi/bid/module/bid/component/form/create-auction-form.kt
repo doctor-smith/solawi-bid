@@ -22,7 +22,7 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.dom.*
 import org.evoleq.compose.style.data.device.DeviceType
-import org.solyton.solawi.bid.application.ui.style.form.*
+import org.solyton.solawi.bid.module.style.form.*
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
 import org.solyton.solawi.bid.module.bid.data.Auction
 import org.solyton.solawi.bid.module.bid.data.date

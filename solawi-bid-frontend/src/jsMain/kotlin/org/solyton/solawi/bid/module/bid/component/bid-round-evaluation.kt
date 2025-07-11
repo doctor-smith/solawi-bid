@@ -14,9 +14,9 @@ import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.dom.TextInput
 import org.solyton.solawi.bid.application.data.Application
 import org.evoleq.compose.style.data.device.DeviceType
-import org.solyton.solawi.bid.application.ui.style.form.formLabelStyle
-import org.solyton.solawi.bid.application.ui.style.form.textInputStyle
-import org.solyton.solawi.bid.application.ui.style.wrap.Wrap
+import org.solyton.solawi.bid.module.style.form.formLabelStyle
+import org.solyton.solawi.bid.module.style.form.textInputStyle
+import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.bid.data.Round
 import org.solyton.solawi.bid.module.bid.data.bidRoundEvaluation
 import org.solyton.solawi.bid.module.separator.LineSeparator

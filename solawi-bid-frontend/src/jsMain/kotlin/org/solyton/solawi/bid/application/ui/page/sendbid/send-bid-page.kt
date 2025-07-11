@@ -22,9 +22,9 @@ import org.jetbrains.compose.web.dom.Div
 import org.solyton.solawi.bid.application.data.*
 import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.ui.effect.LaunchSetDeviceData
-import org.solyton.solawi.bid.application.ui.style.form.formPageDesktopStyle
-import org.solyton.solawi.bid.application.ui.style.page.verticalPageStyle
-import org.solyton.solawi.bid.application.ui.style.wrap.Wrap
+import org.solyton.solawi.bid.module.style.form.formPageDesktopStyle
+import org.solyton.solawi.bid.module.style.page.verticalPageStyle
+import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.bid.action.sendBidAction
 import org.solyton.solawi.bid.module.bid.component.form.SendBidForm
 import org.solyton.solawi.bid.module.bid.component.modal.showSuccessfulBidInformationModal

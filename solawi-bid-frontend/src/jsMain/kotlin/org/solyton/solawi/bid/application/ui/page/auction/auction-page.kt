@@ -30,8 +30,8 @@ import org.solyton.solawi.bid.application.data.actions
 import org.solyton.solawi.bid.application.data.auctions
 import org.solyton.solawi.bid.application.data.i18N
 import org.solyton.solawi.bid.application.ui.page.auction.action.readAuctions
-import org.solyton.solawi.bid.application.ui.style.page.verticalPageStyle
-import org.solyton.solawi.bid.application.ui.style.wrap.Wrap
+import org.solyton.solawi.bid.module.style.page.verticalPageStyle
+import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.bid.component.AuctionDetails
 import org.solyton.solawi.bid.module.bid.component.BidRoundList
 import org.solyton.solawi.bid.module.bid.component.button.CreateNewRoundButton

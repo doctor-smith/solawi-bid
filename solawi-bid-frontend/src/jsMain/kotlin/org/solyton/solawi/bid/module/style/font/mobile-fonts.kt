@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.application.ui.style.font
+package org.solyton.solawi.bid.module.style.font
 
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.rgb
