@@ -3,10 +3,12 @@
   vars:
     pip_install_packages:
       - name: docker
+    swap_file_size_mb: 6144
   become: true
   roles:
     - role: geerlingguy.pip
     - role: geerlingguy.docker
+    - role: geerlingguy.swap
   tasks:
     - name: apt install unattended-upgrades
       apt:
