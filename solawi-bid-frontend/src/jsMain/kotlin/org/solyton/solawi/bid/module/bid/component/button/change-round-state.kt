@@ -19,7 +19,7 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.application.data.*
 import org.evoleq.device.data.mediaType
-import org.solyton.solawi.bid.application.permission.Right
+import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.application.ui.page.auction.action.changeRoundState
 import org.solyton.solawi.bid.module.bid.data.Auction
 import org.solyton.solawi.bid.module.bid.data.Round
@@ -59,7 +59,7 @@ fun ChangeRoundStateButton(
     StdButton(
         texts = texts * commandName(RoundState.fromString(round.state).commandName),
         deviceType = storage * deviceData * mediaType.get,
-        disabled = (storage * userData.get).emit().isNotGranted(Right.BidRound.manage)
+        disabled = (storage * userData.get).emit().isNotGranted(BidRight.BidRound.manage)
     ) {
         // todo:refactor:extract trigger
         CoroutineScope(Job()).launch {

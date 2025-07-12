@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.application.data.db.migrations
 
 import org.evoleq.exposedx.migrations.Migration
 import org.jetbrains.exposed.sql.*
+import org.solyton.solawi.bid.module.user.permission.OrganizationRight
 import org.solyton.solawi.bid.module.application.permission.Context
 import org.solyton.solawi.bid.application.permission.Right
 import org.solyton.solawi.bid.application.permission.Role
@@ -122,23 +123,23 @@ fun setupBasicRolesAndRights() {
     }
 
     val createOrganizationId = Rights.insertAndGetId {
-        it[name] = Right.Organization.create.value
-        it[description] = Right.Organization.create.description
+        it[name] = OrganizationRight.Organization.create.value
+        it[description] = OrganizationRight.Organization.create.description
     }
     // val readOrganizationId =
     Rights.insertAndGetId {
-        it[name] = Right.Organization.read.value
-        it[Roles.description] = Right.Organization.read.description
+        it[name] = OrganizationRight.Organization.read.value
+        it[Roles.description] = OrganizationRight.Organization.read.description
     }
     // val updateOrganizationId =
     Rights.insertAndGetId {
-        it[name] = Right.Organization.update.value
-        it[Roles.description] = Right.Organization.update.description
+        it[name] = OrganizationRight.Organization.update.value
+        it[Roles.description] = OrganizationRight.Organization.update.description
     }
     // val deleteOrganizationId =
     Rights.insertAndGetId {
-        it[name] = Right.Organization.delete.value
-        it[Roles.description] = Right.Organization.delete.description
+        it[name] = OrganizationRight.Organization.delete.value
+        it[Roles.description] = OrganizationRight.Organization.delete.description
     }
 
     RoleRightContexts.insert {

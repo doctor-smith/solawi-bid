@@ -21,7 +21,7 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 import org.evoleq.device.data.mediaType
-import org.solyton.solawi.bid.application.permission.Right
+import org.solyton.solawi.bid.module.application.permission.AppRight
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.user.action.createUser
 import org.solyton.solawi.bid.application.ui.page.user.action.getUsers
@@ -83,7 +83,7 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
                         buttons * subComp("createUser") * title,
                         (storage * deviceData * mediaType.get),
                         // (storage * context * current).read()
-                        (storage * isNotGranted(Right.Application.Users.manage, applicationContextId)).emit()
+                        (storage * isNotGranted(AppRight.Application.Users.manage, applicationContextId)).emit()
                     ) {
                         (storage * modals).showCreateUserModal(
                             texts = dialogs * subComp("createUser"),
@@ -112,7 +112,7 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
                         StdButton(
                             registeredUsers * subComp("buttons") * subComp("edit") * title,
                             storage * deviceData * mediaType.get,
-                            (storage * isNotGranted(Right.Application.Users.manage, applicationContextId)).emit()
+                            (storage * isNotGranted(AppRight.Application.Users.manage, applicationContextId)).emit()
                         ){}
                         StdButton(
                             registeredUsers * subComp("buttons") * subComp("delete") * title,

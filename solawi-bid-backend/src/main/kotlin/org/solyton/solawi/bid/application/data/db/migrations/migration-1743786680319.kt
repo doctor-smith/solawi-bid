@@ -4,6 +4,8 @@ import org.evoleq.exposedx.migrations.Migration
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
+import org.solyton.solawi.bid.module.application.permission.AppRight
+import org.solyton.solawi.bid.module.user.permission.OrganizationRight
 import org.solyton.solawi.bid.module.application.permission.Context
 import org.solyton.solawi.bid.application.permission.Right
 import org.solyton.solawi.bid.application.permission.Role
@@ -49,10 +51,10 @@ class Migration1743786680319(
         val delete = RightEntity.find { RightsTable.name eq Right.delete.value }.first()
 
 
-        val createOrganization = RightEntity.find { RightsTable.name eq Right.Organization.create.value }.first()
-        val readOrganization = RightEntity.find { RightsTable.name eq Right.Organization.read.value }.first()
-        val updateOrganization = RightEntity.find { RightsTable.name eq Right.Organization.update.value }.first()
-        val deleteOrganization = RightEntity.find { RightsTable.name eq Right.Organization.delete.value }.first()
+        val createOrganization = RightEntity.find { RightsTable.name eq OrganizationRight.Organization.create.value }.first()
+        val readOrganization = RightEntity.find { RightsTable.name eq OrganizationRight.Organization.read.value }.first()
+        val updateOrganization = RightEntity.find { RightsTable.name eq OrganizationRight.Organization.update.value }.first()
+        val deleteOrganization = RightEntity.find { RightsTable.name eq OrganizationRight.Organization.delete.value }.first()
 
         // Existing Roles
         val owner = RoleEntity.find { RolesTable.name eq Role.owner.value }.first()
@@ -70,8 +72,8 @@ class Migration1743786680319(
 
         // New rights
         val manageUsers = RightEntity.new {
-            name = Right.Application.Users.manage.value
-            description = Right.Application.Users.manage.description
+            name = AppRight.Application.Users.manage.value
+            description = AppRight.Application.Users.manage.description
         }
 
         // Permissions
@@ -82,16 +84,16 @@ class Migration1743786680319(
 
         // Application Subscriptions
         val readAvailableApplications = RightEntity.new {
-            name = Right.Application.Subscriptions.readAvailableApplications.value
-            description = Right.Application.Subscriptions.readAvailableApplications.description
+            name = AppRight.Application.Subscriptions.readAvailableApplications.value
+            description = AppRight.Application.Subscriptions.readAvailableApplications.description
         }
         val subscribeApplications = RightEntity.new {
-            name = Right.Application.Subscriptions.subscribeApplications.value
-            description = Right.Application.Subscriptions.subscribeApplications.description
+            name = AppRight.Application.Subscriptions.subscribeApplications.value
+            description = AppRight.Application.Subscriptions.subscribeApplications.description
         }
         val unsubscribeApplications = RightEntity.new {
-            name = Right.Application.Subscriptions.unsubscribeApplications.value
-            description = Right.Application.Subscriptions.unsubscribeApplications.description
+            name = AppRight.Application.Subscriptions.unsubscribeApplications.value
+            description = AppRight.Application.Subscriptions.unsubscribeApplications.description
         }
 
         // Grant owner rights in context APPLICATION

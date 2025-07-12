@@ -13,13 +13,15 @@ import org.jetbrains.exposed.sql.transactions.experimental.suspendedTransactionA
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
-import org.solyton.solawi.bid.application.permission.Context
+import org.solyton.solawi.bid.module.application.permission.Context
 import org.solyton.solawi.bid.application.permission.Role
 import org.solyton.solawi.bid.module.bid.permission.Value
 import org.solyton.solawi.bid.application.permission.Right
 import org.solyton.solawi.bid.application.data.db.migrations.Migration1730143239225
 import org.solyton.solawi.bid.application.data.db.migrations.Migration1743235367945
 import org.solyton.solawi.bid.application.data.db.migrations.Migration1743786680319
+import org.solyton.solawi.bid.module.application.permission.AppRight
+import org.solyton.solawi.bid.module.user.permission.OrganizationRight
 import org.solyton.solawi.bid.module.application.permission.ApplicationContext
 import org.solyton.solawi.bid.module.bid.permission.AuctionContext
 import org.solyton.solawi.bid.module.permission.schema.repository.parent
@@ -152,16 +154,16 @@ class MigrationTests {
             Assertions.assertTrue(isGranted(applicationOwnerId, applicationContext.id.value, delete.id.value))
 
             // Organizations
-            val createOrganization = RightEntity.find { RightsTable.name eq Right.Organization.create.value }.first()
+            val createOrganization = RightEntity.find { RightsTable.name eq OrganizationRight.Organization.create.value }.first()
             Assertions.assertTrue(isGranted(applicationOwnerId, applicationContext.id.value, createOrganization.id.value))
 
-            val readOrganization = RightEntity.find { RightsTable.name eq Right.Organization.read.value }.first()
+            val readOrganization = RightEntity.find { RightsTable.name eq OrganizationRight.Organization.read.value }.first()
             Assertions.assertTrue(isGranted(applicationOwnerId, applicationContext.id.value, readOrganization.id.value))
 
-            val updateOrganization = RightEntity.find { RightsTable.name eq Right.Organization.update.value }.first()
+            val updateOrganization = RightEntity.find { RightsTable.name eq OrganizationRight.Organization.update.value }.first()
             Assertions.assertTrue(isGranted(applicationOwnerId, applicationContext.id.value, updateOrganization.id.value))
 
-            val deleteOrganization = RightEntity.find { RightsTable.name eq Right.Organization.delete.value }.first()
+            val deleteOrganization = RightEntity.find { RightsTable.name eq OrganizationRight.Organization.delete.value }.first()
             Assertions.assertTrue(isGranted(applicationOwnerId, applicationContext.id.value, deleteOrganization.id.value))
 
             val readRightRoleContextsOfUser = RightEntity.find { RightsTable.name eq Right.ReadRightRoleContexts.value }.first()
@@ -169,7 +171,7 @@ class MigrationTests {
 
 
             // Users
-            Assertions.assertTrue(isGranted(applicationOwnerId, applicationContext.id.value, Right.Application.Users.manage))
+            Assertions.assertTrue(isGranted(applicationOwnerId, applicationContext.id.value, AppRight.Application.Users.manage))
         }.await()
     }
 }

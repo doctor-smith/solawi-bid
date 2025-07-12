@@ -14,7 +14,7 @@ import org.solyton.solawi.bid.application.data.Application
 import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.userData
-import org.solyton.solawi.bid.application.permission.Right
+import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerCreateNewRound
 import org.solyton.solawi.bid.module.bid.data.Auction
 import org.solyton.solawi.bid.module.bid.data.auctionDetails
@@ -44,7 +44,7 @@ fun CreateNewRoundButton(
         (storage * auction * auctionDetails * areNotConfigured).emit() ||
         (storage * auction * biddersHaveNotBeenImported).emit() ||
         (storage * auction * auctionAccepted).emit() ||
-        (storage * userData.get).emit().isNotGranted(Right.Auction.manage)
+        (storage * userData.get).emit().isNotGranted(BidRight.Auction.manage)
 
     StdButton(
         texts * text,

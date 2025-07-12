@@ -19,7 +19,7 @@ import org.evoleq.optics.storage.remove
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.application.data.*
 import org.evoleq.device.data.mediaType
-import org.solyton.solawi.bid.application.permission.Right
+import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.application.ui.page.auction.action.createAuction
 import org.solyton.solawi.bid.module.bid.component.form.DEFAULT_AUCTION_ID
 import org.solyton.solawi.bid.module.bid.component.form.showAuctionModal
@@ -40,7 +40,7 @@ fun CreateAuctionButton(
 ) = StdButton(
     texts = texts * title,
     deviceType = storage * deviceData * mediaType.get,
-    disabled = (storage * userData.get).emit().isNotGranted(Right.Auction.manage),
+    disabled = (storage * userData.get).emit().isNotGranted(BidRight.Auction.manage),
     dataId = "auctions-page.create-auction-button"
 ){
     // Add auction with dummy id to the store

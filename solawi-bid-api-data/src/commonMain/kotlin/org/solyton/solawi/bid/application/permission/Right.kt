@@ -10,8 +10,6 @@ import org.solyton.solawi.bid.module.permission.permission.ReadRightsAndRolesRig
 
 // typealias Right = ValueWithDescription
 
-
-
 object Right{
     val create = Create
     val read = Read
@@ -22,60 +20,8 @@ object Right{
 
     data object ReadRightsAndRoles : StringValueWithDescription by ReadRightsAndRolesRight
 
-    object Organization {
-        val create = object : StringValueWithDescription {
-            override val value: String= "CREATE_ORGANIZATION"
-            override val description: String = "Create organization in a context"
-        }
-        val read = object : StringValueWithDescription {
-            override val value: String= "READ_ORGANIZATION"
-            override val description: String = "Read organization in a context"
-        }
-        val update = object : StringValueWithDescription {
-            override val value: String= "UPDATE_ORGANIZATION"
-            override val description: String = "Update organization in a context"
-        }
-        val delete = object : StringValueWithDescription {
-            override val value: String= "DELETE_ORGANIZATION"
-            override val description: String = "Delete organization in a context"
-        }
-    }
 
-    object Application {
-        object Users {
-            val manage = object : StringValueWithDescription {
-                override val value: String = "MANAGE_USERS"
-                override val description: String = "Manage Users"
-            }
-        }
 
-        object Subscriptions {
-            val readAvailableApplications = object : StringValueWithDescription {
-                override val value: String = "READ_AVAILABLE_APPLICATIONS"
-                override val description: String = "Read available application subscriptions"
-            }
-            val subscribeApplications = object : StringValueWithDescription {
-                override val value: String = "SUBSCRIBE_APPLICATIONS"
-                override val description: String = "available applications"
-            }
-            val unsubscribeApplications = object : StringValueWithDescription {
-                override val value: String = "UNSUBSCRIBE_APPLICATIONS"
-                override val description: String = "unsubscribe applications"
-            }
-        }
-    }
 
-    object BidRound {
-        val manage = object : StringValueWithDescription {
-            override val value: String= "MANAGE_BID_ROUND"
-            override val description: String = "Manage Bid round"
-        }
 
-    }
-    object Auction {
-        val manage = object : StringValueWithDescription {
-            override val value: String= "MANAGE_AUCTION"
-            override val description: String = "Manage Auction"
-        }
-    }
 }

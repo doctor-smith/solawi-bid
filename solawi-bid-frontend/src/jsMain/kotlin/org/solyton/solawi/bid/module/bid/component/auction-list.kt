@@ -20,7 +20,7 @@ import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
 import org.evoleq.compose.style.data.device.DeviceType
-import org.solyton.solawi.bid.application.permission.Right
+import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.application.ui.page.auction.action.configureAuction
 import org.solyton.solawi.bid.module.bid.action.deleteAuctionAction
 import org.solyton.solawi.bid.module.bid.component.form.showUpdateAuctionModal
@@ -127,7 +127,7 @@ fun AuctionListItem(
         StdButton(
             buttons * subComp("edit") * title,
             device,
-            (auction * auctionAccepted).emit() || user.emit().isNotGranted(Right.Auction.manage),
+            (auction * auctionAccepted).emit() || user.emit().isNotGranted(BidRight.Auction.manage),
         ) {
             // open edit dialog
             (modals).showUpdateAuctionModal(
@@ -144,7 +144,7 @@ fun AuctionListItem(
         StdButton(
             buttons * subComp("delete") * title,
             device,
-            (auction * auctionAccepted).emit() || user.emit().isNotGranted(Right.Auction.manage)
+            (auction * auctionAccepted).emit() || user.emit().isNotGranted(BidRight.Auction.manage)
         ) {
             dispatchDelete()
         }
