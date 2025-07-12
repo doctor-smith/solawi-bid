@@ -4,7 +4,7 @@ import org.evoleq.exposedx.migrations.Migration
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
-import org.solyton.solawi.bid.application.permission.Context
+import org.solyton.solawi.bid.module.application.permission.Context
 import org.solyton.solawi.bid.application.permission.Right
 import org.solyton.solawi.bid.application.permission.Role
 import org.solyton.solawi.bid.module.bid.permission.Value

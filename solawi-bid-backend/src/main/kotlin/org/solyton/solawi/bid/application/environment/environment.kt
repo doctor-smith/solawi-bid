@@ -9,7 +9,7 @@ import org.evoleq.ktorx.result.Result
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.solyton.solawi.bid.application.permission.Context
+import org.solyton.solawi.bid.module.application.permission.Context
 import org.solyton.solawi.bid.application.permission.Role
 import org.solyton.solawi.bid.application.action.io.transform
 import org.solyton.solawi.bid.module.authentication.environment.JWT

@@ -2,7 +2,7 @@ package org.solyton.solawi.bid.application.data.db.migrations
 
 import org.evoleq.exposedx.migrations.Migration
 import org.jetbrains.exposed.sql.*
-import org.solyton.solawi.bid.application.permission.Context
+import org.solyton.solawi.bid.module.application.permission.Context
 import org.solyton.solawi.bid.application.permission.Right
 import org.solyton.solawi.bid.application.permission.Role
 import org.solyton.solawi.bid.module.application.permission.ApplicationContext
