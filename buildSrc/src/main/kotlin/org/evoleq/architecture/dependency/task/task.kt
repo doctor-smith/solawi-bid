@@ -36,6 +36,12 @@ abstract class DependencyAnalyserTask : DefaultTask() {
     @Input
     var reportType: String = "md"
 
+    @Input
+    var checkAppModalDependencies: Boolean = true
+
+    @Input
+    var checkModalDependencies: Boolean = true
+
     @TaskAction
     fun generateGraph() {
 
@@ -43,13 +49,16 @@ abstract class DependencyAnalyserTask : DefaultTask() {
         // both directions
         // First we look at the deps between app <-> mod
         val root = "${project.rootDir.absolutePath}/${project.path.drop(   1)}/src/$sourceSet/kotlin/${domain.replace(".", "/")}"
-        val appToModuleDependencies = computeAppToModuleDependencies(
-            root,
-            domain,
-            appModule,
-            modulePath,
-            modules
-        )
+        val appToModuleDependencies = when{
+            checkAppModalDependencies -> computeAppToModuleDependencies(
+                root,
+                domain,
+                appModule,
+                modulePath,
+                modules
+            )
+            else -> listOf()
+        }
 
         val criticalModules = appToModuleDependencies.filter { it.dependsOn == appModule }
         val nodeModules = """ subgraph Critical Modules
@@ -86,12 +95,15 @@ abstract class DependencyAnalyserTask : DefaultTask() {
             """.trimMargin()
         }
 
-        val moduleDependencies = computeModuleDependencies(
-            root,
-            domain,
-            modulePath,
-            modules
-        )// .sortedBy { dependency -> dependency. }
+        val moduleDependencies = when{
+            checkModalDependencies -> computeModuleDependencies(
+                root,
+                domain,
+                modulePath,
+                modules
+            )
+            else -> listOf()
+        }// .sortedBy { dependency -> dependency. }
         val order = moduleDependencies.toIO().withIndex().associateBy { it.value.module }
         val moduleArrows = moduleDependencies.sortedBy{ order[it.module]!!.index }
             .joinToString("\n") {
@@ -119,9 +131,8 @@ abstract class DependencyAnalyserTask : DefaultTask() {
         }
 
         val report = File(root, "$targetFile.$reportType")
-        report.writeText("""
-            |# Dependency Analysis
-            |
+
+        val appModalDependencies = """
             |## Dependency Graph App <-> Modules
             |Background: App is allowed to depend on modules, but not the other way round
             |
@@ -130,7 +141,8 @@ abstract class DependencyAnalyserTask : DefaultTask() {
             |${if(criticalModules.isNotEmpty()){nodeModules}else{""}}
             |$arrows
             |```
-            |
+            |${
+            if (criticalModules.isNotEmpty()) {"""
             |### Critical Dependencies:
             |```mermaid
             |graph TD
@@ -140,7 +152,11 @@ abstract class DependencyAnalyserTask : DefaultTask() {
             |<details>
             |$criticalImportsByModuleAndFile
             |</details>
-            |
+            |"""
+            }else{ "" }}
+        """.trimMargin()
+
+        val modalDependencies = """
             |## Dependencies between modules
             |In principle, all dependencies are allowed. But there should be no cycles in the graph 
             |```mermaid
@@ -150,6 +166,14 @@ abstract class DependencyAnalyserTask : DefaultTask() {
             |<details>
             |$moduleImportsByModuleAndFile
             |</details>
+        """.trimMargin()
+
+        report.writeText("""
+            |# Dependency Analysis
+            |
+            |$appModalDependencies
+            |
+            |$modalDependencies
             |
         """.trimMargin()
 
@@ -183,27 +207,39 @@ abstract class DetectCyclicDependenciesTask : DefaultTask() {
     @Input
     var reportType: String = "md"
 
+    @Input
+    var checkAppModalDependencies: Boolean = true
+
+    @Input
+    var checkModalDependencies: Boolean = true
+
     @TaskAction
     fun hasCyclicDependencies() {
         // Compute all dependencies between application, module1, ... , moduleN
         // both directions
         // First we look at the deps between app <-> mod
         val root =
-            "${project.rootDir.absolutePath}/${project.path.drop(1)}/src/$sourceSet/kotlin/${domain.replace(".", "/")}"
-        val appToModuleDependencies = computeAppToModuleDependencies(
-            root,
-            domain,
-            appModule,
-            modulePath,
-            modules
-        )
+            "/${project.rootDir.absolutePath}/${project.path.drop(1)}/src/$sourceSet/kotlin/${domain.replace(".", "/")}"
+        val appToModuleDependencies = when{
+            checkAppModalDependencies -> computeAppToModuleDependencies(
+                root,
+                domain,
+                appModule,
+                modulePath,
+                modules
+            )
+            else -> listOf()
+        }
 
-        val moduleDependencies = computeModuleDependencies(
-            root,
-            domain,
-            modulePath,
-            modules
-        )
+        val moduleDependencies = when{
+            checkModalDependencies -> computeModuleDependencies(
+                root,
+                domain,
+                modulePath,
+                modules
+            )
+            else -> listOf()
+        }
 
         val hasCyclicAppToModuleDependencies = appToModuleDependencies.hasCyclicAppToModuleDependencies(appModule)
         val hasCyclicModuleDependencies = moduleDependencies.hasCyclicModuleDependencies()

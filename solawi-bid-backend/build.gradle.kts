@@ -250,9 +250,3 @@ dependencyAnalyser {
     }
 }
 
-/*
-tasks.named("build") {
-    dependsOn("backendDependencyAnalyser")
-}
-
- */

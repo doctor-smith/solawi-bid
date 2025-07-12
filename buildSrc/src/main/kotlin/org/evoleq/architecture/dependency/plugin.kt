@@ -35,6 +35,8 @@ class DependencyPlugin : Plugin<Project> {
                     targetFile = config.targetFile
                     reportType = "md"
                     nameOf = config.name
+                    checkAppModalDependencies = config.checkAppModalDependencies
+                    checkModalDependencies = config.checkModalDependencies
 
                 }
                 // Check for cycles dependencies
@@ -51,7 +53,8 @@ class DependencyPlugin : Plugin<Project> {
                     targetFile = config.targetFile
                     reportType = "md"
                     nameOf = config.name
-                    // runBeforeBuild = config.runBeforeBuild
+                    checkAppModalDependencies = config.checkAppModalDependencies
+                    checkModalDependencies = config.checkModalDependencies
                 }
 
                 if(config.checkCyclesBeforeBuild) {

@@ -5,6 +5,7 @@ plugins {
     `maven-publish`
     alias(libs.plugins.detekt)
     alias(libs.plugins.kover)
+    id("org.evoleq.architecture.dependency")
 }
 
 
@@ -142,4 +143,78 @@ tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselin
 }
 tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektJsTest") {
     baseline.set(file("detekt/detekt-baseline-js-test.xml"))
+}
+
+dependencyAnalyser {
+    analyse("evoleqCommonMain") {
+        domain = "org.evoleq"
+        sourceSet = "commonMain"
+        modulePath = ""
+        modules = setOf(
+            "configuration",
+            "csv",
+            "ktorx/api",
+            "ktorx/result",
+            "math",
+            "permission",
+            "serializationx",
+            "test",
+            "uuid",
+            "value"
+        )
+        checkCyclesBeforeBuild = true
+        checkAppModalDependencies = false
+    }
+    analyse("evoleqJsMain") {
+        domain = "org.evoleq"
+        sourceSet = "jsMain"
+        modulePath = ""
+        modules = setOf(
+            "compose",
+            "device",
+            "ktorx/client",
+            "language",
+            "optics",
+            "parser"
+        )
+        checkCyclesBeforeBuild = true
+        checkAppModalDependencies = false
+    }
+    analyse("evoleqComposeWeb") {
+        domain = "org.evoleq.compose"
+        sourceSet = "jsMain"
+        modulePath = ""
+        modules = setOf(
+            "attribute",
+            "card",
+            "date",
+            "dnd",
+            "error",
+            "i18n",
+            "label",
+            "layout",
+            "modal",
+            "routing",
+            "storage",
+            "structure",
+            "style",
+        )
+        checkCyclesBeforeBuild = true
+        checkAppModalDependencies = false
+    }
+    analyse("evoleqOptics") {
+        domain = "org.evoleq.optics"
+        sourceSet = "jsMain"
+        modulePath = ""
+        modules = setOf(
+            "iso",
+            "lens",
+            "prism",
+            "sg",
+            "storage",
+            "transform"
+        )
+        checkCyclesBeforeBuild = true
+        checkAppModalDependencies = false
+    }
 }

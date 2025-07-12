@@ -11,6 +11,8 @@ open class DependencyAnalyserConfig(var name: String) {
     var modules: Set<String> = setOf()
     var targetFile: String = "dependency-analysis"
     var checkCyclesBeforeBuild: Boolean = false
+    var checkAppModalDependencies: Boolean = true
+    var checkModalDependencies: Boolean = true
 }
 
 open class DependencyAnalyserExtension(

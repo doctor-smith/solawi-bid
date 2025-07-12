@@ -21,7 +21,7 @@ fun computeAppToModuleDependencies(
     val appImports = getAllKtFilesInPackage("$root/$appModule")
 
     modules.forEach { module ->
-        val kotlinFiles = getAllKtFilesInPackage("$root/$modulePath/$module")
+        val kotlinFiles = getAllKtFilesInPackage("$root/$modulePath/$module".cleanPath('/', true))
         val moduleUsesApp = kotlinFiles.map {
             UsingObj(
                 it,
@@ -33,7 +33,7 @@ fun computeAppToModuleDependencies(
         if(moduleUsesApp.isNotEmpty()) {
             dependencies.add(
                 0, Dependency(
-                    "$modulePath.$module",appModule, moduleUsesApp
+                    "$modulePath.$module".asPackage().cleanPath('.'),appModule, moduleUsesApp
                 )
             )
         }
@@ -42,18 +42,18 @@ fun computeAppToModuleDependencies(
             UsingObj(
                 it,
                 readImportsFromFile(it)
-                    .filter { import -> import.startsWith("$domain.$modulePath.$module") }.toSet()
+                    .filter { import -> import.startsWith("$domain.$modulePath.$module".asPackage().cleanPath('.')) }.toSet()
             )
         }.filter { it.imports.isNotEmpty()}
         if(appUsesModule.isNotEmpty()) {
             dependencies.add(
                 0, Dependency(
-                    appModule,"$modulePath.$module",  appUsesModule
+                    appModule,"$modulePath.$module".asPackage().cleanPath('.'),  appUsesModule
                 )
             )
         }
     }
-    return dependencies
+    return dependencies.filter{it.module.isNotEmpty()}
 }
 
 /**
@@ -76,28 +76,28 @@ fun computeModuleDependencies(
 ): List<Dependency> {
     val  moduleDependencies = mutableListOf<Dependency>()
     modules.forEach { sourceModule ->
-        val kotlinFiles = getAllKtFilesInPackage("$root/$modulePath/$sourceModule")
+        val kotlinFiles = getAllKtFilesInPackage("$root/$modulePath/$sourceModule".asPath().cleanPath('/', true))
         modules.forEach { targetModule ->
             if(targetModule != sourceModule) {
                 val sourceUsesTarget = kotlinFiles.map {
                     UsingObj(
                         it ,
                         readImportsFromFile(it)
-                            .filter { import -> import.startsWith("$domain.$modulePath.$targetModule") }.toSet()
+                            .filter { import -> import.startsWith("$domain.$modulePath.$targetModule".asPackage().cleanPath('.')) }.toSet()
                     )
                 }.filter { it.imports.isNotEmpty()}
 
                 if(sourceUsesTarget.isNotEmpty()) {
                     moduleDependencies.add(
                         0, Dependency(
-                            "$modulePath.$sourceModule","$modulePath.$targetModule", sourceUsesTarget
+                            "$modulePath.$sourceModule".asPackage().cleanPath('.'),"$modulePath.$targetModule".asPackage().cleanPath('.'), sourceUsesTarget
                         )
                     )
                 }
 
             }}
     }
-    return moduleDependencies
+    return moduleDependencies.filter{it.module.isNotEmpty() && it.dependsOn.isNotEmpty()}
 }
 
 /**
