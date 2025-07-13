@@ -6,22 +6,20 @@ import org.evoleq.math.emit
 import org.evoleq.math.write
 import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.lens.times
+import org.evoleq.optics.storage.ActionDispatcher
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.testutils.ComposeWebExperimentalTestsApi
 import org.jetbrains.compose.web.testutils.runTest
-import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.application.data.auctions
-import org.solyton.solawi.bid.application.data.bidRounds
-import org.solyton.solawi.bid.application.data.bidderMailAddresses
-import org.solyton.solawi.bid.application.data.env.Environment
+import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
 import org.solyton.solawi.bid.application.serialization.installSerializers
 import org.solyton.solawi.bid.application.ui.page.auction.action.*
-import org.solyton.solawi.bid.module.bid.data.auction.Auction
+import org.solyton.solawi.bid.module.bid.data.*
 import org.solyton.solawi.bid.module.bid.data.api.*
-import org.solyton.solawi.bid.module.bid.data.bidder.BidderInfo
-import org.solyton.solawi.bid.module.bid.data.bidround.rawResults
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.auction.rounds
-import org.solyton.solawi.bid.module.bid.data.toDomainType
+import org.solyton.solawi.bid.module.bid.data.bidder.BidderInfo
+import org.solyton.solawi.bid.module.bid.data.bidenv.Environment
+import org.solyton.solawi.bid.module.bid.data.bidround.rawResults
 import org.solyton.solawi.bid.test.storage.TestStorage
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -30,6 +28,9 @@ import org.solyton.solawi.bid.module.bid.data.bidround.Round as DomainRound
 import org.solyton.solawi.bid.module.bid.data.evaluation.WeightedBid as DomainWeightedBid
 
 class ActionTests{
+
+    val application = BidApplication(Environment(), ActionDispatcher {  })
+
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
     fun deleteAuctionsTest() = runTest{
@@ -42,16 +43,15 @@ class ActionTests{
         val apiAuctions = ApiAuctions(listOf(apiAuction))
 
 
-        val application = Application(Environment())
         val domainAuctions = (action.writer.write(apiAuctions) on application).auctions
         assertEquals(1, domainAuctions.size)
 
         composition {
-            val storage = TestStorage()
+            val storage = TestStorage() * bidApplicationIso
 
             (storage * action.writer).write(apiAuctions) on Unit
 
-            assertEquals(1,(storage * auctions).read().size)
+            assertEquals(1,(storage  * auctions).read().size)
 
             assertEquals(auction.auctionId, (storage * action.reader).emit().auctionIds.first())
 
@@ -70,7 +70,7 @@ class ActionTests{
 
 
         composition {
-            val storage = TestStorage()
+            val storage = TestStorage() * bidApplicationIso
 
             val apiBid = (storage * action.reader).emit()
 
@@ -108,7 +108,7 @@ class ActionTests{
         val action = importBidders(newBidders, auctionLens)
 
         composition {
-            val storage = TestStorage()
+            val storage = TestStorage() * bidApplicationIso
             (storage * auctionLens).write(auction)
             assertEquals(auction, (storage * auctionLens).read())
 
@@ -147,7 +147,7 @@ class ActionTests{
         val action = createRound(auctionLens)
 
         composition {
-            val storage = TestStorage()
+            val storage = TestStorage() * bidApplicationIso
             (storage * auctionLens).write(auction)
 
             // create an auction
@@ -183,7 +183,7 @@ class ActionTests{
 
 
         composition {
-            val storage = TestStorage()
+            val storage = TestStorage() * bidApplicationIso
             (storage * auctionLens).write(auction)
 
 
@@ -225,7 +225,7 @@ class ActionTests{
         val changeRoundState = changeRoundState(RoundState.Started, roundLens)
 
         composition {
-            val storage = TestStorage()
+            val storage = TestStorage() * bidApplicationIso
             (storage * auctionLens).write(auction)
 
             (storage * createRound.writer).write(round) on Unit
@@ -260,7 +260,7 @@ class ActionTests{
         val export = exportBidRoundResults("id",roundLens)
 
         composition {
-            val storage = TestStorage()
+            val storage = TestStorage() * bidApplicationIso
             (storage * auctionLens).write(auction)
             (storage * createRound.writer).write(round) on Unit
 
@@ -305,7 +305,7 @@ class ActionTests{
         val evaluateBidRound = evaluateBidRound("id",roundLens)
 
         composition {
-            val storage = TestStorage()
+            val storage = TestStorage() * bidApplicationIso
             (storage * auctionLens).write(auction)
             (storage * createRound.writer).write(round) on Unit
 
@@ -368,7 +368,7 @@ class ActionTests{
         val preEvaluateBidRound = preEvaluateBidRound("id",roundLens)
 
         composition {
-            val storage = TestStorage()
+            val storage = TestStorage() * bidApplicationIso
             (storage * auctionLens).write(auction)
             (storage * createRound.writer).write(round) on Unit
 
@@ -421,7 +421,7 @@ class ActionTests{
         val acceptRound = acceptRound(auctionLens, "id")
 
         composition {
-            val storage = TestStorage()
+            val storage = TestStorage() * bidApplicationIso
             (storage * auctionLens).write(auction)
             (storage * createRound.writer).write(round) on Unit
 
@@ -450,7 +450,7 @@ class ActionTests{
         val bidders = AddBidders()
         val addBidders = addBidders(bidders)
         composition {
-            val storage = TestStorage()
+            val storage = TestStorage() * bidApplicationIso
 
             // Read
             val biddersData = (storage * addBidders.reader).emit()
@@ -469,7 +469,7 @@ class ActionTests{
         )
         val addBidders = searchUsernameOfBidder(bidders)
         composition {
-            val storage = TestStorage()
+            val storage = TestStorage() * bidApplicationIso
 
             // Read
             val biddersData = (storage * addBidders.reader).emit()

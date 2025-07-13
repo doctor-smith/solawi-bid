@@ -6,13 +6,13 @@
 // lens generator. See below for more details.
 package org.solyton.solawi.bid.module.bid.data.auction
 
-import kotlinx.datetime.LocalDate as Date
 import org.evoleq.optics.Lensify
 import org.evoleq.optics.ReadOnly
 import org.evoleq.optics.ReadWrite
 import org.evoleq.optics.lens.Lens
-import org.solyton.solawi.bid.module.bid.data.bidround.Round
 import org.solyton.solawi.bid.module.bid.data.bidder.BidderInfo
+import org.solyton.solawi.bid.module.bid.data.bidround.Round
+import kotlinx.datetime.LocalDate as Date
 
 /**
  * Generator class.

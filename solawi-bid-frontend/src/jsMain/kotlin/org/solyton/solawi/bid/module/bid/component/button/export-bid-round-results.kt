@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.bid.component.button
 
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
+import org.evoleq.device.data.mediaType
 import org.evoleq.language.Lang
 import org.evoleq.language.title
 import org.evoleq.math.Source
@@ -14,20 +15,19 @@ import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.Button
 import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.application.data.Application
-import org.evoleq.device.data.mediaType
-import org.solyton.solawi.bid.application.data.deviceData
-import org.solyton.solawi.bid.module.style.button.buttonStyle
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerExportOfBidRoundResults
+import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.bidround.Round
+import org.solyton.solawi.bid.module.bid.data.deviceData
+import org.solyton.solawi.bid.module.style.button.buttonStyle
 
 @Markup
 @Composable
 @Suppress("FunctionName")
 fun ExportBidRoundResultsButton(
-    storage: Storage<Application>,
-    auction: Lens<Application, Auction>,
+    storage: Storage<BidApplication>,
+    auction: Lens<BidApplication, Auction>,
     round: Round,
     texts: Source<Lang.Block>
 ) {

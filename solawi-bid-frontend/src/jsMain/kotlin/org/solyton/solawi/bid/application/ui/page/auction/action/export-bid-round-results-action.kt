@@ -8,6 +8,7 @@ import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.bidround.BidResult
 import org.solyton.solawi.bid.module.bid.data.bidround.BidRoundResults
 import org.solyton.solawi.bid.module.bid.data.bidround.Round
@@ -16,7 +17,7 @@ import org.solyton.solawi.bid.module.bid.data.api.ExportBidRound
 import org.solyton.solawi.bid.module.bid.data.bidround.rawResults
 
 @Markup
-fun exportBidRoundResults(auctionId: String, round: Lens<Application,Round>) = Action<Application, ExportBidRound, ApiBidRoundResults >(
+fun exportBidRoundResults(auctionId: String, round: Lens<BidApplication,Round>) = Action<BidApplication, ExportBidRound, ApiBidRoundResults >(
     name = "ExportBidRound",
     reader = round * Reader { r: Round -> ExportBidRound(r.roundId, auctionId ) },
     endPoint = ExportBidRound::class,

@@ -9,6 +9,8 @@ import org.evoleq.compose.modal.Modal
 import org.evoleq.compose.modal.ModalData
 import org.evoleq.compose.modal.ModalType
 import org.evoleq.compose.modal.Modals
+import org.evoleq.compose.style.data.device.DeviceType
+import org.evoleq.device.data.mediaType
 import org.evoleq.language.Lang
 import org.evoleq.language.get
 import org.evoleq.math.Source
@@ -20,12 +22,10 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.P
 import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.application.data.Application
-import org.evoleq.compose.style.data.device.DeviceType
-import org.evoleq.device.data.mediaType
-import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
+import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.bidround.BidRound
+import org.solyton.solawi.bid.module.bid.data.deviceData
 import org.w3c.dom.HTMLElement
 
 @Markup
@@ -34,8 +34,8 @@ fun SuccessfulBidInformationModal(
     id: Int,
     texts: Lang.Block,
     modals: Storage<Modals<Int>>,
-    storage: Storage<Application>,
-    round: Lens<Application, BidRound>,
+    storage: Storage<BidApplication>,
+    round: Lens<BidApplication, BidRound>,
     device: Source<DeviceType>,
     // cancel: ()->Unit,
     update: ()->Unit
@@ -61,8 +61,8 @@ fun SuccessfulBidInformationModal(
 
 @Markup
 fun Storage<Modals<Int>>.showSuccessfulBidInformationModal(
-    storage: Storage<Application>,
-    round: Lens<Application, BidRound>,
+    storage: Storage<BidApplication>,
+    round: Lens<BidApplication, BidRound>,
     texts: Lang.Block,
     device: Source<DeviceType>,
     update: ()->Unit

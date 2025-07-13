@@ -8,6 +8,7 @@ import org.evoleq.compose.Markup
 import org.evoleq.compose.label.Label
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Vertical
+import org.evoleq.device.data.mediaType
 import org.evoleq.language.component
 import org.evoleq.language.subComp
 import org.evoleq.language.title
@@ -20,19 +21,23 @@ import org.jetbrains.compose.web.css.justifyContent
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.*
-import org.solyton.solawi.bid.application.data.*
-import org.evoleq.device.data.mediaType
+import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
 import org.solyton.solawi.bid.application.ui.page.auction.action.searchUsernameOfBidder
+import org.solyton.solawi.bid.module.bid.data.actions
+import org.solyton.solawi.bid.module.bid.data.api.SearchBidderData
+import org.solyton.solawi.bid.module.bid.data.bidderMailAddresses
+import org.solyton.solawi.bid.module.bid.data.deviceData
+import org.solyton.solawi.bid.module.bid.data.i18N
+import org.solyton.solawi.bid.module.bid.data.reader.*
+import org.solyton.solawi.bid.module.control.button.StdButton
+import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.style.form.fieldStyle
 import org.solyton.solawi.bid.module.style.form.formLabelStyle
 import org.solyton.solawi.bid.module.style.form.formStyle
 import org.solyton.solawi.bid.module.style.form.textInputStyle
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
-import org.solyton.solawi.bid.module.bid.data.api.SearchBidderData
-import org.solyton.solawi.bid.module.bid.data.reader.*
-import org.solyton.solawi.bid.module.control.button.StdButton
-import org.solyton.solawi.bid.module.i18n.data.language
 
 @Markup
 @Composable
@@ -47,8 +52,8 @@ fun SearchBiddersPage(storage: Storage<Application>) = Div {
     var data by remember{ mutableStateOf("") }
 
     // Data
-    val device = storage * deviceData * mediaType.get
-    val texts = storage * i18N * language * component(BidComponent.SearchBiddersPage)
+    val device = storage * bidApplicationIso * deviceData * mediaType.get
+    val texts = storage * bidApplicationIso * i18N * language * component(BidComponent.SearchBiddersPage)
     val searchButton = texts * subComp("buttons") * subComp("search")
     val inputs = texts * subComp("inputs")
     val results =texts * subComp("results")
@@ -68,7 +73,7 @@ fun SearchBiddersPage(storage: Storage<Application>) = Div {
                         relatedNames = data.split(",").map{it.trim()}.filter { it.isNotBlank() }
                     )
                     CoroutineScope(Job()).launch {
-                        (storage * actions).read().emit(searchUsernameOfBidder(searchBidderData))
+                        (storage * bidApplicationIso * actions).read().dispatch(searchUsernameOfBidder(searchBidderData))
                     }
                 }
             }
@@ -135,7 +140,7 @@ fun SearchBiddersPage(storage: Storage<Application>) = Div {
         }
         Wrap{
             H2{Text((results * title).emit())}
-            (storage * bidderMailAddresses.get).emit().emails.forEach {
+            (storage * bidApplicationIso * bidderMailAddresses.get).emit().emails.forEach {
                 P{ Text(it) }
             }
         }

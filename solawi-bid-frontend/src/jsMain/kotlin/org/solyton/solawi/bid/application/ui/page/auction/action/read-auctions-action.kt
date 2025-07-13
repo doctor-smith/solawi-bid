@@ -6,18 +6,18 @@ import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.transform.merge
 import org.evoleq.optics.transform.times
-import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.application.data.auctions
-import org.solyton.solawi.bid.application.data.userData
+import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.api.ApiAuctions
 import org.solyton.solawi.bid.module.bid.data.api.GetAuctions
+import org.solyton.solawi.bid.module.bid.data.auctions
 import org.solyton.solawi.bid.module.bid.data.toDomainType
-import org.solyton.solawi.bid.module.user.data.User
+import org.solyton.solawi.bid.module.bid.data.biduser.User
+import org.solyton.solawi.bid.module.bid.data.user
 
 @Markup
-fun readAuctions(): Action<Application, GetAuctions, ApiAuctions> = Action(
+fun readAuctions(): Action<BidApplication, GetAuctions, ApiAuctions> = Action(
     name ="ReadAuctions",
-    reader = userData * Reader { _: User -> GetAuctions },
+    reader = user * Reader { _: User -> GetAuctions },
     endPoint = GetAuctions::class,
     writer = auctions
         merge { given, incoming -> given.auctionId == incoming.auctionId }

@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
 import org.evoleq.compose.label.Label
 import org.evoleq.compose.layout.*
+import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
@@ -12,28 +13,30 @@ import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H4
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.dom.TextInput
-import org.solyton.solawi.bid.application.data.Application
-import org.evoleq.compose.style.data.device.DeviceType
-import org.solyton.solawi.bid.module.style.form.formLabelStyle
-import org.solyton.solawi.bid.module.style.form.textInputStyle
-import org.solyton.solawi.bid.module.style.wrap.Wrap
+import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.bidround.Round
 import org.solyton.solawi.bid.module.bid.data.bidround.bidRoundEvaluation
 import org.solyton.solawi.bid.module.separator.LineSeparator
 import org.solyton.solawi.bid.module.statistics.component.Distribution
 import org.solyton.solawi.bid.module.statistics.data.DistributionConfiguration
+import org.solyton.solawi.bid.module.style.form.formLabelStyle
+import org.solyton.solawi.bid.module.style.form.textInputStyle
+import org.solyton.solawi.bid.module.style.wrap.Wrap
 
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun BidRoundEvaluation(storage: Storage<Application>, round: Lens<Application, Round>) {
+fun BidRoundEvaluation(
+    storage: Storage<BidApplication>,
+    round: Lens<BidApplication, Round>
+) {
 
     val evaluation = (storage * round * bidRoundEvaluation).read()
     // todo:i18n
 
     Vertical(scrollableStyle){
         Wrap {
-            H4{Text("Ziel erreicht")}
+            H4{ Text("Ziel erreicht") }
             ReadOnlyProperty(Property("Zielsumme", evaluation.auctionDetails.targetAmount))
             ReadOnlyProperty(Property("Erreichte Summe", evaluation.totalSumOfWeightedBids),)
             LineSeparator()
@@ -54,7 +57,7 @@ fun BidRoundEvaluation(storage: Storage<Application>, round: Lens<Application, R
             )
         }
         Wrap {
-            H4{Text("Verhältnis max / min")}
+            H4{ Text("Verhältnis max / min") }
 
             val minimalBid = evaluation.weightedBids.minBy { bid -> bid.bid }
             val maximalBid = evaluation.weightedBids.maxBy { bid -> bid.bid }
@@ -65,7 +68,7 @@ fun BidRoundEvaluation(storage: Storage<Application>, round: Lens<Application, R
         }
 
         Wrap {
-            H4{Text("Verteilung")}
+            H4{ Text("Verteilung") }
             var max by remember { mutableStateOf(310.0) }
             var min by remember { mutableStateOf(0.0) }
             var resolution by remember{ mutableStateOf(30) }

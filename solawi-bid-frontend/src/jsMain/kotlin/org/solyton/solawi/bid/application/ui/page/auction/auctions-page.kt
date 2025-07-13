@@ -24,15 +24,22 @@ import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.application.data.*
 import org.evoleq.device.data.mediaType
+import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
 import org.solyton.solawi.bid.application.ui.page.auction.action.readAuctions
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.bid.component.AuctionList
 import org.solyton.solawi.bid.module.bid.component.button.CreateAuctionButton
 import org.solyton.solawi.bid.module.bid.component.form.DEFAULT_AUCTION_ID
+import org.solyton.solawi.bid.module.bid.data.actions
+import org.solyton.solawi.bid.module.bid.data.auctions
+import org.solyton.solawi.bid.module.bid.data.deviceData
+import org.solyton.solawi.bid.module.bid.data.i18N
+import org.solyton.solawi.bid.module.bid.data.modals
 import org.solyton.solawi.bid.module.bid.data.reader.BidComponent
+import org.solyton.solawi.bid.module.bid.data.user
 import org.solyton.solawi.bid.module.error.component.showErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
 import org.solyton.solawi.bid.module.i18n.data.language
@@ -43,14 +50,14 @@ import org.solyton.solawi.bid.module.i18n.data.language
 fun AuctionsPage(storage: Storage<Application>) = Div {
     // Effect
     LaunchedEffect(Unit) {
-        (storage * actions).read().emit(readAuctions())
+        (storage * bidApplicationIso * actions).read().dispatch(readAuctions())
     }
 
     // Data
     val auction = auctions * FirstBy { it.auctionId == DEFAULT_AUCTION_ID }
 
     // Texts
-    val texts = (storage * i18N * language * component(BidComponent.AuctionsPage))
+    val texts = (storage * bidApplicationIso * i18N * language * component(BidComponent.AuctionsPage))
 
     // Markup
     Vertical(style = verticalPageStyle) {
@@ -59,7 +66,7 @@ fun AuctionsPage(storage: Storage<Application>) = Div {
                 H1 { Text((texts * title).emit()) }
                 Horizontal {
                     CreateAuctionButton(
-                        storage = storage,
+                        storage = storage * bidApplicationIso,
                         auction = auction,
                         texts = texts * subComp("buttons") * subComp("createAuction")
                     )
@@ -68,22 +75,22 @@ fun AuctionsPage(storage: Storage<Application>) = Div {
             }
         }
         Wrap{ AuctionList(
-            storage * auctions,
-            storage * userData.get,
-            storage * i18N,
-            storage * modals,
-            storage * deviceData * mediaType.get
+            storage * bidApplicationIso * auctions,
+            storage * bidApplicationIso * user.get,
+            storage * bidApplicationIso * i18N,
+            storage * bidApplicationIso * modals,
+            storage * bidApplicationIso * deviceData * mediaType.get
         ) {
             CoroutineScope(Job()).launch {
-                val actions = (storage * actions).read()
+                val actions = (storage * bidApplicationIso * actions).read()
                 try {
-                    actions.emit(it)
+                    actions.dispatch(it)
                 } catch (exception: Exception) {
-                    (storage * modals).showErrorModal(
+                    (storage * bidApplicationIso * modals).showErrorModal(
                         texts = errorModalTexts(
                             exception.message ?: exception.cause?.message ?: "Cannot Emit action '${it.name}'"
                         ),
-                        device = storage * deviceData * mediaType.get,
+                        device = storage * bidApplicationIso * deviceData * mediaType.get,
                     )
                 }
             }

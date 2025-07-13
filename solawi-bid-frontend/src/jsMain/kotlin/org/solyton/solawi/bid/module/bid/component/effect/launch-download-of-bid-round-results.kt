@@ -10,7 +10,7 @@ import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
-import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.auction.rounds
 import org.solyton.solawi.bid.module.bid.data.bidround.Round
@@ -27,8 +27,8 @@ import kotlin.js.Date
 @Composable
 @Suppress("FunctionName", "UNUSED_PARAMETER" /* todo:dev remove after finishing i18n */)
 fun LaunchDownloadOfBidRoundResults(
-    storage: Storage<Application>,
-    auction: Lens<Application, Auction>,
+    storage: Storage<BidApplication>,
+    auction: Lens<BidApplication, Auction>,
     round: Round,
     texts: Source<Lang.Block>
 ) {

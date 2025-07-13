@@ -5,7 +5,11 @@ import org.evoleq.compose.Markup
 import org.evoleq.compose.date.format
 import org.evoleq.compose.date.parse
 import org.evoleq.compose.label.Label
-import org.evoleq.compose.modal.*
+import org.evoleq.compose.modal.Modal
+import org.evoleq.compose.modal.ModalData
+import org.evoleq.compose.modal.ModalType
+import org.evoleq.compose.modal.Modals
+import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.language.Lang
 import org.evoleq.language.Locale
 import org.evoleq.language.component
@@ -17,18 +21,14 @@ import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.attributes.InputType
-import org.jetbrains.compose.web.dom.*
-import org.evoleq.compose.style.data.device.DeviceType
-import org.solyton.solawi.bid.module.style.form.*
+import org.jetbrains.compose.web.dom.Div
+import org.jetbrains.compose.web.dom.ElementScope
+import org.jetbrains.compose.web.dom.Input
+import org.jetbrains.compose.web.dom.TextInput
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
-import org.solyton.solawi.bid.module.bid.data.auction.Auction
-import org.solyton.solawi.bid.module.bid.data.auction.auctionDetails
-import org.solyton.solawi.bid.module.bid.data.auction.benchmark
-import org.solyton.solawi.bid.module.bid.data.auction.date
-import org.solyton.solawi.bid.module.bid.data.auction.name
-import org.solyton.solawi.bid.module.bid.data.auction.solidarityContribution
-import org.solyton.solawi.bid.module.bid.data.auction.targetAmount
+import org.solyton.solawi.bid.module.bid.data.auction.*
 import org.solyton.solawi.bid.module.bid.service.onNullEmpty
+import org.solyton.solawi.bid.module.style.form.*
 import org.w3c.dom.HTMLElement
 
 @Markup

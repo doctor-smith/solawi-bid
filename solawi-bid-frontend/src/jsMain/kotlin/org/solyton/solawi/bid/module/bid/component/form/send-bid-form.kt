@@ -4,18 +4,18 @@ import androidx.compose.runtime.*
 import io.ktor.util.*
 import org.evoleq.compose.Markup
 import org.evoleq.compose.label.Label
+import org.evoleq.compose.style.data.device.DeviceType
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.color
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.P
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.dom.TextInput
-import org.evoleq.compose.style.data.device.DeviceType
-import org.solyton.solawi.bid.module.style.form.*
 import org.solyton.solawi.bid.module.bid.data.bidround.Bid
 import org.solyton.solawi.bid.module.bid.service.isDecimal
 import org.solyton.solawi.bid.module.bid.service.toDecimal
 import org.solyton.solawi.bid.module.control.button.SubmitButton
+import org.solyton.solawi.bid.module.style.form.*
 
 @Markup
 @Composable

@@ -6,19 +6,19 @@
 // lens generator. See below for more details.
 package org.solyton.solawi.bid.module.bid.data
 
+import org.evoleq.compose.modal.Modals
+import org.evoleq.device.data.Device
 import org.evoleq.optics.Lensify
 import org.evoleq.optics.ReadOnly
 import org.evoleq.optics.ReadWrite
-import org.evoleq.compose.modal.Modals
-import org.evoleq.device.data.Device
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.ActionDispatcher
-import org.solyton.solawi.bid.module.i18n.data.I18N
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.bidder.BidderMails
-import org.solyton.solawi.bid.module.bid.data.bidround.BidRound
 import org.solyton.solawi.bid.module.bid.data.bidenv.Environment
+import org.solyton.solawi.bid.module.bid.data.bidround.BidRound
 import org.solyton.solawi.bid.module.bid.data.biduser.User
+import org.solyton.solawi.bid.module.i18n.data.I18N
 
 /**
  * Generator class.
@@ -33,8 +33,8 @@ import org.solyton.solawi.bid.module.bid.data.biduser.User
 @Lensify data class BidApplication(
     @ReadOnly val environment: Environment,
     @ReadOnly val actions: ActionDispatcher<BidApplication>,
-    @ReadWrite val modals: Modals<Int>,
-    @ReadOnly val deviceData: Device,
+    @ReadWrite val modals: Modals<Int> = mapOf(),
+    @ReadOnly val deviceData: Device = Device(),
     @ReadWrite val i18N: I18N = I18N(),
     @ReadWrite val user: User = User(),
     @ReadWrite val auctions: List<Auction> = listOf(),

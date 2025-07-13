@@ -3,10 +3,10 @@ package org.solyton.solawi.bid.module.bid.data.reader
 import org.evoleq.math.Reader
 import org.evoleq.math.map
 import org.evoleq.uuid.isUuid
+import org.solyton.solawi.bid.module.bid.data.api.RoundState
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.auction.AuctionDetails
 import org.solyton.solawi.bid.module.bid.data.bidround.Round
-import org.solyton.solawi.bid.module.bid.data.api.RoundState
 
 val auctionAccepted: Reader<Auction, Boolean> = Reader {
     it.acceptedRoundId != null && it.acceptedRoundId.isUuid()

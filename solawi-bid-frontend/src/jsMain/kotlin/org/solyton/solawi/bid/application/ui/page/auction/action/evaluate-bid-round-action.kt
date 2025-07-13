@@ -7,7 +7,7 @@ import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.transform.times
-import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.bidround.Round
 import org.solyton.solawi.bid.module.bid.data.api.ApiBidRoundEvaluation
 import org.solyton.solawi.bid.module.bid.data.api.EvaluateBidRound
@@ -17,7 +17,7 @@ import org.solyton.solawi.bid.module.bid.data.evaluation.WeightedBid
 import org.solyton.solawi.bid.module.bid.data.toDomainType
 
 @Markup
-fun evaluateBidRound(auctionId: String, round: Lens<Application, Round>): Action<Application, EvaluateBidRound, ApiBidRoundEvaluation> = Action(
+fun evaluateBidRound(auctionId: String, round: Lens<BidApplication, Round>): Action<BidApplication, EvaluateBidRound, ApiBidRoundEvaluation> = Action(
     name = "EvaluateBidRound",
     reader = round * Reader { r:Round -> EvaluateBidRound(auctionId, r.roundId)},
     endPoint = EvaluateBidRound::class,

@@ -6,11 +6,12 @@ import org.evoleq.optics.storage.times
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.bidenv.Environment
+import org.solyton.solawi.bid.module.bid.data.bidenv.frontendUrl
 import org.solyton.solawi.bid.module.bid.data.biduser.User
 
 val bidApplicationIso: Lens<Application, BidApplication> by lazy {
     Lens<Application, BidApplication>(
-        get =  {whole -> bidApplicationIso.get(whole).copy(actions = whole.actions * bidApplicationPreIso)},
+        get =  {whole -> bidApplicationPreIso.get(whole).copy(actions = whole.actions * bidApplicationPreIso)},
         set = bidApplicationPreIso.set
     )
 }
@@ -19,7 +20,15 @@ val bidApplicationPreIso: Lens<Application, BidApplication> by lazy {
     Lens<Application, BidApplication>(
         get = { whole ->
             BidApplication(
-                environment = Environment,
+                environment = with(whole.environment) {
+                    Environment(
+                        type = type,
+                        frontendUrl = frontendUrl,
+                        frontendPort = frontendPort,
+                        backendUrl = backendUrl,
+                        backendPort = backendPort
+                    )
+                },
                 actions = ActionDispatcher {  },
                 modals = whole.modals,
                 deviceData = whole.deviceData,

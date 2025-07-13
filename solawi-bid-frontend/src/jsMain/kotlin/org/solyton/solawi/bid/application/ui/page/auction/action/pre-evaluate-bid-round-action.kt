@@ -8,6 +8,7 @@ import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.bidround.Round
 import org.solyton.solawi.bid.module.bid.data.api.ApiBidRoundPreEvaluation
 import org.solyton.solawi.bid.module.bid.data.api.PreEvaluateBidRound
@@ -16,7 +17,7 @@ import org.solyton.solawi.bid.module.bid.data.bidround.preEvaluation
 import org.solyton.solawi.bid.module.bid.data.toDomainType
 
 @Markup
-fun preEvaluateBidRound(auctionId: String, round: Lens<Application, Round>): Action<Application, PreEvaluateBidRound, ApiBidRoundPreEvaluation> = Action(
+fun preEvaluateBidRound(auctionId: String, round: Lens<BidApplication, Round>): Action<BidApplication, PreEvaluateBidRound, ApiBidRoundPreEvaluation> = Action(
     name = "PreEvaluateBidRound",
     reader = round * Reader { r: Round -> PreEvaluateBidRound(auctionId, r.roundId) },
     endPoint = PreEvaluateBidRound::class,
