@@ -133,8 +133,8 @@ abstract class DependencyAnalyserTask : DefaultTask() {
         val report = File(root, "$targetFile.$reportType")
 
         val appModalDependencies = """
-            |## Dependency Graph App <-> Modules
-            |Background: App is allowed to depend on modules, but not the other way round
+            |## Dependencies between app and modules
+            |Background: Application is allowed to depend on modules, but not the other way round
             |
             |```mermaid
             |graph TD
