@@ -11,7 +11,7 @@ import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
-import org.solyton.solawi.bid.application.ui.page.auction.action.changeRoundState
+import org.solyton.solawi.bid.module.bid.action.changeRoundState
 import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.actions
 import org.solyton.solawi.bid.module.bid.data.api.RoundState

@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.application.ui.page.auction.action
+package org.solyton.solawi.bid.module.bid.action
 
 import org.evoleq.math.Reader
 import org.evoleq.math.contraMap

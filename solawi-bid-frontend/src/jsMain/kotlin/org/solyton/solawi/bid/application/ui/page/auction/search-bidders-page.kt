@@ -23,7 +23,7 @@ import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.*
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
-import org.solyton.solawi.bid.application.ui.page.auction.action.searchUsernameOfBidder
+import org.solyton.solawi.bid.module.bid.action.searchUsernameOfBidder
 import org.solyton.solawi.bid.module.bid.data.actions
 import org.solyton.solawi.bid.module.bid.data.api.SearchBidderData
 import org.solyton.solawi.bid.module.bid.data.bidderMailAddresses

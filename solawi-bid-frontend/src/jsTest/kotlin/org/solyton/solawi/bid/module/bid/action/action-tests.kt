@@ -12,7 +12,6 @@ import org.jetbrains.compose.web.testutils.ComposeWebExperimentalTestsApi
 import org.jetbrains.compose.web.testutils.runTest
 import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
 import org.solyton.solawi.bid.application.serialization.installSerializers
-import org.solyton.solawi.bid.application.ui.page.auction.action.*
 import org.solyton.solawi.bid.module.bid.data.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.data.auction.Auction

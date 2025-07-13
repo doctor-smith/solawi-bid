@@ -19,7 +19,7 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.application.ui.page.auction.action.configureAuction
+import org.solyton.solawi.bid.module.bid.action.configureAuction
 import org.solyton.solawi.bid.module.bid.action.deleteAuctionAction
 import org.solyton.solawi.bid.module.bid.component.form.showUpdateAuctionModal
 import org.solyton.solawi.bid.module.bid.data.BidApplication

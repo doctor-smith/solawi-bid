@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.application.ui.page.auction.action
+package org.solyton.solawi.bid.module.bid.action
 
 import org.evoleq.compose.Markup
 import org.evoleq.math.Reader
@@ -6,7 +6,6 @@ import org.evoleq.math.Writer
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.transform.times
-import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.api.ApiRound

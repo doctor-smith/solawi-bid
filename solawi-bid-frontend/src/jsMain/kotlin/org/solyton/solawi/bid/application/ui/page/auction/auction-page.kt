@@ -27,7 +27,7 @@ import org.jetbrains.compose.web.dom.H2
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
-import org.solyton.solawi.bid.application.ui.page.auction.action.readAuctions
+import org.solyton.solawi.bid.module.bid.action.readAuctions
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.bid.component.AuctionDetails
