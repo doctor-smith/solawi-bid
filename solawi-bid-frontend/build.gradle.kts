@@ -184,8 +184,6 @@ dependencyAnalyser {
             "user",
             "style"
         )
-        // todo: resolve cyclic dependencies and set to true after++
-
-        checkCyclesBeforeBuild = false
+        checkCyclesBeforeBuild = true
     }
 }
