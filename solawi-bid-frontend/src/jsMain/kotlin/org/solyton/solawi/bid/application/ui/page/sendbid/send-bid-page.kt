@@ -19,18 +19,24 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
-import org.solyton.solawi.bid.application.data.*
-import org.solyton.solawi.bid.application.data.device.mediaType
+import org.evoleq.device.data.mediaType
+import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchSetDeviceData
-import org.solyton.solawi.bid.application.ui.style.form.formPageDesktopStyle
-import org.solyton.solawi.bid.application.ui.style.page.verticalPageStyle
-import org.solyton.solawi.bid.application.ui.style.wrap.Wrap
+import org.solyton.solawi.bid.module.style.form.formPageDesktopStyle
+import org.solyton.solawi.bid.module.style.page.verticalPageStyle
+import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.bid.action.sendBidAction
 import org.solyton.solawi.bid.module.bid.component.form.SendBidForm
 import org.solyton.solawi.bid.module.bid.component.modal.showSuccessfulBidInformationModal
-import org.solyton.solawi.bid.module.bid.data.Bid
+import org.solyton.solawi.bid.module.bid.data.actions
+import org.solyton.solawi.bid.module.bid.data.bidround.Bid
 import org.solyton.solawi.bid.module.bid.data.api.ApiBid
-import org.solyton.solawi.bid.module.bid.data.showSuccessMessage
+import org.solyton.solawi.bid.module.bid.data.bidRounds
+import org.solyton.solawi.bid.module.bid.data.bidround.showSuccessMessage
+import org.solyton.solawi.bid.module.bid.data.deviceData
+import org.solyton.solawi.bid.module.bid.data.i18N
+import org.solyton.solawi.bid.module.bid.data.modals
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.language
 
@@ -40,41 +46,41 @@ import org.solyton.solawi.bid.module.i18n.data.language
 fun SendBidPage(storage: Storage<Application>, link: String) = Div/*(attrs = {style { formPageDesktopStyle() }})*/ {
     val round = bidRounds * FirstOrNull { it.round.link == link }
     val roundLens = bidRounds * FirstBy { it.round.link == link }
-    val showSuccessMessageModal = storage * round  map {
+    val showSuccessMessageModal = storage * bidApplicationIso * round  map {
         when{
             it == null -> false
             else -> it.showSuccessMessage
         }
     }
      if(showSuccessMessageModal.read()) LaunchedEffect(Unit) {
-         val modals = (storage * modals)
-         val texts = ((storage * i18N * language).read() as Lang.Block).component("solyton.auction.round.successfulBidInformationModal")
+         val modals = (storage * bidApplicationIso * modals)
+         val texts = ((storage * bidApplicationIso * i18N * language).read() as Lang.Block).component("solyton.auction.round.successfulBidInformationModal")
 
          modals.showSuccessfulBidInformationModal(
-            storage = storage,
+            storage = storage * bidApplicationIso,
             round = roundLens,
             texts = texts,
-            device = (storage * deviceData * mediaType.get),
-            update = { (storage * roundLens * showSuccessMessage ).write(false) }
+            device = (storage * bidApplicationIso * deviceData * mediaType.get),
+            update = { (storage * bidApplicationIso * roundLens * showSuccessMessage ).write(false) }
         )
     }
-    LaunchSetDeviceData(storage * deviceData)
+    LaunchSetDeviceData(storage * bidApplicationIso * deviceData)
     Vertical(style = {
         verticalPageStyle()
         formPageDesktopStyle()
         height(100.vh)
         paddingBottom(10.px)
     }) {
-        SendBidForm((storage * deviceData * mediaType).read()) {
+        SendBidForm((storage * bidApplicationIso * deviceData * mediaType).read()) {
             CoroutineScope(Job()).launch {
-                (storage * actions).read().emit(
+                (storage * bidApplicationIso * actions).read().dispatch(
                     sendBidAction((it to link).toApiType())
                 )
             }
         }
         Div({ style { flexGrow(1) } }) {}
         Wrap {
-            StdButton({ "QR Code" }, storage * deviceData * mediaType.get) {
+            StdButton({ "QR Code" }, storage * bidApplicationIso * deviceData * mediaType.get) {
                 navigate("/bid/qr-code/$link")
             }
         }

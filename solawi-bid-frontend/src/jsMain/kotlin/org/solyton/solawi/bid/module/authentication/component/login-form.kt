@@ -12,7 +12,7 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.PasswordInput
 import org.jetbrains.compose.web.dom.TextInput
-import org.solyton.solawi.bid.application.ui.style.form.*
+import org.solyton.solawi.bid.module.style.form.*
 import org.solyton.solawi.bid.module.authentication.data.*
 import org.solyton.solawi.bid.module.control.button.SubmitButton
 

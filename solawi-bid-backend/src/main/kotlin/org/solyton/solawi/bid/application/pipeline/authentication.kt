@@ -11,7 +11,7 @@ import io.ktor.server.response.*
 import kotlinx.serialization.json.Json
 import org.evoleq.ktorx.result.Result
 import javax.crypto.SecretKey
-import org.solyton.solawi.bid.application.environment.JWT as JWTDATA
+import org.solyton.solawi.bid.module.authentication.environment.JWT as JWTDATA
 
 fun Application.installAuthentication(jwt: JWTDATA)  {
         install(Authentication) {

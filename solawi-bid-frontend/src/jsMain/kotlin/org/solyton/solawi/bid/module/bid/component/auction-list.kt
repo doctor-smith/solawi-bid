@@ -6,6 +6,7 @@ import org.evoleq.compose.Markup
 import org.evoleq.compose.date.format
 import org.evoleq.compose.modal.Modals
 import org.evoleq.compose.routing.navigate
+import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.language.*
 import org.evoleq.math.Source
 import org.evoleq.math.emit
@@ -18,22 +19,21 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.application.data.Application
-import org.evoleq.compose.style.data.device.DeviceType
-import org.solyton.solawi.bid.application.permission.Right
-import org.solyton.solawi.bid.application.ui.page.auction.action.configureAuction
+import org.solyton.solawi.bid.module.bid.action.configureAuction
 import org.solyton.solawi.bid.module.bid.action.deleteAuctionAction
 import org.solyton.solawi.bid.module.bid.component.form.showUpdateAuctionModal
-import org.solyton.solawi.bid.module.bid.data.Auction
-import org.solyton.solawi.bid.module.bid.data.date
-import org.solyton.solawi.bid.module.bid.data.name
+import org.solyton.solawi.bid.module.bid.data.BidApplication
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
+import org.solyton.solawi.bid.module.bid.data.auction.date
+import org.solyton.solawi.bid.module.bid.data.auction.name
+import org.solyton.solawi.bid.module.bid.data.biduser.User
 import org.solyton.solawi.bid.module.bid.data.reader.auctionAccepted
+import org.solyton.solawi.bid.module.bid.permission.BidRight
+import org.solyton.solawi.bid.module.bid.service.isNotGranted
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.I18N
 import org.solyton.solawi.bid.module.i18n.data.language
-import org.solyton.solawi.bid.module.user.data.User
-import org.solyton.solawi.bid.module.permissions.service.isNotGranted
-import org.solyton.solawi.bid.application.data.auctions as auctionLens
+import org.solyton.solawi.bid.module.bid.data.auctions as auctionLens
 
 @Markup
 @Composable
@@ -45,7 +45,7 @@ fun AuctionList(
     modals: Storage<Modals<Int>>,
     device: Source<DeviceType>,
     styles: AuctionListStyles = AuctionListStyles(),
-    dispatch: (Action<Application, *, *>) -> Unit
+    dispatch: (Action<BidApplication, *, *>) -> Unit
 ) = Div(
     attrs = {style{styles.wrapper(this)}}
 ) {
@@ -127,7 +127,7 @@ fun AuctionListItem(
         StdButton(
             buttons * subComp("edit") * title,
             device,
-            (auction * auctionAccepted).emit() || user.emit().isNotGranted(Right.Auction.manage),
+            (auction * auctionAccepted).emit() || user.emit().isNotGranted(BidRight.Auction.manage),
         ) {
             // open edit dialog
             (modals).showUpdateAuctionModal(
@@ -144,7 +144,7 @@ fun AuctionListItem(
         StdButton(
             buttons * subComp("delete") * title,
             device,
-            (auction * auctionAccepted).emit() || user.emit().isNotGranted(Right.Auction.manage)
+            (auction * auctionAccepted).emit() || user.emit().isNotGranted(BidRight.Auction.manage)
         ) {
             dispatchDelete()
         }

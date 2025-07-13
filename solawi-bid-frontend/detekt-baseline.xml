@@ -19,10 +19,10 @@
     <ID>NewLineAtEndOfFile:change-password-effect.kt$org.solyton.solawi.bid.application.ui.page.user.effect.change-password-effect.kt</ID>
     <ID>NewLineAtEndOfFile:change-round-state-action.kt$org.solyton.solawi.bid.application.ui.page.auction.action.change-round-state-action.kt</ID>
     <ID>NewLineAtEndOfFile:change-route-state.kt$org.solyton.solawi.bid.module.bid.component.effect.change-route-state.kt</ID>
-    <ID>NewLineAtEndOfFile:common-styles.kt$org.solyton.solawi.bid.application.ui.style.button.common-styles.kt</ID>
-    <ID>NewLineAtEndOfFile:common-styles.kt$org.solyton.solawi.bid.application.ui.style.modal.common-styles.kt</ID>
+    <ID>NewLineAtEndOfFile:common-styles.kt$org.solyton.solawi.bid.module.style.button.common-styles.kt</ID>
+    <ID>NewLineAtEndOfFile:common-styles.kt$org.solyton.solawi.bid.module.style.modal.common-styles.kt</ID>
     <ID>NewLineAtEndOfFile:configure-auction-action.kt$org.solyton.solawi.bid.application.ui.page.auction.action.configure-auction-action.kt</ID>
-    <ID>NewLineAtEndOfFile:constants.kt$org.solyton.solawi.bid.application.ui.style.constants.kt</ID>
+    <ID>NewLineAtEndOfFile:constants.kt$org.solyton.solawi.bid.module.style.constants.kt</ID>
     <ID>NewLineAtEndOfFile:container.kt$org.evoleq.compose.layout.container.kt</ID>
     <ID>NewLineAtEndOfFile:context-role-table.kt$org.solyton.solawi.bid.module.user.component.table.context-role-table.kt</ID>
     <ID>NewLineAtEndOfFile:cookie.kt$org.solyton.solawi.bid.module.cookie.api.cookie.kt</ID>
@@ -30,7 +30,7 @@
     <ID>NewLineAtEndOfFile:create-user-action.kt$org.solyton.solawi.bid.application.ui.page.user.action.create-user-action.kt</ID>
     <ID>NewLineAtEndOfFile:dashboard-page.kt$org.solyton.solawi.bid.application.ui.page.dashboard.dashboard-page.kt</ID>
     <ID>NewLineAtEndOfFile:data.kt$org.evoleq.compose.routing.data.kt</ID>
-    <ID>NewLineAtEndOfFile:desktop-styles.kt$org.solyton.solawi.bid.application.ui.style.button.desktop-styles.kt</ID>
+    <ID>NewLineAtEndOfFile:desktop-styles.kt$org.solyton.solawi.bid.module.style.button.desktop-styles.kt</ID>
     <ID>NewLineAtEndOfFile:distribution.kt$org.solyton.solawi.bid.module.statistics.component.distribution.kt</ID>
     <ID>NewLineAtEndOfFile:double.kt$org.solyton.solawi.bid.module.bid.service.double.kt</ID>
     <ID>NewLineAtEndOfFile:dropzone.kt$org.evoleq.compose.dnd.dropzone.kt</ID>
@@ -60,8 +60,8 @@
     <ID>NewLineAtEndOfFile:login.kt$org.solyton.solawi.bid.application.storage.event.login.kt</ID>
     <ID>NewLineAtEndOfFile:logout-action.kt$org.solyton.solawi.bid.application.ui.page.login.action.logout-action.kt</ID>
     <ID>NewLineAtEndOfFile:media-type.kt$org.solyton.solawi.bid.application.data.device.media-type.kt</ID>
-    <ID>NewLineAtEndOfFile:mobile-fonts.kt$org.solyton.solawi.bid.application.ui.style.font.mobile-fonts.kt</ID>
-    <ID>NewLineAtEndOfFile:mobile-styles.kt$org.solyton.solawi.bid.application.ui.style.button.mobile-styles.kt</ID>
+    <ID>NewLineAtEndOfFile:mobile-fonts.kt$org.solyton.solawi.bid.module.style.font.mobile-fonts.kt</ID>
+    <ID>NewLineAtEndOfFile:mobile-styles.kt$org.solyton.solawi.bid.module.style.button.mobile-styles.kt</ID>
     <ID>NewLineAtEndOfFile:moblie-device.kt$org.solyton.solawi.bid.module.mobile.component.moblie-device.kt</ID>
     <ID>NewLineAtEndOfFile:moblie-test-page.kt$org.solyton.solawi.bid.application.ui.page.test.moblie-test-page.kt</ID>
     <ID>NewLineAtEndOfFile:navbar.kt$org.solyton.solawi.bid.application.data.navbar.navbar.kt</ID>
@@ -92,7 +92,7 @@
     <ID>NewLineAtEndOfFile:user.kt$org.solyton.solawi.bid.application.service.user.kt</ID>
     <ID>NewLineAtEndOfFile:util.kt$org.evoleq.compose.modal.util.kt</ID>
     <ID>NewLineAtEndOfFile:vertical.kt$org.evoleq.compose.layout.vertical.kt</ID>
-    <ID>NewLineAtEndOfFile:wrap.kt$org.solyton.solawi.bid.application.ui.style.wrap.wrap.kt</ID>
+    <ID>NewLineAtEndOfFile:wrap.kt$org.solyton.solawi.bid.module.style.wrap.wrap.kt</ID>
     <ID>TooGenericExceptionThrown:double.kt$throw Exception("Not a Double")</ID>
     <ID>TooGenericExceptionThrown:util.kt$throw Exception("Cannot merge Roots into other")</ID>
     <ID>TopLevelPropertyNaming:lang-components.kt$private const val basePath = "solyton.user"</ID>

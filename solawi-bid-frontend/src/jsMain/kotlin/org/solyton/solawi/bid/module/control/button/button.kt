@@ -11,9 +11,9 @@ import org.jetbrains.compose.web.css.backgroundColor
 import org.jetbrains.compose.web.dom.Button
 import org.jetbrains.compose.web.dom.Text
 import org.evoleq.compose.style.data.device.DeviceType
-import org.solyton.solawi.bid.application.ui.style.button.buttonStyle
-import org.solyton.solawi.bid.application.ui.style.button.cancelButtonStyle
-import org.solyton.solawi.bid.application.ui.style.button.submitButtonStyle
+import org.solyton.solawi.bid.module.style.button.buttonStyle
+import org.solyton.solawi.bid.module.style.button.cancelButtonStyle
+import org.solyton.solawi.bid.module.style.button.submitButtonStyle
 
 @Markup
 @Composable

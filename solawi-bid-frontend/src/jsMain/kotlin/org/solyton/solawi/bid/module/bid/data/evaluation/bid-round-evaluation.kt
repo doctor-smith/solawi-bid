@@ -9,7 +9,7 @@ package org.solyton.solawi.bid.module.bid.data.evaluation
 import org.evoleq.optics.Lensify
 import org.evoleq.optics.ReadOnly
 import org.evoleq.optics.lens.Lens
-import org.solyton.solawi.bid.module.bid.data.AuctionDetails
+import org.solyton.solawi.bid.module.bid.data.auction.AuctionDetails
 
 /**
  * Generator class.

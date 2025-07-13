@@ -4,6 +4,7 @@ plugins {
      `maven-publish`
     alias(libs.plugins.detekt)
     alias(libs.plugins.kover)
+    id("org.evoleq.architecture.dependency")
 }
 
 
@@ -158,3 +159,20 @@ tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselin
 tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektJsTest") {
     baseline.set(file("detekt/detekt-baseline-js-test.xml"))
 }
+
+
+dependencyAnalyser {
+    analyse("apiCommonMain") {
+        domain = "org.solyton.solawi.bid"
+        sourceSet = "commonMain"
+        modules = setOf(
+            "application",
+            "authentication",
+            "bid",
+            "permission",
+            "user",
+        )
+        checkCyclesBeforeBuild = true
+    }
+}
+

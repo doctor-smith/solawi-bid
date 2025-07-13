@@ -5,13 +5,17 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.*
-import org.solyton.solawi.bid.application.environment.Environment
+import org.evoleq.exposedx.data.DbEnv
+import org.evoleq.ktorx.data.KTorEnv
 import org.solyton.solawi.bid.module.health.action.checkApplicationHealth
 import kotlin.system.exitProcess
 
 @KtorDsl
 @Suppress("UNUSED_PARAMETER")
-fun Routing.health(environment: Environment) {
+fun <HealthEnv> Routing.health(
+    environment: HealthEnv
+
+) where HealthEnv : KTorEnv, HealthEnv : DbEnv {
     route("/health") {
         get("/check") {
             if (checkApplicationHealth()) {

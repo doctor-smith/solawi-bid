@@ -12,10 +12,9 @@ import org.evoleq.optics.ReadWrite
 import org.evoleq.compose.modal.Modals
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.ActionDispatcher
-import org.solyton.solawi.bid.application.data.device.Device
+import org.evoleq.device.data.Device
 import org.solyton.solawi.bid.module.i18n.data.Environment
 import org.solyton.solawi.bid.module.i18n.data.I18N
-import org.solyton.solawi.bid.module.i18n.data.I18nResources
 import org.solyton.solawi.bid.module.permissions.data.Permissions
 import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 

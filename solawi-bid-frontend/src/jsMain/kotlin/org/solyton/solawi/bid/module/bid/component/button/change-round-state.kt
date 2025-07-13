@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
+import org.evoleq.device.data.mediaType
 import org.evoleq.language.Lang
 import org.evoleq.language.get
 import org.evoleq.math.Reader
@@ -17,26 +18,25 @@ import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
-import org.solyton.solawi.bid.application.data.*
-import org.solyton.solawi.bid.application.data.device.mediaType
-import org.solyton.solawi.bid.application.permission.Right
-import org.solyton.solawi.bid.application.ui.page.auction.action.changeRoundState
-import org.solyton.solawi.bid.module.bid.data.Auction
-import org.solyton.solawi.bid.module.bid.data.Round
+import org.solyton.solawi.bid.module.bid.action.changeRoundState
+import org.solyton.solawi.bid.module.bid.data.*
 import org.solyton.solawi.bid.module.bid.data.api.RoundState
 import org.solyton.solawi.bid.module.bid.data.api.nextState
-import org.solyton.solawi.bid.module.bid.data.rounds
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
+import org.solyton.solawi.bid.module.bid.data.auction.rounds
+import org.solyton.solawi.bid.module.bid.data.bidround.Round
+import org.solyton.solawi.bid.module.bid.permission.BidRight
+import org.solyton.solawi.bid.module.bid.service.isNotGranted
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.error.component.showErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
-import org.solyton.solawi.bid.module.permissions.service.isNotGranted
 
 @Markup
 @Composable
 @Suppress("FunctionName")
 fun ChangeRoundStateButton(
-    storage: Storage<Application>,
-    auction: Lens<Application, Auction>,
+    storage: Storage<BidApplication>,
+    auction: Lens<BidApplication, Auction>,
     round: Round,
     texts: Source<Lang.Block>
 ) {
@@ -59,13 +59,13 @@ fun ChangeRoundStateButton(
     StdButton(
         texts = texts * commandName(RoundState.fromString(round.state).commandName),
         deviceType = storage * deviceData * mediaType.get,
-        disabled = (storage * userData.get).emit().isNotGranted(Right.BidRound.manage)
+        disabled = (storage * user.get).emit().isNotGranted(BidRight.BidRound.manage)
     ) {
         // todo:refactor:extract trigger
         CoroutineScope(Job()).launch {
             val actions = (storage * actions).read()
             try {
-                actions.emit( changeRoundState(
+                actions.dispatch( changeRoundState(
                     RoundState.fromString(round.state).nextState(),
                     auction * rounds * FirstBy { it.roundId == round.roundId })
                 )

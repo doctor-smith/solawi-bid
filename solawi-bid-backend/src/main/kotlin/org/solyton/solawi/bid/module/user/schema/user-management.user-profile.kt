@@ -13,7 +13,7 @@ typealias UserProfileEntity = UserProfile
 object UserProfiles : UUIDTable("user_profiles") {
     val userId = reference("user_id", Users)
 
-    val addressId = reference("address_id", Addresses).nullable()
+    // val addressId = reference("address_id", Addresses).nullable()
 
     val phoneNumber = varchar("phone_number", 15).nullable()
 
@@ -25,7 +25,7 @@ class UserProfile(id: EntityID<UUID>) : UUIDEntity(id) {
 
     var user by User referencedOn UserProfiles.userId
 
-    var address by Address optionalReferencedOn  UserProfiles.addressId
+   // var address by Address optionalReferencedOn  UserProfiles.addressId
 
     var phoneNumber by UserProfiles.phoneNumber
 

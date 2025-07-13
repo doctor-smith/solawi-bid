@@ -11,7 +11,7 @@ import org.jetbrains.compose.web.dom.H2
 import org.jetbrains.compose.web.dom.P
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.application.ui.style.page.verticalPageStyle
+import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 
 @Composable
 @Markup

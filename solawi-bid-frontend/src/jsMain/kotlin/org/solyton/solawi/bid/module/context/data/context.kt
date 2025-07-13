@@ -9,7 +9,7 @@ package org.solyton.solawi.bid.module.context.data
 import org.evoleq.optics.Lensify
 import org.evoleq.optics.ReadWrite
 import org.evoleq.optics.lens.Lens
-import org.solyton.solawi.bid.application.permission.Context as C
+import org.solyton.solawi.bid.module.application.permission.Context as C
 
 /**
  * Generator class.

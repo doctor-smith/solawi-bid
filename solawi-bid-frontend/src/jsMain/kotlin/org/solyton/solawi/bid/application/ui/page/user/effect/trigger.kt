@@ -5,7 +5,7 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.module.user.data.Application
 import org.solyton.solawi.bid.module.user.data.actions
-import org.solyton.solawi.bid.application.data.device.mediaType
+import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.module.user.data.deviceData
 import org.solyton.solawi.bid.module.user.data.modals
 import org.solyton.solawi.bid.module.error.component.showErrorModal
