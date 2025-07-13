@@ -29,11 +29,11 @@ import org.solyton.solawi.bid.module.bid.component.effect.LaunchBidRoundEvaluati
 import org.solyton.solawi.bid.module.bid.component.effect.LaunchDownloadOfBidRoundResults
 import org.solyton.solawi.bid.module.bid.component.effect.LaunchExportOfBidRoundResults
 import org.solyton.solawi.bid.module.bid.component.effect.LaunchPresentationOfBidRoundEvaluationInModal
-import org.solyton.solawi.bid.module.bid.data.Auction
-import org.solyton.solawi.bid.module.bid.data.Round
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
+import org.solyton.solawi.bid.module.bid.data.bidround.Round
 import org.solyton.solawi.bid.module.bid.data.api.RoundState
 import org.solyton.solawi.bid.module.bid.data.reader.roundAccepted
-import org.solyton.solawi.bid.module.bid.data.rounds
+import org.solyton.solawi.bid.module.bid.data.auction.rounds
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.bid.data.reader.rounds as roundsKey
 

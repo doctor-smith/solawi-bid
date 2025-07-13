@@ -19,10 +19,10 @@ import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.application.ui.page.auction.action.configureAuction
 import org.solyton.solawi.bid.module.bid.component.form.showUpdateAuctionModal
-import org.solyton.solawi.bid.module.bid.data.Auction
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.reader.auctionAccepted
 import org.solyton.solawi.bid.module.bid.data.reader.existRounds
-import org.solyton.solawi.bid.module.bid.data.rounds
+import org.solyton.solawi.bid.module.bid.data.auction.rounds
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.error.component.showErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts

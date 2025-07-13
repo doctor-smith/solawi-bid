@@ -21,7 +21,13 @@ import org.jetbrains.compose.web.dom.*
 import org.evoleq.compose.style.data.device.DeviceType
 import org.solyton.solawi.bid.module.style.form.*
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
-import org.solyton.solawi.bid.module.bid.data.*
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
+import org.solyton.solawi.bid.module.bid.data.auction.auctionDetails
+import org.solyton.solawi.bid.module.bid.data.auction.benchmark
+import org.solyton.solawi.bid.module.bid.data.auction.date
+import org.solyton.solawi.bid.module.bid.data.auction.name
+import org.solyton.solawi.bid.module.bid.data.auction.solidarityContribution
+import org.solyton.solawi.bid.module.bid.data.auction.targetAmount
 import org.solyton.solawi.bid.module.bid.service.onNullEmpty
 import org.w3c.dom.HTMLElement
 

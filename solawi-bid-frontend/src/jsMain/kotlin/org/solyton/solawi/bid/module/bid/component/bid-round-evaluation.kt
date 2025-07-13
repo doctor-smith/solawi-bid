@@ -17,8 +17,8 @@ import org.evoleq.compose.style.data.device.DeviceType
 import org.solyton.solawi.bid.module.style.form.formLabelStyle
 import org.solyton.solawi.bid.module.style.form.textInputStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
-import org.solyton.solawi.bid.module.bid.data.Round
-import org.solyton.solawi.bid.module.bid.data.bidRoundEvaluation
+import org.solyton.solawi.bid.module.bid.data.bidround.Round
+import org.solyton.solawi.bid.module.bid.data.bidround.bidRoundEvaluation
 import org.solyton.solawi.bid.module.separator.LineSeparator
 import org.solyton.solawi.bid.module.statistics.component.Distribution
 import org.solyton.solawi.bid.module.statistics.data.DistributionConfiguration

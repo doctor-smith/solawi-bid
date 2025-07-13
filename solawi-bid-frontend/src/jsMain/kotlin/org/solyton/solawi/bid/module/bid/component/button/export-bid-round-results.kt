@@ -19,8 +19,8 @@ import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.module.style.button.buttonStyle
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerExportOfBidRoundResults
-import org.solyton.solawi.bid.module.bid.data.Auction
-import org.solyton.solawi.bid.module.bid.data.Round
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
+import org.solyton.solawi.bid.module.bid.data.bidround.Round
 
 @Markup
 @Composable

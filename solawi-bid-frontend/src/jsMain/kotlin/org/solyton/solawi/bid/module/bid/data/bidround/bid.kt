@@ -4,7 +4,7 @@
 // the generator data class. The corresponding lenses 
 // will be removed or added on the next run of the 
 // lens generator. See below for more details.
-package org.solyton.solawi.bid.module.bid.data
+package org.solyton.solawi.bid.module.bid.data.bidround
 
 import org.evoleq.optics.Lensify
 import org.evoleq.optics.ReadWrite

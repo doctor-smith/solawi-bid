@@ -12,7 +12,7 @@ import org.solyton.solawi.bid.application.data.auctions
 import org.solyton.solawi.bid.application.data.env.Environment
 import org.solyton.solawi.bid.application.serialization.installSerializers
 import org.solyton.solawi.bid.module.bid.component.form.DEFAULT_AUCTION_ID
-import org.solyton.solawi.bid.module.bid.data.Auction
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.test.storage.TestStorage
 import kotlin.test.Test
 import kotlin.test.assertEquals

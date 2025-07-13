@@ -2,6 +2,12 @@ package org.solyton.solawi.bid.module.bid.data
 
 import kotlinx.datetime.LocalDate
 import org.solyton.solawi.bid.module.bid.data.api.*
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
+import org.solyton.solawi.bid.module.bid.data.auction.AuctionDetails
+import org.solyton.solawi.bid.module.bid.data.bidround.BidResult
+import org.solyton.solawi.bid.module.bid.data.bidround.BidRound
+import org.solyton.solawi.bid.module.bid.data.bidround.BidRoundResults
+import org.solyton.solawi.bid.module.bid.data.bidround.Round
 import org.solyton.solawi.bid.module.bid.data.bidder.BidderInfo
 import org.solyton.solawi.bid.module.bid.data.evaluation.BidRoundEvaluation
 import org.solyton.solawi.bid.module.bid.data.evaluation.BidRoundPreEvaluation
@@ -32,19 +38,21 @@ fun ApiBidRound.toDomainType(showSuccessMessage: Boolean = false): BidRound = Bi
 fun ApiAuction.toDomainType(): Auction = Auction(
     auctionId = id,
     name = name,
-    date = with(date){ LocalDate(year, monthNumber, dayOfMonth) },
+    date = with(date) { LocalDate(year, monthNumber, dayOfMonth) },
     rounds = rounds.map { round -> round.toDomainType() },
-    bidderInfo = bidderInfo.map { info -> BidderInfo(
-        info.id,
-        info.numberOfShares
-    ) },
+    bidderInfo = bidderInfo.map { info ->
+        BidderInfo(
+            info.id,
+            info.numberOfShares
+        )
+    },
     auctionDetails = auctionDetails.toDomainType(),
     acceptedRoundId = acceptedRoundId
 )
 
 
 
-fun ApiAuctionDetails.toDomainType(): AuctionDetails  = when(this) {
+fun ApiAuctionDetails.toDomainType(): AuctionDetails = when(this) {
     is ApiAuctionDetailsSolawiTuebingen -> AuctionDetails(
         minimalBid,
         benchmark,

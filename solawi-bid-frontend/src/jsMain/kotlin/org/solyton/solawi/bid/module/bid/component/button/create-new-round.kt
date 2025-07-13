@@ -16,13 +16,13 @@ import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.userData
 import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerCreateNewRound
-import org.solyton.solawi.bid.module.bid.data.Auction
-import org.solyton.solawi.bid.module.bid.data.auctionDetails
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
+import org.solyton.solawi.bid.module.bid.data.auction.auctionDetails
 import org.solyton.solawi.bid.module.bid.data.reader.areNotConfigured
 import org.solyton.solawi.bid.module.bid.data.reader.auctionAccepted
 import org.solyton.solawi.bid.module.bid.data.reader.biddersHaveNotBeenImported
 import org.solyton.solawi.bid.module.bid.data.reader.existsRunning
-import org.solyton.solawi.bid.module.bid.data.rounds
+import org.solyton.solawi.bid.module.bid.data.auction.rounds
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.user.service.isNotGranted
 

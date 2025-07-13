@@ -8,11 +8,11 @@ import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.module.bid.data.Round
+import org.solyton.solawi.bid.module.bid.data.bidround.Round
 import org.solyton.solawi.bid.module.bid.data.api.ApiRound
 import org.solyton.solawi.bid.module.bid.data.api.ChangeRoundState
 import org.solyton.solawi.bid.module.bid.data.api.RoundState
-import org.solyton.solawi.bid.module.bid.data.state
+import org.solyton.solawi.bid.module.bid.data.bidround.state
 
 @Markup
 fun changeRoundState(newState: RoundState, round: Lens<Application, Round>) = Action<Application, ChangeRoundState, ApiRound>(

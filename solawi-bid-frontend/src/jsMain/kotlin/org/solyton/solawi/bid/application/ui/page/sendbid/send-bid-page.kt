@@ -28,9 +28,9 @@ import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.bid.action.sendBidAction
 import org.solyton.solawi.bid.module.bid.component.form.SendBidForm
 import org.solyton.solawi.bid.module.bid.component.modal.showSuccessfulBidInformationModal
-import org.solyton.solawi.bid.module.bid.data.Bid
+import org.solyton.solawi.bid.module.bid.data.bidround.Bid
 import org.solyton.solawi.bid.module.bid.data.api.ApiBid
-import org.solyton.solawi.bid.module.bid.data.showSuccessMessage
+import org.solyton.solawi.bid.module.bid.data.bidround.showSuccessMessage
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.language
 

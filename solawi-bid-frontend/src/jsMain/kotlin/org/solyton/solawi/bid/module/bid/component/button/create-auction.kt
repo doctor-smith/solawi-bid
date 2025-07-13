@@ -23,7 +23,7 @@ import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.application.ui.page.auction.action.createAuction
 import org.solyton.solawi.bid.module.bid.component.form.DEFAULT_AUCTION_ID
 import org.solyton.solawi.bid.module.bid.component.form.showAuctionModal
-import org.solyton.solawi.bid.module.bid.data.Auction
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.error.component.showErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts

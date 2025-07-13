@@ -16,17 +16,17 @@ import org.solyton.solawi.bid.application.data.bidderMailAddresses
 import org.solyton.solawi.bid.application.data.env.Environment
 import org.solyton.solawi.bid.application.serialization.installSerializers
 import org.solyton.solawi.bid.application.ui.page.auction.action.*
-import org.solyton.solawi.bid.module.bid.data.Auction
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.data.bidder.BidderInfo
-import org.solyton.solawi.bid.module.bid.data.rawResults
-import org.solyton.solawi.bid.module.bid.data.rounds
+import org.solyton.solawi.bid.module.bid.data.bidround.rawResults
+import org.solyton.solawi.bid.module.bid.data.auction.rounds
 import org.solyton.solawi.bid.module.bid.data.toDomainType
 import org.solyton.solawi.bid.test.storage.TestStorage
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import org.solyton.solawi.bid.module.bid.data.Round as DomainRound
+import org.solyton.solawi.bid.module.bid.data.bidround.Round as DomainRound
 import org.solyton.solawi.bid.module.bid.data.evaluation.WeightedBid as DomainWeightedBid
 
 class ActionTests{

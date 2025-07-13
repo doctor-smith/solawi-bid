@@ -17,8 +17,8 @@ import org.evoleq.optics.storage.MutableSharedFlowActionDispatcher
 import org.solyton.solawi.bid.application.api.solawiApi
 import org.evoleq.device.data.Device
 import org.solyton.solawi.bid.application.data.env.Environment
-import org.solyton.solawi.bid.module.bid.data.Auction
-import org.solyton.solawi.bid.module.bid.data.BidRound
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
+import org.solyton.solawi.bid.module.bid.data.bidround.BidRound
 import org.solyton.solawi.bid.module.context.data.Context
 import org.solyton.solawi.bid.module.cookie.data.CookieDisclaimer
 import org.solyton.solawi.bid.module.i18n.data.I18N

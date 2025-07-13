@@ -11,7 +11,11 @@ import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.module.bid.data.*
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
+import org.solyton.solawi.bid.module.bid.data.auction.rounds
+import org.solyton.solawi.bid.module.bid.data.bidround.Round
+import org.solyton.solawi.bid.module.bid.data.bidround.rawResults
+import org.solyton.solawi.bid.module.bid.data.bidround.startDownloadOfBidRoundResults
 import org.solyton.solawi.bid.module.bid.service.toCsvContent
 import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.url.URL
@@ -35,7 +39,7 @@ fun LaunchDownloadOfBidRoundResults(
             val csvContent = round.rawResults.toCsvContent()
             downloadCsv(csvContent, fileName)
         }
-        val startDownload = (storage * auction * rounds * FirstBy { it.roundId == round.roundId }) * rawResults  * startDownloadOfBidRoundResults
+        val startDownload = (storage * auction * rounds * FirstBy { it.roundId == round.roundId }) * rawResults * startDownloadOfBidRoundResults
         startDownload.write(false)
     }
 }

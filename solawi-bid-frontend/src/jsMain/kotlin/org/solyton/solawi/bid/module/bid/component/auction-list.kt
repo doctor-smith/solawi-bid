@@ -24,9 +24,9 @@ import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.application.ui.page.auction.action.configureAuction
 import org.solyton.solawi.bid.module.bid.action.deleteAuctionAction
 import org.solyton.solawi.bid.module.bid.component.form.showUpdateAuctionModal
-import org.solyton.solawi.bid.module.bid.data.Auction
-import org.solyton.solawi.bid.module.bid.data.date
-import org.solyton.solawi.bid.module.bid.data.name
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
+import org.solyton.solawi.bid.module.bid.data.auction.date
+import org.solyton.solawi.bid.module.bid.data.auction.name
 import org.solyton.solawi.bid.module.bid.data.reader.auctionAccepted
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.I18N

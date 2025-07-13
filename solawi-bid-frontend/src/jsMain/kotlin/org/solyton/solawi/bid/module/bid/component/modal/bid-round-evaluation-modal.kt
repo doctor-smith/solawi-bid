@@ -18,7 +18,7 @@ import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.module.bid.component.BidRoundEvaluation
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
-import org.solyton.solawi.bid.module.bid.data.Round
+import org.solyton.solawi.bid.module.bid.data.bidround.Round
 import org.w3c.dom.HTMLElement
 
 @Markup

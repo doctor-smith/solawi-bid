@@ -24,9 +24,9 @@ import org.jetbrains.compose.web.dom.*
 import org.evoleq.compose.style.data.device.DeviceType
 import org.solyton.solawi.bid.module.style.form.*
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
-import org.solyton.solawi.bid.module.bid.data.Auction
-import org.solyton.solawi.bid.module.bid.data.date
-import org.solyton.solawi.bid.module.bid.data.name
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
+import org.solyton.solawi.bid.module.bid.data.auction.date
+import org.solyton.solawi.bid.module.bid.data.auction.name
 import org.w3c.dom.HTMLElement
 
 const val DEFAULT_AUCTION_ID = "DEFAULT_AUCTION_ID"

@@ -9,9 +9,9 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.flexShrink
 import org.jetbrains.compose.web.dom.Button
 import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.module.bid.data.Auction
-import org.solyton.solawi.bid.module.bid.data.Round
-import org.solyton.solawi.bid.module.bid.data.auctionId
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
+import org.solyton.solawi.bid.module.bid.data.bidround.Round
+import org.solyton.solawi.bid.module.bid.data.auction.auctionId
 import org.solyton.solawi.bid.module.qrcode.QRCodeSvg
 
 @Markup

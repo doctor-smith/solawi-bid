@@ -13,8 +13,8 @@ import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerBidRoundEvaluation
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerPresentationOfBidRoundEvaluationInModal
-import org.solyton.solawi.bid.module.bid.data.Auction
-import org.solyton.solawi.bid.module.bid.data.Round
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
+import org.solyton.solawi.bid.module.bid.data.bidround.Round
 import org.solyton.solawi.bid.module.bid.data.api.RoundState
 import org.solyton.solawi.bid.module.control.button.StdButton
 

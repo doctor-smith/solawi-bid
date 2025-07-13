@@ -25,7 +25,7 @@ import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
-import org.solyton.solawi.bid.module.bid.data.BidRound
+import org.solyton.solawi.bid.module.bid.data.bidround.BidRound
 import org.w3c.dom.HTMLElement
 
 @Markup
