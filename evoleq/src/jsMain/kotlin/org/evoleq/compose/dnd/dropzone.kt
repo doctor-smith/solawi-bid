@@ -5,6 +5,7 @@ import org.evoleq.compose.Markup
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
+import org.w3c.dom.asList
 import org.w3c.files.File
 import org.w3c.files.FileReader
 import org.w3c.files.get
@@ -44,7 +45,7 @@ fun Dropzone(
                 onProcessingStarted()
                 val files = event.dataTransfer?.files
                 if (files != null) {
-                    val fileList = (0 until files.length).map { files[it]!! }
+                    val fileList = files.asList()
                     console.log(fileList.map { it.name })
                     onFilesDropped(fileList)
                 }
