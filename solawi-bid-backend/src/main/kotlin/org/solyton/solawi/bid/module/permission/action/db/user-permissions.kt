@@ -1,14 +1,13 @@
 package org.solyton.solawi.bid.module.permission.action.db
 
-import io.ktor.client.plugins.convertLongTimeoutToIntWithInfiniteAsZero
 import org.evoleq.exposedx.transaction.resultTransaction
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
-import org.evoleq.util.Contextual
-import org.evoleq.util.DbAction
-import org.evoleq.util.KlAction
+import org.evoleq.ktorx.Contextual
+import org.evoleq.ktorx.DbAction
+import org.evoleq.ktorx.KlAction
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.selectAll
@@ -17,7 +16,7 @@ import org.solyton.solawi.bid.module.permission.schema.RightsTable
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
 import org.solyton.solawi.bid.module.permission.schema.RolesTable
-import org.solyton.solawi.bid.module.user.schema.UserRoleContext
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.Context
 import org.solyton.solawi.bid.module.permission.data.api.Right
@@ -165,7 +164,7 @@ fun Transaction.getRoleRightContexts(userId: UUID): List<Context> {
 fun Transaction.getRoleRightContexts(userIds: List<UUID>): Map<UUID, List<Context>> {
     val userRoleContexts = UserRoleContext.selectAll().where {
         UserRoleContext.userId inList  userIds
-    }.map { Triple(it[UserRoleContext.roleId].value, it[UserRoleContext.contextId].value, it[UserRoleContext.userId].value)  }.toList()
+    }.map { Triple(it[UserRoleContext.roleId].value, it[UserRoleContext.contextId].value, it[UserRoleContext.userId])  }.toList()
 
     val roleContexts = userRoleContexts.map { Pair(it.first, it.second) }
     val contextIds = userRoleContexts.map { it.second }.distinct()
@@ -226,7 +225,7 @@ fun Transaction.getRolesAndRights(userIds: List<UUID>, contextId: UUID): Map<Str
     val userRoles = UserRoleContext.selectAll().where {
         UserRoleContext.contextId eq contextId and
         (UserRoleContext.userId inList  userIds)
-    }.map { Pair( it[UserRoleContext.userId].value, it[UserRoleContext.roleId].value)  }.toList()
+    }.map { Pair( it[UserRoleContext.userId], it[UserRoleContext.roleId].value)  }.toList()
 
 
     val roleIds = userRoles.map { it.second }.distinct()
@@ -282,7 +281,7 @@ fun Transaction.getRolesAndRights(userIds: List<UUID>, contextId: UUID): Map<Str
 fun Transaction.getUserRolesAndRights(contextId: UUID): Map<String, List<Role>> {
     val userRoles = UserRoleContext.selectAll().where {
         UserRoleContext.contextId eq contextId
-    }.map { Pair( it[UserRoleContext.userId].value, it[UserRoleContext.roleId].value)  }.toList()
+    }.map { Pair( it[UserRoleContext.userId], it[UserRoleContext.roleId].value)  }.toList()
 
 
     val roleIds = userRoles.map { it.second }.distinct()

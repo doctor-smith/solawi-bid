@@ -10,7 +10,7 @@ import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.permission.schema.RightsTable
 import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
 import org.solyton.solawi.bid.module.permission.schema.RolesTable
-import org.solyton.solawi.bid.module.user.schema.UserRoleContext
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.permission.action.db.isGranted
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
@@ -61,7 +61,7 @@ class PermissionTests {
         }
         UserRoleContext.insert {
             it[contextId] = context.id
-            it[userId] = user.id
+            it[userId] = user.id.value
             it[roleId] = role.id
         }
 
@@ -125,7 +125,7 @@ class PermissionTests {
         }
         UserRoleContext.insert {
             it[contextId] = context.id
-            it[userId] = user.id
+            it[userId] = user.id.value
             it[roleId] = role.id
         }
 
@@ -184,7 +184,7 @@ class PermissionTests {
         }
         UserRoleContext.insert {
             it[contextId] = context.id
-            it[userId] = user.id
+            it[userId] = user.id.value
             it[roleId] = role.id
         }
 
