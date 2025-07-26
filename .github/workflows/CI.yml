@@ -42,6 +42,9 @@ jobs:
           dockerfile_path: infrastructure/docker/Dockerfile-Backend
 
   e2e:
+    env:
+      TEST_USER: ${{ vars.test_user }}
+      TEST_USER_PASSWORD: ${{ secrets.test_user_password }}
     name: Run E2E Tests
     runs-on: ubuntu-latest
     needs: [build-Frontend, build-Backend]

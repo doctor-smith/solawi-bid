@@ -10,6 +10,8 @@ class LoginTest {
     private lateinit var playwright: Playwright
     private lateinit var browser: Browser
     private lateinit var page: Page
+    private lateinit var user: String
+    private lateinit var password: String
 
     @BeforeEach
     fun beforeEach() {
@@ -17,6 +19,8 @@ class LoginTest {
         playwright = Playwright.create()
         browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
         page = browser.newPage()
+        user = System.getenv("TEST_USER")
+        password = System.getenv("TEST_USER_PASSWORD")
     }
 
     @AfterEach
@@ -29,8 +33,8 @@ class LoginTest {
     fun test_login() {
         page.navigate("http://localhost:8080/login")
         page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Ok")).click()
-        page.getByRole(AriaRole.TEXTBOX, Page.GetByRoleOptions().setName("Nutzername")).fill("owner@solyton.org")
-        page.getByRole(AriaRole.TEXTBOX, Page.GetByRoleOptions().setName("Passwort")).fill("4l=6mx4Vinz-DT")
+        page.getByRole(AriaRole.TEXTBOX, Page.GetByRoleOptions().setName("Nutzername")).fill(user)
+        page.getByRole(AriaRole.TEXTBOX, Page.GetByRoleOptions().setName("Passwort")).fill(password)
         page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Login")).click()
 
         page.waitForURL("**/dashboard")

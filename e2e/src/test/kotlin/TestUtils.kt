@@ -9,17 +9,22 @@ import java.nio.file.Paths
 class TestUtils {
 
     val storageStatePath: Path = Paths.get("loggedInState.json")
+    private lateinit var user: String
+    private lateinit var password: String
 
     fun getCookie(browser: Browser){
 
         val context = browser.newContext()
         val page = context.newPage()
 
+        user = System.getenv("TEST_USER")
+        password = System.getenv("TEST_USER_PASSWORD")
+
         try {
             page.navigate("http://localhost:8080/login")
             page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Ok")).click()
-            page.getByRole(AriaRole.TEXTBOX, Page.GetByRoleOptions().setName("Nutzername")).fill("owner@solyton.org")
-            page.getByRole(AriaRole.TEXTBOX, Page.GetByRoleOptions().setName("Passwort")).fill("4l=6mx4Vinz-DT")
+            page.getByRole(AriaRole.TEXTBOX, Page.GetByRoleOptions().setName("Nutzername")).fill(user)
+            page.getByRole(AriaRole.TEXTBOX, Page.GetByRoleOptions().setName("Passwort")).fill(password)
             page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Login")).click()
             page.waitForURL("**/dashboard")
 
