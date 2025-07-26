@@ -35,7 +35,7 @@ fun <S: Any,T: Any> HttpClient.post(url: String, port: Int, serializer: KSeriali
         decode(deserializer)
     } }
 
-fun <S: Any,T: Any> HttpClient.get(url: String, port: Int, serializer: KSerializer<S>, deserializer: KSerializer<Result<T>>): suspend (S)-> Result<T> = { s: S ->
+fun <S: Any,T: Any> HttpClient.get(url: String, port: Int, /* serializer: KSerializer<S>,*/ deserializer: KSerializer<Result<T>>): suspend (S)-> Result<T> = { _: S ->
     with(get(url) {
         this.port = port
 

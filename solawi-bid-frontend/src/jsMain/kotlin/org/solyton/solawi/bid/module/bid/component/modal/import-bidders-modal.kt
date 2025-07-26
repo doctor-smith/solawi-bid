@@ -8,6 +8,7 @@ import org.evoleq.compose.modal.Modal
 import org.evoleq.compose.modal.ModalData
 import org.evoleq.compose.modal.ModalType
 import org.evoleq.compose.modal.Modals
+import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.csv.parseCsv
 import org.evoleq.language.Lang
 import org.evoleq.math.Source
@@ -15,9 +16,7 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.jetbrains.compose.web.dom.ElementScope
-import org.solyton.solawi.bid.application.data.device.DeviceType
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
-import org.solyton.solawi.bid.module.bid.data.Auction
 import org.solyton.solawi.bid.module.bid.data.api.AddBidders
 import org.solyton.solawi.bid.module.bid.data.api.BidderData
 import org.solyton.solawi.bid.module.bid.data.api.NewBidder
@@ -29,7 +28,6 @@ fun ImportBiddersModal(
     id: Int,
     texts: Lang.Block,
     modals: Storage<Modals<Int>>,
-    auction: Storage<Auction>,
     device: Source<DeviceType>,
     setBidders: (List<NewBidder>)->Unit,
     addBidders: (AddBidders)->Unit,
@@ -62,6 +60,7 @@ fun ImportBiddersModal(
                     setBidders(parsed.map {
                         NewBidder(it["Email"]!!,0, it["Anteile"]!!.toInt())
                     })
+                    // todo:i18n
                     addBidders(AddBidders(parsed.map{
                         BidderData(
                             it["Vorname"]!!,
@@ -83,7 +82,6 @@ fun ImportBiddersModal(
 
 @Markup
 fun Storage<Modals<Int>>.showImportBiddersModal(
-    auction: Storage<Auction>,
     texts: Lang.Block,
     device: Source<DeviceType>,
     setBidders: (List<NewBidder>)->Unit,
@@ -97,13 +95,11 @@ fun Storage<Modals<Int>>.showImportBiddersModal(
             this,
             texts,
             this@showImportBiddersModal,
-            auction,
             device,
             setBidders,
             addBidders,
             cancel,
             update
         )
-    )
-    )
+    ) )
 }

@@ -5,16 +5,15 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
-import org.evoleq.util.DbAction
-import org.evoleq.util.KlAction
-import org.solyton.solawi.bid.module.db.schema.UserEntity
-import org.solyton.solawi.bid.module.db.schema.UsersTable
+import org.evoleq.ktorx.DbAction
+import org.evoleq.ktorx.KlAction
+import org.solyton.solawi.bid.module.user.schema.UserEntity
+import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.user.data.api.ApiUser
 import org.solyton.solawi.bid.module.user.data.api.ChangePassword
 import org.solyton.solawi.bid.module.user.data.api.User
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
-import org.solyton.solawi.bid.module.user.service.hashPassword
-import java.util.UUID
+import org.solyton.solawi.bid.module.user.service.bcrypt.hashPassword
 
 @MathDsl
 @Suppress("FunctionName")

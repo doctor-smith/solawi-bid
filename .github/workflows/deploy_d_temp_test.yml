@@ -12,8 +12,8 @@ jobs:
           uses: ./.github/actions/deploy-application
           with:
               mysql_password: ${{ secrets.MYSQL_PASSWORD_D }}
-              backend_image_name: 'ghcr.io/joystick01/solawi-bid/backend:latest'
-              frontend_image_name: 'ghcr.io/joystick01/solawi-bid/frontend:latest'
+              backend_image_name: 'ghcr.io/doctor-smith/solawi-bid/backend:latest'
+              frontend_image_name: 'ghcr.io/doctor-smith/solawi-bid/frontend:latest'
               frontend_domain: 'd.solyton.org'
               backend_domain: 'api.d.solyton.org'
               jwt_secret: ${{ secrets.JWT_SECRET_D }}
@@ -23,3 +23,4 @@ jobs:
               server_address: '${{ vars.SERVER_ADDRESS }}'
               server_user: ${{ vars.SERVER_USER }}
               server_key: ${{ secrets.SERVER_KEY }}
+              smtp_password: ${{ secrets.SMTP_PASSWORD }}

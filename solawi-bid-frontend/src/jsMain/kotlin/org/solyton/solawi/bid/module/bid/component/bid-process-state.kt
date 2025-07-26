@@ -3,6 +3,7 @@ package org.solyton.solawi.bid.module.bid.component
 import androidx.compose.runtime.Composable
 import io.ktor.util.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.language.Lang
 import org.evoleq.language.get
 import org.evoleq.math.Reader
@@ -10,9 +11,8 @@ import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.times
 import org.jetbrains.compose.web.css.Color
-import org.solyton.solawi.bid.application.data.device.DeviceType
-import org.solyton.solawi.bid.module.bid.data.Round
 import org.solyton.solawi.bid.module.bid.data.api.RoundState
+import org.solyton.solawi.bid.module.bid.data.bidround.Round
 import org.solyton.solawi.bid.module.control.button.ColoredButton
 import org.solyton.solawi.bid.module.control.button.StdButton
 
@@ -94,7 +94,7 @@ fun State(device: Source<DeviceType>, title:String, state: String, currentState:
 
 @Markup
 @Composable
-@Suppress("FunctionName")
+@Suppress("FunctionName", "UNUSED_PARAMETER" /* todo:i18n title needs to be injected  */)
 fun EndState(device: Source<DeviceType>, title:String, state: String, currentState: String , accepted: Boolean) = when(state) {
     currentState -> when{
         accepted -> ColoredButton(Color.seagreen,{ "Angenommen" }, device.emit(),) {}
@@ -102,4 +102,3 @@ fun EndState(device: Source<DeviceType>, title:String, state: String, currentSta
     }
     else -> StdButton({ "?" }, device.emit(),) {}
 }
-

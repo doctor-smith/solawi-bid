@@ -8,3 +8,5 @@ build
 kotlin-js-store
 _dev
 *.dev.kt
+dependency-analysis.md
+erm.md

@@ -7,6 +7,7 @@ import org.evoleq.compose.label.Label
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.compose.modal.Modal
 import org.evoleq.compose.modal.ModalData
+import org.evoleq.compose.modal.ModalStyles
 import org.evoleq.compose.modal.ModalType
 import org.evoleq.compose.modal.Modals
 import org.evoleq.language.Lang
@@ -23,12 +24,11 @@ import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.PasswordInput
 import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.application.data.device.DeviceType
-import org.solyton.solawi.bid.application.ui.style.form.fieldDesktopStyle
-import org.solyton.solawi.bid.application.ui.style.form.formDesktopStyle
-import org.solyton.solawi.bid.application.ui.style.form.formLabelDesktopStyle
-import org.solyton.solawi.bid.application.ui.style.form.textInputDesktopStyle
-import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
+import org.evoleq.compose.style.data.device.DeviceType
+import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
+import org.solyton.solawi.bid.module.style.form.formDesktopStyle
+import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
+import org.solyton.solawi.bid.module.style.form.textInputDesktopStyle
 import org.solyton.solawi.bid.module.user.data.reader.*
 import org.solyton.solawi.bid.module.user.service.PasswordCombinationCheck
 import org.solyton.solawi.bid.module.user.service.onPasswordCombinationValid
@@ -41,6 +41,7 @@ fun ChangePasswordModal(
     texts: Source<Lang.Block>,
     modals: Storage<Modals<Int>>,
     device: Source<DeviceType>,
+    styles: (Source<DeviceType>)-> ModalStyles,
     storedPassword: String,
     setUserData: (password: String) -> Unit,
     cancel: ()->Unit,
@@ -57,7 +58,7 @@ fun ChangePasswordModal(
         cancel()
     },
     texts = texts.emit(),
-    styles = auctionModalStyles(device),
+    styles = styles(device)
 ) {
     var oldPasswordState by remember{ mutableStateOf("") }
     var newPasswordState by remember { mutableStateOf("") }
@@ -149,6 +150,7 @@ fun ChangePasswordModal(
 fun Storage<Modals<Int>>.showChangePasswordModal(
     texts: Source<Lang.Block>,
     device: Source<DeviceType>,
+    styles: (Source<DeviceType>)-> ModalStyles,
     storedPassword: String,
     setUserData: (password: String) -> Unit,
     cancel: ()->Unit,
@@ -161,6 +163,7 @@ fun Storage<Modals<Int>>.showChangePasswordModal(
             texts,
             this@showChangePasswordModal,
             device,
+            styles,
             storedPassword,
             setUserData,
             cancel,

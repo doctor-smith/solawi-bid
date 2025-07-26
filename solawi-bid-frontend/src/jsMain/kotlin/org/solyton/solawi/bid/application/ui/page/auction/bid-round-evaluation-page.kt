@@ -12,7 +12,7 @@ import org.solyton.solawi.bid.application.data.Application
 @Composable
 @Suppress("FunctionName")
 fun BidRoundEvaluationPage(storage: Storage<Application>, bidRoundId: String) = Div{
-    H1 { Text("BidRoundEvaluationPage") }
-
+    H1 { Text("BidRoundEvaluationPage, bidRoundId : $bidRoundId") }
+    storage.read()
 
 }

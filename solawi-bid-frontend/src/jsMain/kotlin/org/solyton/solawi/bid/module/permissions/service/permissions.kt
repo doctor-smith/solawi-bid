@@ -15,6 +15,7 @@ fun Context.isGranted(rightId: String): Boolean = roles.flatMap { it.rights }.an
 fun Permissions.isNotGranted(rightId: String, contextId: String): Boolean =
     !isGranted(rightId, contextId)
 
+@Suppress("UNUSED_PARAMETER" /* todo:dev remove after implementing function*/)
 fun Permissions.contextByPath(path: String): Context = TODO()
 
 fun Permissions.contexts(): List<Context> =

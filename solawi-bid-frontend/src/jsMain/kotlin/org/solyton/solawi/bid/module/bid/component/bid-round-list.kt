@@ -5,6 +5,7 @@ import org.evoleq.compose.Markup
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.compose.routing.navigate
+import org.evoleq.device.data.mediaType
 import org.evoleq.language.Lang
 import org.evoleq.language.subComp
 import org.evoleq.math.Reader
@@ -17,10 +18,6 @@ import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H2
 import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.application.data.device.mediaType
-import org.solyton.solawi.bid.application.data.deviceData
-import org.solyton.solawi.bid.application.data.environment
 import org.solyton.solawi.bid.module.bid.component.button.ChangeRoundStateButton
 import org.solyton.solawi.bid.module.bid.component.button.EvaluateBidRoundButton
 import org.solyton.solawi.bid.module.bid.component.button.ExportBidRoundResultsButton
@@ -29,11 +26,14 @@ import org.solyton.solawi.bid.module.bid.component.effect.LaunchBidRoundEvaluati
 import org.solyton.solawi.bid.module.bid.component.effect.LaunchDownloadOfBidRoundResults
 import org.solyton.solawi.bid.module.bid.component.effect.LaunchExportOfBidRoundResults
 import org.solyton.solawi.bid.module.bid.component.effect.LaunchPresentationOfBidRoundEvaluationInModal
-import org.solyton.solawi.bid.module.bid.data.Auction
-import org.solyton.solawi.bid.module.bid.data.Round
+import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.api.RoundState
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
+import org.solyton.solawi.bid.module.bid.data.auction.rounds
+import org.solyton.solawi.bid.module.bid.data.bidround.Round
+import org.solyton.solawi.bid.module.bid.data.deviceData
+import org.solyton.solawi.bid.module.bid.data.environment
 import org.solyton.solawi.bid.module.bid.data.reader.roundAccepted
-import org.solyton.solawi.bid.module.bid.data.rounds
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.bid.data.reader.rounds as roundsKey
 
@@ -41,8 +41,8 @@ import org.solyton.solawi.bid.module.bid.data.reader.rounds as roundsKey
 @Composable
 @Suppress("FunctionName")
 fun BidRoundList(
-    storage: Storage<Application>,
-    auction: Lens<Application, Auction>,
+    storage: Storage<BidApplication>,
+    auction: Lens<BidApplication, Auction>,
     roundTexts: Reader<Unit, Lang.Block>
 ) {
     H2 {
@@ -67,8 +67,8 @@ fun BidRoundList(
 @Composable
 @Suppress("FunctionName")
 fun BidRoundListItem(
-    storage: Storage<Application>,
-    auction: Lens<Application, Auction>,
+    storage: Storage<BidApplication>,
+    auction: Lens<BidApplication, Auction>,
     round: Round,
     frontendBaseUrl: String,
     texts: Reader<Unit, Lang.Block>
@@ -113,8 +113,7 @@ fun BidRoundListItem(
             storage = storage,
             auction = auction,
             round = round,
-            frontendBaseUrl= frontendBaseUrl,
-            texts = texts
+            frontendBaseUrl= frontendBaseUrl
         )
         Horizontal {
             ChangeRoundStateButton(

@@ -17,3 +17,22 @@ plugins{
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.kover) apply false
 }
+
+tasks.register("detektAll") {
+    group = "verification"
+    description = "Runs all detekt tasks in all projects"
+
+    val detektTasks = listOf("detekt", "detektMain", "detektTest",
+        "detektJs" , "detektJsMain", "detektJsTest",
+        "detektJvm" , "detektJvmMain", "detektJvmTest",
+    )
+
+    dependsOn(
+        rootProject.allprojects.flatMap { project ->
+            project.tasks.matching {
+                if(it.name in detektTasks){ println("${project.name}:${it.name}")}
+                it.name in detektTasks
+            }
+        }
+    )
+}

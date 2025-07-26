@@ -7,7 +7,6 @@
 package org.solyton.solawi.bid.module.bid.data.bidder
 
 import org.evoleq.optics.Lensify
-import org.evoleq.optics.lens.Lens
 
 /**
  * Generator class.
@@ -23,5 +22,3 @@ import org.evoleq.optics.lens.Lens
     val bidderId: String,
     val numberOfShares: Int
 )
-
-

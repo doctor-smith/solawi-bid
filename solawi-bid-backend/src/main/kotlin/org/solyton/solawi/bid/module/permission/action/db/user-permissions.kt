@@ -5,36 +5,100 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
-import org.evoleq.util.Contextual
-import org.evoleq.util.DbAction
-import org.evoleq.util.KlAction
+import org.evoleq.ktorx.Contextual
+import org.evoleq.ktorx.DbAction
+import org.evoleq.ktorx.KlAction
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.selectAll
-import org.solyton.solawi.bid.module.db.schema.*
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.permission.schema.RightsTable
+import org.solyton.solawi.bid.module.permission.schema.RoleEntity
+import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
+import org.solyton.solawi.bid.module.permission.schema.RolesTable
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.Context
 import org.solyton.solawi.bid.module.permission.data.api.Right
 import org.solyton.solawi.bid.module.permission.data.api.Role
+import org.solyton.solawi.bid.module.permission.schema.ContextEntity
+import org.solyton.solawi.bid.module.permission.schema.RightEntity
+import org.solyton.solawi.bid.module.permission.schema.repository.descendants
+import org.solyton.solawi.bid.module.permission.schema.repository.getChildren
 import java.util.UUID
 
 @MathDsl
 @Suppress("FunctionName")
-val GetRoleRightContexts: KlAction<Result<Contextual<ReadRightRoleContextsOfUser>>, Result<List<Context>>> = KlAction {
+val ReadAvailableRightRoleContexts: KlAction<Result<Contextual<ReadRightRoleContexts>>, Result<Contexts>> = KlAction {
+    result ->  DbAction { database -> result bindSuspend { data: Contextual<ReadRightRoleContexts> ->
+        resultTransaction(database){
+            Contexts(getRightRoleContexts(data.data.contextIds.map {  UUID.fromString(it) }))
+        }
+    } x database }
+}
+
+@MathDsl
+@Suppress("FunctionName")
+val GetRoleRightContexts: KlAction<Result<Contextual<ReadRightRoleContextsOfUser>>, Result<Contexts>> = KlAction {
     result ->  DbAction { database -> result bindSuspend { data: Contextual<ReadRightRoleContextsOfUser> ->
         resultTransaction(database){
-            getRoleRightContexts(UUID.fromString(data.data.userId))
+            Contexts(getRoleRightContexts(UUID.fromString(data.data.userId)))
     } } x database }
 }
 @MathDsl
 @Suppress("FunctionName")
-val GetRoleRightContextsOfUsers: KlAction<Result<Contextual<ReadRightRoleContextsOfUsers>>, Result<Map<String,List<Context>>>> = KlAction {
+val GetRoleRightContextsOfUsers: KlAction<Result<Contextual<ReadRightRoleContextsOfUsers>>, Result<UserToContextsMap>> = KlAction {
     result ->  DbAction { database -> result bindSuspend { data: Contextual<ReadRightRoleContextsOfUsers> ->
         resultTransaction(database){
-            getRoleRightContexts(data.data.userIds.map { UUID.fromString(it) }).mapKeys { it.value.toString() }
+            UserToContextsMap(getRoleRightContexts(data.data.userIds.map { UUID.fromString(it) }).mapKeys { it.value.toString() })
     } } x database }
 }
 
+@MathDsl
+@Suppress("FunctionName", "UnsafeCallOnNullableType")
+val ReadParentChildRelationsOfContexts: KlAction<Result<Contextual<ReadParentChildRelationsOfContexts>>, Result<ParentChildRelationsOfContexts>> =
+    KlAction { result ->
+        DbAction { database ->
+            result bindSuspend {contextual: Contextual<ReadParentChildRelationsOfContexts> ->
+                resultTransaction(database) {
+                    val contextUuids = contextual.data.contextIds.map{ UUID.fromString(it) }
+                    val contextEntities = ContextEntity.find {
+                        ContextsTable.id inList contextUuids
+                    }.toList()
+                    val roots = contextEntities.filter { it.root == null }
+                    val otherRoots = contextEntities.filter { it.root != null }.map { it.root!! }
+                    val contextRoots = listOf(
+                        *roots.toTypedArray(),
+                        *otherRoots.toTypedArray()
+                    ).distinctBy { root -> root.id }
+
+                    val allContexts: List<ContextEntity> = listOf(
+                        *contextRoots.toTypedArray(),
+                        *contextRoots.map {
+                            root -> root.descendants()
+                        }.flatten().toTypedArray(),
+                    ).distinctBy{context -> context.id}
+
+                    ParentChildRelationsOfContexts(
+                        list = allContexts.map { contextEntity ->
+                            ParentChildRelationsOfContext(
+                                contextId = contextEntity.id.value.toString(),
+                                name = contextEntity.name,
+                                rootId = contextEntity.root?.id?.value?.toString(),
+                                children = contextEntity.getChildren().map { child -> child.id.value.toString() }
+                            )
+                        }
+                    )
+                }
+            } x database
+        }
+    }
+
+/**
+ * Returns a complete list of cumulated right-role-contexts [Context] of a user
+ * Note:
+ * - structure is flat: no parent-child structure of contexts is established
+ */
 fun Transaction.getRoleRightContexts(userId: UUID): List<Context> {
     val userRoleContexts = UserRoleContext.selectAll().where {
         UserRoleContext.userId eq userId
@@ -61,7 +125,7 @@ fun Transaction.getRoleRightContexts(userId: UUID): List<Context> {
     }.toList()
 
     val contexts =  ContextEntity
-        .find { ContextsTable.id inList contextIds }
+        .find { ContextsTable.id inList contextIds }.toList()
         .map { context -> Context(
             context.id.value.toString(),
             context.name,
@@ -92,10 +156,15 @@ fun Transaction.getRoleRightContexts(userId: UUID): List<Context> {
     return contexts
 }
 
+/**
+ * Returns a complete map of cumulated user-right-role-contexts [Context]
+ * Note:
+ * - structure is flat: no parent-child structure of contexts is established
+ */
 fun Transaction.getRoleRightContexts(userIds: List<UUID>): Map<UUID, List<Context>> {
     val userRoleContexts = UserRoleContext.selectAll().where {
         UserRoleContext.userId inList  userIds
-    }.map { Triple(it[UserRoleContext.roleId].value, it[UserRoleContext.contextId].value, it[UserRoleContext.userId].value)  }.toList()
+    }.map { Triple(it[UserRoleContext.roleId].value, it[UserRoleContext.contextId].value, it[UserRoleContext.userId])  }.toList()
 
     val roleContexts = userRoleContexts.map { Pair(it.first, it.second) }
     val contextIds = userRoleContexts.map { it.second }.distinct()
@@ -156,7 +225,7 @@ fun Transaction.getRolesAndRights(userIds: List<UUID>, contextId: UUID): Map<Str
     val userRoles = UserRoleContext.selectAll().where {
         UserRoleContext.contextId eq contextId and
         (UserRoleContext.userId inList  userIds)
-    }.map { Pair( it[UserRoleContext.userId].value, it[UserRoleContext.roleId].value)  }.toList()
+    }.map { Pair( it[UserRoleContext.userId], it[UserRoleContext.roleId].value)  }.toList()
 
 
     val roleIds = userRoles.map { it.second }.distinct()
@@ -212,7 +281,7 @@ fun Transaction.getRolesAndRights(userIds: List<UUID>, contextId: UUID): Map<Str
 fun Transaction.getUserRolesAndRights(contextId: UUID): Map<String, List<Role>> {
     val userRoles = UserRoleContext.selectAll().where {
         UserRoleContext.contextId eq contextId
-    }.map { Pair( it[UserRoleContext.userId].value, it[UserRoleContext.roleId].value)  }.toList()
+    }.map { Pair( it[UserRoleContext.userId], it[UserRoleContext.roleId].value)  }.toList()
 
 
     val roleIds = userRoles.map { it.second }.distinct()
@@ -262,3 +331,32 @@ fun Transaction.getUserRolesAndRights(contextId: UUID): Map<String, List<Role>> 
     return userRolesMap
 }
 
+/**
+ * Give a list of context ids return the associated contexts together with roles and rights
+ */
+fun Transaction.getRightRoleContexts(contextsIds: List<UUID>): List<Context> {
+    val contexts = ContextEntity
+        .find { ContextsTable.id inList contextsIds }
+        .map { contextEntity -> Context(
+            id = contextEntity.id.value.toString(),
+            name = contextEntity.name,
+            roles = contextEntity.roles
+                .distinctBy { role -> role.id.value }
+                .map { role -> Role(
+                    id = role.id.value.toString(),
+                    name = role.name,
+                    description = role.description,
+                    rights = role.rights
+                        .distinctBy { right -> right.id.value }
+                        .map{right -> Right(
+                            id = right.id.value.toString(),
+                            name = right.name,
+                            description = right.description
+                        )
+                    }
+                )
+            }
+        )
+    }
+    return contexts
+}

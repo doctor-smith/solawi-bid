@@ -3,10 +3,12 @@
   vars:
     pip_install_packages:
       - name: docker
+    swap_file_size_mb: 6144
   become: true
   roles:
     - role: geerlingguy.pip
     - role: geerlingguy.docker
+    - role: geerlingguy.swap
   tasks:
     - name: apt install unattended-upgrades
       apt:
@@ -30,6 +32,7 @@
           - "127.0.0.1:8080:8080"
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
+          - /var/solawi-bid/traefik/letsencrypt:/letsencrypt
         env:
           TRAEFIK_PROVIDERS_DOCKER: "true"
           TRAEFIK_API: "true"
@@ -38,8 +41,16 @@
           TRAEFIK_ENTRYPOINTS_LOCAL_ADDRESS: ":8080"
           TRAEFIK_ENTRYPOINTS_WEB: "true"
           TRAEFIK_ENTRYPOINTS_WEB_ADDRESS: ":80"
+          TRAEFIK_ENTRYPOINTS_WEB_HTTP_REDIRECTIONS_ENTRYPOINT_SCHEME: "https"
+          TRAEFIK_ENTRYPOINTS_WEB_HTTP_REDIRECTIONS_ENTRYPOINT_TO: "websecure"
           TRAEFIK_ENTRYPOINTS_WEBSECURE: "true"
           TRAEFIK_ENTRYPOINTS_WEBSECURE_ADDRESS: ":443"
+          TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT: "true"
+          TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL: "schmidt@alpha-structure.com"
+          TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_STORAGE: "/letsencrypt/acme.json"
+          TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_CASERVER: "https://acme-v02.api.letsencrypt.org/directory"
+          TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_HTTPCHALLENGE: "true"
+          TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_HTTPCHALLENGE_ENTRYPOINT: "web"
         labels:
           traefik.enable: "true"
           traefik.http.routers.api.rule: "PathPrefix(`/api`) || PathPrefix(`/dashboard`)"

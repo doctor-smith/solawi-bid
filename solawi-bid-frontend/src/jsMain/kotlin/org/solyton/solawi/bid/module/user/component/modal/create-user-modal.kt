@@ -6,6 +6,7 @@ import org.evoleq.compose.label.Label
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.compose.modal.Modal
 import org.evoleq.compose.modal.ModalData
+import org.evoleq.compose.modal.ModalStyles
 import org.evoleq.compose.modal.ModalType
 import org.evoleq.compose.modal.Modals
 import org.evoleq.language.Lang
@@ -19,12 +20,11 @@ import org.evoleq.optics.storage.put
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.color
 import org.jetbrains.compose.web.dom.*
-import org.solyton.solawi.bid.application.data.device.DeviceType
-import org.solyton.solawi.bid.application.ui.style.form.fieldDesktopStyle
-import org.solyton.solawi.bid.application.ui.style.form.formDesktopStyle
-import org.solyton.solawi.bid.application.ui.style.form.formLabelDesktopStyle
-import org.solyton.solawi.bid.application.ui.style.form.textInputDesktopStyle
-import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
+import org.evoleq.compose.style.data.device.DeviceType
+import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
+import org.solyton.solawi.bid.module.style.form.formDesktopStyle
+import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
+import org.solyton.solawi.bid.module.style.form.textInputDesktopStyle
 import org.solyton.solawi.bid.module.user.data.reader.errors
 import org.solyton.solawi.bid.module.user.data.reader.inputs
 import org.solyton.solawi.bid.module.user.data.reader.repeatPassword
@@ -41,6 +41,7 @@ fun CreateUserModal(
     texts: Source<Lang.Block>,
     modals: Storage<Modals<Int>>,
     device: Source<DeviceType>,
+    styles: (Source<DeviceType>)-> ModalStyles,
     setUserData: (username: String, password: String) -> Unit,
     cancel: ()->Unit,
     update: ()->Unit,
@@ -56,7 +57,7 @@ fun CreateUserModal(
         cancel()
     },
     texts = texts.emit(),
-    styles = auctionModalStyles(device),
+    styles = styles(device),
 ) {
     var username by remember{ mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -149,6 +150,7 @@ fun CreateUserModal(
 fun Storage<Modals<Int>>.showCreateUserModal(
     texts: Source<Lang.Block>,
     device: Source<DeviceType>,
+    styles: (Source<DeviceType>)-> ModalStyles,
     setUserData: (username: String, password: String) -> Unit,
     cancel: ()->Unit,
     update: ()->Unit,
@@ -160,7 +162,7 @@ fun Storage<Modals<Int>>.showCreateUserModal(
             texts,
             this@showCreateUserModal,
             device,
-
+            styles,
             setUserData,
             cancel,
             update,

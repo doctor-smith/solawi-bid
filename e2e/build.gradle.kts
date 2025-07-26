@@ -13,6 +13,12 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 tasks.register<JavaExec>("playwright") {
     classpath(sourceSets["test"].runtimeClasspath)
     mainClass.set("com.microsoft.playwright.CLI")

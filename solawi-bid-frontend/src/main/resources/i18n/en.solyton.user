@@ -47,6 +47,20 @@ en {
                         }
                     }
                 }
+                permissions {
+                    title: "Permissions"
+                    table {
+                        title: "Roles in Contexts"
+                        columns {
+                            context {
+                                title: "Context"
+                            }
+                            roles {
+                                title: "Roles"
+                            }
+                        }
+                    }
+                }
             }
             privatePage {
                 title: "Personal Data"
@@ -60,6 +74,20 @@ en {
                     properties {
                         username{
                             value: "Username"
+                        }
+                    }
+                }
+                permissions {
+                    title: "Permissions"
+                    table {
+                        title: "Roles in Contexts"
+                        columns {
+                            context {
+                                title: "Context"
+                            }
+                            roles {
+                                title: "Roles"
+                            }
                         }
                     }
                 }
