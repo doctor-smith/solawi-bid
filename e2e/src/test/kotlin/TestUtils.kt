@@ -9,7 +9,6 @@ import java.nio.file.Paths
 class TestUtils {
 
     val storageStatePath: Path = Paths.get("loggedInState.json")
-
     private lateinit var user: String
     private lateinit var password: String
 
@@ -17,7 +16,6 @@ class TestUtils {
 
         val context = browser.newContext()
         val page = context.newPage()
-
 
         user = System.getenv("TEST_USER")
         password = System.getenv("TEST_USER_PASSWORD")
