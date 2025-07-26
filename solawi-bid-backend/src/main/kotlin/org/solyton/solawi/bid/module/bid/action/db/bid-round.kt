@@ -93,7 +93,7 @@ fun Transaction.acceptRound(acceptRound: AcceptRound): AcceptedRound {
 
     val foundAcceptedRound = AcceptedRoundEntity.find { AcceptedRoundsTable.roundId eq UUID.fromString(acceptRound.roundId) }.firstOrNull()
 
-    if (foundAcceptedRound != null) throw Exception()
+    if (foundAcceptedRound != null) throw BidRoundException.NoSuchAcceptedRound
 
     val acceptedRound = AcceptedRoundEntity.new {
         this.auction = auction

@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.bid.component.form
 
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.date.format
 import org.evoleq.compose.date.parse
 import org.evoleq.compose.label.Label
@@ -63,6 +64,7 @@ fun AuctionModal(
             Label(inputs["title"], id = "name" , labelStyle = formLabelDesktopStyle)
             TextInput((auction * name).read()) {
                 id("name")
+                dataId("create-auction.form.input.name")
                 style { textInputDesktopStyle() }
                 onInput { (auction * name).write(it.value) }
             }
@@ -75,6 +77,7 @@ fun AuctionModal(
             Label(inputs["date"], id = "date" , labelStyle = formLabelDesktopStyle)
             Input(InputType.Date) {
                 id("date")
+                dataId("create-auction.form.input.date")
                 value(dateString)
                 style { dateInputDesktopStyle() }
                 onInput {

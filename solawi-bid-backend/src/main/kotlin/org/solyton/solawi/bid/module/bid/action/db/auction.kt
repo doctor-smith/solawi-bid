@@ -130,9 +130,10 @@ val UpdateAuctions = KlAction<Result<UpdateAuctions>, Result<GetAuctions>> {
     }
 }
 
+
+@Suppress("UNUSED_PARAMETER")
 fun Transaction.updateAuctions(auctions: List<ApiAuction>) {
-    TODO("Function updateAuctions not implemented yet!")
-    TODO("Do not forget validation! Auctions could be accepted")
+    TODO("Function updateAuctions not implemented yet! Do not forget validation! Auctions could be accepted")
 }
 
 @MathDsl

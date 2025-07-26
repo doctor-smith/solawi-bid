@@ -11,6 +11,7 @@ import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.env.type
 import org.solyton.solawi.bid.application.data.environment
 import org.solyton.solawi.bid.application.data.navbar.navBar
+import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.data.userData
 import org.solyton.solawi.bid.application.service.seemsToBeLoggerIn
 import org.solyton.solawi.bid.application.ui.page.auction.*
@@ -88,7 +89,7 @@ fun Routing(storage: Storage<Application>): Routes = Routing("/") {
             }
             route("management") {
                 component{
-                    UserManagementPage(storage)
+                    UserManagementPage(storage * userIso)
                 }
             }
 

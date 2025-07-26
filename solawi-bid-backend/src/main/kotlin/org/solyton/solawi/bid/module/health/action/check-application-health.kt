@@ -1,5 +1,6 @@
 package org.solyton.solawi.bid.module.health.action
 
+@Suppress("FunctionOnlyReturningConstant")
 fun checkApplicationHealth(): Boolean {
     // Implement your health check logic here
     // For example, check database connection, external service availability, etc.

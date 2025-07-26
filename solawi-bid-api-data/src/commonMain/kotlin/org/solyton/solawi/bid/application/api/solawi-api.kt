@@ -4,6 +4,8 @@ package org.solyton.solawi.bid.application.api
 import org.evoleq.ktorx.api.Api
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
+import org.solyton.solawi.bid.module.permission.data.api.Context
+import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContextsOfUser
 import org.solyton.solawi.bid.module.user.data.api.*
 
 val solawiApi by lazy {
@@ -22,6 +24,15 @@ val solawiApi by lazy {
         url = "is-logged-in"
     )
 
+    // Permissions
+    .patch<ReadRightRoleContextsOfUser, List<Context>>(
+        key = ReadRightRoleContextsOfUser::class,
+        url = "permissions/user/role-right-contexts"
+    )
+    .patch<ReadRightRoleContextsOfUser, List<Context>>(
+        key = ReadRightRoleContextsOfUser::class,
+        url = "permissions/users/role-right-contexts"
+    )
     // Auction
     .post<CreateAuction, Auction>(
         key = CreateAuction::class,
@@ -105,4 +116,6 @@ val solawiApi by lazy {
         key = ChangePassword::class,
         url = "users/change-password"
     )
+    // Organizations
+
 }

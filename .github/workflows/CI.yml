@@ -1,0 +1,106 @@
+name: Continuous Integration
+
+on:
+  push:
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+jobs:
+  build-Frontend:
+    name: Build Frontend Docker Image
+    runs-on: ubuntu-latest
+    outputs:
+      full_image_name: ${{ steps.build-frontend.outputs.full_image_name }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Build Frontend Docker Image
+        id: build-frontend
+        uses: ./.github/actions/build-docker
+        with:
+          image_name: frontend
+          dockerfile_path: infrastructure/docker/Dockerfile-Frontend
+
+  build-Backend:
+    name: Build Backend Docker Image
+    runs-on: ubuntu-latest
+    outputs:
+      full_image_name: ${{ steps.build-backend.outputs.full_image_name }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Build Backend Docker Image
+        id: build-backend
+        uses: ./.github/actions/build-docker
+        with:
+          image_name: backend
+          dockerfile_path: infrastructure/docker/Dockerfile-Backend
+
+  e2e:
+    name: Run E2E Tests
+    runs-on: ubuntu-latest
+    needs: [build-Frontend, build-Backend]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Download Frontend Docker Image Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image-frontend
+      - name: Download Backend Docker Image Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image-backend
+      - name: Load Docker Images
+        id: load
+        shell: bash
+        run: |
+          docker load --input docker_image_frontend.tar
+          docker load --input docker_image_backend.tar
+
+      - name: Start E2E Test Environment
+        run: docker compose -f docker-compose.e2e.yml up -d --wait --quiet-pull
+
+      - name: Give gradlew permissions
+        run: chmod +x ./gradlew
+
+      - name: Install Playwright Browsers
+        run: ./gradlew :e2e:installPlaywright
+
+      - name: Run Playwright E2E tests
+        run: ./gradlew :e2e:test --info
+
+
+
+  push-Frontend:
+    name: Push Frontend Docker Image
+    runs-on: ubuntu-latest
+    needs: [e2e, build-Frontend]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Push Docker Image
+        uses: ./.github/actions/push-docker
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          image_name: frontend
+          full_image_name: ${{ needs.build-Frontend.outputs.full_image_name }}
+
+  push-Backend:
+    name: Push Backend Docker Image
+    runs-on: ubuntu-latest
+    needs: [e2e, build-Backend]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: push-docker
+        uses: ./.github/actions/push-docker
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          image_name: backend
+          full_image_name: ${{ needs.build-Backend.outputs.full_image_name }}

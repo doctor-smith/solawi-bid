@@ -27,7 +27,7 @@ import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.error.component.showErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
 import org.solyton.solawi.bid.module.i18n.data.language
-import org.solyton.solawi.bid.module.user.isNotGranted
+import org.solyton.solawi.bid.module.permissions.service.isNotGranted
 
 @Markup
 @Composable
@@ -35,7 +35,8 @@ import org.solyton.solawi.bid.module.user.isNotGranted
 fun UpdateAuctionButton(
     storage: Storage<Application>,
     auction: Lens<Application, Auction>,
-    texts: Reader<Unit, Lang.Block>
+    texts: Reader<Unit, Lang.Block>,
+    dataId: String
 ) {
     // Auction can only be configured, if no rounds have been created
     val isDisabled = (storage * auction * rounds * existRounds).emit() ||
@@ -45,7 +46,8 @@ fun UpdateAuctionButton(
     StdButton(
         texts * text,
         storage * deviceData * mediaType.get,
-        isDisabled
+        isDisabled,
+        dataId = dataId
     ) {
         (storage * modals).showUpdateAuctionModal(
             auction =  storage * auction,

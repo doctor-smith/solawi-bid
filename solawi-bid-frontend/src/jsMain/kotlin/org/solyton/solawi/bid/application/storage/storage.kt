@@ -13,6 +13,7 @@ import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.actions
 import org.solyton.solawi.bid.application.data.env.Environment
 import org.solyton.solawi.bid.application.storage.event.*
+import org.solyton.solawi.bid.module.permissions.data.Permissions
 import org.solyton.solawi.bid.module.user.data.User
 import kotlin.reflect.KClass
 
@@ -23,8 +24,8 @@ fun Storage(): Storage<Application> {
     var pulse by remember { mutableStateOf<Int>(0) }
 
     var application by remember{ mutableStateOf<Application>(Application(
-        environment = Environment(),// Environment("DEV"),
-        userData = User("", "","", "", )
+        environment = Environment(),
+        userData = User()
     ))}
 
     return Storage<Application>(
@@ -43,7 +44,7 @@ fun Storage(): Storage<Application> {
         onLogin(oldApplication, newApplication)
         pulse++
     }.onDispatch {
-        (this@onDispatch * actions).read().collect { action : Action<Application, *, *> ->
+        (this@onDispatch * actions).read().flow.collect { action : Action<Application, *, *> ->
             CallApi( action ) runOn this
         }
     }

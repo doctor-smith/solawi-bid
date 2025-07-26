@@ -1,0 +1,25 @@
+name: Install Server
+on:
+  workflow_dispatch:
+
+jobs:
+  install-server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SERVER_KEY }}" > server_key.pem
+          chmod 600 server_key.pem
+      - name: Run Ansible playbook to install server
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "false"
+        run: |
+          ansible-galaxy install -r ./infrastructure/ansible/install-server.requirements.yml
+          ansible-playbook \
+          -i ${{ vars.SERVER_ADDRESS }}, \
+          -u ${{ vars.SERVER_USER }} \
+          --private-key server_key.pem \
+          ./infrastructure/ansible/install-server.yml

@@ -5,7 +5,7 @@ ktor = "2.3.12"#"2.3.0"
 kotlin = "1.9.22"
 compose = "1.5.12"
 shadow = "8.1.0"
-solawi = "1.0.3"
+solawi = "1.0.4"
 logback = "1.4.12"
 exposed = "0.48.0"
 solytonGroup = "org.solyton"
@@ -24,6 +24,8 @@ jjwt = "0.11.5"
 mindrot-jbcrypt = "0.4"
 cdimascio-dotenv-kotlin =  "6.4.1"
 evoleq-exposedx-migrations = "1"
+detekt = "1.23.1"
+kover = "0.7.5"
 
 
 [libraries]
@@ -73,10 +75,12 @@ cdimascio-dotenv-kotlin = { module = "io.github.cdimascio:dotenv-kotlin", versio
 
 
 [plugins]
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt"}
 jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor-plugin" }
 serialization = {id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 mpp = {id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 compose = {id = "org.jetbrains.compose", version.ref = "compose"}
-shadow = {id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover"}
 # evoleq-exposedx-migrations = { module = "org.evoleq.exposedx.migration", version.ref = "evoleq-exposedx-migrations" }

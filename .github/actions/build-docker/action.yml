@@ -1,0 +1,60 @@
+name: build-and-push-docker
+description: Build Docker images
+
+inputs:
+    registry:
+        description: 'Container registry URL'
+        required: true
+        default: 'ghcr.io'
+    image_name:
+        description: 'Image name'
+        required: true
+    dockerfile_path:
+        description: 'Path to the Dockerfile'
+        required: true
+
+outputs:
+  full_image_name:
+    description: "Full name of the Docker image"
+    value: ${{ steps.full_image_name.outputs.full_image_name }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Extract metadata (tags, labels) for Docker image
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: |
+          ${{ inputs.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}
+        tags: |
+          type=ref,event=branch,prefix=branch-
+          type=ref,event=tag,prefix=tag-
+          type=sha
+        flavor: latest=true
+
+    - name: Generate full image name
+      id: full_image_name
+      shell: bash
+      run: echo "full_image_name=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1 | cut -d ':' -f 1)" >> $GITHUB_OUTPUT
+
+    - name: Build Docker image
+      id: push
+      uses: docker/build-push-action@v6
+      with:
+        file: ${{ inputs.dockerfile_path }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        outputs: type=docker,dest=docker_image_${{ inputs.image_name }}.tar
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Upload Docker Image Artifact
+      uses: actions/upload-artifact@v4
+      with:
+          name: docker-image-${{ inputs.image_name }}
+          path: docker_image_${{ inputs.image_name }}.tar
+          retention-days: 1

@@ -138,7 +138,6 @@ class AuctionRoutingTests {
             }.bodyAsText()
             val auction1Result = Json.decodeFromString(ResultSerializer, auction1Text)
             assertIs<Result.Success<Auction>>(auction1Result)
-            val auction1 = auctionResult.data
 
             val response = client.delete("/auction/delete") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)

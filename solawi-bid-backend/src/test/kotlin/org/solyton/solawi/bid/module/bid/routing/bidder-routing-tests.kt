@@ -46,7 +46,7 @@ class BidderTests {
             val auction = auctionResult.data
 
             val bidder = NewBidder(
-                username,
+                USERNAME,
                 0,
                 2
             )
@@ -168,5 +168,5 @@ class BidderTests {
     }
 }
 
-const val username = "developer@alpha-structure.com"
-const val password = "pass1234"
+const val USERNAME = "developer@alpha-structure.com"
+const val PASSWORD = "pass1234"

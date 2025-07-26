@@ -1,63 +1,63 @@
-version: '3.8'
-
-networks:
-  frontend:
-    driver: bridge
-  backend:
-
 services:
+
   solawi-bid_frontend:
     build:
-      context: .
-      dockerfile: solawi-bid-frontend/docker/Dockerfile
+      dockerfile_inline: |
+        FROM gradle:jdk17
+        WORKDIR /app
+        COPY . .
+        CMD gradle solawi-bid-frontend:jsBrowserProductionRun
+    pull_policy: build
     ports:
-      - "8080:80"
-    container_name: solawi-bid_frontend
-    hostname: solawi-bid_frontend
-    env_file:
-      - solawi-bid-frontend/.env
+      - "8080:8080"
+    volumes:
+      - gradle_cache-frontend:/home/gradle/.gradle
+    healthcheck:
+      test: curl --fail http://localhost:8080
+      interval: 5s
+      timeout: 3s
+      retries: 2
+      start_period: 60s
 
-    depends_on:
-      - solawi-bid_backend
-    networks:
-      - frontend
-      - backend
   solawi-bid_backend:
     build:
-      context: .
-      dockerfile: solawi-bid-backend/docker/Dockerfile
+      dockerfile_inline: |
+        FROM gradle:jdk17
+        WORKDIR /app
+        COPY . .
+        CMD gradle solawi-bid-backend:run
+    pull_policy: build
     ports:
       - "8081:8081"
-    container_name: solawi-bid_backend
-    hostname: solawi-bid_backend
-    env_file:
-      - solawi-bid-backend/.env
+    volumes:
+      - gradle_cache-backend:/home/gradle/.gradle
     depends_on:
       - solawi-bid_database
-    networks:
-       - backend
+    healthcheck:
+      test: "curl 'http://localhost:8081/login' -f -X OPTIONS -H 'Access-Control-Request-Method: POST' -H 'Origin: http://localhost'"
+      interval: 2s
+      timeout: 3s
+      retries: 3
+      start_period: 2m
 
   solawi-bid_database:
-    build:
-      context: .
-      dockerfile: solawi-bid-database/docker/Dockerfile
-    container_name: solawi-bid_database
-    hostname: solawi-bid_database
+    image: mysql:9
     ports:
       - "3306:3306"
-    env_file:
-      - solawi-bid-database/.env
-    networks:
-      - backend
+    volumes:
+      - ./infrastructure/database/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+    environment:
+      - MYSQL_DATABASE=solawi-bid
+      - MYSQL_USER=solawi-bid
+      - MYSQL_PASSWORD=secure
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent" ]
+      interval: 5s
+      timeout: 3s
+      retries: 2
+      start_period: 0s
 
-
-  adminer:
-    image: adminer
-    hostname: adminer
-    #container_name: adminer
-    restart: always
-    ports:
-     - "8082:8080"
-    networks:
-      - frontend
-      - backend
+volumes:
+  gradle_cache-frontend:
+  gradle_cache-backend:

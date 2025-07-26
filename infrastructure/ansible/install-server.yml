@@ -1,0 +1,47 @@
+- name: Install Server
+  hosts: all
+  vars:
+    pip_install_packages:
+      - name: docker
+  become: true
+  roles:
+    - role: geerlingguy.pip
+    - role: geerlingguy.docker
+  tasks:
+    - name: apt install unattended-upgrades
+      apt:
+        name: unattended-upgrades
+    - name: activate unattended-upgrades
+      command:
+        cmd: dpkg-reconfigure -f noninteractive unattended-upgrades
+        creates: /etc/apt/apt.conf.d/20auto-upgrades
+    - name: Create reverse proxy network
+      community.docker.docker_network:
+        name: reverse-proxy
+    - name: Create Reverse Proxy Container
+      community.docker.docker_container:
+        name: traefik
+        image: traefik:v3.4
+        networks:
+          - name: reverse-proxy
+        ports:
+          - "80:80"
+          - "443:443"
+          - "127.0.0.1:8080:8080"
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+        env:
+          TRAEFIK_PROVIDERS_DOCKER: "true"
+          TRAEFIK_API: "true"
+          TRAEFIK_API_DASHBOARD: "true"
+          TRAEFIK_ENTRYPOINTS_LOCAL: "true"
+          TRAEFIK_ENTRYPOINTS_LOCAL_ADDRESS: ":8080"
+          TRAEFIK_ENTRYPOINTS_WEB: "true"
+          TRAEFIK_ENTRYPOINTS_WEB_ADDRESS: ":80"
+          TRAEFIK_ENTRYPOINTS_WEBSECURE: "true"
+          TRAEFIK_ENTRYPOINTS_WEBSECURE_ADDRESS: ":443"
+        labels:
+          traefik.enable: "true"
+          traefik.http.routers.api.rule: "PathPrefix(`/api`) || PathPrefix(`/dashboard`)"
+          traefik.http.routers.api.service: "api@internal"
+          traefik.http.routers.api.entrypoints: "local"

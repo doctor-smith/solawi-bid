@@ -28,7 +28,7 @@ import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.error.component.showErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
 import org.solyton.solawi.bid.module.i18n.data.language
-import org.solyton.solawi.bid.module.user.isNotGranted
+import org.solyton.solawi.bid.module.permissions.service.isNotGranted
 
 @Markup
 @Composable
@@ -40,7 +40,8 @@ fun CreateAuctionButton(
 ) = StdButton(
     texts = texts * title,
     deviceType = storage * deviceData * mediaType.get,
-    disabled = (storage * userData.get).emit().isNotGranted(Right.Auction.manage)
+    disabled = (storage * userData.get).emit().isNotGranted(Right.Auction.manage),
+    dataId = "auctions-page.create-auction-button"
 ){
     // Add auction with dummy id to the store
     ((storage * auctions).add(Auction(auctionId = DEFAULT_AUCTION_ID, "", today())))

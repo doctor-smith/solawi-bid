@@ -5,10 +5,8 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultListSerializer
 import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.ktorx.result.Serializer
-import org.evoleq.math.Reader
-import org.evoleq.math.Writer
-import org.evoleq.math.contraMap
-import org.evoleq.math.map
+import org.evoleq.math.*
+import org.evoleq.optics.lens.Lens
 import kotlin.reflect.KClass
 
 /**
@@ -94,7 +92,17 @@ inline fun <Base: Any, reified I : Any,  reified O : Any, reified P : Any> Actio
 )
 
 
-
+/**
+ * Actions are kind of a left module w.r.t multiplication by lenses
+ */
+operator fun <Whole: Any, Part: Any, I : Any, O :Any>  Lens<Whole, Part>.times(action: Action<Part, I,O>): Action<Whole, I,O> = Action(
+    reader = action.reader o get,
+    name = action.name,
+    endPoint = action.endPoint,
+    writer = {o: O -> {w: Whole -> set(action.writer(o)(get(w)))(w)}},
+    serializer = action.serializer,
+    deserializer = action.deserializer
+)
 
 interface ActionType
 

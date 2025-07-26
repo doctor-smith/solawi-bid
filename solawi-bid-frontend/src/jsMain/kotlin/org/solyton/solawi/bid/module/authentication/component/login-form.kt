@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.authentication.component
 
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.label.Label
 import org.evoleq.language.Lang
 import org.evoleq.language.component
@@ -32,6 +33,7 @@ fun LoginForm(storage: Storage<LoginForm>, login: ()->Unit) {
 
             TextInput((userData * username).read()) {
                 style { textInputStyle(device)() }
+                dataId("login-form.input.username")
                 id("username")
                 onInput {
                     (userData * username).write(it.value)
@@ -42,6 +44,7 @@ fun LoginForm(storage: Storage<LoginForm>, login: ()->Unit) {
             Label(loginFields["password"], id = "password", labelStyle = formLabelStyle(device))
             PasswordInput((userData * password).read()) {
                 style { textInputStyle(device)() }
+                attr("data-id", "login-form.input.password")
                 id("password")
                 onInput { (userData * password).write(it.value) }
             }
@@ -51,8 +54,9 @@ fun LoginForm(storage: Storage<LoginForm>, login: ()->Unit) {
             val buttonTexts = texts.component("solyton.authentication.login.buttons")
 
             SubmitButton(
-                { _-> buttonTexts["ok"]},
-                device
+                texts = { _-> buttonTexts["ok"]},
+                deviceType = device,
+                dataId = "login-form.submit-button",
             ) {
                 login()
             }
