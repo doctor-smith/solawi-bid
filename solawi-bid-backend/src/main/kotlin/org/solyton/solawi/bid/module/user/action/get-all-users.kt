@@ -5,24 +5,24 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
-import org.evoleq.util.Action
-import org.evoleq.util.DbAction
-import org.evoleq.util.KlAction
-import org.solyton.solawi.bid.module.db.schema.UsersTable
+import org.evoleq.ktorx.Action
+import org.evoleq.ktorx.DbAction
+import org.evoleq.ktorx.KlAction
+import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.user.data.api.GetUsers
 import org.solyton.solawi.bid.module.user.data.api.User
 import org.solyton.solawi.bid.module.user.data.api.Users
 import java.util.*
 import kotlin.collections.first
 import kotlin.collections.map
-import org.solyton.solawi.bid.module.db.schema.User as UserEntity
+import org.solyton.solawi.bid.module.user.schema.User as UserEntity
 
 /**
  * Get all users in the database
  */
 // val GetAllUsers =
 @MathDsl
-val GetAllUsers: KlAction<Result<GetUsers>, Result<Users>> = KlAction{result -> DbAction {
+val GetAllUsers: KlAction<Result<GetUsers>, Result<Users>> = KlAction{_ -> DbAction {
     database -> resultTransaction(database) {
     Users(UserEntity.all().map { userEntity ->
         User(

@@ -14,6 +14,7 @@ import org.jetbrains.compose.web.testutils.runTest
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.env.Environment
 import org.solyton.solawi.bid.application.data.modals
+import org.solyton.solawi.bid.application.storage.middleware.util.Dispatch
 import org.solyton.solawi.bid.test.storage.TestStorage
 import kotlin.test.Test
 import kotlin.test.assertTrue

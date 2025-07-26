@@ -82,6 +82,4 @@ fun MobileDevice(scale: Double, content: @Composable ElementScope<HTMLElement>.(
 
  */
     }
-
-
 }

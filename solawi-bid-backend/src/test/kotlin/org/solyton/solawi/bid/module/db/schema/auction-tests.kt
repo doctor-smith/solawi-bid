@@ -2,6 +2,13 @@ package org.solyton.solawi.bid.module.db.schema
 
 import org.evoleq.exposedx.test.runSimpleH2Test
 import org.jetbrains.exposed.sql.insert
+import org.solyton.solawi.bid.module.bid.schema.AcceptedRoundsTable
+import org.solyton.solawi.bid.module.bid.schema.Auction
+import org.solyton.solawi.bid.module.bid.schema.AuctionBidders
+import org.solyton.solawi.bid.module.bid.schema.Auctions
+import org.solyton.solawi.bid.module.bid.schema.Bidder
+import org.solyton.solawi.bid.module.bid.schema.Bidders
+import org.solyton.solawi.bid.module.bid.schema.Rounds
 import kotlin.test.assertEquals
 
 class AuctionTests {

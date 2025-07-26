@@ -4,8 +4,23 @@ import org.evoleq.exposedx.test.runSimpleH2Test
 import org.jetbrains.exposed.sql.selectAll
 import org.solyton.solawi.bid.DbFunctional
 import org.junit.jupiter.api.Test
-import org.solyton.solawi.bid.module.db.repository.*
 import org.solyton.solawi.bid.module.db.schema.*
+import org.solyton.solawi.bid.module.permission.schema.ContextEntity
+import org.solyton.solawi.bid.module.permission.schema.repository.ContextToNest
+import org.solyton.solawi.bid.module.permission.schema.repository.addChild
+import org.solyton.solawi.bid.module.permission.schema.repository.cloneContext
+import org.solyton.solawi.bid.module.permission.schema.repository.createChild
+import org.solyton.solawi.bid.module.permission.schema.repository.createRootContext
+import org.solyton.solawi.bid.module.permission.schema.repository.nest
+import org.solyton.solawi.bid.module.permission.schema.repository.parent
+import org.solyton.solawi.bid.module.permission.schema.repository.path
+import org.solyton.solawi.bid.module.permission.schema.repository.pathAsList
+import org.solyton.solawi.bid.module.permission.schema.Contexts
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.permission.schema.Rights
+import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
+import org.solyton.solawi.bid.module.permission.schema.Roles
+import org.solyton.solawi.bid.module.user.schema.repository.createChild
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -105,7 +120,7 @@ class ContextTests {
         }
 
 
-        val contextsToMigrate = ContextEntity.find{Contexts.name like "%/%"}
+        val contextsToMigrate = ContextEntity.find{ Contexts.name like "%/%"}
         val root = ContextEntity.find { ContextsTable.name eq "ROOT" }.first()
         println(contextsToMigrate.map { it.name })
 
@@ -115,12 +130,12 @@ class ContextTests {
             // val contexts =
             ContextToNest(it, names, setOf(root)).nest()
         }
-        val rootContext = ContextEntity.find{Contexts.name eq "ROOT"}
+        val rootContext = ContextEntity.find{ Contexts.name eq "ROOT"}
         assertEquals(1, rootContext.count())
-        val parent = ContextEntity.find{Contexts.name eq "PARENT"}
+        val parent = ContextEntity.find{ Contexts.name eq "PARENT"}
         assertEquals(1, parent.count())
 
-        val child = ContextEntity.find{Contexts.name eq "CHILD"}
+        val child = ContextEntity.find{ Contexts.name eq "CHILD"}
         assertEquals(1, child.count())
 
         assertEquals(parent.first(), child.first().parent())
@@ -198,8 +213,8 @@ class ContextTests {
     @DbFunctional@Test
     fun cloneContextTest() = runSimpleH2Test(*neededTables) {
 
-        val context = createRootContext("c_root", )
-        val child = context.createChild("child")
+        val context = createRootContext("c_root",)
+        context.createChild("child")
 
         val cloned = cloneContext(context.id.value, "_clone")
 

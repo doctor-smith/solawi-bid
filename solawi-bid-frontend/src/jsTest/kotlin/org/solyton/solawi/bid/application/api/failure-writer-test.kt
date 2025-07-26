@@ -11,6 +11,7 @@ import org.jetbrains.compose.web.testutils.ComposeWebExperimentalTestsApi
 import org.jetbrains.compose.web.testutils.runTest
 import org.solyton.solawi.bid.application.data.failure.Failure
 import org.solyton.solawi.bid.application.data.modals
+import org.solyton.solawi.bid.application.storage.middleware.util.failureWriter
 import org.solyton.solawi.bid.test.storage.TestStorage
 import kotlin.test.Test
 import kotlin.test.assertEquals

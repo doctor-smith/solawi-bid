@@ -17,11 +17,15 @@ outputs:
   full_image_name:
     description: "Full name of the Docker image"
     value: ${{ steps.full_image_name.outputs.full_image_name }}
+  full_image_refrence:
+    description: "Full reference of the Docker image including tags"
+    value: ${{ steps.full_image_name.outputs.full_image_refrence }}
 
 runs:
   using: "composite"
   steps:
     - name: Set up Docker Buildx
+      id: setup-buildx
       uses: docker/setup-buildx-action@v3
 
     - name: Extract metadata (tags, labels) for Docker image
@@ -39,7 +43,24 @@ runs:
     - name: Generate full image name
       id: full_image_name
       shell: bash
-      run: echo "full_image_name=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1 | cut -d ':' -f 1)" >> $GITHUB_OUTPUT
+      run: |
+        echo "full_image_name=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1 | cut -d ':' -f 1)" >> $GITHUB_OUTPUT
+        echo "full_image_refrence=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)" >> $GITHUB_OUTPUT
+
+    - name: Cache
+      uses: actions/cache@v4
+      id: cache
+      with:
+        path: cache-mount
+        key: cache-mount-${{ hashFiles( inputs.dockerfile_path ) }}
+
+    - name: Restore Docker cache mounts
+      uses: reproducible-containers/buildkit-cache-dance@v3
+      with:
+        builder: ${{ steps.setup-buildx.outputs.name }}
+        cache-dir: cache-mount
+        dockerfile: ${{ inputs.dockerfile_path }}
+        skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
     - name: Build Docker image
       id: push

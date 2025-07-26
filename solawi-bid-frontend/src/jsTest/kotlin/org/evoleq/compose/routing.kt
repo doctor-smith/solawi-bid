@@ -10,6 +10,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @OptIn(ComposeWebExperimentalTestsApi::class)
 class RoutingTest {
@@ -52,6 +53,26 @@ class RoutingTest {
             }
             route("alfred/E/neumann") {}
         }
+        assertTrue(routes != null)
+    }
+
+    @Test
+    fun routesConfigurationMerge() {
+        val routes = routing{
+            route("x/a"){component { Div{Text("x/a")} }}
+            route("x/b"){component { Div{Text("x/b")} }}
+        }
+        val n1 = routes.children.size
+        assertEquals(1,n1)
+
+        val x = routes.match("x")
+        assertNull(x)
+
+        val a = routes.match("x/a")
+        assertNotNull(a)
+
+        val b = routes.match("x/b")
+        assertNotNull(b)
     }
 
     @Test
@@ -153,7 +174,8 @@ class RoutingTest {
 
 
 
-    @Test fun wrapRoutes() = runTest {
+    @Test
+    fun wrapRoutes() = runTest {
         composition {
             Routing("/") {
                 component {
@@ -166,22 +188,14 @@ class RoutingTest {
                 }
 
                 wrap {
-
-
                     layout {
-
-
                         {
                             Div {
                                 Text("hello wrapper")
                                 it()
                             }
                         }
-
-
                     }
-
-
 
                     route("/y") {
                         component {
@@ -202,15 +216,13 @@ class RoutingTest {
         // Checks that wrap lifts child configurations
         // and
         // 1. wraps component y
-        // 2. but leaves component z as defined
+        // 2. wraps child component z as well
         navigate("/y")
         waitForRecompositionComplete()
         assertEquals("<div>hello wrapper<div>y</div></div>", root.innerHTML)
         navigate("/y/z")
         waitForRecompositionComplete()
-        assertEquals("<div>z</div>", root.innerHTML)
-
-
+        assertEquals("<div>hello wrapper<div>z</div></div>", root.innerHTML)
     }
 }
 

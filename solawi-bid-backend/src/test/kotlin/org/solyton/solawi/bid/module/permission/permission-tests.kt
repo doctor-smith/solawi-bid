@@ -4,12 +4,21 @@ import org.evoleq.exposedx.test.runSimpleH2Test
 import org.jetbrains.exposed.sql.insert
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
-import org.solyton.solawi.bid.module.db.repository.cloneRightRoleContext
+import org.solyton.solawi.bid.module.permission.schema.repository.cloneRightRoleContext
 import org.solyton.solawi.bid.module.db.schema.*
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.permission.schema.RightsTable
+import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
+import org.solyton.solawi.bid.module.permission.schema.RolesTable
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
+import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.permission.action.db.isGranted
+import org.solyton.solawi.bid.module.permission.schema.ContextEntity
+import org.solyton.solawi.bid.module.permission.schema.RightEntity
+import org.solyton.solawi.bid.module.permission.schema.RoleEntity
+import org.solyton.solawi.bid.module.user.schema.UserEntity
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlin.test.fail
 
 
 class PermissionTests {
@@ -52,7 +61,7 @@ class PermissionTests {
         }
         UserRoleContext.insert {
             it[contextId] = context.id
-            it[userId] = user.id
+            it[userId] = user.id.value
             it[roleId] = role.id
         }
 
@@ -116,7 +125,7 @@ class PermissionTests {
         }
         UserRoleContext.insert {
             it[contextId] = context.id
-            it[userId] = user.id
+            it[userId] = user.id.value
             it[roleId] = role.id
         }
 
@@ -175,7 +184,7 @@ class PermissionTests {
         }
         UserRoleContext.insert {
             it[contextId] = context.id
-            it[userId] = user.id
+            it[userId] = user.id.value
             it[roleId] = role.id
         }
 
@@ -204,7 +213,7 @@ class PermissionTests {
     ) {
         val ts = System.currentTimeMillis()
         // Setup database entries
-        val user = UserEntity.new {
+        UserEntity.new {
             username = "x-$ts"
             password = "y"
         }

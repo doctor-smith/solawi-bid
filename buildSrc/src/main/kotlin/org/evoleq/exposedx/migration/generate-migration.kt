@@ -46,6 +46,7 @@ fun generateMigration(id: Long, packageName: String): String =
         |        TODO("Not yet implemented")
         |    }
         |}
+        |
         """.trimMargin()
 
 fun File.buildMigrationList(packageName: String, module: String = ""): String {
@@ -85,6 +86,7 @@ fun File.buildMigrationList(packageName: String, module: String = ""): String {
     |${migrations.joinToString(",\n") { it }}
     |    )
     |}
+    |
     """.trimMargin()
 }
 

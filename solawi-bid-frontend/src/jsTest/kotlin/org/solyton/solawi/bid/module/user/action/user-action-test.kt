@@ -5,6 +5,7 @@ import org.jetbrains.compose.web.testutils.runTest
 import org.solyton.solawi.bid.application.serialization.installSerializers
 import org.solyton.solawi.bid.application.ui.page.user.action.createUser
 import org.solyton.solawi.bid.application.ui.page.user.action.getUsers
+import org.solyton.solawi.bid.application.ui.page.user.action.readParentChildRelationsOfContextsAction
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
 import org.solyton.solawi.bid.test.storage.TestStorage
 import kotlin.test.Test
@@ -59,4 +60,13 @@ class UserActionTests {
              */
         }
     }
+    @OptIn(ComposeWebExperimentalTestsApi::class)
+    @Test fun readParentChildRelationsOfContextsActionTest() = runTest{
+        val name = "name"
+        installSerializers()
+        //val action =
+        readParentChildRelationsOfContextsAction("Gurke")
+
+    }
+
 }

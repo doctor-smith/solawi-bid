@@ -27,4 +27,3 @@ sealed class PasswordCombinationCheck {
     data object WrongPassword: PasswordCombinationCheck()
     data object RequirementsViolated: PasswordCombinationCheck()
 }
-

@@ -35,3 +35,5 @@ val personalData: Reader<Lang.Block, Lang.Block> = subComp("personalData")
 val properties: Reader<Lang.Block, Lang.Block> = subComp("properties")
 
 val value: Reader<Lang.Block, String> = Reader { block -> block["value"] }
+
+val table: Reader<Lang.Block, Lang.Block> = subComp("table")
