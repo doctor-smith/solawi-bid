@@ -6,11 +6,13 @@ plugins {
     alias(libs.plugins.serialization)
     alias(libs.plugins.shadow)
     id("org.evoleq.exposedx.migration")
-    // id("jacoco") // JaCoCo plugin <-
+    id("org.evoleq.architecture.dependency")
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.kover)
 }
 
 group = libs.versions.solytonGroup
-version = libs.versions.solawi
+version = libs.versions.solawi.get()
 val solawiBackendMainClassName = "org.solyton.solawi.bid.MainKt"
 java {
     toolchain {
@@ -23,7 +25,6 @@ kotlin{
 }
 
 application {
-    //mainClass = solawiBackendMainClassName
     mainClass.set(solawiBackendMainClassName)
 
     val isDevelopment: Boolean = project.ext.has("development")
@@ -65,8 +66,8 @@ dependencies {
     implementation(libs.cdimascio.dotenv.kotlin)
 
     // own dependencies
-    //implementation("org.solyton:solawi-bid-api-data-jvm:0.0.1")
     api(project(":solawi-bid-api-data"))
+    api(project(":evoleq"))
 
     // serialization
     implementation(libs.ktor.serialization.kotlinx.json)
@@ -88,15 +89,11 @@ dependencies {
 
     // slf4j
     implementation (libs.slf4j.nop)
+
+    // mail
+    implementation("org.simplejavamail:simple-java-mail:8.0.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.5")
 }
-/*
-jacoco {
-    toolVersion = "0.8.8" // Specify JaCoCo version
-}
-
- */
-
-
 
 tasks.register<Test>("dbFunctionalTest"  ) {
     group = "verification"
@@ -120,7 +117,6 @@ tasks.register<Test>("apiTest") {
         junitXml.required = true
         html.required = true
     }
-//    finalizedBy(tasks.jacocoTestReport)
 }
 
 tasks.register<Test>("unitTest") {
@@ -177,8 +173,8 @@ tasks.jacocoTestReport {
 migrations {
     migration("dbMain") {
         domain = "org.solyton.solawi.bid"
-        module = "db"
-        migrations = "migrations"
+        module = "application"
+        migrations = "data/db/migrations"
         sourceSet = "main"
     }
 
@@ -201,6 +197,56 @@ migrations {
         module = "authentication" // /routing
         migrations = "migrations"
         sourceSet = "test"
+    }
+}
+
+detekt {
+    toolVersion = libs.versions.detekt.get()
+    config.from( files("$rootDir/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
+    allRules = false
+ //   source.from( files("src/main/kotlin", "src/test/kotlin"))
+
+}
+
+
+/*
+tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaseline") {
+    baseline.set(file("detekt/detekt-baseline.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detekt") {
+    baseline.set(file("detekt/detekt-baseline.xml"))
+}
+*/
+
+tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineMain") {
+    baseline.set(file("detekt/detekt-baseline-main.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektMain") {
+    baseline.set(file("detekt/detekt-baseline-main.xml"))
+}
+
+tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineTest") {
+    baseline.set(file("detekt/detekt-baseline-test.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektTest") {
+    baseline.set(file("detekt/detekt-baseline-test.xml"))
+}
+
+dependencyAnalyser {
+    analyse("backend") {
+        domain = "org.solyton.solawi.bid"
+        sourceSet = "main"
+        modules = setOf(
+            "application",
+            "authentication",
+            "banking",
+            "bid",
+            "health",
+            "permission",
+            "user",
+        )
+        checkCyclesBeforeBuild = true
     }
 }
 

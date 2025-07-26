@@ -2,12 +2,15 @@ plugins {
     alias(libs.plugins.mpp)
     alias(libs.plugins.serialization)
      `maven-publish`
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.kover)
+    id("org.evoleq.architecture.dependency")
 }
 
 
 
 group = libs.versions.solytonGroup
-version = libs.versions.solawi
+version = libs.versions.solawi.get()
 val kotlinVersion = libs.versions.kotlin
 
 repositories {
@@ -44,11 +47,13 @@ kotlin{
 
                 // datetime
                 implementation(libs.kotlinx.datetime)
+
+                implementation(project(":evoleq"))
             }
         }
         val commonTest by getting {
             dependencies {
-                implementation(libs.kotlin.test.junit) // Adds kotlin.test for multiplatform
+                implementation(kotlin("test")) // Adds kotlin.test for multiplatform
             }
         }
         val jvmMain by getting {
@@ -73,10 +78,9 @@ kotlin{
         }
         val jsTest by getting {
             dependencies {
-                implementation(libs.kotlin.test.junit) // Adds kotlin.test for multiplatform
+                implementation(libs.kotlin.test.js) // Adds kotlin.test for multiplatform
             }
         }
-
     }
 }
 
@@ -86,6 +90,89 @@ publishing {
     }
     repositories {
         mavenLocal()
+    }
+}
+
+detekt {
+    toolVersion = libs.versions.detekt.get()
+    config = files("$rootDir/detekt/detekt.yml")
+    buildUponDefaultConfig = true
+    allRules = false
+
+    source.from(
+        "src/commonMain/kotlin",
+        "src/commonTest/kotlin",
+        "src/jsMain/kotlin",
+        "src/jsTest/kotlin",
+        "src/jvmMain/kotlin",
+        "src/jvmTest/kotlin",
+
+    )
+}
+
+tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaseline") {
+    baseline.set(file("detekt/detekt-baseline.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detekt") {
+    baseline.set(file("detekt/detekt-baseline.xml"))
+}
+
+
+tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineJvmMain") {
+    baseline.set(file("detekt/detekt-baseline-jvm-main.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektJvmMain") {
+    baseline.set(file("detekt/detekt-baseline-jvm-main.xml"))
+}
+
+/*
+tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineMetadataCommonMain") {
+    baseline.set(file("detekt/detekt-baseline-common-main.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektMetadataCommonMain") {
+    baseline.set(file("detekt/detekt-baseline-common-main.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineCommonTest") {
+    baseline.set(file("detekt/detekt-baseline-common-test.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektCommonTest") {
+    baseline.set(file("detekt/detekt-baseline-common-test.xml"))
+}
+*/
+tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineJvmTest") {
+    baseline.set(file("detekt/detekt-baseline-jvm-test.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektJvmTest") {
+    baseline.set(file("detekt/detekt-baseline-jvm-test.xml"))
+}
+
+tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineJsMain") {
+    baseline.set(file("detekt/detekt-baseline-js-main.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektJsMain") {
+    baseline.set(file("detekt/detekt-baseline-js-main.xml"))
+}
+
+tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineJsTest") {
+    baseline.set(file("detekt/detekt-baseline-js-test.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektJsTest") {
+    baseline.set(file("detekt/detekt-baseline-js-test.xml"))
+}
+
+
+dependencyAnalyser {
+    analyse("apiCommonMain") {
+        domain = "org.solyton.solawi.bid"
+        sourceSet = "commonMain"
+        modules = setOf(
+            "application",
+            "authentication",
+            "bid",
+            "permission",
+            "user",
+        )
+        checkCyclesBeforeBuild = true
     }
 }
 

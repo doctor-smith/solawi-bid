@@ -6,16 +6,19 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.application.data.device.mediaType
+import org.evoleq.device.data.mediaType
+import org.evoleq.optics.storage.times
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.env.type
 import org.solyton.solawi.bid.application.data.environment
-import org.solyton.solawi.bid.application.data.navbar.navBar
+import org.solyton.solawi.bid.application.data.transform.navbar.navBarIso
+import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.data.userData
 import org.solyton.solawi.bid.application.service.seemsToBeLoggerIn
 import org.solyton.solawi.bid.application.ui.page.auction.*
 import org.solyton.solawi.bid.application.ui.page.dashboard.DashboardPage
 import org.solyton.solawi.bid.application.ui.page.login.LoginPage
+import org.solyton.solawi.bid.module.navbar.action.logoutAction
 import org.solyton.solawi.bid.application.ui.page.login.effect.LaunchLogoutEffect
 import org.solyton.solawi.bid.application.ui.page.manual.HowToBidPage
 import org.solyton.solawi.bid.application.ui.page.manual.ManualPage
@@ -55,6 +58,7 @@ fun Routing(storage: Storage<Application>): Routes = Routing("/") {
         }
     }
     route("solyton") {
+
         wrap {
             access {
                 // todo:dev improve it
@@ -75,7 +79,11 @@ fun Routing(storage: Storage<Application>): Routes = Routing("/") {
                 }
             }
             layout { page -> {
-                NavBar(storage, storage * navBar, storage * deviceData * mediaType.get)
+                NavBar(
+                    navBar =storage * navBarIso,
+                    device = storage * deviceData * mediaType.get,
+                    logoutAction = logoutAction
+                )
                 // render page
                 page()
             } }
@@ -88,7 +96,9 @@ fun Routing(storage: Storage<Application>): Routes = Routing("/") {
             }
             route("management") {
                 component{
-                    UserManagementPage(storage)
+                    UserManagementPage(
+                        storage * userIso
+                    )
                 }
             }
 

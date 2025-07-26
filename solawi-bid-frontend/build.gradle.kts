@@ -5,6 +5,9 @@ plugins {
     alias(libs.plugins.compose)
     alias(libs.plugins.serialization)
     id("org.evoleq.math.cat.gradle.optics")
+    id("org.evoleq.architecture.dependency")
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.kover)
 }
 
 repositories {
@@ -21,7 +24,7 @@ repositories {
 }
 
 group = libs.versions.solytonGroup
-version = libs.versions.solawi
+version = libs.versions.solawi.get()
 
 kotlin {
     js(IR) {
@@ -37,7 +40,6 @@ kotlin {
                 // kotlin coroutines
                 implementation(libs.kotlinx.coroutines.core)
 
-
                 // ktor client
                 implementation(libs.ktor.client.core)
                 implementation(libs.ktor.client.js)
@@ -46,6 +48,7 @@ kotlin {
 
                 // own dependencies
                 api(project(":solawi-bid-api-data"))
+                api(project(":evoleq"))
 
                 // Serialization
                 implementation(libs.kotlinx.serialization.json)
@@ -91,13 +94,11 @@ kotlin {
                 implementation(libs.ktor.http.cio)
 
                 // own dependencies
-                api(project(":solawi-bid-api-data"))
-
+                implementation(project(":solawi-bid-api-data"))
+                implementation(project(":evoleq"))
                 // Serialization
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.ktor.client.serialization)
-
-
             }
 
             val commonTest by getting {
@@ -109,14 +110,13 @@ kotlin {
             }
         }
     }
-
-
 }
+
 optics{
     sourceSet = "jsMain"
     defaultPackage = "org.solyton.solawi.bid.data"
 }
-tasks.withType<Test>() {
+tasks.withType<Test> {
     reports {
         junitXml.required = true
         html.required = true
@@ -129,8 +129,9 @@ tasks.register<Test>("commonTest") {
 }
 
 compose {
-     //kotlinCompilerPlugin.set("androidx.compose.compiler:compiler:$composeCompiler")
+    web{ }
 }
+
 // a temporary workaround for a bug in jsRun invocation - see https://youtrack.jetbrains.com/issue/KT-48273
 afterEvaluate {
     rootProject.extensions.configure<NodeJsRootExtension> {
@@ -138,5 +139,51 @@ afterEvaluate {
         versions.webpack.version = "5.75.0"
         versions.webpackDevServer.version = "4.10.0"//"4.0.0"
         versions.webpackCli.version = "5.1.0"//""4.10.0"
+    }
+}
+
+detekt {
+    toolVersion = libs.versions.detekt.get()
+    config.setFrom( files("$rootDir/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
+    allRules = false
+}
+tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineJsMain") {
+    baseline.set(file("detekt/detekt-baseline-js-main.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektJsMain") {
+    baseline.set(file("detekt/detekt-baseline-js-main.xml"))
+}
+
+tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineJsTest") {
+    baseline.set(file("detekt/detekt-baseline-js-test.xml"))
+}
+tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektJsTest") {
+    baseline.set(file("detekt/detekt-baseline-js-test.xml"))
+}
+
+dependencyAnalyser {
+    analyse("frontend") {
+        domain = "org.solyton.solawi.bid"
+        sourceSet = "jsMain"
+        modules = setOf(
+            "authentication",
+            "bid",
+            "context",
+            "cookie",
+            "error",
+            "i18n",
+            "loading",
+            "localstorage",
+            "mobile",
+            "navbar",
+            "permissions",
+            "qrcode",
+            "separator",
+            "statistics",
+            "user",
+            "style"
+        )
+        checkCyclesBeforeBuild = true
     }
 }

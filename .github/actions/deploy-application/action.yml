@@ -44,6 +44,9 @@ inputs:
   server_key:
     description: 'SSH private key for the server'
     required: true
+  smtp_password:
+    description: 'Password of SMTP user'
+    required: true
 
 runs:
   using: "composite"
@@ -75,4 +78,5 @@ runs:
         -e 'jwt_secret=${{ inputs.jwt_secret }}' \
         -e 'application_owner_username=${{ inputs.application_owner_username }}' \
         -e 'application_owner_password=${{ inputs.application_owner_password }}' \
+        -e 'smtp_password=${{inputs.smtp_password}}' \
         ./infrastructure/ansible/deploy-application.yml

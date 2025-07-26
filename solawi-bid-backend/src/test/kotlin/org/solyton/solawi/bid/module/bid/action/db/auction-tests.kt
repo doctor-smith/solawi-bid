@@ -9,6 +9,15 @@ import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.module.bid.data.api.CreateRound
 import org.solyton.solawi.bid.module.bid.data.api.NewBidder
 import org.solyton.solawi.bid.module.bid.data.toApiType
+import org.solyton.solawi.bid.module.bid.schema.AcceptedRoundsTable
+import org.solyton.solawi.bid.module.bid.schema.AuctionBidders
+import org.solyton.solawi.bid.module.bid.schema.AuctionDetailsSolawiTuebingenTable
+import org.solyton.solawi.bid.module.bid.schema.AuctionEntity
+import org.solyton.solawi.bid.module.bid.schema.AuctionType
+import org.solyton.solawi.bid.module.bid.schema.Auctions
+import org.solyton.solawi.bid.module.bid.schema.BidderDetailsSolawiTuebingenTable
+import org.solyton.solawi.bid.module.bid.schema.Bidders
+import org.solyton.solawi.bid.module.bid.schema.Rounds
 import org.solyton.solawi.bid.module.db.schema.*
 import java.util.*
 import kotlin.test.assertEquals
@@ -76,7 +85,6 @@ class AuctionTests {
         Rounds
     ) {
         val name = "TestAuction"
-        val link = "TestLink"
         AuctionType.new {
             type = "SOLAWI_TUEBINGEN"
         }
@@ -102,7 +110,8 @@ class AuctionTests {
             NewBidder("name6",4,1)
         )
 
-        val auctionWithNewBidders = addBidders(
+        // val auctionWithNewBidders =
+        addBidders(
             auctionId = UUID.fromString( auction.id),
             newBidders
         ).toApiType()
@@ -120,7 +129,6 @@ class AuctionTests {
         Rounds
     ) {
         val name = "TestAuction"
-        val link = "TestLink"
         AuctionType.new {
             type = "SOLAWI_TUEBINGEN"
         }

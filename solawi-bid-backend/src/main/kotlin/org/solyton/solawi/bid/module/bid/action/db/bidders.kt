@@ -6,19 +6,28 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
-import org.evoleq.util.DbAction
-import org.evoleq.util.KlAction
+import org.evoleq.ktorx.DbAction
+import org.evoleq.ktorx.KlAction
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.data.toApiType
-import org.solyton.solawi.bid.module.db.BidRoundException
-import org.solyton.solawi.bid.module.db.schema.*
-import org.solyton.solawi.bid.module.db.schema.Auction
-import org.solyton.solawi.bid.module.db.schema.Auctions
-import org.solyton.solawi.bid.module.db.schema.Bidder
+import org.solyton.solawi.bid.module.bid.schema.AuctionBidders
+import org.solyton.solawi.bid.module.bid.schema.AuctionType
+import org.solyton.solawi.bid.module.bid.schema.AuctionTypes
+import org.solyton.solawi.bid.module.bid.schema.SearchBiddersTable
+import org.solyton.solawi.bid.module.bid.exception.BidRoundException
+import org.solyton.solawi.bid.module.bid.schema.Auction
+import org.solyton.solawi.bid.module.bid.schema.AuctionEntity
+import org.solyton.solawi.bid.module.bid.schema.Auctions
+import org.solyton.solawi.bid.module.bid.schema.Bidder
+import org.solyton.solawi.bid.module.bid.schema.BidderDetailsEntity
+import org.solyton.solawi.bid.module.bid.schema.BidderDetailsSolawiTuebingenEntity
+import org.solyton.solawi.bid.module.bid.schema.BidderDetailsSolawiTuebingenTable
+import org.solyton.solawi.bid.module.bid.schema.BidderEntity
+import org.solyton.solawi.bid.module.bid.schema.BiddersTable
+import org.solyton.solawi.bid.module.bid.schema.SearchBidderEntity
 import java.util.*
 
 @MathDsl
@@ -173,11 +182,11 @@ val SearchBidderMails: KlAction<Result<SearchBidderData>, Result<BidderMails>> =
 
 fun Transaction.searchBidderMails(searchBidderData: SearchBidderData): List<String> {
     val operations = listOf<Op<Boolean>?>(
-        if(searchBidderData.firstname.isNotBlank()){ SearchBiddersTable.firstname eq searchBidderData.firstname } else {null},
-        if(searchBidderData.lastname.isNotBlank()){ SearchBiddersTable.lastname eq searchBidderData.lastname } else {null},
-        if(searchBidderData.email.isNotBlank()){ SearchBiddersTable.email eq searchBidderData.email } else {null},
-        if(searchBidderData.relatedEmails.isNotEmpty()) { SearchBiddersTable.relatedEmails columnContainsAny searchBidderData.relatedEmails} else {null},
-        if(searchBidderData.relatedNames.isNotEmpty()) { SearchBiddersTable.relatedNames columnContainsAny searchBidderData.relatedNames} else {null}
+        if(searchBidderData.firstname.isNotBlank()){ SearchBiddersTable.firstname.lowerCase() like "%${searchBidderData.firstname.lowercase() }%"} else {null},
+        if(searchBidderData.lastname.isNotBlank()){ SearchBiddersTable.lastname.lowerCase() like "%${ searchBidderData.lastname.lowercase() }%" } else {null},
+        if(searchBidderData.email.isNotBlank()){ SearchBiddersTable.email.lowerCase() like "%${ searchBidderData.email.lowercase() }%" } else {null},
+        if(searchBidderData.relatedEmails.isNotEmpty()) { SearchBiddersTable.relatedEmails columnContainsAny searchBidderData.relatedEmails } else {null},
+        if(searchBidderData.relatedNames.isNotEmpty()) { SearchBiddersTable.relatedNames columnContainsAny searchBidderData.relatedNames } else {null}
     )
     .filter{it != null}
     .reduceOrNull{
@@ -207,13 +216,13 @@ val AddBidders: KlAction<Result<AddBidders>, Result<Unit>> = KlAction{ bidders: 
     database: Database -> bidders bindSuspend  { data ->
         resultTransaction(database) {
             SearchBiddersTable.deleteAll()
-            data.bidders.forEach {
+            data.bidders.forEach { bidder ->
                 SearchBidderEntity.new {
-                    firstname = it.firstname
-                    lastname = it.lastname
-                    email = it.email
-                    relatedEmails = it.relatedEmails.joinToString(",") { it }
-                    relatedNames = it.relatedNames.joinToString(",") { it }
+                    firstname = bidder.firstname.trim()
+                    lastname = bidder.lastname.trim()
+                    email = bidder.email.trim().toLowerCasePreservingASCIIRules()
+                    relatedEmails = bidder.relatedEmails.joinToString(",") { it.trim() }
+                    relatedNames = bidder.relatedNames.joinToString(",") { it.trim() }
                 }
             }
         }

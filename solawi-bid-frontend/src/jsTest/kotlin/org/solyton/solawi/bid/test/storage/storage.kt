@@ -9,6 +9,7 @@ import org.jetbrains.compose.web.testutils.runTest
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.env.Environment
 import org.solyton.solawi.bid.application.data.userData
+import org.solyton.solawi.bid.module.permissions.data.Permissions
 import org.solyton.solawi.bid.module.user.data.User
 import org.solyton.solawi.bid.module.user.data.username
 import kotlin.test.Test
@@ -23,7 +24,7 @@ fun TestStorage(): Storage<Application> {
         mutableStateOf<Application>(
             Application(
                 environment = Environment(true,"DEV"),
-                userData = User("", "", "", "",)
+                userData = User("", "", "", "",Permissions())
             )
         )
     }

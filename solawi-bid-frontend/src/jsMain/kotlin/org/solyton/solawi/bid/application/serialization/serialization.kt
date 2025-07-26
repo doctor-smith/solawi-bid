@@ -7,6 +7,7 @@ import org.evoleq.ktorx.result.add
 import org.evoleq.ktorx.result.serializers
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
+import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
 
 
@@ -87,5 +88,18 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<Users>(Users.serializer())
         add<GetUsers>(GetUsers.serializer())
         add<ChangePassword>(ChangePassword.serializer())
+
+        // Permissions
+        add<ReadRightRoleContexts>(ReadRightRoleContexts.serializer())
+        add<ReadRightRoleContextsOfUser>(ReadRightRoleContextsOfUser.serializer())
+        add<ReadRightRoleContextsOfUsers>(ReadRightRoleContextsOfUsers.serializer())
+        add<ReadParentChildRelationsOfContexts>(ReadParentChildRelationsOfContexts.serializer())
+        add<ParentChildRelationsOfContexts>(ParentChildRelationsOfContexts.serializer())
+        add<ParentChildRelationsOfContext>(ParentChildRelationsOfContext.serializer())
+        add<Context>(Context.serializer())
+        add<Contexts>(Contexts.serializer())
+        add<Role>(Role.serializer())
+        add<Right>(Right.serializer())
+        add<UserToContextsMap>(UserToContextsMap.serializer())
     }
 } }

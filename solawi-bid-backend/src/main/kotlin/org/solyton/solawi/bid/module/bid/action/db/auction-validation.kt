@@ -1,11 +1,11 @@
 package org.solyton.solawi.bid.module.bid.action.db
 
 import org.jetbrains.exposed.sql.Transaction
-import org.solyton.solawi.bid.module.db.BidRoundException
-import org.solyton.solawi.bid.module.db.schema.AcceptedRoundEntity
-import org.solyton.solawi.bid.module.db.schema.AcceptedRoundsTable
-import org.solyton.solawi.bid.module.db.schema.AuctionEntity
-import org.solyton.solawi.bid.module.db.schema.Round
+import org.solyton.solawi.bid.module.bid.exception.BidRoundException
+import org.solyton.solawi.bid.module.bid.schema.AcceptedRoundEntity
+import org.solyton.solawi.bid.module.bid.schema.AcceptedRoundsTable
+import org.solyton.solawi.bid.module.bid.schema.AuctionEntity
+import org.solyton.solawi.bid.module.bid.schema.Round
 import java.util.*
 
 

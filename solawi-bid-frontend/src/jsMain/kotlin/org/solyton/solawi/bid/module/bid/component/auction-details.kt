@@ -15,7 +15,7 @@ import org.evoleq.math.emit
 import org.evoleq.math.times
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
-import org.solyton.solawi.bid.module.bid.data.Auction
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.reader.*
 
 @Markup

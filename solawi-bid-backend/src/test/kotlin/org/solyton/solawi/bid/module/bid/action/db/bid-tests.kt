@@ -8,9 +8,21 @@ import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.module.bid.data.api.Bid
 import org.solyton.solawi.bid.module.bid.data.api.RoundState
 import org.solyton.solawi.bid.module.bid.data.toApiType
+import org.solyton.solawi.bid.module.bid.schema.AcceptedRoundsTable
+import org.solyton.solawi.bid.module.bid.schema.Auction
+import org.solyton.solawi.bid.module.bid.schema.AuctionBidders
+import org.solyton.solawi.bid.module.bid.schema.AuctionDetailsSolawiTuebingenTable
+import org.solyton.solawi.bid.module.bid.schema.AuctionTypes
+import org.solyton.solawi.bid.module.bid.schema.Auctions
+import org.solyton.solawi.bid.module.bid.schema.BidRound
+import org.solyton.solawi.bid.module.bid.schema.BidRounds
+import org.solyton.solawi.bid.module.bid.schema.Bidder
+import org.solyton.solawi.bid.module.bid.schema.BidderDetailsSolawiTuebingenTable
+import org.solyton.solawi.bid.module.bid.schema.Bidders
+import org.solyton.solawi.bid.module.bid.schema.Round
+import org.solyton.solawi.bid.module.bid.schema.Rounds
 import org.solyton.solawi.bid.module.bid.setupBidProcess
-import org.solyton.solawi.bid.module.db.BidRoundException
-import org.solyton.solawi.bid.module.db.schema.*
+import org.solyton.solawi.bid.module.bid.exception.BidRoundException
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 

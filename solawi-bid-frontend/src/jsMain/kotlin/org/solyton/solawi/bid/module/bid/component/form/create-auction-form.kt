@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.bid.component.form
 
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.date.format
 import org.evoleq.compose.date.parse
 import org.evoleq.compose.label.Label
@@ -9,6 +10,7 @@ import org.evoleq.compose.modal.Modal
 import org.evoleq.compose.modal.ModalData
 import org.evoleq.compose.modal.ModalType
 import org.evoleq.compose.modal.Modals
+import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.language.Lang
 import org.evoleq.language.Locale
 import org.evoleq.language.component
@@ -19,13 +21,15 @@ import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.attributes.InputType
-import org.jetbrains.compose.web.dom.*
-import org.solyton.solawi.bid.application.data.device.DeviceType
-import org.solyton.solawi.bid.application.ui.style.form.*
+import org.jetbrains.compose.web.dom.Div
+import org.jetbrains.compose.web.dom.ElementScope
+import org.jetbrains.compose.web.dom.Input
+import org.jetbrains.compose.web.dom.TextInput
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
-import org.solyton.solawi.bid.module.bid.data.Auction
-import org.solyton.solawi.bid.module.bid.data.date
-import org.solyton.solawi.bid.module.bid.data.name
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
+import org.solyton.solawi.bid.module.bid.data.auction.date
+import org.solyton.solawi.bid.module.bid.data.auction.name
+import org.solyton.solawi.bid.module.style.form.*
 import org.w3c.dom.HTMLElement
 
 const val DEFAULT_AUCTION_ID = "DEFAULT_AUCTION_ID"
@@ -63,6 +67,7 @@ fun AuctionModal(
             Label(inputs["title"], id = "name" , labelStyle = formLabelDesktopStyle)
             TextInput((auction * name).read()) {
                 id("name")
+                dataId("create-auction.form.input.name")
                 style { textInputDesktopStyle() }
                 onInput { (auction * name).write(it.value) }
             }
@@ -75,6 +80,7 @@ fun AuctionModal(
             Label(inputs["date"], id = "date" , labelStyle = formLabelDesktopStyle)
             Input(InputType.Date) {
                 id("date")
+                dataId("create-auction.form.input.date")
                 value(dateString)
                 style { dateInputDesktopStyle() }
                 onInput {

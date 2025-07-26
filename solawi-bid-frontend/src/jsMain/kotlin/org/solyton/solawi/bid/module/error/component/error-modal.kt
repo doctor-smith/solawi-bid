@@ -15,7 +15,7 @@ import org.evoleq.optics.storage.put
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.application.data.device.DeviceType
+import org.evoleq.compose.style.data.device.DeviceType
 import org.w3c.dom.HTMLElement
 
 @Markup
@@ -24,17 +24,16 @@ fun ErrorModal(
     id: Int,
     texts: Lang.Block,
     modals: Storage<Modals<Int>>,
-
     device: Source<DeviceType>,
+    dataId: String? = null,
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
-    id,
-    modals,
-    device,
-    onOk = {
-
-    },
+    id = id,
+    modals = modals,
+    device = device,
+    onOk = {},
     onCancel = null,
-    texts = texts
+    texts = texts,
+    dataId = dataId,
 ) {
     Div {
         Text(texts["content.message"])
@@ -43,6 +42,13 @@ fun ErrorModal(
 
 
 @Markup
-fun Storage<Modals<Int>>.showErrorModal(texts: Lang.Block, device: Source<DeviceType>) = with(nextId()){
-    put(this to ModalData(ModalType.Error, ErrorModal(this, texts, this@showErrorModal, device)))
+fun Storage<Modals<Int>>.showErrorModal(
+    texts: Lang.Block,
+    device: Source<DeviceType>,
+    dataId: String? = null,
+) = with(nextId()){
+    put(this to ModalData(
+        ModalType.Error,
+        ErrorModal(this, texts, this@showErrorModal, device, dataId)
+    ))
 }

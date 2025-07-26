@@ -8,8 +8,8 @@ import org.solyton.solawi.bid.application.permission.Header
 import org.solyton.solawi.bid.module.authentication.data.api.Login
 import org.solyton.solawi.bid.module.authentication.data.api.RefreshToken
 
-const val username = "developer@alpha-structure.com"
-const val password = "pass1234"
+const val USERNAME = "developer@alpha-structure.com"
+const val PASSWORD = "pass1234"
 
 suspend fun ApplicationTestBuilder.testCall(accessToken: String? = null, url: String = "test") = client.get(url) {
     header(HttpHeaders.ContentType, ContentType.Application.Json)

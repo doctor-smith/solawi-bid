@@ -5,17 +5,17 @@ import io.ktor.util.*
 import org.evoleq.exposedx.transaction.resultTransaction
 import org.evoleq.ktorx.result.Result
 import org.evoleq.math.x
-import org.evoleq.util.Action
+import org.evoleq.ktorx.Action
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.joda.time.DateTime
-import org.solyton.solawi.bid.application.environment.JWT
+import org.solyton.solawi.bid.module.authentication.environment.JWT
 import org.solyton.solawi.bid.module.authentication.data.api.IsLoggedIn
 import org.solyton.solawi.bid.module.authentication.data.api.LoggedInAs
 import org.solyton.solawi.bid.module.authentication.service.generateAccessToken
 import org.solyton.solawi.bid.module.authentication.service.isUuid
-import org.solyton.solawi.bid.module.db.schema.TokenEntity
-import org.solyton.solawi.bid.module.db.schema.TokensTable
+import org.solyton.solawi.bid.module.user.schema.TokenEntity
+import org.solyton.solawi.bid.module.user.schema.TokensTable
 import java.util.UUID
 
 @KtorDsl

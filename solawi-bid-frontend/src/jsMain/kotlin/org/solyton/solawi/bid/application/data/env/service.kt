@@ -7,6 +7,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.browser.window
 
 @Serializable
+@Suppress("ConstructorParameterNaming")
 data class Config(
     val ENVIRONMENT: String,
     val FRONTEND_URL: String,
@@ -40,3 +41,4 @@ suspend fun getEnv(): Environment {
         )
     }
 }
+

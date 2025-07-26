@@ -3,9 +3,23 @@ package org.solyton.solawi.bid.module.usermanagement
 import org.evoleq.exposedx.test.runSimpleH2Test
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
-import org.solyton.solawi.bid.module.db.migrations.setupBasicRolesAndRights
-import org.solyton.solawi.bid.module.db.repository.*
+import org.solyton.solawi.bid.application.data.db.migrations.setupBasicRolesAndRights
 import org.solyton.solawi.bid.module.db.schema.*
+import org.solyton.solawi.bid.module.permission.schema.Contexts
+import org.solyton.solawi.bid.module.permission.schema.Rights
+import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
+import org.solyton.solawi.bid.module.permission.schema.Roles
+import org.solyton.solawi.bid.module.user.schema.repository.addUser
+import org.solyton.solawi.bid.module.user.schema.repository.ancestors
+import org.solyton.solawi.bid.module.user.schema.repository.createChild
+import org.solyton.solawi.bid.module.user.schema.repository.createRootOrganization
+import org.solyton.solawi.bid.module.user.schema.repository.getChildren
+import org.solyton.solawi.bid.module.user.schema.repository.getOrganizationByName
+import org.solyton.solawi.bid.module.user.schema.repository.removeChild
+import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
+import org.solyton.solawi.bid.module.user.schema.UserEntity
+import org.solyton.solawi.bid.module.user.schema.UserOrganization
+import org.solyton.solawi.bid.module.user.schema.UsersTable
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -27,11 +41,8 @@ class OrganizationTests {
 
     @DbFunctional@Test fun createOrganization() = runSimpleH2Test(*neededTables){
         setupBasicRolesAndRights()
-        val user = UserEntity.new {
-            password = "password"
-            username = "username"
-        }
-        val organization = createRootOrganization(organizationName, user)
+
+        val organization = createRootOrganization(organizationName)
 
 
         assertEquals(0, organization.left)
@@ -47,7 +58,7 @@ class OrganizationTests {
             password = "password"
             username = "username"
         }
-        val organization = createRootOrganization(organizationName, user)
+        val organization = createRootOrganization(organizationName)
 
         organization.addUser(user)
 
@@ -58,11 +69,8 @@ class OrganizationTests {
 
     @DbFunctional@Test fun createChild() = runSimpleH2Test(*neededTables){
         setupBasicRolesAndRights()
-        val user = UserEntity.new {
-            password = "password"
-            username = "username"
-        }
-        var organization = createRootOrganization(organizationName, user)
+
+        var organization = createRootOrganization(organizationName)
 
         val childOrganization = "TEST_CHILD_ORGANIZATION"
         val child = organization.createChild(childOrganization)
@@ -105,11 +113,8 @@ class OrganizationTests {
 
     @DbFunctional@Test fun ancestors() = runSimpleH2Test(*neededTables){
         setupBasicRolesAndRights()
-        val user = UserEntity.new {
-            password = "password"
-            username = "username"
-        }
-        val organization = createRootOrganization(organizationName, user)
+
+        val organization = createRootOrganization(organizationName)
         val childOrganization = "TEST_CHILD_ORGANIZATION"
         val child = organization.createChild(childOrganization)
         val ancestors = child.ancestors().map{it.name}
@@ -120,11 +125,8 @@ class OrganizationTests {
 
     @DbFunctional@Test fun removeChild() = runSimpleH2Test(*neededTables){
         setupBasicRolesAndRights()
-        val user = UserEntity.new {
-            password = "password"
-            username = "username"
-        }
-        val organization = createRootOrganization(organizationName, user)
+
+        val organization = createRootOrganization(organizationName)
         val childOrganization = "TEST_CHILD_ORGANIZATION"
         val child = organization.createChild(childOrganization)
 

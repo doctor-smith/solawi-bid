@@ -1,7 +1,7 @@
 services:
 
   solawi-bid_frontend:
-    image: ghcr.io/joystick01/solawi-bid/frontend:latest
+    image: ghcr.io/doctor-smith/solawi-bid/frontend:latest
     ports:
       - "8080:80"
     environment:
@@ -18,7 +18,7 @@ services:
       start_period: 2m
 
   solawi-bid_backend:
-    image: ghcr.io/joystick01/solawi-bid/backend:latest
+    image: ghcr.io/doctor-smith/solawi-bid/backend:latest
     ports:
       - "8081:8080"
     environment:
@@ -34,6 +34,7 @@ services:
       - DATABASE_PASSWORD=secure
       - APPLICATION_OWNER_USERNAME=owner@solyton.org
       - APPLICATION_OWNER_PASSWORD=$$2a$$10$$H0EpJArQ6jHtxQgdyt8sr.Ru6OgkJJDTR9pFfZO5fKX4YmD6.BBYS
+      - SMTP_PASSWORD=very-secure-password
     container_name: solawi-bid_backend
     depends_on:
       solawi-bid_database:

@@ -17,7 +17,7 @@ import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.application.data.device.DeviceType
+import org.evoleq.compose.style.data.device.DeviceType
 import org.solyton.solawi.bid.module.cookie.data.CookieDisclaimer
 import org.solyton.solawi.bid.module.cookie.data.isConfirmed
 import org.solyton.solawi.bid.module.cookie.data.isShown
@@ -44,7 +44,7 @@ fun CookieDisclaimer(
                     texts,
                     modals,
                     cookieDisclaimer,
-                    device
+                    device,
                 )
             )
         }
@@ -67,6 +67,7 @@ fun CookieDisclaimerModal(
         id,
         modals,
         device,
+        dataId = "cookie-disclaimer",
         onOk = {
             (cookieDisclaimer * isConfirmed).write(true)
             (cookieDisclaimer * isShown).write(false)

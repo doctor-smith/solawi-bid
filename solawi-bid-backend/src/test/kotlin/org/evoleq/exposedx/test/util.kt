@@ -10,6 +10,12 @@ object Config {
         const val user: String = "root"
         const val password: String = ""
     }
+    object H2NoClose {
+        const val url: String = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
+        const val driver: String = "org.h2.Driver"
+        const val user: String = "root"
+        const val password: String = ""
+    }
 }
 
 fun runSimpleH2Test(vararg tables: Table, block: Transaction.()->Unit) {

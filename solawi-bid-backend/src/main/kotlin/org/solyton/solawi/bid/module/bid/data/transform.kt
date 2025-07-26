@@ -2,13 +2,12 @@ package org.solyton.solawi.bid.module.bid.data
 
 import kotlinx.datetime.LocalDate
 import org.solyton.solawi.bid.module.bid.data.api.*
-import org.solyton.solawi.bid.module.db.schema.AcceptedRound
-import org.solyton.solawi.bid.module.db.schema.AcceptedRoundEntity
-import org.solyton.solawi.bid.module.db.schema.AcceptedRoundsTable
-import org.solyton.solawi.bid.module.db.schema.BidderDetailsSolawiTuebingenEntity
-import org.solyton.solawi.bid.module.db.schema.Auction as AuctionEntity
-import org.solyton.solawi.bid.module.db.schema.BidRound as BidRoundEntity
-import org.solyton.solawi.bid.module.db.schema.Round as RoundEntity
+import org.solyton.solawi.bid.module.bid.schema.AcceptedRound
+import org.solyton.solawi.bid.module.bid.schema.AcceptedRoundEntity
+import org.solyton.solawi.bid.module.bid.schema.AcceptedRoundsTable
+import org.solyton.solawi.bid.module.bid.schema.Auction as AuctionEntity
+import org.solyton.solawi.bid.module.bid.schema.BidRound as BidRoundEntity
+import org.solyton.solawi.bid.module.bid.schema.Round as RoundEntity
 
 fun List<AuctionEntity>.toApiType(): List<Auction> = map {
     it.toApiType()
@@ -45,6 +44,7 @@ fun RoundEntity.toApiType(): Round = Round(
     state
 )
 
+@Suppress("UNUSED_PARAMETER")
 fun BidRoundEntity.toApiType(fullInfo: Unit? = null): BidRound = BidRound(
     id.value.toString(),
     round.toApiType(),

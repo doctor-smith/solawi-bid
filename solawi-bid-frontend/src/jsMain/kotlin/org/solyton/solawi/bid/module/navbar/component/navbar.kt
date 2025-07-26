@@ -17,23 +17,24 @@ import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Option
 import org.jetbrains.compose.web.dom.Select
 import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.application.data.device.DeviceType
-import org.solyton.solawi.bid.application.ui.page.login.effect.TriggerLogoutEffect
+import org.evoleq.compose.style.data.device.DeviceType
+import org.evoleq.optics.storage.Action
+import org.solyton.solawi.bid.module.navbar.effect.TriggerLogoutEffect
+import org.solyton.solawi.bid.module.authentication.data.api.Logout
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.data.locale
 import org.solyton.solawi.bid.module.i18n.data.locales
-import org.solyton.solawi.bid.module.navbar.data.NavBar
-import org.solyton.solawi.bid.module.navbar.data.i18n
+import org.solyton.solawi.bid.module.navbar.data.navbar.NavBar
+import org.solyton.solawi.bid.module.navbar.data.navbar.i18n
 
 @Markup
 @Composable
 @Suppress("FunctionName")
 fun NavBar(
-    storage: Storage<Application>,
     navBar: Storage<NavBar>,
-    device: Source<DeviceType>
+    device: Source<DeviceType>,
+    logoutAction: Action<NavBar, Logout, Unit>
 ) = Div({
     style {
         paddingTop(10.px)
@@ -97,12 +98,11 @@ fun NavBar(
                 Option("Logout", {
 
                     onClick {
-                        TriggerLogoutEffect(storage )
+                        TriggerLogoutEffect(navBar, logoutAction )
                     }
                 }) {
                     Text("Logout")
                 }
             }
         }
-
 }

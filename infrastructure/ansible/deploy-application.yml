@@ -140,6 +140,7 @@
           DATABASE_PASSWORD: "{{ mysql_password }}"
           APPLICATION_OWNER_USERNAME: "{{ application_owner_username }}"
           APPLICATION_OWNER_PASSWORD: "{{ application_owner_password }}"
+          SMTP_PASSWORD: "{{ smtp_password }}"
         labels: "{{ dynamic_dict }}"
         healthcheck:
           test: "curl 'http://localhost:8080/login' -f -X OPTIONS -H 'Access-Control-Request-Method: POST' -H 'Origin: http://localhost'"

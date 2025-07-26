@@ -32,7 +32,7 @@ class AuthReceiveTest {
                 }
             }
             // login
-            val response = login(username, password)
+            val response = login(USERNAME, PASSWORD)
             assertTrue { response.status == HttpStatusCode.OK }
 
             val result = Json.decodeFromString(
@@ -52,7 +52,7 @@ class AuthReceiveTest {
             )
             assertIs<Result.Success<Login>>(testCallResult)
 
-            assertEquals(username, testCallResult.data.username)
+            assertEquals(USERNAME, testCallResult.data.username)
         }
     }
 
@@ -67,7 +67,7 @@ class AuthReceiveTest {
                 }
             }
             // login
-            val response = login(username, password)
+            val response = login(USERNAME, PASSWORD)
             assertTrue { response.status == HttpStatusCode.OK }
 
             val result = Json.decodeFromString(
@@ -87,7 +87,7 @@ class AuthReceiveTest {
             )
             assertIs<Result.Success<Login>>(testCallResult)
 
-            assertEquals(username, testCallResult.data.username)
+            assertEquals(USERNAME, testCallResult.data.username)
         }
     }
 }

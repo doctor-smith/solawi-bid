@@ -8,16 +8,22 @@ import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.ktorx.result.map
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
-import org.evoleq.util.DbAction
-import org.evoleq.util.KlAction
+import org.evoleq.ktorx.DbAction
+import org.evoleq.ktorx.KlAction
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.deleteWhere
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.data.toApiType
-import org.solyton.solawi.bid.module.db.BidRoundException
-import org.solyton.solawi.bid.module.db.schema.*
+import org.solyton.solawi.bid.module.bid.schema.AuctionDetailsSolawiTuebingen
+import org.solyton.solawi.bid.module.bid.schema.AuctionDetailsSolawiTuebingenTable
+import org.solyton.solawi.bid.module.bid.schema.AuctionEntity
+import org.solyton.solawi.bid.module.bid.schema.AuctionType
+import org.solyton.solawi.bid.module.bid.schema.AuctionTypes
+import org.solyton.solawi.bid.module.bid.schema.Auctions
+import org.solyton.solawi.bid.module.bid.schema.BidderDetails
+import org.solyton.solawi.bid.module.bid.exception.BidRoundException
 import java.util.*
 import org.solyton.solawi.bid.module.bid.data.api.Auctions as ApiAuctions
 
@@ -130,9 +136,10 @@ val UpdateAuctions = KlAction<Result<UpdateAuctions>, Result<GetAuctions>> {
     }
 }
 
+
+@Suppress("UNUSED_PARAMETER")
 fun Transaction.updateAuctions(auctions: List<ApiAuction>) {
-    TODO("Function updateAuctions not implemented yet!")
-    TODO("Do not forget validation! Auctions could be accepted")
+    TODO("Function updateAuctions not implemented yet! Do not forget validation! Auctions could be accepted")
 }
 
 @MathDsl
