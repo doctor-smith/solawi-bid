@@ -32,11 +32,11 @@ class LoginTest {
     @Test
     fun test_login() {
         page.navigate("http://localhost:8080/login")
-        page.submit("cookie-disclaimer.modal.submit-button")
+        page.clickOn("cookie-disclaimer.modal.submit-button")
 
         page.put("login-form.input.username", user)
         page.put("login-form.input.password", password)
-        page.submit("login-form.submit-button")
+        page.clickOn("login-form.submit-button")
 
         page.waitForURL("**/dashboard")
 
@@ -47,11 +47,11 @@ class LoginTest {
     @Test
     fun test_login_userDoesNotExist() {
         page.navigate("http://localhost:8080/login")
+        page.clickOn("cookie-disclaimer.modal.submit-button")
 
-        page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Ok")).click()
-        page.getByRole(AriaRole.TEXTBOX, Page.GetByRoleOptions().setName("Nutzername")).fill("Tom")
-        page.getByRole(AriaRole.TEXTBOX, Page.GetByRoleOptions().setName("Passwort")).fill("1234")
-        page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Login")).click()
+        page.put("login-form.input.username", "Tom")
+        page.put("login-form.input.password", "1234")
+        page.clickOn("login-form.submit-button")
 
         val errorMessage = page.waitForSelector("text=User with username Tom does not exists")
 

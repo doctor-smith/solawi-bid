@@ -22,10 +22,11 @@ class TestUtils {
 
         try {
             page.navigate("http://localhost:8080/login")
-            page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Ok")).click()
-            page.getByRole(AriaRole.TEXTBOX, Page.GetByRoleOptions().setName("Nutzername")).fill(user)
-            page.getByRole(AriaRole.TEXTBOX, Page.GetByRoleOptions().setName("Passwort")).fill(password)
-            page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Login")).click()
+            page.clickOn("cookie-disclaimer.modal.submit-button")
+
+            page.put("login-form.input.username", user)
+            page.put("login-form.input.password", password)
+            page.clickOn("login-form.submit-button")
             page.waitForURL("**/dashboard")
 
             context.storageState(

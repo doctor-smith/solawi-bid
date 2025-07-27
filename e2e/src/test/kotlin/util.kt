@@ -7,4 +7,4 @@ fun Page.getByDataId(testId: String): Locator {
 
 fun Page.put(testId: String, value: String) = getByDataId(testId).fill(value)
 
-fun Page.submit(testId: String) = getByDataId(testId).click()
+fun Page.clickOn(testId: String) = getByDataId(testId).click()
