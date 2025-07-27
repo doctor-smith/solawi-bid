@@ -19,6 +19,7 @@ class LoginTest {
         playwright = Playwright.create()
         browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
         page = browser.newPage()
+        // get data from environment
         user = System.getenv("TEST_USER")
         password = System.getenv("TEST_USER_PASSWORD")
     }
@@ -33,7 +34,8 @@ class LoginTest {
     fun test_login() {
         page.navigate("http://localhost:8080/login")
         page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Ok")).click()
-        page.getByRole(AriaRole.TEXTBOX, Page.GetByRoleOptions().setName("Nutzername")).fill(user)
+        page.getByDataId("login-form.input.username").fill(user)
+        // page.getByRole(AriaRole.TEXTBOX, Page.GetByRoleOptions().setName("Nutzername")).fill(user)
         page.getByRole(AriaRole.TEXTBOX, Page.GetByRoleOptions().setName("Passwort")).fill(password)
         page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Login")).click()
 
