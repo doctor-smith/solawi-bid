@@ -17,6 +17,7 @@ class TestUtils {
         val context = browser.newContext()
         val page = context.newPage()
 
+        // get data from environment
         user = System.getenv("TEST_USER")
         password = System.getenv("TEST_USER_PASSWORD")
 
