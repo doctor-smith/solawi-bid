@@ -19,6 +19,7 @@ class LoginTest {
         playwright = Playwright.create()
         browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
         page = browser.newPage()
+        // get data from environment
         user = System.getenv("TEST_USER")
         password = System.getenv("TEST_USER_PASSWORD")
     }
