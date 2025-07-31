@@ -1,0 +1,18 @@
+FROM gradle:8-jdk17-noble AS build
+
+WORKDIR /build
+COPY . /build
+
+RUN --mount=type=cache,target=/home/gradle/.gradle gradle solawi-bid-frontend:build -x jsBrowserTest
+
+FROM nginx:1-alpine
+
+ENV ENVIRONMENT="D"
+ENV FRONTEND_URL="http://localhost"
+ENV FRONTEND_PORT="8080"
+ENV BACKEND_URL="http://localhost"
+ENV BACKEND_PORT="8081"
+
+COPY infrastructure/nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /build/solawi-bid-frontend/build/dist/js/productionExecutable/ /usr/share/nginx/html
+CMD ["sh", "-c", "envsubst < /usr/share/nginx/html/config.json.template > /usr/share/nginx/html/config.json && nginx -g 'daemon off;'"]

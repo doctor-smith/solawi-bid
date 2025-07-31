@@ -77,3 +77,68 @@ Instead of manually compiling and executing a Kotlin/JS project every time you w
 
 # solawi-bid
 - [Frontend Notes](./solawi-bid-frontend/Notes.md)
+
+# CICD
+
+## Provisioning a Server
+
+to provision a server, you can use the install-server github action.
+the following inputs are required:
+
+- vars.SERVER_ADDRESS: the address of the server, e.g. `solyton.org`
+- vars.SERVER_USER: the user to connect to the server, e.g. `root` **This User needs passwordless sudo acess for ansible to work**
+- secrets.SERVER_KEY: the ssh key to connect to the server
+
+## Continuous Deployment
+
+on every push the project is built and deployed to the server.
+with the following rules:
+
+normal push: published to d.solyton.org
+push to main: published to q.solyton.org
+push to release/tag: published to solyton.org
+
+the following inputs are required:
+
+- vars.SERVER_ADDRESS: the address of the server, e.g. `solyton.org`
+- vars.SERVER_USER: the user to connect to the server, e.g. `root` **This User needs passwordless sudo acess for ansible to work**
+- secrets.APPLICATION_OWNER_PASSWORD_D
+- secrets.APPLICATION_OWNER_PASSWORD_P
+- secrets.APPLICATION_OWNER_PASSWORD_Q
+- secrets.JWT_SECRET_D
+- secrets.JWT_SECRET_P
+- secrets.JWT_SECRET_Q
+- secrets.MYSQL_PASSWORD_D
+- secrets.MYSQL_PASSWORD_P
+- secrets.MYSQL_PASSWORD_Q
+- secrets.SERVER_KEY
+
+# Troubleshooting
+
+## Connecting to the traefik dashboard
+
+Because the traefik dashboard is not secured, it is only accessible over an ssh tunnel.
+
+```shell
+ssh <user>@solyton.org -L 8080:localhost:8080
+```
+
+Then you can access the dashboard at `http://localhost:8080/dashborad` in your browser.
+
+## Accessing the MySQL databases
+
+For the same reason as the traefik dashboard, the MySQL databases are only accessible over an ssh tunnel.
+Because we have three databases, docker maps the databases to different random ports.
+To find out which port is mapped to which database, you can use the following command after logging into the server:
+
+```shell
+docker ps --filter "name=solawi-bid_database" --format "table {{.Names}}\t{{.Ports}}"
+```
+
+Then you can create an ssh tunnel for the database you want to access:
+
+```shell
+ssh <user>@solyton.org -L 3306:localhost:<port>
+```
+
+Then you can access the database with your favorite MySQL client e.g. DBeaver on `localhost:3306`.
