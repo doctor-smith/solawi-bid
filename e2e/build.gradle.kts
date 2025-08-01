@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    id("org.evoleq.exposedx.migration")
 }
 
 repositories {
@@ -7,6 +8,7 @@ repositories {
 }
 
 dependencies {
+    testImplementation(project(":solawi-bid-backend"))
     testImplementation("com.microsoft.playwright:playwright:1.51.0")
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -30,6 +32,7 @@ tasks.test {
         events("passed", "skipped", "failed")
     }
 }
+
 tasks.register<JavaExec>("installPlaywright") {
     group = "playwright"
     description = "Installiert die Playwright-Browser"
