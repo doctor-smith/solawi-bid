@@ -9,7 +9,6 @@ import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
-import org.solyton.solawi.bid.application.data.Application
 import org.jetbrains.compose.web.dom.*
 import org.jetbrains.letsPlot.*
 import org.jetbrains.letsPlot.frontend.JsFrontendUtil
@@ -18,9 +17,10 @@ import org.jetbrains.letsPlot.intern.Plot
 import org.jetbrains.letsPlot.label.labs
 import org.jetbrains.letsPlot.scale.scaleXDiscrete
 import org.jetbrains.letsPlot.scale.scaleYContinuous
-import org.solyton.solawi.bid.application.ui.style.wrap.Wrap
-import org.solyton.solawi.bid.module.bid.data.Round
-import org.solyton.solawi.bid.module.bid.data.bidRoundEvaluation
+import org.solyton.solawi.bid.module.bid.data.BidApplication
+import org.solyton.solawi.bid.module.style.wrap.Wrap
+import org.solyton.solawi.bid.module.bid.data.bidround.Round
+import org.solyton.solawi.bid.module.bid.data.bidround.bidRoundEvaluation
 import org.solyton.solawi.bid.module.separator.LineSeparator
 import org.solyton.solawi.bid.module.bid.service.roundTo
 import org.w3c.dom.HTMLElement
@@ -64,8 +64,8 @@ fun createHistogram(
 @Composable
 @Suppress("FunctionName")
 fun BidRoundEvaluation(
-    storage: Storage<Application>,
-    round: Lens<Application, Round>
+    storage: Storage<BidApplication>,
+    round: Lens<BidApplication, Round>
 ) {
     // Checkbox Variables
     var showStandardBidsTotal by remember { mutableStateOf(true) }
@@ -155,7 +155,7 @@ fun BidRoundEvaluation(
         Wrap {
             H4 { Text(headingText) }
             ReadOnlyProperty(Property("Zielsumme", evaluation.auctionDetails.targetAmount))
-            ReadOnlyProperty(Property("Erreichte Summe", evaluation.totalSumOfWeightedBids),)
+            ReadOnlyProperty(Property("Erreichte Summe", evaluation.totalSumOfWeightedBids))
             Div(attrs = { style {
                 width(50.percent)
                 padding(0.px)
