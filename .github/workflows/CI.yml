@@ -1,4 +1,5 @@
 name: Continuous Integration
+run-name: Continuous Integration ${{ startsWith(github.ref, 'refs/tags/') && 'Main -> Prod (P)' || (github.ref == 'refs/heads/main' && 'Main -> Staging (Q)' || 'Feature -> Dev (D)') }}
 
 on:
   push:
@@ -7,6 +8,11 @@ permissions:
   contents: read
   packages: write
   id-token: write
+
+concurrency:
+  group: ci-${{ startsWith(github.ref, 'refs/tags/') && 'P' || (github.ref == 'refs/heads/main' && 'Q' || 'D') }}
+  cancel-in-progress: false
+
 
 jobs:
   build-Frontend:
