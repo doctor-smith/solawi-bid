@@ -40,6 +40,8 @@ kotlin {
                 // kotlin coroutines
                 implementation(libs.kotlinx.coroutines.core)
 
+                implementation("org.jetbrains.lets-plot:lets-plot-kotlin-js:4.10.0")
+
                 // ktor client
                 implementation(libs.ktor.client.core)
                 implementation(libs.ktor.client.js)

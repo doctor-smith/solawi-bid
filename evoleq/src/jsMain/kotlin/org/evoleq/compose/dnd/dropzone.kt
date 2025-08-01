@@ -68,7 +68,7 @@ fun readFileContent(file: File, onContentRead: (String) -> Unit) {
         }
     }
     reader.onerror = {
-        console.error("Error reading file: ${file.name}")
+        console.error("Error reading file: ${file.name}", reader.error)
     }
     reader.readAsText(file) // You can also use `readAsArrayBuffer` or `readAsDataURL`
 }
