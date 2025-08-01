@@ -38,3 +38,10 @@ tasks.register<JavaExec>("installPlaywright") {
     args = listOf("install", "--with-deps")
 }
 
+tasks.withType<Test>().configureEach {
+    onlyIf {
+        val requestedTasks = gradle.startParameter.taskNames
+        // Disable tests if `build` is requested and this test task wasn't explicitly requested
+        !("build" in requestedTasks && name !in requestedTasks)
+    }
+}
