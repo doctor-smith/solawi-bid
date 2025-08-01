@@ -21,6 +21,8 @@ services:
     image: ghcr.io/doctor-smith/solawi-bid/backend:latest
     ports:
       - "8081:8080"
+    env_file:
+      - solawi-bid-backend/.env
     environment:
       - KTOR_ENV=dev
       - BACKEND_PORT=8080
