@@ -4,29 +4,29 @@ import org.evoleq.exposedx.transaction.resultTransaction
 import org.evoleq.ktorx.result.*
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
-import org.evoleq.util.Contextual
-import org.evoleq.util.DbAction
-import org.evoleq.util.KlAction
+import org.evoleq.ktorx.Contextual
+import org.evoleq.ktorx.DbAction
+import org.evoleq.ktorx.KlAction
 import org.jetbrains.exposed.sql.*
 import org.solyton.solawi.bid.module.permission.schema.Contexts
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.permission.schema.Rights
 import org.solyton.solawi.bid.module.permission.schema.RightsTable
-import org.solyton.solawi.bid.module.user.schema.UserRoleContext
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
-import org.solyton.solawi.bid.shared.ValueWithDescription
+import org.evoleq.value.StringValueWithDescription
 import java.util.UUID
 
 @MathDsl
 @Suppress("FunctionName")
 fun <T> IsGranted(right: String, accessCheckNeeded: (Contextual<T>)->Boolean = {true}): KlAction<Result<Contextual<T>>,Result<Contextual<T>>> = KlAction {
-    result -> DbAction { database -> result bindSuspend  { data ->
+    result -> DbAction { database -> result bindSuspend  { contextual ->
         resultTransaction(database) {
             when {
-                !accessCheckNeeded(data) -> data
-                isGranted(data.userId, UUID.fromString(data.context), right) -> data
+                !accessCheckNeeded(contextual) -> contextual
+                isGranted(contextual.userId, UUID.fromString(contextual.context), right) -> contextual
                 else -> throw PermissionException.AccessDenied
             }
         }
@@ -81,7 +81,7 @@ fun Transaction.isGranted(userId: UUID, contextId: UUID, right: String): Boolean
     return isGranted(userId, contextId, rightId.value)
 }
 
-fun Transaction.isGranted(userId: UUID, contextId: UUID, right: ValueWithDescription): Boolean {
+fun Transaction.isGranted(userId: UUID, contextId: UUID, right: StringValueWithDescription): Boolean {
     val rightId = RightEntity.find { RightsTable.name eq right.value }.firstOrNull()?.id
         ?: throw PermissionException.NoSuchRight(right.value)
 

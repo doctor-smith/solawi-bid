@@ -9,12 +9,12 @@ import org.slf4j.event.Level
 import org.solyton.solawi.bid.application.environment.setupEnvironment
 import org.solyton.solawi.bid.application.pipeline.*
 import org.solyton.solawi.bid.application.routing.setupRouting
-import org.solyton.solawi.bid.module.db.migrations.dbMigrations
+import org.solyton.solawi.bid.application.data.db.migrations.applicationMigrations
 
 fun Application.solawiBid(test: Boolean = false) {
         val environment = setupEnvironment()
         if(!test) {
-            val database = installDatabase(environment, dbMigrations)
+            val database = installDatabase(environment, applicationMigrations)
             installUsers(environment, database)
         }
         installSerializers()

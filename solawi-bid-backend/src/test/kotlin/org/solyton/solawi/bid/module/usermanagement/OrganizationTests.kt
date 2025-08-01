@@ -3,7 +3,7 @@ package org.solyton.solawi.bid.module.usermanagement
 import org.evoleq.exposedx.test.runSimpleH2Test
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
-import org.solyton.solawi.bid.module.db.migrations.setupBasicRolesAndRights
+import org.solyton.solawi.bid.application.data.db.migrations.setupBasicRolesAndRights
 import org.solyton.solawi.bid.module.db.schema.*
 import org.solyton.solawi.bid.module.permission.schema.Contexts
 import org.solyton.solawi.bid.module.permission.schema.Rights

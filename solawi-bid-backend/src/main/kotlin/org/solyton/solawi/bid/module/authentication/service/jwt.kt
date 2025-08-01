@@ -4,7 +4,7 @@ package org.solyton.solawi.bid.module.authentication.service
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
-import org.solyton.solawi.bid.application.environment.JWT
+import org.solyton.solawi.bid.module.authentication.environment.JWT
 import java.util.*
 
 

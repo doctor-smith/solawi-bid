@@ -1,7 +1,6 @@
 package org.evoleq.optics.storage
 
 import kotlinx.coroutines.flow.MutableSharedFlow
-import org.evoleq.language.BasePath
 import org.evoleq.optics.lens.Lens
 
 
@@ -26,4 +25,8 @@ operator fun <Whole: Any, Part: Any> MutableSharedFlow<Action<Whole, *, *>>.time
 
 fun <Base:Any> ActionDispatcher(dispatch: suspend (Action<Base, *,*>)->Unit): ActionDispatcher<Base> = object : ActionDispatcher<Base> {
     override suspend fun <I : Any, O : Any> dispatch(action: Action<Base, I, O>) = dispatch(action)
+}
+
+suspend fun <Base: Any> Storage<ActionDispatcher<Base>>.dispatch(action: Action<Base, *, *>) {
+    read().dispatch(action)
 }

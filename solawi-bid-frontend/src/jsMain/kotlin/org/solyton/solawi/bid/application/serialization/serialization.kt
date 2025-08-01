@@ -90,10 +90,16 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<ChangePassword>(ChangePassword.serializer())
 
         // Permissions
+        add<ReadRightRoleContexts>(ReadRightRoleContexts.serializer())
         add<ReadRightRoleContextsOfUser>(ReadRightRoleContextsOfUser.serializer())
         add<ReadRightRoleContextsOfUsers>(ReadRightRoleContextsOfUsers.serializer())
+        add<ReadParentChildRelationsOfContexts>(ReadParentChildRelationsOfContexts.serializer())
+        add<ParentChildRelationsOfContexts>(ParentChildRelationsOfContexts.serializer())
+        add<ParentChildRelationsOfContext>(ParentChildRelationsOfContext.serializer())
         add<Context>(Context.serializer())
+        add<Contexts>(Contexts.serializer())
         add<Role>(Role.serializer())
         add<Right>(Right.serializer())
+        add<UserToContextsMap>(UserToContextsMap.serializer())
     }
 } }

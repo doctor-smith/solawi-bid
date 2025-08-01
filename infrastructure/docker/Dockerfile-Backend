@@ -1,0 +1,16 @@
+FROM gradle:8-jdk17-noble AS build
+
+WORKDIR /build
+COPY . /build
+
+RUN --mount=type=cache,target=/home/gradle/.gradle gradle solawi-bid-backend:buildFatJar
+
+
+
+FROM eclipse-temurin:17
+
+WORKDIR /app
+COPY --from=build /build/solawi-bid-backend/build/resources/main/application.env.conf /app/application.conf
+COPY --from=build /build/solawi-bid-backend/build/libs/*-all.jar /app/server.jar
+
+ENTRYPOINT ["java","-jar","/app/server.jar", "-config=/app/application.conf"]

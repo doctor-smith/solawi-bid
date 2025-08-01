@@ -7,8 +7,8 @@ import org.jetbrains.compose.web.css.marginTop
 import org.jetbrains.compose.web.css.padding
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.*
-import org.solyton.solawi.bid.application.ui.style.font.DesktopFonts
-import org.solyton.solawi.bid.application.ui.style.font.setFont
+import org.solyton.solawi.bid.module.style.font.DesktopFonts
+import org.solyton.solawi.bid.module.style.font.setFont
 
 @Markup
 @Composable

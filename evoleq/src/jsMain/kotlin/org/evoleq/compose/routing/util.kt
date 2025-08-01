@@ -110,7 +110,7 @@ fun Routes.match(path: String): ComposableRoute? = with(
     path.dropWhile { it == '/' }.dropLastWhile { it == '/' }.split("/").map{it.trim()}.filter { it != "" }
 ) {
     if(component != null) {
-        if(size == 0) {
+        if(isEmpty()) {
             ComposableRoute(listOf(), listOf(), component)
         } else {
             this@match.match(ComposableRoute(listOf(), listOf(), component) x this).first

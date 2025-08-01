@@ -3,9 +3,9 @@ import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 plugins {
     alias(libs.plugins.mpp)
     alias(libs.plugins.compose)
-//    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.serialization)
     id("org.evoleq.math.cat.gradle.optics")
+    id("org.evoleq.architecture.dependency")
     alias(libs.plugins.detekt)
     alias(libs.plugins.kover)
 }
@@ -101,8 +101,6 @@ kotlin {
                 // Serialization
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.ktor.client.serialization)
-
-
             }
 
             val commonTest by getting {
@@ -114,15 +112,13 @@ kotlin {
             }
         }
     }
-
-
 }
 
 optics{
     sourceSet = "jsMain"
     defaultPackage = "org.solyton.solawi.bid.data"
 }
-tasks.withType<Test>() {
+tasks.withType<Test> {
     reports {
         junitXml.required = true
         html.required = true
@@ -133,13 +129,11 @@ tasks.register<Test>("commonTest") {
     testClassesDirs =  files("src/commonTest/kotlin")
  //   classpath = sourceSets["commonTest"].runtimeClasspath
 }
-/*
+
 compose {
-    // composeCompilerPlugin.set("1.5.12")
-     kotlinCompilerPlugin.set("androidx.compose.compiler:compiler:1.5.12")
+    web{ }
 }
 
- */
 // a temporary workaround for a bug in jsRun invocation - see https://youtrack.jetbrains.com/issue/KT-48273
 afterEvaluate {
     rootProject.extensions.configure<NodeJsRootExtension> {
@@ -152,10 +146,9 @@ afterEvaluate {
 
 detekt {
     toolVersion = libs.versions.detekt.get()
-    config = files("$rootDir/detekt/detekt.yml")
+    config.setFrom( files("$rootDir/detekt/detekt.yml"))
     buildUponDefaultConfig = true
     allRules = false
-
 }
 tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineJsMain") {
     baseline.set(file("detekt/detekt-baseline-js-main.xml"))
@@ -169,4 +162,30 @@ tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselin
 }
 tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektJsTest") {
     baseline.set(file("detekt/detekt-baseline-js-test.xml"))
+}
+
+dependencyAnalyser {
+    analyse("frontend") {
+        domain = "org.solyton.solawi.bid"
+        sourceSet = "jsMain"
+        modules = setOf(
+            "authentication",
+            "bid",
+            "context",
+            "cookie",
+            "error",
+            "i18n",
+            "loading",
+            "localstorage",
+            "mobile",
+            "navbar",
+            "permissions",
+            "qrcode",
+            "separator",
+            "statistics",
+            "user",
+            "style"
+        )
+        checkCyclesBeforeBuild = true
+    }
 }
