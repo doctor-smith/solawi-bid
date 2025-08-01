@@ -117,6 +117,7 @@ jobs:
           full_image_name: ${{ needs.build-Backend.outputs.full_image_name }}
 
   deploy:
+    environment: ${{ startsWith(github.ref, 'refs/tags/') && 'Production' || (github.ref == 'refs/heads/main' && 'Staging' || 'Develop') }}
     name: Deploy Application
     runs-on: ubuntu-latest
     needs: [push-Frontend, push-Backend, build-Frontend, build-Backend]
