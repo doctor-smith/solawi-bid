@@ -165,5 +165,3 @@ jobs:
           server_user: ${{ vars.SERVER_USER }}
           server_key: ${{ secrets.SERVER_KEY }}
           smtp_password: ${{ secrets.SMTP_PASSWORD }}
-          
-
