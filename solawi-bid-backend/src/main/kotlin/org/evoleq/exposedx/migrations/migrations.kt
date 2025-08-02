@@ -11,7 +11,9 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.Transaction
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.experimental.suspendedTransactionAsync
 
 interface Migration {
@@ -81,3 +83,17 @@ suspend fun ArrayList<Database.()-> Migration>.runOn(database: Database): List<B
         }
     }
 
+suspend fun ArrayList<Database.()-> Migration>.revertOn(database: Database): List<Boolean> =
+    mapSuspended {
+        it(database)
+    }.sortedByDescending {
+        it.id
+    }.mapSuspended { migration ->
+        with(migration) {
+            database.down()
+        }
+        MigrationTable.deleteWhere {
+            MigrationTable.migrationId eq migration.id
+        }
+        true
+    }
