@@ -6,18 +6,20 @@
 ### Setup Docker
 First, install Docker on your system. 
 
-### Start Project
-Open a terminal, move to the root folder of the project and run the commands 
-```shell
-./gradlew solawi-bid-backend:clean && \
-./gradlew solawi-bid-backend:build && \
-./gradlew solawi-bid-backend:buildFatJar && \
-./gradlew solawi-bid-frontend:clean && \
-./gradlew solawi-bid-frontend:build && \
-docker compose -p solawi-bid down --remove-orphans && \
-docker compose -p solawi-bid up -d 
-```
+### Start Project locally
+Make sure that the environment variables are set:
+```SMTP_PASSWORD in .env``` under ```solawi-bid-backend``` 
 
+Make shure 
+
+Open a terminal, move to the root folder of the project and run the command
+```shell
+docker compose -f docker-compose.local.yml up -d
+```
+Stop it using command
+```shell
+docker compose down --remove-orphans
+```
 
 
 Access the frontend on
@@ -28,12 +30,6 @@ Access the backend on
 ```
 localhost:8081
 ```
-
-If you need to rebuild frontend or backend use one of the bash scripts in the scripts folder:
-
-- rebuild-backend.sh
-- rebuild-frontend.sh
-- rebuild-be-and-fe.sh
 
 ### Run the backend separately
 Use the command line to run the backend:
