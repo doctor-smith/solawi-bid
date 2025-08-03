@@ -1,10 +1,12 @@
-repositories {
-    mavenLocal()
-    mavenCentral()
-    maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
-    google()
+allprojects {
+    repositories {
+        google()
+        mavenLocal()
+        mavenCentral()
+        maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
+        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    }
 }
-
 
 plugins{
     alias(libs.plugins.jvm) apply false
@@ -12,6 +14,7 @@ plugins{
     alias(libs.plugins.mpp) apply false
     alias(libs.plugins.ktor) apply false
     alias(libs.plugins.compose) apply false
+    alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.shadow) apply false
     id("org.evoleq.exposedx.migration") apply false
     alias(libs.plugins.detekt) apply false
