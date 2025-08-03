@@ -8,6 +8,7 @@ permissions:
   contents: read
   packages: write
   id-token: write
+  checks: write
 
 concurrency:
   group: ci-${{ startsWith(github.ref, 'refs/tags/') && 'P' || (github.ref == 'refs/heads/main' && 'Q' || 'D') }}
