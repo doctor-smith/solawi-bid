@@ -1,0 +1,29 @@
+name: Build Gradle Base Image For Frontend
+on:
+  workflow_dispatch:
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build Chrome Gradle Image
+        run: docker build -t ghcr.io/doctor-smith/gradle-base-frontend:latest -f infrastructure/docker/Dockerfile-Frontend-Base .
+
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Image
+        run: docker push ghcr.io/doctor-smith/gradle-base-frontend:latest
+
+

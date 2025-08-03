@@ -29,7 +29,13 @@ version = libs.versions.solawi.get()
 
 kotlin {
     js(IR) {
-        browser()
+        browser{
+            testTask {
+                useKarma {
+                    useChromeHeadlessNoSandbox()
+                }
+            }
+        }
         binaries.executable()
     }
     sourceSets {

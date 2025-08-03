@@ -4,17 +4,18 @@ WORKDIR /build
 COPY . /build
 
 RUN --mount=type=cache,target=/home/gradle/.gradle \
-    gradle \
+    gradle --continue \
       solawi-bid-backend:test \
       solawi-bid-backend:unitTest \
       solawi-bid-backend:schemaTest \
-      solawi-bid-backend:functionalTest \
+      solawi-bid-backend:dbFunctionalTest \
       solawi-bid-backend:apiTest
 
 RUN --mount=type=cache,target=/home/gradle/.gradle gradle solawi-bid-backend:buildFatJar
 
-RUN mkdir /test-results && \
-    cp -r /build/solawi-bid-backend/build/test-results /test-results
+RUN mkdir -p /test-results && \
+    mkdir -p /build/solawi-bid-backend/build/test-results && \
+    cp -r /build/solawi-bid-backend/build/test-results/. /test-results/
 
 
 FROM eclipse-temurin:17 as production
