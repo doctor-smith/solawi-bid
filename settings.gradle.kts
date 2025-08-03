@@ -10,6 +10,7 @@ include("e2e")
 
 pluginManagement {
     repositories {
+        google()
         mavenLocal()
         gradlePluginPortal()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")

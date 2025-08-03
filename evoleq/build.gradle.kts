@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.mpp)
     alias(libs.plugins.compose)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.serialization)
     `maven-publish`
     alias(libs.plugins.detekt)
@@ -15,9 +16,11 @@ version = libs.versions.solawi.get()
 val kotlinVersion = libs.versions.kotlin
 
 repositories {
+    google()
     mavenLocal()
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    maven ("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
 }
 
 configurations.all {
@@ -41,10 +44,11 @@ kotlin{
     jvm(){ }
     sourceSets {
         val commonMain by getting {
-            kotlin.srcDir("/src/commonMain/kotlin")
+           // kotlin.srcDir("src/commonMain/kotlin")
 
             dependencies {
-                implementation(kotlin("stdlib"))
+                // implementation(kotlin("stdlib-common"))
+                // implementation("org.jetbrains.kotlin:kotlin-stdlib-common:${kotlinVersion}")
                 implementation(libs.benasher.uuid)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.serialization.json)
@@ -108,7 +112,7 @@ publishing {
 
 detekt {
     toolVersion = libs.versions.detekt.get()
-    config = files("$rootDir/detekt/detekt.yml")
+    config.from(files("$rootDir/detekt/detekt.yml"))
     buildUponDefaultConfig = true
     allRules = false
 
@@ -218,3 +222,4 @@ dependencyAnalyser {
         checkAppModalDependencies = false
     }
 }
+
