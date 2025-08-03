@@ -12,3 +12,4 @@ _dev
 *.local.yaml
 dependency-analysis.md
 erm.md
+.kotlin
