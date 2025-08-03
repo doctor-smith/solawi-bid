@@ -69,7 +69,7 @@ Instead of manually compiling and executing a Kotlin/JS project every time you w
 
 - [Compose Multiplatform](https://github.com/JetBrains/compose-jb)
 
-- [Kotlin Compatibility](https://github.com/JetBrains/compose-jb/blob/master/VERSIONING.md#kotlin-compatibility)
+- [Kotlin Compatibility](https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-compatibility-and-versioning.html)
 
 - [Ktor Docs](https://ktor.io/docs/welcome.html)
 
