@@ -1,0 +1,27 @@
+FROM gradle:8-jdk17-noble
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    gnupg \
+    unzip \
+    --no-install-recommends \
+ && rm -rf /var/lib/apt/lists/*
+
+# Add Google Chrome repository
+RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /etc/apt/trusted.gpg.d/google.gpg \
+ && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
+
+# Install Chrome
+RUN apt-get update && apt-get install -y \
+    google-chrome-stable \
+    --no-install-recommends \
+ && rm -rf /var/lib/apt/lists/*
+
+# Confirm installation
+RUN google-chrome --version
+
+# Create dir for rest results
+RUN mkdir -p /test-results && \
+    mkdir -p /build/solawi-bid-frontend/build/test-results

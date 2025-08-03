@@ -1,14 +1,11 @@
-FROM gradle:8-jdk17-noble AS build
+FROM ghcr.io/doctor-smith/gradle-base-frontend:latest AS build
 
 WORKDIR /build
 COPY . /build
 
-RUN --mount=type=cache,target=/home/gradle/.gradle gradle solawi-bid-frontend:jsTest
-RUN --mount=type=cache,target=/home/gradle/.gradle gradle solawi-bid-frontend:build -x jsBrowserTest
+RUN --mount=type=cache,target=/home/gradle/.gradle gradle solawi-bid-frontend:build
 
-RUN mkdir /test-results && \
-    cp -r /build/solawi-bid-frontend/build/test-results /test-results
-
+RUN cp -r /build/solawi-bid-frontend/build/test-results/. /test-results/
 
 FROM nginx:1-alpine as production
 

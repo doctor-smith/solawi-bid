@@ -88,10 +88,12 @@ runs:
     - name: Publish Test Report
       uses: dorny/test-reporter@v2
       with:
-        name: Backend Test Report
+        name: test-report-${{ inputs.image_name }}
+        report-title: Test Report ${{ endswith(inputs.image_name, 'frontend') && 'Frontend' || 'Backend'  }}
         path: ./test-results/**/*.xml
         reporter: java-junit
         fail-on-error: false
+        fail-on-empty: false
 
     # 🏗️ Build final production image (this is what's published)
     - name: Build Docker image (production)
