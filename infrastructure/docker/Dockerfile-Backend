@@ -3,11 +3,12 @@ FROM gradle:8-jdk17-noble AS build
 WORKDIR /build
 COPY . /build
 
-RUN --mount=type=cache,target=/home/gradle/.gradle gradle solawi-bid-backend:buildFatJar
+RUN --mount=type=cache,target=/home/gradle/.gradle gradle solawi-bid-backend:test solawi-bid-backend:buildFatJar
+RUN mkdir /test-results && \
+    cp -r /build/solawi-bid-backend/build/test-results /test-results
 
 
-
-FROM eclipse-temurin:17
+FROM eclipse-temurin:17 as production
 
 WORKDIR /app
 COPY --from=build /build/solawi-bid-backend/build/resources/main/application.env.conf /app/application.conf

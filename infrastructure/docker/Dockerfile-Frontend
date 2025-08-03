@@ -3,9 +3,12 @@ FROM gradle:8-jdk17-noble AS build
 WORKDIR /build
 COPY . /build
 
-RUN --mount=type=cache,target=/home/gradle/.gradle gradle solawi-bid-frontend:build -x jsBrowserTest
+RUN --mount=type=cache,target=/home/gradle/.gradle gradle solawi-bid-frontend:jsTest solawi-bid-frontend:build -x jsBrowserTest
+RUN mkdir /test-results && \
+    cp -r /build/solawi-bid-backend/build/test-results /test-results
 
-FROM nginx:1-alpine
+
+FROM nginx:1-alpine as production
 
 ENV ENVIRONMENT="D"
 ENV FRONTEND_URL="http://localhost"
