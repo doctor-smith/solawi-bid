@@ -3,7 +3,16 @@ FROM gradle:8-jdk17-noble AS build
 WORKDIR /build
 COPY . /build
 
-RUN --mount=type=cache,target=/home/gradle/.gradle gradle solawi-bid-backend:test solawi-bid-backend:buildFatJar
+RUN --mount=type=cache,target=/home/gradle/.gradle \
+    gradle \
+      solawi-bid-backend:test \
+      solawi-bid-backend:unitTest \
+      solawi-bid-backend:schemaTest \
+      solawi-bid-backend:functionalTest \
+      solawi-bid-backend:apiTest
+
+RUN --mount=type=cache,target=/home/gradle/.gradle gradle solawi-bid-backend:buildFatJar
+
 RUN mkdir /test-results && \
     cp -r /build/solawi-bid-backend/build/test-results /test-results
 
