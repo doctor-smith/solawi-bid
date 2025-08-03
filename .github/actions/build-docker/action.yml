@@ -86,7 +86,7 @@ runs:
 
     # Use Dorny test-reporter to show test failures in the UI
     - name: Publish Test Report
-      uses: dorny/test-reporter@v1
+      uses: dorny/test-reporter@v2
       with:
         name: Backend Test Report
         path: ./test-results/**/*.xml
