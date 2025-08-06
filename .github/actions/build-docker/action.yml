@@ -47,31 +47,27 @@ runs:
         echo "full_image_name=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1 | cut -d ':' -f 1)" >> $GITHUB_OUTPUT
         echo "full_image_refrence=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)" >> $GITHUB_OUTPUT
 
-    - name: Cache
-      uses: actions/cache@v4
-      id: cache
+    # 🧪 Build the builder stage with BuildKit + cache
+    - name: Build builder image (with cache)
+      id: builder-build
+      uses: docker/build-push-action@v6
       with:
-        path: cache-mount
-        key: cache-mount-${{ hashFiles( inputs.dockerfile_path ) }}
+        file: ${{ inputs.dockerfile_path }}
+        target: build
+        tags: builder-image
+        outputs: type=docker,dest=builder_image_${{ inputs.image_name }}.tar
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
-    - name: Restore Docker cache mounts
-      uses: reproducible-containers/buildkit-cache-dance@v3
-      with:
-        builder: ${{ steps.setup-buildx.outputs.name }}
-        cache-dir: cache-mount
-        dockerfile: ${{ inputs.dockerfile_path }}
-        skip-extraction: ${{ steps.cache.outputs.cache-hit }}
-
-    # 🧪 Build the builder stage for test extraction
-    - name: Build builder stage for test reports
+    # Load the builder image and extract test results
+    - name: Load builder image
       shell: bash
       run: |
-        docker build \
-          --target=build \
-          -f "${{ inputs.dockerfile_path }}" \
-          -t builder-image .
-  
-        # Create a temp container to extract test reports
+        docker load -i builder_image_${{ inputs.image_name }}.tar
+
+    - name: Extract test results
+      shell: bash
+      run: |
         container_id=$(docker create builder-image)
         mkdir -p ./test-results
         docker cp "$container_id:/test-results" ./test-results || echo "No test results found"
@@ -95,7 +91,7 @@ runs:
         fail-on-error: false
         fail-on-empty: false
 
-    # 🏗️ Build final production image (this is what's published)
+    # 🏗️ Build final production image (with same cache)
     - name: Build Docker image (production)
       id: push
       uses: docker/build-push-action@v6
