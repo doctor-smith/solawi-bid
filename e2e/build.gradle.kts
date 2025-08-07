@@ -23,6 +23,7 @@ java {
 }
 
 tasks.register<JavaExec>("playwright") {
+    workingDir = file("$projectDir")
     classpath(sourceSets["test"].runtimeClasspath)
     mainClass.set("com.microsoft.playwright.CLI")
 }
@@ -31,6 +32,11 @@ tasks.test {
     useJUnitPlatform()
     testLogging {
         events("passed", "skipped", "failed")
+    }
+    reports {
+        junitXml.required.set(true)
+        html.required.set(true)
+        junitXml.outputLocation.set(file(layout.buildDirectory.dir("test-results/test")))
     }
 }
 
