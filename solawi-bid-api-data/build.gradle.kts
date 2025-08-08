@@ -32,7 +32,13 @@ java {
 
 kotlin{
     js(IR) {
-        browser()
+        browser{
+            testTask {
+                useKarma {
+                    useChromeHeadlessNoSandbox()
+                }
+            }
+        }
         binaries.executable()
     }
     jvm(){ }
@@ -81,6 +87,12 @@ kotlin{
                 implementation(libs.kotlin.test.js) // Adds kotlin.test for multiplatform
             }
         }
+    }
+}
+tasks.withType<Test> {
+    reports {
+        junitXml.required = true
+        html.required = true
     }
 }
 

@@ -1,19 +1,45 @@
+# syntax=docker/dockerfile:1.7-labs
+
 FROM ghcr.io/doctor-smith/gradle-base-frontend:latest AS build
 
 WORKDIR /build
-COPY . /build
 
-RUN --mount =type=cache,target=/home/gradle/.gradle gradle solawi-bid-frontend:build -x jsBrowserTest
+# ---- Step 1: Copy Gradle wrapper and build scripts only ----
+COPY gradlew gradle/ ./
+COPY build.gradle* settings.gradle* gradle.properties ./
+
+# ---- Step 2: Pre-download dependencies for better caching ----
 RUN --mount=type=cache,target=/home/gradle/.gradle \
-      gradle --continue \
-        solawi-bid-frontend:jsTest \
-        solawi-bid-api-data:jsTest \
-        evoleq:jsTest
+    --mount=type=cache,target=/root/.gradle \
+    --mount=type=cache,target=.gradle \
+    ./gradlew --no-daemon --stacktrace --parallel --build-cache build -x test -x jsBrowserTest || true
 
-RUN cp -r /build/solawi-bid-frontend/build/test-results/. /test-results/
-RUN cp -r /build/solawi-bid-api-data/build/test-results/. /test-results/
-RUN cp -r /build/evoleq/build/test-results/. /test-results/
+# ---- Step 3: Copy the rest of the source code ----
+COPY . .
 
+# ---- Step 4: Build frontend without running browser tests ----
+RUN --mount=type=cache,target=/home/gradle/.gradle \
+    --mount=type=cache,target=/root/.gradle \
+    --mount=type=cache,target=.gradle \
+    ./gradlew --no-daemon --continue --parallel --build-cache \
+      :solawi-bid-frontend:build -x jsBrowserTest
+
+# ---- Step 5: Run JS tests for selected subprojects ----
+RUN --mount=type=cache,target=/home/gradle/.gradle \
+    --mount=type=cache,target=/root/.gradle \
+    --mount=type=cache,target=.gradle \
+    ./gradlew --no-daemon --continue --parallel --build-cache \
+      :solawi-bid-frontend:jsTest \
+      :solawi-bid-api-data:jsTest \
+      :evoleq:jsTest
+
+# ---- Step 6: Collect test results ----
+RUN mkdir -p /test-results && \
+    cp -r /build/solawi-bid-frontend/build/test-results/. /test-results/ && \
+    cp -r /build/solawi-bid-api-data/build/test-results/. /test-results/ && \
+    cp -r /build/evoleq/build/test-results/. /test-results/
+
+# ---- Final Stage ----
 FROM nginx:1-alpine as production
 
 ENV ENVIRONMENT="D"
