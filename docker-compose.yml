@@ -3,15 +3,18 @@ services:
   solawi-bid_frontend:
     build:
       dockerfile_inline: |
-        FROM gradle:jdk17
+        FROM gradle:8-jdk17-noble
         WORKDIR /app
         COPY . .
-        CMD gradle solawi-bid-frontend:jsBrowserProductionRun
+        CMD ./gradlew solawi-bid-frontend:jsBrowserProductionRun
     pull_policy: build
     ports:
       - "8080:8080"
     volumes:
       - gradle_cache-frontend:/home/gradle/.gradle
+      - gradle_cache_root-frontend:/root/.gradle
+      - gradle_project_cache-frontend:/app/.gradle
+
     healthcheck:
       test: curl --fail http://localhost:8080
       interval: 5s
@@ -20,17 +23,23 @@ services:
       start_period: 60s
 
   solawi-bid_backend:
+    env_file:
+      - solawi-bid-backend/.env
+    environment:
+      - SMTP_PASSWORD
     build:
       dockerfile_inline: |
-        FROM gradle:jdk17
+        FROM gradle:8-jdk17-noble
         WORKDIR /app
         COPY . .
-        CMD gradle solawi-bid-backend:run
+        CMD ./gradlew solawi-bid-backend:run
     pull_policy: build
     ports:
       - "8081:8081"
     volumes:
       - gradle_cache-backend:/home/gradle/.gradle
+      - gradle_cache_root-backend:/root/.gradle
+      - gradle_project_cache-backend:/app/.gradle
     depends_on:
       - solawi-bid_database
     healthcheck:
@@ -45,7 +54,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ./infrastructure/database/:/docker-entrypoint-initdb.d/
+      - ./infrastructure/database/setup.sql:/docker-entrypoint-initdb.d/setup.sql
     environment:
       - MYSQL_DATABASE=solawi-bid
       - MYSQL_USER=solawi-bid
@@ -61,3 +70,7 @@ services:
 volumes:
   gradle_cache-frontend:
   gradle_cache-backend:
+  gradle_cache_root-frontend:
+  gradle_cache_root-backend:
+  gradle_project_cache-frontend:
+  gradle_project_cache-backend:

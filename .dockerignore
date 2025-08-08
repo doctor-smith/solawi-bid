@@ -1,10 +1,9 @@
 .github
 .gradle
+!gradle/wrapper/gradle-wrapper.jar
 .idea
+.vscode
 build
 *.sh
 *.md
-docker-compose.e2e.yml
-docker-compose.yml
-docker-compose.local.yml
-docker-compose.e2e.local.yml
+docker-compose*.yml
