@@ -6,3 +6,5 @@ build
 *.md
 docker-compose.e2e.yml
 docker-compose.yml
+docker-compose.local.yml
+docker-compose.e2e.local.yml
