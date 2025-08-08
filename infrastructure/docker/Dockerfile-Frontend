@@ -6,7 +6,13 @@ WORKDIR /build
 
 # ---- Step 1: Copy Gradle wrapper and build scripts only ----
 COPY gradlew gradle/ ./
-COPY build.gradle* settings.gradle* gradle.properties ./
+
+COPY settings.gradle.kts.frontend ./settings.gradle.kts
+COPY build.gradle* gradle.properties ./
+COPY buildSrc/build.gradle* buildSrc/settings.gradle* ./
+COPY solawi-bid-api-data/build.gradle*  ./
+COPY solawi-bid-frontend/build.gradle*  ./
+COPY evoleq/build.gradle*  ./
 
 # ---- Step 2: Pre-download dependencies for better caching ----
 RUN --mount=type=cache,target=/home/gradle/.gradle \
