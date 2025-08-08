@@ -13,6 +13,8 @@ COPY solawi-bid-api-data/build.gradle*  ./
 COPY solawi-bid-backend/build.gradle*  ./
 COPY evoleq/build.gradle*  ./
 
+
+
 # ---- Step 2: Pre-download dependencies for better caching ----
 RUN --mount=type=cache,target=/home/gradle/.gradle \
     --mount=type=cache,target=/root/.gradle \

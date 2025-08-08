@@ -14,7 +14,7 @@ Make shure
 
 Open a terminal, move to the root folder of the project and run the command
 ```shell
-docker compose -f docker-compose.local.yml up -d
+docker compose -f docker-compose.yml up -d
 ```
 Stop it using command
 ```shell
