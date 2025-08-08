@@ -131,11 +131,6 @@ tasks.withType<Test> {
         html.required = true
     }
 }
-tasks.register<Test>("commonTest") {
-    useJUnitPlatform()  // or your specific test platform
-    testClassesDirs =  files("src/commonTest/kotlin")
- //   classpath = sourceSets["commonTest"].runtimeClasspath
-}
 
 compose {
     web{ }
