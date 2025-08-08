@@ -9,14 +9,17 @@ RUN --mount=type=cache,target=/home/gradle/.gradle \
       solawi-bid-backend:unitTest \
       solawi-bid-backend:schemaTest \
       solawi-bid-backend:dbFunctionalTest \
-      solawi-bid-backend:apiTest
+      solawi-bid-backend:apiTest \
+      evoleq:jvmTest \
+      solawi-bid-api-data:jvmTest
 
 RUN --mount=type=cache,target=/home/gradle/.gradle gradle solawi-bid-backend:buildFatJar
 
 RUN mkdir -p /test-results && \
     mkdir -p /build/solawi-bid-backend/build/test-results && \
-    cp -r /build/solawi-bid-backend/build/test-results/. /test-results/
-
+    cp -r /build/solawi-bid-backend/build/test-results/. /test-results/ \
+    cp -r /build/solawi-bid-api-data/build/test-results/. /test-results/ \
+    cp -r /build/evoleq/build/test-results/. /test-results/
 
 FROM eclipse-temurin:17 as production
 

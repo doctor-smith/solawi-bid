@@ -3,9 +3,16 @@ FROM ghcr.io/doctor-smith/gradle-base-frontend:latest AS build
 WORKDIR /build
 COPY . /build
 
-RUN --mount=type=cache,target=/home/gradle/.gradle gradle solawi-bid-frontend:build
+RUN --mount =type=cache,target=/home/gradle/.gradle gradle solawi-bid-frontend:build -x jsBrowserTest
+RUN --mount=type=cache,target=/home/gradle/.gradle \
+      gradle --continue \
+        solawi-bid-frontend:jsTest \
+        solawi-bid-api-data:jsTest \
+        evoleq:jsTest
 
 RUN cp -r /build/solawi-bid-frontend/build/test-results/. /test-results/
+RUN cp -r /build/solawi-bid-api-data/build/test-results/. /test-results/
+RUN cp -r /build/evoleq/build/test-results/. /test-results/
 
 FROM nginx:1-alpine as production
 
