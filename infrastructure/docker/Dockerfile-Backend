@@ -1,29 +1,58 @@
+# syntax=docker/dockerfile:1.7-labs
+
 FROM gradle:8-jdk17-noble AS build
 
 WORKDIR /build
-COPY . /build
 
+# ---- Step 1: Copy Gradle wrapper and build scripts only ----
+COPY gradlew gradle/ ./
+COPY build.gradle* settings.gradle* gradle.properties ./
+
+# ---- Step 2: Pre-download dependencies for better caching ----
 RUN --mount=type=cache,target=/home/gradle/.gradle \
-    gradle --continue \
-      solawi-bid-backend:test \
-      solawi-bid-backend:unitTest \
-      solawi-bid-backend:schemaTest \
-      solawi-bid-backend:dbFunctionalTest \
-      solawi-bid-backend:apiTest \
-      evoleq:jvmTest \
-      solawi-bid-api-data:jvmTest
+    --mount=type=cache,target=/root/.gradle \
+    --mount=type=cache,target=.gradle \
+    ./gradlew --no-daemon --stacktrace --parallel --build-cache build -x test || true
 
-RUN --mount=type=cache,target=/home/gradle/.gradle gradle solawi-bid-backend:buildFatJar
+# ---- Step 3: Copy the rest of the source code ----
+COPY . .
 
+# ---- Step 4: Run backend and related unit tests in parallel ----
+RUN --mount=type=cache,target=/home/gradle/.gradle \
+    --mount=type=cache,target=/root/.gradle \
+    --mount=type=cache,target=.gradle \
+    ./gradlew --no-daemon --continue  --parallel --build-cache\
+      :solawi-bid-backend:test \
+      :solawi-bid-backend:unitTest \
+      :evoleq:jvmTest \
+      :solawi-bid-api-data:jvmTest
+
+# ---- Step 4: Run backend tests sequentially ----
+RUN --mount=type=cache,target=/home/gradle/.gradle \
+    --mount=type=cache,target=/root/.gradle \
+    --mount=type=cache,target=.gradle \
+    ./gradlew --no-daemon --continue --build-cache \
+      :solawi-bid-backend:schemaTest \
+      :solawi-bid-backend:dbFunctionalTest \
+      :solawi-bid-backend:apiTest
+
+# ---- Step 6: Build backend fat jar ----
+RUN --mount=type=cache,target=/home/gradle/.gradle \
+    --mount=type=cache,target=/root/.gradle \
+    --mount=type=cache,target=.gradle \
+    ./gradlew --no-daemon --parallel --build-cache :solawi-bid-backend:buildFatJar
+
+# ---- Step 7: Collect test results ----
 RUN mkdir -p /test-results && \
-    mkdir -p /build/solawi-bid-backend/build/test-results && \
-    cp -r /build/solawi-bid-backend/build/test-results/. /test-results/ \
-    cp -r /build/solawi-bid-api-data/build/test-results/. /test-results/ \
+    cp -r /build/solawi-bid-backend/build/test-results/. /test-results/ && \
+    cp -r /build/solawi-bid-api-data/build/test-results/. /test-results/ && \
     cp -r /build/evoleq/build/test-results/. /test-results/
 
+# ---- Final Stage ----
 FROM eclipse-temurin:17 as production
 
 WORKDIR /app
+
 COPY --from=build /build/solawi-bid-backend/build/resources/main/application.env.conf /app/application.conf
 COPY --from=build /build/solawi-bid-backend/build/libs/*-all.jar /app/server.jar
 
