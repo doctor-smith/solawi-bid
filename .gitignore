@@ -11,3 +11,7 @@ _dev
 dependency-analysis.md
 erm.md
 .kotlin
+build-reports
+!build-reports/HOWTO.md
+!build-reports/frontend/.gitkeep
+!build-reports/backend/.gitkeep
