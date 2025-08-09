@@ -1,9 +1,9 @@
 .github
 .gradle
-!gradle/wrapper/gradle-wrapper.jar
 .idea
 .vscode
 build
+build-reports
 *.sh
 *.md
 docker-compose*.yml
