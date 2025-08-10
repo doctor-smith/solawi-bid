@@ -8,6 +8,7 @@ import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
 import org.evoleq.ktorx.Base
 import org.evoleq.ktorx.Receive
+import org.evoleq.ktorx.ReceiveContextual
 import org.evoleq.ktorx.Respond
 import org.evoleq.ktorx.data.KTorEnv
 // import org.solyton.solawi.bid.application.environment.Environment
@@ -32,11 +33,11 @@ fun <UserEnv> Routing.user(
             }
 
             post("create") {
-                Receive<CreateUser>() * CreateNewUser * Respond<User>{ transform() } runOn Base(call, environment)
+                ReceiveContextual<CreateUser>() * CreateNewUser * Respond<User>{ transform() } runOn Base(call, environment)
             }
 
             patch("change-password") {
-                Receive<ChangePassword>() * ChangePassword * Respond<User>{ transform() } runOn Base(call, environment)
+                ReceiveContextual<ChangePassword>() * ChangePassword * Respond<User>{ transform() } runOn Base(call, environment)
             }
         }
     }

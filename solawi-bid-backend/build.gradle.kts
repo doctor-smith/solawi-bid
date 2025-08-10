@@ -205,19 +205,7 @@ detekt {
     config.from( files("$rootDir/detekt/detekt.yml"))
     buildUponDefaultConfig = true
     allRules = false
- //   source.from( files("src/main/kotlin", "src/test/kotlin"))
-
 }
-
-
-/*
-tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaseline") {
-    baseline.set(file("detekt/detekt-baseline.xml"))
-}
-tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detekt") {
-    baseline.set(file("detekt/detekt-baseline.xml"))
-}
-*/
 
 tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselineMain") {
     baseline.set(file("detekt/detekt-baseline-main.xml"))
@@ -239,6 +227,7 @@ dependencyAnalyser {
         sourceSet = "main"
         modules = setOf(
             "application",
+            "auditable",
             "authentication",
             "banking",
             "bid",

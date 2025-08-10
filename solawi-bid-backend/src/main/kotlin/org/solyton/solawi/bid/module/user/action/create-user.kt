@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.user.action
 
 
 import org.evoleq.exposedx.transaction.resultTransaction
+import org.evoleq.ktorx.Contextual
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
@@ -26,8 +27,11 @@ import org.solyton.solawi.bid.module.user.service.bcrypt.hashPassword
 
 @MathDsl
 @Suppress("FunctionName")
-val CreateNewUser: KlAction<Result<CreateUser>, Result<User>> = KlAction{ result ->DbAction {
-    database -> result bindSuspend {data -> resultTransaction(database) {
+val CreateNewUser: KlAction<Result<Contextual<CreateUser>>, Result<User>> = KlAction{ result ->DbAction {
+    database -> result bindSuspend {contextual -> resultTransaction(database) {
+        val creatorId = contextual.userId
+        val data = contextual.data
+
         val user = UserEntity.find { UsersTable.username eq data.username }.firstOrNull()
         if(user != null) {
             User(user.id.value.toString(), user.username)
@@ -39,9 +43,10 @@ val CreateNewUser: KlAction<Result<CreateUser>, Result<User>> = KlAction{ result
             val userRole = applicationContext.roles.find { it.name == Role.user.value }
                 ?: throw PermissionException.NoSuchRole(Role.user.value)
 
-            val userEntity = UserEntity.new{
+            val userEntity = UserEntity.new {
                 username = data.username
                 password = hashPassword( data.password )
+                createdBy = creatorId
             }
 
             UserRoleContext.insert {
