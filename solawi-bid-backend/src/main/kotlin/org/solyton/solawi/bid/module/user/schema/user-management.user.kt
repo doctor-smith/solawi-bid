@@ -13,6 +13,7 @@ typealias UsersTable = Users
 
 object Users : AuditableUUIDTable("users")  {
     val username = varchar("username", 50).uniqueIndex()
+    // todo:dev change column name and write migration
     val password = varchar("varchar", 500)
 }
 

@@ -1,13 +1,13 @@
 name: Create PR from feature to main
 
-on:
-  push:
-    branches:
-      - 'feature/**'
-      - 'defect/**'
-      - 'version/**'
-    paths-ignore:
-      - '.github/**'
+on: workflow_dispatch
+  #push:
+  #  branches:
+  #    - 'feature/**'
+  #    - 'defect/**'
+  #    - 'version/**'
+  #  paths-ignore:
+  #    - '.github/**'
 
 permissions:
   pull-requests: write

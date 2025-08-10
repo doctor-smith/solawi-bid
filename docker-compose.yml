@@ -57,7 +57,9 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ./infrastructure/database/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+      - mysql_data:/var/lib/mysql
+      - ./infrastructure/database/dump-clean.sql:/docker-entrypoint-initdb.d/setup.sql
+      # - ./infrastructure/database/setup.sql:/docker-entrypoint-initdb.d/setup.sql
     environment:
       - MYSQL_DATABASE=solawi-bid
       - MYSQL_USER=solawi-bid
@@ -77,3 +79,4 @@ volumes:
   gradle_cache_root-backend:
   gradle_project_cache-frontend:
   gradle_project_cache-backend:
+  mysql_data:
