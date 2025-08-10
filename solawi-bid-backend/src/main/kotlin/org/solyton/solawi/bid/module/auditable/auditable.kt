@@ -17,10 +17,10 @@ interface AuditableColumns<Id> {
 }
 
 interface AuditableEntity<Id> {
-    val createdAt: DateTime
-    val createdBy: Id
-    val modifiedAt: DateTime?
-    val modifiedBy: Id?
+    var createdAt: DateTime
+    var createdBy: Id
+    var modifiedAt: DateTime?
+    var modifiedBy: Id?
 }
 
 abstract class AuditableTable<Id : Comparable<Id>>(open val name: String) : IdTable<Id>(name) , AuditableColumns<Id>

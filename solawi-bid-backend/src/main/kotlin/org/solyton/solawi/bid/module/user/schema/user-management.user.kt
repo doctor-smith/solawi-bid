@@ -23,10 +23,10 @@ class User(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     var username by Users.username
     var password by Users.password
 
-    override val createdAt: DateTime by Users.createdAt
-    override val createdBy: UUID by Users.createdBy
-    override val modifiedAt: DateTime? by Users.modifiedAt
-    override val modifiedBy: UUID? by Users.modifiedBy
+    override var createdAt: DateTime by Users.createdAt
+    override var createdBy: UUID by Users.createdBy
+    override var modifiedAt: DateTime? by Users.modifiedAt
+    override var modifiedBy: UUID? by Users.modifiedBy
 
     var organizations by Organization via UserOrganization
 }
