@@ -45,6 +45,7 @@ fun Transaction.createAuction(name: String, date: LocalDate, type: String = "SOL
         this.name = name
         this.date = DateTime().withDate(date.year, date.monthNumber, date.dayOfMonth)
         this.type = auctionType
+        createdBy = UUID(0L,0L)
     }
 }
 
