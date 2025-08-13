@@ -21,6 +21,7 @@ import org.solyton.solawi.bid.module.permission.schema.Roles
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.schema.Users
+import java.util.UUID
 import org.jetbrains.exposed.sql.Database as SqlDatabase
 
 fun Application.setupEnvironment(): Environment = with(environment.config){
@@ -92,6 +93,7 @@ data class Environment(
             val applicationOwner = UserEntity.new {
                 username = applicationOwner.username
                 password = applicationOwner.password
+                createdBy = UUID(0L,0L)
             }
 
             val applicationContextId = ContextEntity.find {

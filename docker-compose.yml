@@ -29,6 +29,9 @@ services:
       - solawi-bid-backend/.env
     environment:
       - SMTP_PASSWORD
+      - DATABASE_URL=jdbc:mysql://solawi-bid_database:3306/solawi-bid
+      - DATABASE_DRIVER=com.mysql.cj.jdbc.Driver
+      - DATABASE_USER=solawi-bid
     build:
       dockerfile_inline: |
         FROM gradle:8-jdk17-noble
