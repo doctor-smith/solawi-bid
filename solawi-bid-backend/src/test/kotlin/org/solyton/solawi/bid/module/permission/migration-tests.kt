@@ -180,6 +180,7 @@ fun injectApplicationOwner(ownerUsername: String, ownerPassword: String):UUID {
     val applicationOwner = UserEntity.new {
         username = ownerUsername
         password = ownerPassword
+        createdBy = UUID(0L,0L)
     }
 
     val applicationContextId = ContextEntity.find {
