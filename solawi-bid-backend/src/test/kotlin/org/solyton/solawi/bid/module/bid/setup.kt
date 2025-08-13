@@ -10,6 +10,7 @@ import org.solyton.solawi.bid.module.bid.schema.AuctionType
 import org.solyton.solawi.bid.module.bid.schema.Bidder
 import org.solyton.solawi.bid.module.bid.schema.BidderDetailsSolawiTuebingenTable
 import org.solyton.solawi.bid.module.bid.schema.Round
+import java.util.UUID
 
 fun Transaction.setupBidProcess(): BidProcessSetup {
     // db setup
@@ -22,6 +23,7 @@ fun Transaction.setupBidProcess(): BidProcessSetup {
         name = "TestAuction"
         date = DateTime().withDate(1,1,1)
         type = auctionType
+        createdBy = UUID(0L,0L)
     }
     // create a round in the auction
     // note: state is "OPENED" by default.

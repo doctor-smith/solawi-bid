@@ -169,6 +169,7 @@ class AuctionTests {
             name = "TestAuction"
             date = DateTime().withDate(1,1,1)
             type = auctionType
+            createdBy = UUID(0L,0L)
         }
 
         deleteAuctions(listOf(auction.id.value))
