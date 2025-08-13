@@ -20,6 +20,7 @@ import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserOrganization
 import org.solyton.solawi.bid.module.user.schema.UsersTable
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -57,6 +58,7 @@ class OrganizationTests {
         val user = UserEntity.new {
             password = "password"
             username = "username"
+            createdBy = UUID(0L, 0L)
         }
         val organization = createRootOrganization(organizationName)
 

@@ -16,6 +16,7 @@ import org.solyton.solawi.bid.module.permission.schema.RolesTable
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.schema.UsersTable
+import java.util.UUID
 import kotlin.test.assertEquals
 
 class UserRoleRightContextTests {
@@ -35,6 +36,7 @@ class UserRoleRightContextTests {
         val user = UserEntity.new {
             username = "x-$ts"
             password = "y"
+            createdBy = UUID(0L,0L)
         }
         val readRight = RightEntity.new {
             name = "READ-$ts"
