@@ -1,10 +1,8 @@
 package org.solyton.solawi.bid.module.auditable
 
-import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.jodatime.date
 import org.jetbrains.exposed.sql.jodatime.datetime
 import org.joda.time.DateTime
 import java.util.UUID
@@ -24,10 +22,10 @@ interface AuditableEntity<Id> {
     var modifiedBy: Id?
 }
 
-abstract class AuditableTable<Id : Comparable<Id>>(open val name: String) : IdTable<Id>(name) , AuditableColumns<Id>
+abstract class AuditableTable<Id : Comparable<Id>>(name: String) : IdTable<Id>(name) , AuditableColumns<Id>
 
 open class AuditableUUIDTable(
-    override val name: String,
+    name: String,
     idColumnName: String = "id"
 ) : AuditableTable<UUID>(name){
     final override val id: Column<EntityID<UUID>> = uuid(idColumnName).autoGenerate().entityId()
