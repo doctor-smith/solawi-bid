@@ -23,6 +23,29 @@ import org.solyton.solawi.bid.module.bid.schema.BidderDetailsSolawiTuebingenEnti
 import org.solyton.solawi.bid.module.bid.schema.BidderEntity
 import org.solyton.solawi.bid.module.bid.schema.SearchBidderEntity
 import java.util.*
+import kotlin.Boolean
+import kotlin.String
+import kotlin.Suppress
+import kotlin.Unit
+import kotlin.collections.List
+import kotlin.collections.contains
+import kotlin.collections.drop
+import kotlin.collections.filter
+import kotlin.collections.first
+import kotlin.collections.firstOrNull
+import kotlin.collections.forEach
+import kotlin.collections.isNotEmpty
+import kotlin.collections.joinToString
+import kotlin.collections.listOf
+import kotlin.collections.map
+import kotlin.collections.mutableListOf
+import kotlin.collections.reduceOrNull
+import kotlin.collections.toList
+import kotlin.collections.toTypedArray
+import kotlin.text.contains
+import kotlin.text.isNotBlank
+import kotlin.text.lowercase
+import kotlin.text.trim
 
 @MathDsl
 val ImportBidders = KlAction{bidders: Result<ImportBidders> -> DbAction {
