@@ -3,7 +3,9 @@ package org.solyton.solawi.bid.module.user.schema
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.UUIDTable
+import org.joda.time.DateTime
+import org.solyton.solawi.bid.module.auditable.AuditableEntity
+import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.Contexts
 import java.util.*
@@ -11,7 +13,7 @@ import java.util.*
 typealias OrganizationsTable = Organisations
 typealias OrganizationEntity = Organization
 
-object Organisations : UUIDTable("organizations") {
+object Organisations : AuditableUUIDTable("organizations") {
     val name = varchar("name", 255).uniqueIndex()
     val rootId = optReference("root_id", Organisations)
     val contextId = reference("context_id", Contexts)
@@ -36,7 +38,7 @@ object Organisations : UUIDTable("organizations") {
 
 }
 
-class Organization(id: EntityID<UUID>) : UUIDEntity(id) {
+class Organization(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     companion object : UUIDEntityClass<Organization>(Organisations)
 
     var root by OrganizationEntity optionalReferencedOn OrganizationsTable.rootId
@@ -51,4 +53,9 @@ class Organization(id: EntityID<UUID>) : UUIDEntity(id) {
     var level by Organisations.level
 
     var users by User via UserOrganization
+    
+    override var createdAt: DateTime by Organisations.createdAt
+    override var createdBy: UUID by Organisations.createdBy
+    override var modifiedAt: DateTime? by Organisations.modifiedAt
+    override var modifiedBy: UUID? by Organisations.modifiedBy
 }
