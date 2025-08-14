@@ -3,7 +3,9 @@ package org.solyton.solawi.bid.module.bid.schema
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.UUIDTable
+import org.joda.time.DateTime
+import org.solyton.solawi.bid.module.auditable.AuditableEntity
+import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
 import org.solyton.solawi.bid.module.banking.schema.FiscalYear
 import org.solyton.solawi.bid.module.banking.schema.FiscalYears
 import org.solyton.solawi.bid.module.user.schema.UserProfile
@@ -13,7 +15,7 @@ import java.util.*
 typealias ShareEntity = Share
 typealias SharesTable = Shares
 
-object Shares : UUIDTable("shares") {
+object Shares : AuditableUUIDTable("shares") {
     val typeId = reference("type_id", ShareTypes)
     val userProfileId = reference("user_profile_id", UserProfiles)
     val distributionPointId = optReference("distribution_point_id", DistributionPoints)
@@ -23,7 +25,7 @@ object Shares : UUIDTable("shares") {
     val fiscalYearId = reference("fiscal_year_id", FiscalYears)
 }
 
-class Share(id: EntityID<UUID>): UUIDEntity(id) {
+class Share(id: EntityID<UUID>): UUIDEntity(id), AuditableEntity<UUID> {
     companion object : UUIDEntityClass<Share>(Shares)
 
     var type by ShareType referencedOn Shares.typeId
@@ -35,4 +37,10 @@ class Share(id: EntityID<UUID>): UUIDEntity(id) {
     var ahcAuthorized by Shares.ahcAuthorized
 
     var fiscalYear by FiscalYear referencedOn Shares.fiscalYearId
+
+
+    override var createdAt: DateTime by Shares.createdAt
+    override var createdBy: UUID by Shares.createdBy
+    override var modifiedAt: DateTime? by Shares.modifiedAt
+    override var modifiedBy: UUID? by Shares.modifiedBy
 }
