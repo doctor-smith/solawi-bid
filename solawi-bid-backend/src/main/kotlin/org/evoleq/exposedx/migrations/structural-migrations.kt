@@ -2,15 +2,17 @@ package org.evoleq.exposedx.migrations
 
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.transaction
 
 data class AddMissingColumns(
     val table: Table,
-    val columnDefs: List<ColumnDef<Any>>
+    val columnDefs: List<ColumnDef<Any?>>
 )
 
-data class ColumnDef<out T : Any>(
+data class ColumnDef<out T : Any?>(
     val name: String,
     val default: T
 )
@@ -25,43 +27,50 @@ data class StructuralMigrations(
 
 
 fun Database.addMissingColumns(vararg dataSets: AddMissingColumns){
+    // Here, one has to take into account that names in dbs are case-insensitive
+    // while strings on the client side are case-sensitive
+    // We are better off forcing lowercase in every comparison.
     val database = this
     val existingTables = transaction(database) {
-        SchemaUtils.listTables()
+        SchemaUtils.listTables().map{it.substringAfterLast(".")}
     }
     val relevantDataSets = dataSets.filter { it.table.tableName in existingTables }
-    relevantDataSets.forEach { (table, columnDefs) ->
-        val columnNames = columnDefs.map { it.name }
-        table.columns.filter { column -> column.name in columnNames }.forEach { column ->
-            val columnName = column.name
-            when{
-                column.defaultValueFun != null ||
-                column.columnType.nullable -> transaction(database) {
-                    if (!columnExists(table.tableName, columnName)) {
-                        exec("ALTER TABLE ${table.tableName} MODIFY $columnName ${column.columnType.sqlType()};")
-                    }
-                }
-                else -> transaction(database) {
-                    val columnDef = columnDefs.find { it.name == column.name }
-                        ?:throw MigrationException.NoSuchColumnDef(column.name)
+    transaction(database) {
+        // Enable SQL logging
+        addLogger(StdOutSqlLogger)
 
-                    if (!columnExists(table.tableName, columnName)) {
-                        exec("ALTER TABLE ${table.tableName} ADD COLUMN $columnName ${column.columnType.sqlType()} NULL;")
+        relevantDataSets.forEach { (table, columnDefs) ->
+            val columnNames = columnDefs.map { it.name.lowercase() }
+            table.columns.filter { column -> column.name.lowercase() in columnNames }.forEach { column ->
+                val columnName = column.name
+                val columnExists = columnExists(table.tableName, columnName)
 
-                        exec("""
-                        |UPDATE ${table.tableName}
-                        |   SET $columnName = ${columnDef.default}
-                        |   WHERE $columnName IS NULL;
-                    """.trimMargin()
-                        )
+                if (!columnExists) {
+                    when {
+                        column.defaultValueFun != null ||
+                        column.columnType.nullable ->
+                            exec("ALTER TABLE ${table.tableName} ADD COLUMN  $columnName ${column.columnType.sqlType()};")
+                        else -> {
+                            val columnDef = columnDefs.find { it.name.lowercase() == column.name.lowercase() }
+                                ?: throw MigrationException.NoSuchColumnDef(column.name)
 
-                        exec("ALTER TABLE ${table.tableName} MODIFY $columnName ${column.columnType.sqlType()};")
+                            exec("ALTER TABLE ${table.tableName} ADD COLUMN $columnName ${column.columnType.sqlType()} NULL;")
+
+                            exec(
+                            """
+                                |UPDATE ${table.tableName}
+                                |   SET $columnName = ${columnDef.default}
+                                |   WHERE $columnName IS NULL;
+                            """.trimMargin()
+                            )
+
+                            exec("ALTER TABLE ${table.tableName} MODIFY $columnName ${column.columnType.sqlType()};")
+                        }
                     }
                 }
             }
         }
     }
-
 }
 
 fun columnExists(tableName: String, columnName: String): Boolean {
@@ -77,4 +86,3 @@ fun columnExists(tableName: String, columnName: String): Boolean {
         } ?: false
     }
 }
-
