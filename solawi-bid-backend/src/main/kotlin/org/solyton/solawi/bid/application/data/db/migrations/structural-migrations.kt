@@ -4,6 +4,7 @@ import org.evoleq.exposedx.migrations.AddMissingColumns
 import org.evoleq.exposedx.migrations.ColumnDef
 import org.evoleq.exposedx.migrations.StructuralMigrations
 import org.evoleq.uuid.UUID_ZERO
+import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.banking.schema.BankAccountsTable
 import org.solyton.solawi.bid.module.banking.schema.FiscalYears
 import org.solyton.solawi.bid.module.bid.schema.*
@@ -20,73 +21,109 @@ val structuralMigrations by lazy {
             AddMissingColumns(
                 UsersTable,
                 listOf(
-                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO)
+                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO),
+                    ColumnDef<DateTime>("CREATED_AT", DateTime.now()),
+                    ColumnDef<UUID?>("MODIFIED_BY",null),
+                    ColumnDef<DateTime?>("MODIFIED_AT", null),
                 )
             ),
             AddMissingColumns(
                 UserProfilesTable,
                 listOf(
-                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO)
+                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO),
+                    ColumnDef<DateTime>("CREATED_AT", DateTime.now()),
+                    ColumnDef<UUID?>("MODIFIED_BY",null),
+                    ColumnDef<DateTime?>("MODIFIED_AT", null),
                 )
             ),
             AddMissingColumns(
                 AuctionsTable,
                 listOf(
-                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO)
+                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO),
+                    ColumnDef<DateTime>("CREATED_AT", DateTime.now()),
+                    ColumnDef<UUID?>("MODIFIED_BY",null),
+                    ColumnDef<DateTime?>("MODIFIED_AT", null),
                 )
             ),
             AddMissingColumns(
                 AuctionDetailsSolawiTuebingenTable,
                 listOf(
-                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO)
+                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO),
+                    ColumnDef<DateTime>("CREATED_AT", DateTime.now()),
+                    ColumnDef<UUID?>("MODIFIED_BY",null),
+                    ColumnDef<DateTime?>("MODIFIED_AT", null),
                 )
             ),
             AddMissingColumns(
                 RoundsTable,
                 listOf(
-                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO)
+                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO),
+                    ColumnDef<DateTime>("CREATED_AT", DateTime.now()),
+                    ColumnDef<UUID?>("MODIFIED_BY",null),
+                    ColumnDef<DateTime?>("MODIFIED_AT", null),
                 )
             ),
             AddMissingColumns(
                 OrganizationsTable,
                 listOf(
-                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO)
+                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO),
+                    ColumnDef<DateTime>("CREATED_AT", DateTime.now()),
+                    ColumnDef<UUID?>("MODIFIED_BY",null),
+                    ColumnDef<DateTime?>("MODIFIED_AT", null),
                 )
             ),
             AddMissingColumns(
                 DistributionPointsTable,
                 listOf(
-                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO)
+                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO),
+                    ColumnDef<DateTime>("CREATED_AT", DateTime.now()),
+                    ColumnDef<UUID?>("MODIFIED_BY",null),
+                    ColumnDef<DateTime?>("MODIFIED_AT", null),
                 )
             ),
             AddMissingColumns(
                 SharesTable,
                 listOf(
-                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO)
+                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO),
+                    ColumnDef<DateTime>("CREATED_AT", DateTime.now()),
+                    ColumnDef<UUID?>("MODIFIED_BY",null),
+                    ColumnDef<DateTime?>("MODIFIED_AT", null),
                 )
             ),
             AddMissingColumns(
                 ShareTypesTable,
                 listOf(
-                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO)
+                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO),
+                    ColumnDef<DateTime>("CREATED_AT", DateTime.now()),
+                    ColumnDef<UUID?>("MODIFIED_BY",null),
+                    ColumnDef<DateTime?>("MODIFIED_AT", null),
                 )
             ),
             AddMissingColumns(
                 BankAccountsTable,
                 listOf(
-                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO)
+                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO),
+                    ColumnDef<DateTime>("CREATED_AT", DateTime.now()),
+                    ColumnDef<UUID?>("MODIFIED_BY",null),
+                    ColumnDef<DateTime?>("MODIFIED_AT", null),
                 )
             ),
             AddMissingColumns(
                 FiscalYears,
                 listOf(
-                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO)
+                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO),
+                    ColumnDef<DateTime>("CREATED_AT", DateTime.now()),
+                    ColumnDef<UUID?>("MODIFIED_BY",null),
+                    ColumnDef<DateTime?>("MODIFIED_AT", null),
                 )
             ),
             AddMissingColumns(
                 AddressesTable,
                 listOf(
-                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO)
+                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO),
+                    ColumnDef<DateTime>("CREATED_AT", DateTime.now()),
+                    ColumnDef<UUID?>("MODIFIED_BY",null),
+                    ColumnDef<DateTime?>("MODIFIED_AT", null),
                 )
             )
         )

@@ -136,7 +136,6 @@ Then you can create an ssh tunnel for the database you want to access:
 ```shell
 ssh <user>@solyton.org -L 3306:localhost:<port>
 ```
-ssh drx@solyton.org -L 3306:localhost:32795
 Then you can access the database with your favorite MySQL client e.g. DBeaver on `localhost:3306`.
 
 ## (Local) Build Reports
