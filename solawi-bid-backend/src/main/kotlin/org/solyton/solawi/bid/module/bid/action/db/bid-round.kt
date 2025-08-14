@@ -9,6 +9,7 @@ import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.crypto.generateSecureLink
 import org.evoleq.math.x
+import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.Transaction
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.data.toApiType
@@ -38,6 +39,8 @@ fun Transaction.addRound(round: CreateRound): org.solyton.solawi.bid.module.bid.
 
     val roundEntity = org.solyton.solawi.bid.module.bid.schema.Round.new {
         auction = auctionEntity
+        // todo:created_by add valid userId
+        createdBy = UUID_ZERO
     }
     roundEntity.link = generateSecureLink(round.auctionId, roundEntity.id.value.toString(), UUID.randomUUID().toString()).signature
     return roundEntity
