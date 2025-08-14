@@ -4,20 +4,16 @@ import org.evoleq.exposedx.test.runSimpleH2Test
 import org.jetbrains.exposed.sql.insert
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
-import org.solyton.solawi.bid.module.permission.schema.repository.cloneRightRoleContext
 import org.solyton.solawi.bid.module.db.schema.*
-import org.solyton.solawi.bid.module.permission.schema.ContextsTable
-import org.solyton.solawi.bid.module.permission.schema.RightsTable
-import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
-import org.solyton.solawi.bid.module.permission.schema.RolesTable
-import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
-import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.permission.action.db.isGranted
+import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
+import org.solyton.solawi.bid.module.permission.schema.repository.cloneRightRoleContext
 import org.solyton.solawi.bid.module.user.schema.UserEntity
-import java.util.UUID
+import org.solyton.solawi.bid.module.user.schema.UsersTable
+import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 

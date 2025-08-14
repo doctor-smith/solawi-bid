@@ -5,7 +5,7 @@ import org.evoleq.exposedx.migrations.ColumnDef
 import org.evoleq.exposedx.migrations.StructuralMigrations
 import org.solyton.solawi.bid.module.bid.schema.AuctionsTable
 import org.solyton.solawi.bid.module.user.schema.UsersTable
-import java.util.UUID
+import java.util.*
 
 
 val structuralMigrations by lazy {

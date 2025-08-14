@@ -10,8 +10,8 @@ import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.api.ApiAuctions
 import org.solyton.solawi.bid.module.bid.data.api.GetAuctions
 import org.solyton.solawi.bid.module.bid.data.auctions
-import org.solyton.solawi.bid.module.bid.data.toDomainType
 import org.solyton.solawi.bid.module.bid.data.biduser.User
+import org.solyton.solawi.bid.module.bid.data.toDomainType
 import org.solyton.solawi.bid.module.bid.data.user
 
 @Markup

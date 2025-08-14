@@ -5,9 +5,9 @@ import org.evoleq.math.state.times
 import org.evoleq.optics.storage.Action
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.storage.middleware.api.Call
+import org.solyton.solawi.bid.application.storage.middleware.react.React
 import org.solyton.solawi.bid.application.storage.middleware.util.Dispatch
 import org.solyton.solawi.bid.application.storage.middleware.util.Read
-import org.solyton.solawi.bid.application.storage.middleware.react.React
 
 @MathDsl
 @Suppress("FunctionName")

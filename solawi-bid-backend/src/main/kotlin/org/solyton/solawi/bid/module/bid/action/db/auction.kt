@@ -3,27 +3,24 @@ package org.solyton.solawi.bid.module.bid.action.db
 import io.ktor.util.*
 import kotlinx.datetime.LocalDate
 import org.evoleq.exposedx.transaction.resultTransaction
+import org.evoleq.ktorx.DbAction
+import org.evoleq.ktorx.KlAction
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.ktorx.result.map
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
-import org.evoleq.ktorx.DbAction
-import org.evoleq.ktorx.KlAction
+import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.deleteWhere
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.data.toApiType
-import org.solyton.solawi.bid.module.bid.schema.AuctionDetailsSolawiTuebingen
-import org.solyton.solawi.bid.module.bid.schema.AuctionDetailsSolawiTuebingenTable
-import org.solyton.solawi.bid.module.bid.schema.AuctionEntity
-import org.solyton.solawi.bid.module.bid.schema.AuctionType
-import org.solyton.solawi.bid.module.bid.schema.AuctionTypes
-import org.solyton.solawi.bid.module.bid.schema.Auctions
-import org.solyton.solawi.bid.module.bid.schema.BidderDetails
 import org.solyton.solawi.bid.module.bid.exception.BidRoundException
+import org.solyton.solawi.bid.module.bid.schema.*
+import org.solyton.solawi.bid.module.bid.schema.AuctionEntity
+import org.solyton.solawi.bid.module.bid.schema.Auctions
 import java.util.*
 import org.solyton.solawi.bid.module.bid.data.api.Auctions as ApiAuctions
 
@@ -45,7 +42,7 @@ fun Transaction.createAuction(name: String, date: LocalDate, type: String = "SOL
         this.name = name
         this.date = DateTime().withDate(date.year, date.monthNumber, date.dayOfMonth)
         this.type = auctionType
-        createdBy = UUID(0L,0L)
+        createdBy = UUID_ZERO
     }
 }
 

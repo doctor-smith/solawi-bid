@@ -2,8 +2,8 @@ package org.solyton.solawi.bid.module.banking.service
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import kotlin.test.assertEquals
 import org.solyton.solawi.bid.Unit
+import kotlin.test.assertEquals
 
 class BicValidatorTest {
 

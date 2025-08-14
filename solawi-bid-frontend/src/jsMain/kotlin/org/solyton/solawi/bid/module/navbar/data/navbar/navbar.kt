@@ -6,15 +6,15 @@
 // lens generator. See below for more details.
 package org.solyton.solawi.bid.module.navbar.data.navbar
 
+import org.evoleq.compose.modal.Modals
+import org.evoleq.device.data.Device
 import org.evoleq.optics.Lensify
 import org.evoleq.optics.ReadOnly
 import org.evoleq.optics.ReadWrite
-import org.evoleq.compose.modal.Modals
-import org.evoleq.device.data.Device
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.ActionDispatcher
-import org.solyton.solawi.bid.module.navbar.data.environment.Environment
 import org.solyton.solawi.bid.module.i18n.data.I18N
+import org.solyton.solawi.bid.module.navbar.data.environment.Environment
 import org.solyton.solawi.bid.module.navbar.data.user.User
 
 /**

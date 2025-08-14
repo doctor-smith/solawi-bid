@@ -1,9 +1,9 @@
 package org.solyton.solawi.bid.module.style.button
 
 import org.evoleq.compose.Style
-import org.jetbrains.compose.web.css.*
 import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.compose.style.data.device.compareTo
+import org.jetbrains.compose.web.css.*
 import org.solyton.solawi.bid.module.style.font.LargeMobileFonts
 import org.solyton.solawi.bid.module.style.font.setFont
 

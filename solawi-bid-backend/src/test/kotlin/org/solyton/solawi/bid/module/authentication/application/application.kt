@@ -16,9 +16,9 @@ import org.solyton.solawi.bid.application.pipeline.*
 import org.solyton.solawi.bid.module.authentication.data.api.Login
 import org.solyton.solawi.bid.module.authentication.migrations.authenticationMigrations
 import org.solyton.solawi.bid.module.authentication.routing.authentication
-import org.solyton.solawi.bid.module.bid.routing.sendBid
 import org.solyton.solawi.bid.module.bid.routing.bid
 import org.solyton.solawi.bid.module.bid.routing.migrations.bidRoutingMigrations
+import org.solyton.solawi.bid.module.bid.routing.sendBid
 import org.solyton.solawi.bid.module.user.action.GetUserById
 import org.solyton.solawi.bid.module.user.routing.user
 import java.util.*

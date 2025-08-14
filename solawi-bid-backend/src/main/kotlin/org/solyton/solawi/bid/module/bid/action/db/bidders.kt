@@ -2,31 +2,25 @@ package org.solyton.solawi.bid.module.bid.action.db
 
 import io.ktor.util.*
 import org.evoleq.exposedx.transaction.resultTransaction
+import org.evoleq.ktorx.DbAction
+import org.evoleq.ktorx.KlAction
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
-import org.evoleq.ktorx.DbAction
-import org.evoleq.ktorx.KlAction
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.data.toApiType
-import org.solyton.solawi.bid.module.bid.schema.AuctionBidders
-import org.solyton.solawi.bid.module.bid.schema.AuctionType
-import org.solyton.solawi.bid.module.bid.schema.AuctionTypes
-import org.solyton.solawi.bid.module.bid.schema.SearchBiddersTable
 import org.solyton.solawi.bid.module.bid.exception.BidRoundException
+import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.bid.schema.Auction
 import org.solyton.solawi.bid.module.bid.schema.AuctionEntity
 import org.solyton.solawi.bid.module.bid.schema.Auctions
 import org.solyton.solawi.bid.module.bid.schema.Bidder
-import org.solyton.solawi.bid.module.bid.schema.BidderDetailsEntity
 import org.solyton.solawi.bid.module.bid.schema.BidderDetailsSolawiTuebingenEntity
-import org.solyton.solawi.bid.module.bid.schema.BidderDetailsSolawiTuebingenTable
 import org.solyton.solawi.bid.module.bid.schema.BidderEntity
-import org.solyton.solawi.bid.module.bid.schema.BiddersTable
 import org.solyton.solawi.bid.module.bid.schema.SearchBidderEntity
 import java.util.*
 

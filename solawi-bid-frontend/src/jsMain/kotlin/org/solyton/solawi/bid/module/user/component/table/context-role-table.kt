@@ -17,8 +17,8 @@ import org.solyton.solawi.bid.module.permissions.data.contexts
 import org.solyton.solawi.bid.module.user.data.Application
 import org.solyton.solawi.bid.module.user.data.managedUsers
 import org.solyton.solawi.bid.module.user.data.permissions
-import org.solyton.solawi.bid.module.user.data.managed.permissions as managedPermissions
 import org.solyton.solawi.bid.module.user.data.user
+import org.solyton.solawi.bid.module.user.data.managed.permissions as managedPermissions
 
 @Markup
 @Composable

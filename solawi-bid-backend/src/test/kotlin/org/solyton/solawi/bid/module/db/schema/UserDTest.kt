@@ -2,11 +2,11 @@ package org.solyton.solawi.bid.module.db.schema
 
 
 import org.evoleq.exposedx.test.runSimpleH2Test
+import org.evoleq.uuid.UUID_ZERO
 import org.junit.Test
 import org.solyton.solawi.bid.Schema
 import org.solyton.solawi.bid.module.user.schema.User
 import org.solyton.solawi.bid.module.user.schema.Users
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
@@ -17,7 +17,7 @@ class UserDTest {
         User.new {
             username = "name"
             password = "pw"
-            createdBy = UUID(0L,0L)
+            createdBy = UUID_ZERO
         }
 
         val  user = User.find {

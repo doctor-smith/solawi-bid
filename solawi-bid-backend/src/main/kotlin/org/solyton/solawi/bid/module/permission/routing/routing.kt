@@ -4,25 +4,15 @@ import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.util.*
 import org.evoleq.exposedx.data.DbEnv
-import org.evoleq.math.state.runOn
-import org.evoleq.math.state.times
 import org.evoleq.ktorx.Base
 import org.evoleq.ktorx.ReceiveContextual
 import org.evoleq.ktorx.Respond
 import org.evoleq.ktorx.data.KTorEnv
+import org.evoleq.math.state.runOn
+import org.evoleq.math.state.times
+import org.solyton.solawi.bid.module.permission.action.db.*
+import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.permission.permission.Right
-import org.solyton.solawi.bid.module.permission.action.db.GetRoleRightContexts
-import org.solyton.solawi.bid.module.permission.action.db.GetRoleRightContextsOfUsers
-import org.solyton.solawi.bid.module.permission.action.db.IsGranted
-import org.solyton.solawi.bid.module.permission.action.db.ReadAvailableRightRoleContexts
-import org.solyton.solawi.bid.module.permission.action.db.ReadParentChildRelationsOfContexts
-import org.solyton.solawi.bid.module.permission.data.api.Contexts
-import org.solyton.solawi.bid.module.permission.data.api.ParentChildRelationsOfContexts
-import org.solyton.solawi.bid.module.permission.data.api.ReadParentChildRelationsOfContexts
-import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContexts
-import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContextsOfUser
-import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContextsOfUsers
-import org.solyton.solawi.bid.module.permission.data.api.UserToContextsMap
 
 @KtorDsl
 fun <PermissionEnv> Routing.permissions(

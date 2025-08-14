@@ -5,12 +5,12 @@ import androidx.compose.runtime.LaunchedEffect
 import kotlinx.browser.window
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
-import org.evoleq.optics.storage.Storage
-import org.evoleq.optics.transform.times
-import org.evoleq.device.data.Device
 import org.evoleq.compose.style.data.device.DeviceType
+import org.evoleq.device.data.Device
 import org.evoleq.device.data.mediaType
 import org.evoleq.device.data.screenWidth
+import org.evoleq.optics.storage.Storage
+import org.evoleq.optics.transform.times
 
 @Markup
 @Composable

@@ -8,6 +8,7 @@ import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Vertical
+import org.evoleq.device.data.mediaType
 import org.evoleq.language.component
 import org.evoleq.language.subComp
 import org.evoleq.language.title
@@ -24,25 +25,19 @@ import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.Text
-import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
 import org.solyton.solawi.bid.module.bid.action.readAuctions
-import org.solyton.solawi.bid.module.style.page.verticalPageStyle
-import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.bid.component.AuctionList
 import org.solyton.solawi.bid.module.bid.component.button.CreateAuctionButton
 import org.solyton.solawi.bid.module.bid.component.form.DEFAULT_AUCTION_ID
-import org.solyton.solawi.bid.module.bid.data.actions
-import org.solyton.solawi.bid.module.bid.data.auctions
-import org.solyton.solawi.bid.module.bid.data.deviceData
-import org.solyton.solawi.bid.module.bid.data.i18N
-import org.solyton.solawi.bid.module.bid.data.modals
+import org.solyton.solawi.bid.module.bid.data.*
 import org.solyton.solawi.bid.module.bid.data.reader.BidComponent
-import org.solyton.solawi.bid.module.bid.data.user
 import org.solyton.solawi.bid.module.error.component.showErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
 import org.solyton.solawi.bid.module.i18n.data.language
+import org.solyton.solawi.bid.module.style.page.verticalPageStyle
+import org.solyton.solawi.bid.module.style.wrap.Wrap
 
 @Markup
 @Composable

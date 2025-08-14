@@ -9,11 +9,11 @@ import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.dom.TextInput
-import org.solyton.solawi.bid.module.style.form.textInputDesktopStyle
-import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.qrcode.QRCodeSvg
 import org.solyton.solawi.bid.module.statistics.component.Distribution
 import org.solyton.solawi.bid.module.statistics.data.DistributionConfiguration
+import org.solyton.solawi.bid.module.style.form.textInputDesktopStyle
+import org.solyton.solawi.bid.module.style.wrap.Wrap
 
 @Markup
 @Composable

@@ -1,15 +1,15 @@
 package org.solyton.solawi.bid.application.ui.page.user.effect
 
+import org.evoleq.device.data.mediaType
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
-import org.solyton.solawi.bid.module.user.data.Application
-import org.solyton.solawi.bid.module.user.data.actions
-import org.evoleq.device.data.mediaType
-import org.solyton.solawi.bid.module.user.data.deviceData
-import org.solyton.solawi.bid.module.user.data.modals
 import org.solyton.solawi.bid.module.error.component.showErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
+import org.solyton.solawi.bid.module.user.data.Application
+import org.solyton.solawi.bid.module.user.data.actions
+import org.solyton.solawi.bid.module.user.data.deviceData
+import org.solyton.solawi.bid.module.user.data.modals
 
 suspend fun < I : Any,O: Any> Storage<Application>.trigger(action: Action<Application, I, O>) {
     val actions = (this * actions).read()

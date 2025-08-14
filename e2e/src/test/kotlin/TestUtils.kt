@@ -1,7 +1,5 @@
 import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserContext
-import com.microsoft.playwright.Page
-import com.microsoft.playwright.options.AriaRole
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths

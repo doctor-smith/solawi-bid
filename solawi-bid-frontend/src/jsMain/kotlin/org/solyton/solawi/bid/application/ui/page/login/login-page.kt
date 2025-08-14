@@ -5,16 +5,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
+import org.evoleq.device.data.mediaType
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.Div
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.actions
-import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.ui.page.login.action.loginAction
-import org.solyton.solawi.bid.module.style.form.formPageStyle
 import org.solyton.solawi.bid.module.authentication.component.LoginForm
+import org.solyton.solawi.bid.module.style.form.formPageStyle
 import org.solyton.solawi.bid.application.data.authentication.LoginForm as LoginFormData
 
 @Markup

@@ -1,31 +1,35 @@
 package org.solyton.solawi.bid.module.permission.action.db
 
 import org.evoleq.exposedx.transaction.resultTransaction
+import org.evoleq.ktorx.Contextual
+import org.evoleq.ktorx.DbAction
+import org.evoleq.ktorx.KlAction
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
-import org.evoleq.ktorx.Contextual
-import org.evoleq.ktorx.DbAction
-import org.evoleq.ktorx.KlAction
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.selectAll
-import org.solyton.solawi.bid.module.permission.schema.ContextsTable
-import org.solyton.solawi.bid.module.permission.schema.RightsTable
-import org.solyton.solawi.bid.module.permission.schema.RoleEntity
-import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
-import org.solyton.solawi.bid.module.permission.schema.RolesTable
-import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.Context
 import org.solyton.solawi.bid.module.permission.data.api.Right
 import org.solyton.solawi.bid.module.permission.data.api.Role
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
+import org.solyton.solawi.bid.module.permission.schema.RightsTable
+import org.solyton.solawi.bid.module.permission.schema.RoleEntity
+import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
+import org.solyton.solawi.bid.module.permission.schema.RolesTable
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.permission.schema.repository.descendants
 import org.solyton.solawi.bid.module.permission.schema.repository.getChildren
-import java.util.UUID
+import java.util.*
+import kotlin.Pair
+import kotlin.String
+import kotlin.Suppress
+import kotlin.Triple
 
 @MathDsl
 @Suppress("FunctionName")

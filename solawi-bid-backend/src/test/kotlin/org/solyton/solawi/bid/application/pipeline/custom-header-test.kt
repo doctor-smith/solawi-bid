@@ -21,7 +21,6 @@ import org.solyton.solawi.bid.application.permission.Header
 import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlin.test.fail
 
 class CustomHeaderTests {
 

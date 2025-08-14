@@ -1,20 +1,18 @@
 package org.solyton.solawi.bid.module.user.action
 
 import org.evoleq.exposedx.transaction.resultTransaction
+import org.evoleq.ktorx.Action
+import org.evoleq.ktorx.DbAction
+import org.evoleq.ktorx.KlAction
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
-import org.evoleq.ktorx.Action
-import org.evoleq.ktorx.DbAction
-import org.evoleq.ktorx.KlAction
-import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.user.data.api.GetUsers
 import org.solyton.solawi.bid.module.user.data.api.User
 import org.solyton.solawi.bid.module.user.data.api.Users
+import org.solyton.solawi.bid.module.user.schema.UsersTable
 import java.util.*
-import kotlin.collections.first
-import kotlin.collections.map
 import org.solyton.solawi.bid.module.user.schema.User as UserEntity
 
 /**

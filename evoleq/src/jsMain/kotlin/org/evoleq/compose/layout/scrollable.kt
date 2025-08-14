@@ -1,6 +1,8 @@
 package org.evoleq.compose.layout
 
-import org.jetbrains.compose.web.css.*
+import org.jetbrains.compose.web.css.Color
+import org.jetbrains.compose.web.css.StyleScope
+import org.jetbrains.compose.web.css.overflowY
 
 val scrollableStyle: StyleScope.()->Unit = {
     //marginTop(10.px)

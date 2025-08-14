@@ -4,12 +4,12 @@ import org.evoleq.compose.Markup
 import org.evoleq.math.Reader
 import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
-import org.solyton.solawi.bid.module.user.data.Application
-import org.solyton.solawi.bid.module.user.data.managedUsers
 import org.solyton.solawi.bid.module.permissions.data.Permissions
+import org.solyton.solawi.bid.module.user.data.Application
 import org.solyton.solawi.bid.module.user.data.api.GetUsers
 import org.solyton.solawi.bid.module.user.data.api.Users
 import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
+import org.solyton.solawi.bid.module.user.data.managedUsers
 
 @Markup
 fun getUsers() = Action<Application, GetUsers, Users>(

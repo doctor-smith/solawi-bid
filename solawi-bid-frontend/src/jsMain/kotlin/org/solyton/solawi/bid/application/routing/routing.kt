@@ -2,12 +2,11 @@ package org.solyton.solawi.bid.application.routing
 
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.routing.*
+import org.evoleq.device.data.mediaType
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
-import org.evoleq.device.data.mediaType
-import org.evoleq.optics.storage.times
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.env.type
 import org.solyton.solawi.bid.application.data.environment
@@ -18,7 +17,6 @@ import org.solyton.solawi.bid.application.service.seemsToBeLoggerIn
 import org.solyton.solawi.bid.application.ui.page.auction.*
 import org.solyton.solawi.bid.application.ui.page.dashboard.DashboardPage
 import org.solyton.solawi.bid.application.ui.page.login.LoginPage
-import org.solyton.solawi.bid.module.navbar.action.logoutAction
 import org.solyton.solawi.bid.application.ui.page.login.effect.LaunchLogoutEffect
 import org.solyton.solawi.bid.application.ui.page.manual.HowToBidPage
 import org.solyton.solawi.bid.application.ui.page.manual.ManualPage
@@ -29,6 +27,7 @@ import org.solyton.solawi.bid.application.ui.page.test.MobileTestPage
 import org.solyton.solawi.bid.application.ui.page.test.TestPage
 import org.solyton.solawi.bid.application.ui.page.user.PrivateUserPage
 import org.solyton.solawi.bid.application.ui.page.user.UserManagementPage
+import org.solyton.solawi.bid.module.navbar.action.logoutAction
 import org.solyton.solawi.bid.module.navbar.component.NavBar
 
 @RoutingDsl

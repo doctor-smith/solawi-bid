@@ -1,16 +1,16 @@
 package org.solyton.solawi.bid.module.navbar.effect
 
 
+import org.evoleq.device.data.mediaType
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
-import org.solyton.solawi.bid.module.navbar.data.navbar.actions
-import org.evoleq.device.data.mediaType
-import org.solyton.solawi.bid.module.navbar.data.navbar.deviceData
-import org.solyton.solawi.bid.module.navbar.data.navbar.modals
 import org.solyton.solawi.bid.module.error.component.showErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
 import org.solyton.solawi.bid.module.navbar.data.navbar.NavBar
+import org.solyton.solawi.bid.module.navbar.data.navbar.actions
+import org.solyton.solawi.bid.module.navbar.data.navbar.deviceData
+import org.solyton.solawi.bid.module.navbar.data.navbar.modals
 
 suspend fun < I : Any,O: Any> Storage<NavBar>.trigger(action: Action<NavBar, I, O>) {
     val actions = (this * actions).read()

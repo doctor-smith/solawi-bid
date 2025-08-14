@@ -1,23 +1,19 @@
 package org.solyton.solawi.bid.module.permission.action.db
 
 import org.evoleq.exposedx.transaction.resultTransaction
-import org.evoleq.ktorx.result.*
-import org.evoleq.math.MathDsl
-import org.evoleq.math.x
 import org.evoleq.ktorx.Contextual
 import org.evoleq.ktorx.DbAction
 import org.evoleq.ktorx.KlAction
+import org.evoleq.ktorx.result.*
+import org.evoleq.math.MathDsl
+import org.evoleq.math.x
+import org.evoleq.value.StringValueWithDescription
 import org.jetbrains.exposed.sql.*
-import org.solyton.solawi.bid.module.permission.schema.Contexts
-import org.solyton.solawi.bid.module.permission.schema.ContextsTable
-import org.solyton.solawi.bid.module.permission.schema.Rights
-import org.solyton.solawi.bid.module.permission.schema.RightsTable
-import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.permission.PermissionException
+import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
-import org.evoleq.value.StringValueWithDescription
-import java.util.UUID
+import java.util.*
 
 @MathDsl
 @Suppress("FunctionName")

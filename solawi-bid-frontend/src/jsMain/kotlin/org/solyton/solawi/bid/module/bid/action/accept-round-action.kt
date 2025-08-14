@@ -7,9 +7,9 @@ import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.module.bid.data.BidApplication
-import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.api.AcceptRound
 import org.solyton.solawi.bid.module.bid.data.api.AcceptedRound
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
 
 @Markup
 fun acceptRound(auction: Lens<BidApplication,Auction>, roundId: String): Action<BidApplication, AcceptRound, AcceptedRound> = Action(

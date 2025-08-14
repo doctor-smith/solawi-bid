@@ -1,15 +1,10 @@
 package org.solyton.solawi.bid.module.db.schema
 
 import org.evoleq.exposedx.test.runSimpleH2Test
+import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.insert
-import org.solyton.solawi.bid.module.bid.schema.AcceptedRoundsTable
-import org.solyton.solawi.bid.module.bid.schema.Auction
-import org.solyton.solawi.bid.module.bid.schema.AuctionBidders
-import org.solyton.solawi.bid.module.bid.schema.Auctions
-import org.solyton.solawi.bid.module.bid.schema.Bidder
-import org.solyton.solawi.bid.module.bid.schema.Bidders
-import org.solyton.solawi.bid.module.bid.schema.Rounds
-import java.util.UUID
+import org.solyton.solawi.bid.module.bid.schema.*
+import java.util.*
 import kotlin.test.assertEquals
 
 class AuctionTests {
@@ -25,8 +20,7 @@ class AuctionTests {
         val name = "TestAuction"
         val auction = Auction.new {
             this.name = name
-            createdBy = UUID(0L,0L)
-            createdBy = UUID(0L,0L)
+            createdBy = UUID_ZERO
         }
 
         val readAuction = Auction.find {

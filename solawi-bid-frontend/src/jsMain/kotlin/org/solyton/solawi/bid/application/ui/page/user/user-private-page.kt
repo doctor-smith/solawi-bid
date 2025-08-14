@@ -6,6 +6,7 @@ import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Property
 import org.evoleq.compose.layout.ReadOnlyProperty
 import org.evoleq.compose.layout.Vertical
+import org.evoleq.device.data.mediaType
 import org.evoleq.language.component
 import org.evoleq.language.subComp
 import org.evoleq.language.title
@@ -23,28 +24,23 @@ import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.H2
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.*
-import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.service.useI18nTransform
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.user.effect.TriggerPasswordChange
 import org.solyton.solawi.bid.application.ui.page.user.i18n.UserLangComponent
-import org.solyton.solawi.bid.module.style.page.verticalPageStyle
-import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.componentLoaded
 import org.solyton.solawi.bid.module.i18n.data.language
-import org.solyton.solawi.bid.module.user.data.api.ChangePassword
-import org.solyton.solawi.bid.module.user.data.password
-import org.solyton.solawi.bid.module.user.data.reader.changePassword
-import org.solyton.solawi.bid.module.user.data.reader.personalData
-import org.solyton.solawi.bid.module.user.data.reader.properties
-import org.solyton.solawi.bid.module.user.data.reader.value
-import org.solyton.solawi.bid.module.user.data.username
+import org.solyton.solawi.bid.module.style.page.verticalPageStyle
+import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.component.modal.showChangePasswordModal
 import org.solyton.solawi.bid.module.user.component.table.ContextRoleTableForUser
-import org.solyton.solawi.bid.module.user.data.reader.table
+import org.solyton.solawi.bid.module.user.data.api.ChangePassword
+import org.solyton.solawi.bid.module.user.data.password
+import org.solyton.solawi.bid.module.user.data.reader.*
+import org.solyton.solawi.bid.module.user.data.username
 
 @Markup
 @Composable

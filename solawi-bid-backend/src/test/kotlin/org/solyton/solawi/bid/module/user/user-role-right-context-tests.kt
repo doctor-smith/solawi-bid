@@ -6,17 +6,13 @@ import org.solyton.solawi.bid.module.permission.action.db.getRoleRightContexts
 import org.solyton.solawi.bid.module.permission.data.api.Context
 import org.solyton.solawi.bid.module.permission.data.api.Right
 import org.solyton.solawi.bid.module.permission.data.api.Role
+import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
-import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
-import org.solyton.solawi.bid.module.permission.schema.RightsTable
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
-import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
-import org.solyton.solawi.bid.module.permission.schema.RolesTable
 import org.solyton.solawi.bid.module.user.schema.UserEntity
-import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.schema.UsersTable
-import java.util.UUID
+import java.util.*
 import kotlin.test.assertEquals
 
 class UserRoleRightContextTests {

@@ -8,11 +8,11 @@ import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.module.bid.data.BidApplication
+import org.solyton.solawi.bid.module.bid.data.api.ApiBidRoundResults
+import org.solyton.solawi.bid.module.bid.data.api.ExportBidRound
 import org.solyton.solawi.bid.module.bid.data.bidround.BidResult
 import org.solyton.solawi.bid.module.bid.data.bidround.BidRoundResults
 import org.solyton.solawi.bid.module.bid.data.bidround.Round
-import org.solyton.solawi.bid.module.bid.data.api.ApiBidRoundResults
-import org.solyton.solawi.bid.module.bid.data.api.ExportBidRound
 import org.solyton.solawi.bid.module.bid.data.bidround.rawResults
 
 @Markup

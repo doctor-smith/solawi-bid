@@ -4,10 +4,9 @@ import org.evoleq.math.Reader
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.times
+import org.evoleq.value.StringValueWithDescription
 import org.solyton.solawi.bid.module.permissions.data.Context
 import org.solyton.solawi.bid.module.user.data.Application
-import org.evoleq.value.StringValueWithDescription
-
 
 
 fun isGranted(right: StringValueWithDescription, contextId: String): Reader<Application, Boolean> = Reader{
