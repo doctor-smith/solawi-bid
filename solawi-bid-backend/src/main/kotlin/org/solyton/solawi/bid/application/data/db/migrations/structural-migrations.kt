@@ -4,10 +4,7 @@ import org.evoleq.exposedx.migrations.AddMissingColumns
 import org.evoleq.exposedx.migrations.ColumnDef
 import org.evoleq.exposedx.migrations.StructuralMigrations
 import org.evoleq.uuid.UUID_ZERO
-import org.solyton.solawi.bid.module.bid.schema.AuctionDetailsSolawiTuebingenTable
-import org.solyton.solawi.bid.module.bid.schema.AuctionsTable
-import org.solyton.solawi.bid.module.bid.schema.DistributionPointsTable
-import org.solyton.solawi.bid.module.bid.schema.RoundsTable
+import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import java.util.*
@@ -48,6 +45,18 @@ val structuralMigrations by lazy {
             ),
             AddMissingColumns(
                 DistributionPointsTable,
+                listOf(
+                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO)
+                )
+            ),
+            AddMissingColumns(
+                SharesTable,
+                listOf(
+                    ColumnDef<UUID>("CREATED_BY", UUID_ZERO)
+                )
+            ),
+            AddMissingColumns(
+                ShareTypesTable,
                 listOf(
                     ColumnDef<UUID>("CREATED_BY", UUID_ZERO)
                 )
