@@ -20,7 +20,6 @@ import org.solyton.solawi.bid.module.bid.data.toApiType
 import org.solyton.solawi.bid.module.bid.exception.BidRoundException
 import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.bid.schema.AuctionEntity
-import org.solyton.solawi.bid.module.bid.schema.Auctions
 import java.util.*
 import org.solyton.solawi.bid.module.bid.data.api.Auctions as ApiAuctions
 
