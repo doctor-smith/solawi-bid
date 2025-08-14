@@ -1,5 +1,6 @@
 package org.solyton.solawi.bid.module.user.schema.repository
 
+import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.solyton.solawi.bid.module.permission.exception.ContextException
@@ -64,6 +65,8 @@ fun createRootOrganization(organizationName: String): OrganizationEntity {
     return OrganizationEntity.new {
         name = organizationName
         context = organizationContext
+        // todo:created_by add valid userId
+        createdBy = UUID_ZERO
     }
 }
 
@@ -96,6 +99,8 @@ fun OrganizationEntity.createChild(name: String): OrganizationEntity {
         left = oldRight
         right = oldRight + 1
         level = childLevel
+        // todo:created_by add valid userId
+        createdBy = UUID_ZERO
     }
 }
 
