@@ -186,6 +186,7 @@ fun Transaction.setAuctionDetails(auction: AuctionEntity, auctionDetails: Auctio
                     targetAmount = auctionDetails.targetAmount
                     solidarityContribution = auctionDetails.solidarityContribution
                     minimalBid = auctionDetails.minimalBid
+                    createdBy = UUID_ZERO
                 }
             } else {
                 detailsEntity.benchmark = auctionDetails.benchmark
