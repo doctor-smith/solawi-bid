@@ -1,15 +1,18 @@
 package org.solyton.solawi.bid.module.user.schema
 
+import kotlinx.html.A
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.UUIDTable
+import org.joda.time.DateTime
+import org.solyton.solawi.bid.module.auditable.AuditableEntity
+import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
 import java.util.*
 
 typealias AddressesTable = Addresses
 typealias AddressEntity = Address
 
-object Addresses : UUIDTable("addresses") {
+object Addresses : AuditableUUIDTable("addresses") {
 //    val recipientName VARCHAR(255),   -- Name of the recipient
 //    organization_name VARCHAR(255),-- Name of the organization (optional)
 //    address_line1 VARCHAR(255),    -- Main street address
@@ -30,7 +33,7 @@ object Addresses : UUIDTable("addresses") {
 
 }
 
-class Address(id : EntityID<UUID>) : UUIDEntity(id) {
+class Address(id : EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     companion object : UUIDEntityClass<Address>(Addresses)
 
     var userProfile by UserProfile referencedOn Addresses.userProfile
@@ -44,8 +47,8 @@ class Address(id : EntityID<UUID>) : UUIDEntity(id) {
     var countryCode by Addresses.countryCode
 
 
-}
-
-fun Address.dummy() = Address.new {
-
+    override var createdAt: DateTime by Addresses.createdAt
+    override var createdBy: UUID by Addresses.createdBy
+    override var modifiedAt: DateTime? by Addresses.modifiedAt
+    override var modifiedBy: UUID? by Addresses.modifiedBy
 }
