@@ -4,11 +4,14 @@ import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.UUIDTable
+import org.joda.time.DateTime
+import org.solyton.solawi.bid.module.auditable.AuditableEntity
+import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
 import java.util.*
 
 typealias AuctionDetailsSolawiTuebingenEntity = AuctionDetailsSolawiTuebingen
 
-object AuctionDetailsSolawiTuebingenTable : UUIDTable("auction_details_solawi_tuebingen") {
+object AuctionDetailsSolawiTuebingenTable : AuditableUUIDTable("auction_details_solawi_tuebingen") {
     val auctionId = reference("auction_id", AuctionsTable)
     val benchmark = double("benchmark")
     val targetAmount = double("target_amount")
@@ -16,7 +19,7 @@ object AuctionDetailsSolawiTuebingenTable : UUIDTable("auction_details_solawi_tu
     val minimalBid = double("minimal_bid").default(0.0)
 }
 
-class AuctionDetailsSolawiTuebingen(id: EntityID<UUID>) : UUIDEntity(id) {
+class AuctionDetailsSolawiTuebingen(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     companion object : UUIDEntityClass<AuctionDetailsSolawiTuebingen>(AuctionDetailsSolawiTuebingenTable)
 
     var benchmark by AuctionDetailsSolawiTuebingenTable.benchmark
@@ -24,5 +27,10 @@ class AuctionDetailsSolawiTuebingen(id: EntityID<UUID>) : UUIDEntity(id) {
     var solidarityContribution by AuctionDetailsSolawiTuebingenTable.solidarityContribution
     var minimalBid by AuctionDetailsSolawiTuebingenTable.minimalBid
     var auction by Auction referencedOn AuctionDetailsSolawiTuebingenTable.auctionId
+
+    override var createdAt: DateTime by AuctionDetailsSolawiTuebingenTable.createdAt
+    override var createdBy: UUID by AuctionDetailsSolawiTuebingenTable.createdBy
+    override var modifiedAt: DateTime? by AuctionDetailsSolawiTuebingenTable.modifiedAt
+    override var modifiedBy: UUID? by AuctionDetailsSolawiTuebingenTable.modifiedBy
 }
 
