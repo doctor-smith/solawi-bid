@@ -2,7 +2,6 @@ package org.evoleq.ktorx.result
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.builtins.MapEntrySerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlin.reflect.KClass
 

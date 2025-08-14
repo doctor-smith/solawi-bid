@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.bid.action.db
 
 import kotlinx.datetime.LocalDate
 import org.evoleq.exposedx.test.runSimpleH2Test
+import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.selectAll
 import org.joda.time.DateTime
 import org.junit.jupiter.api.Test
@@ -9,15 +10,8 @@ import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.module.bid.data.api.CreateRound
 import org.solyton.solawi.bid.module.bid.data.api.NewBidder
 import org.solyton.solawi.bid.module.bid.data.toApiType
-import org.solyton.solawi.bid.module.bid.schema.AcceptedRoundsTable
-import org.solyton.solawi.bid.module.bid.schema.AuctionBidders
-import org.solyton.solawi.bid.module.bid.schema.AuctionDetailsSolawiTuebingenTable
+import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.bid.schema.AuctionEntity
-import org.solyton.solawi.bid.module.bid.schema.AuctionType
-import org.solyton.solawi.bid.module.bid.schema.Auctions
-import org.solyton.solawi.bid.module.bid.schema.BidderDetailsSolawiTuebingenTable
-import org.solyton.solawi.bid.module.bid.schema.Bidders
-import org.solyton.solawi.bid.module.bid.schema.Rounds
 import org.solyton.solawi.bid.module.db.schema.*
 import java.util.*
 import kotlin.test.assertEquals
@@ -169,7 +163,7 @@ class AuctionTests {
             name = "TestAuction"
             date = DateTime().withDate(1,1,1)
             type = auctionType
-            createdBy = UUID(0L,0L)
+            createdBy = UUID_ZERO
         }
 
         deleteAuctions(listOf(auction.id.value))

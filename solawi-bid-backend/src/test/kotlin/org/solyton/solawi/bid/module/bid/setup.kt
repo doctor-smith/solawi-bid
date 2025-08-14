@@ -1,16 +1,11 @@
 package org.solyton.solawi.bid.module.bid
 
+import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.insert
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.bid.action.db.BidBests.BidProcessSetup
-import org.solyton.solawi.bid.module.bid.schema.Auction
-import org.solyton.solawi.bid.module.bid.schema.AuctionBidders
-import org.solyton.solawi.bid.module.bid.schema.AuctionType
-import org.solyton.solawi.bid.module.bid.schema.Bidder
-import org.solyton.solawi.bid.module.bid.schema.BidderDetailsSolawiTuebingenTable
-import org.solyton.solawi.bid.module.bid.schema.Round
-import java.util.UUID
+import org.solyton.solawi.bid.module.bid.schema.*
 
 fun Transaction.setupBidProcess(): BidProcessSetup {
     // db setup
@@ -23,7 +18,7 @@ fun Transaction.setupBidProcess(): BidProcessSetup {
         name = "TestAuction"
         date = DateTime().withDate(1,1,1)
         type = auctionType
-        createdBy = UUID(0L,0L)
+        createdBy = UUID_ZERO
     }
     // create a round in the auction
     // note: state is "OPENED" by default.

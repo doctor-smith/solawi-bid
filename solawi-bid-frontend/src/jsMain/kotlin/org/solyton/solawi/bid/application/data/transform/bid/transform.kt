@@ -6,7 +6,6 @@ import org.evoleq.optics.storage.times
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.bidenv.Environment
-import org.solyton.solawi.bid.module.bid.data.bidenv.frontendUrl
 import org.solyton.solawi.bid.module.bid.data.biduser.User
 
 val bidApplicationIso: Lens<Application, BidApplication> by lazy {

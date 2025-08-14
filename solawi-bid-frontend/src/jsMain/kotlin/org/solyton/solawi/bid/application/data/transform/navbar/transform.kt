@@ -4,8 +4,8 @@ import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.ActionDispatcher
 import org.evoleq.optics.storage.times
 import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.module.navbar.data.navbar.NavBar
 import org.solyton.solawi.bid.module.navbar.data.environment.Environment
+import org.solyton.solawi.bid.module.navbar.data.navbar.NavBar
 import org.solyton.solawi.bid.module.navbar.data.user.User as NavBarUser
 
 val navBarIso: Lens<Application, NavBar> by lazy {

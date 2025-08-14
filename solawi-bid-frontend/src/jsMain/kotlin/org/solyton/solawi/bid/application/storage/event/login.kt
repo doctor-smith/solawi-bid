@@ -3,7 +3,6 @@ package org.solyton.solawi.bid.application.storage.event
 import org.evoleq.compose.routing.navigate
 import org.evoleq.optics.storage.Storage
 import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.application.ui.page.user.effect.TriggerReadUserPermissions
 import org.solyton.solawi.bid.module.localstorage.api.write
 import org.solyton.solawi.bid.module.user.data.User
 

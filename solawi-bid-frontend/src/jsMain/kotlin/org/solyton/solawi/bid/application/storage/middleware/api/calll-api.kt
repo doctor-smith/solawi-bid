@@ -2,21 +2,20 @@ package org.solyton.solawi.bid.application.storage.middleware.api
 
 import org.evoleq.ktorx.api.EndPoint
 import org.evoleq.ktorx.result.Result
-import org.evoleq.math.*
+import org.evoleq.math.MathDsl
 import org.evoleq.math.state.KlState
 import org.evoleq.math.state.State
+import org.evoleq.math.x
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
-import org.solyton.solawi.bid.application.api.client
-import org.solyton.solawi.bid.application.api.delete
-import org.solyton.solawi.bid.application.api.get
-import org.solyton.solawi.bid.application.api.patch
-import org.solyton.solawi.bid.application.api.post
-import org.solyton.solawi.bid.application.api.put
-import org.solyton.solawi.bid.application.data.*
+import org.solyton.solawi.bid.application.api.*
+import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.application.data.api
 import org.solyton.solawi.bid.application.data.env.backendPort
 import org.solyton.solawi.bid.application.data.env.backendUrl
+import org.solyton.solawi.bid.application.data.environment
+import org.solyton.solawi.bid.application.data.userData
 import org.solyton.solawi.bid.application.service.seemsToBeLoggerIn
 
 @MathDsl

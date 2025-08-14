@@ -6,6 +6,7 @@ import org.evoleq.compose.modal.Modal
 import org.evoleq.compose.modal.ModalData
 import org.evoleq.compose.modal.ModalType
 import org.evoleq.compose.modal.Modals
+import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.language.Lang
 import org.evoleq.language.component
 import org.evoleq.language.get
@@ -17,7 +18,6 @@ import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
-import org.evoleq.compose.style.data.device.DeviceType
 import org.solyton.solawi.bid.module.cookie.data.CookieDisclaimer
 import org.solyton.solawi.bid.module.cookie.data.isConfirmed
 import org.solyton.solawi.bid.module.cookie.data.isShown

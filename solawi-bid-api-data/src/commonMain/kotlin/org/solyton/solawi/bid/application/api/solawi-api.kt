@@ -4,14 +4,7 @@ package org.solyton.solawi.bid.application.api
 import org.evoleq.ktorx.api.Api
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
-import org.solyton.solawi.bid.module.permission.data.api.Context
-import org.solyton.solawi.bid.module.permission.data.api.Contexts
-import org.solyton.solawi.bid.module.permission.data.api.ParentChildRelationsOfContext
-import org.solyton.solawi.bid.module.permission.data.api.ReadParentChildRelationsOfContexts
-import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContexts
-import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContextsOfUser
-import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContextsOfUsers
-import org.solyton.solawi.bid.module.permission.data.api.UserToContextsMap
+import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
 
 val solawiApi by lazy {

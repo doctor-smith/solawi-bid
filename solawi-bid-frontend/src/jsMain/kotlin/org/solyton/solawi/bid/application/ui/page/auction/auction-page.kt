@@ -28,8 +28,6 @@ import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
 import org.solyton.solawi.bid.module.bid.action.readAuctions
-import org.solyton.solawi.bid.module.style.page.verticalPageStyle
-import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.bid.component.AuctionDetails
 import org.solyton.solawi.bid.module.bid.component.BidRoundList
 import org.solyton.solawi.bid.module.bid.component.button.CreateNewRoundButton
@@ -43,6 +41,8 @@ import org.solyton.solawi.bid.module.bid.data.i18N
 import org.solyton.solawi.bid.module.bid.data.reader.BidComponent
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.data.locale
+import org.solyton.solawi.bid.module.style.page.verticalPageStyle
+import org.solyton.solawi.bid.module.style.wrap.Wrap
 
 val auctionPropertiesStyles = PropertiesStyles(
     containerStyle = { width(40.percent) },

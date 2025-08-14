@@ -1,10 +1,9 @@
 package org.solyton.solawi.bid.module.application.permission
 
-import org.evoleq.permission.combine
-import org.evoleq.value.StringValueWithDescription
-
 
 import org.evoleq.permission.EmptyContext
+import org.evoleq.permission.combine
+import org.evoleq.value.StringValueWithDescription
 import org.solyton.solawi.bid.module.bid.permission.AuctionContext
 import org.solyton.solawi.bid.module.user.permission.OrganizationContext
 

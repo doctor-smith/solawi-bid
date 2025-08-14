@@ -19,7 +19,6 @@ import org.solyton.solawi.bid.application.ui.page.user.action.readRightRoleConte
 import org.solyton.solawi.bid.module.context.data.current
 import org.solyton.solawi.bid.module.permission.data.api.Contexts
 import org.solyton.solawi.bid.module.permission.data.api.ParentChildRelationsOfContexts
-import org.solyton.solawi.bid.module.user.data.availablePermissions
 
 
 @MathDsl

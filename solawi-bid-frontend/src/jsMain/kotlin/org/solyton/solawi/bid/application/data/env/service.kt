@@ -1,10 +1,9 @@
 package org.solyton.solawi.bid.application.data.env
 
+import kotlinx.browser.window
 import kotlinx.coroutines.await
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.decodeFromString
-import kotlinx.browser.window
 
 @Serializable
 @Suppress("ConstructorParameterNaming")

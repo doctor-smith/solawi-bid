@@ -5,7 +5,7 @@ import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.jodatime.datetime
 import org.joda.time.DateTime
-import java.util.UUID
+import java.util.*
 
 
 interface AuditableColumns<Id> {

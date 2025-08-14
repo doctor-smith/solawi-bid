@@ -8,7 +8,6 @@ import org.jetbrains.compose.web.dom.Text
 import org.w3c.dom.asList
 import org.w3c.files.File
 import org.w3c.files.FileReader
-import org.w3c.files.get
 
 @Markup
 @Composable

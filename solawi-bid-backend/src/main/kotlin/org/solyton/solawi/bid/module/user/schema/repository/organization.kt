@@ -3,7 +3,6 @@ package org.solyton.solawi.bid.module.user.schema.repository
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.solyton.solawi.bid.module.permission.exception.ContextException
-import org.solyton.solawi.bid.module.user.exception.UserManagementException
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
@@ -11,11 +10,12 @@ import org.solyton.solawi.bid.module.permission.schema.Rights
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
 import org.solyton.solawi.bid.module.permission.schema.Roles
+import org.solyton.solawi.bid.module.user.exception.UserManagementException
 import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
 import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserOrganization
-import java.util.UUID
+import java.util.*
 
 fun OrganizationEntity.ancestors(): SizedIterable<OrganizationEntity> {
     if(root == null) {

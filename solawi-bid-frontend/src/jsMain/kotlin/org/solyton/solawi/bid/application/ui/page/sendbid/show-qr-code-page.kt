@@ -4,18 +4,18 @@ import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.compose.routing.navigate
+import org.evoleq.device.data.mediaType
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.solyton.solawi.bid.application.data.Application
-import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.environment
-import org.solyton.solawi.bid.module.style.form.formPageDesktopStyle
-import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.qrcode.QRCodeSvg
+import org.solyton.solawi.bid.module.style.form.formPageDesktopStyle
+import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 
 @Markup
 @Composable

@@ -5,10 +5,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.routing.navigate
+import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.language.Lang
 import org.evoleq.language.component
 import org.evoleq.language.get
 import org.evoleq.math.Source
+import org.evoleq.optics.storage.Action
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.attributes.selected
@@ -17,9 +19,6 @@ import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Option
 import org.jetbrains.compose.web.dom.Select
 import org.jetbrains.compose.web.dom.Text
-import org.evoleq.compose.style.data.device.DeviceType
-import org.evoleq.optics.storage.Action
-import org.solyton.solawi.bid.module.navbar.effect.TriggerLogoutEffect
 import org.solyton.solawi.bid.module.authentication.data.api.Logout
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.language
@@ -27,6 +26,7 @@ import org.solyton.solawi.bid.module.i18n.data.locale
 import org.solyton.solawi.bid.module.i18n.data.locales
 import org.solyton.solawi.bid.module.navbar.data.navbar.NavBar
 import org.solyton.solawi.bid.module.navbar.data.navbar.i18n
+import org.solyton.solawi.bid.module.navbar.effect.TriggerLogoutEffect
 
 @Markup
 @Composable

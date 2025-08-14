@@ -7,24 +7,24 @@
 package org.solyton.solawi.bid.application.data
 
 import kotlinx.coroutines.flow.MutableSharedFlow
+import org.evoleq.compose.modal.Modals
+import org.evoleq.device.data.Device
+import org.evoleq.ktorx.api.Api
 import org.evoleq.optics.Lensify
 import org.evoleq.optics.ReadOnly
 import org.evoleq.optics.ReadWrite
-import org.evoleq.compose.modal.Modals
-import org.evoleq.ktorx.api.Api
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.MutableSharedFlowActionDispatcher
 import org.solyton.solawi.bid.application.api.solawiApi
-import org.evoleq.device.data.Device
 import org.solyton.solawi.bid.application.data.env.Environment
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
+import org.solyton.solawi.bid.module.bid.data.bidder.BidderMails
 import org.solyton.solawi.bid.module.bid.data.bidround.BidRound
 import org.solyton.solawi.bid.module.context.data.Context
 import org.solyton.solawi.bid.module.cookie.data.CookieDisclaimer
 import org.solyton.solawi.bid.module.i18n.data.I18N
 import org.solyton.solawi.bid.module.permissions.data.Permissions
 import org.solyton.solawi.bid.module.user.data.User
-import org.solyton.solawi.bid.module.bid.data.bidder.BidderMails
 import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 
 /**

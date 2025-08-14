@@ -18,8 +18,8 @@ import org.solyton.solawi.bid.application.ui.effect.LaunchReadEnvironmentEffect
 import org.solyton.solawi.bid.application.ui.effect.LaunchSetDeviceData
 import org.solyton.solawi.bid.application.ui.page.login.effect.LaunchIsLoggedInEffect
 import org.solyton.solawi.bid.application.ui.page.user.effect.LaunchReadUserPermissionsEffect
-import org.solyton.solawi.bid.module.style.GlobalStyles
 import org.solyton.solawi.bid.module.loading.component.Loading
+import org.solyton.solawi.bid.module.style.GlobalStyles
 
 @Markup
 @Suppress("FunctionName")

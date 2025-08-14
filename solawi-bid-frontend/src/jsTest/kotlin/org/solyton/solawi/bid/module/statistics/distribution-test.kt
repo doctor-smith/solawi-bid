@@ -1,6 +1,5 @@
 package org.solyton.solawi.bid.module.statistics
 
-import io.ktor.http.HttpHeaders.Range
 import org.solyton.solawi.bid.module.statistics.data.DistributionConfiguration
 import org.solyton.solawi.bid.module.statistics.service.distribute
 import kotlin.test.Test

@@ -6,12 +6,12 @@
 // lens generator. See below for more details.
 package org.solyton.solawi.bid.module.authentication.data
 
+import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.language.Lang
 import org.evoleq.optics.Lensify
 import org.evoleq.optics.ReadOnly
 import org.evoleq.optics.ReadWrite
 import org.evoleq.optics.lens.Lens
-import org.evoleq.compose.style.data.device.DeviceType
 
 /**
  * Generator class.

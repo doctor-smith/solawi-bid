@@ -1,9 +1,7 @@
 package org.evoleq.language
 
-import org.evoleq.parser.ParsingResult
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class LanguageTest {

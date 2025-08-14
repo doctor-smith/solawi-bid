@@ -2,25 +2,12 @@ package org.solyton.solawi.bid.module.permission
 
 import org.evoleq.exposedx.test.runSimpleH2Test
 import org.jetbrains.exposed.sql.selectAll
-import org.solyton.solawi.bid.DbFunctional
 import org.junit.jupiter.api.Test
+import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.module.db.schema.*
+import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
-import org.solyton.solawi.bid.module.permission.schema.repository.ContextToNest
-import org.solyton.solawi.bid.module.permission.schema.repository.addChild
-import org.solyton.solawi.bid.module.permission.schema.repository.cloneContext
-import org.solyton.solawi.bid.module.permission.schema.repository.createChild
-import org.solyton.solawi.bid.module.permission.schema.repository.createRootContext
-import org.solyton.solawi.bid.module.permission.schema.repository.nest
-import org.solyton.solawi.bid.module.permission.schema.repository.parent
-import org.solyton.solawi.bid.module.permission.schema.repository.path
-import org.solyton.solawi.bid.module.permission.schema.repository.pathAsList
-import org.solyton.solawi.bid.module.permission.schema.Contexts
-import org.solyton.solawi.bid.module.permission.schema.ContextsTable
-import org.solyton.solawi.bid.module.permission.schema.Rights
-import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
-import org.solyton.solawi.bid.module.permission.schema.Roles
-import org.solyton.solawi.bid.module.user.schema.repository.createChild
+import org.solyton.solawi.bid.module.permission.schema.repository.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 

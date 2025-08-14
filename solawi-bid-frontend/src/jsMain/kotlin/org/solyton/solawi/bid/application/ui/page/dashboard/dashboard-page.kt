@@ -5,6 +5,7 @@ import org.evoleq.compose.Markup
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.compose.routing.navigate
+import org.evoleq.device.data.mediaType
 import org.evoleq.language.Lang
 import org.evoleq.language.component
 import org.evoleq.language.subComp
@@ -17,14 +18,13 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 import org.solyton.solawi.bid.application.data.Application
-import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.i18N
 import org.solyton.solawi.bid.application.ui.page.dashboard.data.DashboardComponent
-import org.solyton.solawi.bid.module.style.page.verticalPageStyle
-import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.language
+import org.solyton.solawi.bid.module.style.page.verticalPageStyle
+import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.w3c.dom.HTMLElement
 
 @Markup

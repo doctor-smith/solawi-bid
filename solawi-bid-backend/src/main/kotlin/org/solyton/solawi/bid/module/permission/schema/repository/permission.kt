@@ -1,6 +1,9 @@
 package org.solyton.solawi.bid.module.permission.schema.repository
 
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.Transaction
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.insertAndGetId
+import org.jetbrains.exposed.sql.selectAll
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity

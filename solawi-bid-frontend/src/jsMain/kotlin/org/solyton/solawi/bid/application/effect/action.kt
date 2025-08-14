@@ -1,11 +1,11 @@
 package org.solyton.solawi.bid.application.effect
 
+import org.evoleq.device.data.mediaType
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.actions
-import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.modals
 import org.solyton.solawi.bid.module.error.component.showErrorModal

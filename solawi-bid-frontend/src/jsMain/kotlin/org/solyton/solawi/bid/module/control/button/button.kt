@@ -3,6 +3,7 @@ package org.solyton.solawi.bid.module.control.button
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
 import org.evoleq.compose.attribute.dataId
+import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.jetbrains.compose.web.attributes.disabled
@@ -10,7 +11,6 @@ import org.jetbrains.compose.web.css.CSSColorValue
 import org.jetbrains.compose.web.css.backgroundColor
 import org.jetbrains.compose.web.dom.Button
 import org.jetbrains.compose.web.dom.Text
-import org.evoleq.compose.style.data.device.DeviceType
 import org.solyton.solawi.bid.module.style.button.buttonStyle
 import org.solyton.solawi.bid.module.style.button.cancelButtonStyle
 import org.solyton.solawi.bid.module.style.button.submitButtonStyle

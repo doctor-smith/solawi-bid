@@ -6,10 +6,10 @@ import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.defaultheaders.*
 import io.ktor.server.plugins.forwardedheaders.*
 import org.slf4j.event.Level
+import org.solyton.solawi.bid.application.data.db.migrations.applicationMigrations
 import org.solyton.solawi.bid.application.environment.setupEnvironment
 import org.solyton.solawi.bid.application.pipeline.*
 import org.solyton.solawi.bid.application.routing.setupRouting
-import org.solyton.solawi.bid.application.data.db.migrations.applicationMigrations
 
 fun Application.solawiBid(test: Boolean = false) {
         val environment = setupEnvironment()

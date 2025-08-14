@@ -1,6 +1,6 @@
 package org.evoleq.ktorx.data
 
-import io.ktor.http.HttpStatusCode
+import io.ktor.http.*
 import org.evoleq.ktorx.result.Result
 
 interface KTorEnv {

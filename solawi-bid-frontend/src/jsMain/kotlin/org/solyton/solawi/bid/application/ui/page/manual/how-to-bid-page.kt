@@ -7,23 +7,23 @@ import org.evoleq.compose.layout.Space
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.compose.layout.scrollableStyle
 import org.evoleq.compose.routing.navigate
+import org.evoleq.compose.style.data.device.DeviceType
+import org.evoleq.device.data.Device
+import org.evoleq.device.data.mediaType
 import org.evoleq.math.Reader
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 import org.solyton.solawi.bid.application.data.Application
-import org.evoleq.device.data.Device
-import org.evoleq.compose.style.data.device.DeviceType
-import org.evoleq.device.data.mediaType
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.env.Environment
-import org.solyton.solawi.bid.module.style.page.verticalPageStyle
-import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.bid.component.form.SendBidForm
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.mobile.component.MobileDevice
 import org.solyton.solawi.bid.module.qrcode.QRCodeSvg
+import org.solyton.solawi.bid.module.style.page.verticalPageStyle
+import org.solyton.solawi.bid.module.style.wrap.Wrap
 
 @Markup
 @Composable

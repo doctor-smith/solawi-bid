@@ -1,27 +1,27 @@
 package org.solyton.solawi.bid.application.environment
 
-import io.ktor.http.HttpStatusCode
+import io.ktor.http.*
 import io.ktor.server.application.*
 import org.evoleq.exposedx.data.Database
 import org.evoleq.exposedx.data.DbEnv
 import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.ktorx.result.Result
+import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.solyton.solawi.bid.module.application.permission.Context
-import org.solyton.solawi.bid.application.permission.Role
 import org.solyton.solawi.bid.application.action.io.transform
+import org.solyton.solawi.bid.application.permission.Role
+import org.solyton.solawi.bid.module.application.permission.Context
 import org.solyton.solawi.bid.module.authentication.environment.JWT
 import org.solyton.solawi.bid.module.authentication.environment.JwtEnv
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.Contexts
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.Roles
-import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
+import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.Users
-import java.util.UUID
 import org.jetbrains.exposed.sql.Database as SqlDatabase
 
 fun Application.setupEnvironment(): Environment = with(environment.config){
@@ -93,7 +93,7 @@ data class Environment(
             val applicationOwner = UserEntity.new {
                 username = applicationOwner.username
                 password = applicationOwner.password
-                createdBy = UUID(0L,0L)
+                createdBy = UUID_ZERO
             }
 
             val applicationContextId = ContextEntity.find {
