@@ -161,6 +161,7 @@ internal fun Transaction.addBidders(auction: AuctionEntity, newBidders: List<New
                     it[BidderDetailsSolawiTuebingenTable.bidderId] = newBidder.id.value
                     it[weblingId] = bidder.weblingId
                     it[numberOfShares] = bidder.numberOfShares
+                    it[createdBy] = UUID_ZERO
                 }
             }
 

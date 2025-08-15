@@ -43,6 +43,7 @@ fun Transaction.setupBidProcess(): BidProcessSetup {
         it[weblingId] = 1
         it[numberOfShares] = 1
         it[bidderId] = bidder.id.value
+        it[createdBy] = UUID_ZERO
     }
     auction.bidders+bidder
 
