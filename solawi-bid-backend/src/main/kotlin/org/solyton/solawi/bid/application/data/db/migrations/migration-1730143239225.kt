@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.application.data.db.migrations
 
 import org.evoleq.exposedx.migrations.Migration
+import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.*
 import org.solyton.solawi.bid.application.permission.Right
 import org.solyton.solawi.bid.application.permission.Role
@@ -60,22 +61,28 @@ fun setupBasicRolesAndRights() {
     // Contexts
     val applicationContextId = Contexts.insertAndGetId {
         it[name] = Context.Application.value
+        it[createdBy] = UUID_ZERO
     }
     // val applicationOrganizationContextId =
     Contexts.insertAndGetId {
         it[name] = ApplicationContext.Organization.value
+        it[createdBy] = UUID_ZERO
     }
     Contexts.insert {
         it[name] = OrganizationContext.value
+        it[createdBy] = UUID_ZERO
     }
     Contexts.insert {
         it[name] = OrganizationContext.Management.value
+        it[createdBy] = UUID_ZERO
     }
     Contexts.insert {
         it[name] = Context.Auction.value
+        it[createdBy] = UUID_ZERO
     }
     Contexts.insert {
         it[name] = AuctionContext.Management.value
+        it[createdBy] = UUID_ZERO
     }
 
     // Roles

@@ -1,5 +1,6 @@
 package org.solyton.solawi.bid.module.permission.schema.repository
 
+import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
 import org.solyton.solawi.bid.module.permission.exception.ContextException
@@ -31,6 +32,7 @@ fun ContextEntity.descendants(): SizedIterable<ContextEntity> = with(root?.id?:i
 fun createRootContext(contextName: String): ContextEntity {
     return ContextEntity.new {
         name = contextName.replace(" ", "_")
+        createdBy = UUID_ZERO
     }
 }
 
@@ -61,6 +63,7 @@ fun ContextEntity.createChild(name: String): ContextEntity {
         left = oldRight
         right = oldRight + 1
         level = childLevel
+        createdBy = UUID_ZERO
     }
 }
 
@@ -205,6 +208,7 @@ fun Transaction.cloneContext(contextId: UUID, identifier: String): List<ContextE
         level = contextToClone.level
         left = contextToClone.left
         right = contextToClone.right
+        createdBy = UUID_ZERO
     }
     val contexts =descendants.map { context ->
         ContextEntity.new{
@@ -213,6 +217,7 @@ fun Transaction.cloneContext(contextId: UUID, identifier: String): List<ContextE
             level = context.level
             left = context.left
             right = context.right
+            createdBy = UUID_ZERO
         }
     }
     return listOf(
