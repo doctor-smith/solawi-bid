@@ -95,6 +95,12 @@ val columns: List<AddMissingColumns> by lazy {
             ColumnDef<DateTime>("CREATED_AT", DateTime.now()),
             ColumnDef<UUID?>("MODIFIED_BY",null),
             ColumnDef<DateTime?>("MODIFIED_AT", null),
+        ),
+        BiddersTable.addColumnsIfMissing(
+            ColumnDef<UUID>("CREATED_BY", UUID_ZERO),
+            ColumnDef<DateTime>("CREATED_AT", DateTime.now()),
+            ColumnDef<UUID?>("MODIFIED_BY",null),
+            ColumnDef<DateTime?>("MODIFIED_AT", null),
         )
     )
 }

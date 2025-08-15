@@ -51,6 +51,7 @@ class AuctionTests {
             username = "name"
             weblingId = 1
             numberOfShares = 1
+            createdBy = UUID_ZERO
         }
 
         AuctionBidders.insert {

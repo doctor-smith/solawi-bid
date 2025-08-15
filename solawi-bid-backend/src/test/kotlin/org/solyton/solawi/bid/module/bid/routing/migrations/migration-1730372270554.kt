@@ -82,6 +82,7 @@ class Migration1730372270554(
             type = auctionType
             //weblingId = 1
             //numberOfParts = 1
+            createdBy = UUID_ZERO
         }
         AuctionBidders.insert{
             it[AuctionBidders.auctionId] = auction.id

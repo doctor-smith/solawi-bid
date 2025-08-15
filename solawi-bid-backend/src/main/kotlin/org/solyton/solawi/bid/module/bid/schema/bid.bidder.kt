@@ -4,12 +4,15 @@ import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.UUIDTable
+import org.joda.time.DateTime
+import org.solyton.solawi.bid.module.auditable.AuditableEntity
+import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
 import java.util.*
 
 typealias BidderEntity = Bidder
 typealias BiddersTable = Bidders
 
-object Bidders : UUIDTable("bidders") {
+object Bidders : AuditableUUIDTable("bidders") {
 
     val username = varchar("username", 100)
 
@@ -25,7 +28,7 @@ object Bidders : UUIDTable("bidders") {
     }
 }
 
-class Bidder(id : EntityID<UUID> ) : UUIDEntity(id) {
+class Bidder(id : EntityID<UUID> ) : UUIDEntity(id), AuditableEntity<UUID> {
     companion object: UUIDEntityClass<Bidder>(Bidders)
 
     var username by Bidders.username
@@ -36,4 +39,9 @@ class Bidder(id : EntityID<UUID> ) : UUIDEntity(id) {
 
     var auctions by Auction via AuctionBidders
     val bidRounds by BidRound referrersOn BidRounds.bidder
+
+    override var createdAt: DateTime by Bidders.createdAt
+    override var createdBy: UUID by Bidders.createdBy
+    override var modifiedAt: DateTime? by Bidders.modifiedAt
+    override var modifiedBy: UUID? by Bidders.modifiedBy
 }

@@ -33,6 +33,7 @@ fun Transaction.setupBidProcess(): BidProcessSetup {
     val bidder = Bidder.new {
         username = "test-user"
         type = auctionType
+        createdBy = UUID_ZERO
     }
     AuctionBidders.insert{
         it[AuctionBidders.auctionId] = auction.id
