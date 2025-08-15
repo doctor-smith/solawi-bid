@@ -3,13 +3,15 @@ package org.solyton.solawi.bid.module.permission.schema
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.UUIDTable
+import org.joda.time.DateTime
+import org.solyton.solawi.bid.module.auditable.AuditableEntity
+import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
 import java.util.*
 
 typealias ContextEntity = Context
 typealias ContextsTable = Contexts
 
-object Contexts : UUIDTable("contexts") {
+object Contexts : AuditableUUIDTable("contexts") {
     val name = varchar("name",500).uniqueIndex()
 
     // Nested Tree structure
@@ -19,7 +21,7 @@ object Contexts : UUIDTable("contexts") {
     val level = integer("level").index().default(0)
 }
 
-class Context(id: EntityID<UUID>) : UUIDEntity(id) {
+class Context(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     companion object : UUIDEntityClass<Context>(Contexts)
     // attributes
     var name by Contexts.name
@@ -33,4 +35,9 @@ class Context(id: EntityID<UUID>) : UUIDEntity(id) {
     var left by Contexts.left
     var right by Contexts.right
     var level by Contexts.level
+
+    override var createdAt: DateTime by Contexts.createdAt
+    override var createdBy: UUID by Contexts.createdBy
+    override var modifiedAt: DateTime? by Contexts.modifiedAt
+    override var modifiedBy: UUID? by Contexts.modifiedBy
 }
