@@ -10,6 +10,7 @@ import org.solyton.solawi.bid.module.banking.schema.BankAccountsTable
 import org.solyton.solawi.bid.module.banking.schema.FiscalYears
 import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.permission.schema.Resources
 import org.solyton.solawi.bid.module.user.schema.AddressesTable
 import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import org.solyton.solawi.bid.module.user.schema.UserProfilesTable
@@ -110,6 +111,12 @@ val columns: List<AddMissingColumns> by lazy {
             ColumnDef<DateTime?>("MODIFIED_AT", null),
         ),
         ContextsTable.addColumnsIfMissing(
+            ColumnDef<UUID>("CREATED_BY", UUID_ZERO),
+            ColumnDef<DateTime>("CREATED_AT", DateTime.now()),
+            ColumnDef<UUID?>("MODIFIED_BY",null),
+            ColumnDef<DateTime?>("MODIFIED_AT", null),
+        ),
+        Resources.addColumnsIfMissing(
             ColumnDef<UUID>("CREATED_BY", UUID_ZERO),
             ColumnDef<DateTime>("CREATED_AT", DateTime.now()),
             ColumnDef<UUID?>("MODIFIED_BY",null),
