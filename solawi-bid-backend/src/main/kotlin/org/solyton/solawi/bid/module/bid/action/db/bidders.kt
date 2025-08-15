@@ -8,6 +8,7 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
+import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
@@ -151,6 +152,8 @@ internal fun Transaction.addBidders(auction: AuctionEntity, newBidders: List<New
             this.type = auctionType
             // weblingId = bidder.weblingId
             // this.numberOfParts = bidder.numberOfShares
+            // todo dev:
+            createdBy = UUID_ZERO
         }
         when(typeName) {
             "solawi_tuebingen" -> {
