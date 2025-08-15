@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.module.permission
 
 import org.evoleq.exposedx.test.runSimpleH2Test
+import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.selectAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
@@ -24,6 +25,7 @@ class ContextTests {
      @DbFunctional@Test fun getParentTest() = runSimpleH2Test(*neededTables){
          val root = ContextEntity.new {
              name = "Root"
+             createdBy = UUID_ZERO
          }
 
          val context1_1 = root.createChild("context1_1")
@@ -39,6 +41,7 @@ class ContextTests {
     @DbFunctional@Test fun computeContextPathTest() = runSimpleH2Test(*neededTables){
         val root = ContextEntity.new {
             name = "Root"
+            createdBy = UUID_ZERO
         }
 
         val context1_1 = root.createChild("context1_1")
@@ -84,26 +87,29 @@ class ContextTests {
         exec("ALTER TABLE contexts DROP CONSTRAINT CONTEXTS_NAME_UNIQUE;")
 
         ContextEntity.new {
+            createdBy = UUID_ZERO
             name = "Context"
         }
         ContextEntity.new {
             name = "Context"
+            createdBy = UUID_ZERO
         }
         assertTrue { Contexts.selectAll().map { it }.size >= 2 }
-
-
     }
 
     @DbFunctional@Test fun nestContexts() = runSimpleH2Test(*neededTables) {
         ContextEntity.new {
             name = "ROOT"
+            createdBy = UUID_ZERO
         }
         ContextEntity.new {
             name = "ROOT/PARENT"
+            createdBy = UUID_ZERO
         }
 
         ContextEntity.new {
             name = "ROOT/PARENT/CHILD"
+            createdBy = UUID_ZERO
         }
 
 
@@ -132,10 +138,12 @@ class ContextTests {
     @DbFunctional@Test fun addContext() = runSimpleH2Test(*neededTables) {
         val root = ContextEntity.new {
             name = "ROOT"
+            createdBy = UUID_ZERO
         }
 
         val child = ContextEntity.new {
             name = "CHILD"
+            createdBy = UUID_ZERO
         }
 
         root.addChild(child)
@@ -151,10 +159,12 @@ class ContextTests {
     @DbFunctional@Test fun addContext2() = runSimpleH2Test(*neededTables) {
         val root = ContextEntity.new {
             name = "ROOT"
+            createdBy = UUID_ZERO
         }
 
         val child = ContextEntity.new {
             name = "CHILD"
+            createdBy = UUID_ZERO
         }
 
         root.addChild(child)
@@ -167,9 +177,11 @@ class ContextTests {
 
         val root2 = ContextEntity.new {
             name = "ROOT2"
+            createdBy = UUID_ZERO
         }
         val child2 = ContextEntity.new {
             name = "CHILD2"
+            createdBy = UUID_ZERO
         }
 
         root2.addChild(child2)

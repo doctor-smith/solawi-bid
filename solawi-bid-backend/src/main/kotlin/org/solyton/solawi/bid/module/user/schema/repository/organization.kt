@@ -45,6 +45,7 @@ fun createRootOrganization(organizationName: String): OrganizationEntity {
 
     val organizationContext = ContextEntity.new {
         name = finalOrganizationName
+        createdBy = UUID_ZERO
     }
     val manager = RoleEntity.find { Roles.name eq "MANAGER" }.first()
     val read = RightEntity.find { Rights.name eq "READ" }.first()

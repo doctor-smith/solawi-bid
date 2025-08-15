@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.module.permission
 
 import org.evoleq.exposedx.test.runSimpleH2Test
+import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.insert
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
@@ -50,6 +51,7 @@ class PermissionTests {
         }
         val context = ContextEntity.new {
             name = "APP-$ts"
+            createdBy = UUID_ZERO
 
         }
         RoleRightContexts.insert {
@@ -115,7 +117,7 @@ class PermissionTests {
         }
         val context = ContextEntity.new {
             name = "APP-$ts"
-
+            createdBy = UUID_ZERO
         }
         RoleRightContexts.insert {
             it[roleId] = role.id
@@ -175,7 +177,7 @@ class PermissionTests {
         }
         val context = ContextEntity.new {
             name = "APP-$ts"
-
+            createdBy = UUID_ZERO
         }
         RoleRightContexts.insert {
             it[roleId] = role.id
@@ -232,6 +234,7 @@ class PermissionTests {
         }
         val context = ContextEntity.new {
             name = "APP-$ts"
+            createdBy = UUID_ZERO
 
         }
         RoleRightContexts.insert {
@@ -246,7 +249,7 @@ class PermissionTests {
         }
         val context1 = ContextEntity.new {
             name = "APP1-$ts"
-
+            createdBy = UUID_ZERO
         }
 
         val cloned = cloneRightRoleContext(context.id.value, context1.id.value)
