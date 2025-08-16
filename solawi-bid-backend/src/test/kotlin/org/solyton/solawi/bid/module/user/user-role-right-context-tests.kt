@@ -53,15 +53,18 @@ class UserRoleRightContextTests {
         val creator = RoleEntity.new {
             name = "CREATOR-$ts"
             description = ""
+            createdBy = UUID_ZERO
         }
 
         val reader = RoleEntity.new {
             name = "READER-$ts"
             description = ""
+            createdBy = UUID_ZERO
         }
         val updater = RoleEntity.new {
             name = "UPDATER-$ts"
             description = ""
+            createdBy = UUID_ZERO
         }
         val context = ContextEntity.new {
             name = "APP-$ts"

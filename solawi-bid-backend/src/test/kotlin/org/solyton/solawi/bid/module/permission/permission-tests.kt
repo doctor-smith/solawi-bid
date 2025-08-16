@@ -50,6 +50,7 @@ class PermissionTests {
         val role = RoleEntity.new {
             name = "READER-$ts"
             description = ""
+            createdBy = UUID_ZERO
         }
         val context = ContextEntity.new {
             name = "APP-$ts"
@@ -118,6 +119,7 @@ class PermissionTests {
         val role = RoleEntity.new {
             name = "READER-$ts"
             description = ""
+            createdBy = UUID_ZERO
         }
         val context = ContextEntity.new {
             name = "APP-$ts"
@@ -180,6 +182,7 @@ class PermissionTests {
         val role = RoleEntity.new {
             name = "READER-$ts"
             description = ""
+            createdBy = UUID_ZERO
         }
         val context = ContextEntity.new {
             name = "APP-$ts"
@@ -239,6 +242,7 @@ class PermissionTests {
         val role = RoleEntity.new {
             name = "READER-$ts"
             description = ""
+            createdBy = UUID_ZERO
         }
         val context = ContextEntity.new {
             name = "APP-$ts"

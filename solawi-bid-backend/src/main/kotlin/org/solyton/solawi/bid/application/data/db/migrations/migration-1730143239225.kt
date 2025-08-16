@@ -89,22 +89,26 @@ fun setupBasicRolesAndRights() {
     val ownerRoleId = Roles.insertAndGetId {
         it[name] = Role.owner.value
         it[description] = Role.owner.description
+        it[createdBy] = UUID_ZERO
     }
     // val managerRoleId =
     Roles.insertAndGetId {
         it[name] = Role.manager.value
         it[description] = Role.manager.description
+        it[createdBy] = UUID_ZERO
     }
 
     val userRoleId = Roles.insertAndGetId {
         it[name] = Role.user.value
         it[description] = Role.user.description
+        it[createdBy] = UUID_ZERO
     }
 
     // val bidderRoleId =
     Roles.insertAndGetId {
         it[name] = Role.bidder.value
         it[description] = Role.bidder.description
+        it[createdBy] = UUID_ZERO
     }
 
     // General Rights
