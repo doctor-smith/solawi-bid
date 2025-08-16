@@ -111,38 +111,46 @@ fun setupBasicRolesAndRights() {
     val createId = Rights.insertAndGetId {
         it[name] = Right.create.value
         it[description] = Right.create.description
+        it[createdBy] = UUID_ZERO
     }
     Rights.insert {
         it[name] = Right.read.value
         it[description] = Right.read.description
+        it[createdBy] = UUID_ZERO
     }
     Rights.insert {
         it[name] = Right.update.value
         it[description] = Right.update.description
+        it[createdBy] = UUID_ZERO
     }
     Rights.insert {
         it[name] = Right.delete.value
         it[description] = Right.delete.description
+        it[createdBy] = UUID_ZERO
     }
 
     val createOrganizationId = Rights.insertAndGetId {
         it[name] = OrganizationRight.Organization.create.value
         it[description] = OrganizationRight.Organization.create.description
+        it[createdBy] = UUID_ZERO
     }
     // val readOrganizationId =
     Rights.insertAndGetId {
         it[name] = OrganizationRight.Organization.read.value
         it[Roles.description] = OrganizationRight.Organization.read.description
+        it[createdBy] = UUID_ZERO
     }
     // val updateOrganizationId =
     Rights.insertAndGetId {
         it[name] = OrganizationRight.Organization.update.value
         it[Roles.description] = OrganizationRight.Organization.update.description
+        it[createdBy] = UUID_ZERO
     }
     // val deleteOrganizationId =
     Rights.insertAndGetId {
         it[name] = OrganizationRight.Organization.delete.value
         it[Roles.description] = OrganizationRight.Organization.delete.description
+        it[createdBy] = UUID_ZERO
     }
 
     RoleRightContexts.insert {

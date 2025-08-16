@@ -3,7 +3,6 @@ package org.solyton.solawi.bid.module.bid.schema
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.UUIDTable
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.auditable.AuditableEntity
 import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
