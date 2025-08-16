@@ -6,13 +6,21 @@ import org.jetbrains.exposed.sql.Table
 
 data class AddMissingColumns(
     val table: Table,
-    val columnDefs: List<ColumnDef<Any?>>
+    val columnDefs: List<ColumnDef.Missing<Any?>>
 )
 
-data class ColumnDef<out T : Any?>(
-    val name: String,
-    val default: T
-)
+sealed class ColumnDef(open val name: String) {
+
+    data class Missing<out T : Any?>(
+        override val name: String,
+        val default: T
+    ) : ColumnDef(name)
+
+    data class ModifyName(
+        override val name: String,
+        val newName: String
+    ) : ColumnDef(name)
+}
 
 data class StructuralMigrations(
     val addMissingColumns: List<AddMissingColumns>
