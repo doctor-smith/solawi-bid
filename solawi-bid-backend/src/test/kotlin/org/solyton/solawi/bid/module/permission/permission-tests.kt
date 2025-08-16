@@ -40,10 +40,12 @@ class PermissionTests {
         val readRight = RightEntity.new {
             name = "READ-$ts"
             description = ""
+            createdBy = UUID_ZERO
         }
         val updateRight = RightEntity.new {
             name = "UPDATE-$ts"
             description = ""
+            createdBy = UUID_ZERO
         }
         val role = RoleEntity.new {
             name = "READER-$ts"
@@ -106,10 +108,12 @@ class PermissionTests {
         val readRight = RightEntity.new {
             name = "READ-$ts"
             description = ""
+            createdBy = UUID_ZERO
         }
         val updateRight = RightEntity.new {
             name = "UPDATE-$ts"
             description = ""
+            createdBy = UUID_ZERO
         }
         val role = RoleEntity.new {
             name = "READER-$ts"
@@ -166,10 +170,12 @@ class PermissionTests {
         val readRight = RightEntity.new {
             name = "READ-$ts"
             description = ""
+            createdBy = UUID_ZERO
         }
         val updateRight = RightEntity.new {
             name = "UPDATE-$ts"
             description = ""
+            createdBy = UUID_ZERO
         }
         val role = RoleEntity.new {
             name = "READER-$ts"
@@ -223,10 +229,12 @@ class PermissionTests {
         val readRight = RightEntity.new {
             name = "READ-$ts"
             description = ""
+            createdBy = UUID_ZERO
         }
         val updateRight = RightEntity.new {
             name = "UPDATE-$ts"
             description = ""
+            createdBy = UUID_ZERO
         }
         val role = RoleEntity.new {
             name = "READER-$ts"

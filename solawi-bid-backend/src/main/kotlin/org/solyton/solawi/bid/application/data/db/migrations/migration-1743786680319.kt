@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.application.data.db.migrations
 
 import org.evoleq.exposedx.migrations.Migration
+import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
@@ -74,26 +75,31 @@ class Migration1743786680319(
         val manageUsers = RightEntity.new {
             name = AppRight.Application.Users.manage.value
             description = AppRight.Application.Users.manage.description
+            createdBy = UUID_ZERO
         }
 
         // Permissions
         val readRoleRightContexts = RightEntity.new {
             name = Right.ReadRightRoleContexts.value
             description = Right.ReadRightRoleContexts.description
+            createdBy = UUID_ZERO
         }
 
         // Application Subscriptions
         val readAvailableApplications = RightEntity.new {
             name = AppRight.Application.Subscriptions.readAvailableApplications.value
             description = AppRight.Application.Subscriptions.readAvailableApplications.description
+            createdBy = UUID_ZERO
         }
         val subscribeApplications = RightEntity.new {
             name = AppRight.Application.Subscriptions.subscribeApplications.value
             description = AppRight.Application.Subscriptions.subscribeApplications.description
+            createdBy = UUID_ZERO
         }
         val unsubscribeApplications = RightEntity.new {
             name = AppRight.Application.Subscriptions.unsubscribeApplications.value
             description = AppRight.Application.Subscriptions.unsubscribeApplications.description
+            createdBy = UUID_ZERO
         }
 
         // Grant owner rights in context APPLICATION

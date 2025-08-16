@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.module.user
 
 import org.evoleq.exposedx.test.runSimpleH2Test
+import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.insert
 import org.solyton.solawi.bid.module.permission.action.db.getRoleRightContexts
 import org.solyton.solawi.bid.module.permission.data.api.Context
@@ -37,14 +38,17 @@ class UserRoleRightContextTests {
         val readRight = RightEntity.new {
             name = "READ-$ts"
             description = ""
+            createdBy = UUID_ZERO
         }
         val createRight = RightEntity.new {
             name = "CREATE-$ts"
             description = ""
+            createdBy = UUID_ZERO
         }
         val updateRight = RightEntity.new {
             name = "UPDATE-$ts"
             description = ""
+            createdBy = UUID_ZERO
         }
         val creator = RoleEntity.new {
             name = "CREATOR-$ts"
@@ -61,7 +65,7 @@ class UserRoleRightContextTests {
         }
         val context = ContextEntity.new {
             name = "APP-$ts"
-
+            createdBy = UUID_ZERO
         }
         RoleRightContexts.insert {
             it[roleId] = creator.id
