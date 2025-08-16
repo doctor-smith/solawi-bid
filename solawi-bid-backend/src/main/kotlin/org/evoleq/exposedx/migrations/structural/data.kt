@@ -9,6 +9,11 @@ data class AddMissingColumns(
     val columnDefs: List<ColumnDef.Missing<Any?>>
 )
 
+data class ModifyColumnNames(
+    val table: Table,
+    val columnDefs: List<ColumnDef.ModifyName>
+)
+
 sealed class ColumnDef(open val name: String) {
 
     data class Missing<out T : Any?>(
@@ -17,15 +22,17 @@ sealed class ColumnDef(open val name: String) {
     ) : ColumnDef(name)
 
     data class ModifyName(
-        override val name: String,
+        val oldName: String,
         val newName: String
-    ) : ColumnDef(name)
+    ) : ColumnDef(oldName)
 }
 
 data class StructuralMigrations(
-    val addMissingColumns: List<AddMissingColumns>
+    val addMissingColumns: List<AddMissingColumns> = emptyList(),
+    val modifyColumnNames: List<ModifyColumnNames> = emptyList()
 ) {
     fun runOn(database: Database) {
         database.addMissingColumns(*addMissingColumns.toTypedArray())
+        database.modifyColumnNames(*modifyColumnNames.toTypedArray())
     }
 }

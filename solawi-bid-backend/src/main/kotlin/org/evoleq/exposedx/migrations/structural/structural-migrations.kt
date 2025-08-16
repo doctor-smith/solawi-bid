@@ -55,3 +55,40 @@ fun Database.addMissingColumns(vararg dataSets: AddMissingColumns){
     }
 }
 
+fun Database.modifyColumnNames(vararg dataSets: ModifyColumnNames) {
+    // Here, one has to take into account that names in dbs are case-insensitive
+    // while strings on the client side are case-sensitive
+    // We are better off forcing lowercase in every comparison.
+    val database = this
+    val existingTables = transaction(database) {
+        SchemaUtils.listTables().map{it.substringAfterLast(".")}
+    }
+    val relevantDataSets = dataSets.filter { it.table.tableName in existingTables }
+
+    transaction(database) {
+        relevantDataSets.forEach { (table, columnDefs) ->
+            val newColumnNames = columnDefs.map { it.newName.lowercase() }
+
+            table.columns.filter { column -> column.name.lowercase() in newColumnNames }.forEach { column ->
+                val newColumnName = column.name
+                val oldColumnName = columnDefs.firstOrNull { it.newName == newColumnName }?.oldName
+                    ?:throw MigrationException.NoSuchColumnDef(newColumnName)
+
+                // check if column still carries old name in database
+                val columnExists = columnExists(table.tableName, oldColumnName)
+
+                // check if old name is a reserved word
+
+                if(columnExists) {
+                    exec("ALTER TABLE ${table.tableName} CHANGE COLUMN ${oldColumnName.fixColumnName()} $newColumnName ${column.columnType.sqlType()};")
+                }
+            }
+        }
+    }
+}
+
+fun String.fixColumnName(): String = when{
+    listOf("varchar").contains(this) -> "`$this`"
+    else -> this
+}
+

@@ -2,8 +2,10 @@ package org.solyton.solawi.bid.application.data.db.migrations
 
 import org.evoleq.exposedx.migrations.structural.AddMissingColumns
 import org.evoleq.exposedx.migrations.structural.ColumnDef
+import org.evoleq.exposedx.migrations.structural.ModifyColumnNames
 import org.evoleq.exposedx.migrations.structural.StructuralMigrations
 import org.evoleq.exposedx.migrations.structural.addColumnsIfMissing
+import org.evoleq.exposedx.migrations.structural.modifyColumnNames
 import org.evoleq.uuid.UUID_ZERO
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.banking.schema.BankAccountsTable
@@ -22,11 +24,12 @@ import java.util.*
 
 val structuralMigrations by lazy {
     StructuralMigrations(
-        addMissingColumns = columns
+        addMissingColumns = columnsToAdd,
+        modifyColumnNames = columnNamesToModify
     )
 }
 
-val columns: List<AddMissingColumns> by lazy {
+val columnsToAdd: List<AddMissingColumns> by lazy {
     listOf(
         UsersTable.addColumnsIfMissing(
             ColumnDef.Missing<UUID>("created_by", UUID_ZERO),
@@ -136,6 +139,17 @@ val columns: List<AddMissingColumns> by lazy {
             ColumnDef.Missing<DateTime>("created_at", DateTime.now()),
             ColumnDef.Missing<UUID?>("modified_by",null),
             ColumnDef.Missing<DateTime?>("modified_at", null),
+        )
+    )
+}
+
+val columnNamesToModify by lazy {
+    listOf(
+        UsersTable.modifyColumnNames(
+            ColumnDef.ModifyName(
+            "varchar",
+            "password"
+            ),
         )
     )
 }
