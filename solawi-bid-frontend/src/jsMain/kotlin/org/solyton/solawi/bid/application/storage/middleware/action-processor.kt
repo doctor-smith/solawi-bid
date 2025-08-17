@@ -8,6 +8,7 @@ import org.solyton.solawi.bid.application.storage.middleware.api.Call
 import org.solyton.solawi.bid.application.storage.middleware.react.React
 import org.solyton.solawi.bid.application.storage.middleware.util.Dispatch
 import org.solyton.solawi.bid.application.storage.middleware.util.Read
+import org.solyton.solawi.bid.module.context.data.Contextual
 
 @MathDsl
 @Suppress("FunctionName")

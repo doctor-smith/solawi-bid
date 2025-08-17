@@ -30,7 +30,7 @@ fun Application.interceptAndValidateHeaders() {
             )
             finish()
         } else {
-            call.response.headers.append(Header.CONTEXT, contextHeader)
+            call.response.header(Header.CONTEXT, contextHeader)
         }
     }
 
