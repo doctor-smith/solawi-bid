@@ -17,10 +17,11 @@ import org.solyton.solawi.bid.application.data.env.backendUrl
 import org.solyton.solawi.bid.application.data.environment
 import org.solyton.solawi.bid.application.data.userData
 import org.solyton.solawi.bid.application.service.seemsToBeLoggerIn
+import org.solyton.solawi.bid.module.context.data.Contextual
 
 @MathDsl
 @Suppress("FunctionName")
-fun <S : Any,T : Any> Call(action: Action<Application, S, T>): KlState<Storage<Application>, S, Result<T>> = {
+fun <S : Any,T : Any> Call(action: Action<Application, S, T>): KlState<Storage<Application>, S, Result<Contextual<T>>> = {
     s -> State{ storage ->
         val application = storage.read()
         val call = (storage * api ).read()[action.endPoint]!!

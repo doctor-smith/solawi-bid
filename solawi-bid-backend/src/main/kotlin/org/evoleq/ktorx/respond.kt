@@ -7,14 +7,21 @@ import kotlinx.serialization.json.Json
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.math.x
+import org.solyton.solawi.bid.application.permission.Header
+import org.solyton.solawi.bid.module.application.permission.Context
 
 
 @KtorDsl
 @Suppress("FunctionName")
 suspend inline fun <reified T : Any>  Respond(
+    context: String = Context.Empty.value,
     noinline transformException: Result.Failure.Exception.() -> Pair<HttpStatusCode, Result.Failure.Message>
 ): KlAction<Result<T>, Unit> = { result ->
     ApiAction { call ->
+        // todo:dev find better condition
+        if(context != Context.Empty.value && context != call.request.headers[Header.CONTEXT]) {
+            call.response.header(Header.CONTEXT, context)
+        }
         when (result) {
             is Result.Success<T> -> try {
                 call.respond(

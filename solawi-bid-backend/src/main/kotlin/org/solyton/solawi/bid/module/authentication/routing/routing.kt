@@ -9,6 +9,8 @@ import org.evoleq.ktorx.Respond
 import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
+import org.evoleq.uuid.UUID_ZERO
+import org.solyton.solawi.bid.module.application.permission.Context
 import org.solyton.solawi.bid.module.authentication.action.IsLoggedIn
 import org.solyton.solawi.bid.module.authentication.action.Login
 import org.solyton.solawi.bid.module.authentication.action.LogoutUser
@@ -31,7 +33,7 @@ fun <AuthEnv> Routing.authentication(
 
     // Login endpoint
     post("/login") {
-        Receive<Login>() * Login(jwt = environment.jwt) * Respond{ transform() } runOn Base(call, environment)
+        Receive<Login>() * Login(jwt = environment.jwt) * Respond(Context.Application.value /* <-- todo:dev use id of context */){ transform() } runOn Base(call, environment)
 
     }
 
@@ -42,7 +44,7 @@ fun <AuthEnv> Routing.authentication(
 
     // Logout endpoint
     patch("/logout") {
-        Receive<Logout>() * LogoutUser() * Respond{ transform() } runOn Base(call, environment)
+        Receive<Logout>() * LogoutUser() * Respond("$UUID_ZERO"){ transform() } runOn Base(call, environment)
         /*
         val refreshToken = call.receive<Logout>().refreshToken
         if (refreshToken != null) {
