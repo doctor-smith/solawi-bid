@@ -20,7 +20,9 @@ import org.jetbrains.compose.web.dom.*
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.i18N
+import org.solyton.solawi.bid.application.service.setContext
 import org.solyton.solawi.bid.application.ui.page.dashboard.data.DashboardComponent
+import org.solyton.solawi.bid.module.application.permission.Context
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
@@ -31,6 +33,7 @@ import org.w3c.dom.HTMLElement
 @Composable
 @Suppress("FunctionName")
 fun DashboardPage(storage: Storage<Application>) {
+    storage.setContext(Context.Application)
     // Effects
 
     // Data
