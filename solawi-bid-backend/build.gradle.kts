@@ -143,6 +143,18 @@ tasks.register<Test>("schemaTest") {
     }
 //    finalizedBy(tasks.jacocoTestReport)
 }
+tasks.register<Test>("migrationTest") {
+    group = "verification"
+    useJUnitPlatform() {
+        includeTags("migration")
+
+    }
+    reports {
+        junitXml.required = true
+        html.required = true
+    }
+//    finalizedBy(tasks.jacocoTestReport)
+}
 
 tasks.register<Test>("testFrameworkTest") {
     group = "verification"

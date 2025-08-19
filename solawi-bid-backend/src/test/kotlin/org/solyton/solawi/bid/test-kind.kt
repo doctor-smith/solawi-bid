@@ -26,6 +26,11 @@ annotation class Schema
 
 @Target(CLASS, FUNCTION)
 @Retention(RUNTIME)
+@org.junit.jupiter.api.Tag("migration")
+annotation class Migration
+
+@Target(CLASS, FUNCTION)
+@Retention(RUNTIME)
 @org.junit.jupiter.api.Tag("testFramework")
 annotation class TestFramework
 
