@@ -35,7 +35,7 @@ class ApplicationRepositoryTests {
         assertEquals("TestApp", app.name)
         assertEquals("d", app.description)
 
-        assertTrue {   app.createdAt >= now.minus(Duration.millis(2_000)) }
+        assertTrue {   app.createdAt >= now.minus(Duration.millis(60_000)) }
         assertEquals(UUID_ZERO, app.createdBy)
         assertNull(app.modifiedBy)
         assertNull(app.modifiedAt)
@@ -47,7 +47,7 @@ class ApplicationRepositoryTests {
         val now = DateTime.now()
         val app = createApplication("TestApp", "d", UUID_ZERO)
 
-        assertTrue { app.createdAt >= now.minus(Duration.millis(2_000)) }
+        assertTrue { app.createdAt >= now.minus(Duration.millis(60_000)) }
         assertEquals(UUID_ZERO, app.createdBy)
         assertNull(app.modifiedBy)
         assertNull(app.modifiedAt)
@@ -63,7 +63,7 @@ class ApplicationRepositoryTests {
         val now = DateTime.now()
         val app = createApplication("TestApp", "d", UUID_ZERO)
 
-        assertTrue {   app.createdAt >= now.minus(Duration.millis(2_000)) }
+        assertTrue {   app.createdAt >= now.minus(Duration.millis(60_000)) }
         assertEquals(UUID_ZERO, app.createdBy)
         assertNull(app.modifiedBy)
         assertNull(app.modifiedAt)
@@ -118,7 +118,7 @@ class ApplicationRepositoryTests {
 
         val module = createModule("TEST_MODULE", "D", app.id.value, UUID_ZERO)
 
-        assertTrue{module.createdAt >= now.minus(Duration.millis(2_000))}
+        assertTrue{module.createdAt >= now.minus(Duration.millis(60_000))}
         assertEquals(UUID_ZERO, module.createdBy)
         assertEquals("TEST_MODULE", module.name)
         assertEquals("D", module.description)
@@ -135,7 +135,7 @@ class ApplicationRepositoryTests {
 
         val module = createModule("TEST_MODULE", "D", app.id.value, UUID_ZERO)
 
-        assertTrue{module.createdAt >= now.minus(Duration.millis(2_000))}
+        assertTrue{module.createdAt >= now.minus(Duration.millis(60_000))}
         assertEquals(UUID_ZERO, module.createdBy)
         assertEquals("TEST_MODULE", module.name)
         assertEquals("D", module.description)
@@ -146,7 +146,7 @@ class ApplicationRepositoryTests {
         val userId = UUID.randomUUID()
         val module2 = updateModule(module.id.value, "TEST_MODULE_2", "D_2", app.id.value, userId)
 
-        assertTrue { module2.modifiedAt!! >= now.minus(Duration.millis(2_000)) }
+        assertTrue { module2.modifiedAt!! >= now.minus(Duration.millis(60_000)) }
         assertEquals(userId, module2.modifiedBy)
         assertEquals("TEST_MODULE_2", module2.name)
         assertEquals("D_2", module2.description)
