@@ -24,6 +24,14 @@ inline fun <reified T> Storage<List<T>>.add(items: List<T>): Unit = write(listOf
     *items.toTypedArray()
 ))
 
+fun <T > Storage<List<T>>.onEmpty(action: ()->Unit) {
+    if(read().isEmpty()) {
+        action()
+    }
+}
+
+fun <T > Storage<List<T>>.isEmpty() = read().isEmpty()
+
 inline fun <reified T, R:Comparable<R>> Storage<List<T>>.sortBy(crossinline f: (T)->R ) {
     write(
         with(arrayListOf(*read().toTypedArray()) ){

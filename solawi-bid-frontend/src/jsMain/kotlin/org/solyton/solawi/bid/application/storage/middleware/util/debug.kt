@@ -15,7 +15,7 @@ import org.solyton.solawi.bid.application.data.Application
 @MathDsl
 @Suppress("FunctionName")
 fun <T: Any> Debug(debug: Reader<Application, Unit>): KlState<Storage<Application>, Result<T>, Result<T>> = {
-    result -> State { storage ->
+        result -> State { storage ->
         console.log("Debug...")
         (storage * debug).emit()
         console.log("Debug...Done")
@@ -27,7 +27,7 @@ fun <T: Any> Debug(debug: Reader<Application, Unit>): KlState<Storage<Applicatio
 @Suppress("FunctionName")
 fun <T: Any> DebugResult(debug: Result<T>.()->Unit): KlState<Storage<Application>, Result<T>, Result<T>> = {
     result -> State { storage ->
-        console.log("Debug...")
+        console.log("Debug Result...")
         result.debug()
         console.log("Debug...Done")
         result x storage

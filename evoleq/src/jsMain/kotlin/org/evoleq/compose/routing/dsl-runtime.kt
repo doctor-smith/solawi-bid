@@ -46,7 +46,7 @@ fun Routing(initPath: String,routes: RoutesConfiguration.()->Unit): Routes = wit
         return derivedStateOf { currentPath.value.ifBlank { initPath } }
     }
 
-    if(window.location.pathname.isBlank()) {
+    if(window.location.pathname.isBlank() || window.location.pathname == "/") {
         navigate(initPath)
     }
     compose(path().value)

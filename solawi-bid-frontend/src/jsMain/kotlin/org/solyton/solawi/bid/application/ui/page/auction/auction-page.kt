@@ -16,6 +16,7 @@ import org.evoleq.math.times
 import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Storage
+import org.evoleq.optics.storage.isEmpty
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.JustifyContent
 import org.jetbrains.compose.web.css.justifyContent
@@ -59,6 +60,9 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div {
     // Effects
     LaunchedEffect(Unit) {
         (storage * bidApplicationIso * actions).read().dispatch(readAuctions())
+    }
+    if((storage * bidApplicationIso * auctions).isEmpty()) {
+        return@Div
     }
     // Data
     var newBidders by remember { mutableStateOf<List<NewBidder>>(listOf()) }
