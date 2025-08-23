@@ -2,7 +2,6 @@ package org.solyton.solawi.bid.application.data.db.migrations
 
 import org.evoleq.exposedx.migrations.structural.AddMissingColumns
 import org.evoleq.exposedx.migrations.structural.ColumnDef
-import org.evoleq.exposedx.migrations.structural.ModifyColumnNames
 import org.evoleq.exposedx.migrations.structural.StructuralMigrations
 import org.evoleq.exposedx.migrations.structural.addColumnsIfMissing
 import org.evoleq.exposedx.migrations.structural.modifyColumnNames
