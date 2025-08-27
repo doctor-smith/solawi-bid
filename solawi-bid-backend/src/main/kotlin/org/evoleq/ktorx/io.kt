@@ -33,9 +33,9 @@ fun <T : Any> Success(): KlAction<Result<T>, Result<Boolean>> = KlAction { _ -> 
 
 @KtorDsl
 @Suppress("FunctionName")
-suspend inline fun <reified T : Any>  ReceiveContextual(): Action<Result<Contextual<T>>> = Principle() * {
+suspend inline fun <reified T : Any>  ReceiveContextual(inject: T? = null): Action<Result<Contextual<T>>> = Principle() * {
     principle -> ApiAction { call -> principle mapSuspend  { jwtp ->
-        val data = call.receive<T>()
+        val data = inject?: call.receive<T>()
         val userId = jwtp.payload.subject
         val context = call.request.headers[Header.CONTEXT]!!
         Contextual(UUID.fromString(userId), context, data)
