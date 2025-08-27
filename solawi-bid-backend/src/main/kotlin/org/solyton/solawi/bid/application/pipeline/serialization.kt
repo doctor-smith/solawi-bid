@@ -5,6 +5,15 @@ import kotlinx.serialization.builtins.serializer
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.ktorx.result.serializers
+import org.solyton.solawi.bid.module.application.data.ApiApplication
+import org.solyton.solawi.bid.module.application.data.ApiApplications
+import org.solyton.solawi.bid.module.application.data.ApiLifecycleStage
+import org.solyton.solawi.bid.module.application.data.ApiModule
+import org.solyton.solawi.bid.module.application.data.ApiUserApplications
+import org.solyton.solawi.bid.module.application.data.LifecycleStage
+import org.solyton.solawi.bid.module.application.data.ReadApplications
+import org.solyton.solawi.bid.module.application.data.ReadPersonalUserApplications
+import org.solyton.solawi.bid.module.application.data.ReadUserApplications
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
@@ -96,4 +105,22 @@ fun Application.installSerializers() {
     serializers[Role::class] = Role.serializer()
     serializers[Right::class] = Right.serializer()
     serializers[UserToContextsMap::class] = UserToContextsMap.serializer()
+
+    // Application / Modules
+    serializers[ReadApplications::class] = ReadApplications.serializer()
+    serializers[ReadUserApplications::class] = ReadUserApplications.serializer()
+    serializers[ReadPersonalUserApplications::class] = ReadPersonalUserApplications.serializer()
+    serializers[ApiApplications::class] = ApiApplications.serializer()
+    serializers[ApiApplication::class] = ApiApplication.serializer()
+    serializers[ApiUserApplications::class] = ApiUserApplications.serializer()
+    serializers[ApiModule::class] = ApiModule.serializer()
+    serializers[ApiLifecycleStage::class] = ApiLifecycleStage.serializer()
+    serializers[LifecycleStage.Empty::class] = LifecycleStage.Empty.serializer()
+    serializers[LifecycleStage.Registered::class] = LifecycleStage.Registered.serializer()
+    serializers[LifecycleStage.Trialing::class] = LifecycleStage.Trialing.serializer()
+    serializers[LifecycleStage.Active::class] = LifecycleStage.Active.serializer()
+    serializers[LifecycleStage.Paused::class] = LifecycleStage.Paused.serializer()
+    serializers[LifecycleStage.PaymentFailedGracePeriod::class] = LifecycleStage.PaymentFailedGracePeriod.serializer()
+    serializers[LifecycleStage.Cancelled::class] = LifecycleStage.Cancelled.serializer()
+    serializers[LifecycleStage.Churned::class] = LifecycleStage.Churned.serializer()
 }

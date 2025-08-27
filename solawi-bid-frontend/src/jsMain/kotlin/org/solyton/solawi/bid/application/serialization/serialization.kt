@@ -5,6 +5,14 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.ktorx.result.add
 import org.evoleq.ktorx.result.serializers
+import org.solyton.solawi.bid.module.application.data.ApiApplication
+import org.solyton.solawi.bid.module.application.data.ApiApplications
+import org.solyton.solawi.bid.module.application.data.ApiModule
+import org.solyton.solawi.bid.module.application.data.ApiUserApplications
+import org.solyton.solawi.bid.module.application.data.LifecycleStage
+import org.solyton.solawi.bid.module.application.data.ReadApplications
+import org.solyton.solawi.bid.module.application.data.ReadPersonalUserApplications
+import org.solyton.solawi.bid.module.application.data.ReadUserApplications
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
@@ -101,5 +109,23 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<Role>(Role.serializer())
         add<Right>(Right.serializer())
         add<UserToContextsMap>(UserToContextsMap.serializer())
+
+        // Applications and Modules
+        add<ReadApplications>(ReadApplications.serializer())
+        add<ReadUserApplications>(ReadUserApplications.serializer())
+        add<ReadPersonalUserApplications>(ReadPersonalUserApplications.serializer())
+        add<ApiApplications>(ApiApplications.serializer())
+        add<ApiUserApplications>(ApiUserApplications.serializer())
+        add<ApiApplication>(ApiApplication.serializer())
+        add<ApiModule>(ApiModule.serializer())
+        add<LifecycleStage>(LifecycleStage.serializer())
+        add<LifecycleStage.Empty>(LifecycleStage.Empty.serializer())
+        add<LifecycleStage.Registered>(LifecycleStage.Registered.serializer())
+        add<LifecycleStage.Trialing>(LifecycleStage.Trialing.serializer())
+        add<LifecycleStage.Active>(LifecycleStage.Active.serializer())
+        add<LifecycleStage.Paused>(LifecycleStage.Paused.serializer())
+        add<LifecycleStage.PaymentFailedGracePeriod>(LifecycleStage.PaymentFailedGracePeriod.serializer())
+        add<LifecycleStage.Cancelled>(LifecycleStage.Cancelled.serializer())
+        add<LifecycleStage.Churned>(LifecycleStage.Churned.serializer())
     }
 } }
