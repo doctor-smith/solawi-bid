@@ -4,12 +4,8 @@ import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.application.exception.ApplicationException
-import org.solyton.solawi.bid.module.application.schema.Application
-import org.solyton.solawi.bid.module.application.schema.Applications
+import org.solyton.solawi.bid.module.application.schema.*
 import org.solyton.solawi.bid.module.application.schema.LifecycleStageEntity
-import org.solyton.solawi.bid.module.application.schema.LifecycleStages
-import org.solyton.solawi.bid.module.application.schema.UserApplication
-import org.solyton.solawi.bid.module.application.schema.UserApplications
 import java.util.UUID
 
 fun Transaction.registerForApplication(userId: UUID, applicationId: UUID): UserApplication {
