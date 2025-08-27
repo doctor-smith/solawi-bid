@@ -2,6 +2,12 @@ package org.solyton.solawi.bid.application.api
 
 
 import org.evoleq.ktorx.api.Api
+import org.solyton.solawi.bid.module.application.data.ApiApplications
+import org.solyton.solawi.bid.module.application.data.Applications
+import org.solyton.solawi.bid.module.application.data.ReadApplications
+import org.solyton.solawi.bid.module.application.data.ReadPersonalUserApplications
+import org.solyton.solawi.bid.module.application.data.ReadUserApplications
+import org.solyton.solawi.bid.module.application.data.UserApplications
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
@@ -140,6 +146,21 @@ val solawiApi by lazy {
             key = SendMailForRegistrationConfirmation::class,
             url = "user/send-registration-mail"
         )
+
+        // Applications and Modules
+        get<ReadApplications, ApiApplications>(
+            key = ReadApplications::class,
+            url = "applications/all"
+        )
+        get<ReadPersonalUserApplications, Applications>(
+            key = ReadPersonalUserApplications::class,
+            url = "applications/personal"
+        )
+        patch<ReadUserApplications, UserApplications>(
+            key = ReadUserApplications::class,
+            url = "applications/management/users"
+        )
     }
+
     // Organizations
 }

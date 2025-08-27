@@ -8,6 +8,9 @@ import org.solyton.solawi.bid.module.auditable.AuditableEntity
 import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
 import java.util.UUID
 
+typealias UserModulesTable = UserModules
+typealias UserModuleEntity = UserModule
+
 object UserModules : AuditableUUIDTable("user_modules") {
     val userId = uuid("user_id")
     val moduleId = reference("module_id", Modules.id)
