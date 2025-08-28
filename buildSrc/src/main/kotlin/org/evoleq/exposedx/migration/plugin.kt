@@ -27,6 +27,7 @@ class MigrationPlugin : Plugin<Project> {
                     module = config.module
                     migrations = config.migrations
                     sourceSet = config.sourceSet
+                    forceModule = config.forceModule
                 }
             }
         }
