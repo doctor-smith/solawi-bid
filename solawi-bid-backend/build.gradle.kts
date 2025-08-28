@@ -210,6 +210,14 @@ migrations {
         migrations = "migrations"
         sourceSet = "test"
     }
+
+    migration("applicationApiTest") {
+        domain = "org.solyton.solawi.bid"
+        module = "application"
+        forceModule = true
+        migrations = "migrations"
+        sourceSet = "test"
+    }
 }
 
 detekt {
