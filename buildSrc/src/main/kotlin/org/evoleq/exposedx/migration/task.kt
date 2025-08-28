@@ -19,6 +19,9 @@ abstract class GenerateMigrationTask : DefaultTask() {
     @Input
     var sourceSet: String = ""
 
+    @Input
+    var forceModule: Boolean = false
+
     @TaskAction
     fun generate() {
         logger.lifecycle("Starting migration generation for: $domain:$module")
@@ -27,13 +30,13 @@ abstract class GenerateMigrationTask : DefaultTask() {
         println("Module: $module")
         println("Migrations: $migrations")
         println("SourceSet: $sourceSet")
+        println("Force module: $forceModule")
         // Add task logic here that uses these properties
-
 
         //doLast {
            // group = "migration"
             val id = System.currentTimeMillis()
-            val packageName = if(module != "application"){
+            val packageName = if(module != "application" || forceModule){
                 "$domain.module.$module.$migrations"
             }else{
                 "$domain.$module.$migrations"
@@ -50,7 +53,7 @@ abstract class GenerateMigrationTask : DefaultTask() {
                         ".",
                         "/"
                     )
-                }${if(module != "application"){"/module"}else {""}}/$module/$migrations/migration-$id.kt"
+                }${if(module != "application" || forceModule){"/module"}else {""}}/$module/$migrations/migration-$id.kt"
             )
             println(file.absolutePath)
 

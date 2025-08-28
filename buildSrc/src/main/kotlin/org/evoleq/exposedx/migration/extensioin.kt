@@ -10,6 +10,7 @@ open class MigrationConfig(var name: String) {
     var module: String = ""
     var migrations: String = ""
     var sourceSet: String = ""
+    var forceModule: Boolean = false
 
 }
 
