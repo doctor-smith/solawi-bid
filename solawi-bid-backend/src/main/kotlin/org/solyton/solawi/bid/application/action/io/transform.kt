@@ -37,6 +37,9 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
         is UserManagementException.WrongCredentials -> HttpStatusCode.Unauthorized
         // Permission
         is PermissionException.AccessDenied -> HttpStatusCode.Forbidden
+        // todo:dev how to handle these permission exceptions?
+        //is PermissionException.NoSuchContext -> HttpStatusCode.Forbidden
+        //is PermissionException.NoSuchRight -> HttpStatusCode.Forbidden
 
         else -> HttpStatusCode.InternalServerError
     } x this.value.toMessage()

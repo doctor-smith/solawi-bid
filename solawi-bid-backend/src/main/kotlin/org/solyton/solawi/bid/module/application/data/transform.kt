@@ -17,9 +17,9 @@ fun Pair<UserApplicationEntity, List<UserModuleEntity>>.toApi(): ApiApplication 
     val resultApplication = with(application.toApi()) {
         copy(
             lifecycleStage = userApplication.lifecycleStage.toApi(),
-            modules = modules.map {
-                it.copy(
-                    lifecycleStage = userModules.find { module -> module.id.value.toString() == it.id }
+            modules = modules.map { module ->
+                module.copy(
+                    lifecycleStage = userModules.find { userModule -> userModule.module.id.value.toString() == module.id }
                         ?.lifecycleStage?.toApi()?: ApiLifecycleStage.Empty
                 )
             }
