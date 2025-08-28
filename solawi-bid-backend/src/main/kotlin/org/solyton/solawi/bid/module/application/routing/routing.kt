@@ -15,6 +15,7 @@ import org.solyton.solawi.bid.module.application.action.ReadPersonalUserApplicat
 import org.solyton.solawi.bid.module.application.data.ApiApplications
 import org.solyton.solawi.bid.module.application.data.ReadApplications
 import org.solyton.solawi.bid.module.application.data.ReadPersonalUserApplications
+import org.solyton.solawi.bid.module.permission.action.db.IsGranted
 
 fun <ApplicationEnv> Routing.application(
     environment: ApplicationEnv,
@@ -25,13 +26,14 @@ fun <ApplicationEnv> Routing.application(
         route("applications"){
             get("all") {
                 Receive(ReadApplications) *
-                        ReadAllApplications() *
-                        Respond<ApiApplications>{ transform() } runOn Base(call, environment)
+                ReadAllApplications() *
+                Respond<ApiApplications>{ transform() } runOn Base(call, environment)
             }
             get("personal") {
                 ReceiveContextual(ReadPersonalUserApplications) *
-                        ReadPersonalUserApplications() *
-                        Respond<ApiApplications>{ transform() } runOn Base(call, environment)
+                IsGranted("READ_APPLICATION") *
+                ReadPersonalUserApplications() *
+                Respond<ApiApplications>{ transform() } runOn Base(call, environment)
             }
             patch("subscribe") {
 
