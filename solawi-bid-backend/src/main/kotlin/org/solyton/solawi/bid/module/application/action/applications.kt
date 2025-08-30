@@ -15,6 +15,7 @@ import org.solyton.solawi.bid.module.application.schema.UserApplicationEntity
 import org.solyton.solawi.bid.module.application.schema.UserApplicationsTable
 import org.solyton.solawi.bid.module.application.schema.UserModuleEntity
 import org.solyton.solawi.bid.module.application.schema.UserModulesTable
+import java.util.UUID
 
 @MathDsl
 @Suppress("FunctionName")
@@ -45,6 +46,32 @@ fun ReadPersonalUserApplications(): KlAction<Result<Contextual<ReadPersonalUserA
             }
 
             applicationModules.toApiFromPairs()
+        } } x database
+    }
+}
+
+/**
+ * Just returns entries nonempty values.
+ */
+@MathDsl
+@Suppress("FunctionName")
+fun ReadApplicationsOfUsers(): KlAction<Result<Contextual<ReadUserApplications>>, Result<UserApplications>> = KlAction<Result< Contextual<ReadUserApplications>>, Result<UserApplications>> {
+    result: Result<Contextual<ReadUserApplications>> -> DbAction {
+        database -> result bindSuspend {contextual: Contextual<ReadUserApplications> -> resultTransaction(database){
+            val userIds = contextual.data.userIds.map { UUID.fromString(it) }
+            val applications = UserApplicationEntity.find{ UserApplicationsTable.userId inList userIds }.toList()
+            val modules = UserModuleEntity.find { UserModulesTable.userId inList userIds }.toList()
+
+            val applicationModules = applications.map{ application ->
+                Pair(
+                    application,
+                    modules.filter{ module ->
+                        module.module in application.application.modules
+                    }
+                )
+            }
+
+            applicationModules.toApiUserApplications()
         } } x database
     }
 }

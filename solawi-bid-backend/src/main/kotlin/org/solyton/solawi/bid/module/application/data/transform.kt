@@ -1,5 +1,6 @@
 package org.solyton.solawi.bid.module.application.data
 
+import org.evoleq.math.x
 import org.solyton.solawi.bid.module.application.schema.*
 import org.solyton.solawi.bid.module.application.data.LifecycleStage as ApiLifecycleStage
 
@@ -26,6 +27,15 @@ fun Pair<UserApplicationEntity, List<UserModuleEntity>>.toApi(): ApiApplication 
         )
     }
     return resultApplication
+}
+
+fun List<Pair<UserApplicationEntity, List<UserModuleEntity>>>.toApiUserApplications(): ApiUserApplications {
+    val userApplications = map { pair ->
+            pair.first.userId.toString() x pair.toApi()
+        }
+        .groupBy { pair -> pair.first }
+        .mapValues { (_ ,value) -> value.map { it.second } }
+    return UserApplications(userApplications)
 }
 
 fun ApplicationEntity.toApi(): ApiApplication = ApiApplication(

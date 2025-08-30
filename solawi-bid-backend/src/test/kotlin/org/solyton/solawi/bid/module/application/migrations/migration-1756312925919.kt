@@ -5,30 +5,18 @@ import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Transaction
-import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.solyton.solawi.bid.module.application.repository.createApplication
 import org.solyton.solawi.bid.module.application.repository.createModule
 import org.solyton.solawi.bid.module.application.repository.registerForApplication
 import org.solyton.solawi.bid.module.application.repository.registerForModule
-import org.solyton.solawi.bid.module.application.schema.ApplicationContextsTable
-import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
+import org.solyton.solawi.bid.module.application.schema.*
 import org.solyton.solawi.bid.module.application.schema.LifecycleStageEntity
-import org.solyton.solawi.bid.module.application.schema.LifecycleStagesTable
 import org.solyton.solawi.bid.module.application.schema.LifecycleTransitionEntity
-import org.solyton.solawi.bid.module.application.schema.LifecycleTransitionsTable
-import org.solyton.solawi.bid.module.application.schema.ModuleContextsTable
-import org.solyton.solawi.bid.module.application.schema.ModulesTable
-import org.solyton.solawi.bid.module.application.schema.UserApplicationsTable
-import org.solyton.solawi.bid.module.application.schema.UserModulesTable
+import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
-import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
-import org.solyton.solawi.bid.module.permission.schema.RightsTable
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
-import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
-import org.solyton.solawi.bid.module.permission.schema.RolesTable
-import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.permission.schema.repository.grant
 import org.solyton.solawi.bid.module.permission.schema.repository.of
 import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
@@ -86,11 +74,20 @@ class Migration1756312925919(
             createdBy = UUID_ZERO
         }
 
+        // val dummyUsers =
+        (0..9).map {
+            UserEntity.new {
+                username = "dummy_$it@solyton.org"
+                password = "$2a$10$5EENEnXKE4oNT0AejWzy8Oa09DkBDiQTnk2LyqtqpBa3DrZijo51O"
+                createdBy = UUID_ZERO
+            }
+        }.toTypedArray()
 
         val applicationContext = ContextEntity.new {
             name = "APPLICATION"
             createdBy = UUID_ZERO
         }
+
 
         ContextEntity.new {
             name = "DUMMY_CONTEXT"
@@ -125,6 +122,8 @@ class Migration1756312925919(
             it[roleId] = userRole.id.value
             it[contextId] = applicationContext.id.value
         }
+
+
 
         val applicationManagementApplication = createApplication(
             "APPLICATION_MANAGEMENT",
