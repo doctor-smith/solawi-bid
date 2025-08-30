@@ -17,6 +17,9 @@ suspend fun test(case: String, test: suspend String.() -> Unit): Unit = with(cas
 suspend fun Any.setup(test: suspend Any.() -> Unit): Unit = test()
 
 @MathDsl
+suspend fun <T> Any.setupData(test: suspend Any.() -> T): T = test()
+
+@MathDsl
 suspend fun <T : Any> Any.parameters(test: suspend Any.() -> Array<T>): Array<T> = test()
 
 data class TestCase(

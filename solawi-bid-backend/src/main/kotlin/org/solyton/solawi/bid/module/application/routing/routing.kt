@@ -11,10 +11,13 @@ import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
 import org.solyton.solawi.bid.module.application.action.ReadAllApplications
+import org.solyton.solawi.bid.module.application.action.ReadApplicationsOfUsers
 import org.solyton.solawi.bid.module.application.action.ReadPersonalUserApplications
 import org.solyton.solawi.bid.module.application.data.ApiApplications
+import org.solyton.solawi.bid.module.application.data.ApiUserApplications
 import org.solyton.solawi.bid.module.application.data.ReadApplications
 import org.solyton.solawi.bid.module.application.data.ReadPersonalUserApplications
+import org.solyton.solawi.bid.module.application.data.ReadUserApplications
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
 
 fun <ApplicationEnv> Routing.application(
@@ -43,7 +46,10 @@ fun <ApplicationEnv> Routing.application(
             }
             route("management") {
                 patch("users") {
-                    TODO("not implemented yet")
+                    ReceiveContextual<ReadUserApplications>() *
+                    IsGranted("MANAGE_ACCESS_TO_APPS") *
+                    ReadApplicationsOfUsers() *
+                    Respond<ApiUserApplications> { transform() } runOn Base(call, environment)
                 }
             }
         }
