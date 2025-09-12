@@ -7,6 +7,8 @@ import org.evoleq.exposedx.migrations.structural.addColumnsIfMissing
 import org.evoleq.exposedx.migrations.structural.modifyColumnNames
 import org.evoleq.uuid.UUID_ZERO
 import org.joda.time.DateTime
+import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
+import org.solyton.solawi.bid.module.application.schema.ModulesTable
 import org.solyton.solawi.bid.module.banking.schema.BankAccountsTable
 import org.solyton.solawi.bid.module.banking.schema.FiscalYears
 import org.solyton.solawi.bid.module.bid.schema.*
@@ -138,6 +140,12 @@ val columnsToAdd: List<AddMissingColumns> by lazy {
             ColumnDef.Missing<DateTime>("created_at", DateTime.now()),
             ColumnDef.Missing<UUID?>("modified_by",null),
             ColumnDef.Missing<DateTime?>("modified_at", null),
+        ),
+        ApplicationsTable.addColumnsIfMissing(
+            ColumnDef.Missing<Boolean>("is_mandatory", false)
+        ),
+        ModulesTable.addColumnsIfMissing(
+            ColumnDef.Missing<Boolean>("is_mandatory", false)
         )
     )
 }
