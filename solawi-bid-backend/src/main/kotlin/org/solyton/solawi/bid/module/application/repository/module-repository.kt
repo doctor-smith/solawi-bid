@@ -10,34 +10,8 @@ import org.solyton.solawi.bid.module.application.schema.ModuleEntity
 import org.solyton.solawi.bid.module.application.schema.ModulesTable
 import java.util.UUID
 
-fun Transaction.createApplication(applicationName: String, applicationDescription: String, creator: UUID): ApplicationEntity  {
-    val appExists = !ApplicationEntity.find { ApplicationsTable.name eq applicationName }.empty()
-    if(appExists) throw ApplicationException.DuplicateApplicationName(applicationName)
 
-    return ApplicationEntity.new {
-        name = applicationName
-        description = applicationDescription
-        createdBy = creator
-    }
-}
-
-fun Transaction.updateApplication(applicationId: UUID, newName: String, newDescription: String, modifier: UUID): ApplicationEntity {
-    val application = ApplicationEntity.find { ApplicationsTable.id eq applicationId }.firstOrNull()
-        ?:throw ApplicationException.NoSuchApplication(applicationId.toString())
-
-    if(newName == application.name && newDescription == application.description) return application
-
-    if(application.hasDuplicateApplicationName(newName)) throw ApplicationException.DuplicateApplicationName(newName)
-
-    application.name = newName
-    application.description = newDescription
-    application.modifiedBy = modifier
-    application.modifiedAt = DateTime.now()
-
-    return application
-}
-
-fun Transaction.createModule(moduleName: String, moduleDescription: String, applicationId: UUID, creator: UUID): ModuleEntity  {
+fun Transaction.createModule(moduleName: String, moduleDescription: String, applicationId: UUID, creator: UUID, isMandatory: Boolean = false): ModuleEntity  {
     val baseApplication = ApplicationEntity.find { ApplicationsTable.id eq applicationId }.firstOrNull()
         ?: throw ApplicationException.NoSuchApplication(applicationId.toString())
 
@@ -49,6 +23,7 @@ fun Transaction.createModule(moduleName: String, moduleDescription: String, appl
         name = moduleName
         description = moduleDescription
         application = baseApplication
+        this.isMandatory = isMandatory
         createdBy = creator
     }
 }
@@ -58,7 +33,8 @@ fun Transaction.updateModule(
     newName: String,
     newDescription: String,
     newApplicationId: UUID,
-    modifier: UUID
+    modifier: UUID,
+    isMandatory: Boolean = false
 ): ModuleEntity {
     val module = ModuleEntity.find { ModulesTable.id eq moduleId }.firstOrNull()
         ?:throw ApplicationException.NoSuchModule(moduleId.toString())
@@ -79,6 +55,7 @@ fun Transaction.updateModule(
     module.name = newName
     module.description = newDescription
     module.application = targetApplication
+    module.isMandatory = isMandatory
     module.modifiedBy = modifier
     module.modifiedAt = DateTime.now()
 
