@@ -15,6 +15,8 @@ typealias ApplicationEntity = Application
 object Applications : AuditableUUIDTable("applications") {
     val name = varchar("name", 255).uniqueIndex()
     val description = varchar("description", 500)
+    val isMandatory = bool("is_mandatory").default(false)
+
 }
 
 class Application(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
@@ -22,7 +24,7 @@ class Application(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
 
     var name by Applications.name
     var description by Applications.description
-
+    var isMandatory by Applications.isMandatory
     val modules: SizedIterable<Module> by Module referrersOn Modules.applicationId
 
     override var createdAt: DateTime by Applications.createdAt
