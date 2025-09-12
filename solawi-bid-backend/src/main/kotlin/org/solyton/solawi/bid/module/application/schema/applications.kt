@@ -16,7 +16,6 @@ object Applications : AuditableUUIDTable("applications") {
     val name = varchar("name", 255).uniqueIndex()
     val description = varchar("description", 500)
     val isMandatory = bool("is_mandatory").default(false)
-
 }
 
 class Application(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
