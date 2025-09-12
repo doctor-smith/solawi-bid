@@ -4,6 +4,7 @@ import org.evoleq.exposedx.test.runSimpleH2Test
 import org.evoleq.uuid.UUID_ZERO
 import org.joda.time.DateTime
 import org.joda.time.Duration
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
@@ -37,6 +38,7 @@ class ApplicationRepositoryTests {
 
         assertTrue {   app.createdAt >= now.minus(Duration.millis(60_000)) }
         assertEquals(UUID_ZERO, app.createdBy)
+        assertFalse(app.isMandatory)
         assertNull(app.modifiedBy)
         assertNull(app.modifiedAt)
 
@@ -45,32 +47,34 @@ class ApplicationRepositoryTests {
     @DbFunctional@Test
     fun updateApplicationWithoutChanges() = runSimpleH2Test(*tables) {
         val now = DateTime.now()
-        val app = createApplication("TestApp", "d", UUID_ZERO)
+        val app = createApplication("TestApp", "d", UUID_ZERO, true)
 
         assertTrue { app.createdAt >= now.minus(Duration.millis(60_000)) }
+        assertTrue { app.isMandatory }
         assertEquals(UUID_ZERO, app.createdBy)
         assertNull(app.modifiedBy)
         assertNull(app.modifiedAt)
 
         val userId = UUID.randomUUID()
 
-        val newApp1 = updateApplication(app.id.value, app.name, app.description, userId)
+        val newApp1 = updateApplication(app.id.value, app.name, app.description, userId,true)
         assertEquals(app, newApp1)
     }
 
     @DbFunctional@Test
     fun createAndUpdateApplication() = runSimpleH2Test(*tables) {
         val now = DateTime.now()
-        val app = createApplication("TestApp", "d", UUID_ZERO)
+        val app = createApplication("TestApp", "d", UUID_ZERO, true)
 
         assertTrue {   app.createdAt >= now.minus(Duration.millis(60_000)) }
+        assertTrue { app.isMandatory }
         assertEquals(UUID_ZERO, app.createdBy)
         assertNull(app.modifiedBy)
         assertNull(app.modifiedAt)
 
         val userId = UUID.randomUUID()
 
-        val newApp1 = updateApplication(app.id.value, app.name, app.description, userId)
+        val newApp1 = updateApplication(app.id.value, app.name, app.description, userId, false)
         assertEquals(app, newApp1)
 
 
@@ -81,6 +85,7 @@ class ApplicationRepositoryTests {
         assertTrue{newApp2.modifiedAt!! >= modifyDate}
         assertEquals(userId, newApp2.modifiedBy)
         assertEquals("TestApp 2", newApp2.name)
+        assertFalse { app.isMandatory }
     }
 
     @DbFunctional@Test
@@ -122,6 +127,7 @@ class ApplicationRepositoryTests {
         assertEquals(UUID_ZERO, module.createdBy)
         assertEquals("TEST_MODULE", module.name)
         assertEquals("D", module.description)
+        assertFalse { module.isMandatory }
         assertEquals(app, module.application)
         assertNull(module.modifiedAt)
         assertNull(module.modifiedBy)
@@ -139,17 +145,19 @@ class ApplicationRepositoryTests {
         assertEquals(UUID_ZERO, module.createdBy)
         assertEquals("TEST_MODULE", module.name)
         assertEquals("D", module.description)
+        assertFalse(module.isMandatory)
         assertEquals(app, module.application)
         assertNull(module.modifiedAt)
         assertNull(module.modifiedBy)
 
         val userId = UUID.randomUUID()
-        val module2 = updateModule(module.id.value, "TEST_MODULE_2", "D_2", app.id.value, userId)
+        val module2 = updateModule(module.id.value, "TEST_MODULE_2", "D_2", app.id.value, userId, true)
 
         assertTrue { module2.modifiedAt!! >= now.minus(Duration.millis(60_000)) }
         assertEquals(userId, module2.modifiedBy)
         assertEquals("TEST_MODULE_2", module2.name)
         assertEquals("D_2", module2.description)
+        assertTrue(module.isMandatory)
         assertEquals(app, module.application)
 
     }
