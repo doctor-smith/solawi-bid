@@ -17,6 +17,8 @@ object Modules : AuditableUUIDTable("modules") {
 
     val applicationId = reference("application_id", ApplicationsTable.id)
 
+    val isMandatory = bool("is_mandatory").default(false)
+
     init {
         uniqueIndex(name, applicationId)
     }
@@ -29,6 +31,7 @@ class Module(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     var description by Modules.description
 
     var application by Application referencedOn Modules.applicationId
+    var isMandatory by Modules.isMandatory
 
     override var createdAt: DateTime by Modules.createdAt
     override var createdBy: UUID by Modules.createdBy
