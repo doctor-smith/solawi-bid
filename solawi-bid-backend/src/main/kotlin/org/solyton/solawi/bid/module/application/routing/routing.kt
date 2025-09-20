@@ -13,11 +13,17 @@ import org.evoleq.math.state.times
 import org.solyton.solawi.bid.module.application.action.ReadAllApplications
 import org.solyton.solawi.bid.module.application.action.ReadApplicationsOfUsers
 import org.solyton.solawi.bid.module.application.action.ReadPersonalUserApplications
+import org.solyton.solawi.bid.module.application.action.RegisterForApplications
+import org.solyton.solawi.bid.module.application.action.StartTrialsOfApplications
+import org.solyton.solawi.bid.module.application.action.SubscribeApplications
 import org.solyton.solawi.bid.module.application.data.ApiApplications
 import org.solyton.solawi.bid.module.application.data.ApiUserApplications
 import org.solyton.solawi.bid.module.application.data.ReadApplications
 import org.solyton.solawi.bid.module.application.data.ReadPersonalUserApplications
 import org.solyton.solawi.bid.module.application.data.ReadUserApplications
+import org.solyton.solawi.bid.module.application.data.RegisterForApplications
+import org.solyton.solawi.bid.module.application.data.StartTrialsOfApplications
+import org.solyton.solawi.bid.module.application.data.SubscribeApplications
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
 
 fun <ApplicationEnv> Routing.application(
@@ -32,17 +38,34 @@ fun <ApplicationEnv> Routing.application(
                 ReadAllApplications() *
                 Respond<ApiApplications>{ transform() } runOn Base(call, environment)
             }
-            get("personal") {
-                ReceiveContextual(ReadPersonalUserApplications) *
-                IsGranted("READ_APPLICATION") *
-                ReadPersonalUserApplications() *
-                Respond<ApiApplications>{ transform() } runOn Base(call, environment)
-            }
-            patch("subscribe") {
-
+            route("personal")             {
+                get("") {
+                    ReceiveContextual(ReadPersonalUserApplications) *
+                    IsGranted("READ_APPLICATION") *
+                    ReadPersonalUserApplications() *
+                    Respond<ApiApplications>{ transform() } runOn Base(call, environment)
+                }
+                patch("register") {
+                    ReceiveContextual<RegisterForApplications>() *
+                    IsGranted("SUBSCRIBE_APPLICATION") *
+                    RegisterForApplications() *
+                    Respond<ApiApplications> { transform() } runOn Base(call, environment)
+                }
+                patch("trial") {
+                    ReceiveContextual< StartTrialsOfApplications>() *
+                    IsGranted("SUBSCRIBE_APPLICATION") *
+                    StartTrialsOfApplications() *
+                    Respond<ApiApplications> { transform() } runOn Base(call, environment)
+                }
+                patch("subscribe") {
+                    ReceiveContextual<SubscribeApplications>() *
+                    IsGranted("SUBSCRIBE_APPLICATION") *
+                    SubscribeApplications() *
+                    Respond<ApiApplications> { transform() } runOn Base(call, environment)
+                }
             }
             patch("modules/subscribe") {
-
+                TODO("Not implemented")
             }
             route("management") {
                 patch("users") {

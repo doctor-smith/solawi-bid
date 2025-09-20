@@ -7,6 +7,9 @@ import org.solyton.solawi.bid.module.application.data.Applications
 import org.solyton.solawi.bid.module.application.data.ReadApplications
 import org.solyton.solawi.bid.module.application.data.ReadPersonalUserApplications
 import org.solyton.solawi.bid.module.application.data.ReadUserApplications
+import org.solyton.solawi.bid.module.application.data.RegisterForApplications
+import org.solyton.solawi.bid.module.application.data.StartTrialsOfApplications
+import org.solyton.solawi.bid.module.application.data.SubscribeApplications
 import org.solyton.solawi.bid.module.application.data.UserApplications
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
@@ -159,6 +162,18 @@ val solawiApi by lazy {
         patch<ReadUserApplications, UserApplications>(
             key = ReadUserApplications::class,
             url = "applications/management/users"
+        )
+        patch<RegisterForApplications, ApiApplications>(
+            key = RegisterForApplications::class,
+            url = "applications/personal/register"
+        )
+        patch<StartTrialsOfApplications, ApiApplications>(
+            key = StartTrialsOfApplications::class,
+            url = "applications/personal/trial"
+        )
+        patch<SubscribeApplications, ApiApplications>(
+            key = SubscribeApplications::class,
+            url = "applications/personal/subscribe"
         )
     }
 

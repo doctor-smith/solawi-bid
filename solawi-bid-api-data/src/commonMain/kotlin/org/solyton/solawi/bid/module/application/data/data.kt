@@ -20,6 +20,26 @@ data class ReadUserApplications(
 )
 
 @Serializable
+data class RegisterForApplications(
+    val applicationIds: List<String>
+)
+
+@Serializable
+data class StartTrialsOfApplications(
+    val applicationIds: List<String>
+)
+
+@Serializable
+data class SubscribeApplications(
+    val applicationIds: List<String>
+)
+
+@Serializable
+data class PauseApplications(
+    val applicationIds: List<String>
+)
+
+@Serializable
 data class UserApplications(
     // maps userIds to applications
     val map: Map<String, List<Application>>
@@ -65,4 +85,15 @@ sealed class LifecycleStage {
     data object Cancelled : LifecycleStage()
     @Serializable
     data object Churned : LifecycleStage()
+}
+
+fun LifecycleStage.name(): String = when(this) {
+    is LifecycleStage.Empty -> "EMPTY"
+    is LifecycleStage.Active -> "ACTIVE"
+    is LifecycleStage.Cancelled -> "CANCELLED"
+    is LifecycleStage.Churned -> "CHURNED"
+    is LifecycleStage.Paused -> "PAUSED"
+    is LifecycleStage.PaymentFailedGracePeriod -> "PAYMENT_FAILED_GRACE_PERIOD"
+    is LifecycleStage.Registered -> "REGISTERED"
+    is LifecycleStage.Trialing -> "TRIALING"
 }

@@ -19,4 +19,7 @@ sealed class ApplicationException(override val message: String): Exception(messa
 
     data class ApplicationTrialImpossible(val userId: String, val applicationId: String): ApplicationException("Trial impossible: userId = $userId; applicationId = $applicationId")
     data class ModuleTrialImpossible(val userId: String, val moduleId: String): ApplicationException("Trial impossible: userId = $userId; moduleId = $moduleId")
+
+    data class ApplicationSubscriptionImpossible(val userId: String, val applicationId: String): ApplicationException("Subscription impossible: userId = $userId; applicationId = $applicationId")
+    data class ModuleSubscriptionImpossible(val userId: String, val moduleId: String): ApplicationException("Subscription impossible: userId = $userId; moduleId = $moduleId")
 }
