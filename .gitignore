@@ -15,3 +15,6 @@ build-reports
 !build-reports/HOWTO.md
 !build-reports/frontend/.gitkeep
 !build-reports/backend/.gitkeep
+
+.sql
+!setup.sql

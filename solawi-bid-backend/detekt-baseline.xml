@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:transform.kt$fun Result.Failure.Exception.transform(): Pair&lt;HttpStatusCode, Result.Failure.Message&gt;</ID>
+    <ID>LargeClass:application-api-tests.kt$ApplicationApiTests</ID>
+  </CurrentIssues>
+</SmellBaseline>

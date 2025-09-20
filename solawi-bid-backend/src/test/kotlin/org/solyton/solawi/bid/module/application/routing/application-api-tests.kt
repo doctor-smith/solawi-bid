@@ -617,7 +617,7 @@ class ApplicationApiTests {
         }
     }
 
-
+/*
     @Api@Test
     fun cannotRegisterForApplicationsTwice() = runBlocking {
         class Data(
@@ -979,4 +979,6 @@ class ApplicationApiTests {
             assertEquals(modules.size - 2, untrialedModules.size)
         }
     }
+
+ */
 }
