@@ -13,6 +13,9 @@ import org.solyton.solawi.bid.module.application.data.LifecycleStage
 import org.solyton.solawi.bid.module.application.data.ReadApplications
 import org.solyton.solawi.bid.module.application.data.ReadPersonalUserApplications
 import org.solyton.solawi.bid.module.application.data.ReadUserApplications
+import org.solyton.solawi.bid.module.application.data.RegisterForApplications
+import org.solyton.solawi.bid.module.application.data.StartTrialsOfApplications
+import org.solyton.solawi.bid.module.application.data.SubscribeApplications
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
@@ -114,6 +117,9 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<ReadApplications>(ReadApplications.serializer())
         add<ReadUserApplications>(ReadUserApplications.serializer())
         add<ReadPersonalUserApplications>(ReadPersonalUserApplications.serializer())
+        add<RegisterForApplications>(RegisterForApplications.serializer())
+        add<StartTrialsOfApplications>(StartTrialsOfApplications.serializer())
+        add<SubscribeApplications>(SubscribeApplications.serializer())
         add<ApiApplications>(ApiApplications.serializer())
         add<ApiUserApplications>(ApiUserApplications.serializer())
         add<ApiApplication>(ApiApplication.serializer())

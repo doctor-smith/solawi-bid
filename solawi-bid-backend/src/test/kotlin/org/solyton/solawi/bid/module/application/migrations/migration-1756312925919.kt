@@ -128,14 +128,14 @@ class Migration1756312925919(
         val applicationManagementApplication = createApplication(
             "APPLICATION_MANAGEMENT",
             "Manage all aspects of the Solyton Application",
-            UUID_ZERO
+            UUID_ZERO,
         )
 
         val orgaManagementModule = createModule(
             "ORGANIZATION_MANAGEMENT",
             "Manage members, Access rights",
             applicationManagementApplication.id.value,
-            UUID_ZERO
+            UUID_ZERO,
         )
         createModule(
             "TECHNICAL_APPLICATION_MANAGEMENT",
@@ -166,13 +166,15 @@ class Migration1756312925919(
             "ORGANIZATION_MANAGEMENT",
             "Manage Organization, Members, Shares, Depots, ...",
             auctionApplication.id.value,
-            UUID_ZERO
+            UUID_ZERO,
+            true
         )
         createModule(
             "AUCTION_MANAGEMENT",
             "Manage Auctions",
             auctionApplication.id.value,
-            UUID_ZERO
+            UUID_ZERO,
+            true
         )
         createModule(
             "FINANCIAL_TOOLING",

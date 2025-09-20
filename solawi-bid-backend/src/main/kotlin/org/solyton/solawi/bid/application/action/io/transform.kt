@@ -4,6 +4,7 @@ import io.ktor.http.*
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.toMessage
 import org.evoleq.math.x
+import org.solyton.solawi.bid.module.application.exception.ApplicationException
 import org.solyton.solawi.bid.module.authentication.exception.AuthenticationException
 import org.solyton.solawi.bid.module.bid.data.api.RoundStateException
 import org.solyton.solawi.bid.module.bid.exception.BidRoundException
@@ -40,6 +41,19 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
         // todo:dev how to handle these permission exceptions?
         //is PermissionException.NoSuchContext -> HttpStatusCode.Forbidden
         //is PermissionException.NoSuchRight -> HttpStatusCode.Forbidden
+
+        // Application (Module!)
+        is ApplicationException.NoSuchApplication -> HttpStatusCode.NotFound
+        is ApplicationException.DuplicateApplicationName -> HttpStatusCode.Conflict
+        // App lifecycle
+        is ApplicationException.ApplicationRegistrationImpossible -> HttpStatusCode.Conflict
+        is ApplicationException.ApplicationTrialImpossible -> HttpStatusCode.Conflict
+        is ApplicationException.ApplicationSubscriptionImpossible -> HttpStatusCode.Conflict
+        // Module lifecycle
+        is ApplicationException.ModuleRegistrationImpossible -> HttpStatusCode.Conflict
+        is ApplicationException.ModuleTrialImpossible -> HttpStatusCode.Conflict
+        is ApplicationException.ModuleSubscriptionImpossible -> HttpStatusCode.Conflict
+
 
         else -> HttpStatusCode.InternalServerError
     } x this.value.toMessage()

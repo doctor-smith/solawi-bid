@@ -2,8 +2,17 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
+    <ID>CyclomaticComplexMethod:transform.kt$fun Result.Failure.Exception.transform(): Pair&lt;HttpStatusCode, Result.Failure.Message&gt;</ID>
+    <ID>MapGetWithNotNullAssertionOperator:applications.kt$lifecycleStages[LifecycleStage.Active.name()]!!</ID>
+    <ID>MapGetWithNotNullAssertionOperator:applications.kt$lifecycleStages[LifecycleStage.Paused.name()]!!</ID>
+    <ID>MapGetWithNotNullAssertionOperator:applications.kt$lifecycleStages[LifecycleStage.Registered.name()]!!</ID>
+    <ID>MapGetWithNotNullAssertionOperator:applications.kt$lifecycleStages[LifecycleStage.Trialing.name()]!!</ID>
     <ID>NoNameShadowing:bidders.kt${ it.id }</ID>
     <ID>RedundantSuspendModifier:io.kt$suspend</ID>
+    <ID>UnsafeCallOnNullableType:applications.kt$lifecycleStages[LifecycleStage.Active.name()]!!</ID>
+    <ID>UnsafeCallOnNullableType:applications.kt$lifecycleStages[LifecycleStage.Paused.name()]!!</ID>
+    <ID>UnsafeCallOnNullableType:applications.kt$lifecycleStages[LifecycleStage.Registered.name()]!!</ID>
+    <ID>UnsafeCallOnNullableType:applications.kt$lifecycleStages[LifecycleStage.Trialing.name()]!!</ID>
     <ID>UnsafeCallOnNullableType:bidders.kt$item!!</ID>
     <ID>UnsafeCallOnNullableType:context.kt$root!!</ID>
     <ID>UnsafeCallOnNullableType:io.kt$call.request.headers[Header.CONTEXT]!!</ID>
