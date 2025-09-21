@@ -2,15 +2,7 @@ package org.solyton.solawi.bid.application.api
 
 
 import org.evoleq.ktorx.api.Api
-import org.solyton.solawi.bid.module.application.data.ApiApplications
-import org.solyton.solawi.bid.module.application.data.Applications
-import org.solyton.solawi.bid.module.application.data.ReadApplications
-import org.solyton.solawi.bid.module.application.data.ReadPersonalUserApplications
-import org.solyton.solawi.bid.module.application.data.ReadUserApplications
-import org.solyton.solawi.bid.module.application.data.RegisterForApplications
-import org.solyton.solawi.bid.module.application.data.StartTrialsOfApplications
-import org.solyton.solawi.bid.module.application.data.SubscribeApplications
-import org.solyton.solawi.bid.module.application.data.UserApplications
+import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
@@ -174,6 +166,18 @@ val solawiApi by lazy {
         patch<SubscribeApplications, ApiApplications>(
             key = SubscribeApplications::class,
             url = "applications/personal/subscribe"
+        )
+        patch<RegisterForModules, ApiApplications>(
+            key = RegisterForModules::class,
+            url = "applications/modules/personal/register"
+        )
+        patch<StartTrialsOfModules, ApiApplications>(
+            key = StartTrialsOfModules::class,
+            url = "applications/modules/personal/trial"
+        )
+        patch<SubscribeModules, ApiApplications>(
+            key = SubscribeModules::class,
+            url = "applications/modules/personal/subscribe"
         )
     }
 

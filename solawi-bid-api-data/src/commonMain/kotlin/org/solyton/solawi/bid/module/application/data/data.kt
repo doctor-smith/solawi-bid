@@ -35,6 +35,21 @@ data class SubscribeApplications(
 )
 
 @Serializable
+data class RegisterForModules(
+    val moduleIds: List<String>
+)
+
+@Serializable
+data class StartTrialsOfModules(
+    val moduleIds: List<String>
+)
+
+@Serializable
+data class SubscribeModules(
+    val moduleIds: List<String>
+)
+
+@Serializable
 data class PauseApplications(
     val applicationIds: List<String>
 )

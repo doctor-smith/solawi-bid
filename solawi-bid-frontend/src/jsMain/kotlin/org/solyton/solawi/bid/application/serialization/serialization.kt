@@ -5,17 +5,11 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.ktorx.result.add
 import org.evoleq.ktorx.result.serializers
+import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.application.data.ApiApplication
 import org.solyton.solawi.bid.module.application.data.ApiApplications
 import org.solyton.solawi.bid.module.application.data.ApiModule
 import org.solyton.solawi.bid.module.application.data.ApiUserApplications
-import org.solyton.solawi.bid.module.application.data.LifecycleStage
-import org.solyton.solawi.bid.module.application.data.ReadApplications
-import org.solyton.solawi.bid.module.application.data.ReadPersonalUserApplications
-import org.solyton.solawi.bid.module.application.data.ReadUserApplications
-import org.solyton.solawi.bid.module.application.data.RegisterForApplications
-import org.solyton.solawi.bid.module.application.data.StartTrialsOfApplications
-import org.solyton.solawi.bid.module.application.data.SubscribeApplications
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
@@ -120,6 +114,9 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<RegisterForApplications>(RegisterForApplications.serializer())
         add<StartTrialsOfApplications>(StartTrialsOfApplications.serializer())
         add<SubscribeApplications>(SubscribeApplications.serializer())
+        add<RegisterForModules>(RegisterForModules.serializer())
+        add<StartTrialsOfModules>(StartTrialsOfModules.serializer())
+        add<SubscribeModules>(SubscribeModules.serializer())
         add<ApiApplications>(ApiApplications.serializer())
         add<ApiUserApplications>(ApiUserApplications.serializer())
         add<ApiApplication>(ApiApplication.serializer())
