@@ -23,3 +23,5 @@ fun readUserApplications(userId: UUID): ApiApplications {
 
     return applicationModules.toApiFromPairs()
 }
+
+fun <K, V> Map<K, V>.getNullSave(key: K): V = this[key]?: throw IndexOutOfBoundsException("No value for key: $key")

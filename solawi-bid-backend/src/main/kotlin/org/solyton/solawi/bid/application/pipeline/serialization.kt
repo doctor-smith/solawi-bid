@@ -15,8 +15,11 @@ import org.solyton.solawi.bid.module.application.data.ReadApplications
 import org.solyton.solawi.bid.module.application.data.ReadPersonalUserApplications
 import org.solyton.solawi.bid.module.application.data.ReadUserApplications
 import org.solyton.solawi.bid.module.application.data.RegisterForApplications
+import org.solyton.solawi.bid.module.application.data.RegisterForModules
+import org.solyton.solawi.bid.module.application.data.StartTrialsOfModules
 import org.solyton.solawi.bid.module.application.data.StartTrialsOfApplications
 import org.solyton.solawi.bid.module.application.data.SubscribeApplications
+import org.solyton.solawi.bid.module.application.data.SubscribeModules
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
@@ -116,6 +119,9 @@ fun Application.installSerializers() {
     serializers[RegisterForApplications::class] = RegisterForApplications.serializer()
     serializers[StartTrialsOfApplications::class] = StartTrialsOfApplications.serializer()
     serializers[SubscribeApplications::class] = SubscribeApplications.serializer()
+    serializers[RegisterForModules::class] = RegisterForModules.serializer()
+    serializers[StartTrialsOfModules::class] = StartTrialsOfModules.serializer()
+    serializers[SubscribeModules::class] = SubscribeModules.serializer()
     serializers[ApiApplications::class] = ApiApplications.serializer()
     serializers[ApiApplication::class] = ApiApplication.serializer()
     serializers[ApiUserApplications::class] = ApiUserApplications.serializer()
