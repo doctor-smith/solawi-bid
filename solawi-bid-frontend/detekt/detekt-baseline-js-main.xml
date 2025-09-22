@@ -2,11 +2,11 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
+    <ID>MaxLineLength:application.kt$@ReadWrite</ID>
     <ID>MaxLineLength:how-to-bid-page.kt$P{Text("Du erhälts dann ein Feedback, ob dein Gebot angenommen wurde oder nicht. Falls dein Gebot nicht angenommen werden kann, überprüfe bitte deine Angaben. Wenn es dennoch nicht funktioniert, dann wende dich bitte ans Personal")}</ID>
     <ID>MayBeConst:adhoc-permissions.kt$private val fs = "schmidt@alpha-structure.com"</ID>
     <ID>MayBeConst:adhoc-permissions.kt$private val owner = "owner@solyton.org"</ID>
     <ID>TooGenericExceptionThrown:double.kt$throw Exception("Not a Double")</ID>
-    <ID>TooGenericExceptionThrown:util.kt$throw Exception("Cannot merge Roots into other")</ID>
     <ID>TopLevelPropertyNaming:lang-components.kt$private const val basePath = "solyton.user"</ID>
     <ID>TopLevelPropertyNaming:mobile-styles.kt$const val mobileFontSizeFactor = 1.6</ID>
     <ID>UnusedParameter:qrcode-gen-compose.kt$QRCode$callback: (error: String?, svg: String?) -&gt; Unit</ID>
