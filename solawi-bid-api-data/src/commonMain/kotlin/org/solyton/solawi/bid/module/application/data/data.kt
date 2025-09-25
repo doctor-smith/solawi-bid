@@ -20,6 +20,12 @@ data class ReadUserApplications(
 )
 
 @Serializable
+data object ReadPersonalApplicationContextRelations
+
+@Serializable
+data object ReadPersonalModuleContextRelations
+
+@Serializable
 data class RegisterForApplications(
     val applicationIds: List<String>
 )
@@ -112,3 +118,25 @@ fun LifecycleStage.name(): String = when(this) {
     is LifecycleStage.Registered -> "REGISTERED"
     is LifecycleStage.Trialing -> "TRIALING"
 }
+
+@Serializable
+data class ApplicationContextRelations(
+    val all: List<ApplicationContextRelation>
+)
+
+@Serializable
+data class ApplicationContextRelation(
+    val applicationId: String,
+    val contextId: String
+)
+
+@Serializable
+data class ModuleContextRelations(
+    val all: List<ApplicationContextRelation>
+)
+
+@Serializable
+data class ModuleContextRelation(
+    val moduleId: String,
+    val contextId: String
+)
