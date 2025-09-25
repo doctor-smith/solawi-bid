@@ -15,6 +15,7 @@ import org.solyton.solawi.bid.module.application.exception.ApplicationException
 import org.solyton.solawi.bid.module.application.repository.moveLifecycleStage
 import org.solyton.solawi.bid.module.application.repository.registerForApplication
 import org.solyton.solawi.bid.module.application.repository.registerForModule
+import org.solyton.solawi.bid.module.application.schema.ApplicationContexts
 import org.solyton.solawi.bid.module.application.schema.ApplicationEntity
 import org.solyton.solawi.bid.module.application.schema.LifecycleStageEntity
 import org.solyton.solawi.bid.module.application.schema.ModuleEntity
@@ -41,6 +42,28 @@ fun ReadPersonalUserApplications(): KlAction<Result<Contextual<ReadPersonalUserA
     result: Result<Contextual<ReadPersonalUserApplications>> -> DbAction {
         database -> result bindSuspend {contextual: Contextual<ReadPersonalUserApplications> -> resultTransaction(database){
             readUserApplications(contextual.userId)
+        } } x database
+    }
+}
+
+@MathDsl
+@Suppress("FunctionName")
+fun ReadPersonalApplicationContextRelations(): KlAction<
+        Result<Contextual<ReadPersonalApplicationContextRelations>>,
+        Result<ApplicationContextRelations>
+        > = KlAction<Result< Contextual<ReadPersonalApplicationContextRelations>>, Result<ApplicationContextRelations>> {
+    result: Result<Contextual<ReadPersonalApplicationContextRelations>> -> DbAction {
+        database -> result bindSuspend {contextual: Contextual<ReadPersonalApplicationContextRelations> -> resultTransaction(database){
+            val userId = contextual.userId
+            val applications = UserApplicationEntity.find { UserApplicationsTable.userId eq  userId}.toList().map{it.application.id.value}
+            val applicationContexts = ApplicationContexts.select(ApplicationContexts.applicationId, ApplicationContexts.contextId)
+                .where{ ApplicationContexts.applicationId inList applications }.toList()
+            ApplicationContextRelations(applicationContexts.map{
+                ApplicationContextRelation(
+                    it[ApplicationContexts.applicationId].value.toString(),
+                    it[ApplicationContexts.contextId].value.toString()
+                )
+            })
         } } x database
     }
 }

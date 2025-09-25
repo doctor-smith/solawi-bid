@@ -33,6 +33,13 @@ fun <ApplicationEnv> Routing.application(
                     ReadPersonalUserApplications() *
                     Respond<ApiApplications>{ transform() } runOn Base(call, environment)
                 }
+
+                get("application-context-relations") {
+                    ReceiveContextual(ReadPersonalApplicationContextRelations) *
+                    IsGranted("READ_APPLICATION") *
+                    ReadPersonalApplicationContextRelations() *
+                    Respond< ApplicationContextRelations>{ transform() } runOn Base(call, environment)
+                }
                 patch("register") {
                     ReceiveContextual<RegisterForApplications>() *
                     IsGranted("SUBSCRIBE_APPLICATION") *
@@ -54,6 +61,12 @@ fun <ApplicationEnv> Routing.application(
             }
             route("modules") {
                 route("personal") {
+                    get("module-context-relations") {
+                        ReceiveContextual(ReadPersonalModuleContextRelations) *
+                        IsGranted("READ_APPLICATION") *
+                        ReadPersonalModuleContextRelations() *
+                        Respond<ModuleContextRelations>{ transform() } runOn Base(call, environment)
+                    }
                     patch("register") {
                         ReceiveContextual<RegisterForModules>() *
                         IsGranted("SUBSCRIBE_APPLICATION") *
