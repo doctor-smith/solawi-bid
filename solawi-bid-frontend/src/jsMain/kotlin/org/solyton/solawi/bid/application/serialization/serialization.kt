@@ -111,6 +111,8 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<ReadApplications>(ReadApplications.serializer())
         add<ReadUserApplications>(ReadUserApplications.serializer())
         add<ReadPersonalUserApplications>(ReadPersonalUserApplications.serializer())
+        add<ReadPersonalApplicationContextRelations>(ReadPersonalApplicationContextRelations.serializer())
+        add<ReadPersonalModuleContextRelations>(ReadPersonalModuleContextRelations.serializer())
         add<RegisterForApplications>(RegisterForApplications.serializer())
         add<StartTrialsOfApplications>(StartTrialsOfApplications.serializer())
         add<SubscribeApplications>(SubscribeApplications.serializer())
@@ -130,5 +132,9 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<LifecycleStage.PaymentFailedGracePeriod>(LifecycleStage.PaymentFailedGracePeriod.serializer())
         add<LifecycleStage.Cancelled>(LifecycleStage.Cancelled.serializer())
         add<LifecycleStage.Churned>(LifecycleStage.Churned.serializer())
+        add<ApplicationContextRelation>(ApplicationContextRelation.serializer())
+        add<ApplicationContextRelations>(ApplicationContextRelations.serializer())
+        add<ModuleContextRelation>(ModuleContextRelation.serializer())
+        add<ModuleContextRelations>(ModuleContextRelations.serializer())
     }
 } }
