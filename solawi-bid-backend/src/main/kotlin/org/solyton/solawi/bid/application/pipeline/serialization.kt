@@ -10,9 +10,15 @@ import org.solyton.solawi.bid.module.application.data.ApiApplications
 import org.solyton.solawi.bid.module.application.data.ApiLifecycleStage
 import org.solyton.solawi.bid.module.application.data.ApiModule
 import org.solyton.solawi.bid.module.application.data.ApiUserApplications
+import org.solyton.solawi.bid.module.application.data.ApplicationContextRelation
+import org.solyton.solawi.bid.module.application.data.ApplicationContextRelations
 import org.solyton.solawi.bid.module.application.data.LifecycleStage
+import org.solyton.solawi.bid.module.application.data.ModuleContextRelation
+import org.solyton.solawi.bid.module.application.data.ModuleContextRelations
 import org.solyton.solawi.bid.module.application.data.ReadApplications
 import org.solyton.solawi.bid.module.application.data.ReadPersonalUserApplications
+import org.solyton.solawi.bid.module.application.data.ReadPersonalApplicationContextRelations
+import org.solyton.solawi.bid.module.application.data.ReadPersonalModuleContextRelations
 import org.solyton.solawi.bid.module.application.data.ReadUserApplications
 import org.solyton.solawi.bid.module.application.data.RegisterForApplications
 import org.solyton.solawi.bid.module.application.data.RegisterForModules
@@ -116,6 +122,8 @@ fun Application.installSerializers() {
     serializers[ReadApplications::class] = ReadApplications.serializer()
     serializers[ReadUserApplications::class] = ReadUserApplications.serializer()
     serializers[ReadPersonalUserApplications::class] = ReadPersonalUserApplications.serializer()
+    serializers[ReadPersonalApplicationContextRelations::class] = ReadPersonalApplicationContextRelations.serializer()
+    serializers[ReadPersonalModuleContextRelations::class] = ReadPersonalModuleContextRelations.serializer()
     serializers[RegisterForApplications::class] = RegisterForApplications.serializer()
     serializers[StartTrialsOfApplications::class] = StartTrialsOfApplications.serializer()
     serializers[SubscribeApplications::class] = SubscribeApplications.serializer()
@@ -135,4 +143,8 @@ fun Application.installSerializers() {
     serializers[LifecycleStage.PaymentFailedGracePeriod::class] = LifecycleStage.PaymentFailedGracePeriod.serializer()
     serializers[LifecycleStage.Cancelled::class] = LifecycleStage.Cancelled.serializer()
     serializers[LifecycleStage.Churned::class] = LifecycleStage.Churned.serializer()
+    serializers[ApplicationContextRelations::class] = ApplicationContextRelations.serializer()
+    serializers[ApplicationContextRelation::class] = ApplicationContextRelation.serializer()
+    serializers[ModuleContextRelations::class] = ModuleContextRelations.serializer()
+    serializers[ModuleContextRelation::class] = ModuleContextRelation.serializer()
 }
