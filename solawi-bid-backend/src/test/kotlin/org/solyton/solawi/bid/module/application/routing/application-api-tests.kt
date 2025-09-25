@@ -20,7 +20,9 @@ import org.solyton.solawi.bid.module.application.PASSWORD
 import org.solyton.solawi.bid.module.application.USERNAME
 import org.solyton.solawi.bid.module.application.data.ApiApplications
 import org.solyton.solawi.bid.module.application.data.ApiUserApplications
+import org.solyton.solawi.bid.module.application.data.ApplicationContextRelations
 import org.solyton.solawi.bid.module.application.data.LifecycleStage
+import org.solyton.solawi.bid.module.application.data.ModuleContextRelations
 import org.solyton.solawi.bid.module.application.data.ReadUserApplications
 import org.solyton.solawi.bid.module.application.data.RegisterForApplications
 import org.solyton.solawi.bid.module.application.data.StartTrialsOfApplications
@@ -524,6 +526,99 @@ class ApplicationApiTests {
             assertEquals(HttpStatusCode.Forbidden, applicationsResponse.status, "HttpStatus not Forbidden")
         }
     }
+
+    @Api@Test
+    fun readPersonalApplicationContexts() = runBlocking {
+        testApplication() {
+            setup {
+                environment {
+                    // Load the HOCON file explicitly with the file path
+                    val configFile = File("src/test/resources/application.module.api.test.conf")
+                    config = HoconApplicationConfig(ConfigFactory.parseFile(configFile))
+                }
+            }
+
+            // login
+            val response = login(USERNAME, PASSWORD)
+            assertTrue("failed to login") {
+                response.status == HttpStatusCode.OK
+            }
+
+            val result = Json.decodeFromString(
+                ResultSerializer,
+                response.bodyAsText()
+            )
+            assertIs<Result.Success<LoggedIn>>(result, "login not successful")
+            val accessToken = result.data.accessToken
+
+            val context = getRootContextByName("APPLICATION", accessToken)
+
+
+            val applicationsResponse = client.get("applications/personal/application-context-relations") {
+                header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(HttpHeaders.Authorization, "Bearer $accessToken")
+                header(Header.CONTEXT, context.id)
+            }
+
+            assertEquals(HttpStatusCode.OK, applicationsResponse.status, "HttpStatus not OK")
+            val applicationsResponseText = applicationsResponse.bodyAsText()
+
+            val applicationsResult = Json.decodeFromString(
+                deserializer = ResultSerializer<ApplicationContextRelations>(),
+                string = applicationsResponseText
+            )
+            assertIs<Result.Success<ApplicationContextRelations>>(applicationsResult)
+
+            // todo:dev improve tests
+        }
+    }
+
+    @Api@Test
+    fun readPersonalModuleContexts() = runBlocking {
+        testApplication() {
+            setup {
+                environment {
+                    // Load the HOCON file explicitly with the file path
+                    val configFile = File("src/test/resources/application.module.api.test.conf")
+                    config = HoconApplicationConfig(ConfigFactory.parseFile(configFile))
+                }
+            }
+
+            // login
+            val response = login(USERNAME, PASSWORD)
+            assertTrue("failed to login") {
+                response.status == HttpStatusCode.OK
+            }
+
+            val result = Json.decodeFromString(
+                ResultSerializer,
+                response.bodyAsText()
+            )
+            assertIs<Result.Success<LoggedIn>>(result, "login not successful")
+            val accessToken = result.data.accessToken
+
+            val context = getRootContextByName("APPLICATION", accessToken)
+
+
+            val applicationsResponse = client.get("applications/modules/personal/module-context-relations") {
+                header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(HttpHeaders.Authorization, "Bearer $accessToken")
+                header(Header.CONTEXT, context.id)
+            }
+
+            assertEquals(HttpStatusCode.OK, applicationsResponse.status, "HttpStatus not OK")
+            val applicationsResponseText = applicationsResponse.bodyAsText()
+
+            val applicationsResult = Json.decodeFromString(
+                deserializer = ResultSerializer<ModuleContextRelations>(),
+                string = applicationsResponseText
+            )
+            assertIs<Result.Success<ModuleContextRelations>>(applicationsResult)
+
+            // todo:dev improve tests
+        }
+    }
+
 
     @Api@Test
     fun registerForApplications() = runBlocking {

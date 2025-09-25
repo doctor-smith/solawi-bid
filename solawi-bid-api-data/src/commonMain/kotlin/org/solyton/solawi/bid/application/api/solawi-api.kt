@@ -157,7 +157,7 @@ val solawiApi by lazy {
         )
         get<ReadPersonalModuleContextRelations, ModuleContextRelations>(
             key = ReadPersonalModuleContextRelations::class,
-            url = "applications/personal/module-context-relations"
+            url = "applications/modules/personal/module-context-relations"
         )
         patch<ReadUserApplications, UserApplications>(
             key = ReadUserApplications::class,
