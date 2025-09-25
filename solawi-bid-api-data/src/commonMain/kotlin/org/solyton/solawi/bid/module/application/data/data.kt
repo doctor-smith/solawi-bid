@@ -132,7 +132,7 @@ data class ApplicationContextRelation(
 
 @Serializable
 data class ModuleContextRelations(
-    val all: List<ApplicationContextRelation>
+    val all: List<ModuleContextRelation>
 )
 
 @Serializable
