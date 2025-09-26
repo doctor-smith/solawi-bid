@@ -56,7 +56,7 @@ fun Routing(storage: Storage<Application>): Routes = Routing("/") {
             component { HowToBidPage(storage) }
         }
     }
-    route("solyton") {
+    route("app") {
 
         wrap {
             access {

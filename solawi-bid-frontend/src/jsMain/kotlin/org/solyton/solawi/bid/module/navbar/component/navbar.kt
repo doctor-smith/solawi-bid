@@ -60,7 +60,7 @@ fun NavBar(
         {"Dashboard"},
         device
     ) {
-        navigate("/solyton/dashboard")
+        navigate("/app/dashboard")
     }
 
     Div({style { width(50.px) }}) {  }
@@ -90,7 +90,7 @@ fun NavBar(
                 Option("MyData", {
 
                     onClick {
-                        navigate("/solyton/private/data")
+                        navigate("/app/private/data")
                     }
                 }) {
                     Text("Meine Daten")

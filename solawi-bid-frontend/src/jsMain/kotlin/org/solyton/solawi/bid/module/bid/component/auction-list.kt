@@ -120,7 +120,7 @@ fun AuctionListItem(
             device,
             false,
         ) {
-            navigate("/solyton/auctions/${auction.read().auctionId}")
+            navigate("/app/auctions/${auction.read().auctionId}")
         }
 
         // Edit

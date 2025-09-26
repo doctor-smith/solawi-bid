@@ -37,7 +37,7 @@ fun QRLinkToRoundPageButton(
             onClick {
                 // todo:dev
                 // window.open("$frontendBaseUrl/solyton/auctions/${auctionId}/rounds/${round.roundId}", "_blank")
-                navigate("/solyton/auctions/${auctionId}/rounds/${round.roundId}")
+                navigate("/app/auctions/${auctionId}/rounds/${round.roundId}")
             }
         }
     ){
