@@ -36,3 +36,12 @@ fun hasRole(role: StringValueWithDescription, contextId: String): Reader<Applica
 
 fun hasRole(role: StringValueWithDescription, contextId: Source<String>): Reader<Application, Boolean> =
     hasRole(role, contextId.emit())
+
+fun hasOneOfTheRoles(roles: List<String>, contextId: String): Reader<Application, Boolean> = Reader {
+    application ->
+    val context: Context? = application.user.permissions.contexts.firstOrNull { it.contextId == contextId }
+    if(context == null) false
+    require(context != null)
+    context.roles.map { it.roleName }.distinct().any { role -> roles.any{ it == role } }
+}
+

@@ -20,6 +20,7 @@ import org.jetbrains.compose.web.dom.*
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.i18N
+import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.service.setContext
 import org.solyton.solawi.bid.application.ui.page.dashboard.data.DashboardComponent
 import org.solyton.solawi.bid.module.application.permission.Context
@@ -27,6 +28,7 @@ import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
+import org.solyton.solawi.bid.module.user.data.reader.hasOneOfTheRoles
 import org.w3c.dom.HTMLElement
 
 @Markup
@@ -41,7 +43,14 @@ fun DashboardPage(storage: Storage<Application>) {
     // Texts
     val texts = (storage * i18N * language * component(DashboardComponent.Page))
     // val auctionsCard = texts * subComp("auctionsCard")
+/*
+    val applicationManagementContext = (storage)
 
+    val canAccessApplicationManagement = (storage * userIso) * hasOneOfTheRoles(
+        listOf("APPLICATION_"),
+        ""
+    )
+*/
     Vertical(verticalPageStyle) {
         Wrap{
             H1 { Text((texts * title).emit()) }
@@ -50,7 +59,7 @@ fun DashboardPage(storage: Storage<Application>) {
 
             // auctionsCard
             Card({
-                navigate("/solyton/auctions")
+                navigate("/app/auctions")
             }) {
                 Wrap { H3 { Text("Auktionen") } }
                 /*
@@ -62,12 +71,12 @@ fun DashboardPage(storage: Storage<Application>) {
                  */
             }
             Card({
-                navigate("/solyton/management")
+                navigate("/pp/management")
             }) {
                 Wrap { H3 { Text("User Management") } }
             }
             Card({
-                navigate("/solyton/auctions/search-bidders")
+                navigate("/app/auctions/search-bidders")
             }){
                 Wrap { H3 { Text("Bieter Suche") } }
             }
@@ -126,6 +135,6 @@ fun AuctionsCard(storage: Storage<Application>, texts: Source<Lang.Block>) {
         navButton * title,
         storage * deviceData * mediaType.get)
     {
-        navigate("/solyton/auctions")
+        navigate("/app/auctions")
     }
 }

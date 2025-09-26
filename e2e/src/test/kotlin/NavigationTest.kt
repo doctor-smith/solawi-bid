@@ -42,7 +42,7 @@ class NavigationTest {
 
         val page = context.newPage()
 
-        page.navigate("http://localhost:8080/solyton/dashboard")
+        page.navigate("http://localhost:8080/app/dashboard")
 
         assertTrue(page.url().contains("/dashboard"))
 
@@ -64,7 +64,7 @@ class NavigationTest {
 
         val page = context.newPage()
 
-        page.navigate("http://localhost:8080/solyton/dashboard")
+        page.navigate("http://localhost:8080/app/dashboard")
         page.waitForURL("**/login")
 
         assertTrue(
