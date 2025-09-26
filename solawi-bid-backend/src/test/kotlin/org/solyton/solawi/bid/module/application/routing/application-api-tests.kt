@@ -131,7 +131,7 @@ class ApplicationApiTests {
             val context = getRootContextByName("APPLICATION", accessToken)
 
 
-            val applicationsResponse = client.get("applications/personal") {
+            val applicationsResponse = client.get("applications/personal/all") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $accessToken")
                 header(Header.CONTEXT, context.id)
@@ -172,7 +172,7 @@ class ApplicationApiTests {
                 }
             }
 
-            val applicationsResponse = client.get("applications/personal") {
+            val applicationsResponse = client.get("applications/personal/all") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
             }
 
@@ -206,7 +206,7 @@ class ApplicationApiTests {
             val context = getRootContextByName("APPLICATION", accessToken)
 
 
-            val applicationsResponse = client.get("applications/personal") {
+            val applicationsResponse = client.get("applications/personal/all") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $accessToken")
                 header(Header.CONTEXT, context.id)
@@ -242,7 +242,7 @@ class ApplicationApiTests {
 
             val context = getRootContextByName("DUMMY_CONTEXT", accessToken)
 
-            val applicationsResponse = client.get("applications/personal") {
+            val applicationsResponse = client.get("applications/personal/all") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $accessToken")
                 header(Header.CONTEXT, context.id)

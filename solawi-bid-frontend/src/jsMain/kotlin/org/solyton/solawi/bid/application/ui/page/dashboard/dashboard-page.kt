@@ -20,9 +20,11 @@ import org.jetbrains.compose.web.dom.*
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.i18N
+import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.service.setContext
 import org.solyton.solawi.bid.application.ui.page.dashboard.data.DashboardComponent
+import org.solyton.solawi.bid.application.ui.page.dashboard.permissions.canAccessApplication
 import org.solyton.solawi.bid.module.application.permission.Context
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.language
@@ -40,51 +42,53 @@ fun DashboardPage(storage: Storage<Application>) {
 
     // Data
 
+    // Permissions
+    val canAccessApplicationManagement = (storage * applicationManagementModule * canAccessApplication("APPLICATION_MANAGEMENT")).emit()
+    val canAccessAuctions = (storage * applicationManagementModule * canAccessApplication("AUCTIONS")).emit()
     // Texts
     val texts = (storage * i18N * language * component(DashboardComponent.Page))
     // val auctionsCard = texts * subComp("auctionsCard")
-/*
-    val applicationManagementContext = (storage)
 
-    val canAccessApplicationManagement = (storage * userIso) * hasOneOfTheRoles(
-        listOf("APPLICATION_"),
-        ""
-    )
-*/
     Vertical(verticalPageStyle) {
         Wrap{
             H1 { Text((texts * title).emit()) }
         }
         Horizontal(/*{justifyContent(JustifyContent.SpaceEvenly)}*/) {
+            if(canAccessApplicationManagement) {
+                Card({
+                    navigate("/app/management")
+                }) {
+                    Wrap { H3 { Text("User Management") } }
+                }
+            }
 
             // auctionsCard
-            Card({
-                navigate("/app/auctions")
-            }) {
-                Wrap { H3 { Text("Auktionen") } }
-                /*
+            if(canAccessAuctions) {
+                Card({
+                    navigate("/app/auctions")
+                }) {
+                    Wrap { H3 { Text("Auktionen") } }
+                    /*
                 AuctionsCard(
                     storage = storage,
                     texts = auctionsCard
                 )
 
                  */
-            }
-            Card({
-                navigate("/app/management")
-            }) {
-                Wrap { H3 { Text("User Management") } }
-            }
-            Card({
-                navigate("/app/auctions/search-bidders")
-            }){
-                Wrap { H3 { Text("Bieter Suche") } }
-            }
+                }
 
-            Card({
-                navigate("/manual")
-            }){
-                Wrap { H3 { Text("Gebrauchsanleitung") } }
+
+                Card({
+                    navigate("/app/auctions/search-bidders")
+                }) {
+                    Wrap { H3 { Text("Bieter Suche") } }
+                }
+
+                Card({
+                    navigate("/manual")
+                }) {
+                    Wrap { H3 { Text("Gebrauchsanleitung") } }
+                }
             }
             /*
             Wrap({width(25.percent)}) {
