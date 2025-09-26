@@ -9,6 +9,8 @@ import org.evoleq.uuid.UUID_ZERO
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
 import org.solyton.solawi.bid.module.application.schema.ModulesTable
+import org.solyton.solawi.bid.module.application.schema.UserApplicationsTable
+import org.solyton.solawi.bid.module.application.schema.UserModulesTable
 import org.solyton.solawi.bid.module.banking.schema.BankAccountsTable
 import org.solyton.solawi.bid.module.banking.schema.FiscalYears
 import org.solyton.solawi.bid.module.bid.schema.*
@@ -146,6 +148,12 @@ val columnsToAdd: List<AddMissingColumns> by lazy {
         ),
         ModulesTable.addColumnsIfMissing(
             ColumnDef.Missing<Boolean>("is_mandatory", false)
+        ),
+        UserApplicationsTable.addColumnsIfMissing(
+            ColumnDef.Missing("lifecycle_stage_id", false)
+        ),
+        UserModulesTable.addColumnsIfMissing(
+        ColumnDef.Missing("lifecycle_stage_id", false)
         )
     )
 }
