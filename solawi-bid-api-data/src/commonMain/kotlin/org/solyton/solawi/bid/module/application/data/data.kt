@@ -7,7 +7,10 @@ typealias ApiApplication = Application
 typealias ApiModule = Module
 typealias ApiLifecycleStage = LifecycleStage
 typealias ApiUserApplications = UserApplications
-
+typealias ApiApplicationContextRelations = ApplicationContextRelations
+typealias ApiApplicationContextRelation = ApplicationContextRelation
+typealias ApiModuleContextRelations = ModuleContextRelations
+typealias ApiModuleContextRelation = ModuleContextRelation
 
 @Serializable
 data object ReadApplications

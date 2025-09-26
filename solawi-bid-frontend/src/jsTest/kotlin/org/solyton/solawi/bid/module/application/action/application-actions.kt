@@ -11,7 +11,9 @@ import org.solyton.solawi.bid.application.data.transform.application.management.
 import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.application.data.management.ApplicationManagement
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
+import org.solyton.solawi.bid.module.application.data.management.personalApplicationContextRelations
 import org.solyton.solawi.bid.module.application.data.management.personalApplications
+import org.solyton.solawi.bid.module.application.data.management.personalModuleContextRelations
 import org.solyton.solawi.bid.module.application.data.management.userApplications
 import org.solyton.solawi.bid.module.i18n.data.Environment
 import org.solyton.solawi.bid.module.i18n.data.I18N
@@ -393,6 +395,72 @@ class ApplicationActionsTest {
             val applications = (storage * personalApplications).read()
 
             assertEquals(1,applications.size)
+            assertEquals(domainApplications, applications)
+        }
+    }
+
+    @OptIn(ComposeWebExperimentalTestsApi::class)
+    @Test
+    fun readModuleContextRelationsTest() = runTest{
+
+        val action = readModuleContextRelations
+
+        val apiModuleContextRelations = ApiModuleContextRelations(
+            all = listOf(
+                ApiModuleContextRelation(
+                    "moduleId_1", "contextId_1"
+                ),
+                ApiModuleContextRelation(
+                    "moduleId_2", "contextId_2"
+                )
+            ),
+        )
+        val domainApplications = apiModuleContextRelations.toDomainType()
+
+        composition {
+            val storage = TestStorage() * applicationManagementModule
+
+            assertIs<ReadPersonalModuleContextRelations>((storage * action.reader).emit())
+            assertEquals(0,(storage * personalModuleContextRelations).read().size)
+
+
+            (storage * action.writer).write(apiModuleContextRelations) on Unit
+            val applications = (storage * personalModuleContextRelations).read()
+
+            assertEquals(2,applications.size)
+            assertEquals(domainApplications, applications)
+        }
+    }
+
+    @OptIn(ComposeWebExperimentalTestsApi::class)
+    @Test
+    fun readApplicationContextRelationsTest() = runTest{
+
+        val action = readApplicationContextRelations
+
+        val apiApplicationContextRelations = ApiApplicationContextRelations(
+            all = listOf(
+                ApiApplicationContextRelation(
+                    "applicationId_1", "contextId_1"
+                ),
+                ApiApplicationContextRelation(
+                    "applicationId_2", "contextId_2"
+                )
+            ),
+        )
+        val domainApplications = apiApplicationContextRelations.toDomainType()
+
+        composition {
+            val storage = TestStorage() * applicationManagementModule
+
+            assertIs< ReadPersonalApplicationContextRelations>((storage * action.reader).emit())
+            assertEquals(0,(storage * personalApplicationContextRelations).read().size)
+
+
+            (storage * action.writer).write(apiApplicationContextRelations) on Unit
+            val applications = (storage * personalApplicationContextRelations).read()
+
+            assertEquals(2,applications.size)
             assertEquals(domainApplications, applications)
         }
     }

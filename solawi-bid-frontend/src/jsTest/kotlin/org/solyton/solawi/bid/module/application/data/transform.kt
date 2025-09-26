@@ -3,6 +3,7 @@ package org.solyton.solawi.bid.module.application.data
 import org.solyton.solawi.bid.module.application.data.application.Application
 import org.solyton.solawi.bid.module.application.data.module.Module
 import org.solyton.solawi.bid.module.application.data.userapplication.UserApplications
+import org.solyton.solawi.bid.module.permissions.data.relations.ContextRelation
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -231,6 +232,106 @@ class TransformationTests {
         assertEquals(
             expectedModule,
             apiModule.toDomainType()
+        )
+    }
+
+    @Test fun moduleContextRelationsToDomainTypeTest() {
+        val moduleContextRelations = ApiModuleContextRelations(
+            all = listOf(
+                ApiModuleContextRelation(
+                    "moduleId_1","contextId_1"
+                ),
+                ApiModuleContextRelation(
+                    "moduleId_2","contextId_2"
+                )
+            )
+        )
+
+        val expectedContextRelations = listOf(
+            ContextRelation(
+                "contextId_1","moduleId_1"
+            ),
+            ContextRelation(
+                "contextId_2","moduleId_2"
+            )
+        )
+
+        val result = moduleContextRelations.toDomainType()
+
+        assertEquals(
+            expectedContextRelations,
+            result
+        )
+    }
+
+    @Test fun moduleContextRelationToDomainTypeTest() {
+        val contextId = "contextId"
+        val moduleId = "moduleId"
+        val moduleContextRelation = ApiModuleContextRelation(
+            moduleId = moduleId,
+            contextId = contextId
+        )
+
+        val expectedContextRelation = ContextRelation(
+            contextId = contextId,
+            relatedId = moduleId
+        )
+
+        val result = moduleContextRelation.toDomainType()
+
+        assertEquals(
+            expectedContextRelation,
+            result
+        )
+    }
+
+    @Test fun applicationContextRelationsToDomainTypeTest() {
+        val applicationContextRelations = ApiApplicationContextRelations(
+            all = listOf(
+                ApiApplicationContextRelation(
+                    "moduleId_1","contextId_1"
+                ),
+                ApiApplicationContextRelation(
+                    "moduleId_2","contextId_2"
+                )
+            )
+        )
+
+        val expectedContextRelations = listOf(
+            ContextRelation(
+                "contextId_1","moduleId_1"
+            ),
+            ContextRelation(
+                "contextId_2","moduleId_2"
+            )
+        )
+
+        val result = applicationContextRelations.toDomainType()
+
+        assertEquals(
+            expectedContextRelations,
+            result
+        )
+    }
+
+    @Test fun applicationContextRelationToDomainTypeTest() {
+        val contextId = "contextId"
+        val applicationId = "applicationId"
+        val applicationContextRelation = ApiApplicationContextRelation(
+            applicationId = applicationId,
+            contextId = contextId
+        )
+
+        val expectedContextRelation = ContextRelation(
+            contextId = contextId,
+            relatedId = applicationId
+        )
+
+        val result = applicationContextRelation.toDomainType()
+
+        assertEquals(
+            expectedContextRelation,
+            result
         )
     }
 }

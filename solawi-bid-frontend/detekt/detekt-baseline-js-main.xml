@@ -2,6 +2,7 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
+    <ID>MaxLineLength:application-management.kt$@ReadWrite</ID>
     <ID>MaxLineLength:application.kt$@ReadWrite</ID>
     <ID>MaxLineLength:how-to-bid-page.kt$P{Text("Du erhälts dann ein Feedback, ob dein Gebot angenommen wurde oder nicht. Falls dein Gebot nicht angenommen werden kann, überprüfe bitte deine Angaben. Wenn es dennoch nicht funktioniert, dann wende dich bitte ans Personal")}</ID>
     <ID>MayBeConst:adhoc-permissions.kt$private val fs = "schmidt@alpha-structure.com"</ID>
