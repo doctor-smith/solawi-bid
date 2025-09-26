@@ -71,7 +71,7 @@ fun DashboardPage(storage: Storage<Application>) {
                  */
             }
             Card({
-                navigate("/pp/management")
+                navigate("/app/management")
             }) {
                 Wrap { H3 { Text("User Management") } }
             }
