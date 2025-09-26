@@ -27,7 +27,7 @@ fun <ApplicationEnv> Routing.application(
                 Respond<ApiApplications>{ transform() } runOn Base(call, environment)
             }
             route("personal") {
-                get("") {
+                get("all") {
                     ReceiveContextual(ReadPersonalUserApplications) *
                     IsGranted("READ_APPLICATION") *
                     ReadPersonalUserApplications() *

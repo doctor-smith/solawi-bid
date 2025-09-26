@@ -28,7 +28,9 @@ fun Storage<Application>.setContext(context: StringValueWithDescription) {
 
 @OptIn(ExperimentalUuidApi::class)
 fun Storage<Application>.setContext(contextId: Uuid) {
-    (this * context * current).write(contextId.toString())
+    val stringifiedId = contextId.toString()
+    if(stringifiedId == (this * context * current).read()) return
+    (this * context * current).write(stringifiedId)
 }
 
 fun Storage<Application>.setContextByName(contextName: String) {
