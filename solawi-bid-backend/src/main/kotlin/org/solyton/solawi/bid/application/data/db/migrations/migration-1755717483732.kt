@@ -33,7 +33,7 @@ import org.solyton.solawi.bid.module.permission.schema.repository.of
  *
  * Description:
  * - Add tables: ApplicationContexts, ModuleContexts.
- * - Relate applications 'Application Management'  and 'Auctions' with contexts
+ * - Relate applications 'Application Management'
  * - Create corresponding Roles and Rights
  * - Define role-right-context
  */

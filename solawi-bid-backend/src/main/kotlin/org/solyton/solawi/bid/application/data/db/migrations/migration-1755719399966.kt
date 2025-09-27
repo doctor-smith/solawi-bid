@@ -21,7 +21,8 @@ import org.solyton.solawi.bid.module.permission.schema.ContextsTable
  *
  * Generated at Wed Aug 20 21:49:59 CEST 2025
  *
- * Description: ...
+ * Description:
+ * Relate application 'Auctions' with auction context in application contexts
  */
 class Migration1755719399966(
     override val database: Database
