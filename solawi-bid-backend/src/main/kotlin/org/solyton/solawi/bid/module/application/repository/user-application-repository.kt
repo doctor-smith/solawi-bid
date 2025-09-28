@@ -6,7 +6,9 @@ import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.application.exception.ApplicationException
 import org.solyton.solawi.bid.module.application.schema.*
 import org.solyton.solawi.bid.module.application.schema.LifecycleStageEntity
-import java.util.UUID
+import org.solyton.solawi.bid.module.permission.schema.repository.cloneRightRoleContext
+import org.solyton.solawi.bid.module.permission.schema.repository.createRootContext
+import java.util.*
 
 fun Transaction.registerForApplication(userId: UUID, applicationId: UUID): UserApplication {
     val application = Application.find{ Applications.id eq applicationId }.firstOrNull()
@@ -22,9 +24,16 @@ fun Transaction.registerForApplication(userId: UUID, applicationId: UUID): UserA
     val registeredStage = LifecycleStageEntity.find { LifecycleStages.name eq "REGISTERED" }.firstOrNull()
         ?: throw ApplicationException.NoSuchLifecycleStage("REGISTERED")
 
+    val context = createRootContext(application.buildUserApplicationContextName(userId))
+    cloneRightRoleContext(
+        application.defaultContext.id.value,
+        context.id.value
+    )
+
     return UserApplication.new{
         this.userId = userId
         this.application = application
+        this.context = context
         lifecycleStage = registeredStage
         createdBy = userId
     }

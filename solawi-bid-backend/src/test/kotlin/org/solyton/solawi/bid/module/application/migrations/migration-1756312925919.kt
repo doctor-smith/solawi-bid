@@ -17,6 +17,7 @@ import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
+import org.solyton.solawi.bid.module.permission.schema.repository.createRootContext
 import org.solyton.solawi.bid.module.permission.schema.repository.grant
 import org.solyton.solawi.bid.module.permission.schema.repository.of
 import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
@@ -87,7 +88,7 @@ class Migration1756312925919(
             name = "APPLICATION"
             createdBy = UUID_ZERO
         }
-
+        createRootContext("EMPTY")
 
         ContextEntity.new {
             name = "DUMMY_CONTEXT"

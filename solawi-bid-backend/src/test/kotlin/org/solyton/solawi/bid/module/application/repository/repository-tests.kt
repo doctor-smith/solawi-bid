@@ -13,7 +13,9 @@ import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
 import org.solyton.solawi.bid.module.application.schema.ModulesTable
 import org.solyton.solawi.bid.module.application.schema.UserApplications
 import org.solyton.solawi.bid.module.application.schema.UserModules
-import java.util.UUID
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.permission.schema.repository.createRootContext
+import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
@@ -24,11 +26,13 @@ class ApplicationRepositoryTests {
         ApplicationsTable,
         ModulesTable,
         UserApplications,
-        UserModules
+        UserModules,
+        ContextsTable
     )
 
     @DbFunctional@Test
     fun createApplication() = runSimpleH2Test(*tables) {
+        createRootContext("EMPTY")
         val now = DateTime.now()
         val app = createApplication("TestApp", "d", UUID_ZERO)
 
@@ -46,6 +50,7 @@ class ApplicationRepositoryTests {
 
     @DbFunctional@Test
     fun updateApplicationWithoutChanges() = runSimpleH2Test(*tables) {
+        createRootContext("EMPTY")
         val now = DateTime.now()
         val app = createApplication("TestApp", "d", UUID_ZERO, true)
 
@@ -57,12 +62,13 @@ class ApplicationRepositoryTests {
 
         val userId = UUID.randomUUID()
 
-        val newApp1 = updateApplication(app.id.value, app.name, app.description, userId,true)
+        val newApp1 = updateApplication(app.id.value, app.name, app.description, userId,true, null)
         assertEquals(app, newApp1)
     }
 
     @DbFunctional@Test
     fun createAndUpdateApplication() = runSimpleH2Test(*tables) {
+        createRootContext("EMPTY")
         val now = DateTime.now()
         val app = createApplication("TestApp", "d", UUID_ZERO, true)
 
@@ -74,12 +80,12 @@ class ApplicationRepositoryTests {
 
         val userId = UUID.randomUUID()
 
-        val newApp1 = updateApplication(app.id.value, app.name, app.description, userId, false)
+        val newApp1 = updateApplication(app.id.value, app.name, app.description, userId, false, null)
         assertEquals(app, newApp1)
 
 
         val modifyDate = DateTime.now()
-        val newApp2 = updateApplication(app.id.value, "TestApp 2", app.description, userId)
+        val newApp2 = updateApplication(app.id.value, "TestApp 2", app.description, userId, false, null)
 
         assertNotNull(newApp2.modifiedAt)
         assertTrue{newApp2.modifiedAt!! >= modifyDate}
@@ -90,6 +96,7 @@ class ApplicationRepositoryTests {
 
     @DbFunctional@Test
     fun cannotCreateTwoAppsWithSameName() = runSimpleH2Test(*tables) {
+        createRootContext("EMPTY")
         var resultException: Exception? = null
         val app1 = createApplication("TEST_APP", "d", UUID_ZERO)
         try {
@@ -103,11 +110,12 @@ class ApplicationRepositoryTests {
 
     @DbFunctional@Test
     fun cannotUpdateApplicationWithDuplicateName() = runSimpleH2Test(*tables) {
+        createRootContext("EMPTY")
         var resultException: Exception? = null
         val app1 = createApplication("TEST_APP", "d", UUID_ZERO)
         try {
             val app2 = createApplication("TEST_APP_1", "d", UUID_ZERO)
-            updateApplication(app2.id.value, app1.name, app2.description, app1.createdBy)
+            updateApplication(app2.id.value, app1.name, app2.description, app1.createdBy, false, null)
         } catch (exception: Exception) {
             resultException = exception
         }
@@ -117,6 +125,7 @@ class ApplicationRepositoryTests {
 
     @DbFunctional@Test
     fun createModule() = runSimpleH2Test(*tables) {
+        createRootContext("EMPTY")
         val app = createApplication("TEST_APP", "d", UUID_ZERO)
 
         val now = DateTime.now()
@@ -135,6 +144,7 @@ class ApplicationRepositoryTests {
 
     @DbFunctional@Test
     fun updateModule() = runSimpleH2Test(*tables) {
+        createRootContext("EMPTY")
         val app = createApplication("TEST_APP", "d", UUID_ZERO)
 
         val now = DateTime.now()
@@ -151,7 +161,7 @@ class ApplicationRepositoryTests {
         assertNull(module.modifiedBy)
 
         val userId = UUID.randomUUID()
-        val module2 = updateModule(module.id.value, "TEST_MODULE_2", "D_2", app.id.value, userId, true)
+        val module2 = updateModule(module.id.value, "TEST_MODULE_2", "D_2", app.id.value, userId, true, null)
 
         assertTrue { module2.modifiedAt!! >= now.minus(Duration.millis(60_000)) }
         assertEquals(userId, module2.modifiedBy)
@@ -164,6 +174,7 @@ class ApplicationRepositoryTests {
 
     @DbFunctional@Test
     fun cannotCreateModuleWithDuplicateName() = runSimpleH2Test(*tables) {
+        createRootContext("EMPTY")
         var resultException: Exception? = null
 
         val app = createApplication("TEST_APP", "d", UUID_ZERO)
@@ -180,18 +191,20 @@ class ApplicationRepositoryTests {
 
     @DbFunctional@Test
     fun updateModuleApp() = runSimpleH2Test(*tables) {
+        createRootContext("EMPTY")
         val app = createApplication("TEST_APP", "d", UUID_ZERO)
         val targetApp = createApplication("TARGET_TEST_APP", "D", UUID_ZERO)
         val now = DateTime.now()
 
         val module = createModule("TEST_MODULE", "D", app.id.value, UUID_ZERO)
-        val module2 = updateModule(module.id.value, module.name, module.description, targetApp.id.value, UUID_ZERO)
+        val module2 = updateModule(module.id.value, module.name, module.description, targetApp.id.value, UUID_ZERO, false, null)
 
         assertEquals(targetApp, module2.application)
     }
 
     @DbFunctional@Test
     fun cannotUpdateModuleWithDuplicateName() = runSimpleH2Test(*tables) {
+        createRootContext("EMPTY")
         var resultException: Exception? = null
 
         val app = createApplication("TEST_APP", "d", UUID_ZERO)
@@ -200,7 +213,7 @@ class ApplicationRepositoryTests {
 
         val module = createModule("TEST_MODULE", "D", app.id.value, UUID_ZERO)
         try{
-            updateModule(module.id.value, module.name, module.description,targetApp.id.value, UUID_ZERO)
+            updateModule(module.id.value, module.name, module.description,targetApp.id.value, UUID_ZERO, false, null)
         } catch (e: Exception) {
             resultException = e
         }

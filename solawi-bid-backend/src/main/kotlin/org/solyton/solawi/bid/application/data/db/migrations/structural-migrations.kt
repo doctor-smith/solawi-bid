@@ -144,17 +144,21 @@ val columnsToAdd: List<AddMissingColumns> by lazy {
             ColumnDef.Missing<DateTime?>("modified_at", null),
         ),
         ApplicationsTable.addColumnsIfMissing(
-            ColumnDef.Missing<Boolean>("is_mandatory", false)
+            ColumnDef.Missing<Boolean>("is_mandatory", false),
+            ColumnDef.Missing("default_context_id", UUID_ZERO)
         ),
         ModulesTable.addColumnsIfMissing(
-            ColumnDef.Missing<Boolean>("is_mandatory", false)
+            ColumnDef.Missing<Boolean>("is_mandatory", false),
+            ColumnDef.Missing("default_context_id", UUID_ZERO)
         ),
         UserApplicationsTable.addColumnsIfMissing(
-            ColumnDef.Missing("lifecycle_stage_id", false)
+            ColumnDef.Missing("lifecycle_stage_id", false),
+            ColumnDef.Missing("context_id", UUID_ZERO)
         ),
         UserModulesTable.addColumnsIfMissing(
-        ColumnDef.Missing("lifecycle_stage_id", false)
-        )
+        ColumnDef.Missing("lifecycle_stage_id", false),
+        ColumnDef.Missing("context_id", UUID_ZERO)
+        ),
     )
 }
 

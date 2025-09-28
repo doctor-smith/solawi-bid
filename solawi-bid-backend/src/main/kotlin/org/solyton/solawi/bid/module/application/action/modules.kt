@@ -12,7 +12,6 @@ import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.application.repository.moveLifecycleStage
 import org.solyton.solawi.bid.module.application.repository.registerForModule
 import org.solyton.solawi.bid.module.application.schema.LifecycleStageEntity
-import org.solyton.solawi.bid.module.application.schema.ModuleContexts
 import org.solyton.solawi.bid.module.application.schema.ModulesTable
 import org.solyton.solawi.bid.module.application.schema.UserModuleEntity
 import org.solyton.solawi.bid.module.application.schema.UserModulesTable
@@ -27,13 +26,14 @@ fun ReadPersonalModuleContextRelations(): KlAction<
    result: Result<Contextual<ReadPersonalModuleContextRelations>> -> DbAction {
         database -> result bindSuspend {contextual: Contextual<ReadPersonalModuleContextRelations> -> resultTransaction(database){
             val userId = contextual.userId
-            val modules = UserModuleEntity.find { UserModulesTable.userId eq  userId}.toList().map{it.module.id.value}
-            val moduleContexts = ModuleContexts.select(ModuleContexts.moduleId, ModuleContexts.contextId)
-                .where{ ModuleContexts.moduleId inList modules }.toList()
+            val moduleContexts = UserModulesTable.select(
+                UserModulesTable.moduleId,
+                UserModulesTable.contextId
+            ).where{ UserModulesTable.userId eq userId }.toList()
             ModuleContextRelations(moduleContexts.map{
                 ModuleContextRelation(
-                    it[ModuleContexts.moduleId].value.toString(),
-                    it[ModuleContexts.contextId].value.toString()
+                    it[UserModulesTable.moduleId].value.toString(),
+                    it[UserModulesTable.contextId].value.toString()
                 )
             })
         } } x database
