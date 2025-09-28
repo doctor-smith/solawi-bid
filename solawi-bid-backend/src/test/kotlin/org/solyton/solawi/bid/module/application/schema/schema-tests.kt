@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Schema
 import org.solyton.solawi.bid.module.application.schema.ApplicationEntity
 import org.solyton.solawi.bid.module.application.schema.ModuleEntity
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.permission.schema.repository.createRootContext
 import kotlin.test.assertEquals
 
 class ApplicationSchemaTests {
@@ -13,11 +15,15 @@ class ApplicationSchemaTests {
     @Schema@Test
     fun appsAndModules() = runSimpleH2Test(
         ApplicationsTable,
-        ModulesTable
+        ModulesTable,
+        ContextsTable
     ) {
+        val context = createRootContext( "EMPTY")
+
         val app = ApplicationEntity.new {
             name = "TestApplication"
             description = "Description"
+            defaultContext = context
             createdBy= UUID_ZERO
         }
 
@@ -25,6 +31,7 @@ class ApplicationSchemaTests {
             name = "TestModule1"
             description = "module-1-1description"
             application = app
+            defaultContext = context
             createdBy = UUID_ZERO
         }
 
@@ -32,6 +39,7 @@ class ApplicationSchemaTests {
             name = "TestModule2"
             description = "module-2-1description"
             application = app
+            defaultContext = context
             createdBy = UUID_ZERO
         }
 

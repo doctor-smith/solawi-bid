@@ -7,20 +7,11 @@ import org.joda.time.Duration
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.module.application.exception.ApplicationException
-import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
-import org.solyton.solawi.bid.module.application.schema.LifecycleStagesTable
-import org.solyton.solawi.bid.module.application.schema.LifecycleTransitionsTable
-import org.solyton.solawi.bid.module.application.schema.ModulesTable
-import org.solyton.solawi.bid.module.application.schema.UserApplication
-import org.solyton.solawi.bid.module.application.schema.UserApplications
-import org.solyton.solawi.bid.module.application.schema.UserModule
-import org.solyton.solawi.bid.module.application.schema.UserModules
-import java.util.UUID
-import kotlin.test.assertEquals
-import kotlin.test.assertIs
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import org.solyton.solawi.bid.module.application.schema.*
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.permission.schema.repository.createRootContext
+import java.util.*
+import kotlin.test.*
 
 class LifecycleTests {
     @DbFunctional@Test
@@ -261,8 +252,11 @@ class LifecycleTests {
         ApplicationsTable,
         UserApplications,
         LifecycleStagesTable,
-        LifecycleTransitionsTable
+        LifecycleTransitionsTable,
+        ContextsTable
     ){
+
+        val emptyContext = createRootContext("EMPTY")
         val now = DateTime.now()
 
         val lifecycleStage1 = createLifecycleStage(
@@ -285,6 +279,7 @@ class LifecycleTests {
             lifecycleStage = lifecycleStage1
             createdBy = coolUserId
             createdAt = now
+            context = emptyContext
         }
 
         val updatedUserApplication = moveLifecycleStage(
@@ -306,6 +301,8 @@ class LifecycleTests {
         LifecycleStagesTable,
         LifecycleTransitionsTable
     ){
+
+        val emptyContext = createRootContext("EMPTY")
         val now = DateTime.now()
 
         val lifecycleStage1 = createLifecycleStage(
@@ -330,6 +327,7 @@ class LifecycleTests {
             lifecycleStage = lifecycleStage1
             createdBy = coolUserId
             createdAt = now
+            context = emptyContext
         }
 
         val updatedUserModule = moveLifecycleStage(

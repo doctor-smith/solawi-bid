@@ -2,6 +2,8 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
+    <ID>ComplexCondition:application-repository.kt$newName == application.name &amp;&amp; newDescription == application.description &amp;&amp; isMandatory == application.isMandatory &amp;&amp; newDefaultContextId == application.defaultContext.id.value</ID>
+    <ID>ComplexCondition:module-repository.kt$newName == module.name &amp;&amp; newDescription == module.description &amp;&amp; newApplicationId == module.application.id.value &amp;&amp; isMandatory == module.isMandatory &amp;&amp; newDefaultContextId == module.defaultContext.id</ID>
     <ID>CyclomaticComplexMethod:transform.kt$fun Result.Failure.Exception.transform(): Pair&lt;HttpStatusCode, Result.Failure.Message&gt;</ID>
     <ID>MapGetWithNotNullAssertionOperator:applications.kt$lifecycleStages[LifecycleStage.Active.name()]!!</ID>
     <ID>MapGetWithNotNullAssertionOperator:applications.kt$lifecycleStages[LifecycleStage.Paused.name()]!!</ID>

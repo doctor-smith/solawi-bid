@@ -15,7 +15,6 @@ import org.solyton.solawi.bid.module.application.exception.ApplicationException
 import org.solyton.solawi.bid.module.application.repository.moveLifecycleStage
 import org.solyton.solawi.bid.module.application.repository.registerForApplication
 import org.solyton.solawi.bid.module.application.repository.registerForModule
-import org.solyton.solawi.bid.module.application.schema.ApplicationContexts
 import org.solyton.solawi.bid.module.application.schema.ApplicationEntity
 import org.solyton.solawi.bid.module.application.schema.LifecycleStageEntity
 import org.solyton.solawi.bid.module.application.schema.ModuleEntity
@@ -24,7 +23,7 @@ import org.solyton.solawi.bid.module.application.schema.UserApplicationEntity
 import org.solyton.solawi.bid.module.application.schema.UserApplicationsTable
 import org.solyton.solawi.bid.module.application.schema.UserModuleEntity
 import org.solyton.solawi.bid.module.application.schema.UserModulesTable
-import java.util.UUID
+import java.util.*
 
 @MathDsl
 @Suppress("FunctionName")
@@ -55,13 +54,16 @@ fun ReadPersonalApplicationContextRelations(): KlAction<
     result: Result<Contextual<ReadPersonalApplicationContextRelations>> -> DbAction {
         database -> result bindSuspend {contextual: Contextual<ReadPersonalApplicationContextRelations> -> resultTransaction(database){
             val userId = contextual.userId
-            val applications = UserApplicationEntity.find { UserApplicationsTable.userId eq  userId}.toList().map{it.application.id.value}
-            val applicationContexts = ApplicationContexts.select(ApplicationContexts.applicationId, ApplicationContexts.contextId)
-                .where{ ApplicationContexts.applicationId inList applications }.toList()
+            val applicationContexts = UserApplicationsTable.select(
+                UserApplicationsTable.applicationId,
+                UserApplicationsTable.contextId
+            ).where{
+                UserApplicationsTable.userId eq userId
+            }.toList()
             ApplicationContextRelations(applicationContexts.map{
                 ApplicationContextRelation(
-                    it[ApplicationContexts.applicationId].value.toString(),
-                    it[ApplicationContexts.contextId].value.toString()
+                    it[UserApplicationsTable.applicationId].value.toString(),
+                    it[UserApplicationsTable.contextId].value.toString()
                 )
             })
         } } x database

@@ -4,13 +4,13 @@ import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.application.exception.ApplicationException
+import org.solyton.solawi.bid.module.application.schema.*
 import org.solyton.solawi.bid.module.application.schema.LifecycleStageEntity
-import org.solyton.solawi.bid.module.application.schema.LifecycleStages
 import org.solyton.solawi.bid.module.application.schema.ModuleEntity
-import org.solyton.solawi.bid.module.application.schema.ModulesTable
-import org.solyton.solawi.bid.module.application.schema.UserModule
-import org.solyton.solawi.bid.module.application.schema.UserModules
-import java.util.UUID
+import org.solyton.solawi.bid.module.application.schema.UserApplicationEntity
+import org.solyton.solawi.bid.module.permission.schema.repository.cloneRightRoleContext
+import org.solyton.solawi.bid.module.permission.schema.repository.createChild
+import java.util.*
 
 fun Transaction.registerForModule(userId: UUID, moduleId: UUID): UserModule {
     val module = ModuleEntity.find{ ModulesTable.id eq moduleId }.firstOrNull()
@@ -26,9 +26,21 @@ fun Transaction.registerForModule(userId: UUID, moduleId: UUID): UserModule {
     val registeredStage = LifecycleStageEntity.find { LifecycleStages.name eq "REGISTERED" }.firstOrNull()
         ?: throw ApplicationException.NoSuchLifecycleStage("REGISTERED")
 
+    val userApplicationContext = UserApplicationEntity.find {
+        UserApplicationsTable.applicationId eq module.application.id and
+        (UserApplicationsTable.userId eq userId)
+    }.first().context
+
+    val context = userApplicationContext.createChild(module.buildUserModuleContextName(userId))
+    cloneRightRoleContext(
+        module.defaultContext.id.value,
+        context.id.value
+    )
+
     return UserModule.new{
         this.userId = userId
         this.module = module
+        this.context = context
         lifecycleStage = registeredStage
         createdBy = userId
     }
