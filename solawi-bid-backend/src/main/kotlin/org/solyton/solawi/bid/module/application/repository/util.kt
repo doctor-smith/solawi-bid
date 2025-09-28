@@ -21,3 +21,14 @@ fun ApplicationEntity.buildUserApplicationContextName(userId: UUID): String =
 
 fun ModuleEntity.buildUserModuleContextName(userId: UUID): String =
     "$name.${id.value}.$userId"
+
+/**
+ * Drop user and application info
+ * Recall: context_name ~ <name>|<name>.<app_id|module_id>.<user_id>
+ * Result will return the name
+ */
+fun String.reduceContextName(): String = with(split(".")) { when{
+    size <= 1 -> this@reduceContextName
+    size == 2 -> this[0]
+    else -> take(size-2).joinToString(".") { it }
+} }
