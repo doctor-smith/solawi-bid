@@ -10,10 +10,13 @@ import org.evoleq.language.Block
 import org.evoleq.language.component
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
+import org.jetbrains.compose.web.css.px
 import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.routing.Routing
 import org.solyton.solawi.bid.module.cookie.component.CookieDisclaimer
 import org.solyton.solawi.bid.module.i18n.data.language
+import org.solyton.solawi.bid.module.logo.TopLogo
+import org.solyton.solawi.bid.module.style.topLogoHeight
 
 @Markup
 @Suppress("FunctionName")
@@ -36,6 +39,12 @@ import org.solyton.solawi.bid.module.i18n.data.language
             device = storage * deviceData * mediaType.get,
             cookieDisclaimer = storage * cookieDisclaimer,
             excluded = currentPath().startsWith("/bid") || currentPath().startsWith("/manual")
+        )
+        // Logo at the top of the Page
+        TopLogo(
+            src = "/img/Solyton-Logo_v7_transparent_2.png",
+            alt = "Logo",
+            logoHeight = topLogoHeight
         )
         // All pages shall be wrapped in a container
         Container(storage * deviceData * mediaType.get ){
