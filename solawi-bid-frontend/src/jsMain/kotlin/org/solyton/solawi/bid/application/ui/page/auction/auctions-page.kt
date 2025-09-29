@@ -8,6 +8,7 @@ import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Vertical
+import org.evoleq.compose.layout.VerticalAccent
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.component
 import org.evoleq.language.subComp
@@ -36,6 +37,7 @@ import org.solyton.solawi.bid.module.bid.data.reader.BidComponent
 import org.solyton.solawi.bid.module.error.component.showErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
 import org.solyton.solawi.bid.module.i18n.data.language
+import org.solyton.solawi.bid.module.style.layout.accent.vertical.verticalAccentStyles
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 
@@ -56,6 +58,9 @@ fun AuctionsPage(storage: Storage<Application>) = Div {
 
     // Markup
     Vertical(style = verticalPageStyle) {
+        VerticalAccent(
+            verticalAccentStyles(storage * bidApplicationIso * deviceData * mediaType.get)
+        ) {
         Wrap {
             Horizontal(styles = { justifyContent(JustifyContent.SpaceBetween); width(100.percent) }) {
                 H1 { Text((texts * title).emit()) }
@@ -90,5 +95,5 @@ fun AuctionsPage(storage: Storage<Application>) = Div {
                 }
             }
         }}
-    }
+    } }
 }
