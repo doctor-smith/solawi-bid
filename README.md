@@ -15,6 +15,17 @@ This project is dual-licensed:
    Required for any commercial use, including deployment as a SaaS product.  
    Commercial licenses are available on request: schmidt@alpha-structure.com
 
+
+### Docker Images
+
+Docker images built by this project (frontend and backend) are used internally for deployment in this SaaS project.
+
+These images are private in GitHub Packages and are not distributed to third parties.
+
+Since the images are used internally, Apache 2.0 obligations (including providing LICENSE or NOTICE files) do not apply.
+
+If in the future the images are made publicly available or shared with third parties, the LICENSE and NOTICE files must be included in accordance with Apache 2.0.
+
 ## Running the project
 ### Setup Docker
 First, install Docker on your system. 

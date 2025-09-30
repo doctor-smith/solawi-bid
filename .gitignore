@@ -15,6 +15,6 @@ build-reports
 !build-reports/HOWTO.md
 !build-reports/frontend/.gitkeep
 !build-reports/backend/.gitkeep
-
+.NOTICE.BAK
 .sql
 !setup.sql
