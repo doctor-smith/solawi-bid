@@ -19,10 +19,7 @@ import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
-import org.jetbrains.compose.web.css.JustifyContent
-import org.jetbrains.compose.web.css.justifyContent
-import org.jetbrains.compose.web.css.percent
-import org.jetbrains.compose.web.css.width
+import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.Text
@@ -63,7 +60,7 @@ fun AuctionsPage(storage: Storage<Application>) = Div {
         ) {
         Wrap {
             Horizontal(styles = { justifyContent(JustifyContent.SpaceBetween); width(100.percent) }) {
-                H1 { Text((texts * title).emit()) }
+                H1({style { marginLeft(20.px) }}) { Text((texts * title).emit()) }
                 Horizontal {
                     CreateAuctionButton(
                         storage = storage * bidApplicationIso,
