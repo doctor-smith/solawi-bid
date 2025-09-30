@@ -5,20 +5,40 @@ This project is dual-licensed:
 1) Open-Source License:
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+   You may obtain a copy of the License at:
 
        http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+   distributed under the License is on an "AS IS" BASIS, WITHOUT WARRANTIES
+   OR CONDITIONS OF ANY KIND.
 
 2) Commercial License:
-   For any commercial use, including deployment as a SaaS product,
-   a separate commercial license is required.
+   For any commercial use, including deployment as a SaaS product or any
+   use that generates revenue (directly or indirectly), a separate commercial
+   license is required.
    Contact: schmidt@alpha-structure.com
+
+---
+
+Commercial Use Clarification:
+
+- Commercial use includes, but is not limited to:
+  - Charging users for access to the software or any service powered by the software.
+  - Using the software as part of a business or revenue-generating activity.
+  - Deploying the software as a SaaS or offering it to third parties, even if
+    access to the software itself is free, when the activity generates revenue
+    indirectly (e.g., by selling products, services, or advertising connected to
+    the software).
+
+- Non-commercial use is allowed under the Apache 2.0 license, including:
+  - Personal, educational, or research purposes.
+  - Community or volunteer projects that do not generate revenue.
+
+For any commercial use, a separate commercial license is required.
+Contact: schmidt@alpha-structure.com
+
+---
 
 ============================
 Full Apache License 2.0 Text
