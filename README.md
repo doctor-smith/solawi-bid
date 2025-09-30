@@ -1,6 +1,19 @@
 # Solawi Auction Application
 [![Kotlin](https://img.shields.io/badge/kotlin-2.1.0.-blue.svg?logo=kotlin)](http://kotlinlang.org)
-[![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
+[![Apache 2.0 License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](./LICENSE)  
+*Open-source use under Apache 2.0; commercial use requires a separate license.*
+
+## Licensing
+
+This project is dual-licensed:
+
+1. **Open-Source License (Apache 2.0)**  
+   You may use, modify, and redistribute this project under the terms of the Apache License 2.0.  
+   See the [LICENSE](./LICENSE) file for full details.
+
+2. **Commercial License**  
+   Required for any commercial use, including deployment as a SaaS product.  
+   Commercial licenses are available on request: schmidt@alpha-structure.com
 
 ## Running the project
 ### Setup Docker
