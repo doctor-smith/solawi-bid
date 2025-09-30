@@ -33,6 +33,11 @@ import org.solyton.solawi.bid.module.bid.service.isNotGranted
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.I18N
 import org.solyton.solawi.bid.module.i18n.data.language
+import org.solyton.solawi.bid.module.separator.LineSeparatorStyles
+import org.solyton.solawi.bid.module.style.listEven
+import org.solyton.solawi.bid.module.style.listItemGap
+import org.solyton.solawi.bid.module.style.listOdd
+import org.solyton.solawi.bid.module.style.verticalAccentBar
 import org.solyton.solawi.bid.module.bid.data.auctions as auctionLens
 
 @Markup
@@ -49,8 +54,10 @@ fun AuctionList(
 ) = Div(
     attrs = {style{styles.wrapper(this)}}
 ) {
+    AuctionListHeader(styles)
+    // LineSeparator(headerSeparatorStyles)
     with(auctions.read()) {
-        forEach{ auction ->
+        forEachIndexed{ index, auction ->
             AuctionListItem(
                 auctions * FirstBy<Auction> { it.auctionId == auction.auctionId},
                 user,
@@ -58,6 +65,7 @@ fun AuctionList(
                 modals,
                 device,
                 styles,
+                index,
                 dispatchDelete = { dispatch(deleteAuctionAction(auction)) },
                 dispatchConfiguration = {dispatch(configureAuction(auctionLens * FirstBy<Auction> { it.auctionId == auction.auctionId}))    }
             )
@@ -76,15 +84,31 @@ fun AuctionListItem(
     modals: Storage<Modals<Int>>,
     device: Source<DeviceType>,
     styles: AuctionListStyles = AuctionListStyles(),
+    index: Int,
     dispatchDelete: ()->Unit,
     dispatchConfiguration: ()->Unit
 ) = Div(attrs = {
-    style { styles.item(this) }
+    style {
+        styles.item(this)
+        backgroundColor(when{
+            index % 2 == 0 -> listEven
+            else -> listOdd
+        })
+
+        border {
+            style(LineStyle.Solid)
+            color(Color.ghostwhite)
+        }
+        borderWidth(1.px, 1.px, 1.px, 1.px)
+    }
 }) {
     Div (attrs = {style {
         display(DisplayStyle.Flex)
         flexDirection(FlexDirection.Row)
         width(80.percent)
+        marginTop(10.px)
+        marginBottom(10.px)
+        marginLeft(20.px)
     }}){
         // date
         Div(
@@ -151,20 +175,56 @@ fun AuctionListItem(
     }
 }
 
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun AuctionListHeader(styles: AuctionListStyles = AuctionListStyles(),) {
+        Div(attrs = {
+            style {
+                styles.item(this)
+                justifyContent(JustifyContent.Start)
+                //backgroundColor(forestGreenUltraLite)
+            }
+        }) {
+            Div({
+                style {
+                    display(DisplayStyle.Flex)
+                    flexDirection(FlexDirection.Row)
+                    width(80.percent)
+                    marginLeft(20.px)
+                    marginTop(10.px)
+                    marginBottom(10.px)
+                }
+            }) {
+                // todo:i18n - AuctionListHeader
+                Div({ style { width(20.percent); fontWeight("bold") } }) { Text("Datum") }
+                // todo:i18n - AuctionListHeader
+                Div({ style { width(20.percent); fontWeight("bold") } }) { Text("Name") }
+            }
+        }
+
+}
+
 data class AuctionListStyles (
     val wrapper: StyleScope.()->Unit = {
         display(DisplayStyle.Flex)
         flexDirection(FlexDirection.Column)
+        gap(listItemGap)
         width(100.percent)
         height(100.percent)
-        paddingTop(10.px)
-        margin(5.px)
-
     },
     val item: StyleScope.()->Unit = {
-        paddingTop(10.px)
         display(DisplayStyle.Flex)
         flexDirection(FlexDirection.Row)
+        alignItems(AlignItems.Center)
         width(100.percent)
+    }
+)
+
+val headerSeparatorStyles = LineSeparatorStyles().copy (
+    separatorStyles = {
+        width(100.percent)
+        height(2.px)
+        backgroundColor(verticalAccentBar)
     }
 )

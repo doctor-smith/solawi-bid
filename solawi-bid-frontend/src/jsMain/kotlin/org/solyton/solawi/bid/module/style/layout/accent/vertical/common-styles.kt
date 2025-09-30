@@ -3,18 +3,9 @@ package org.solyton.solawi.bid.module.style.layout.accent.vertical
 import org.evoleq.compose.Style
 import org.evoleq.compose.layout.VerticalAccentStyles
 import org.evoleq.compose.style.data.device.DeviceType
-import org.evoleq.compose.style.data.device.compareTo
 import org.evoleq.math.Source
 import org.evoleq.math.emit
-import org.jetbrains.compose.web.css.StyleScope
-import org.jetbrains.compose.web.css.backgroundColor
-import org.jetbrains.compose.web.css.borderRadius
-import org.jetbrains.compose.web.css.marginRight
-import org.jetbrains.compose.web.css.minHeight
-import org.jetbrains.compose.web.css.paddingBottom
-import org.jetbrains.compose.web.css.paddingTop
-import org.jetbrains.compose.web.css.px
-import org.jetbrains.compose.web.css.width
+import org.jetbrains.compose.web.css.*
 import org.solyton.solawi.bid.module.style.verticalAccentBar
 
 @Style
@@ -40,7 +31,6 @@ fun accentBarStyle(device: DeviceType): StyleScope.()-> Unit = {
     width(16.px)
     borderRadius(4.px)
     backgroundColor(verticalAccentBar)
-    marginRight(12.px)
 }
 @Style
 @Suppress("UnusedParameter")
