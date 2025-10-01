@@ -8,12 +8,16 @@ import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.jetbrains.compose.web.attributes.disabled
 import org.jetbrains.compose.web.css.CSSColorValue
+import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.backgroundColor
+import org.jetbrains.compose.web.css.color
 import org.jetbrains.compose.web.dom.Button
+import org.jetbrains.compose.web.dom.I
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.style.button.buttonStyle
 import org.solyton.solawi.bid.module.style.button.cancelButtonStyle
 import org.solyton.solawi.bid.module.style.button.submitButtonStyle
+import org.solyton.solawi.bid.module.style.button.symbolicButtonStyle
 
 @Markup
 @Composable
@@ -97,3 +101,125 @@ fun ColoredButton(color: CSSColorValue, texts: Source<String>, deviceType: Devic
 ) {
     Text(texts.emit())
 }
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun IconButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    classes: Array<String>,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit) = Button(
+    attrs = {
+        if(texts.emit() != null) title(texts.emit()!!)
+        if(isDisabled) disabled()
+        if(dataId != null) dataId(dataId)
+        style {
+            symbolicButtonStyle(deviceType.emit())()
+            color(color)
+            property("border-color", color)
+            backgroundColor(bgColor)
+        }
+        onClick {
+            if(isDisabled) return@onClick
+            onClick()
+        }
+    }
+) {
+    I({
+        classes(*classes)
+    })
+}
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun EditButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-pen"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun PlusButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-plus"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun DetailsButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-file-lines"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun TrashCanButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-trash-can"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)

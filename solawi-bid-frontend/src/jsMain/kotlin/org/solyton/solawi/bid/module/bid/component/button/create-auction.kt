@@ -9,7 +9,7 @@ import org.evoleq.compose.date.today
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.Lang
 import org.evoleq.language.component
-import org.evoleq.language.title
+import org.evoleq.language.tooltip
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.times
@@ -18,6 +18,7 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.add
 import org.evoleq.optics.storage.remove
 import org.evoleq.optics.transform.times
+import org.jetbrains.compose.web.css.Color
 import org.solyton.solawi.bid.module.bid.action.createAuction
 import org.solyton.solawi.bid.module.bid.component.form.DEFAULT_AUCTION_ID
 import org.solyton.solawi.bid.module.bid.component.form.showAuctionModal
@@ -25,7 +26,7 @@ import org.solyton.solawi.bid.module.bid.data.*
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.module.bid.service.isNotGranted
-import org.solyton.solawi.bid.module.control.button.StdButton
+import org.solyton.solawi.bid.module.control.button.PlusButton
 import org.solyton.solawi.bid.module.error.component.showErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
 import org.solyton.solawi.bid.module.i18n.data.language
@@ -37,10 +38,12 @@ fun CreateAuctionButton(
     storage: Storage<BidApplication>,
     auction: Lens<BidApplication, Auction>,
     texts: Source<Lang.Block>
-) = StdButton(
-    texts = texts * title,
+) = PlusButton(
+    color = Color.black,
+    bgColor = Color.transparent,
+    texts = texts * tooltip,
     deviceType = storage * deviceData * mediaType.get,
-    disabled = (storage * user.get).emit().isNotGranted(BidRight.Auction.manage),
+    isDisabled = (storage * user.get).emit().isNotGranted(BidRight.Auction.manage),
     dataId = "auctions-page.create-auction-button"
 ){
     // Add auction with dummy id to the store

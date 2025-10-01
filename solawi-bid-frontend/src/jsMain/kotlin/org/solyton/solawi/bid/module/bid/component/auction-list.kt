@@ -22,6 +22,8 @@ import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.bid.action.configureAuction
 import org.solyton.solawi.bid.module.bid.action.deleteAuctionAction
 import org.solyton.solawi.bid.module.bid.component.form.showUpdateAuctionModal
+import org.solyton.solawi.bid.module.bid.component.styles.actionButtonBgColor
+import org.solyton.solawi.bid.module.bid.component.styles.actionButtonColor
 import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.auction.date
@@ -30,7 +32,9 @@ import org.solyton.solawi.bid.module.bid.data.biduser.User
 import org.solyton.solawi.bid.module.bid.data.reader.auctionAccepted
 import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.module.bid.service.isNotGranted
-import org.solyton.solawi.bid.module.control.button.StdButton
+import org.solyton.solawi.bid.module.control.button.DetailsButton
+import org.solyton.solawi.bid.module.control.button.EditButton
+import org.solyton.solawi.bid.module.control.button.TrashCanButton
 import org.solyton.solawi.bid.module.i18n.data.I18N
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.separator.LineSeparatorStyles
@@ -128,6 +132,8 @@ fun AuctionListItem(
         flexDirection(FlexDirection.Row)
         justifyContent(JustifyContent.End)
         width(20.percent)
+        marginRight(10.px)
+        gap(2.px)
     }}) {
         val buttons = (i18n *
             language *
@@ -139,8 +145,10 @@ fun AuctionListItem(
             subComp("buttons")
         )
 
-        StdButton(
-            buttons * subComp("details") * title,
+        DetailsButton(
+            actionButtonColor,
+            actionButtonBgColor,
+            buttons * subComp("details") * tooltip,
             device,
             false,
         ) {
@@ -148,8 +156,10 @@ fun AuctionListItem(
         }
 
         // Edit
-        StdButton(
-            buttons * subComp("edit") * title,
+        EditButton(
+            actionButtonColor,
+            actionButtonBgColor,
+            buttons * subComp("edit") * tooltip,
             device,
             (auction * auctionAccepted).emit() || user.emit().isNotGranted(BidRight.Auction.manage),
         ) {
@@ -165,8 +175,10 @@ fun AuctionListItem(
         }
 
         // Delete
-        StdButton(
-            buttons * subComp("delete") * title,
+        TrashCanButton(
+            actionButtonColor,
+            actionButtonBgColor,
+            buttons * subComp("delete") * tooltip,
             device,
             (auction * auctionAccepted).emit() || user.emit().isNotGranted(BidRight.Auction.manage)
         ) {
@@ -178,12 +190,13 @@ fun AuctionListItem(
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun AuctionListHeader(styles: AuctionListStyles = AuctionListStyles(),) {
+fun AuctionListHeader(
+    styles: AuctionListStyles = AuctionListStyles()
+) {
         Div(attrs = {
             style {
                 styles.item(this)
                 justifyContent(JustifyContent.Start)
-                //backgroundColor(forestGreenUltraLite)
             }
         }) {
             Div({
@@ -202,7 +215,6 @@ fun AuctionListHeader(styles: AuctionListStyles = AuctionListStyles(),) {
                 Div({ style { width(20.percent); fontWeight("bold") } }) { Text("Name") }
             }
         }
-
 }
 
 data class AuctionListStyles (
@@ -221,6 +233,7 @@ data class AuctionListStyles (
     }
 )
 
+@Suppress("UNUSED_VARIABLE")
 val headerSeparatorStyles = LineSeparatorStyles().copy (
     separatorStyles = {
         width(100.percent)
