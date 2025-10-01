@@ -6,8 +6,13 @@ import org.evoleq.compose.style.data.device.DeviceType
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.Text
+import org.solyton.solawi.bid.module.control.button.AppsButton
 import org.solyton.solawi.bid.module.control.button.DetailsButton
 import org.solyton.solawi.bid.module.control.button.EditButton
+import org.solyton.solawi.bid.module.control.button.FileImportButton
+import org.solyton.solawi.bid.module.control.button.GearButton
+import org.solyton.solawi.bid.module.control.button.HomeButton
+import org.solyton.solawi.bid.module.control.button.PlayButton
 import org.solyton.solawi.bid.module.control.button.TrashCanButton
 
 @Markup
@@ -24,6 +29,25 @@ fun TestButtonsPage() {
     }
 
     TrashCanButton(Color.seagreen, Color.transparent, {"delete resource"}, {DeviceType.Mobile}, false) {
+        console.log("Edit me, please fucking edit me!")
+    }
+
+    GearButton(Color.seagreen, Color.transparent, {"configure something"}, {DeviceType.Mobile}, false) {
+        console.log("Edit me, please fucking edit me!")
+    }
+
+    FileImportButton(Color.seagreen, Color.transparent, {"configure something"}, {DeviceType.Mobile}, false) {
+        console.log("Edit me, please fucking edit me!")
+    }
+
+    PlayButton(Color.seagreen, Color.transparent, {"configure something"}, {DeviceType.Mobile}, false) {
+        console.log("Edit me, please fucking edit me!")
+    }
+
+    AppsButton(Color.seagreen, Color.transparent, {"configure something"}, {DeviceType.Mobile}, false) {
+        console.log("Edit me, please fucking edit me!")
+    }
+    HomeButton(Color.seagreen, Color.transparent, {"configure something"}, {DeviceType.Mobile}, false) {
         console.log("Edit me, please fucking edit me!")
     }
 }
