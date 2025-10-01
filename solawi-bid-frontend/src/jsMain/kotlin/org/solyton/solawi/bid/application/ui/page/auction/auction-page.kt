@@ -18,9 +18,13 @@ import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.isEmpty
 import org.evoleq.optics.transform.times
+import org.jetbrains.compose.web.css.AlignItems
 import org.jetbrains.compose.web.css.JustifyContent
+import org.jetbrains.compose.web.css.alignItems
+import org.jetbrains.compose.web.css.gap
 import org.jetbrains.compose.web.css.justifyContent
 import org.jetbrains.compose.web.css.percent
+import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H1
@@ -77,7 +81,11 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div {
     Vertical(verticalPageStyle) {
         Wrap { Horizontal(styles = { justifyContent(JustifyContent.SpaceBetween); width(100.percent) }) {
             H1 { Text(with((storage * bidApplicationIso * auction).read()) { name }) }
-            Horizontal {
+            Horizontal({
+                alignItems(AlignItems.Center);
+                // todo:dev - use default value
+                gap(5.px)}
+            ) {
                 UpdateAuctionButton(
                     storage = storage * bidApplicationIso,
                     auction = auction,

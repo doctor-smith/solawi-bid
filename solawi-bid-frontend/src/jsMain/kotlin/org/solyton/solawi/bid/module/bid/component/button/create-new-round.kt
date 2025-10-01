@@ -11,6 +11,7 @@ import org.evoleq.math.times
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
+import org.jetbrains.compose.web.css.Color
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerCreateNewRound
 import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
@@ -24,7 +25,7 @@ import org.solyton.solawi.bid.module.bid.data.reader.existsRunning
 import org.solyton.solawi.bid.module.bid.data.user
 import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.module.bid.service.isNotGranted
-import org.solyton.solawi.bid.module.control.button.StdButton
+import org.solyton.solawi.bid.module.control.button.PlayButton
 
 @Markup
 @Composable
@@ -46,7 +47,9 @@ fun CreateNewRoundButton(
         (storage * auction * auctionAccepted).emit() ||
         (storage * user.get).emit().isNotGranted(BidRight.Auction.manage)
 
-    StdButton(
+    PlayButton(
+        Color.black,
+        Color.transparent,
         texts * text,
         storage * deviceData * mediaType.get,
         isDisabled,

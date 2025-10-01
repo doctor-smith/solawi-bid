@@ -16,6 +16,7 @@ import org.evoleq.math.times
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
+import org.jetbrains.compose.web.css.Color
 import org.solyton.solawi.bid.module.bid.action.addBidders
 import org.solyton.solawi.bid.module.bid.action.importBidders
 import org.solyton.solawi.bid.module.bid.component.modal.showImportBiddersModal
@@ -28,7 +29,7 @@ import org.solyton.solawi.bid.module.bid.data.reader.auctionAccepted
 import org.solyton.solawi.bid.module.bid.data.reader.existRounds
 import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.module.bid.service.isNotGranted
-import org.solyton.solawi.bid.module.control.button.StdButton
+import org.solyton.solawi.bid.module.control.button.FileImportButton
 import org.solyton.solawi.bid.module.i18n.data.language
 
 @Markup
@@ -46,7 +47,9 @@ fun ImportBiddersButton(
         (storage * auction * auctionAccepted).emit()||
         (storage * user.get).emit().isNotGranted(BidRight.Auction.manage)
 
-    StdButton(
+    FileImportButton(
+        Color.black,
+        Color.transparent,
         texts * text,
         storage * deviceData * mediaType.get,
         isDisabled,
