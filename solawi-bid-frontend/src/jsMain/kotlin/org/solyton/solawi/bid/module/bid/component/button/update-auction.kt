@@ -15,6 +15,7 @@ import org.evoleq.math.times
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
+import org.jetbrains.compose.web.css.Color
 import org.solyton.solawi.bid.module.bid.action.configureAuction
 import org.solyton.solawi.bid.module.bid.component.form.showUpdateAuctionModal
 import org.solyton.solawi.bid.module.bid.data.*
@@ -24,7 +25,7 @@ import org.solyton.solawi.bid.module.bid.data.reader.auctionAccepted
 import org.solyton.solawi.bid.module.bid.data.reader.existRounds
 import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.module.bid.service.isNotGranted
-import org.solyton.solawi.bid.module.control.button.StdButton
+import org.solyton.solawi.bid.module.control.button.GearButton
 import org.solyton.solawi.bid.module.error.component.showErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
 import org.solyton.solawi.bid.module.i18n.data.language
@@ -43,7 +44,9 @@ fun UpdateAuctionButton(
         (storage * auction * auctionAccepted).emit()||
         (storage * user.get).emit().isNotGranted(BidRight.Auction.manage)
 
-    StdButton(
+    GearButton(
+        Color.black,
+        Color.transparent,
         texts * text,
         storage * deviceData * mediaType.get,
         isDisabled,

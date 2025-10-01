@@ -7,10 +7,7 @@ import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.jetbrains.compose.web.attributes.disabled
-import org.jetbrains.compose.web.css.CSSColorValue
-import org.jetbrains.compose.web.css.Color
-import org.jetbrains.compose.web.css.backgroundColor
-import org.jetbrains.compose.web.css.color
+import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Button
 import org.jetbrains.compose.web.dom.I
 import org.jetbrains.compose.web.dom.Text
@@ -123,6 +120,10 @@ fun IconButton(
             color(color)
             property("border-color", color)
             backgroundColor(bgColor)
+            if(isDisabled) {
+                property("opacity", 0.5)
+                cursor("not-allowed")
+            }
         }
         onClick {
             if(isDisabled) return@onClick
