@@ -11,14 +11,10 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
-import org.jetbrains.compose.web.dom.Option
-import org.jetbrains.compose.web.dom.Select
-import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.authentication.data.api.Logout
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.navbar.data.navbar.NavBar
 import org.solyton.solawi.bid.module.navbar.data.navbar.i18n
-import org.solyton.solawi.bid.module.navbar.effect.TriggerLogoutEffect
 
 @Markup
 @Composable
@@ -61,25 +57,11 @@ fun NavBar(
         i18n,
         scope
     )
-    // todo:dev: extract
-    Div({classes("select")}) {
-        Select {
-                Option("MyData", {
 
-                    onClick {
-                        navigate("/app/private/data")
-                    }
-                }) {
-                    Text("Meine Daten")
-                }
-                Option("Logout", {
-
-                    onClick {
-                        TriggerLogoutEffect(navBar, logoutAction )
-                    }
-                }) {
-                    Text("Logout")
-                }
-            }
-        }
+    PersonalDropdown(
+        navBar,
+        i18n,
+        logoutAction,
+        scope
+    )
 }

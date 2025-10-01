@@ -10,8 +10,6 @@ import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.css.keywords.auto
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Img
-import org.jetbrains.compose.web.dom.Span
-import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.i18n.data.I18N
 import org.solyton.solawi.bid.module.i18n.data.locale
 import org.solyton.solawi.bid.module.i18n.data.locales
@@ -26,19 +24,15 @@ fun LocaleDropdown(
     var open by remember { mutableStateOf(false) }
     val locales = (i18n * locales).read()
     val currentLocale = (i18n * locale).read()
-    // Container für das Dropdown
+    // Dropdown Container
     Div(attrs = {
         style {
             position(Position.Relative)
-            // width(200.px)
-            // border(1.px, LineStyle.Solid, Color.black)
-            // borderRadius(4.px)
             cursor("pointer")
         }
         onClick { open = !open }
     }) {
-        // Angezeigte aktuelle Auswahl
-        // val displayText = ((i18n * language).read() as Lang.Block).component("solyton.locales")[currentLocale]
+        // Display current value
         Div(attrs = {
             style {
                 display(DisplayStyle.Flex)
@@ -50,16 +44,13 @@ fun LocaleDropdown(
                 src = "/assets/flags/4x3/$currentLocale.svg",
                 alt = currentLocale,
                 attrs = {
-                    style { width(40.px); auto; marginRight(8.px) }
+                    style { width(30.px); auto; marginRight(8.px) }
                 }
             )
-            // Text(displayText)
-            Span {
-                Text(if (open) "▲" else "▼")
-            }
+            SimpleUpDown(open)
         }
 
-        // Dropdown-Liste
+        // Dropdown-List
         if (open) {
             Div(attrs = {
                 style {
@@ -99,7 +90,7 @@ fun LocaleDropdown(
                             src = "/assets/flags/4x3/$s.svg",
                             alt = s,
                             attrs = {
-                                style { width(40.px); auto; marginRight(8.px) }
+                                style { width(30.px); auto; marginRight(8.px) }
                             }
                         )
                     }
