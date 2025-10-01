@@ -12,7 +12,8 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.solyton.solawi.bid.module.authentication.data.api.Logout
-import org.solyton.solawi.bid.module.control.button.StdButton
+import org.solyton.solawi.bid.module.control.button.AppsButton
+import org.solyton.solawi.bid.module.control.button.HomeButton
 import org.solyton.solawi.bid.module.navbar.data.navbar.NavBar
 import org.solyton.solawi.bid.module.navbar.data.navbar.i18n
 
@@ -36,18 +37,22 @@ fun NavBar(
     val scope = rememberCoroutineScope()
 
     // todo:i18n
-    StdButton(
+    HomeButton(
+        Color.black,
+        Color.transparent,
         {"Home"},
-        device
-    ) {
-        navigate("/")
+        device,
+    ){
+        navigate("/home")
     }
 
     // todo:i18n
-    StdButton(
+    AppsButton(
+        Color.black,
+        Color.transparent,
         {"Dashboard"},
-        device
-    ) {
+        device,
+        ){
         navigate("/app/dashboard")
     }
 
