@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.module.navbar.component
 
 import androidx.compose.runtime.*
+import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
 import org.evoleq.compose.Markup
 import org.evoleq.compose.routing.navigate
@@ -36,6 +37,8 @@ fun PersonalDropdown(
     // var selected by remember { mutableStateOf(initialValue) }
     // val locales = (i18n * locales).read()
     // val currentLocale = (i18n * locale).read()
+
+
     // Container für das Dropdown
     Div(attrs = {
         style {
@@ -73,6 +76,11 @@ fun PersonalDropdown(
 
         // Dropdown-List
         if (open) {
+
+            addDropdownCloseHandler {
+                open = false
+            }
+
             Div(attrs = {
                 style {
                     position(Position.Absolute)

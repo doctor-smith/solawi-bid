@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.module.navbar.component
 
 import androidx.compose.runtime.*
+import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
@@ -24,6 +25,9 @@ fun LocaleDropdown(
     var open by remember { mutableStateOf(false) }
     val locales = (i18n * locales).read()
     val currentLocale = (i18n * locale).read()
+
+
+
     // Dropdown Container
     Div(attrs = {
         style {
@@ -52,6 +56,11 @@ fun LocaleDropdown(
 
         // Dropdown-List
         if (open) {
+
+            addDropdownCloseHandler{
+                open = false
+            }
+
             Div(attrs = {
                 style {
                     position(Position.Absolute)
@@ -80,7 +89,8 @@ fun LocaleDropdown(
 
                              */
                         }
-                        onClick {
+                        onClick { event ->
+                            event.stopPropagation()
                             // open = false;
                             scope.launch {  (i18n * locale).write(s) }
                         }
