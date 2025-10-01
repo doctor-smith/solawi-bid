@@ -24,6 +24,7 @@ import org.solyton.solawi.bid.application.ui.page.sendbid.SendBidPage
 import org.solyton.solawi.bid.application.ui.page.sendbid.ShowQRCodePage
 import org.solyton.solawi.bid.application.ui.page.test.FontsPage
 import org.solyton.solawi.bid.application.ui.page.test.MobileTestPage
+import org.solyton.solawi.bid.application.ui.page.test.TestButtonsPage
 import org.solyton.solawi.bid.application.ui.page.test.TestPage
 import org.solyton.solawi.bid.application.ui.page.user.PrivateUserPage
 import org.solyton.solawi.bid.application.ui.page.user.UserManagementPage
@@ -160,6 +161,9 @@ fun Routing(storage: Storage<Application>): Routes = Routing("/") {
         }
         route("fonts") {
             component { FontsPage() }
+        }
+        route("buttons") {
+            component{ TestButtonsPage() }
         }
     }
 }

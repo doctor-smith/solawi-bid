@@ -59,16 +59,13 @@ fun AuctionsPage(storage: Storage<Application>) = Div {
             verticalAccentStyles(storage * bidApplicationIso * deviceData * mediaType.get)
         ) {
         Wrap {
-            Horizontal(styles = { justifyContent(JustifyContent.SpaceBetween); width(100.percent) }) {
+            Horizontal(styles = { justifyContent(JustifyContent.FlexStart); alignItems(AlignItems.Center); width(100.percent); gap(20.px) }) {
                 H1({style { marginLeft(20.px) }}) { Text((texts * title).emit()) }
-                Horizontal {
-                    CreateAuctionButton(
-                        storage = storage * bidApplicationIso,
-                        auction = auction,
-                        texts = texts * subComp("buttons") * subComp("createAuction")
-                    )
-                    // Here add filters, ordering, etc
-                }
+                CreateAuctionButton(
+                    storage = storage * bidApplicationIso,
+                    auction = auction,
+                    texts = texts * subComp("buttons") * subComp("createAuction")
+                )
             }
         }
         Wrap{ AuctionList(
