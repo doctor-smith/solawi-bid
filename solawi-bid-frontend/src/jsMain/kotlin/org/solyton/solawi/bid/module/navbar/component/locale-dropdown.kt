@@ -70,28 +70,17 @@ fun LocaleDropdown(
                     backgroundColor(Color.white)
                     border(1.px, LineStyle.Solid, Color.black)
                     borderRadius(4.px)
-                    //boxShadow(Color.gray, offsetX = 2.px, offsetY = 2.px, blurRadius = 4.px)
-                    //zIndex(5000)
                     property("z-index", 500)
                 }
             }) {
                 locales.forEach { s ->
-                    // val text = ((i18n * language).read() as Lang.Block).component("solyton.locales")[s]
                     Div(attrs = {
                         style {
                             display(DisplayStyle.Flex)
                             alignItems(AlignItems.Center)
                             padding(4.px)
-                            /*
-                            hover {
-                                backgroundColor(Color.lightGray)
-                            }
-
-                             */
                         }
                         onClick { event ->
-                            event.stopPropagation()
-                            // open = false;
                             scope.launch {  (i18n * locale).write(s) }
                         }
                     }) {

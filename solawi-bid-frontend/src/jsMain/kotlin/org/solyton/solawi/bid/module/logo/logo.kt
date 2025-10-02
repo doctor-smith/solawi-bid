@@ -12,6 +12,7 @@ import org.jetbrains.compose.web.css.justifyContent
 import org.jetbrains.compose.web.css.keywords.auto
 import org.jetbrains.compose.web.css.marginBottom
 import org.jetbrains.compose.web.css.marginTop
+import org.jetbrains.compose.web.css.paddingTop
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.width
@@ -28,10 +29,9 @@ fun TopLogo(
 ) {
     Div(attrs = {
         style {
-            marginTop(10.px)
+            paddingTop(30.px)
             marginBottom(5.px)
             width(100.percent)
-            height(logoHeight)
             display(DisplayStyle.Flex)
             justifyContent(JustifyContent.Center)
         }
