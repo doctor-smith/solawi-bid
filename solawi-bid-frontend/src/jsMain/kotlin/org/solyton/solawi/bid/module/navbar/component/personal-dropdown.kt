@@ -16,7 +16,7 @@ import org.solyton.solawi.bid.module.i18n.data.I18N
 import org.solyton.solawi.bid.module.navbar.data.navbar.NavBar
 import org.solyton.solawi.bid.module.navbar.effect.TriggerLogoutEffect
 
-
+// todo:i18n
 @Markup
 @Composable
 @Suppress("FunctionName", "UnusedParameter")
@@ -34,11 +34,6 @@ fun PersonalDropdown(
     )
 
     var open by remember { mutableStateOf(false) }
-    // var selected by remember { mutableStateOf(initialValue) }
-    // val locales = (i18n * locales).read()
-    // val currentLocale = (i18n * locale).read()
-
-
     // Container für das Dropdown
     Div(attrs = {
         style {

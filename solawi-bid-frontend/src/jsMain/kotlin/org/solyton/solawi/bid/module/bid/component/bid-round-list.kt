@@ -137,12 +137,6 @@ fun BidRoundListItem(
                 round = round,
                 texts = (texts * subComp("bidRoundList") * subComp("item") * subComp("buttons") * subComp("exportResults"))
             )
-            EvaluateBidRoundButton(
-                storage = storage,
-                auction = auction,
-                round = round,
-                //texts = (texts * subComp("bidRoundList") * subComp("item") * subComp("buttons") * subComp("exportResults"))
-            )
             // todo:i18n
             StdButton({ "Bieten" }, storage * deviceData * mediaType.get) {
                 navigate("/bid/send/${round.link}")

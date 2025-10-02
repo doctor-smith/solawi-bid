@@ -261,7 +261,29 @@ fun FileImportButton(
 ) = IconButton(
     color,
     bgColor,
-    arrayOf("fa-solid", "fa-file-arrow-up"),
+    arrayOf("fa-solid", "fa-file-import"), //"fa-file-arrow-up"
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun FileExportButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-file-export"),
     texts,
     deviceType,
     isDisabled,
@@ -335,3 +357,48 @@ fun AppsButton(
     dataId,
     onClick
 )
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun EvaluationButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-chart-line"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun XMarkButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-xmark"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
