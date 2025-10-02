@@ -86,6 +86,7 @@ data class Round(
     val id: String,
     val link: String,
     val state: String,
+    val number: Int,
     val rawResults: ApiBidRoundResults = ApiBidRoundResults(),
     val bidRoundEvaluation: ApiBidRoundEvaluation = ApiBidRoundEvaluation(),
     val preEvaluation: ApiBidRoundPreEvaluation = ApiBidRoundPreEvaluation()

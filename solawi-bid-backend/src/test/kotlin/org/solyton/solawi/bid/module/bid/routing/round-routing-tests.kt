@@ -65,6 +65,7 @@ class RoundRoutingTests {
             assertIs<Result.Success<Round>>(result)
 
             assertEquals(RoundState.Opened.toString(), result.data.state)
+            assertEquals(1, result.data.number)
         }
     }
 

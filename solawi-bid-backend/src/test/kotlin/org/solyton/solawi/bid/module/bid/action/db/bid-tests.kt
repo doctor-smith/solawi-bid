@@ -6,6 +6,7 @@ import org.jetbrains.exposed.sql.deleteAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.module.bid.data.api.Bid
+import org.solyton.solawi.bid.module.bid.data.api.CreateRound
 import org.solyton.solawi.bid.module.bid.data.api.RoundState
 import org.solyton.solawi.bid.module.bid.data.toApiType
 import org.solyton.solawi.bid.module.bid.exception.BidRoundException
@@ -123,6 +124,20 @@ class BidBests {
         }
 
         assertTrue { storedBid.instanceOf(BidRoundException.RoundNotStarted::class) }
+    }
+
+    @DbFunctional@Test fun validateRoundNumbers() = runSimpleH2Test(*tables){
+        val (auction,round,_) = setupBidProcess()
+
+        assertEquals(1, auction.rounds.count())
+        assertEquals(1,round.number)
+        // start with 2
+        (2..10).forEach { number ->
+            val newRound = addRound(CreateRound(auction.id.value.toString()))
+            assertEquals(number,newRound.number)
+        }
+
+        assertEquals(10L,auction.rounds.count())
     }
 
     // Setup

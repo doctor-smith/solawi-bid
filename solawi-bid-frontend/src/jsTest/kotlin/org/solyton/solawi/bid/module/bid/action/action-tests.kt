@@ -78,7 +78,7 @@ class ActionTests{
 
             val apiBidRound = ApiBidRound(
                 "",
-                Round("","", ""),
+                Round("","", "", 0),
                 ApiAuction(
                     "",
                     "",
@@ -138,7 +138,8 @@ class ActionTests{
         val round = Round(
             "id",
             "link",
-            RoundState.Started.toString()
+            RoundState.Started.toString(),
+            0
         )
 
         val createAuction = createAuction(auctionLens)
@@ -217,7 +218,8 @@ class ActionTests{
         val round = Round(
             "id",
             "link",
-            RoundState.Opened.toString()
+            RoundState.Opened.toString(),
+            0
         )
 
         val createRound = createRound(auctionLens)
@@ -234,7 +236,8 @@ class ActionTests{
             val nextRound = Round(
                 "id",
                 "link",
-                RoundState.Started.toString()
+                RoundState.Started.toString(),
+                0
             )
 
             (storage * changeRoundState.writer).write(nextRound) on Unit
@@ -252,7 +255,8 @@ class ActionTests{
         val round = Round(
             "id",
             "link",
-            RoundState.Opened.toString()
+            RoundState.Opened.toString(),
+            0
         )
 
         val createRound = createRound(auctionLens)
@@ -297,7 +301,8 @@ class ActionTests{
         val round = Round(
             "id",
             "link",
-            RoundState.Opened.toString()
+            RoundState.Opened.toString(),
+            0
         )
 
         val createRound = createRound(auctionLens)
@@ -360,7 +365,8 @@ class ActionTests{
         val round = Round(
             "id",
             "link",
-            RoundState.Opened.toString()
+            RoundState.Opened.toString(),
+            0
         )
 
         val createRound = createRound(auctionLens)
@@ -413,7 +419,8 @@ class ActionTests{
         val round = Round(
             "id",
             "link",
-            RoundState.Opened.toString()
+            RoundState.Opened.toString(),
+            0
         )
 
         val createRound = createRound(auctionLens)
@@ -483,5 +490,4 @@ class ActionTests{
 
         }
     }
-
 }

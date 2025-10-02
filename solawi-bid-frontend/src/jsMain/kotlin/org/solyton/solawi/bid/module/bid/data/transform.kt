@@ -20,6 +20,7 @@ fun ApiRound.toDomainType(): Round = Round(
     id,
     link,
     state,
+    number,
     rawResults.toDomainType(),
     bidRoundEvaluation.toDomainType(),
     preEvaluation.toDomainType()
