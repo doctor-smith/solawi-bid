@@ -41,7 +41,8 @@ fun AuctionEntity.toApiType(): Auction = Auction(
 fun RoundEntity.toApiType(): Round = Round(
     id.value.toString(),
     link,
-    state
+    state,
+    number
 )
 
 @Suppress("UNUSED_PARAMETER")

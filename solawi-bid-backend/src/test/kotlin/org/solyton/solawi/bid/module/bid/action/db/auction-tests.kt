@@ -48,8 +48,8 @@ class AuctionTests {
         assertEquals(name, auction.name)
         val round = addRound(
             CreateRound(
-            auction.id,
-        )
+                auction.id
+            )
         ).toApiType()
         assertNotEquals(link, round.link)
 

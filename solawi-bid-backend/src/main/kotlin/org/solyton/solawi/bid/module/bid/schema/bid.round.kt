@@ -15,6 +15,7 @@ typealias RoundsTable = Rounds
 object Rounds: AuditableUUIDTable("rounds") {
     val link = varchar("link", 500).default("not-set")
     val state = varchar("state", 100).default("${RoundState.Opened}")
+    val number = integer("number").default(0)
     val auction = reference("auction_id", Auctions)
 }
 
@@ -24,6 +25,7 @@ class Round(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
 
     var link by Rounds.link
     var state by Rounds.state
+    var number by Rounds.number
     var auction by Auction referencedOn Rounds.auction
     val bidRounds by BidRound referrersOn BidRounds.auction
 

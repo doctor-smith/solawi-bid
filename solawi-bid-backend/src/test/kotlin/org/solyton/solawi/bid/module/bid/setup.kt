@@ -25,6 +25,7 @@ fun Transaction.setupBidProcess(): BidProcessSetup {
     val round = Round.new {
         this.auction = auction
         link = "test-link"
+        number = 1
         createdBy = UUID_ZERO
         // state = RoundState.Started.toString()
     }

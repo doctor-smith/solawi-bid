@@ -23,7 +23,7 @@ import org.solyton.solawi.bid.module.bid.schema.Rounds
 import java.util.*
 
 @MathDsl
-val AddRound = KlAction<Result<CreateRound>, Result<Round>> {
+val CreateRound = KlAction<Result<CreateRound>, Result<Round>> {
     round -> DbAction {
         database -> round bindSuspend  { data -> resultTransaction(database){
             addRound(data).toApiType()
@@ -37,8 +37,11 @@ fun Transaction.addRound(round: CreateRound): org.solyton.solawi.bid.module.bid.
 
     validateAuctionNotAccepted(auctionEntity)
 
+    val roundNumber = auctionEntity.rounds.count().toInt() + 1
+
     val roundEntity = org.solyton.solawi.bid.module.bid.schema.Round.new {
         auction = auctionEntity
+        number = roundNumber
         // todo:created_by add valid userId
         createdBy = UUID_ZERO
     }

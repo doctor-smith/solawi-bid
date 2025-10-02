@@ -159,6 +159,9 @@ val columnsToAdd: List<AddMissingColumns> by lazy {
         ColumnDef.Missing("lifecycle_stage_id", false),
         ColumnDef.Missing("context_id", UUID_ZERO)
         ),
+        RoundsTable.addColumnsIfMissing(
+            ColumnDef.Missing("number", 0)
+        )
     )
 }
 
