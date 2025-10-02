@@ -1,8 +1,12 @@
 package org.solyton.solawi.bid.application.ui.page.auction
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.layout.Vertical
+import org.evoleq.math.Source
+import org.evoleq.math.emit
 import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
@@ -13,6 +17,7 @@ import org.jetbrains.compose.web.dom.Div
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.auctions
 import org.solyton.solawi.bid.application.data.environment
+import org.solyton.solawi.bid.module.bid.action.readAuctions
 import org.solyton.solawi.bid.module.bid.data.auction.rounds
 import org.solyton.solawi.bid.module.bid.data.bidround.link
 import org.solyton.solawi.bid.module.qrcode.QRCodeSvg
@@ -23,6 +28,20 @@ import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 @Composable
 @Suppress("FunctionName")
 fun RoundPage(storage: Storage<Application>, auctionId: String, roundId: String) = Div{
+    // Effect
+    // Load missing data if necessary
+    val dataIsMissing = onMissing(
+        storage * auctions.get,
+        { it.auctionId == auctionId}
+    ){
+        LaunchedEffect(Unit) {
+            launch {
+                readAuctions()
+            }
+        }
+    }
+    if(dataIsMissing) return@Div
+
     // Data
     val auction = storage * auctions * FirstBy { it.auctionId == auctionId }
     val round = auction * rounds * FirstBy { it.roundId == roundId }
@@ -81,4 +100,13 @@ fun RoundPage(storage: Storage<Application>, auctionId: String, roundId: String)
         Text(preEvaluation.toString())
     }
     */
+}
+
+@Composable fun <T> onMissing(
+    storage: Source<List<T>>,
+    predicate: (T)-> Boolean,
+    effect: @Composable ()->Unit
+): Boolean {
+    val missing = storage.emit().none { predicate(it) }
+    return if(missing){ effect(); true } else { false }
 }
