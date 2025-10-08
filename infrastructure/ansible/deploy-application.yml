@@ -2,6 +2,12 @@
   hosts: all
   become: true
   tasks:
+    - name: Log in to GitHub Container Registry
+      ansible.builtin.shell: |
+        echo "{{ ghcr_pat }}" | docker login ghcr.io -u "{{ ghcr_user }}" --password-stdin
+      args:
+        warn: false
+      when: ghcr_pat is defined and ghcr_user is defined
     - name: Ensure /var/solawi-bid/{{ environment_letter }}/database directory exists
       file:
         path: "/var/solawi-bid/{{ environment_letter }}/database"
