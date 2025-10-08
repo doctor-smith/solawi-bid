@@ -47,6 +47,12 @@ inputs:
   smtp_password:
     description: 'Password of SMTP user'
     required: true
+  ghcr_pat:
+    description: 'Token needed to access ghcr from server'
+    required: true
+  ghcr_user:
+    description: 'User needed to access ghcr from server'
+    required: true
 
 runs:
   using: "composite"
@@ -79,4 +85,6 @@ runs:
         -e 'application_owner_username=${{ inputs.application_owner_username }}' \
         -e 'application_owner_password=${{ inputs.application_owner_password }}' \
         -e 'smtp_password=${{inputs.smtp_password}}' \
+        -e 'ghcr_pat=${{inputs.ghcr_pat}}' \
+        -e 'ghcr_user=${{inputs.ghcr_user}}' \
         ./infrastructure/ansible/deploy-application.yml
