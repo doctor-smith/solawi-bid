@@ -27,6 +27,7 @@ import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
 import org.solyton.solawi.bid.module.bid.action.readAuctions
 import org.solyton.solawi.bid.module.bid.component.AuctionDetails
 import org.solyton.solawi.bid.module.bid.component.CurrentBidRound
+import org.solyton.solawi.bid.module.bid.component.button.AuctionsButton
 import org.solyton.solawi.bid.module.bid.component.button.CreateNewRoundButton
 import org.solyton.solawi.bid.module.bid.component.button.ImportBiddersButton
 import org.solyton.solawi.bid.module.bid.component.button.UpdateAuctionButton
@@ -123,6 +124,16 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                         ) {
                             openUrlInNewTab("/manual/how-to-carry-ou-an-auction")
                         }
+                        AuctionsButton(
+                            url = "/app/auctions",
+                            color = Color.black,
+                            bgColor = Color.transparent,
+                            // todo:i18n
+                            texts= {"Auctions"},
+                            deviceType = storage * bidApplicationIso * deviceData * mediaType.get,
+                            isDisabled = false,
+                            dataId = "auction-page.button.nav-to-auctions"
+                        )
                         UpdateAuctionButton(
                             storage = storage * bidApplicationIso,
                             auction = auction,
