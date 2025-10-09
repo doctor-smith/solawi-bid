@@ -143,6 +143,10 @@ en{
                     numberOfShares: "Number of Shares"
                 }
                 buttons {
+                    help {
+                        text: "Help"
+                        tooltip: "Navigate to help page"
+                    }
                     updateAuction {
                         text: "Configure Auction"
                         tooltip: "Configure auction"

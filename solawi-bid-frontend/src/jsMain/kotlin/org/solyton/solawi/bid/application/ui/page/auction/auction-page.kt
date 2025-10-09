@@ -3,11 +3,14 @@ package org.solyton.solawi.bid.application.ui.page.auction
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
 import org.evoleq.compose.layout.*
+import org.evoleq.compose.routing.navigate
+import org.evoleq.compose.routing.openUrlInNewTab
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.Locale
 import org.evoleq.language.component
 import org.evoleq.language.subComp
 import org.evoleq.language.title
+import org.evoleq.language.tooltip
 import org.evoleq.math.*
 import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.lens.times
@@ -46,6 +49,7 @@ import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.module.bid.service.isNotGranted
 import org.solyton.solawi.bid.module.control.button.EvaluationButton
 import org.solyton.solawi.bid.module.control.button.FileExportButton
+import org.solyton.solawi.bid.module.control.button.HelpButton
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.data.locale
 import org.solyton.solawi.bid.module.style.layout.accent.vertical.verticalAccentStyles
@@ -109,6 +113,16 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                         // todo:dev - use default value
                         gap(5.px)}
                     ) {
+                        HelpButton(
+                            color = Color.black,
+                            bgColor = Color.transparent,
+                            texts = buttons * subComp("help") * tooltip ,
+                            deviceType = storage * bidApplicationIso * deviceData * mediaType.get,
+                            isDisabled = false,
+                            dataId = "auction-page.button.help"
+                        ) {
+                            openUrlInNewTab("/manual/how-to-carry-ou-an-auction")
+                        }
                         UpdateAuctionButton(
                             storage = storage * bidApplicationIso,
                             auction = auction,
