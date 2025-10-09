@@ -402,3 +402,24 @@ fun XMarkButton(
     onClick
 )
 
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun HelpButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-question"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)

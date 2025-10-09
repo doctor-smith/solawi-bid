@@ -19,6 +19,7 @@ import org.solyton.solawi.bid.application.ui.page.dashboard.DashboardPage
 import org.solyton.solawi.bid.application.ui.page.login.LoginPage
 import org.solyton.solawi.bid.application.ui.page.login.effect.LaunchLogoutEffect
 import org.solyton.solawi.bid.application.ui.page.manual.HowToBidPage
+import org.solyton.solawi.bid.application.ui.page.manual.HowToCarryOutAnAuctionPage
 import org.solyton.solawi.bid.application.ui.page.manual.ManualPage
 import org.solyton.solawi.bid.application.ui.page.sendbid.SendBidPage
 import org.solyton.solawi.bid.application.ui.page.sendbid.ShowQRCodePage
@@ -55,6 +56,9 @@ fun Routing(storage: Storage<Application>): Routes = Routing("/") {
 
         route("how-to-bid") {
             component { HowToBidPage(storage) }
+        }
+        route("how-to-carry-ou-an-auction") {
+            component { HowToCarryOutAnAuctionPage(storage) }
         }
     }
     route("app") {

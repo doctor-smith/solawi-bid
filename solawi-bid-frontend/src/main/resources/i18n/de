@@ -128,7 +128,6 @@ de{
                         }
                     }
                 }
-
             }
             auctionPage {
                 title: "Auktion"
@@ -143,6 +142,10 @@ de{
                     numberOfShares: "Anzahl der Anteile"
                 }
                 buttons {
+                    help {
+                        text: "Hilfe"
+                        tooltip: "Zu Hilfe in Manual navigieren"
+                    }
                     updateAuction {
                         text: "Konfiguration"
                         tooltip: "Auktion konfigurieren"
