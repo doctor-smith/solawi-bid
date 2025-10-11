@@ -25,6 +25,12 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build Frontend Docker Image
         id: build-frontend
         uses: ./.github/actions/build-docker
@@ -41,6 +47,12 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build Backend Docker Image
         id: build-backend
         uses: ./.github/actions/build-docker
@@ -58,7 +70,12 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
@@ -206,3 +223,5 @@ jobs:
           server_user: ${{ vars.SERVER_USER }}
           server_key: ${{ secrets.SERVER_KEY }}
           smtp_password: ${{ secrets.SMTP_PASSWORD }}
+          ghcr_pat: ${{ secrets.GHCR_PAT }}
+          ghcr_user: ${{ github.actor }}

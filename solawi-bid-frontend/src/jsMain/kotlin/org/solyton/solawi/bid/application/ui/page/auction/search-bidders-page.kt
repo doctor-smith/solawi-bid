@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
+import org.evoleq.compose.guard.data.isLoading
 import org.evoleq.compose.label.Label
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Vertical
@@ -12,6 +13,7 @@ import org.evoleq.device.data.mediaType
 import org.evoleq.language.component
 import org.evoleq.language.subComp
 import org.evoleq.language.title
+import org.evoleq.math.Reader
 import org.evoleq.math.emit
 import org.evoleq.math.times
 import org.evoleq.optics.storage.Storage
@@ -23,6 +25,8 @@ import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.*
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
+import org.solyton.solawi.bid.application.service.useI18nTransform
+import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.module.bid.action.searchUsernameOfBidder
 import org.solyton.solawi.bid.module.bid.data.actions
 import org.solyton.solawi.bid.module.bid.data.api.SearchBidderData
@@ -31,7 +35,9 @@ import org.solyton.solawi.bid.module.bid.data.deviceData
 import org.solyton.solawi.bid.module.bid.data.i18N
 import org.solyton.solawi.bid.module.bid.data.reader.*
 import org.solyton.solawi.bid.module.control.button.StdButton
+import org.solyton.solawi.bid.module.i18n.data.componentLoaded
 import org.solyton.solawi.bid.module.i18n.data.language
+import org.solyton.solawi.bid.module.i18n.guard.onMissing
 import org.solyton.solawi.bid.module.style.form.fieldStyle
 import org.solyton.solawi.bid.module.style.form.formLabelStyle
 import org.solyton.solawi.bid.module.style.form.formStyle
@@ -43,6 +49,19 @@ import org.solyton.solawi.bid.module.style.wrap.Wrap
 @Composable
 @Suppress("FunctionName")
 fun SearchBiddersPage(storage: Storage<Application>) = Div {
+
+    if(isLoading(
+        onMissing(
+            BidComponent.SearchBiddersPage,
+            storage * bidApplicationIso * i18N.get
+        ) {
+            LaunchComponentLookup(
+                BidComponent.SearchBiddersPage,
+                storage  * Reader { app: Application -> app.environment.useI18nTransform() },
+                storage * bidApplicationIso * i18N
+            )
+        }
+    )) return@Div
 
     // State
     var fstname by remember{ mutableStateOf("") }

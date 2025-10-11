@@ -6,6 +6,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
+import org.evoleq.compose.guard.data.isLoading
+import org.evoleq.compose.guard.data.onEmpty
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.compose.layout.VerticalAccent
@@ -13,6 +15,7 @@ import org.evoleq.device.data.mediaType
 import org.evoleq.language.component
 import org.evoleq.language.subComp
 import org.evoleq.language.title
+import org.evoleq.math.Reader
 import org.evoleq.math.emit
 import org.evoleq.math.times
 import org.evoleq.optics.lens.FirstBy
@@ -25,6 +28,8 @@ import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
+import org.solyton.solawi.bid.application.service.useI18nTransform
+import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.module.bid.action.readAuctions
 import org.solyton.solawi.bid.module.bid.component.AuctionList
 import org.solyton.solawi.bid.module.bid.component.button.CreateAuctionButton
@@ -33,7 +38,9 @@ import org.solyton.solawi.bid.module.bid.data.*
 import org.solyton.solawi.bid.module.bid.data.reader.BidComponent
 import org.solyton.solawi.bid.module.error.component.showErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
+import org.solyton.solawi.bid.module.i18n.data.componentLoaded
 import org.solyton.solawi.bid.module.i18n.data.language
+import org.solyton.solawi.bid.module.i18n.guard.onMissing
 import org.solyton.solawi.bid.module.style.layout.accent.vertical.verticalAccentStyles
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
@@ -47,6 +54,27 @@ fun AuctionsPage(storage: Storage<Application>) = Div {
         (storage * bidApplicationIso * actions).read().dispatch(readAuctions())
     }
 
+    if(isLoading(
+        onMissing(
+            BidComponent.AuctionsPage,
+            storage * bidApplicationIso * i18N.get,
+        ) {
+            LaunchComponentLookup(
+                BidComponent.AuctionsPage,
+                storage  * Reader { app: Application -> app.environment.useI18nTransform() },
+                storage * bidApplicationIso * i18N
+            )
+        }
+    )) return@Div
+    /*
+    LaunchComponentLookup(
+        BidComponent.AuctionsPage,
+        storage  * Reader { app: Application -> app.environment.useI18nTransform() },
+        storage * bidApplicationIso * i18N
+    )
+    val loaded = (storage * bidApplicationIso * i18N * componentLoaded(BidComponent.AuctionsPage)).emit()
+    if(!loaded) return@Div
+*/
     // Data
     val auction = auctions * FirstBy { it.auctionId == DEFAULT_AUCTION_ID }
 

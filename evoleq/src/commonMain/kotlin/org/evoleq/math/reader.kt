@@ -29,4 +29,8 @@ fun <T> FirstOrNull(predicate: (T)->Boolean): Reader<List<T>,T?> = Reader{
     it.firstOrNull(predicate)
 }
 
+@MathDsl
 fun <T> assureValue(): Reader<T?, T> = Reader{value -> require(value != null); value}
+
+@MathDsl
+fun <T> not(reader: Reader<T, Boolean>): Reader<T, Boolean> = {t: T -> !reader(t)}

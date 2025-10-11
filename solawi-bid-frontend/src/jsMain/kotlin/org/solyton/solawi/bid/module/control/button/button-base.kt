@@ -6,15 +6,19 @@ import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.math.Source
 import org.evoleq.math.emit
+import org.evoleq.optics.prism.Either
 import org.jetbrains.compose.web.attributes.disabled
 import org.jetbrains.compose.web.css.*
+import org.jetbrains.compose.web.css.keywords.auto
 import org.jetbrains.compose.web.dom.Button
 import org.jetbrains.compose.web.dom.I
+import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.style.button.buttonStyle
 import org.solyton.solawi.bid.module.style.button.cancelButtonStyle
 import org.solyton.solawi.bid.module.style.button.submitButtonStyle
 import org.solyton.solawi.bid.module.style.button.symbolicButtonStyle
+import org.solyton.solawi.bid.module.style.data.Side
 
 @Markup
 @Composable
@@ -136,202 +140,60 @@ fun IconButton(
     })
 }
 
+/**
+ * Show icon on the left side of a text
+ */
 @Markup
 @Composable
-@Suppress("FunctionName")
-fun EditButton(
+@Suppress("FunctionName", "CognitiveComplexMethod")
+fun IconButtonWithText(
     color: CSSColorValue,
     bgColor: CSSColorValue = Color.transparent,
-    texts: Source<String?> = {null},
+    classes: Array<String>,
+    text: Source<String> = {""},
+    tooltip: Source<String?> = {null},
     deviceType: Source<DeviceType>,
+    iconSide: Side = Side.Left,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
-) = IconButton(
-    color,
-    bgColor,
-    arrayOf("fa-solid", "fa-pen"),
-    texts,
-    deviceType,
-    isDisabled,
-    dataId,
-    onClick
-)
-
-@Markup
-@Composable
-@Suppress("FunctionName")
-fun PlusButton(
-    color: CSSColorValue,
-    bgColor: CSSColorValue = Color.transparent,
-    texts: Source<String?> = {null},
-    deviceType: Source<DeviceType>,
-    isDisabled: Boolean = false,
-    dataId: String? = null,
-    onClick: ()->Unit
-) = IconButton(
-    color,
-    bgColor,
-    arrayOf("fa-solid", "fa-plus"),
-    texts,
-    deviceType,
-    isDisabled,
-    dataId,
-    onClick
-)
-
-@Markup
-@Composable
-@Suppress("FunctionName")
-fun DetailsButton(
-    color: CSSColorValue,
-    bgColor: CSSColorValue = Color.transparent,
-
-    texts: Source<String?> = {null},
-    deviceType: Source<DeviceType>,
-    isDisabled: Boolean = false,
-    dataId: String? = null,
-    onClick: ()->Unit
-) = IconButton(
-    color,
-    bgColor,
-    arrayOf("fa-solid", "fa-file-lines"),
-    texts,
-    deviceType,
-    isDisabled,
-    dataId,
-    onClick
-)
-
-@Markup
-@Composable
-@Suppress("FunctionName")
-fun TrashCanButton(
-    color: CSSColorValue,
-    bgColor: CSSColorValue = Color.transparent,
-    texts: Source<String?> = {null},
-    deviceType: Source<DeviceType>,
-    isDisabled: Boolean = false,
-    dataId: String? = null,
-    onClick: ()->Unit
-) = IconButton(
-    color,
-    bgColor,
-    arrayOf("fa-solid", "fa-trash-can"),
-    texts,
-    deviceType,
-    isDisabled,
-    dataId,
-    onClick
-)
-
-@Markup
-@Composable
-@Suppress("FunctionName")
-fun GearButton(
-    color: CSSColorValue,
-    bgColor: CSSColorValue = Color.transparent,
-    texts: Source<String?> = {null},
-    deviceType: Source<DeviceType>,
-    isDisabled: Boolean = false,
-    dataId: String? = null,
-    onClick: ()->Unit
-) = IconButton(
-    color,
-    bgColor,
-    arrayOf("fa-solid", "fa-gear"),
-    texts,
-    deviceType,
-    isDisabled,
-    dataId,
-    onClick
-)
-
-@Markup
-@Composable
-@Suppress("FunctionName")
-fun FileImportButton(
-    color: CSSColorValue,
-    bgColor: CSSColorValue = Color.transparent,
-    texts: Source<String?> = {null},
-    deviceType: Source<DeviceType>,
-    isDisabled: Boolean = false,
-    dataId: String? = null,
-    onClick: ()->Unit
-) = IconButton(
-    color,
-    bgColor,
-    arrayOf("fa-solid", "fa-file-arrow-up"),
-    texts,
-    deviceType,
-    isDisabled,
-    dataId,
-    onClick
-)
-
-@Markup
-@Composable
-@Suppress("FunctionName")
-fun PlayButton(
-    color: CSSColorValue,
-    bgColor: CSSColorValue = Color.transparent,
-    texts: Source<String?> = {null},
-    deviceType: Source<DeviceType>,
-    isDisabled: Boolean = false,
-    dataId: String? = null,
-    onClick: ()->Unit
-) = IconButton(
-    color,
-    bgColor,
-    arrayOf("fa-solid", "fa-play"),
-    texts,
-    deviceType,
-    isDisabled,
-    dataId,
-    onClick
-)
-
-@Markup
-@Composable
-@Suppress("FunctionName")
-fun HomeButton(
-    color: CSSColorValue,
-    bgColor: CSSColorValue = Color.transparent,
-    texts: Source<String?> = {null},
-    deviceType: Source<DeviceType>,
-    isDisabled: Boolean = false,
-    dataId: String? = null,
-    onClick: ()->Unit
-) = IconButton(
-    color,
-    bgColor,
-    arrayOf("fa-solid", "fa-house"),
-    texts,
-    deviceType,
-    isDisabled,
-    dataId,
-    onClick
-)
-
-
-@Markup
-@Composable
-@Suppress("FunctionName")
-fun AppsButton(
-    color: CSSColorValue,
-    bgColor: CSSColorValue = Color.transparent,
-    texts: Source<String?> = {null},
-    deviceType: Source<DeviceType>,
-    isDisabled: Boolean = false,
-    dataId: String? = null,
-    onClick: ()->Unit
-) = IconButton(
-    color,
-    bgColor,
-    arrayOf("fa-solid", "fa-grip"),
-    texts,
-    deviceType,
-    isDisabled,
-    dataId,
-    onClick
-)
+    onClick: ()->Unit) = Button(
+    attrs = {
+        if(tooltip.emit() != null) title(tooltip.emit()!!)
+        if(isDisabled) disabled()
+        if(dataId != null) dataId(dataId)
+        style {
+            symbolicButtonStyle(deviceType.emit())()
+            color(color)
+            property("border-color", color)
+            backgroundColor(bgColor)
+            if(isDisabled) {
+                property("opacity", 0.5)
+                cursor("not-allowed")
+            }
+            display(DisplayStyle.Flex)
+            alignItems(AlignItems.Center)
+            gap(0.5.em)
+            if(iconSide is Side.Right) flexDirection(FlexDirection.RowReverse)
+        }
+        onClick {
+            if(isDisabled) return@onClick
+            onClick()
+        }
+    }
+) {
+    Span({style {
+        width(2.em)
+        height(auto)
+        flexShrink(0)
+    }}){
+        I({
+            classes(*classes)
+            style {
+                width(2.em)
+                height(auto)
+                flexShrink(0)
+            }
+        })
+    }
+    Span{ Text(text.emit()) }
+}

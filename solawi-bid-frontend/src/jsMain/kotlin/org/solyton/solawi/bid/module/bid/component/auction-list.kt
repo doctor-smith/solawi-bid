@@ -93,7 +93,7 @@ fun AuctionListItem(
     dispatchConfiguration: ()->Unit
 ) = Div(attrs = {
     style {
-        styles.item(this)
+        styles.listItemWrapper(this)
         backgroundColor(when{
             index % 2 == 0 -> listEven
             else -> listOdd
@@ -107,12 +107,7 @@ fun AuctionListItem(
     }
 }) {
     Div (attrs = {style {
-        display(DisplayStyle.Flex)
-        flexDirection(FlexDirection.Row)
-        width(80.percent)
-        marginTop(10.px)
-        marginBottom(10.px)
-        marginLeft(20.px)
+        styles.dataWrapper(this)
     }}){
         // date
         Div(
@@ -128,12 +123,16 @@ fun AuctionListItem(
         }
     }
     Div(attrs = {style {
+        styles.actionsWrapper(this)
+        /*
         display(DisplayStyle.Flex)
         flexDirection(FlexDirection.Row)
         justifyContent(JustifyContent.End)
         width(20.percent)
         marginRight(10.px)
         gap(2.px)
+
+         */
     }}) {
         val buttons = (i18n *
             language *
@@ -195,18 +194,13 @@ fun AuctionListHeader(
 ) {
         Div(attrs = {
             style {
-                styles.item(this)
+                styles.headerWrapper(this)
                 justifyContent(JustifyContent.Start)
             }
         }) {
             Div({
                 style {
-                    display(DisplayStyle.Flex)
-                    flexDirection(FlexDirection.Row)
-                    width(80.percent)
-                    marginLeft(20.px)
-                    marginTop(10.px)
-                    marginBottom(10.px)
+                    styles.header(this)
                 }
             }) {
                 // todo:i18n - AuctionListHeader
@@ -217,6 +211,17 @@ fun AuctionListHeader(
         }
 }
 
+/**
+ * Structure: nested flex-boxes
+ * wrapper
+ * |- titleWrapper
+ *    |- title
+ * |- headerWrapper
+ *    |- header
+ * |- listItemWrapper
+ *    |- dataWrapper
+ *    |- actionsWrapper
+ */
 data class AuctionListStyles (
     val wrapper: StyleScope.()->Unit = {
         display(DisplayStyle.Flex)
@@ -225,13 +230,118 @@ data class AuctionListStyles (
         width(100.percent)
         height(100.percent)
     },
-    val item: StyleScope.()->Unit = {
+    val titleWrapper: StyleScope.()->Unit = {},
+    val title: StyleScope.()-> Unit = {},
+    val headerWrapper: StyleScope.()->Unit = {
+        justifyContent(JustifyContent.SpaceBetween)
+        alignItems(AlignItems.Center)
+        width(100.percent)
+    },
+    val header: StyleScope.()->Unit = {
+        display(DisplayStyle.Flex)
+        flexDirection(FlexDirection.Row)
+        width(80.percent)
+        marginLeft(20.px)
+        marginTop(10.px)
+        marginBottom(10.px)
+    },
+    val listItemWrapper: StyleScope.()->Unit = {
         display(DisplayStyle.Flex)
         flexDirection(FlexDirection.Row)
         alignItems(AlignItems.Center)
         width(100.percent)
+    },
+    val dataWrapper: StyleScope.()-> Unit = {
+        display(DisplayStyle.Flex)
+        flexDirection(FlexDirection.Row)
+        width(80.percent)
+        marginTop(10.px)
+        marginBottom(10.px)
+        marginLeft(20.px)
+    },
+    val actionsWrapper: StyleScope.()->Unit = {
+        display(DisplayStyle.Flex)
+        flexDirection(FlexDirection.Row)
+        justifyContent(JustifyContent.End)
+        width(20.percent)
+        marginRight(10.px)
+        gap(2.px)
     }
-)
+)  {
+    fun modify(
+        wrapper: StyleScope.() -> Unit,
+        headerWrapper: StyleScope.() -> Unit,
+        header: StyleScope.() -> Unit,
+        listItemWrapper: StyleScope.() -> Unit,
+        dataWrapper: StyleScope.() -> Unit,
+        actionsWrapper: StyleScope.() -> Unit
+    ): AuctionListStyles = copy(
+        wrapper = {this.wrapper(); wrapper()},
+        titleWrapper = {this.titleWrapper(); titleWrapper()},
+        title = {this.title(); title()},
+        headerWrapper= {this.headerWrapper(); headerWrapper()},
+        header = {this.header(); header()},
+        listItemWrapper = {this.listItemWrapper(); listItemWrapper()},
+        dataWrapper = {this.dataWrapper(); dataWrapper()},
+        actionsWrapper = {this.actionsWrapper(); actionsWrapper()}
+    )
+
+    fun modifyWrapper(newStyles: StyleScope.()->Unit): AuctionListStyles = copy(
+        wrapper = {
+            wrapper()
+            newStyles()
+        }
+    )
+
+    fun modifyTitleWrapper(newStyles: StyleScope.()->Unit): AuctionListStyles = copy(
+        titleWrapper = {
+            titleWrapper()
+            newStyles()
+        }
+    )
+
+    fun modifyTitle(newStyles: StyleScope.()->Unit): AuctionListStyles = copy(
+        title = {
+            title()
+            newStyles()
+        }
+    )
+
+    fun modifyHeader(newStyles: StyleScope.()->Unit): AuctionListStyles = copy(
+        header = {
+            header()
+            newStyles()
+        }
+    )
+
+    fun modifyHeaderWrapper(newStyles: StyleScope.()->Unit): AuctionListStyles = copy(
+        headerWrapper = {
+            headerWrapper()
+            newStyles()
+        }
+    )
+
+    fun modifyListItemWrapper(newStyles: StyleScope.()->Unit): AuctionListStyles = copy(
+        listItemWrapper = {
+            listItemWrapper()
+            newStyles()
+        }
+    )
+
+    fun modifyDataWrapper(newStyles: StyleScope.()->Unit): AuctionListStyles = copy(
+        dataWrapper = {
+            dataWrapper()
+            newStyles()
+        }
+    )
+
+    fun modifyActionsWrapper(newStyles: StyleScope.()->Unit): AuctionListStyles = copy(
+        actionsWrapper = {
+            actionsWrapper()
+            newStyles()
+        }
+    )
+}
 
 @Suppress("UNUSED_VARIABLE")
 val headerSeparatorStyles = LineSeparatorStyles().copy (

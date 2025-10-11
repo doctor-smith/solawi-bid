@@ -10,6 +10,7 @@ import org.evoleq.device.data.mediaType
 import org.evoleq.language.Lang
 import org.evoleq.language.component
 import org.evoleq.language.text
+import org.evoleq.language.tooltip
 import org.evoleq.math.Reader
 import org.evoleq.math.emit
 import org.evoleq.math.times
@@ -29,8 +30,10 @@ import org.solyton.solawi.bid.module.bid.data.reader.auctionAccepted
 import org.solyton.solawi.bid.module.bid.data.reader.existRounds
 import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.module.bid.service.isNotGranted
-import org.solyton.solawi.bid.module.control.button.FileImportButton
+import org.solyton.solawi.bid.module.control.button.UploadButton
+import org.solyton.solawi.bid.module.control.button.UploadButtonWithText
 import org.solyton.solawi.bid.module.i18n.data.language
+import org.solyton.solawi.bid.module.style.data.Side
 
 @Markup
 @Composable
@@ -41,20 +44,14 @@ fun ImportBiddersButton(
     addBidders: Storage<AddBidders>,
     auction: Lens<BidApplication, Auction>,
     texts : Reader<Unit, Lang.Block>,
-    dataId: String
+    dataId: String,
+    showText: Boolean = false
 ) {
     val isDisabled = (storage * auction * rounds * existRounds).emit() ||
         (storage * auction * auctionAccepted).emit()||
         (storage * user.get).emit().isNotGranted(BidRight.Auction.manage)
 
-    FileImportButton(
-        Color.black,
-        Color.transparent,
-        texts * text,
-        storage * deviceData * mediaType.get,
-        isDisabled,
-        dataId
-    ) {
+    val action: () -> Unit = {
         (storage * modals).showImportBiddersModal(
             texts = ((storage * i18N * language).read() as Lang.Block).component("solyton.auction.importBiddersDialog"),
             setBidders = { newBidders.write(it.map { bidder -> bidder.copy(
@@ -73,4 +70,29 @@ fun ImportBiddersButton(
             }
         )
     }
+    when(showText) {
+        true -> UploadButtonWithText(
+            Color.black,
+            Color.transparent,
+            texts * text,
+            texts * tooltip,
+            Side.Right,
+            storage * deviceData * mediaType.get,
+            isDisabled,
+            dataId
+        ) {
+            action()
+        }
+        false -> UploadButton(
+            Color.black,
+            Color.transparent,
+            texts * text,
+            storage * deviceData * mediaType.get,
+            isDisabled,
+            dataId
+        ) {
+            action()
+        }
+    }
+
 }

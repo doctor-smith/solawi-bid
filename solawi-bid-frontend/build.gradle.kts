@@ -175,19 +175,23 @@ dependencyAnalyser {
             "authentication",
             "bid",
             "context",
+            "control",
             "cookie",
             "error",
             "i18n",
+            "list",
             "loading",
             "localstorage",
+            "logo",
             "mobile",
             "navbar",
+            "page",
             "permissions",
             "qrcode",
             "separator",
             "statistics",
+            "style",
             "user",
-            "style"
         )
         checkCyclesBeforeBuild = true
     }

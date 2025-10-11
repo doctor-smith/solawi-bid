@@ -28,6 +28,15 @@ fun navigate(to: String, title: String = "") {
     currentPath.value = window.location.newPath()
 }
 
+@RoutingDsl
+fun openUrlInNewTab(url: String) {
+    window.open(
+        url = url,
+        target = "_blank",
+        features = "noopener, noreferrer"
+    )
+}
+
 /**
  * Handle route changes
  */

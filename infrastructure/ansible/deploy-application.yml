@@ -2,6 +2,12 @@
   hosts: all
   become: true
   tasks:
+    - name: Log in to GitHub Container Registry
+      community.docker.docker_login:
+        registry_url: ghcr.io
+        username: "{{ ghcr_user }}"
+        password: "{{ ghcr_pat }}"
+      when: ghcr_pat is defined and ghcr_user is defined
     - name: Ensure /var/solawi-bid/{{ environment_letter }}/database directory exists
       file:
         path: "/var/solawi-bid/{{ environment_letter }}/database"
