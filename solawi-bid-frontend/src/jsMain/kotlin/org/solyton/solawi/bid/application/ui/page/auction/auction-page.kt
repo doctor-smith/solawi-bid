@@ -24,7 +24,6 @@ import org.solyton.solawi.bid.application.service.useI18nTransform
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.module.bid.action.readAuctions
 import org.solyton.solawi.bid.module.bid.component.AuctionDetails
-import org.solyton.solawi.bid.module.bid.component.AuctionListStyles
 import org.solyton.solawi.bid.module.bid.component.BidArrow
 import org.solyton.solawi.bid.module.bid.component.CurrentBidRound
 import org.solyton.solawi.bid.module.bid.component.button.AuctionsButton
@@ -34,9 +33,9 @@ import org.solyton.solawi.bid.module.bid.component.button.UpdateAuctionButton
 import org.solyton.solawi.bid.module.bid.component.effect.LaunchDownloadOfBidRoundResults
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerBidRoundEvaluation
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerExportOfBidRoundResults
-import org.solyton.solawi.bid.module.bid.component.list.HeaderCell
-import org.solyton.solawi.bid.module.bid.component.list.TextCell
-import org.solyton.solawi.bid.module.bid.component.list.TimeCell
+import org.solyton.solawi.bid.module.list.component.HeaderCell
+import org.solyton.solawi.bid.module.list.component.TextCell
+import org.solyton.solawi.bid.module.list.component.TimeCell
 import org.solyton.solawi.bid.module.bid.data.*
 import org.solyton.solawi.bid.module.bid.data.api.AddBidders
 import org.solyton.solawi.bid.module.bid.data.api.NewBidder
@@ -53,6 +52,15 @@ import org.solyton.solawi.bid.module.control.button.HelpButton
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.data.locale
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
+import org.solyton.solawi.bid.module.list.component.ActionsWrapper
+import org.solyton.solawi.bid.module.list.component.DataWrapper
+import org.solyton.solawi.bid.module.list.component.Header
+import org.solyton.solawi.bid.module.list.component.HeaderWrapper
+import org.solyton.solawi.bid.module.list.component.ListItemWrapper
+import org.solyton.solawi.bid.module.list.component.ListWrapper
+import org.solyton.solawi.bid.module.list.component.Title
+import org.solyton.solawi.bid.module.list.component.TitleWrapper
+import org.solyton.solawi.bid.module.list.style.ListStyles
 import org.solyton.solawi.bid.module.style.forestGreenUltraLite
 import org.solyton.solawi.bid.module.style.layout.accent.vertical.verticalAccentStyles
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
@@ -266,7 +274,7 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
 
         // List of passed rounds
         if((storage * bidApplicationIso * frozenRounds).emit().isNotEmpty()) {
-            val listStyles = AuctionListStyles()
+            val listStyles = ListStyles()
                 .modifyHeaderWrapper{
                     justifyContent(JustifyContent.SpaceBetween)
                     alignItems(AlignItems.Center)
@@ -284,14 +292,15 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                     borderWidth(1.px, 1.px, 1.px, 1.px)
                 }
             Wrap {
-                Vertical(listStyles.wrapper) {
+                ListWrapper {
                     // Title
                     // todo:i18n
-                    Wrap(listStyles.titleWrapper){H2({/*style { marginLeft(20.px) }*/ }) { Text("Abgeschlossene Runden") }}
+                    TitleWrapper{ Title{
+                        H2({/*style { marginLeft(20.px) }*/ }) { Text("Abgeschlossene Runden") }
+                    } }
 
-                    // Header
-                    Horizontal(styles = listStyles.headerWrapper ) {
-                        Horizontal(listStyles.header/*{ justifyContent(JustifyContent.FlexStart); width(80.percent) }*/) {
+                    HeaderWrapper(styles = listStyles.headerWrapper ) {
+                        Header {
                             // Space for  Check or Xmark
                             // -> HCell
                             // todo:i18n
@@ -318,8 +327,8 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                             texts = texts
                         )
 
-                        Horizontal(styles = listStyles.listItemWrapper ) {
-                            Horizontal(listStyles.dataWrapper) {
+                        ListItemWrapper(styles = listStyles.listItemWrapper ) {
+                            DataWrapper{
                                 // Check or Xmark ???
                                 // todo:i18n runde
                                 TextCell("Runde ${round.roundNumber}")
@@ -330,7 +339,7 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                                 // todo:i18n date
                                 TextCell("Kommentar zu Runde ${round.roundNumber}") { width(50.percent) }
                             }
-                            Horizontal(listStyles.actionsWrapper) {
+                            ActionsWrapper {
                                 val isExportDisabled = (storage * bidApplicationIso * user.get).emit()
                                     .isNotGranted(BidRight.BidRound.manage)
                                 // todo:i18n
