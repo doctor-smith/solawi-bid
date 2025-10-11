@@ -129,16 +129,6 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                         // todo:dev - use default value
                         gap(5.px)}
                     ) {
-                        HelpButton(
-                            color = Color.black,
-                            bgColor = Color.transparent,
-                            texts = buttons * subComp("help") * tooltip ,
-                            deviceType = storage * bidApplicationIso * deviceData * mediaType.get,
-                            isDisabled = false,
-                            dataId = "auction-page.button.help"
-                        ) {
-                            openUrlInNewTab("/manual/how-to-carry-ou-an-auction")
-                        }
                         AuctionsButton(
                             url = "/app/auctions",
                             color = Color.black,
@@ -175,6 +165,16 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                             texts = buttons * subComp("createRound"),
                             dataId = "auction-page.button.create-round"
                         )
+                        HelpButton(
+                            color = Color.black,
+                            bgColor = Color.transparent,
+                            texts = buttons * subComp("help") * tooltip ,
+                            deviceType = storage * bidApplicationIso * deviceData * mediaType.get,
+                            isDisabled = false,
+                            dataId = "auction-page.button.help"
+                        ) {
+                            openUrlInNewTab("/manual/how-to-carry-ou-an-auction")
+                        }
                     }
                 }
             }

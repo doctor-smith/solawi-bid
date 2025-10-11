@@ -13,6 +13,7 @@ import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.solyton.solawi.bid.module.authentication.data.api.Logout
 import org.solyton.solawi.bid.module.control.button.AppsButton
+import org.solyton.solawi.bid.module.control.button.HelpButton
 import org.solyton.solawi.bid.module.control.button.HomeButton
 import org.solyton.solawi.bid.module.navbar.data.navbar.NavBar
 import org.solyton.solawi.bid.module.navbar.data.navbar.i18n
@@ -69,4 +70,13 @@ fun NavBar(
         logoutAction,
         scope
     )
+
+    HelpButton(
+        Color.black,
+        Color.transparent,
+        {"Help"},
+        device
+    ) {
+        navigate("/manual")
+    }
 }
