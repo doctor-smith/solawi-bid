@@ -5,6 +5,7 @@ import org.evoleq.compose.Markup
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.Lang
 import org.evoleq.language.text
+import org.evoleq.language.tooltip
 import org.evoleq.math.Reader
 import org.evoleq.math.emit
 import org.evoleq.math.times
@@ -26,6 +27,9 @@ import org.solyton.solawi.bid.module.bid.data.user
 import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.module.bid.service.isNotGranted
 import org.solyton.solawi.bid.module.control.button.PlayButton
+import org.solyton.solawi.bid.module.control.button.PlayButtonWithText
+import org.solyton.solawi.bid.module.style.data.Side
+import org.w3c.dom.Text
 
 @Markup
 @Composable
@@ -34,7 +38,8 @@ fun CreateNewRoundButton(
     storage: Storage<BidApplication>,
     auction: Lens<BidApplication, Auction>,
     texts : Reader<Unit, Lang.Block>,
-    dataId: String
+    dataId: String,
+    showText: Boolean = false
 ) {
     // New rounds can only be created when
     // 1. the auction is configured,
@@ -47,17 +52,34 @@ fun CreateNewRoundButton(
         (storage * auction * auctionAccepted).emit() ||
         (storage * user.get).emit().isNotGranted(BidRight.Auction.manage)
 
-    PlayButton(
-        Color.black,
-        Color.transparent,
-        texts * text,
-        storage * deviceData * mediaType.get,
-        isDisabled,
-        dataId
-    ) {
-        TriggerCreateNewRound(
-            storage = storage,
-            auction = auction
-        )
+    when(showText) {
+        true -> PlayButtonWithText(
+            Color.black,
+            Color.transparent,
+            texts * text,
+            texts * tooltip,
+            Side.Right,
+            storage * deviceData * mediaType.get,
+            isDisabled,
+            dataId
+        ) {
+            TriggerCreateNewRound(
+                storage = storage,
+                auction = auction
+            )
+        }
+        false -> PlayButton(
+            Color.black,
+            Color.transparent,
+            texts * text,
+            storage * deviceData * mediaType.get,
+            isDisabled,
+            dataId
+        ) {
+            TriggerCreateNewRound(
+                storage = storage,
+                auction = auction
+            )
+        }
     }
 }

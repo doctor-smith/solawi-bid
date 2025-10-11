@@ -14,6 +14,7 @@ import org.evoleq.math.emit
 import org.evoleq.math.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Button
+import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.bid.data.api.RoundState
 import org.solyton.solawi.bid.module.bid.data.bidround.Round
@@ -208,4 +209,69 @@ fun BidProcessState(device: Source<DeviceType>, title:String, tooltip: String ,s
         true
         //device.emit(),
     ) {}
+}
+
+@Markup
+@Composable
+@Suppress("FunctionName","UnusedVariable", "UnusedPrivateProperty")
+fun BidArrow(
+    color: CSSColorValue,
+    borderColor: CSSColorValue,
+    bgColor: CSSColorValue,
+    tooltip: Source<String>,
+
+) {
+    val width: Int = 60
+    val height: Int = 60
+    val stroke: Int = 40
+    val tipLength: Int = 20
+
+    val yCenter = 256
+    val xTip = 440
+
+    val svg = """<svg xmlns='http://www.w3.org/2000/svg'
+                     viewBox='0 0 512 512'
+                     width='1em' height='1em'
+                     fill='$bgColor'
+                     stroke='$borderColor'
+                     stroke-width='40'
+                     stroke-linejoin='round'
+                     role='img'
+                     aria-hidden='false'>
+                    <title>${tooltip.emit()}</title>
+                    <polygon points='40,148 320,148 320,64 480,256 320,448 320,364 40,364' />
+                </svg>""".trimIndent()
+        .replace("\n", "")
+        .replace(Regex("\\s+"), " ")
+
+    console.log(svg)
+    Div({
+
+
+        title(tooltip.emit())
+        style {
+            // background("transparent")
+
+            color(color)
+            //backgroundColor(bgColor)
+            property("border", "none")
+            opacity(0.5)
+            position(Position.Relative)
+            width(width.px)
+            height(height.px)
+            backgroundImage(
+                """url("data:image/svg+xml;utf8,$svg")""".trimIndent()
+                //.replace("\"", "'")
+                .replace("\n", "")
+                .replace("  ", " ")
+            )
+            backgroundSize("100% 100%")
+            backgroundRepeat("no-repeat")
+            display(DisplayStyle.Flex)
+            justifyContent(JustifyContent.Center)
+            alignItems(AlignItems.Center)
+        }
+    }) {
+
+    }
 }

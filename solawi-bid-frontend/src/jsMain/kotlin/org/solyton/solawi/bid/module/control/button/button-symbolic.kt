@@ -166,6 +166,50 @@ fun FileExportButton(
 @Markup
 @Composable
 @Suppress("FunctionName")
+fun UploadButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-upload"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun DownloadButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-download"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
+@Markup
+@Composable
+@Suppress("FunctionName")
 fun PlayButton(
     color: CSSColorValue,
     bgColor: CSSColorValue = Color.transparent,

@@ -44,6 +44,7 @@ val bidApplicationPreIso: Lens<Application, BidApplication> by lazy {
         set = { part -> { whole ->
               whole.copy(
                   modals = part.modals,
+                  i18N = part.i18N,
                   auctions = part.auctions,
                   bidRounds = part.bidRounds,
                   bidderMailAddresses = part.bidderMailAddresses

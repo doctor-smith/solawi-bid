@@ -218,13 +218,16 @@ fun CurrentBidRound(
                 CoroutineScope(Job()).launch {
                     val actions = (storage * actions).read()
                     try {
-                        actions.dispatch( changeRoundState(
-                            RoundState.fromString(round.state).nextState(),
-                            auction * rounds * FirstBy { it.roundId == round.roundId })
+                        actions.dispatch(
+                            changeRoundState(
+                                RoundState.fromString(round.state).nextState(),
+                                auction * rounds * FirstBy { it.roundId == round.roundId })
                         )
-                    } catch(exception: Exception) {
+                    } catch (exception: Exception) {
                         (storage * modals).showErrorModal(
-                            texts = errorModalTexts(exception.message?:exception.cause?.message?:"Cannot Emit action 'ChangeRoundState'"),
+                            texts = errorModalTexts(
+                                exception.message ?: exception.cause?.message ?: "Cannot Emit action 'ChangeRoundState'"
+                            ),
                             device = storage * deviceData * mediaType.get,
                         )
                     }
