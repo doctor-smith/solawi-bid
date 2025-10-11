@@ -32,9 +32,7 @@ fun NavBar(
         justifyContent(JustifyContent.FlexEnd)
     }
 }) {
-
     val i18n = navBar * i18n
-    // val currentLocale = (i18n * locale).read()
     val scope = rememberCoroutineScope()
 
     // todo:i18n
@@ -56,6 +54,15 @@ fun NavBar(
         ){
         navigate("/app/dashboard")
     }
+    // todo:i18n
+    HelpButton(
+        Color.black,
+        Color.transparent,
+        {"Help"},
+        device
+    ) {
+        navigate("/manual")
+    }
 
     Div({style { width(50.px) }}) {  }
 
@@ -70,13 +77,4 @@ fun NavBar(
         logoutAction,
         scope
     )
-
-    HelpButton(
-        Color.black,
-        Color.transparent,
-        {"Help"},
-        device
-    ) {
-        navigate("/manual")
-    }
 }
