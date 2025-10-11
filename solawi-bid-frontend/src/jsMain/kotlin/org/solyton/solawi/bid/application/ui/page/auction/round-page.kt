@@ -4,8 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
+import org.evoleq.compose.guard.data.onMissing
 import org.evoleq.compose.layout.Vertical
-import org.evoleq.math.Source
+import org.evoleq.math.Reader
 import org.evoleq.math.emit
 import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.storage.Storage
@@ -17,9 +18,15 @@ import org.jetbrains.compose.web.dom.Div
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.auctions
 import org.solyton.solawi.bid.application.data.environment
+import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
+import org.solyton.solawi.bid.application.service.useI18nTransform
+import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.module.bid.action.readAuctions
 import org.solyton.solawi.bid.module.bid.data.auction.rounds
 import org.solyton.solawi.bid.module.bid.data.bidround.link
+import org.solyton.solawi.bid.module.bid.data.i18N
+import org.solyton.solawi.bid.module.bid.data.reader.BidComponent
+import org.solyton.solawi.bid.module.i18n.data.componentLoaded
 import org.solyton.solawi.bid.module.qrcode.QRCodeSvg
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 
@@ -32,8 +39,8 @@ fun RoundPage(storage: Storage<Application>, auctionId: String, roundId: String)
     // Load missing data if necessary
     val dataIsMissing = onMissing(
         storage * auctions.get,
-        { it.auctionId == auctionId}
-    ){
+        { it.auctionId == auctionId }
+    ) {
         LaunchedEffect(Unit) {
             launch {
                 readAuctions()
@@ -41,6 +48,13 @@ fun RoundPage(storage: Storage<Application>, auctionId: String, roundId: String)
         }
     }
     if(dataIsMissing) return@Div
+    LaunchComponentLookup(
+        BidComponent.Round,
+        storage  * Reader { app: Application -> app.environment.useI18nTransform() },
+        storage * bidApplicationIso * i18N
+    )
+    val loaded = (storage * bidApplicationIso * i18N * componentLoaded(BidComponent.Round)).emit()
+    if(!loaded) return@Div
 
     // Data
     val auction = storage * auctions * FirstBy { it.auctionId == auctionId }
@@ -102,11 +116,3 @@ fun RoundPage(storage: Storage<Application>, auctionId: String, roundId: String)
     */
 }
 
-@Composable fun <T> onMissing(
-    storage: Source<List<T>>,
-    predicate: (T)-> Boolean,
-    effect: @Composable ()->Unit
-): Boolean {
-    val missing = storage.emit().none { predicate(it) }
-    return if(missing){ effect(); true } else { false }
-}

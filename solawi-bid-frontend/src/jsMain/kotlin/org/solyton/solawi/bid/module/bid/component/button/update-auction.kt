@@ -9,6 +9,7 @@ import org.evoleq.device.data.mediaType
 import org.evoleq.language.Lang
 import org.evoleq.language.component
 import org.evoleq.language.text
+import org.evoleq.language.tooltip
 import org.evoleq.math.Reader
 import org.evoleq.math.emit
 import org.evoleq.math.times
@@ -26,9 +27,11 @@ import org.solyton.solawi.bid.module.bid.data.reader.existRounds
 import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.module.bid.service.isNotGranted
 import org.solyton.solawi.bid.module.control.button.GearButton
+import org.solyton.solawi.bid.module.control.button.GearButtonWithText
 import org.solyton.solawi.bid.module.error.component.showErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
 import org.solyton.solawi.bid.module.i18n.data.language
+import org.solyton.solawi.bid.module.style.data.Side
 
 @Markup
 @Composable
@@ -37,21 +40,15 @@ fun UpdateAuctionButton(
     storage: Storage<BidApplication>,
     auction: Lens<BidApplication, Auction>,
     texts: Reader<Unit, Lang.Block>,
-    dataId: String
+    dataId: String,
+    showText: Boolean = false
 ) {
     // Auction can only be configured, if no rounds have been created
     val isDisabled = (storage * auction * rounds * existRounds).emit() ||
         (storage * auction * auctionAccepted).emit()||
         (storage * user.get).emit().isNotGranted(BidRight.Auction.manage)
 
-    GearButton(
-        Color.black,
-        Color.transparent,
-        texts * text,
-        storage * deviceData * mediaType.get,
-        isDisabled,
-        dataId = dataId
-    ) {
+    val action: () -> Unit = {
         (storage * modals).showUpdateAuctionModal(
             auction =  storage * auction,
             texts = ((storage * i18N * language).read() as Lang.Block).component("solyton.auction.updateDialog"),
@@ -71,6 +68,30 @@ fun UpdateAuctionButton(
                     )
                 }
             }
+        }
+    }
+    when(showText) {
+        true -> GearButtonWithText(
+            Color.black,
+            Color.transparent,
+            texts * text,
+            texts * tooltip,
+            Side.Right,
+            storage * deviceData * mediaType.get,
+            isDisabled,
+            dataId = dataId
+        ) {
+            action()
+        }
+        false -> GearButton(
+            Color.black,
+            Color.transparent,
+            texts * text,
+            storage * deviceData * mediaType.get,
+            isDisabled,
+            dataId = dataId
+        ) {
+            action()
         }
     }
 }

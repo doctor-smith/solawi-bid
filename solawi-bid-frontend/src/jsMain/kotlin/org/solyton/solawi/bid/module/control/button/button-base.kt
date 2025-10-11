@@ -6,15 +6,19 @@ import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.math.Source
 import org.evoleq.math.emit
+import org.evoleq.optics.prism.Either
 import org.jetbrains.compose.web.attributes.disabled
 import org.jetbrains.compose.web.css.*
+import org.jetbrains.compose.web.css.keywords.auto
 import org.jetbrains.compose.web.dom.Button
 import org.jetbrains.compose.web.dom.I
+import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.style.button.buttonStyle
 import org.solyton.solawi.bid.module.style.button.cancelButtonStyle
 import org.solyton.solawi.bid.module.style.button.submitButtonStyle
 import org.solyton.solawi.bid.module.style.button.symbolicButtonStyle
+import org.solyton.solawi.bid.module.style.data.Side
 
 @Markup
 @Composable
@@ -134,4 +138,62 @@ fun IconButton(
     I({
         classes(*classes)
     })
+}
+
+/**
+ * Show icon on the left side of a text
+ */
+@Markup
+@Composable
+@Suppress("FunctionName", "CognitiveComplexMethod")
+fun IconButtonWithText(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    classes: Array<String>,
+    text: Source<String> = {""},
+    tooltip: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    iconSide: Side = Side.Left,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit) = Button(
+    attrs = {
+        if(tooltip.emit() != null) title(tooltip.emit()!!)
+        if(isDisabled) disabled()
+        if(dataId != null) dataId(dataId)
+        style {
+            symbolicButtonStyle(deviceType.emit())()
+            color(color)
+            property("border-color", color)
+            backgroundColor(bgColor)
+            if(isDisabled) {
+                property("opacity", 0.5)
+                cursor("not-allowed")
+            }
+            display(DisplayStyle.Flex)
+            alignItems(AlignItems.Center)
+            gap(0.5.em)
+            if(iconSide is Side.Right) flexDirection(FlexDirection.RowReverse)
+        }
+        onClick {
+            if(isDisabled) return@onClick
+            onClick()
+        }
+    }
+) {
+    Span({style {
+        width(2.em)
+        height(auto)
+        flexShrink(0)
+    }}){
+        I({
+            classes(*classes)
+            style {
+                width(2.em)
+                height(auto)
+                flexShrink(0)
+            }
+        })
+    }
+    Span{ Text(text.emit()) }
 }
