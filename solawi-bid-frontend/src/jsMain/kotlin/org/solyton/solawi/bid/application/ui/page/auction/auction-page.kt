@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.application.ui.page.auction
 
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.conditional.When
 import org.evoleq.compose.guard.data.isLoading
 import org.evoleq.compose.guard.data.onEmpty
 import org.evoleq.compose.layout.*
@@ -61,6 +62,7 @@ import org.solyton.solawi.bid.module.list.component.ListWrapper
 import org.solyton.solawi.bid.module.list.component.Title
 import org.solyton.solawi.bid.module.list.component.TitleWrapper
 import org.solyton.solawi.bid.module.list.style.ListStyles
+import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.style.forestGreenUltraLite
 import org.solyton.solawi.bid.module.style.layout.accent.vertical.verticalAccentStyles
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
@@ -123,7 +125,7 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
     val buttons = texts * subComp("buttons")
 
     // Markup
-    Vertical({verticalPageStyle(); }) {
+    Page({verticalPageStyle(); }) {
         // Auction Details
         VerticalAccent(verticalAccentStyles(storage * bidApplicationIso * deviceData * mediaType.get)) {
             Wrap({marginLeft(20.px)}) {
@@ -202,21 +204,21 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
         }
 
         // Process / ~ Explanation
+        val r = (storage * bidApplicationIso * runningRound).emit()
+        val frontendBaseUrl = with((storage * bidApplicationIso * environment).read()) {
+            "$frontendUrl:$frontendPort"
+        }
         Wrap({width(100.percent)}) {
-            val r = (storage * bidApplicationIso * runningRound).emit()
-            val frontendBaseUrl = with((storage * bidApplicationIso * environment).read()) {
-                "$frontendUrl:$frontendPort"
-            }
-            if (r != null && not(auctionAccepted).emit()) {
+            When(r != null && not(auctionAccepted).emit()) {
                 CurrentBidRound(
                     storage = storage * bidApplicationIso,
                     auction = auction,
-                    r,
+                    r!!,
                     frontendBaseUrl,
                     (storage * bidApplicationIso * i18N * language * component(BidComponent.Round))
                 )
             }
-            if(r == null && not(auctionAccepted).emit()) {
+            When(r == null && not(auctionAccepted).emit()) {
                 Horizontal({
                     width(100.percent)
                     marginTop(50.px)
@@ -273,8 +275,11 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
         }
 
         // List of passed rounds
-        if((storage * bidApplicationIso * frozenRounds).emit().isNotEmpty()) {
+        When((storage * bidApplicationIso * frozenRounds).emit().isNotEmpty()) {
             val listStyles = ListStyles()
+                .modifyListWrapper {
+                    marginBottom(20.px)
+                }
                 .modifyHeaderWrapper{
                     justifyContent(JustifyContent.SpaceBetween)
                     alignItems(AlignItems.Center)
@@ -291,93 +296,93 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                     }
                     borderWidth(1.px, 1.px, 1.px, 1.px)
                 }
-            Wrap {
-                ListWrapper {
-                    // Title
-                    // todo:i18n
-                    TitleWrapper{ Title{
-                        H2({/*style { marginLeft(20.px) }*/ }) { Text("Abgeschlossene Runden") }
-                    } }
+            // Wrap {
+            ListWrapper {
+                // Title
+                // todo:i18n
+                TitleWrapper{ Title{
+                    H2({/*style { marginLeft(20.px) }*/ }) { Text("Abgeschlossene Runden") }
+                } }
 
-                    HeaderWrapper(styles = listStyles.headerWrapper ) {
-                        Header {
-                            // Space for  Check or Xmark
-                            // -> HCell
-                            // todo:i18n
-                            HeaderCell("Runde Nr")
+                HeaderWrapper(styles = listStyles.headerWrapper ) {
+                    Header {
+                        // Space for  Check or Xmark
+                        // -> HCell
+                        // todo:i18n
+                        HeaderCell("Runde Nr")
 
-                            // todo:i18n
-                            HeaderCell("Start")
+                        // todo:i18n
+                        HeaderCell("Start")
 
-                            // todo:i18n
-                            HeaderCell("Stop")
+                        // todo:i18n
+                        HeaderCell("Stop")
 
-                            // todo:i18n
-                            HeaderCell("Kommentar"){width(50.percent)}
-                        }
+                        // todo:i18n
+                        HeaderCell("Kommentar"){width(50.percent)}
                     }
+                }
 
-                    // Rows
-                    (storage * bidApplicationIso * frozenRounds).emit().forEach { round ->
-                        // Effect
-                        LaunchDownloadOfBidRoundResults(
-                            storage = storage * bidApplicationIso,
-                            auction = auction,
-                            round = round,
-                            texts = texts
-                        )
+                // Rows
+                (storage * bidApplicationIso * frozenRounds).emit().forEach { round ->
+                    // Effect
+                    LaunchDownloadOfBidRoundResults(
+                        storage = storage * bidApplicationIso,
+                        auction = auction,
+                        round = round,
+                        texts = texts
+                    )
 
-                        ListItemWrapper(styles = listStyles.listItemWrapper ) {
-                            DataWrapper{
-                                // Check or Xmark ???
-                                // todo:i18n runde
-                                TextCell("Runde ${round.roundNumber}")
-                                // todo:i18n date
-                                TimeCell(Date())
-                                // todo:i18n date
-                                TimeCell(Date(Date.now() + 15 * 60_000))
-                                // todo:i18n date
-                                TextCell("Kommentar zu Runde ${round.roundNumber}") { width(50.percent) }
+                    ListItemWrapper(styles = listStyles.listItemWrapper ) {
+                        DataWrapper{
+                            // Check or Xmark ???
+                            // todo:i18n runde
+                            TextCell("Runde ${round.roundNumber}")
+                            // todo:i18n date
+                            TimeCell(Date())
+                            // todo:i18n date
+                            TimeCell(Date(Date.now() + 15 * 60_000))
+                            // todo:i18n date
+                            TextCell("Kommentar zu Runde ${round.roundNumber}") { width(50.percent) }
+                        }
+                        ActionsWrapper {
+                            val isExportDisabled = (storage * bidApplicationIso * user.get).emit()
+                                .isNotGranted(BidRight.BidRound.manage)
+                            // todo:i18n
+                            DownloadButton(
+                                Color.black,
+                                Color.transparent,
+                                { "Ergebnisse Exportieren" },
+                                storage * bidApplicationIso * deviceData * mediaType.get,
+                                isExportDisabled
+                            ) {
+                                TriggerExportOfBidRoundResults(
+                                    storage = storage * bidApplicationIso,
+                                    auction = auction,
+                                    round = round
+                                )
                             }
-                            ActionsWrapper {
-                                val isExportDisabled = (storage * bidApplicationIso * user.get).emit()
-                                    .isNotGranted(BidRight.BidRound.manage)
-                                // todo:i18n
-                                DownloadButton(
-                                    Color.black,
-                                    Color.transparent,
-                                    { "Ergebnisse Exportieren" },
-                                    storage * bidApplicationIso * deviceData * mediaType.get,
-                                    isExportDisabled
-                                ) {
-                                    TriggerExportOfBidRoundResults(
-                                        storage = storage * bidApplicationIso,
-                                        auction = auction,
-                                        round = round
-                                    )
-                                }
 
-                                val isEvaluationDisabled = (storage * bidApplicationIso * user.get).emit()
-                                    .isNotGranted(BidRight.BidRound.manage)
-                                // todo:i18n
-                                EvaluationButton(
-                                    Color.black,
-                                    Color.transparent,
-                                    { "Evaluation einsehen" },
-                                    storage * bidApplicationIso * deviceData * mediaType.get,
-                                    isEvaluationDisabled
-                                ) {
-                                    TriggerBidRoundEvaluation(
-                                        storage = storage * bidApplicationIso,
-                                        auction = auction,
-                                        round = round
-                                    )
-                                }
+                            val isEvaluationDisabled = (storage * bidApplicationIso * user.get).emit()
+                                .isNotGranted(BidRight.BidRound.manage)
+                            // todo:i18n
+                            EvaluationButton(
+                                Color.black,
+                                Color.transparent,
+                                { "Evaluation einsehen" },
+                                storage * bidApplicationIso * deviceData * mediaType.get,
+                                isEvaluationDisabled
+                            ) {
+                                TriggerBidRoundEvaluation(
+                                    storage = storage * bidApplicationIso,
+                                    auction = auction,
+                                    round = round
+                                )
                             }
                         }
                     }
                 }
             }
+            // }
         }
     }
 }
