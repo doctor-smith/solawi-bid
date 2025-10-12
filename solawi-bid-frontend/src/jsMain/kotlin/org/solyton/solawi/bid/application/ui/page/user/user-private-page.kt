@@ -37,6 +37,8 @@ import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.component.modal.showChangePasswordModal
 import org.solyton.solawi.bid.module.user.component.table.ContextRoleTableForUser
+import org.solyton.solawi.bid.module.user.component.table.ListAvailablePermissions
+import org.solyton.solawi.bid.module.user.component.table.ListUserPermissions
 import org.solyton.solawi.bid.module.user.data.api.ChangePassword
 import org.solyton.solawi.bid.module.user.data.password
 import org.solyton.solawi.bid.module.user.data.reader.*
@@ -102,13 +104,11 @@ fun PrivateUserPage(storage: Storage<Application>) = Div {
             H2{ Text((texts * personalData * title).emit()) }
             Vertical {
                 ReadOnlyProperty(Property((texts * personalData * properties * org.solyton.solawi.bid.module.user.data.reader.username * value).emit(), (userData * username).read()))
-
             }
+
             H2{ Text((permissions * title).emit())}
-            Vertical {
 
-                ContextRoleTableForUser(storage * userIso, permissions * table)
-            }
+            ListUserPermissions(storage * userIso, permissions * table)
         }
     }
 }
