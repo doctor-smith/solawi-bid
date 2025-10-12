@@ -66,15 +66,7 @@ fun AuctionsPage(storage: Storage<Application>) = Div {
             )
         }
     )) return@Div
-    /*
-    LaunchComponentLookup(
-        BidComponent.AuctionsPage,
-        storage  * Reader { app: Application -> app.environment.useI18nTransform() },
-        storage * bidApplicationIso * i18N
-    )
-    val loaded = (storage * bidApplicationIso * i18N * componentLoaded(BidComponent.AuctionsPage)).emit()
-    if(!loaded) return@Div
-*/
+
     // Data
     val auction = auctions * FirstBy { it.auctionId == DEFAULT_AUCTION_ID }
 

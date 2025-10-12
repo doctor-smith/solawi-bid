@@ -134,6 +134,10 @@ en{
                 auctionList {
                     items {
                         buttons {
+                            run {
+                                title: "Start auction"
+                                tooltip: "Start auction"
+                            }
                             details {
                                 title: "Details"
                                 tooltip: "Show details of the auction"
