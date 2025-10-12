@@ -14,6 +14,7 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.*
 import org.solyton.solawi.bid.module.permissions.data.contexts
+import org.solyton.solawi.bid.module.permissions.service.readableName
 import org.solyton.solawi.bid.module.user.data.Application
 import org.solyton.solawi.bid.module.user.data.managedUsers
 import org.solyton.solawi.bid.module.user.data.permissions
@@ -38,7 +39,7 @@ fun ContextRoleTableForUser(application: Storage<Application>, texts: Source<Lan
             (application * user * permissions * contexts.get).emit().forEach {
                 Tr {
                     Td{
-                        Text(it.contextName)
+                        Text(it.readableName())
                     }
                     Td{
                         Text(it.roles.joinToString(", ") { it.roleName })
