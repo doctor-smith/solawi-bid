@@ -133,6 +133,10 @@ de{
                 auctionList {
                     items {
                         buttons {
+                            run {
+                                title: "Auktion starten"
+                                tooltip: "Auktion starten"
+                            }
                             details {
                                 title: "Details"
                                 tooltip: "Auktions Details anzeigen"

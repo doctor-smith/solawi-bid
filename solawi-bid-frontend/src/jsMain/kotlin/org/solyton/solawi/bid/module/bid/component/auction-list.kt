@@ -32,8 +32,8 @@ import org.solyton.solawi.bid.module.bid.data.biduser.User
 import org.solyton.solawi.bid.module.bid.data.reader.auctionAccepted
 import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.module.bid.service.isNotGranted
-import org.solyton.solawi.bid.module.control.button.DetailsButton
 import org.solyton.solawi.bid.module.control.button.EditButton
+import org.solyton.solawi.bid.module.control.button.PlayButton
 import org.solyton.solawi.bid.module.control.button.TrashCanButton
 import org.solyton.solawi.bid.module.i18n.data.I18N
 import org.solyton.solawi.bid.module.i18n.data.language
@@ -124,15 +124,6 @@ fun AuctionListItem(
     }
     Div(attrs = {style {
         styles.actionsWrapper(this)
-        /*
-        display(DisplayStyle.Flex)
-        flexDirection(FlexDirection.Row)
-        justifyContent(JustifyContent.End)
-        width(20.percent)
-        marginRight(10.px)
-        gap(2.px)
-
-         */
     }}) {
         val buttons = (i18n *
             language *
@@ -143,16 +134,6 @@ fun AuctionListItem(
             subComp("items") *
             subComp("buttons")
         )
-
-        DetailsButton(
-            actionButtonColor,
-            actionButtonBgColor,
-            buttons * subComp("details") * tooltip,
-            device,
-            false,
-        ) {
-            navigate("/app/auctions/${auction.read().auctionId}")
-        }
 
         // Edit
         EditButton(
@@ -171,6 +152,17 @@ fun AuctionListItem(
             ) {
                 dispatchConfiguration()
             }
+        }
+
+        PlayButton(
+            actionButtonColor,
+            actionButtonBgColor,
+            buttons * subComp("run") * tooltip,
+            device,
+            // todo:permissions
+            false,
+        ) {
+            navigate("/app/auctions/${auction.read().auctionId}")
         }
 
         // Delete
