@@ -1,12 +1,17 @@
 package org.solyton.solawi.bid.module.application.repository
 
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.insertAndGetId
 import org.solyton.solawi.bid.module.application.schema.ApplicationEntity
 import org.solyton.solawi.bid.module.application.schema.ModuleEntity
 import org.solyton.solawi.bid.module.permission.exception.ContextException
+import org.solyton.solawi.bid.module.permission.exception.PermissionException
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
-import java.util.UUID
+import org.solyton.solawi.bid.module.permission.schema.RoleEntity
+import org.solyton.solawi.bid.module.permission.schema.RolesTable
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
+import java.util.*
 
 
 fun getDefaultContext(defaultContextId: UUID?): ContextEntity = when(defaultContextId) {
@@ -32,3 +37,13 @@ fun String.reduceContextName(): String = with(split(".")) { when{
     size == 2 -> this[0]
     else -> take(size-2).joinToString(".") { it }
 } }
+
+fun createUserRoleContext(userId: UUID, role: String, contextId: UUID): UUID {
+    val ownerRoleId = RoleEntity.find { RolesTable.name eq role }.firstOrNull()?.id?.value
+        ?: throw PermissionException.NoSuchRole(role)
+    return UserRoleContext.insertAndGetId {
+        it[UserRoleContext.userId] = userId
+        it[UserRoleContext.roleId] = ownerRoleId
+        it[UserRoleContext.contextId] = contextId
+    }.value
+}

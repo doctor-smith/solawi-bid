@@ -101,6 +101,13 @@ class Migration1756312925919(
             createdBy = UUID_ZERO
         }
 
+        // val ownerRole =
+        RoleEntity.new{
+            name = "OWNER"
+            description = "DESCRIPTION"
+            createdBy = UUID_ZERO
+        }
+
         val readApplications = RightEntity.new {
             name = "READ_APPLICATION"
             description = "DESCRIPTION"

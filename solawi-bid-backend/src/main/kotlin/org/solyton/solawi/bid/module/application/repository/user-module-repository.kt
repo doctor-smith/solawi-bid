@@ -36,6 +36,7 @@ fun Transaction.registerForModule(userId: UUID, moduleId: UUID): UserModule {
         module.defaultContext.id.value,
         context.id.value
     )
+    createUserRoleContext(userId, "OWNER", context.id.value)
 
     return UserModule.new{
         this.userId = userId

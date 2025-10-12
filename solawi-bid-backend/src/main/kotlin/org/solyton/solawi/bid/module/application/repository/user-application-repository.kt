@@ -29,7 +29,7 @@ fun Transaction.registerForApplication(userId: UUID, applicationId: UUID): UserA
         application.defaultContext.id.value,
         context.id.value
     )
-
+    createUserRoleContext(userId, "OWNER", context.id.value)
     return UserApplication.new{
         this.userId = userId
         this.application = application
