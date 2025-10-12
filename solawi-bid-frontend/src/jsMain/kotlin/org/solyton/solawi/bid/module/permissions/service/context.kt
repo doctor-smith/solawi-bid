@@ -44,7 +44,9 @@ fun List<Context>.fromPath(path: List<String>): Context? {
     return result ?: rest.fromPath(path)
 }
 
-fun Context.readableName(): String = when{
-    contextName.contains(".") -> contextName.split(".")[0]
-    else -> contextName
+fun Context.readableName(): String = contextName.readableName()
+
+fun String.readableName(): String = when{
+    contains(".") -> split(".")[0]
+    else -> this
 }
