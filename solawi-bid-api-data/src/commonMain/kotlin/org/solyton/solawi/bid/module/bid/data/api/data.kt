@@ -196,7 +196,8 @@ data class BidResult(
     val username: String,
     val numberOfShares: Int,
     val amount: Double,
-    val hasPlacedBid: Boolean
+    val hasPlacedBid: Boolean,
+    val round: Int = 0
 )
 
 @Serializable

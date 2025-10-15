@@ -102,8 +102,8 @@ class CompleteAuctionTest {
             """.trimMargin())
 
             val expected1: List<BidResult> = listOf(
-                BidResult("bidder_1@auction.com",1,100.0,true ),
-                BidResult("bidder_2@auction.com",1,200.0,true ),
+                BidResult("bidder_1@auction.com",1,100.0,true,1 ),
+                BidResult("bidder_2@auction.com",1,200.0,true,1 ),
                 BidResult("bidder_3@auction.com",1,100.0,false ),
                 BidResult("bidder_4@auction.com",1,100.0,false ),
                 BidResult("bidder_5@auction.com",1,100.0,false ),

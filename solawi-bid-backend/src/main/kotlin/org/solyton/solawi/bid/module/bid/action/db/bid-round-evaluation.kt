@@ -46,7 +46,7 @@ val PreEvaluateBidRound = KlAction<Result<PreEvaluateBidRound>, Result<BidRoundP
 }
 
 
-fun Transaction.getResults(auctionId: UUID, roundId: UUID):BidRoundResults {
+fun Transaction.getResults(auctionId: UUID, roundId: UUID, includeEarlierRounds: Boolean = true):BidRoundResults {
     // Collect auxiliary data
     val auction = AuctionEntity.find {
         AuctionsTable.id eq auctionId
@@ -55,14 +55,23 @@ fun Transaction.getResults(auctionId: UUID, roundId: UUID):BidRoundResults {
     val bidderDetails = getBidderDetails(auction).map { it as BidderDetails.SolawiTuebingen }
 
     // Compute results for those who have sent bids
-    val bidResults = BidRoundEntity.find {
-        BidRoundsTable.round eq roundId
+    val bidResults = when(includeEarlierRounds) {
+        false -> BidRoundEntity.find {
+            BidRoundsTable.round eq roundId
+        }
+        true -> BidRoundEntity.find {
+            BidRoundsTable.round inList auction.rounds.map { it.id }
+        }.groupBy { round -> round.bidder.username }
+         .map { it.value.maxBy {
+            round -> round.round.number
+        } }
     }.map{
         BidResult(
             it.bidder.username,
             bidderDetails.first { details -> details.bidder.username == it.bidder.username }.numberOfShares,
             it.amount,
-            true
+            true,
+            it.round.number
         )
     }
 
