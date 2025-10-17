@@ -43,6 +43,8 @@ import org.solyton.solawi.bid.module.bid.data.api.NewBidder
 import org.solyton.solawi.bid.module.bid.data.api.RoundState
 import org.solyton.solawi.bid.module.bid.data.auction.rounds
 import org.solyton.solawi.bid.module.bid.data.bidround.Round
+import org.solyton.solawi.bid.module.bid.data.bidround.comment
+import org.solyton.solawi.bid.module.bid.data.bidround.comments
 import org.solyton.solawi.bid.module.bid.data.reader.BidComponent
 import org.solyton.solawi.bid.module.bid.data.reader.auctionAccepted
 import org.solyton.solawi.bid.module.bid.permission.BidRight
@@ -342,7 +344,7 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                             // todo:i18n date
                             TimeCell(Date(Date.now() + 15 * 60_000))
                             // todo:i18n date
-                            TextCell("Kommentar zu Runde ${round.roundNumber}") { width(50.percent) }
+                            TextCell(round.comments.firstOrNull()?.comment?:"") { width(50.percent) }
                         }
                         ActionsWrapper {
                             val isExportDisabled = (storage * bidApplicationIso * user.get).emit()
