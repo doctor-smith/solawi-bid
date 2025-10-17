@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.bid.data
 
 import kotlinx.datetime.LocalDate
 import org.solyton.solawi.bid.module.bid.data.api.*
+import org.solyton.solawi.bid.module.bid.data.api.ApiRoundComment
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.auction.AuctionDetails
 import org.solyton.solawi.bid.module.bid.data.bidder.BidderInfo
@@ -9,6 +10,8 @@ import org.solyton.solawi.bid.module.bid.data.bidround.BidResult
 import org.solyton.solawi.bid.module.bid.data.bidround.BidRound
 import org.solyton.solawi.bid.module.bid.data.bidround.BidRoundResults
 import org.solyton.solawi.bid.module.bid.data.bidround.Round
+
+import org.solyton.solawi.bid.module.bid.data.bidround.RoundComment as DomainRoundComment
 import org.solyton.solawi.bid.module.bid.data.evaluation.BidRoundEvaluation
 import org.solyton.solawi.bid.module.bid.data.evaluation.BidRoundPreEvaluation
 import org.solyton.solawi.bid.module.bid.data.evaluation.WeightedBid
@@ -21,9 +24,22 @@ fun ApiRound.toDomainType(): Round = Round(
     link,
     state,
     number,
+    comments.toDomainType(),
     rawResults.toDomainType(),
     bidRoundEvaluation.toDomainType(),
     preEvaluation.toDomainType()
+
+)
+
+fun ApiRoundComments.toDomainType(): List<DomainRoundComment> = all.map {
+    it.toDomainType()
+}
+
+fun ApiRoundComment.toDomainType(): DomainRoundComment = DomainRoundComment(
+    id,
+    comment,
+    createdBy,
+    createAt,
 
 )
 
