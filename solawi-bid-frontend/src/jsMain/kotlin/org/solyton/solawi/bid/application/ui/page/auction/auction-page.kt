@@ -11,6 +11,7 @@ import org.evoleq.device.data.mediaType
 import org.evoleq.language.*
 import org.evoleq.math.*
 import org.evoleq.optics.lens.FirstBy
+import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
@@ -33,11 +34,13 @@ import org.solyton.solawi.bid.module.bid.component.button.ImportBiddersButton
 import org.solyton.solawi.bid.module.bid.component.button.UpdateAuctionButton
 import org.solyton.solawi.bid.module.bid.component.effect.LaunchDownloadOfBidRoundResults
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerBidRoundEvaluation
+import org.solyton.solawi.bid.module.bid.component.effect.TriggerCommentOnRoundDialog
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerExportOfBidRoundResults
 import org.solyton.solawi.bid.module.list.component.HeaderCell
 import org.solyton.solawi.bid.module.list.component.TextCell
 import org.solyton.solawi.bid.module.list.component.TimeCell
 import org.solyton.solawi.bid.module.bid.data.*
+import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.api.AddBidders
 import org.solyton.solawi.bid.module.bid.data.api.NewBidder
 import org.solyton.solawi.bid.module.bid.data.api.RoundState
@@ -49,6 +52,7 @@ import org.solyton.solawi.bid.module.bid.data.reader.BidComponent
 import org.solyton.solawi.bid.module.bid.data.reader.auctionAccepted
 import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.module.bid.service.isNotGranted
+import org.solyton.solawi.bid.module.control.button.CommentButton
 import org.solyton.solawi.bid.module.control.button.DownloadButton
 import org.solyton.solawi.bid.module.control.button.EvaluationButton
 import org.solyton.solawi.bid.module.control.button.HelpButton
@@ -349,6 +353,21 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                         ActionsWrapper {
                             val isExportDisabled = (storage * bidApplicationIso * user.get).emit()
                                 .isNotGranted(BidRight.BidRound.manage)
+
+                            // todo:i18n
+                            CommentButton(
+                                Color.black,
+                                Color.transparent,
+                                { "Runde kommentieren" },
+                                storage * bidApplicationIso * deviceData * mediaType.get,
+                                false
+                            ) {
+                                TriggerCommentOnRoundDialog(
+                                    storage * bidApplicationIso,
+                                    auction * rounds * FirstBy { it.roundId == round.roundId }
+                                )
+                            }
+
                             // todo:i18n
                             DownloadButton(
                                 Color.black,
