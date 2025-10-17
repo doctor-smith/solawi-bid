@@ -28,12 +28,11 @@ fun ApiRound.toDomainType(): Round = Round(
     rawResults.toDomainType(),
     bidRoundEvaluation.toDomainType(),
     preEvaluation.toDomainType()
-
 )
 
 fun ApiRoundComments.toDomainType(): List<DomainRoundComment> = all.map {
     it.toDomainType()
-}
+}.sortedByDescending { it.createdAt }
 
 fun ApiRoundComment.toDomainType(): DomainRoundComment = DomainRoundComment(
     id,

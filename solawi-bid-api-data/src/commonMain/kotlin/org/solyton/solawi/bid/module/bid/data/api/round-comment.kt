@@ -19,3 +19,9 @@ data class RoundComment(
     val createAt: LocalDate,
     val createdBy: String
 )
+
+@Serializable
+data class CommentOnRound(
+    val comment: String,
+    val roundId: String
+)

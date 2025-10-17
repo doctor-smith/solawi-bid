@@ -18,11 +18,14 @@ import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.auction.rounds
 import org.solyton.solawi.bid.module.bid.data.bidder.BidderInfo
 import org.solyton.solawi.bid.module.bid.data.bidenv.Environment
+import org.solyton.solawi.bid.module.bid.data.bidround.RoundComment
+import org.solyton.solawi.bid.module.bid.data.bidround.comments
 import org.solyton.solawi.bid.module.bid.data.bidround.rawResults
 import org.solyton.solawi.bid.test.storage.TestStorage
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.test.fail
 import org.solyton.solawi.bid.module.bid.data.bidround.Round as DomainRound
 import org.solyton.solawi.bid.module.bid.data.evaluation.WeightedBid as DomainWeightedBid
 
@@ -78,7 +81,7 @@ class ActionTests{
 
             val apiBidRound = ApiBidRound(
                 "",
-                Round("","", "", 0),
+                Round("","", "", 0, ApiRoundComments(listOf())),
                 ApiAuction(
                     "",
                     "",
@@ -139,7 +142,8 @@ class ActionTests{
             "id",
             "link",
             RoundState.Started.toString(),
-            0
+            0,
+            ApiRoundComments(listOf())
         )
 
         val createAuction = createAuction(auctionLens)
@@ -219,7 +223,8 @@ class ActionTests{
             "id",
             "link",
             RoundState.Opened.toString(),
-            0
+            0,
+            ApiRoundComments(listOf())
         )
 
         val createRound = createRound(auctionLens)
@@ -237,7 +242,8 @@ class ActionTests{
                 "id",
                 "link",
                 RoundState.Started.toString(),
-                0
+                0,
+                ApiRoundComments(listOf())
             )
 
             (storage * changeRoundState.writer).write(nextRound) on Unit
@@ -256,7 +262,8 @@ class ActionTests{
             "id",
             "link",
             RoundState.Opened.toString(),
-            0
+            0,
+            ApiRoundComments(listOf())
         )
 
         val createRound = createRound(auctionLens)
@@ -302,7 +309,8 @@ class ActionTests{
             "id",
             "link",
             RoundState.Opened.toString(),
-            0
+            0,
+            ApiRoundComments(listOf())
         )
 
         val createRound = createRound(auctionLens)
@@ -366,7 +374,8 @@ class ActionTests{
             "id",
             "link",
             RoundState.Opened.toString(),
-            0
+            0,
+            ApiRoundComments(listOf())
         )
 
         val createRound = createRound(auctionLens)
@@ -420,7 +429,8 @@ class ActionTests{
             "id",
             "link",
             RoundState.Opened.toString(),
-            0
+            0,
+            ApiRoundComments(listOf())
         )
 
         val createRound = createRound(auctionLens)
@@ -447,6 +457,56 @@ class ActionTests{
             val storedAuction = (storage * auctionLens).read()
 
             assertEquals("id", storedAuction.acceptedRoundId)
+        }
+    }
+
+    @OptIn(ComposeWebExperimentalTestsApi::class)
+    @Test fun commentOnRoundTest() = runTest {
+
+
+
+        val auction = Auction("id", "name", LocalDate(1, 1, 1))
+        val auctionLens = auctions * FirstBy<Auction> { auc -> auc.auctionId == auction.auctionId }
+        val roundLens = auctionLens * rounds * FirstBy { it.roundId == "id" }
+
+        val round = Round(
+            "id",
+            "link",
+            RoundState.Opened.toString(),
+            0,
+            ApiRoundComments(listOf())
+        )
+
+        val createRound = createRound(auctionLens)
+        val comment = "comment"
+        val commentOnRound = commentOnRound(comment, roundLens)
+
+        composition {
+            val storage = TestStorage() * bidApplicationIso
+            (storage * auctionLens).write(auction)
+            (storage * createRound.writer).write(round) on Unit
+            assertEquals(0, (storage * roundLens * comments).read().size)
+
+
+            val roundComments = ApiRoundComments(listOf(ApiRoundComment(
+                "id", "comment", LocalDate(1,1,1), "me"
+            )))
+
+            // Check reader of action
+            // read evaluation
+            val dto: CommentOnRound = (storage * commentOnRound.reader).emit()
+            // assert
+            assertEquals(CommentOnRound(comment, "id"), dto)
+
+            // Check writer of action
+            // write evaluation
+            (storage * commentOnRound.writer).write(roundComments) on Unit
+
+            // assertions
+            val storedComments = (storage * roundLens * comments).read()
+
+            assertEquals(1, storedComments.size)
+            assertEquals(roundComments.toDomainType(), storedComments)
         }
     }
 
