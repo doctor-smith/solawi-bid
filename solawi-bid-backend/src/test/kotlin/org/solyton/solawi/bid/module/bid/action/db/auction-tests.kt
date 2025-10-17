@@ -37,7 +37,8 @@ class AuctionTests {
         Auctions,
         Bidders,
         BidderDetailsSolawiTuebingenTable,
-        Rounds
+        Rounds,
+        RoundComments
     ) {
         val name = "TestAuction"
         val link = "TestLink"
