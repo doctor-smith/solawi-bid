@@ -80,6 +80,8 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<WeightedBid>(WeightedBid.serializer())
         add<AcceptRound>(AcceptRound.serializer())
         add<AcceptedRound>(AcceptedRound.serializer())
+        add<RoundComments>(RoundComments.serializer())
+        add<RoundComment>(RoundComment.serializer())
 
         // Search Bidders
         add<BidderMails>(BidderMails.serializer())
