@@ -8,6 +8,7 @@ import org.evoleq.exposedx.data.DbEnv
 import org.evoleq.ktorx.Base
 import org.evoleq.ktorx.Fail
 import org.evoleq.ktorx.Receive
+import org.evoleq.ktorx.ReceiveContextual
 import org.evoleq.ktorx.Respond
 import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.ktorx.result.Result
@@ -118,8 +119,9 @@ fun <BidEnv> Routing.round(
                 Receive<PreEvaluateBidRound>() * PreEvaluateBidRound * Respond{ transform() } runOn Base(call, environment)
             }
 
-
-
+            post("add-comment") {
+                ReceiveContextual<CommentOnRound>() * CommentOnRound * Respond { transform() } runOn Base(call, environment)
+            }
         }
     }
 

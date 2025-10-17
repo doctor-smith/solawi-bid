@@ -103,6 +103,10 @@ val solawiApi by lazy {
             key  = AcceptRound::class,
             url = "auction/accept-round"
         )
+        post<CommentOnRound, RoundComments>(
+            key = CommentOnRound::class,
+            url = "round/add-comment"
+        )
 
         // Auction bid
         post<Bid,BidRound> (
