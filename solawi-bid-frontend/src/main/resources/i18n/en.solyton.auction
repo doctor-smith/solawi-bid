@@ -50,6 +50,15 @@ en{
                         title: "Reject"
                     }
                 }
+                commentOnRoundModal {
+                    title: "Comment Round"
+                    okButton {
+                        title: "Ok"
+                    }
+                    cancelButton {
+                        title: "Cancel"
+                    }
+                }
                 successfulBidInformationModal {
                     title: "Bid Successfully Transmitted"
                     message: "Your bid has been transmitted successfully"

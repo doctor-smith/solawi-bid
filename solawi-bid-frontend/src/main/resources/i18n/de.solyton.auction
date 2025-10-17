@@ -63,6 +63,15 @@ de{
                         title: "Abbrechen"
                     }
                 }
+                commentOnRoundModal {
+                    title: "Runde kommentieren"
+                    okButton {
+                        title: "Ok"
+                    }
+                    cancelButton {
+                        title: "Abbrechen"
+                    }
+                }
                 states {
                     opened: "Eröffnet"
                     started: "Gestartet"
