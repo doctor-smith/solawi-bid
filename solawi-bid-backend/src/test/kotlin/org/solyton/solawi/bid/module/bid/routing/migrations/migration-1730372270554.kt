@@ -52,7 +52,8 @@ class Migration1730372270554(
             AuctionTypes,
             AuctionDetailsSolawiTuebingenTable,
             BidderDetailsSolawiTuebingenTable,
-            AcceptedRoundsTable
+            AcceptedRoundsTable,
+            RoundCommentsTable,
         )
         val typeName = "SOLAWI_TUEBINGEN"
         val auctionType = AuctionType.find { AuctionTypes.type eq  typeName}.firstOrNull()
