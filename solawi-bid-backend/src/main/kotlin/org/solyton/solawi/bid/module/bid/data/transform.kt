@@ -5,6 +5,7 @@ import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.schema.AcceptedRound
 import org.solyton.solawi.bid.module.bid.schema.AcceptedRoundEntity
 import org.solyton.solawi.bid.module.bid.schema.AcceptedRoundsTable
+import org.solyton.solawi.bid.module.bid.schema.RoundCommentEntity
 import org.solyton.solawi.bid.module.bid.schema.Auction as AuctionEntity
 import org.solyton.solawi.bid.module.bid.schema.BidRound as BidRoundEntity
 import org.solyton.solawi.bid.module.bid.schema.Round as RoundEntity
@@ -41,7 +42,15 @@ fun RoundEntity.toApiType(): Round = Round(
     id.value.toString(),
     link,
     state,
-    number
+    number,
+    comments = ApiRoundComments(comments.map {it.toApiType()})
+)
+
+fun RoundCommentEntity.toApiType(): ApiRoundComment = ApiRoundComment(
+    id = id.value.toString(),
+    comment = comment,
+    createdBy = createdBy.toString(),
+    createAt = LocalDate(createdAt.year, createdAt.monthOfYear, createdAt.dayOfMonth)
 )
 
 @Suppress("UNUSED_PARAMETER")
