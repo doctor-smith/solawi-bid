@@ -94,6 +94,7 @@ fun Application.installSerializers() {
     serializers[AcceptedRound::class] = AcceptedRound.serializer()
     serializers[RoundComments::class] = RoundComments.serializer()
     serializers[RoundComment::class] = RoundComment.serializer()
+    serializers[CommentOnRound::class] = CommentOnRound.serializer()
     // Search Bidders
     serializers[BidderMails::class] = BidderMails.serializer()
     serializers[BidderData::class] = BidderData.serializer()

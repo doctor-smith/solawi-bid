@@ -82,6 +82,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<AcceptedRound>(AcceptedRound.serializer())
         add<RoundComments>(RoundComments.serializer())
         add<RoundComment>(RoundComment.serializer())
+        add<CommentOnRound>(CommentOnRound.serializer())
 
         // Search Bidders
         add<BidderMails>(BidderMails.serializer())
