@@ -28,6 +28,7 @@ class Round(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     var number by Rounds.number
     var auction by Auction referencedOn Rounds.auction
     val bidRounds by BidRound referrersOn BidRounds.auction
+    val comments by RoundComment referrersOn RoundComments.roundId
 
     override var createdAt: DateTime by Rounds.createdAt
     override var createdBy: UUID by Rounds.createdBy
