@@ -28,6 +28,7 @@ fun <Id> Modal(
     texts: Block,
     styles: ModalStyles = ModalStyles(),
     dataId: String? = null,
+    isOkButtonDisabled: ()->Boolean = {false},
     content: @Composable ElementScope<HTMLElement>.()->Unit
 ):  @Composable ElementScope<HTMLElement>.()->Unit = {
 
@@ -131,6 +132,7 @@ fun <Id> Modal(
                 {texts["okButton.title"]},
                 device.emit(),
                 dataId = "$dataId.modal.submit-button",
+                disabled = isOkButtonDisabled()
             ) {
                 onOk()
                 id.close()

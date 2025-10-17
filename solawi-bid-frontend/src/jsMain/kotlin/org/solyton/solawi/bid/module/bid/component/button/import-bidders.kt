@@ -1,6 +1,10 @@
 package org.solyton.solawi.bid.module.bid.component.button
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import io.ktor.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -47,6 +51,8 @@ fun ImportBiddersButton(
     dataId: String,
     showText: Boolean = false
 ) {
+    var isOkButtonDisabled by remember { mutableStateOf(true) }
+
     val isDisabled = (storage * auction * rounds * existRounds).emit() ||
         (storage * auction * auctionAccepted).emit()||
         (storage * user.get).emit().isNotGranted(BidRight.Auction.manage)
@@ -54,9 +60,12 @@ fun ImportBiddersButton(
     val action: () -> Unit = {
         (storage * modals).showImportBiddersModal(
             texts = ((storage * i18N * language).read() as Lang.Block).component("solyton.auction.importBiddersDialog"),
-            setBidders = { newBidders.write(it.map { bidder -> bidder.copy(
-                username = bidder.username.trim().toLowerCasePreservingASCIIRules()
-            )})},
+            setBidders = {
+                newBidders.write(it.map { bidder -> bidder.copy(
+                    username = bidder.username.trim().toLowerCasePreservingASCIIRules()
+                )})
+                isOkButtonDisabled = false
+            },
             addBidders = {addBidders.write(AddBidders(it.bidders. map { bidder -> bidder.copy(
                 email = bidder.email.trim().toLowerCasePreservingASCIIRules()
             )}))},
@@ -67,7 +76,8 @@ fun ImportBiddersButton(
                     (storage * actions).read().dispatch(addBidders(addBidders.read()))
                     (storage * actions).read().dispatch(importBidders(newBidders.read(), auction))
                 }
-            }
+            },
+            isOkButtonDisabled = { isOkButtonDisabled }
         )
     }
     when(showText) {

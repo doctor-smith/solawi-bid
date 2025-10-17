@@ -31,6 +31,7 @@ fun ImportBiddersModal(
     device: Source<DeviceType>,
     setBidders: (List<NewBidder>)->Unit,
     addBidders: (AddBidders)->Unit,
+    isOkButtonDisabled: ()->Boolean,
     cancel: ()->Unit,
     update: ()->Unit
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
@@ -43,6 +44,7 @@ fun ImportBiddersModal(
         onCancel = {
             cancel()
         },
+        isOkButtonDisabled = isOkButtonDisabled,
         texts = texts,
         styles = auctionModalStyles(device),
     ) {
@@ -75,7 +77,6 @@ fun ImportBiddersModal(
                 }
             }
         }
-
     }
 
 
@@ -86,6 +87,7 @@ fun Storage<Modals<Int>>.showImportBiddersModal(
     device: Source<DeviceType>,
     setBidders: (List<NewBidder>)->Unit,
     addBidders: (AddBidders)->Unit,
+    isOkButtonDisabled: ()->Boolean,
     cancel: ()->Unit,
     update: ()->Unit
 ) = with(nextId()) {
@@ -98,6 +100,7 @@ fun Storage<Modals<Int>>.showImportBiddersModal(
             device,
             setBidders,
             addBidders,
+            isOkButtonDisabled,
             cancel,
             update
         )

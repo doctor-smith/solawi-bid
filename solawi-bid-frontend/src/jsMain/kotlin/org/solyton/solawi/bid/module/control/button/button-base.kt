@@ -6,7 +6,6 @@ import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.math.Source
 import org.evoleq.math.emit
-import org.evoleq.optics.prism.Either
 import org.jetbrains.compose.web.attributes.disabled
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.css.keywords.auto
@@ -29,6 +28,7 @@ fun SubmitButton(texts: Source<String>,deviceType: DeviceType,disabled: Boolean 
         if(dataId != null) dataId(dataId)
         style {
             submitButtonStyle(deviceType)()
+            if(disabled) cursor("not-allowed")
         }
         onClick {
             if(disabled) return@onClick
