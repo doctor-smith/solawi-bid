@@ -16,6 +16,7 @@ import org.evoleq.ktorx.result.ResultSerializer
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
 import org.solyton.solawi.bid.module.bid.data.api.*
+import org.solyton.solawi.bid.module.testFramework.getTestToken
 import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertIs

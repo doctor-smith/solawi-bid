@@ -29,6 +29,7 @@ import org.solyton.solawi.bid.module.application.data.StartTrialsOfApplications
 import org.solyton.solawi.bid.module.application.getRootContextByName
 import org.solyton.solawi.bid.module.application.login
 import org.solyton.solawi.bid.module.authentication.data.api.LoggedIn
+import org.solyton.solawi.bid.module.testFramework.getTestToken
 import org.solyton.solawi.bid.module.user.data.api.ApiUsers
 import java.io.File
 import kotlin.test.assertEquals
@@ -47,20 +48,7 @@ class ApplicationApiTests {
                     config = HoconApplicationConfig(ConfigFactory.parseFile(configFile))
                 }
             }
-
-            // login
-            val response = login(USERNAME, PASSWORD)
-            assertTrue("failed to login") {
-                response.status == HttpStatusCode.OK
-            }
-
-            val result = Json.decodeFromString(
-                ResultSerializer,
-                response.bodyAsText()
-            )
-            assertIs<Result.Success<LoggedIn>>(result, "login not successful")
-            val accessToken = result.data.accessToken
-
+            val accessToken = client.getTestToken(USERNAME)
             val context = getRootContextByName("APPLICATION", accessToken)
 
             val applicationsResponse = client.get("applications/all") {
@@ -114,19 +102,7 @@ class ApplicationApiTests {
                     config = HoconApplicationConfig(ConfigFactory.parseFile(configFile))
                 }
             }
-
-            // login
-            val response = login(USERNAME, PASSWORD)
-            assertTrue("failed to login") {
-                response.status == HttpStatusCode.OK
-            }
-
-            val result = Json.decodeFromString(
-                ResultSerializer,
-                response.bodyAsText()
-            )
-            assertIs<Result.Success<LoggedIn>>(result, "login not successful")
-            val accessToken = result.data.accessToken
+            val accessToken = client.getTestToken(USERNAME)
 
             val context = getRootContextByName("APPLICATION", accessToken)
 
@@ -228,17 +204,7 @@ class ApplicationApiTests {
                 }
             }
 
-            val response = login("developer@solyton.org", PASSWORD)
-            assertTrue("failed to login") {
-                response.status == HttpStatusCode.OK
-            }
-
-            val result = Json.decodeFromString(
-                ResultSerializer,
-                response.bodyAsText()
-            )
-            assertIs<Result.Success<LoggedIn>>(result, "login not successful")
-            val accessToken = result.data.accessToken
+            val accessToken = client.getTestToken(USERNAME)
 
             val context = getRootContextByName("DUMMY_CONTEXT", accessToken)
 
@@ -269,18 +235,8 @@ class ApplicationApiTests {
                     config = HoconApplicationConfig(ConfigFactory.parseFile(configFile))
                 }
 
-                // login
-                val response = login(USERNAME, PASSWORD)
-                assertTrue("failed to login") {
-                    response.status == HttpStatusCode.OK
-                }
-
-                val result = Json.decodeFromString(
-                    ResultSerializer,
-                    response.bodyAsText()
-                )
-                assertIs<Result.Success<LoggedIn>>(result, "login not successful")
-                val accessToken = result.data.accessToken
+                // get token
+                val accessToken = client.getTestToken(USERNAME)
 
                 val contextId = client.get("setup/application-module-context-id?app=APPLICATION_MANAGEMENT&module=APPLICATION_USER_MANAGEMENT").bodyAsText()
 
@@ -405,19 +361,8 @@ class ApplicationApiTests {
                     val configFile = File("src/test/resources/application.module.api.test.conf")
                     config = HoconApplicationConfig(ConfigFactory.parseFile(configFile))
                 }
-
-                // login
-                val response = login("dummy_0@solyton.org", PASSWORD)
-                assertTrue("failed to login") {
-                    response.status == HttpStatusCode.OK
-                }
-
-                val result = Json.decodeFromString(
-                    ResultSerializer,
-                    response.bodyAsText()
-                )
-                assertIs<Result.Success<LoggedIn>>(result, "login not successful")
-                val accessToken = result.data.accessToken
+                // get token
+                val accessToken = client.getTestToken("dummy_0@solyton.org")
 
                 val contextId = client.get("setup/application-module-context-id?app=APPLICATION_MANAGEMENT&module=APPLICATION_USER_MANAGEMENT").bodyAsText()
 
@@ -475,19 +420,8 @@ class ApplicationApiTests {
                     config = HoconApplicationConfig(ConfigFactory.parseFile(configFile))
                 }
 
-                // login
-                val response = login(USERNAME, PASSWORD)
-                assertTrue("failed to login") {
-                    response.status == HttpStatusCode.OK
-                }
-
-                val result = Json.decodeFromString(
-                    ResultSerializer,
-                    response.bodyAsText()
-                )
-                assertIs<Result.Success<LoggedIn>>(result, "login not successful")
-                val accessToken = result.data.accessToken
-
+                // get token
+                val accessToken = client.getTestToken(USERNAME)
                 val contextId = getRootContextByName("DUMMY_CONTEXT", accessToken).id
 
                 val usersResponse = client.get("setup/dummy-users")
@@ -538,18 +472,8 @@ class ApplicationApiTests {
                 }
             }
 
-            // login
-            val response = login(USERNAME, PASSWORD)
-            assertTrue("failed to login") {
-                response.status == HttpStatusCode.OK
-            }
-
-            val result = Json.decodeFromString(
-                ResultSerializer,
-                response.bodyAsText()
-            )
-            assertIs<Result.Success<LoggedIn>>(result, "login not successful")
-            val accessToken = result.data.accessToken
+            // get token
+            val accessToken = client.getTestToken(USERNAME)
 
             val context = getRootContextByName("APPLICATION", accessToken)
 
@@ -584,18 +508,8 @@ class ApplicationApiTests {
                 }
             }
 
-            // login
-            val response = login(USERNAME, PASSWORD)
-            assertTrue("failed to login") {
-                response.status == HttpStatusCode.OK
-            }
-
-            val result = Json.decodeFromString(
-                ResultSerializer,
-                response.bodyAsText()
-            )
-            assertIs<Result.Success<LoggedIn>>(result, "login not successful")
-            val accessToken = result.data.accessToken
+            // get token
+            val accessToken = client.getTestToken(USERNAME)
 
             val context = getRootContextByName("APPLICATION", accessToken)
 
@@ -636,18 +550,8 @@ class ApplicationApiTests {
                     config = HoconApplicationConfig(ConfigFactory.parseFile(configFile))
                 }
 
-                // login
-                val response = login(USERNAME, PASSWORD)
-                assertTrue("failed to login") {
-                    response.status == HttpStatusCode.OK
-                }
-
-                val result = Json.decodeFromString(
-                    ResultSerializer,
-                    response.bodyAsText()
-                )
-                assertIs<Result.Success<LoggedIn>>(result, "login not successful")
-                val accessToken = result.data.accessToken
+                // get token
+                val accessToken = client.getTestToken(USERNAME)
 
                 val applicationContextId = getRootContextByName("APPLICATION", accessToken).id
 

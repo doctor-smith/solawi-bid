@@ -31,6 +31,7 @@ import org.solyton.solawi.bid.module.permission.data.api.ApiContext
 import org.solyton.solawi.bid.module.permission.exception.ContextException
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.testFramework.provideUserTokens
 import org.solyton.solawi.bid.module.user.data.api.ApiUser
 import org.solyton.solawi.bid.module.user.data.api.ApiUsers
 import org.solyton.solawi.bid.module.user.schema.UserEntity
@@ -50,6 +51,7 @@ fun Application.applicationTest() {
             authenticate("auth-jwt"){ it() }
         }
         val database = environment.connectToDatabase()
+        provideUserTokens(environment.jwt, database)
         route("setup") {
             get("root-context-by-name") {
                 val contextName = call.request.headers[Header.CONTEXT]!!
