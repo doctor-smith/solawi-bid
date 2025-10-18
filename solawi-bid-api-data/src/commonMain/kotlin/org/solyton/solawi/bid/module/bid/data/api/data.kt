@@ -1,6 +1,6 @@
 package org.solyton.solawi.bid.module.bid.data.api
 
-import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 import org.solyton.solawi.bid.module.bid.data.validation.ValidationException
 
@@ -107,14 +107,14 @@ data class GetRound(
 @Serializable
 data class CreateAuction(
     val name: String,
-    val date: LocalDate
+    val date: LocalDateTime
 )
 
 @Serializable
 data class ConfigureAuction(
     val id: String,
     val name: String,
-    val date: LocalDate,
+    val date: LocalDateTime,
     val auctionDetails: AuctionDetails = AuctionDetails.Empty
 )
 
@@ -122,7 +122,7 @@ data class ConfigureAuction(
 data class Auction(
     val id: String,
     val name: String,
-    val date: LocalDate,
+    val date: LocalDateTime,
     val rounds: List<Round> = listOf(),
     val bidderInfo: List<BidderInfo> = listOf(),
     val auctionDetails: AuctionDetails = AuctionDetails.Empty,

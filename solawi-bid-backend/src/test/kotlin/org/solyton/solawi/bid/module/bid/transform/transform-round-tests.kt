@@ -1,7 +1,9 @@
 package org.solyton.solawi.bid.module.bid.transform
 
 import kotlinx.datetime.LocalDate
+import org.evoleq.exposedx.joda.toKotlinxWithZone
 import org.evoleq.exposedx.test.runSimpleH2Test
+import org.evoleq.kotlinx.date.todayWithTime
 import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.insert
 import org.junit.jupiter.api.Test
@@ -34,7 +36,7 @@ class TransformRoundTests {
                 it[type] = "AUCTION_TYPE"
             }
 
-            val auction = createAuction("name", LocalDate(0, 1, 1), "AUCTION_TYPE")
+            val auction = createAuction("name", todayWithTime(), "AUCTION_TYPE")
             val round = addRound(CreateRound("${auction.id.value}"))
             round.addComment("comment-1", UUID_ZERO)
 
@@ -43,7 +45,7 @@ class TransformRoundTests {
             val expected = ApiRoundComment(
                 roundComment.id.value.toString(),
                 comment = roundComment.comment,
-                createAt = with(roundComment.createdAt) { LocalDate(year, monthOfYear, dayOfMonth) },
+                createAt = roundComment.createdAt.toKotlinxWithZone(),
                 createdBy = roundComment.createdBy.toString()
             )
 
@@ -65,7 +67,7 @@ class TransformRoundTests {
                 it[type] = "AUCTION_TYPE"
             }
 
-            val auction = createAuction("name", LocalDate(0, 1, 1), "AUCTION_TYPE")
+            val auction = createAuction("name", todayWithTime(), "AUCTION_TYPE")
             val round = addRound(CreateRound("${auction.id.value}"))
             round.addComment("comment-1", UUID_ZERO)
 
@@ -76,7 +78,7 @@ class TransformRoundTests {
                     ApiRoundComment(
                         roundComment.id.value.toString(),
                         comment = roundComment.comment,
-                        createAt = with(roundComment.createdAt) { LocalDate(year, monthOfYear, dayOfMonth) },
+                        createAt = roundComment.createdAt.toKotlinxWithZone(),
                         createdBy = roundComment.createdBy.toString()
                     )
                 )
@@ -101,7 +103,7 @@ class TransformRoundTests {
                 it[type] = "AUCTION_TYPE"
             }
 
-            val auction = createAuction("name", LocalDate(0, 1, 1), "AUCTION_TYPE")
+            val auction = createAuction("name", todayWithTime(), "AUCTION_TYPE")
             val round = addRound(CreateRound("${auction.id.value}"))
             round.addComment("comment-1", UUID_ZERO)
 
@@ -112,7 +114,7 @@ class TransformRoundTests {
                     ApiRoundComment(
                         roundComment.id.value.toString(),
                         comment = roundComment.comment,
-                        createAt = with(roundComment.createdAt) { LocalDate(year, monthOfYear, dayOfMonth) },
+                        createAt = roundComment.createdAt.toKotlinxWithZone(),
                         createdBy = roundComment.createdBy.toString()
                     )
                 )

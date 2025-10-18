@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.module.bid.data.api
 
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
 typealias ApiRoundComments = RoundComments
@@ -16,7 +17,7 @@ data class RoundComments(
 data class RoundComment(
     val id: String,
     val comment: String,
-    val createAt: LocalDate,
+    val createAt: LocalDateTime,
     val createdBy: String
 )
 

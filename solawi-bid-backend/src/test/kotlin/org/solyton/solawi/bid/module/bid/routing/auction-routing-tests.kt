@@ -9,6 +9,7 @@ import io.ktor.server.testing.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
+import org.evoleq.kotlinx.date.todayWithTime
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultListSerializer
 import org.evoleq.ktorx.result.ResultSerializer
@@ -40,7 +41,7 @@ class AuctionRoutingTests {
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
-                        CreateAuction("test-name", LocalDate(1, 1, 1))
+                        CreateAuction("test-name", todayWithTime())
                     )
                 )
             }
@@ -68,7 +69,7 @@ class AuctionRoutingTests {
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
-                        CreateAuction("test-name", LocalDate(1, 1, 1))
+                        CreateAuction("test-name", todayWithTime())
                     )
                 )
             }
@@ -118,7 +119,7 @@ class AuctionRoutingTests {
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
-                        CreateAuction("test-name", LocalDate(1, 1, 1))
+                        CreateAuction("test-name", todayWithTime())
                     )
                 )
             }.bodyAsText()
@@ -132,7 +133,7 @@ class AuctionRoutingTests {
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
-                        CreateAuction("test-name-1", LocalDate(1, 1, 1))
+                        CreateAuction("test-name-1", todayWithTime())
                     )
                 )
             }.bodyAsText()

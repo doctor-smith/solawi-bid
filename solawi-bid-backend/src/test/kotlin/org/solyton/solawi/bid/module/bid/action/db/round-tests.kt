@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.bid.action.db
 
 import kotlinx.datetime.LocalDate
 import org.evoleq.exposedx.test.runSimpleH2Test
+import org.evoleq.kotlinx.date.todayWithTime
 import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.insert
 import org.junit.jupiter.api.Test
@@ -28,7 +29,7 @@ class RoundTests {
             it[type] = "AUCTION_TYPE"
         }
 
-        val auction = createAuction("name", LocalDate(0,1,1), "AUCTION_TYPE")
+        val auction = createAuction("name", todayWithTime(), "AUCTION_TYPE")
         val round = addRound(CreateRound("${auction.id.value}"))
         round.addComment("comment-1", UUID_ZERO)
         assertEquals(1, round.comments.count())

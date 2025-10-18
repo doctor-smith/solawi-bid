@@ -1,6 +1,6 @@
 package org.solyton.solawi.bid.module.bid.data
 
-import kotlinx.datetime.LocalDate
+import org.evoleq.exposedx.joda.toKotlinxWithZone
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.schema.AcceptedRound
 import org.solyton.solawi.bid.module.bid.schema.AcceptedRoundEntity
@@ -17,7 +17,7 @@ fun List<AuctionEntity>.toApiType(): List<Auction> = map {
 fun AuctionEntity.toApiType(): Auction = Auction(
     id = id.value.toString(),
     name = name,
-    date = LocalDate(date.year, date.monthOfYear, date.dayOfMonth),
+    date = date.toKotlinxWithZone(),
     rounds = try{ rounds.map {
         it.toApiType()
     }} catch(e:Exception){
@@ -50,7 +50,7 @@ fun RoundCommentEntity.toApiType(): ApiRoundComment = ApiRoundComment(
     id = id.value.toString(),
     comment = comment,
     createdBy = createdBy.toString(),
-    createAt = LocalDate(createdAt.year, createdAt.monthOfYear, createdAt.dayOfMonth)
+    createAt = createdAt.toKotlinxWithZone()
 )
 
 @Suppress("UNUSED_PARAMETER")

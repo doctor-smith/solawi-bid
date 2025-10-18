@@ -1,7 +1,8 @@
 package org.solyton.solawi.bid.module.bid.action.db
 
 import io.ktor.util.*
-import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import org.evoleq.exposedx.joda.toJoda
 import org.evoleq.exposedx.transaction.resultTransaction
 import org.evoleq.ktorx.DbAction
 import org.evoleq.ktorx.KlAction
@@ -33,13 +34,13 @@ val CreateAuction = KlAction<Result<CreateAuction>, Result<ApiAuction>> {
     }
 }
 
-fun Transaction.createAuction(name: String, date: LocalDate, type: String = "SOLAWI_TUEBINGEN"): AuctionEntity {
+fun Transaction.createAuction(name: String, date: LocalDateTime, type: String = "SOLAWI_TUEBINGEN"): AuctionEntity {
     val auctionType = AuctionType.find { AuctionTypes.type eq type.toUpperCasePreservingASCIIRules() }.firstOrNull()
         ?: throw BidRoundException.NoSuchAuctionType(type)
 
     return AuctionEntity.new {
         this.name = name
-        this.date = DateTime().withDate(date.year, date.monthNumber, date.dayOfMonth)
+        this.date = date.toJoda()
         this.type = auctionType
         createdBy = UUID_ZERO
     }
