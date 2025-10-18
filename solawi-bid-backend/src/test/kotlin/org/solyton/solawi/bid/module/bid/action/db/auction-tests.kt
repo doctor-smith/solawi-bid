@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.bid.action.db
 
 import kotlinx.datetime.LocalDate
 import org.evoleq.exposedx.test.runSimpleH2Test
+import org.evoleq.kotlinx.date.todayWithTime
 import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.selectAll
 import org.joda.time.DateTime
@@ -45,7 +46,7 @@ class AuctionTests {
         AuctionType.new {
             type = "SOLAWI_TUEBINGEN"
         }
-        val auction = createAuction(name,LocalDate(0,1,1)).toApiType()
+        val auction = createAuction(name,todayWithTime()).toApiType()
         assertEquals(name, auction.name)
         val round = addRound(
             CreateRound(
@@ -83,7 +84,7 @@ class AuctionTests {
         AuctionType.new {
             type = "SOLAWI_TUEBINGEN"
         }
-        val auction = createAuction(name,LocalDate(0,1,1)).toApiType()
+        val auction = createAuction(name,todayWithTime()).toApiType()
 
         val bidders = listOf<NewBidder>(
             NewBidder("name1",1,1),
@@ -127,10 +128,10 @@ class AuctionTests {
         AuctionType.new {
             type = "SOLAWI_TUEBINGEN"
         }
-        val auction1 = createAuction(name, LocalDate(0, 1, 1))
+        val auction1 = createAuction(name, todayWithTime())
         assertEquals(name, auction1.name)
 
-        val auction2 = createAuction(name, LocalDate(0, 1, 1))
+        val auction2 = createAuction(name, todayWithTime())
         assertEquals(name, auction2.name)
 
 

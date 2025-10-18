@@ -9,6 +9,7 @@ import io.ktor.server.testing.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
+import org.evoleq.kotlinx.date.todayWithTime
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
 import org.junit.jupiter.api.Test
@@ -40,7 +41,7 @@ class RoundRoutingTests {
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
-                        CreateAuction("test-name", LocalDate(1, 1, 1))
+                        CreateAuction("test-name", todayWithTime())
                     )
                 )
             }.bodyAsText()
@@ -102,7 +103,7 @@ class RoundRoutingTests {
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
-                        CreateAuction("test-name", LocalDate(1, 1, 1))
+                        CreateAuction("test-name", todayWithTime())
                     )
                 )
             }.bodyAsText()

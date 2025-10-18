@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.application.ui.page.auction.action
 
 import kotlinx.datetime.LocalDate
+import org.evoleq.kotlinx.date.todayWithTime
 import org.evoleq.ktorx.result.on
 import org.evoleq.math.write
 import org.evoleq.optics.lens.Lens
@@ -28,7 +29,7 @@ class AuctionTests {
         val name = "name"
         installSerializers()
         val auctionLens = Lens<BidApplication, Auction>(
-            get = {Auction(DEFAULT_AUCTION_ID,name, LocalDate(0,0,0))},
+            get = {Auction(DEFAULT_AUCTION_ID,name, todayWithTime())},
             set = {{it}}
         )
 
@@ -37,11 +38,12 @@ class AuctionTests {
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test fun readAuctionsTest() = runTest{
+        val date = todayWithTime()
         val name = "name"
         installSerializers()
         val action = readAuctions()
 
-        val apiAuction = ApiAuction("id", name, LocalDate(1,1,1))
+        val apiAuction = ApiAuction("id", name, date)
         val apiAuctions = ApiAuctions(listOf(apiAuction))
 
         val application = BidApplication(Environment(),ActionDispatcher{}, )

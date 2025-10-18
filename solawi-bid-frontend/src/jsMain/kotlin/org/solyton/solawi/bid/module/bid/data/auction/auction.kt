@@ -12,7 +12,7 @@ import org.evoleq.optics.ReadWrite
 import org.evoleq.optics.lens.Lens
 import org.solyton.solawi.bid.module.bid.data.bidder.BidderInfo
 import org.solyton.solawi.bid.module.bid.data.bidround.Round
-import kotlinx.datetime.LocalDate as Date
+import kotlinx.datetime.LocalDateTime as Date
 
 /**
  * Generator class.

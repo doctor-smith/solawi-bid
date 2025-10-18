@@ -71,10 +71,11 @@ kotlin{
                 implementation(kotlin("test")) // Adds kotlin.test for multiplatform
             }
         }
-        /*
+
         val jvmMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") // Specific for JVM
+                implementation(libs.exposed.joda.time)
             }
         }
         val jvmTest by getting {
@@ -83,7 +84,6 @@ kotlin{
             }
         }
 
-         */
         val jsMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-html-js:0.8.0") // Example for JS

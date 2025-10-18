@@ -10,6 +10,7 @@ import org.evoleq.compose.modal.ModalData
 import org.evoleq.compose.modal.ModalType
 import org.evoleq.compose.modal.Modals
 import org.evoleq.compose.style.data.device.DeviceType
+import org.evoleq.kotlinx.date.toDateTime
 import org.evoleq.language.Lang
 import org.evoleq.language.Locale
 import org.evoleq.language.component
@@ -80,7 +81,7 @@ fun UpdateAuctionModal(
                 style { dateInputDesktopStyle() }
                 onInput {
                     dateString = it.value
-                    (auction * date).write(it.value.parse(Locale.Iso))
+                    (auction * date).write(it.value.parse(Locale.Iso).toDateTime())
                 }
             }
         }

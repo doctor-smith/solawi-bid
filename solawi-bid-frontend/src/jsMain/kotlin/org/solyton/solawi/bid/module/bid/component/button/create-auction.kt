@@ -5,8 +5,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
-import org.evoleq.compose.date.today
+import org.evoleq.kotlinx.date.today
 import org.evoleq.device.data.mediaType
+import org.evoleq.kotlinx.date.todayWithTime
 import org.evoleq.language.Lang
 import org.evoleq.language.component
 import org.evoleq.language.tooltip
@@ -47,7 +48,7 @@ fun CreateAuctionButton(
     dataId = "auctions-page.create-auction-button"
 ){
     // Add auction with dummy id to the store
-    ((storage * auctions).add(Auction(auctionId = DEFAULT_AUCTION_ID, "", today())))
+    ((storage * auctions).add(Auction(auctionId = DEFAULT_AUCTION_ID, "", todayWithTime())))
 
     // Show the auction modal
     (storage * modals).showAuctionModal(

@@ -10,6 +10,7 @@ import io.ktor.server.testing.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
+import org.evoleq.kotlinx.date.todayWithTime
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.ktorx.result.map
@@ -244,7 +245,7 @@ suspend fun HttpClient.createAuction(name: String): Result<ApiAuction> {
         setBody(
             Json.encodeToString(
                 CreateAuction.serializer(),
-                CreateAuction(name, LocalDate(1, 1, 1))
+                CreateAuction(name, todayWithTime())
             )
         )
     }.bodyAsText()

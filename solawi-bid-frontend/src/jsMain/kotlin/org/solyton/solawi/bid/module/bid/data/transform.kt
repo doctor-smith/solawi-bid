@@ -1,8 +1,6 @@
 package org.solyton.solawi.bid.module.bid.data
 
-import kotlinx.datetime.LocalDate
 import org.solyton.solawi.bid.module.bid.data.api.*
-import org.solyton.solawi.bid.module.bid.data.api.ApiRoundComment
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.auction.AuctionDetails
 import org.solyton.solawi.bid.module.bid.data.bidder.BidderInfo
@@ -10,11 +8,10 @@ import org.solyton.solawi.bid.module.bid.data.bidround.BidResult
 import org.solyton.solawi.bid.module.bid.data.bidround.BidRound
 import org.solyton.solawi.bid.module.bid.data.bidround.BidRoundResults
 import org.solyton.solawi.bid.module.bid.data.bidround.Round
-
-import org.solyton.solawi.bid.module.bid.data.bidround.RoundComment as DomainRoundComment
 import org.solyton.solawi.bid.module.bid.data.evaluation.BidRoundEvaluation
 import org.solyton.solawi.bid.module.bid.data.evaluation.BidRoundPreEvaluation
 import org.solyton.solawi.bid.module.bid.data.evaluation.WeightedBid
+import org.solyton.solawi.bid.module.bid.data.bidround.RoundComment as DomainRoundComment
 
 
 fun ApiAuctions.toDomainType(): List<Auction> = list.map { auction -> auction.toDomainType() }
@@ -54,7 +51,7 @@ fun ApiBidRound.toDomainType(showSuccessMessage: Boolean = false): BidRound = Bi
 fun ApiAuction.toDomainType(): Auction = Auction(
     auctionId = id,
     name = name,
-    date = with(date) { LocalDate(year, monthNumber, dayOfMonth) },
+    date = date,
     rounds = rounds.map { round -> round.toDomainType() },
     bidderInfo = bidderInfo.map { info ->
         BidderInfo(
