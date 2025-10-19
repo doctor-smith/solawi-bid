@@ -61,7 +61,7 @@ fun <BidEnv> Routing.auction(
                 ReceiveContextual<ConfigureAuction>() * ConfigureAuction * Respond<Auction>{ transform() } runOn Base(call, environment)
             }
             delete("delete") {
-                (Receive<DeleteAuctions>() * DeleteAuctions * ReadAuctions * Respond<Auctions>{ transform() }) runOn Base(call, environment)
+                (ReceiveContextual<DeleteAuctions>() * DeleteAuctions * ReadAuctions * Respond<Auctions>{ transform() }) runOn Base(call, environment)
             }
 
             get("results") {
