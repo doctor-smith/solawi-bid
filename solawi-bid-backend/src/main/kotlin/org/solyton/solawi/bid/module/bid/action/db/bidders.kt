@@ -194,10 +194,10 @@ fun Transaction.addBidders(auctionId: UUID, bidders: List<NewBidder>): AuctionEn
 
 @MathDsl
 @Suppress("FunctionName")
-val SearchBidderMails: KlAction<Result<SearchBidderData>, Result<BidderMails>> = KlAction{bidders: Result<SearchBidderData> -> DbAction {
+val SearchBidderMails: KlAction<Result<Contextual<SearchBidderData>>, Result<BidderMails>> = KlAction{bidders: Result<Contextual<SearchBidderData>> -> DbAction {
     database: Database -> bidders bindSuspend  {
         resultTransaction(database) {
-            BidderMails(searchBidderMails(it))
+            BidderMails(searchBidderMails(it.data))
         }
     } x database
 }}
