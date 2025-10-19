@@ -55,7 +55,7 @@ fun <BidEnv> Routing.auction(
                 ReceiveContextual<CreateAuction>() * CreateAuction * Respond<Auction>{ transform() } runOn Base(call, environment)
             }
             patch("update") {
-                (Receive<UpdateAuctions>() * UpdateAuctions * ReadAuctions * Respond<Auctions>{ transform() }) runOn Base(call, environment)
+                (ReceiveContextual<UpdateAuctions>() * UpdateAuctions * ReadAuctions * Respond<Auctions>{ transform() }) runOn Base(call, environment)
             }
             patch("configure") {
                 Receive<ConfigureAuction>() * ConfigureAuction * Respond<Auction>{ transform() } runOn Base(call, environment)
