@@ -105,7 +105,7 @@ fun <BidEnv> Routing.round(
             }
 
             patch("evaluate") {
-                Receive<EvaluateBidRound>() * EvaluateBidRound * Respond{ transform() } runOn Base(call, environment)
+                ReceiveContextual<EvaluateBidRound>() * EvaluateBidRound * Respond{ transform() } runOn Base(call, environment)
             }
 
             patch("pre-evaluate") {
