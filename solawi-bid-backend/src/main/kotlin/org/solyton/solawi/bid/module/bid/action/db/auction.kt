@@ -141,11 +141,11 @@ fun Transaction.updateAuctions(auctions: List<ApiAuction>) {
 }
 
 @MathDsl
-val ConfigureAuction = KlAction<Result<ConfigureAuction>, Result<ApiAuction>> {
+val ConfigureAuction = KlAction<Result< Contextual<ConfigureAuction>>, Result<ApiAuction>> {
     auction -> DbAction {
         database -> auction bindSuspend {
-            data -> resultTransaction(database) {
-                configureAuction(data)
+            contextual -> resultTransaction(database) {
+                configureAuction(contextual.data)
             }
         }  x database
     }
