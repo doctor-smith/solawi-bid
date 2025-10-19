@@ -15,6 +15,7 @@ import org.evoleq.ktorx.result.ResultSerializer
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
 import org.solyton.solawi.bid.module.bid.data.api.*
+import org.solyton.solawi.bid.module.testFramework.getTestToken
 import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -32,9 +33,15 @@ class BidderTests {
 
             }
             application { }
+
+            // get token
+            val token = client.getTestToken("user@solyton.org")
+
             // create Auction
             val auctionText = client.post("/auction/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(HttpHeaders.Authorization, "Bearer $token")
+
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
@@ -53,6 +60,7 @@ class BidderTests {
             )
             val importBiddersResponse = client.post("/auction/bidder/import") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(HttpHeaders.Authorization, "Bearer $token")
                 setBody(
                     Json.encodeToString(
                         ImportBidders.serializer(),
@@ -83,9 +91,14 @@ class BidderTests {
 
             }
             application { }
+
+            // get token
+            val token = client.getTestToken("user@solyton.org")
+
             // create Auction
             val addBiddersText = client.post("/bidders/add") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(HttpHeaders.Authorization, "Bearer $token")
                 setBody(
                     Json.encodeToString(
                         AddBidders.serializer(),
@@ -123,9 +136,14 @@ class BidderTests {
 
             }
             application { }
+
+            // get token
+            val token = client.getTestToken("user@solyton.org")
+
             // create Auction
             val addBiddersText = client.post("/bidders/add") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(HttpHeaders.Authorization, "Bearer $token")
                 setBody(
                     Json.encodeToString(
                         AddBidders.serializer(),
@@ -153,6 +171,7 @@ class BidderTests {
 
             val searchBidderText = client.patch("/bidders/search") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(HttpHeaders.Authorization, "Bearer $token")
                 setBody(
                     Json.encodeToString(
                         SearchBidderData.serializer(),
