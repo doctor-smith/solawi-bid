@@ -64,11 +64,8 @@ fun <BidEnv> Routing.auction(
                 (ReceiveContextual<DeleteAuctions>() * DeleteAuctions * ReadAuctions * Respond<Auctions>{ transform() }) runOn Base(call, environment)
             }
 
-            get("results") {
-
-            }
             patch("accept-round") {
-                (Receive<AcceptRound>()) * AcceptRound * Respond<AcceptedRound>{ transform() } runOn Base(call, environment)
+                (ReceiveContextual<AcceptRound>()) * AcceptRound * Respond<AcceptedRound>{ transform() } runOn Base(call, environment)
             }
             get("all"){
                 (Receive(GetAuctions) * ReadAuctions * Respond<Auctions>{ transform() }) runOn Base(call, environment)
