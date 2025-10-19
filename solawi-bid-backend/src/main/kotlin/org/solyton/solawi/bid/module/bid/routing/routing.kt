@@ -109,7 +109,7 @@ fun <BidEnv> Routing.round(
             }
 
             patch("pre-evaluate") {
-                Receive<PreEvaluateBidRound>() * PreEvaluateBidRound * Respond{ transform() } runOn Base(call, environment)
+                ReceiveContextual<PreEvaluateBidRound>() * PreEvaluateBidRound * Respond{ transform() } runOn Base(call, environment)
             }
 
             post("add-comment") {
@@ -127,7 +127,7 @@ fun <BidEnv> Routing.bidders(
         val transform = environment.transformException
         route("bidders") {
             patch("search") {
-                Receive<SearchBidderData>() * SearchBidderMails * Respond<BidderMails>{ transform() } runOn Base(call, environment)
+                ReceiveContextual<SearchBidderData>() * SearchBidderMails * Respond<BidderMails>{ transform() } runOn Base(call, environment)
             }
             post("add") {
                 Receive<AddBidders>() * AddBidders * Respond<Unit>{ transform() } runOn Base(call, environment)

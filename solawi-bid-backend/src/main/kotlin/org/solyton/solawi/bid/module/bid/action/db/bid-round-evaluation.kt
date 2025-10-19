@@ -44,10 +44,13 @@ val EvaluateBidRound = KlAction<Result<Contextual<EvaluateBidRound>>, Result<Bid
 }
 
 @MathDsl
-val PreEvaluateBidRound = KlAction<Result<PreEvaluateBidRound>, Result<BidRoundPreEvaluation>> {
+val PreEvaluateBidRound = KlAction<Result<Contextual<PreEvaluateBidRound>>, Result<BidRoundPreEvaluation>> {
     roundData -> DbAction {
-        database -> coroutineScope { roundData bindSuspend {data -> resultTransaction(database) {
-            preEvaluateBidRound(UUID.fromString(data.auctionId),UUID.fromString(data.roundId))
+        database -> coroutineScope { roundData bindSuspend {contextual -> resultTransaction(database) {
+            preEvaluateBidRound(
+                UUID.fromString(contextual.data.auctionId),
+                UUID.fromString(contextual.data.roundId)
+            )
         } } } x database
     }
 }
