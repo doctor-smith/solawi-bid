@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.bid.action.db
 
 import kotlinx.coroutines.coroutineScope
 import org.evoleq.exposedx.transaction.resultTransaction
+import org.evoleq.ktorx.Contextual
 import org.evoleq.ktorx.DbAction
 import org.evoleq.ktorx.KlAction
 import org.evoleq.ktorx.result.Result
@@ -19,10 +20,13 @@ import org.solyton.solawi.bid.module.bid.schema.BidderDetails
 import java.util.*
 
 @MathDsl
-val ExportResults = KlAction<Result<ExportBidRound>, Result<BidRoundResults>> {
+val ExportResults = KlAction<Result<Contextual<ExportBidRound>>, Result<BidRoundResults>> {
     roundData -> DbAction {
-        database -> coroutineScope { roundData bindSuspend {data -> resultTransaction(database) {
-            getResults(UUID.fromString(data.auctionId),UUID.fromString(data.roundId))
+        database -> coroutineScope { roundData bindSuspend {contextual -> resultTransaction(database) {
+            getResults(
+                UUID.fromString(contextual.data.auctionId),
+                UUID.fromString(contextual.data.roundId)
+            )
         } } } x database
     }
 }

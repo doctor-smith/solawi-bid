@@ -101,7 +101,7 @@ fun <BidEnv> Routing.round(
             }
 
             patch("export-results") {
-                Receive<ExportBidRound>() * ExportResults * Respond{ transform() } runOn Base(call, environment)
+                ReceiveContextual<ExportBidRound>() * ExportResults * Respond{ transform() } runOn Base(call, environment)
             }
 
             patch("evaluate") {
