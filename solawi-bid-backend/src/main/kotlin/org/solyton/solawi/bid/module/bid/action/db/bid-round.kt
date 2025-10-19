@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.bid.action.db
 
 import kotlinx.coroutines.coroutineScope
 import org.evoleq.exposedx.transaction.resultTransaction
+import org.evoleq.ktorx.Contextual
 import org.evoleq.ktorx.DbAction
 import org.evoleq.ktorx.KlAction
 import org.evoleq.ktorx.result.Result
@@ -80,10 +81,10 @@ fun Transaction.changeRoundState(newState: ChangeRoundState): org.solyton.solawi
 // AcceptRound
 
 @MathDsl
-val AcceptRound = KlAction<Result<AcceptRound>, Result<ApiAcceptedRound>> {
+val AcceptRound = KlAction<Result<Contextual<AcceptRound>>, Result<ApiAcceptedRound>> {
     roundState -> DbAction {
-        database -> coroutineScope { roundState bindSuspend {data -> resultTransaction(database) {
-            acceptRound(data).toApiType()
+        database -> coroutineScope { roundState bindSuspend {contextual -> resultTransaction(database) {
+            acceptRound(contextual.data).toApiType()
         } } } x database
     }
 }
