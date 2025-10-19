@@ -32,10 +32,13 @@ val ExportResults = KlAction<Result<Contextual<ExportBidRound>>, Result<BidRound
 }
 
 @MathDsl
-val EvaluateBidRound = KlAction<Result<EvaluateBidRound>, Result<BidRoundEvaluation>> {
+val EvaluateBidRound = KlAction<Result<Contextual<EvaluateBidRound>>, Result<BidRoundEvaluation>> {
     roundData -> DbAction {
-        database -> coroutineScope { roundData bindSuspend {data -> resultTransaction(database) {
-            evaluateBidRound(UUID.fromString(data.auctionId),UUID.fromString(data.roundId))
+        database -> coroutineScope { roundData bindSuspend {contextual -> resultTransaction(database) {
+            evaluateBidRound(
+                UUID.fromString(contextual.data.auctionId),
+                UUID.fromString(contextual.data.roundId)
+            )
         } } } x database
     }
 }
