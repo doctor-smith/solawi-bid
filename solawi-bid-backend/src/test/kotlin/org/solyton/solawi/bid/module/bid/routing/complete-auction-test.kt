@@ -8,7 +8,6 @@ import io.ktor.http.*
 import io.ktor.server.config.*
 import io.ktor.server.testing.*
 import kotlinx.coroutines.runBlocking
-import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
 import org.evoleq.kotlinx.date.todayWithTime
 import org.evoleq.ktorx.result.Result
@@ -16,8 +15,8 @@ import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.ktorx.result.map
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
-import org.solyton.solawi.bid.module.bid.action.db.AcceptRound
 import org.solyton.solawi.bid.module.bid.data.api.*
+import org.solyton.solawi.bid.module.testFramework.getTestToken
 import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -38,7 +37,10 @@ class CompleteAuctionTest {
 
             }
 
-            val auctionResult = client.createAuction("test-auction")
+            // get token
+            val token = client.getTestToken("user@solyton.org")
+
+            val auctionResult = client.createAuction("test-auction", token)
             assertIs<Result.Success<ApiAuction>>(auctionResult)
             val auction = auctionResult.data
             val auctionId = auction.id
@@ -51,11 +53,13 @@ class CompleteAuctionTest {
                 20.0
             )
             val configuredAuction = client.configureAuction(ConfigureAuction(
-                auctionId,
-                auction.name,
-                auction.date,
-                auctionDetails
-            ))
+                    auctionId,
+                    auction.name,
+                    auction.date,
+                    auctionDetails
+                ),
+                token
+            )
             assertIs<Result.Success<ApiAuction>>(configuredAuction)
             // import bidders
             val importBidders = ImportBidders(
@@ -70,18 +74,18 @@ class CompleteAuctionTest {
 
                 )
             )
-            val auctionWithBiddersResult = client.importBidders(importBidders)
+            val auctionWithBiddersResult = client.importBidders(importBidders, token )
             assertIs<Result.Success<ApiAuction>>(auctionWithBiddersResult)
 
             // create round
-            val round1Result = client.createRound(auctionId)
+            val round1Result = client.createRound(auctionId,token )
             assertIs<Result.Success<ApiRound>>(round1Result)
 
             val round1 = round1Result.data
             val link1 = round1.link
 
             // start round
-            val startedRound1 = client.changeRoundState(ChangeRoundState(round1.id, RoundState.Started.toString()))
+            val startedRound1 = client.changeRoundState(ChangeRoundState(round1.id, RoundState.Started.toString()), token)
             assertIs<Result.Success<ApiRound>>(startedRound1)
 
             // bid
@@ -93,11 +97,11 @@ class CompleteAuctionTest {
 
 
             // stop round
-            val stoppedRound1 = client.changeRoundState(ChangeRoundState(round1.id, RoundState.Stopped.toString()))
+            val stoppedRound1 = client.changeRoundState(ChangeRoundState(round1.id, RoundState.Stopped.toString()), token)
             assertIs<Result.Success<ApiAuction>>(stoppedRound1)
 
             // check results
-            val results1Result = client.exportRoundResults(ExportBidRound(round1.id, auctionId))
+            val results1Result = client.exportRoundResults(ExportBidRound(round1.id, auctionId), token)
             assertIs<Result.Success<ApiBidRoundResults>>(results1Result)
             //val results1 = results1Result.data
 
@@ -129,26 +133,26 @@ class CompleteAuctionTest {
                 )
             )
 
-            val evaluation1Result = client.evaluateRound(EvaluateBidRound(auctionId,round1.id))
+            val evaluation1Result = client.evaluateRound(EvaluateBidRound(auctionId,round1.id), token)
             assertIs<Result.Success<ApiBidRoundEvaluation>>(evaluation1Result)
             val evaluation1 = evaluation1Result.data
             assertEquals(expectedEvaluation1, evaluation1)
 
             // evaluated round
-            val evaluatedRound1 = client.changeRoundState(ChangeRoundState(round1.id, RoundState.Evaluated.toString()))
+            val evaluatedRound1 = client.changeRoundState(ChangeRoundState(round1.id, RoundState.Evaluated.toString()), token)
             assertIs<Result.Success<ApiAuction>>(evaluatedRound1)
 
             // close round
-            val closedRound1 = client.changeRoundState(ChangeRoundState(round1.id, RoundState.Closed.toString()))
+            val closedRound1 = client.changeRoundState(ChangeRoundState(round1.id, RoundState.Closed.toString()), token)
             assertIs<Result.Success<ApiAuction>>(closedRound1)
 
             // freeze round
-            val frozenRound1 = client.changeRoundState(ChangeRoundState(round1.id, RoundState.Frozen.toString()))
+            val frozenRound1 = client.changeRoundState(ChangeRoundState(round1.id, RoundState.Frozen.toString()), token)
             assertIs<Result.Success<ApiAuction>>(frozenRound1)
 
             // assert that no round has been accepted
             // Check auction
-            val acceptedAuction1 = client.getAuctionById(auctionId)
+            val acceptedAuction1 = client.getAuctionById(auctionId, token)
             assertIs<Result.Success<ApiAuction>>(acceptedAuction1)
 
             assertEquals(null, acceptedAuction1.data.acceptedRoundId)
@@ -156,14 +160,14 @@ class CompleteAuctionTest {
 
 
             // create round 2
-            val round2Result = client.createRound(auctionId)
+            val round2Result = client.createRound(auctionId, token)
             assertIs<Result.Success<ApiRound>>(round2Result)
 
             val round2 = round2Result.data
             val link2 = round2.link
 
             // start round
-            val startedRound2 = client.changeRoundState(ChangeRoundState(round2.id, RoundState.Started.toString()))
+            val startedRound2 = client.changeRoundState(ChangeRoundState(round2.id, RoundState.Started.toString()), token)
             assertIs<Result.Success<ApiRound>>(startedRound2)
 
             // bid
@@ -172,7 +176,7 @@ class CompleteAuctionTest {
 
 
             // check results
-            val results2Result = client.exportRoundResults(ExportBidRound(round2.id, auctionId))
+            val results2Result = client.exportRoundResults(ExportBidRound(round2.id, auctionId), token)
             assertIs<Result.Success<ApiBidRoundResults>>(results2Result)
             //val results1 = results1Result.data
 
@@ -188,7 +192,7 @@ class CompleteAuctionTest {
             assertEquals(expected2, bidResults2)
 
             // stop round
-            val stoppedRound2 = client.changeRoundState(ChangeRoundState(round2.id, RoundState.Stopped.toString()))
+            val stoppedRound2 = client.changeRoundState(ChangeRoundState(round2.id, RoundState.Stopped.toString()), token)
             assertIs<Result.Success<ApiAuction>>(stoppedRound2)
 
             // check evaluation
@@ -206,30 +210,30 @@ class CompleteAuctionTest {
                 )
             )
 
-            val evaluation2Result = client.evaluateRound(EvaluateBidRound(auctionId,round2.id))
+            val evaluation2Result = client.evaluateRound(EvaluateBidRound(auctionId,round2.id), token)
             assertIs<Result.Success<ApiBidRoundEvaluation>>(evaluation2Result)
             val evaluation2 = evaluation2Result.data
             assertEquals(expectedEvaluation2, evaluation2)
 
             // evaluated round
-            val evaluatedRound2 = client.changeRoundState(ChangeRoundState(round2.id, RoundState.Evaluated.toString()))
+            val evaluatedRound2 = client.changeRoundState(ChangeRoundState(round2.id, RoundState.Evaluated.toString()), token)
             assertIs<Result.Success<ApiAuction>>(evaluatedRound2)
 
 
             // close round
-            val closedRound2 = client.changeRoundState(ChangeRoundState(round2.id, RoundState.Closed.toString()))
+            val closedRound2 = client.changeRoundState(ChangeRoundState(round2.id, RoundState.Closed.toString()), token)
             assertIs<Result.Success<ApiAuction>>(closedRound2)
 
             // freeze round
-            val frozenRound2 = client.changeRoundState(ChangeRoundState(round2.id, RoundState.Frozen.toString()))
+            val frozenRound2 = client.changeRoundState(ChangeRoundState(round2.id, RoundState.Frozen.toString()), token)
             assertIs<Result.Success<ApiAuction>>(frozenRound2)
 
             // Accept round
-            val acceptedRound = client.acceptRound(ApiAcceptRound(auction.id, round2.id))
+            val acceptedRound = client.acceptRound(ApiAcceptRound(auction.id, round2.id), token)
             assertIs<Result.Success<ApiAcceptedRound>>(acceptedRound)
 
             // Check auction
-            val acceptedAuction2 = client.getAuctionById(auctionId)
+            val acceptedAuction2 = client.getAuctionById(auctionId, token)
             assertIs<Result.Success<ApiAuction>>(acceptedAuction2)
 
             assertEquals(round2.id, acceptedAuction2.data.acceptedRoundId)
@@ -239,9 +243,10 @@ class CompleteAuctionTest {
     }
 }
 
-suspend fun HttpClient.createAuction(name: String): Result<ApiAuction> {
+suspend fun HttpClient.createAuction(name: String, token: String): Result<ApiAuction> {
     val createAuctionText = post("/auction/create") {
         header(HttpHeaders.ContentType, ContentType.Application.Json)
+        header(HttpHeaders.Authorization, "Bearer $token")
         setBody(
             Json.encodeToString(
                 CreateAuction.serializer(),
@@ -256,9 +261,10 @@ suspend fun HttpClient.createAuction(name: String): Result<ApiAuction> {
     return result
 }
 
-suspend fun HttpClient.configureAuction(configureAuction: ConfigureAuction): Result<ApiAuction> {
+suspend fun HttpClient.configureAuction(configureAuction: ConfigureAuction, token: String): Result<ApiAuction> {
     val createAuctionText = patch("/auction/configure") {
         header(HttpHeaders.ContentType, ContentType.Application.Json)
+        header(HttpHeaders.Authorization, "Bearer $token")
         setBody(
             Json.encodeToString(
                 ConfigureAuction.serializer(),
@@ -273,9 +279,10 @@ suspend fun HttpClient.configureAuction(configureAuction: ConfigureAuction): Res
     return result
 }
 
-suspend fun HttpClient.getAuctionById(auctionId: String): Result<ApiAuction> {
+suspend fun HttpClient.getAuctionById(auctionId: String, token: String): Result<ApiAuction> {
     val createAuctionText = get("/auction/all") {
         header(HttpHeaders.ContentType, ContentType.Application.Json)
+        header(HttpHeaders.Authorization, "Bearer $token")
     }.bodyAsText()
     val result = Json.decodeFromString<Result<ApiAuctions>>(
         ResultSerializer(),
@@ -284,9 +291,10 @@ suspend fun HttpClient.getAuctionById(auctionId: String): Result<ApiAuction> {
     return result
 }
 
-suspend fun HttpClient.createRound(auctionId: String): Result<ApiRound> {
+suspend fun HttpClient.createRound(auctionId: String, token: String): Result<ApiRound> {
     val createAuctionText = post("/round/create") {
         header(HttpHeaders.ContentType, ContentType.Application.Json)
+        header(HttpHeaders.Authorization, "Bearer $token")
         setBody(
             Json.encodeToString(
                 CreateRound.serializer(),
@@ -301,9 +309,10 @@ suspend fun HttpClient.createRound(auctionId: String): Result<ApiRound> {
     return result
 }
 
-suspend fun HttpClient.changeRoundState(changeRoundState: ChangeRoundState): Result<ApiRound> {
+suspend fun HttpClient.changeRoundState(changeRoundState: ChangeRoundState, token: String): Result<ApiRound> {
     val createAuctionText = patch("/round/change-state") {
         header(HttpHeaders.ContentType, ContentType.Application.Json)
+        header(HttpHeaders.Authorization, "Bearer $token")
         setBody(
             Json.encodeToString(
                 ChangeRoundState.serializer(),
@@ -318,9 +327,10 @@ suspend fun HttpClient.changeRoundState(changeRoundState: ChangeRoundState): Res
     return result
 }
 
-suspend fun HttpClient.exportRoundResults(exportRound: ExportBidRound): Result<ApiBidRoundResults> {
+suspend fun HttpClient.exportRoundResults(exportRound: ExportBidRound, token: String): Result<ApiBidRoundResults> {
     val createAuctionText = patch("/round/export-results") {
         header(HttpHeaders.ContentType, ContentType.Application.Json)
+        header(HttpHeaders.Authorization, "Bearer $token")
         setBody(
             Json.encodeToString(
                 ExportBidRound.serializer(),
@@ -334,9 +344,10 @@ suspend fun HttpClient.exportRoundResults(exportRound: ExportBidRound): Result<A
     )
     return result
 }
-suspend fun HttpClient.evaluateRound(evaluateRound: EvaluateBidRound): Result<ApiBidRoundEvaluation> {
+suspend fun HttpClient.evaluateRound(evaluateRound: EvaluateBidRound, token: String): Result<ApiBidRoundEvaluation> {
     val createAuctionText = patch("/round/evaluate") {
         header(HttpHeaders.ContentType, ContentType.Application.Json)
+        header(HttpHeaders.Authorization, "Bearer $token")
         setBody(
             Json.encodeToString(
                 EvaluateBidRound.serializer(),
@@ -351,9 +362,10 @@ suspend fun HttpClient.evaluateRound(evaluateRound: EvaluateBidRound): Result<Ap
     return result
 }
 
-suspend fun HttpClient.acceptRound(acceptRound: ApiAcceptRound): Result<ApiAcceptedRound> {
+suspend fun HttpClient.acceptRound(acceptRound: ApiAcceptRound, token: String): Result<ApiAcceptedRound> {
     val createAuctionText = patch("/auction/accept-round") {
         header(HttpHeaders.ContentType, ContentType.Application.Json)
+        header(HttpHeaders.Authorization, "Bearer $token")
         setBody(
             Json.encodeToString(
                 ApiAcceptRound.serializer(),
@@ -368,9 +380,10 @@ suspend fun HttpClient.acceptRound(acceptRound: ApiAcceptRound): Result<ApiAccep
     return result
 }
 
-suspend fun HttpClient.importBidders(importBidders: ImportBidders): Result<ApiAuction> {
+suspend fun HttpClient.importBidders(importBidders: ImportBidders, token: String): Result<ApiAuction> {
     val createAuctionText = post("/auction/bidder/import") {
         header(HttpHeaders.ContentType, ContentType.Application.Json)
+        header(HttpHeaders.Authorization, "Bearer $token")
         setBody(
             Json.encodeToString(
                 ImportBidders.serializer(),
