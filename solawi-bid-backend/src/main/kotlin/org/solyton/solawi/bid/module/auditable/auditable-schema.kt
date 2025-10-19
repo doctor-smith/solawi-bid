@@ -27,7 +27,7 @@ open class AuditableUUIDTable(
 ) : AuditableTable<UUID>(name){
     final override val id: Column<EntityID<UUID>> = uuid(idColumnName).autoGenerate().entityId()
     final override val primaryKey = PrimaryKey(id)
-    override val createdAt: Column<DateTime> = datetime("created_at").default(now())
+    override val createdAt: Column<DateTime> = datetime("created_at").clientDefault{now()}
     override val createdBy: Column<UUID> = uuid("created_by")
     override val modifiedAt: Column<DateTime?> = datetime("modified_at").nullable()
     override val modifiedBy: Column<UUID?> = uuid("modified_by").nullable()
