@@ -2,7 +2,7 @@ package org.solyton.solawi.bid.module.bid.repository
 
 import org.solyton.solawi.bid.module.bid.schema.RoundCommentEntity
 import org.solyton.solawi.bid.module.bid.schema.RoundEntity
-import java.util.UUID
+import java.util.*
 
 fun RoundEntity.addComment(comment: String, creatorId: UUID): RoundEntity {
     val newComment = RoundCommentEntity.new {
