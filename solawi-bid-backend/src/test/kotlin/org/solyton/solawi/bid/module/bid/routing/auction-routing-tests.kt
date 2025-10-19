@@ -24,8 +24,7 @@ import kotlin.test.assertTrue
 
 class AuctionRoutingTests {
 
-    @Api
-    @Test
+    @Api@Test
     fun createAuction() = runBlocking {
         testApplication {
             environment {
@@ -37,8 +36,13 @@ class AuctionRoutingTests {
             application {
 
             }
+            // get token
+            val token = client.getTestToken("user@solyton.org")
+
+            // create auction
             val response = client.post("/auction/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(HttpHeaders.Authorization, "Bearer $token")
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
@@ -52,8 +56,7 @@ class AuctionRoutingTests {
     }
 
 
-    @Api
-    @Test
+    @Api@Test
     fun configureAuction() = runBlocking {
         testApplication {
             environment {
@@ -65,7 +68,12 @@ class AuctionRoutingTests {
             application {
 
             }
+            // get token
+            val token = client.getTestToken("user@solyton.org")
+
+            // create auction
             val response = client.post("/auction/create") {
+                header(HttpHeaders.Authorization, "Bearer $token")
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 setBody(
                     Json.encodeToString(
@@ -81,8 +89,10 @@ class AuctionRoutingTests {
             assertIs<Result.Success<Auction>>(auctionResult)
             val auction = auctionResult.data
 
+            // configure auction
             val configureAuctionResponse = client.patch("/auction/configure") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(HttpHeaders.Authorization, "Bearer $token")
                 setBody(
                     Json.encodeToString(
                         ConfigureAuction.serializer(),
@@ -97,9 +107,9 @@ class AuctionRoutingTests {
                     )
                 )
             }
+
+            // assertions
             assertTrue("Wrong status: ${configureAuctionResponse.status}, expected ${HttpStatusCode.OK}") { configureAuctionResponse.status == HttpStatusCode.OK }
-
-
         }
     }
 
@@ -115,8 +125,13 @@ class AuctionRoutingTests {
             application {
 
             }
+            // get token
+            val token = client.getTestToken("user@solyton.org")
+
+            // create action
             val auctionText = client.post("/auction/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(HttpHeaders.Authorization, "Bearer $token")
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
@@ -128,9 +143,10 @@ class AuctionRoutingTests {
             assertIs<Result.Success<Auction>>(auctionResult)
             val auction = auctionResult.data
 
-
+            // create another auction
             val auction1Text = client.post("/auction/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(HttpHeaders.Authorization, "Bearer $token")
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
@@ -141,8 +157,10 @@ class AuctionRoutingTests {
             val auction1Result = Json.decodeFromString(ResultSerializer, auction1Text)
             assertIs<Result.Success<Auction>>(auction1Result)
 
+            // delete auction
             val response = client.delete("/auction/delete") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(HttpHeaders.Authorization, "Bearer $token")
                 setBody(
                     Json.encodeToString(
                         DeleteAuctions.serializer(),
@@ -150,13 +168,14 @@ class AuctionRoutingTests {
                     )
                 )
             }
+
+            // assertions
             assertEquals(HttpStatusCode.OK, response.status)
             val result = Json.decodeFromString(ResultListSerializer<Auction>(), response.bodyAsText())
             assertIs<Result.Success<Auctions>>(result)
 
             val auctions = result.data
 
-            println(auctions.list.map { it.name })
             assertTrue { auctions.list.isNotEmpty() }
 
             assertTrue { auctions.list.filter { it.name == "test-name-1" }.isNotEmpty() }
