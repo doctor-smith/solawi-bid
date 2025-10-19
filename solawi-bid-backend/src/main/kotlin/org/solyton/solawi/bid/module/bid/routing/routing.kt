@@ -68,7 +68,7 @@ fun <BidEnv> Routing.auction(
                 (ReceiveContextual<AcceptRound>()) * AcceptRound * Respond<AcceptedRound>{ transform() } runOn Base(call, environment)
             }
             get("all"){
-                (Receive(GetAuctions) * ReadAuctions * Respond<Auctions>{ transform() }) runOn Base(call, environment)
+                (ReceiveContextual(GetAuctions) * ReadAllAuctions * Respond<Auctions>{ transform() }) runOn Base(call, environment)
             }
             route("bidder") {
                 post("import") {
