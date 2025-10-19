@@ -47,7 +47,7 @@ fun Transaction.createAuction(name: String, date: LocalDateTime, type: String = 
 }
 
 @MathDsl
-val ReadAuctions = KlAction<Result<GetAuctions>, Result<ApiAuctions>> {
+val ReadAllAuctions = KlAction<Result<Contextual<GetAuctions>>, Result<ApiAuctions>> {
     _ -> DbAction { database ->  resultTransaction(database){
         val auctions = readAuctions().map {
             it.toApiType().copy(
@@ -60,6 +60,22 @@ val ReadAuctions = KlAction<Result<GetAuctions>, Result<ApiAuctions>> {
 
     // TODO(use identifier to return all auction which are accessible as identified person)
     } x database }
+}
+
+@MathDsl
+val ReadAuctions = KlAction<Result<GetAuctions>, Result<ApiAuctions>> {
+    _ -> DbAction { database ->  resultTransaction(database){
+        val auctions = readAuctions().map {
+            it.toApiType().copy(
+                bidderInfo = getBidderDetails(it).map {det  -> det.toBidderInfo()},
+                auctionDetails = getAuctionDetails(it)
+            )
+        }
+        ApiAuctions(auctions)
+
+
+    // TODO(use identifier to return all auction which are accessible as identified person)
+} x database }
 }
 
 fun Transaction.getAuctionDetails(auction: AuctionEntity): AuctionDetails {
