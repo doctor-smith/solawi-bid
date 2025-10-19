@@ -97,7 +97,7 @@ fun <BidEnv> Routing.round(
                 ReceiveContextual<CreateRound>() * CreateRound * Respond{ transform() }runOn Base(call,environment)
             }
             patch("change-state") {
-                Receive<ChangeRoundState>() * ChangeRoundState *  Respond{ transform() } runOn Base(call,environment)
+                ReceiveContextual<ChangeRoundState>() * ChangeRoundState *  Respond{ transform() } runOn Base(call,environment)
             }
 
             patch("export-results") {

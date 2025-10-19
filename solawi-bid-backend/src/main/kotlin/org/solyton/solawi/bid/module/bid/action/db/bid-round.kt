@@ -52,10 +52,10 @@ fun Transaction.addRound(round: CreateRound): org.solyton.solawi.bid.module.bid.
 
 
 @MathDsl
-val ChangeRoundState = KlAction<Result<ChangeRoundState>, Result<Round>> {
+val ChangeRoundState = KlAction<Result<Contextual<ChangeRoundState>>, Result<Round>> {
     roundState -> DbAction {
-        database -> coroutineScope { roundState bindSuspend {state -> resultTransaction(database) {
-            changeRoundState(state).toApiType()
+        database -> coroutineScope { roundState bindSuspend {contextual -> resultTransaction(database) {
+            changeRoundState(contextual.data).toApiType()
         } } } x database
     }
 }
