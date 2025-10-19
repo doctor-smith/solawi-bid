@@ -8,6 +8,8 @@ import org.jetbrains.exposed.sql.jodatime.date
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.auditable.AuditableEntity
 import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
+import org.solyton.solawi.bid.module.permission.schema.ContextEntity
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import java.util.*
 
 typealias AuctionEntity = Auction
@@ -17,6 +19,7 @@ object Auctions: AuditableUUIDTable("auctions") {
     val name = varchar("name", 250)
     val date = date("date")
     val typeId = reference("type_id", AuctionTypes)
+    val contextId = reference("context_id", ContextsTable)
 }
 
 
@@ -30,6 +33,7 @@ class Auction(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
 
     var bidders: SizedIterable<Bidder> by Bidder via AuctionBidders
     val bidRounds: SizedIterable<BidRound> by BidRound referrersOn BidRounds.auction
+    var context by ContextEntity referencedOn Auctions.contextId
 
     override var createdAt: DateTime by Auctions.createdAt
     override var createdBy: UUID by Auctions.createdBy
