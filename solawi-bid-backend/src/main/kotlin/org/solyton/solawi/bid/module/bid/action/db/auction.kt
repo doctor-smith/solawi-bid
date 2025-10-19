@@ -4,6 +4,7 @@ import io.ktor.util.*
 import kotlinx.datetime.LocalDateTime
 import org.evoleq.exposedx.joda.toJoda
 import org.evoleq.exposedx.transaction.resultTransaction
+import org.evoleq.ktorx.Contextual
 import org.evoleq.ktorx.DbAction
 import org.evoleq.ktorx.KlAction
 import org.evoleq.ktorx.result.Result
@@ -25,11 +26,10 @@ import java.util.*
 import org.solyton.solawi.bid.module.bid.data.api.Auctions as ApiAuctions
 
 @MathDsl
-val CreateAuction = KlAction<Result<CreateAuction>, Result<ApiAuction>> {
-    auction: Result<CreateAuction> -> DbAction {
-        database -> auction bindSuspend  { data -> resultTransaction(database) {
-            println("Create auction: ${data.name}")
-            createAuction(data.name, data.date).toApiType()
+val CreateAuction = KlAction<Result<Contextual<CreateAuction>>, Result<ApiAuction>> {
+    auction: Result<Contextual<CreateAuction>> -> DbAction {
+        database -> auction bindSuspend  { contextual -> resultTransaction(database) {
+            createAuction(contextual.data.name, contextual.data.date).toApiType()
         } }  x database
     }
 }

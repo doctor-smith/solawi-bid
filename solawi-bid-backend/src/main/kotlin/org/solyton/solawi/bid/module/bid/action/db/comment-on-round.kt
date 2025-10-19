@@ -16,7 +16,7 @@ import org.solyton.solawi.bid.module.bid.exception.BidRoundException
 import org.solyton.solawi.bid.module.bid.repository.addComment
 import org.solyton.solawi.bid.module.bid.schema.RoundEntity
 import org.solyton.solawi.bid.module.bid.schema.RoundsTable
-import java.util.UUID
+import java.util.*
 
 @MathDsl
 val CommentOnRound = KlAction<Result< Contextual< CommentOnRound>>, Result<RoundComments>> {

@@ -6,7 +6,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.auditable.AuditableEntity
 import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
-import java.util.UUID
+import java.util.*
 
 typealias RoundCommentsTable = RoundComments
 typealias RoundCommentEntity = RoundComment
