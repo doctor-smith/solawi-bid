@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.bid.action.db
 
 import io.ktor.util.*
 import org.evoleq.exposedx.transaction.resultTransaction
+import org.evoleq.ktorx.Contextual
 import org.evoleq.ktorx.DbAction
 import org.evoleq.ktorx.KlAction
 import org.evoleq.ktorx.result.Result
@@ -49,11 +50,11 @@ import kotlin.text.lowercase
 import kotlin.text.trim
 
 @MathDsl
-val ImportBidders = KlAction{bidders: Result<ImportBidders> -> DbAction {
+val ImportBidders = KlAction{bidders: Result<Contextual<ImportBidders>> -> DbAction {
     database: Database -> bidders bindSuspend  {
         resultTransaction(database) {
-            importBidders(auctionId = UUID.fromString(it.auctionId), it.bidders).toApiType().copy(
-                bidderInfo = getBidderDetails(it.bidders).map{det -> det.toBidderInfo()}
+            importBidders(auctionId = UUID.fromString(it.data.auctionId), it.data.bidders).toApiType().copy(
+                bidderInfo = getBidderDetails(it.data.bidders).map{det -> det.toBidderInfo()}
             )
         }
     } x database
