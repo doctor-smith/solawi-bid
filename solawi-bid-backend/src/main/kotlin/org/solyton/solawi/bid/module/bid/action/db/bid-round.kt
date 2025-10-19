@@ -24,10 +24,10 @@ import org.solyton.solawi.bid.module.bid.schema.Rounds
 import java.util.*
 
 @MathDsl
-val CreateRound = KlAction<Result<CreateRound>, Result<Round>> {
+val CreateRound = KlAction<Result<Contextual<CreateRound>>, Result<Round>> {
     round -> DbAction {
-        database -> round bindSuspend  { data -> resultTransaction(database){
-            addRound(data).toApiType()
+        database -> round bindSuspend  { contextual -> resultTransaction(database){
+            addRound(contextual.data).toApiType()
         } } x database
     }
 }
