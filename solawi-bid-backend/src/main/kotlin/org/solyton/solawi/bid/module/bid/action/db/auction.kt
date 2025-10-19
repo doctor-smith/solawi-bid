@@ -124,11 +124,11 @@ fun Transaction.deleteAuctions(auctionIds: List<UUID>) {
 }
 
 @MathDsl
-val UpdateAuctions = KlAction<Result<UpdateAuctions>, Result<GetAuctions>> {
+val UpdateAuctions = KlAction<Result<Contextual<UpdateAuctions>>, Result<GetAuctions>> {
     auctions -> DbAction {
         database -> auctions bindSuspend {
-            data -> resultTransaction(database) {
-                 updateAuctions(data.list )
+            contextual -> resultTransaction(database) {
+                 updateAuctions(contextual.data.list )
             }
         } map { GetAuctions } x database
     }
