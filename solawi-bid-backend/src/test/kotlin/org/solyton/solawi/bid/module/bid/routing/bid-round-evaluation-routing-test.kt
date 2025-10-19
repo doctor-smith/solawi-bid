@@ -11,8 +11,10 @@ import kotlinx.serialization.json.Json
 import org.evoleq.kotlinx.date.todayWithTime
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
+import org.evoleq.uuid.UUID_ZERO
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
+import org.solyton.solawi.bid.application.permission.Header
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.testFramework.getTestToken
 import java.io.File
@@ -40,6 +42,7 @@ class BidRoundEvaluationRoutingTest {
             val auctionText = client.post("/auction/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, "$UUID_ZERO")
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
@@ -55,6 +58,7 @@ class BidRoundEvaluationRoutingTest {
             val configureAuctionResponse = client.patch("/auction/configure") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, "$UUID_ZERO")
                 setBody(
                     Json.encodeToString(
                         ConfigureAuction.serializer(),
@@ -76,6 +80,7 @@ class BidRoundEvaluationRoutingTest {
             val roundResponse = client.post("/round/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, "$UUID_ZERO")
                 setBody(
                     Json.encodeToString(
                         CreateRound.serializer(),
@@ -94,6 +99,7 @@ class BidRoundEvaluationRoutingTest {
             val exportResultsResponse = client.patch("round/export-results") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, "$UUID_ZERO")
                 setBody(
                     Json.encodeToString(
                         EvaluateBidRound.serializer(),
@@ -127,6 +133,7 @@ class BidRoundEvaluationRoutingTest {
             val auctionText = client.post("/auction/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, "$UUID_ZERO")
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
@@ -142,6 +149,7 @@ class BidRoundEvaluationRoutingTest {
             val configureAuctionResponse = client.patch("/auction/configure") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, "$UUID_ZERO")
                 setBody(
                     Json.encodeToString(
                         ConfigureAuction.serializer(),
@@ -163,6 +171,7 @@ class BidRoundEvaluationRoutingTest {
             val roundResponse = client.post("/round/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, "$UUID_ZERO")
                 setBody(
                     Json.encodeToString(
                         CreateRound.serializer(),
@@ -181,6 +190,7 @@ class BidRoundEvaluationRoutingTest {
             val evaluationResponse = client.patch("round/evaluate") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, "$UUID_ZERO")
                 setBody(
                     Json.encodeToString(
                         EvaluateBidRound.serializer(),
@@ -210,6 +220,7 @@ class BidRoundEvaluationRoutingTest {
                 val auctionText = client.post("/auction/create") {
                     header(HttpHeaders.ContentType, ContentType.Application.Json)
                     header(HttpHeaders.Authorization, "Bearer $token")
+                    header(Header.CONTEXT, "$UUID_ZERO")
                     setBody(
                         Json.encodeToString(
                             CreateAuction.serializer(),
@@ -225,6 +236,7 @@ class BidRoundEvaluationRoutingTest {
                 val configureAuctionResponse = client.patch("/auction/configure") {
                     header(HttpHeaders.ContentType, ContentType.Application.Json)
                     header(HttpHeaders.Authorization, "Bearer $token")
+                    header(Header.CONTEXT, "$UUID_ZERO")
                     setBody(
                         Json.encodeToString(
                             ConfigureAuction.serializer(),
@@ -245,6 +257,7 @@ class BidRoundEvaluationRoutingTest {
                 val roundResponse = client.post("/round/create") {
                     header(HttpHeaders.ContentType, ContentType.Application.Json)
                     header(HttpHeaders.Authorization, "Bearer $token")
+                    header(Header.CONTEXT, "$UUID_ZERO")
                     setBody(
                         Json.encodeToString(
                             CreateRound.serializer(),
@@ -263,6 +276,7 @@ class BidRoundEvaluationRoutingTest {
                 val preEvaluationResponse = client.patch("round/pre-evaluate") {
                     header(HttpHeaders.ContentType, ContentType.Application.Json)
                     header(HttpHeaders.Authorization, "Bearer $token")
+                    header(Header.CONTEXT, "$UUID_ZERO")
                     setBody(
                         Json.encodeToString(
                             PreEvaluateBidRound.serializer(),
@@ -294,6 +308,7 @@ class BidRoundEvaluationRoutingTest {
             val auctionText = client.post("/auction/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, "$UUID_ZERO")
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
@@ -309,6 +324,7 @@ class BidRoundEvaluationRoutingTest {
             val configureAuctionResponse = client.patch("/auction/configure") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, "$UUID_ZERO")
                 setBody(
                     Json.encodeToString(
                         ConfigureAuction.serializer(),
@@ -330,6 +346,7 @@ class BidRoundEvaluationRoutingTest {
             val roundResponse = client.post("/round/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, "$UUID_ZERO")
                 setBody(
                     Json.encodeToString(
                         CreateRound.serializer(),
@@ -348,6 +365,7 @@ class BidRoundEvaluationRoutingTest {
             val exportResultsResponse = client.patch("round/export-results") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, "$UUID_ZERO")
                 setBody(
                     Json.encodeToString(
                         EvaluateBidRound.serializer(),
@@ -362,6 +380,7 @@ class BidRoundEvaluationRoutingTest {
             val acceptRoundResultsResponse = client.patch("auction/accept-round") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, "$UUID_ZERO")
                 setBody(
                     Json.encodeToString(
                         AcceptRound.serializer(),

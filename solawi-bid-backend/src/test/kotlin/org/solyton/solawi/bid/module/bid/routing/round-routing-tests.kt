@@ -11,11 +11,13 @@ import kotlinx.serialization.json.Json
 import org.evoleq.kotlinx.date.todayWithTime
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
+import org.evoleq.uuid.UUID_ZERO
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.solyton.solawi.bid.Api
+import org.solyton.solawi.bid.application.permission.Header
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.testFramework.getTestToken
 import java.io.File
@@ -39,10 +41,13 @@ class RoundRoutingTests {
 
             // get token
             val token = client.getTestToken("user@solyton.org")
+            // get context
+            val context = "$UUID_ZERO"
 
             val auctionText = client.post("/auction/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, context)
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
@@ -57,6 +62,7 @@ class RoundRoutingTests {
             val roundResponse  = client.post("/round/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, context)
                 setBody(
                     Json.encodeToString(
                         CreateRound.serializer(),
@@ -107,10 +113,13 @@ class RoundRoutingTests {
 
             // get token
             val token = client.getTestToken("user@solyton.org")
+            // get context
+            val context = "$UUID_ZERO"
 
             val auctionText = client.post("/auction/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, context)
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
@@ -125,6 +134,7 @@ class RoundRoutingTests {
             val roundResponse = client.post("/round/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, context)
                 setBody(
                     Json.encodeToString(
                         CreateRound.serializer(),
@@ -145,6 +155,7 @@ class RoundRoutingTests {
                 client.patch("round/change-state"){
                     header(HttpHeaders.ContentType, ContentType.Application.Json)
                     header(HttpHeaders.Authorization, "Bearer $token")
+                    header(Header.CONTEXT, context)
                     setBody(
                         Json.encodeToString(
                             ChangeRoundState.serializer(),
@@ -157,6 +168,7 @@ class RoundRoutingTests {
                 client.patch("round/change-state") {
                     header(HttpHeaders.ContentType, ContentType.Application.Json)
                     header(HttpHeaders.Authorization, "Bearer $token")
+                    header(Header.CONTEXT, context)
                     setBody(
                         Json.encodeToString(
                             ChangeRoundState.serializer(),
@@ -169,6 +181,7 @@ class RoundRoutingTests {
                 client.patch("round/change-state") {
                     header(HttpHeaders.ContentType, ContentType.Application.Json)
                     header(HttpHeaders.Authorization, "Bearer $token")
+                    header(Header.CONTEXT, context)
                     setBody(
                         Json.encodeToString(
                             ChangeRoundState.serializer(),
@@ -181,6 +194,7 @@ class RoundRoutingTests {
                 client.patch("round/change-state") {
                     header(HttpHeaders.ContentType, ContentType.Application.Json)
                     header(HttpHeaders.Authorization, "Bearer $token")
+                    header(Header.CONTEXT, context)
                     setBody(
                         Json.encodeToString(
                             ChangeRoundState.serializer(),
@@ -193,6 +207,7 @@ class RoundRoutingTests {
                 client.patch("round/change-state") {
                     header(HttpHeaders.ContentType, ContentType.Application.Json)
                     header(HttpHeaders.Authorization, "Bearer $token")
+                    header(Header.CONTEXT, context)
                     setBody(
                         Json.encodeToString(
                             ChangeRoundState.serializer(),
@@ -207,6 +222,7 @@ class RoundRoutingTests {
                 val changeRoundStateFailResponse = client.patch("round/change-state"){
                     header(HttpHeaders.ContentType, ContentType.Application.Json)
                     header(HttpHeaders.Authorization, "Bearer $token")
+                    header(Header.CONTEXT, context)
                     setBody(
                         Json.encodeToString(
                             ChangeRoundState.serializer(),
@@ -222,6 +238,7 @@ class RoundRoutingTests {
             val changeRoundStateResponse = client.patch("round/change-state"){
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, context)
                 setBody(
                     Json.encodeToString(
                         ChangeRoundState.serializer(),

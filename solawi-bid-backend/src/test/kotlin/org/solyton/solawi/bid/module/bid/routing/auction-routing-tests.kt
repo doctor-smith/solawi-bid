@@ -12,8 +12,10 @@ import org.evoleq.kotlinx.date.todayWithTime
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultListSerializer
 import org.evoleq.ktorx.result.ResultSerializer
+import org.evoleq.uuid.UUID_ZERO
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
+import org.solyton.solawi.bid.application.permission.Header
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.testFramework.getTestToken
 import java.io.File
@@ -42,6 +44,7 @@ class AuctionRoutingTests {
             val response = client.post("/auction/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, "$UUID_ZERO")
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
@@ -74,6 +77,7 @@ class AuctionRoutingTests {
             val response = client.post("/auction/create") {
                 header(HttpHeaders.Authorization, "Bearer $token")
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(Header.CONTEXT, "$UUID_ZERO")
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
@@ -92,6 +96,7 @@ class AuctionRoutingTests {
             val configureAuctionResponse = client.patch("/auction/configure") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, "$UUID_ZERO")
                 setBody(
                     Json.encodeToString(
                         ConfigureAuction.serializer(),
@@ -131,6 +136,7 @@ class AuctionRoutingTests {
             val auctionText = client.post("/auction/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, "$UUID_ZERO")
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
@@ -146,6 +152,7 @@ class AuctionRoutingTests {
             val auction1Text = client.post("/auction/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, "$UUID_ZERO")
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
@@ -160,6 +167,7 @@ class AuctionRoutingTests {
             val response = client.delete("/auction/delete") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
+                header(Header.CONTEXT, "$UUID_ZERO")
                 setBody(
                     Json.encodeToString(
                         DeleteAuctions.serializer(),
