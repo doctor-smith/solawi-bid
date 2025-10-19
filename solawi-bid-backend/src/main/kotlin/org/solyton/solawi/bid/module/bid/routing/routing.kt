@@ -130,7 +130,7 @@ fun <BidEnv> Routing.bidders(
                 ReceiveContextual<SearchBidderData>() * SearchBidderMails * Respond<BidderMails>{ transform() } runOn Base(call, environment)
             }
             post("add") {
-                Receive<AddBidders>() * AddBidders * Respond<Unit>{ transform() } runOn Base(call, environment)
+                ReceiveContextual<AddBidders>() * AddBidders * Respond<Unit>{ transform() } runOn Base(call, environment)
             }
 
         }
