@@ -56,7 +56,7 @@ fun <BidEnv> Routing.auction(
 
         route("auction"){
             post("create") {
-                (Receive<CreateAuction>() * CreateAuction * Respond<Auction>{ transform() }) runOn Base(call, environment)
+                Receive<CreateAuction>() * CreateAuction * Respond<Auction>{ transform() } runOn Base(call, environment)
             }
             patch("update") {
                 (Receive<UpdateAuctions>() * UpdateAuctions * ReadAuctions * Respond<Auctions>{ transform() }) runOn Base(call, environment)
