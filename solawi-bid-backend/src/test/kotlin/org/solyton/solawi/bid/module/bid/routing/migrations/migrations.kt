@@ -11,6 +11,7 @@ val bidRoutingMigrations: ArrayList<Database.()-> Migration> by lazy{
         {Migration1734880481636(this)},
         //{ Migration1729880480552(this) },
         { Migration1730372270554(this) },
-        { Migration1741189180989(this) }
+        { Migration1741189180989(this) },
+        { Migration1760819440375(this) }
     )
 }

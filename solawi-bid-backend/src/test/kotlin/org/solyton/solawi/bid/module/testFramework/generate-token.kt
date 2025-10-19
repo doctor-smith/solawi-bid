@@ -22,7 +22,6 @@ fun Routing.provideUserTokens(jwt: JWT, database: Database) {
         val token =  transaction(database) {
             val user = UserEntity.find { UsersTable.username eq username }.first()
             generateAccessToken(user.id.value.toString(), jwt)
-
         }
         call.respondText(token)
     }
@@ -30,6 +29,5 @@ fun Routing.provideUserTokens(jwt: JWT, database: Database) {
 
 suspend fun HttpClient.getTestToken(user: String): String {
     val response = get("/test/get-token?user=$user")
-    println(response)
     return response.bodyAsText()
 }
