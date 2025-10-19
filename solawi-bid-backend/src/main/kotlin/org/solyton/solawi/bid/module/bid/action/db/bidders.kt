@@ -234,11 +234,11 @@ fun String.containsOneOf(strings: List<String>): Boolean = when  {
 
 @MathDsl
 @Suppress("FunctionName")
-val AddBidders: KlAction<Result<AddBidders>, Result<Unit>> = KlAction{ bidders: Result<AddBidders> -> DbAction {
-    database: Database -> bidders bindSuspend  { data ->
+val AddBidders: KlAction<Result<Contextual<AddBidders>>, Result<Unit>> = KlAction{ bidders: Result<Contextual<AddBidders>> -> DbAction {
+    database: Database -> bidders bindSuspend  { contextual ->
         resultTransaction(database) {
             SearchBiddersTable.deleteAll()
-            data.bidders.forEach { bidder ->
+            contextual.data.bidders.forEach { bidder ->
                 SearchBidderEntity.new {
                     firstname = bidder.firstname.trim()
                     lastname = bidder.lastname.trim()
