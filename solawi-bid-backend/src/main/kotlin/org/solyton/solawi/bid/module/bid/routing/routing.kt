@@ -78,7 +78,7 @@ fun <BidEnv> Routing.auction(
                 }
                 delete("delete"){
                     // will delete all listed bidders
-                    (Receive<DeleteBidders>() * Fail("Not Implemented") * Respond{ transform() }) runOn Base(call, environment)
+                    (ReceiveContextual<DeleteBidders>() * Fail("Not Implemented") * Respond{ transform() }) runOn Base(call, environment)
                 }
             }
 
