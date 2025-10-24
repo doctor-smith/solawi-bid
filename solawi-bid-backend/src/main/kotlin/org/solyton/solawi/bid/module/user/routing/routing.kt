@@ -42,3 +42,30 @@ fun <UserEnv> Routing.user(
         }
     }
 }
+
+
+@KtorDsl
+fun <OrganizationEnv> Routing.organization(
+    environment: OrganizationEnv,
+    authenticate: Routing.(Route.() -> Route)-> Route
+) where OrganizationEnv : KTorEnv, OrganizationEnv : DbEnv {
+    val transform = environment.transformException
+    authenticate {
+        route("organizations") {
+            get("all") {
+
+                // val principal = call.authentication.principal<JWTPrincipal>()
+                // val userId = principal?.payload?.subject ?: "Unknown"
+                // Receive(GetUsers) * GetAllUsers * Respond<Users>{ transform() } runOn Base(call, environment)
+            }
+
+            post("create") {
+                // ReceiveContextual<CreateUser>() * CreateNewUser * Respond<User>{ transform() } runOn Base(call, environment)
+            }
+            put("update") {
+
+            }
+
+        }
+    }
+}
