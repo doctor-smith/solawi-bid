@@ -1,5 +1,6 @@
 package org.solyton.solawi.bid.module.user.schema.repository
 
+import org.evoleq.permission.Role as BasicRole
 import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -11,7 +12,10 @@ import org.solyton.solawi.bid.module.permission.schema.Rights
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
 import org.solyton.solawi.bid.module.permission.schema.Roles
+import org.solyton.solawi.bid.module.permission.schema.repository.grant
+import org.solyton.solawi.bid.module.permission.schema.repository.of
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
+import org.solyton.solawi.bid.module.user.permission.OrganizationRight
 import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
 import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import org.solyton.solawi.bid.module.user.schema.UserEntity
@@ -37,19 +41,28 @@ fun OrganizationEntity.descendants(): SizedIterable<OrganizationEntity> = with(r
     }.orderBy(OrganizationsTable.left to SortOrder.ASC)
 }
 
-fun createRootOrganization(organizationName: String): OrganizationEntity {
-    val finalOrganizationName = organizationName.replace(" ", "_").uppercase()
-    val exists = !ContextEntity.find { ContextsTable.name eq finalOrganizationName and (ContextsTable.rootId eq null) }.empty()
+/**
+ * Creates a root organization with default context and a manager role.
+ * - The name of the organization is unique among all stored root organizations.
+ * - The name of the context equals the name of the organization
+ * - Manager rights are:
+ *   - Read
+ *   - Update
+ * The user cannot delete his root organization
+ */
+fun createRootOrganization(organizationName: String, creatorId: UUID = UUID_ZERO): OrganizationEntity {
+    val organizationContextName = organizationName.replace(" ", "_").uppercase()
+    val exists = !ContextEntity.find { ContextsTable.name eq organizationContextName and (ContextsTable.rootId eq null) }.empty()
 
-    if(exists) throw ContextException.PathAlreadyExists(finalOrganizationName)
+    if(exists) throw ContextException.PathAlreadyExists(organizationContextName)
 
     val organizationContext = ContextEntity.new {
-        name = finalOrganizationName
-        createdBy = UUID_ZERO
+        name = organizationContextName
+        createdBy = creatorId
     }
-    val manager = RoleEntity.find { Roles.name eq "MANAGER" }.first()
-    val read = RightEntity.find { Rights.name eq "READ" }.first()
-    val write = RightEntity.find { Rights.name eq "UPDATE" }.first()
+    val manager = RoleEntity.find { Roles.name eq BasicRole.manager.value }.first()
+    val read = RightEntity.find { Rights.name eq OrganizationRight.Organization.create.value }.first()
+    val write = RightEntity.find { Rights.name eq OrganizationRight.Organization.update.value }.first()
 
     RoleRightContexts.insert {
         it[roleId] = manager.id
@@ -63,18 +76,32 @@ fun createRootOrganization(organizationName: String): OrganizationEntity {
         it[contextId] = organizationContext.id
     }
 
-    return OrganizationEntity.new {
+    val organization = OrganizationEntity.new {
         name = organizationName
         context = organizationContext
-        // todo:created_by add valid userId
-        createdBy = UUID_ZERO
+        createdBy = creatorId
     }
+
+    // grant manager rights to creator and add it to the organization
+    if(creatorId != UUID_ZERO) {
+        (manager of organizationContext).grant(
+            read, write
+        )
+
+        UserOrganization.insert {
+            it[userId] = creatorId
+            it[organizationId] = organization.id
+        }
+    }
+
+    return organization
 }
 
-
-fun OrganizationEntity.createChild(name: String): OrganizationEntity {
+/**
+ * Creates a child organization with context = root.context
+ */
+fun OrganizationEntity.createChild(name: String, creatorId: UUID): OrganizationEntity {
     val ancestors = ancestors()
-    println(ancestors.map { it.name })
     val maxRight = root?.right?:1
     val siblings = OrganizationEntity.find {
         OrganizationsTable.rootId eq root?.id and (OrganizationsTable.left greater right) and (OrganizationsTable.right less maxRight)
@@ -100,8 +127,7 @@ fun OrganizationEntity.createChild(name: String): OrganizationEntity {
         left = oldRight
         right = oldRight + 1
         level = childLevel
-        // todo:created_by add valid userId
-        createdBy = UUID_ZERO
+        createdBy = creatorId
     }
 }
 

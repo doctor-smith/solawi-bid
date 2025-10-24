@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.module.permission.schema.repository
 
 import org.jetbrains.exposed.sql.Transaction
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.selectAll
@@ -8,6 +9,7 @@ import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
+import org.solyton.solawi.bid.module.permission.schema.RolesTable
 import java.util.*
 
 fun grant(
@@ -50,6 +52,7 @@ fun Transaction.cloneRightRoleContext(oldContextId: UUID, newContextId: UUID): L
         row[RoleRightContexts.roleId].value ,
         newContextId
     ) }.map{ rrc ->
+        // todo:dev only insert those rrc which are not present; compare [cloneRightRoleContextsWrtRoles]
         val id = RoleRightContexts.insertAndGetId {
             it[contextId] = rrc.contextId
             it[roleId] = rrc.roleId
@@ -62,5 +65,50 @@ fun Transaction.cloneRightRoleContext(oldContextId: UUID, newContextId: UUID): L
             rrc.contextId
         )
     }
+    return rightRoleContexts
+}
+
+fun Transaction.cloneRightRoleContextWrtRoles(
+    oldContextId: UUID,
+    newContextId: UUID,
+    vararg roleNames: String
+): List<RightRoleContextIds> {
+    val existingInTarget = getRoleRightContextsByRoleNames(newContextId,*roleNames)
+    val rightRoleContexts = getRoleRightContextsByRoleNames(
+        oldContextId,
+        *roleNames
+    ).map { it.copy(
+        contextId = newContextId
+    ) }.filter {
+        it !in existingInTarget
+    }.map{ rrc ->
+        val id = RoleRightContexts.insertAndGetId {
+            it[contextId] = rrc.contextId
+            it[roleId] = rrc.roleId
+            it[rightId] = rrc.rightId
+        }
+        RightRoleContextIds(
+            id.value,
+            rrc.rightId,
+            rrc.roleId,
+            rrc.contextId
+        )
+    }
+    return rightRoleContexts
+}
+
+fun getRoleRightContextsByRoleNames(
+    contextId: UUID,
+    vararg roleNames: String
+): List<RightRoleContextIds> {
+    val roleIds = RoleEntity.find { RolesTable.name inList listOf(*roleNames) }.map { it.id.value }
+    val rightRoleContexts = RoleRightContexts.selectAll().where {
+        RoleRightContexts.contextId eq contextId and (RoleRightContexts.rightId inList roleIds)
+    }.map { row -> RightRoleContextIds(
+        row[RoleRightContexts.id].value,
+        row[RoleRightContexts.rightId].value,
+        row[RoleRightContexts.roleId].value ,
+        contextId
+    ) }
     return rightRoleContexts
 }

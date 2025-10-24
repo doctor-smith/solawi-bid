@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.module.usermanagement
 
 import org.evoleq.exposedx.test.runSimpleH2Test
+import org.evoleq.uuid.UUID_ZERO
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.application.data.db.migrations.setupBasicRolesAndRights
@@ -69,7 +70,7 @@ class OrganizationTests {
         var organization = createRootOrganization(organizationName)
 
         val childOrganization = "TEST_CHILD_ORGANIZATION"
-        val child = organization.createChild(childOrganization)
+        val child = organization.createChild(childOrganization, UUID_ZERO)
 
         organization = getOrganizationByName(organizationName)
 
@@ -88,7 +89,7 @@ class OrganizationTests {
         assertEquals(2, child.right,"child has wrong right value")
 
         val level2Name = "TEST_LEVEL_TWO_CHILD"
-        val level2Child = child.createChild(level2Name)
+        val level2Child = child.createChild(level2Name, UUID_ZERO)
         organization = getOrganizationByName(organizationName)
         // organization
         assertEquals(0, organization.left, "organization has wrong left value")
@@ -112,7 +113,7 @@ class OrganizationTests {
 
         val organization = createRootOrganization(organizationName)
         val childOrganization = "TEST_CHILD_ORGANIZATION"
-        val child = organization.createChild(childOrganization)
+        val child = organization.createChild(childOrganization, UUID_ZERO)
         val ancestors = child.ancestors().map{it.name}
         println(ancestors)
         assertTrue { ancestors.contains(organizationName) }
@@ -124,7 +125,7 @@ class OrganizationTests {
 
         val organization = createRootOrganization(organizationName)
         val childOrganization = "TEST_CHILD_ORGANIZATION"
-        val child = organization.createChild(childOrganization)
+        val child = organization.createChild(childOrganization, UUID_ZERO)
 
         assertTrue { organization.getChildren().contains(child) }
 
