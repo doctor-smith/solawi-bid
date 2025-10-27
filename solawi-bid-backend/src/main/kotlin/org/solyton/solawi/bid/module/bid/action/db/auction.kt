@@ -7,6 +7,7 @@ import org.evoleq.exposedx.transaction.resultTransaction
 import org.evoleq.ktorx.Contextual
 import org.evoleq.ktorx.DbAction
 import org.evoleq.ktorx.KlAction
+import org.evoleq.ktorx.map
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.ktorx.result.map
@@ -15,7 +16,9 @@ import org.evoleq.math.x
 import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.Transaction
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.selectAll
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.data.toApiType
@@ -27,6 +30,10 @@ import org.solyton.solawi.bid.module.bid.service.cloneDefaultAuctionContext
 import org.solyton.solawi.bid.module.permission.exception.ContextException
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.permission.schema.RoleEntity
+import org.solyton.solawi.bid.module.permission.schema.RolesTable
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext.userId
 import java.util.*
 import org.solyton.solawi.bid.module.bid.data.api.Auctions as ApiAuctions
 
@@ -71,34 +78,25 @@ fun Transaction.createAuction(
 
 @MathDsl
 val ReadAllAuctions = KlAction<Result<Contextual<GetAuctions>>, Result<ApiAuctions>> {
-    _ -> DbAction { database ->  resultTransaction(database){
-        val auctions = readAuctions().map {
+    result -> DbAction { database -> result bindSuspend {contextual ->  resultTransaction(database) {
+        val auctionRoleIds = RoleEntity.find { RolesTable.name inList listOf(
+            "BIDDER", "USER", "OWNER", "AUCTION_MANAGER", "AUCTION_TEAMMATE", "AUCTION_MODERATOR"
+        ) }.map { it.id.value }
+        val contextIds = UserRoleContext.selectAll().where {
+            UserRoleContext.userId eq contextual.userId and (UserRoleContext.roleId inList auctionRoleIds)
+        }.map { row -> row[UserRoleContext.contextId].value }
+
+        val auctions = readAuctions(contextIds).map {
             it.toApiType().copy(
-                bidderInfo = getBidderDetails(it).map {det  -> det.toBidderInfo()},
+                bidderInfo = getBidderDetails(it).map { det -> det.toBidderInfo() },
                 auctionDetails = getAuctionDetails(it)
             )
         }
         ApiAuctions(auctions)
 
-
+    }
     // TODO(use identifier to return all auction which are accessible as identified person)
     } x database }
-}
-
-@MathDsl
-val ReadAuctions = KlAction<Result<GetAuctions>, Result<ApiAuctions>> {
-    _ -> DbAction { database ->  resultTransaction(database){
-        val auctions = readAuctions().map {
-            it.toApiType().copy(
-                bidderInfo = getBidderDetails(it).map {det  -> det.toBidderInfo()},
-                auctionDetails = getAuctionDetails(it)
-            )
-        }
-        ApiAuctions(auctions)
-
-
-    // TODO(use identifier to return all auction which are accessible as identified person)
-} x database }
 }
 
 fun Transaction.getAuctionDetails(auction: AuctionEntity): AuctionDetails {
@@ -115,7 +113,9 @@ fun Transaction.getAuctionDetails(auction: AuctionEntity): AuctionDetails {
     }
 }
 
-fun Transaction.readAuctions(): List<AuctionEntity> = with(AuctionEntity.all().map{it
+fun Transaction.readAuctions(allowedContexts: List<UUID>): List<AuctionEntity> = with(AuctionEntity.find{
+    AuctionsTable.contextId inList allowedContexts
+}.map{it
 }) {
    try {
        toList()
@@ -148,12 +148,13 @@ fun Transaction.readAuction(auctionId: UUID): AuctionEntity {
 
 
 @MathDsl
-val DeleteAuctions = KlAction<Result<Contextual<DeleteAuctions>>, Result<GetAuctions>> {
+val DeleteAuctions = KlAction<Result<Contextual<DeleteAuctions>>, Result<Contextual<GetAuctions>>> {
     auctions -> DbAction {
         database -> auctions bindSuspend {
             contextual -> resultTransaction(database){
                 deleteAuctions(contextual.data.auctionIds.map { UUID.fromString(it) })
-        } } map { GetAuctions } x database
+                contextual map { GetAuctions }
+        } }  x database
     }
 }
 
@@ -163,13 +164,14 @@ fun Transaction.deleteAuctions(auctionIds: List<UUID>) {
 }
 
 @MathDsl
-val UpdateAuctions = KlAction<Result<Contextual<UpdateAuctions>>, Result<GetAuctions>> {
+val UpdateAuctions = KlAction<Result<Contextual<UpdateAuctions>>, Result<Contextual<GetAuctions>>> {
     auctions -> DbAction {
         database -> auctions bindSuspend {
             contextual -> resultTransaction(database) {
-                 updateAuctions(contextual.data.list )
+                updateAuctions(contextual.data.list )
+                contextual map {GetAuctions}
             }
-        } map { GetAuctions } x database
+        } x database
     }
 }
 

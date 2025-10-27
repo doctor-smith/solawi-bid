@@ -36,13 +36,13 @@ class Migration1761575845606(
      * Upwards migration
      */
     override suspend fun Transaction.up() {
-        val user = UserEntity.find{ UsersTable.username eq "owner@solyton.org" }.first()
-        val auctionApplication = getAuctionUserApplication(user.id.value)
-        val auctionApplicationContext = auctionApplication.context.createChild("AUCTION.${user.id.value}")
-        cloneDefaultAuctionContext(user.id.value, auctionApplicationContext.id.value)
-        addUserAsOwnerToContext(user.id.value, auctionApplicationContext.id.value)
+        //val user = UserEntity.find{ UsersTable.username eq "owner@solyton.org" }.first()
+        //val auctionApplication = getAuctionUserApplication(user.id.value)
+        //val auctionApplicationContext = auctionApplication.context.createChild("AUCTION.${user.id.value}")
+        //cloneDefaultAuctionContext(user.id.value, auctionApplicationContext.id.value)
+        //addUserAsOwnerToContext(user.id.value, auctionApplicationContext.id.value)
 
-        AuctionEntity.all().forEach { auction -> auction.context = auctionApplicationContext }
+        //AuctionEntity.all().forEach { auction -> auction.context = auctionApplicationContext }
     }
 
     /**

@@ -60,20 +60,30 @@ fun <BidEnv> Routing.auction(
                 Base(call, environment)
             }
             patch("update") {
-                (ReceiveContextual<UpdateAuctions>() * UpdateAuctions * ReadAuctions * Respond<Auctions>{ transform() }) runOn Base(call, environment)
+                (ReceiveContextual<UpdateAuctions>() *
+                IsGranted("UPDATE_AUCTION") *
+                UpdateAuctions *
+                ReadAllAuctions *
+                Respond<Auctions>{ transform() }
+                ) runOn Base(call, environment)
+
             }
             patch("configure") {
                 ReceiveContextual<ConfigureAuction>() * ConfigureAuction * Respond<Auction>{ transform() } runOn Base(call, environment)
             }
             delete("delete") {
-                (ReceiveContextual<DeleteAuctions>() * DeleteAuctions * ReadAuctions * Respond<Auctions>{ transform() }) runOn Base(call, environment)
+                (ReceiveContextual<DeleteAuctions>() * DeleteAuctions * ReadAllAuctions * Respond<Auctions>{ transform() }) runOn Base(call, environment)
             }
 
             patch("accept-round") {
                 (ReceiveContextual<AcceptRound>()) * AcceptRound * Respond<AcceptedRound>{ transform() } runOn Base(call, environment)
             }
             get("all"){
-                (ReceiveContextual(GetAuctions) * ReadAllAuctions * Respond<Auctions>{ transform() }) runOn Base(call, environment)
+                (ReceiveContextual(GetAuctions) *
+                IsGranted("READ_AUCTION") *
+                ReadAllAuctions *
+                Respond<Auctions>{ transform() }
+                ) runOn Base(call, environment)
             }
             route("bidder") {
                 post("import") {
