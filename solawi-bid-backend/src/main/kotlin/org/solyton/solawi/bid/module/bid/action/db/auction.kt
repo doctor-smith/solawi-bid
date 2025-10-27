@@ -22,6 +22,11 @@ import org.solyton.solawi.bid.module.bid.data.toApiType
 import org.solyton.solawi.bid.module.bid.exception.BidRoundException
 import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.bid.schema.AuctionEntity
+import org.solyton.solawi.bid.module.bid.service.addUserAsOwnerToContext
+import org.solyton.solawi.bid.module.bid.service.cloneDefaultAuctionContext
+import org.solyton.solawi.bid.module.permission.exception.ContextException
+import org.solyton.solawi.bid.module.permission.schema.ContextEntity
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import java.util.*
 import org.solyton.solawi.bid.module.bid.data.api.Auctions as ApiAuctions
 
@@ -29,20 +34,38 @@ import org.solyton.solawi.bid.module.bid.data.api.Auctions as ApiAuctions
 val CreateAuction = KlAction<Result<Contextual<CreateAuction>>, Result<ApiAuction>> {
     auction: Result<Contextual<CreateAuction>> -> DbAction {
         database -> auction bindSuspend  { contextual -> resultTransaction(database) {
-            createAuction(contextual.data.name, contextual.data.date).toApiType()
+            val auctionContextId = UUID.fromString(contextual.data.contextId)
+            cloneDefaultAuctionContext(contextual.userId, auctionContextId)
+
+            addUserAsOwnerToContext(contextual.userId, auctionContextId)
+
+            createAuction(
+                contextual.data.name,
+                contextual.data.date,
+                contextId = auctionContextId
+            ).toApiType()
         } }  x database
     }
 }
 
-fun Transaction.createAuction(name: String, date: LocalDateTime, type: String = "SOLAWI_TUEBINGEN"): AuctionEntity {
+fun Transaction.createAuction(
+    name: String,
+    date: LocalDateTime,
+    type: String = "SOLAWI_TUEBINGEN",
+    contextId: UUID
+): AuctionEntity {
     val auctionType = AuctionType.find { AuctionTypes.type eq type.toUpperCasePreservingASCIIRules() }.firstOrNull()
         ?: throw BidRoundException.NoSuchAuctionType(type)
+
+    val context = ContextEntity.find { ContextsTable.id eq contextId }.firstOrNull()
+        ?: throw ContextException.NoSuchContext(contextId.toString())
 
     return AuctionEntity.new {
         this.name = name
         this.date = date.toJoda()
         this.type = auctionType
         createdBy = UUID_ZERO
+        this.context = context
     }
 }
 

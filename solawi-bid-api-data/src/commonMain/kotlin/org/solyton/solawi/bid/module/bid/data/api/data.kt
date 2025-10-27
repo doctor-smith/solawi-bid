@@ -3,6 +3,7 @@ package org.solyton.solawi.bid.module.bid.data.api
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 import org.solyton.solawi.bid.module.bid.data.validation.ValidationException
+import org.solyton.solawi.bid.module.permission.data.api.ContextId
 
 typealias ApiBid = Bid
 typealias ApiNewBidder = NewBidder
@@ -107,8 +108,9 @@ data class GetRound(
 @Serializable
 data class CreateAuction(
     val name: String,
-    val date: LocalDateTime
-)
+    val date: LocalDateTime,
+    override val contextId: String
+) : ContextId
 
 @Serializable
 data class ConfigureAuction(

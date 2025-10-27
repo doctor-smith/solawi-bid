@@ -9,15 +9,9 @@ import org.jetbrains.exposed.sql.insert
 import org.solyton.solawi.bid.module.application.repository.createApplication
 import org.solyton.solawi.bid.module.application.repository.createModule
 import org.solyton.solawi.bid.module.application.repository.registerForApplication
-import org.solyton.solawi.bid.module.application.schema.ApplicationEntity
-import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
+import org.solyton.solawi.bid.module.application.schema.*
 import org.solyton.solawi.bid.module.application.schema.LifecycleStageEntity
-import org.solyton.solawi.bid.module.application.schema.LifecycleStagesTable
 import org.solyton.solawi.bid.module.application.schema.LifecycleTransitionEntity
-import org.solyton.solawi.bid.module.application.schema.LifecycleTransitionsTable
-import org.solyton.solawi.bid.module.application.schema.ModulesTable
-import org.solyton.solawi.bid.module.application.schema.UserApplicationsTable
-import org.solyton.solawi.bid.module.application.schema.UserModulesTable
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
 import org.solyton.solawi.bid.module.permission.schema.RightsTable
