@@ -9,6 +9,7 @@ import org.solyton.solawi.bid.module.authentication.exception.AuthenticationExce
 import org.solyton.solawi.bid.module.bid.data.api.RoundStateException
 import org.solyton.solawi.bid.module.bid.exception.BidRoundException
 import org.solyton.solawi.bid.module.permission.PermissionException
+import org.solyton.solawi.bid.module.permission.exception.ContextException
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
 
 
@@ -41,6 +42,7 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
         // todo:dev how to handle these permission exceptions?
         //is PermissionException.NoSuchContext -> HttpStatusCode.Forbidden
         //is PermissionException.NoSuchRight -> HttpStatusCode.Forbidden
+        is ContextException.NoContextProvided -> HttpStatusCode.BadRequest
 
         // Application (Module!)
         is ApplicationException.NoSuchApplication -> HttpStatusCode.NotFound

@@ -8,7 +8,6 @@ import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.insert
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.bid.schema.*
-import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.permission.schema.repository.createRootContext
 

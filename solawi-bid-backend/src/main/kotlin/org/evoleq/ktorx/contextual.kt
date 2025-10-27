@@ -7,3 +7,8 @@ data class Contextual<T>(
     val context: String,
     val data: T
 )
+
+/**
+ * Functoriality of Contextual
+ */
+infix fun <S, T> Contextual<S>.map(f: (S)->T): Contextual<T> = Contextual(userId, context, f(data))

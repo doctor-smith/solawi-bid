@@ -7,6 +7,11 @@ typealias ApiContexts = Contexts
 typealias ApiRole = Role
 typealias ApiRight = Right
 
+
+interface ContextId {
+    val contextId: String
+}
+
 @Serializable
 data class Contexts(
     val list: List<Context>

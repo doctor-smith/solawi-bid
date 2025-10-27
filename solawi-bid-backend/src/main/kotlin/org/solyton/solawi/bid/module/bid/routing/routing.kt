@@ -12,6 +12,7 @@ import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
 import org.solyton.solawi.bid.module.bid.action.db.*
 import org.solyton.solawi.bid.module.bid.data.api.*
+import org.solyton.solawi.bid.module.permission.action.db.IsGranted
 
 @KtorDsl
 fun <BidEnv> Routing.sendBid(
@@ -52,7 +53,11 @@ fun <BidEnv> Routing.auction(
 
         route("auction"){
             post("create") {
-                ReceiveContextual<CreateAuction>() * CreateAuction * Respond<Auction>{ transform() } runOn Base(call, environment)
+                ReceiveContextual<CreateAuction>() *
+                IsGranted("CREATE_AUCTION") *
+                CreateAuction *
+                Respond<Auction>{ transform() } runOn
+                Base(call, environment)
             }
             patch("update") {
                 (ReceiveContextual<UpdateAuctions>() * UpdateAuctions * ReadAuctions * Respond<Auctions>{ transform() }) runOn Base(call, environment)
