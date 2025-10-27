@@ -17,6 +17,9 @@ import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
 import org.solyton.solawi.bid.application.permission.Header
 import org.solyton.solawi.bid.module.bid.data.api.*
+import org.solyton.solawi.bid.module.testFramework.getAuctionsApplicationContextId
+import org.solyton.solawi.bid.module.testFramework.getDummyRootContextId
+import org.solyton.solawi.bid.module.testFramework.getTestAuctionContextId
 import org.solyton.solawi.bid.module.testFramework.getTestToken
 import java.io.File
 import kotlin.test.assertEquals
@@ -38,17 +41,18 @@ class AuctionRoutingTests {
 
             }
             // get token
-            val token = client.getTestToken("user@solyton.org")
-
+            val token = client.getTestToken("auction.manager@solyton.org")
+            val auctionContext = client.getTestAuctionContextId()
+            val auctionApplicationContextsId = client.getAuctionsApplicationContextId()
             // create auction
             val response = client.post("/auction/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
-                header(Header.CONTEXT, "$UUID_ZERO")
+                header(Header.CONTEXT, auctionApplicationContextsId)
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
-                        CreateAuction("test-name", todayWithTime())
+                        CreateAuction("test-name", todayWithTime(), auctionContext)
                     )
                 )
             }
@@ -71,17 +75,19 @@ class AuctionRoutingTests {
 
             }
             // get token
-            val token = client.getTestToken("user@solyton.org")
+            val token = client.getTestToken("auction.manager@solyton.org")
+            val auctionContext = client.getTestAuctionContextId()
+            val auctionApplicationContextsId = client.getAuctionsApplicationContextId()
 
             // create auction
             val response = client.post("/auction/create") {
                 header(HttpHeaders.Authorization, "Bearer $token")
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
-                header(Header.CONTEXT, "$UUID_ZERO")
+                header(Header.CONTEXT, auctionApplicationContextsId)
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
-                        CreateAuction("test-name", todayWithTime())
+                        CreateAuction("test-name", todayWithTime(), auctionContext)
                     )
                 )
             }
@@ -96,7 +102,7 @@ class AuctionRoutingTests {
             val configureAuctionResponse = client.patch("/auction/configure") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
-                header(Header.CONTEXT, "$UUID_ZERO")
+                header(Header.CONTEXT, auctionApplicationContextsId)
                 setBody(
                     Json.encodeToString(
                         ConfigureAuction.serializer(),
@@ -130,17 +136,19 @@ class AuctionRoutingTests {
 
             }
             // get token
-            val token = client.getTestToken("user@solyton.org")
+            val token = client.getTestToken("auction.manager@solyton.org")
+            val auctionContext = client.getTestAuctionContextId()
+            val auctionApplicationContextsId = client.getAuctionsApplicationContextId()
 
             // create action
             val auctionText = client.post("/auction/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
-                header(Header.CONTEXT, "$UUID_ZERO")
+                header(Header.CONTEXT, auctionApplicationContextsId)
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
-                        CreateAuction("test-name", todayWithTime())
+                        CreateAuction("test-name", todayWithTime(), auctionContext)
                     )
                 )
             }.bodyAsText()
@@ -152,11 +160,11 @@ class AuctionRoutingTests {
             val auction1Text = client.post("/auction/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
-                header(Header.CONTEXT, "$UUID_ZERO")
+                header(Header.CONTEXT, auctionApplicationContextsId)
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
-                        CreateAuction("test-name-1", todayWithTime())
+                        CreateAuction("test-name-1", todayWithTime(), auctionContext)
                     )
                 )
             }.bodyAsText()
@@ -167,7 +175,7 @@ class AuctionRoutingTests {
             val response = client.delete("/auction/delete") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
-                header(Header.CONTEXT, "$UUID_ZERO")
+                header(Header.CONTEXT, auctionApplicationContextsId)
                 setBody(
                     Json.encodeToString(
                         DeleteAuctions.serializer(),
@@ -185,8 +193,8 @@ class AuctionRoutingTests {
 
             assertTrue { auctions.list.isNotEmpty() }
 
-            assertTrue { auctions.list.filter { it.name == "test-name-1" }.isNotEmpty() }
-            assertTrue { auctions.list.filter { it.name == "test-name" }.isEmpty() }
+            assertTrue { auctions.list.any { it.name == "test-name-1" } }
+            assertTrue { auctions.list.none { it.name == "test-name" } }
         }
     }
 }

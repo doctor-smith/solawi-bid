@@ -18,6 +18,9 @@ import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
 import org.solyton.solawi.bid.application.permission.Header
 import org.solyton.solawi.bid.module.bid.data.api.*
+import org.solyton.solawi.bid.module.testFramework.getAuctionsApplicationContextId
+import org.solyton.solawi.bid.module.testFramework.getDummyRootContextId
+import org.solyton.solawi.bid.module.testFramework.getTestAuctionContextId
 import org.solyton.solawi.bid.module.testFramework.getTestToken
 import java.io.File
 import kotlin.test.assertEquals
@@ -40,11 +43,12 @@ class CompleteAuctionTest {
             }
 
             // get token
-            val token = client.getTestToken("user@solyton.org")
+            val token = client.getTestToken("auction.manager@solyton.org")
+            val auctionContext = client.getTestAuctionContextId()
             // get context
-            val context = "$UUID_ZERO"
+            val context = client.getAuctionsApplicationContextId()
 
-            val auctionResult = client.createAuction("test-auction", token, context)
+            val auctionResult = client.createAuction("test-auction", token, context, auctionContext)
             assertIs<Result.Success<ApiAuction>>(auctionResult)
             val auction = auctionResult.data
             val auctionId = auction.id
@@ -248,7 +252,7 @@ class CompleteAuctionTest {
     }
 }
 
-suspend fun HttpClient.createAuction(name: String, token: String, context: String): Result<ApiAuction> {
+suspend fun HttpClient.createAuction(name: String, token: String, context: String, auctionContext: String): Result<ApiAuction> {
     val createAuctionText = post("/auction/create") {
         header(HttpHeaders.ContentType, ContentType.Application.Json)
         header(HttpHeaders.Authorization, "Bearer $token")
@@ -256,7 +260,7 @@ suspend fun HttpClient.createAuction(name: String, token: String, context: Strin
         setBody(
             Json.encodeToString(
                 CreateAuction.serializer(),
-                CreateAuction(name, todayWithTime())
+                CreateAuction(name, todayWithTime(), auctionContext)
             )
         )
     }.bodyAsText()

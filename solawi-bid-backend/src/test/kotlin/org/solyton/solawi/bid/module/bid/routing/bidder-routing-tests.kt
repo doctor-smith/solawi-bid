@@ -16,6 +16,9 @@ import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
 import org.solyton.solawi.bid.application.permission.Header
 import org.solyton.solawi.bid.module.bid.data.api.*
+import org.solyton.solawi.bid.module.testFramework.getAuctionsApplicationContextId
+import org.solyton.solawi.bid.module.testFramework.getDummyRootContextId
+import org.solyton.solawi.bid.module.testFramework.getTestAuctionContextId
 import org.solyton.solawi.bid.module.testFramework.getTestToken
 import java.io.File
 import kotlin.test.assertEquals
@@ -36,18 +39,19 @@ class BidderTests {
             application { }
 
             // get token
-            val token = client.getTestToken("user@solyton.org")
-
+            val token = client.getTestToken("auction.manager@solyton.org")
+            val auctionContext = client.getTestAuctionContextId()
+            val auctionApplicationContextsId = client.getAuctionsApplicationContextId()
             // create Auction
             val auctionText = client.post("/auction/create") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
-                header(Header.CONTEXT, "$UUID_ZERO")
+                header(Header.CONTEXT, auctionApplicationContextsId)
 
                 setBody(
                     Json.encodeToString(
                         CreateAuction.serializer(),
-                        CreateAuction("test-name-2", todayWithTime())
+                        CreateAuction("test-name-2", todayWithTime(), auctionContext)
                     )
                 )
             }.bodyAsText()
@@ -63,7 +67,7 @@ class BidderTests {
             val importBiddersResponse = client.post("/auction/bidder/import") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
-                header(Header.CONTEXT, "$UUID_ZERO")
+                header(Header.CONTEXT, auctionApplicationContextsId)
                 setBody(
                     Json.encodeToString(
                         ImportBidders.serializer(),

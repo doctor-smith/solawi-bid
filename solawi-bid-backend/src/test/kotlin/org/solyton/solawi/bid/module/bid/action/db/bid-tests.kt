@@ -12,6 +12,7 @@ import org.solyton.solawi.bid.module.bid.data.toApiType
 import org.solyton.solawi.bid.module.bid.exception.BidRoundException
 import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.bid.setupBidProcess
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -153,6 +154,7 @@ class BidBests {
         AuctionDetailsSolawiTuebingenTable,
         BidderDetailsSolawiTuebingenTable,
         RoundCommentsTable,
+        ContextsTable
     )
 
     data class BidProcessSetup(
