@@ -38,6 +38,18 @@ class Migration1760819440375(
             password = "egal - only uses token"
             createdBy = UUID_ZERO
         }
+
+        UserEntity.new {
+            username = "auction.manager@solyton.org"
+            password = "dddddd   fda"
+            createdBy = UUID_ZERO
+        }
+
+        UserEntity.new {
+            username = "owner@solyton.org"
+            password = "dddddd   fda"
+            createdBy = UUID_ZERO
+        }
     }
 
     /**

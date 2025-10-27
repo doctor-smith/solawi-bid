@@ -7,6 +7,8 @@ import org.joda.time.DateTime
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Schema
 import org.solyton.solawi.bid.module.bid.schema.*
+import org.solyton.solawi.bid.module.permission.schema.Context
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import kotlin.test.assertEquals
 
 class AuctionTests {
@@ -19,7 +21,14 @@ class AuctionTests {
         Rounds,
         AcceptedRoundsTable,
         AuctionBidders,
+        ContextsTable,
     ) {
+
+        val context = Context.new {
+            this.name = "context"
+            createdBy = UUID_ZERO
+        }
+
         val auctionType = AuctionType.new {
             type = "TYPE"
         }
@@ -30,6 +39,7 @@ class AuctionTests {
             date = DateTime.now()
             createdBy = UUID_ZERO
             type = auctionType
+            this.context = context
         }
 
         val readAuction = Auction.find {
@@ -47,22 +57,26 @@ class AuctionTests {
         AuctionBidders,
         Auctions,
         Bidders,
+        ContextsTable,
     ) {
         val auctionType = AuctionType.new {
             type = "TYPE"
         }
 
         val name = "TestAuction"
+        val context = Context.new {
+            this.name = "context"
+            createdBy = UUID_ZERO
+        }
         val auction = Auction.new {
             this.name = name
             date = DateTime.now()
             createdBy = UUID_ZERO
             type = auctionType
+            this.context = context
         }
 
         assertEquals(name, auction.name)
-
-
 
         val bidder = Bidder.new {
             username = "name"
@@ -77,10 +91,7 @@ class AuctionTests {
             it[bidderId] = bidder.id.value
         }
 
-        //auction.bidders+bidder
-
-        println(bidder.auctions.map { it.name })
-
-        println()
+        auction.bidders+bidder
+        assertEquals(1,auction.bidders.count())
     }
 }

@@ -21,6 +21,8 @@ import org.solyton.solawi.bid.module.bid.schema.AuctionTypesTable
 import org.solyton.solawi.bid.module.bid.schema.AuctionsTable
 import org.solyton.solawi.bid.module.bid.schema.RoundCommentsTable
 import org.solyton.solawi.bid.module.bid.schema.RoundsTable
+import org.solyton.solawi.bid.module.permission.schema.Context
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import kotlin.test.assertEquals
 
 class TransformRoundTests {
@@ -30,13 +32,19 @@ class TransformRoundTests {
             AuctionTypesTable,
             AcceptedRoundsTable,
             RoundsTable,
-            RoundCommentsTable
+            RoundCommentsTable,
+            ContextsTable
         ) {
+            val context = Context.new {
+                this.name = "context"
+                createdBy = UUID_ZERO
+            }
+
             AuctionTypesTable.insert {
                 it[type] = "AUCTION_TYPE"
             }
 
-            val auction = createAuction("name", todayWithTime(), "AUCTION_TYPE")
+            val auction = createAuction("name", todayWithTime(), "AUCTION_TYPE", context.id.value)
             val round = addRound(CreateRound("${auction.id.value}"))
             round.addComment("comment-1", UUID_ZERO)
 
@@ -61,13 +69,19 @@ class TransformRoundTests {
             AuctionTypesTable,
             AcceptedRoundsTable,
             RoundsTable,
-            RoundCommentsTable
+            RoundCommentsTable,
+            ContextsTable
         ) {
+            val context = Context.new {
+                this.name = "context"
+                createdBy = UUID_ZERO
+            }
+
             AuctionTypesTable.insert {
                 it[type] = "AUCTION_TYPE"
             }
 
-            val auction = createAuction("name", todayWithTime(), "AUCTION_TYPE")
+            val auction = createAuction("name", todayWithTime(), "AUCTION_TYPE", context.id.value)
             val round = addRound(CreateRound("${auction.id.value}"))
             round.addComment("comment-1", UUID_ZERO)
 
@@ -97,13 +111,19 @@ class TransformRoundTests {
             AuctionTypesTable,
             AcceptedRoundsTable,
             RoundsTable,
-            RoundCommentsTable
+            RoundCommentsTable,
+            ContextsTable
         ) {
+            val context = Context.new {
+                this.name = "context"
+                createdBy = UUID_ZERO
+            }
+
             AuctionTypesTable.insert {
                 it[type] = "AUCTION_TYPE"
             }
 
-            val auction = createAuction("name", todayWithTime(), "AUCTION_TYPE")
+            val auction = createAuction("name", todayWithTime(), "AUCTION_TYPE", context.id.value)
             val round = addRound(CreateRound("${auction.id.value}"))
             round.addComment("comment-1", UUID_ZERO)
 

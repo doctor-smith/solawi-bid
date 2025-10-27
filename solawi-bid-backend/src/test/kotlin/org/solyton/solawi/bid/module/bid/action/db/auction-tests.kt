@@ -14,6 +14,9 @@ import org.solyton.solawi.bid.module.bid.data.toApiType
 import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.bid.schema.AuctionEntity
 import org.solyton.solawi.bid.module.db.schema.*
+import org.solyton.solawi.bid.module.permission.schema.Context
+import org.solyton.solawi.bid.module.permission.schema.ContextEntity
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -41,12 +44,16 @@ class AuctionTests {
         Rounds,
         RoundComments
     ) {
+        val context = Context.new {
+            this.name = "context"
+            createdBy = UUID_ZERO
+        }
         val name = "TestAuction"
         val link = "TestLink"
         AuctionType.new {
             type = "SOLAWI_TUEBINGEN"
         }
-        val auction = createAuction(name,todayWithTime()).toApiType()
+        val auction = createAuction(name,todayWithTime(), contextId = context.id.value).toApiType()
         assertEquals(name, auction.name)
         val round = addRound(
             CreateRound(
@@ -78,13 +85,19 @@ class AuctionTests {
         Auctions,
         Bidders,
         BidderDetailsSolawiTuebingenTable,
-        Rounds
+        Rounds,
+        ContextsTable
     ) {
+        val context = Context.new {
+            this.name = "context"
+            createdBy = UUID_ZERO
+        }
+
         val name = "TestAuction"
         AuctionType.new {
             type = "SOLAWI_TUEBINGEN"
         }
-        val auction = createAuction(name,todayWithTime()).toApiType()
+        val auction = createAuction(name,todayWithTime(), contextId = context.id.value).toApiType()
 
         val bidders = listOf<NewBidder>(
             NewBidder("name1",1,1),
@@ -124,14 +137,19 @@ class AuctionTests {
         BidderDetailsSolawiTuebingenTable,
         Rounds
     ) {
+        val context = Context.new {
+            this.name = "context"
+            createdBy = UUID_ZERO
+        }
+
         val name = "TestAuction"
         AuctionType.new {
             type = "SOLAWI_TUEBINGEN"
         }
-        val auction1 = createAuction(name, todayWithTime())
+        val auction1 = createAuction(name, todayWithTime(), contextId = context.id.value)
         assertEquals(name, auction1.name)
 
-        val auction2 = createAuction(name, todayWithTime())
+        val auction2 = createAuction(name, todayWithTime(), contextId = context.id.value)
         assertEquals(name, auction2.name)
 
 
@@ -156,8 +174,15 @@ class AuctionTests {
         Auctions,
         Bidders,
         BidderDetailsSolawiTuebingenTable,
-        Rounds
+        Rounds,
+        ContextsTable
     ) {
+
+        val context = Context.new {
+            this.name = "context"
+            createdBy = UUID_ZERO
+        }
+
         val auctionType = AuctionType.new {
             type = "SOLAWI_TUEBINGEN"
         }
@@ -166,6 +191,7 @@ class AuctionTests {
             date = DateTime().withDate(1,1,1)
             type = auctionType
             createdBy = UUID_ZERO
+            this.context = context
         }
 
         deleteAuctions(listOf(auction.id.value))
