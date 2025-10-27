@@ -13,7 +13,7 @@ import org.solyton.solawi.bid.module.bid.data.auction.Auction
 fun createAuction(auction: Lens<BidApplication, Auction >) =
     Action<BidApplication, CreateAuction, ApiAuction>(
         name = "CreateAuction",
-        reader = auction * Reader{ a: Auction -> CreateAuction(a.name, a.date) },
+        reader = auction * Reader{ a: Auction -> CreateAuction(a.name, a.date, a.contextId) },
         endPoint = CreateAuction::class,
         writer = auction * Writer{ apiAuction: ApiAuction -> {auction: Auction -> auction.copy(auctionId = apiAuction.id)} }
     )
