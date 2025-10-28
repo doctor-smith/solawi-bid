@@ -36,13 +36,11 @@ import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.component.modal.showChangePasswordModal
-import org.solyton.solawi.bid.module.user.component.table.ContextRoleTableForUser
-import org.solyton.solawi.bid.module.user.component.table.ListAvailablePermissions
 import org.solyton.solawi.bid.module.user.component.table.ListUserPermissions
 import org.solyton.solawi.bid.module.user.data.api.ChangePassword
-import org.solyton.solawi.bid.module.user.data.password
+import org.solyton.solawi.bid.module.user.data.user.password
 import org.solyton.solawi.bid.module.user.data.reader.*
-import org.solyton.solawi.bid.module.user.data.username
+import org.solyton.solawi.bid.module.user.data.user.username
 
 @Markup
 @Composable
