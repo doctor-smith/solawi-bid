@@ -29,7 +29,7 @@ import org.solyton.solawi.bid.module.user.data.organization.Organization
     @ReadWrite val accessToken: String = "",
     @ReadWrite val refreshToken: String = "",
     @ReadOnly val permissions: Permissions = Permissions(),
-    @ReadWrite val organizations: List<Organization>
+    @ReadWrite val organizations: List<Organization> = listOf()
 )
 
 /**
