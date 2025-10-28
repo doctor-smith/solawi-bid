@@ -152,14 +152,9 @@ class OrganizationRoutingTests {
             }
             assertIs<Result.Success<ApiOrganization>>(childOrganizationResult)
             val returnedOrganization = childOrganizationResult.data
-            assertEquals(rootOrganization.id, returnedOrganization.id)
-            assertEquals(organizationName, returnedOrganization.name)
-            assertEquals(1, returnedOrganization.subOrganizations.size)
+            assertEquals(childOrganizationName, returnedOrganization.name)
 
-            val childOrganization = returnedOrganization.subOrganizations.first()
-            assertEquals(childOrganizationName, childOrganization.name)
-
-            val childOrganizationContextExists = client.contextExists(UUID.fromString(childOrganization.contextId))
+            val childOrganizationContextExists = client.contextExists(UUID.fromString(returnedOrganization.contextId))
             assertTrue(childOrganizationContextExists)
 
         }
