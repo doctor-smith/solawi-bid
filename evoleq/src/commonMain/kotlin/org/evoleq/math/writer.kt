@@ -21,3 +21,7 @@ infix fun <W> Writer<Unit, W>.dispatch(w : W): Unit = write(w) on Unit
 
 @MathDsl
 fun <W> Dispatcher<W>.dispatch(): (w: W)->Unit = {w: W -> dispatch(w)}
+
+@MathDsl
+@Suppress("FunctionName")
+inline fun <reified T> Push(): Writer<List<T>, T> = { t:T -> { list -> listOf(t, *list.toTypedArray())}}
