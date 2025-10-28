@@ -7,6 +7,12 @@ import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
+import org.solyton.solawi.bid.module.user.data.api.organization.CreateChildOrganization
+import org.solyton.solawi.bid.module.user.data.api.organization.CreateOrganization
+import org.solyton.solawi.bid.module.user.data.api.organization.Organization
+import org.solyton.solawi.bid.module.user.data.api.organization.Organizations
+import org.solyton.solawi.bid.module.user.data.api.organization.ReadOrganizations
+import org.solyton.solawi.bid.module.user.data.api.organization.UpdateOrganization
 
 val solawiApi by lazy {
     // Authentication
@@ -191,7 +197,24 @@ val solawiApi by lazy {
             key = SubscribeModules::class,
             url = "applications/modules/personal/subscribe"
         )
-    }
 
-    // Organizations
+        // Organizations
+        post<CreateOrganization, Organization>(
+            key = CreateOrganization::class,
+            url = "organizations/create"
+        )
+        post<CreateChildOrganization, Organization>(
+            key = CreateChildOrganization::class,
+            url = "organizations/create-child"
+        )
+        get<ReadOrganizations, Organizations>(
+            key = ReadOrganizations::class,
+            url = "organizations/all"
+        )
+        patch<UpdateOrganization, Organization>(
+            key = UpdateOrganization::class,
+            url = "organizations/update"
+        )
+
+    }
 }

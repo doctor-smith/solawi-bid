@@ -383,3 +383,10 @@ fun Transaction.getUserRightContexts(userId: UUID, rights: List<String>): List<U
         pair -> relevantUserRoleIds.contains(pair.first.value)
     }.map { pair -> pair.second.value }
 }
+
+fun Transaction.getRolesByUserAndContext(userId: UUID, contextId: UUID): List<RoleEntity> {
+    val roleIds = UserRoleContext.selectAll().where{
+        UserRoleContext.userId eq userId and (UserRoleContext.contextId eq contextId)
+    }.map { it[UserRoleContext.roleId].value }
+    return RoleEntity.find { RolesTable.id inList roleIds }.toList()
+}

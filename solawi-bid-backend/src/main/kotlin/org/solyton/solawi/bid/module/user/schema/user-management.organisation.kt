@@ -47,6 +47,8 @@ class Organization(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
 
     var context by ContextEntity referencedOn OrganizationsTable.contextId
 
+    val members by UserEntity via UserOrganization
+
     // val parent by OrganizationEntity optionalReferencedOn OrganizationsTable.parentId
     var left by Organisations.left
     var right by Organisations.right

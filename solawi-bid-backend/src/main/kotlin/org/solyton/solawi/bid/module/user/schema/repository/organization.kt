@@ -1,6 +1,5 @@
 package org.solyton.solawi.bid.module.user.schema.repository
 
-import org.evoleq.permission.Role as BasicRole
 import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -12,15 +11,17 @@ import org.solyton.solawi.bid.module.permission.schema.Rights
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
 import org.solyton.solawi.bid.module.permission.schema.Roles
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.permission.schema.repository.grant
 import org.solyton.solawi.bid.module.permission.schema.repository.of
-import org.solyton.solawi.bid.module.user.exception.UserManagementException
+import org.solyton.solawi.bid.module.user.exception.OrganizationException
 import org.solyton.solawi.bid.module.user.permission.OrganizationRight
 import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
 import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserOrganization
 import java.util.*
+import org.evoleq.permission.Role as BasicRole
 
 fun OrganizationEntity.ancestors(): SizedIterable<OrganizationEntity> {
     if(root == null) {
@@ -64,17 +65,9 @@ fun createRootOrganization(organizationName: String, creatorId: UUID = UUID_ZERO
     val read = RightEntity.find { Rights.name eq OrganizationRight.Organization.create.value }.first()
     val write = RightEntity.find { Rights.name eq OrganizationRight.Organization.update.value }.first()
 
-    RoleRightContexts.insert {
-        it[roleId] = manager.id
-        it[rightId] = read.id
-        it[contextId] = organizationContext.id
-    }
-
-    RoleRightContexts.insert {
-        it[roleId] = manager.id
-        it[rightId] = write.id
-        it[contextId] = organizationContext.id
-    }
+    (manager of organizationContext).grant(
+        read, write
+    )
 
     val organization = OrganizationEntity.new {
         name = organizationName
@@ -84,9 +77,12 @@ fun createRootOrganization(organizationName: String, creatorId: UUID = UUID_ZERO
 
     // grant manager rights to creator and add it to the organization
     if(creatorId != UUID_ZERO) {
-        (manager of organizationContext).grant(
-            read, write
-        )
+
+        UserRoleContext.insert {
+            it[userId] = creatorId
+            it[roleId] = manager.id
+            it[contextId] = organizationContext.id
+        }
 
         UserOrganization.insert {
             it[userId] = creatorId
@@ -132,7 +128,7 @@ fun OrganizationEntity.createChild(name: String, creatorId: UUID): OrganizationE
 }
 
 fun OrganizationEntity.removeChild(childId: UUID) : OrganizationEntity {
-    val child = OrganizationEntity.findById(childId)?: throw UserManagementException.NoSuchChildOrganization(childId.toString())
+    val child = OrganizationEntity.findById(childId)?: throw OrganizationException.NoSuchChildOrganization(childId.toString())
     child.remove()
     return this
 }

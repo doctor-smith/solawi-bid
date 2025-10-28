@@ -10,6 +10,7 @@ import org.solyton.solawi.bid.module.bid.data.api.RoundStateException
 import org.solyton.solawi.bid.module.bid.exception.BidRoundException
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.exception.ContextException
+import org.solyton.solawi.bid.module.user.exception.OrganizationException
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
 
 
@@ -37,6 +38,11 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
         //User
         is UserManagementException.UserDoesNotExist -> HttpStatusCode.Unauthorized
         is UserManagementException.WrongCredentials -> HttpStatusCode.Unauthorized
+
+        // Organization
+        is OrganizationException.NoSuchOrganization -> HttpStatusCode.NotFound
+        is OrganizationException.NoSuchChildOrganization -> HttpStatusCode.NotFound
+
         // Permission
         is PermissionException.AccessDenied -> HttpStatusCode.Forbidden
         // todo:dev how to handle these permission exceptions?

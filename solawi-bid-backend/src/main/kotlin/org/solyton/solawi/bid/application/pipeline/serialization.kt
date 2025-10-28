@@ -30,6 +30,13 @@ import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
+import org.solyton.solawi.bid.module.user.data.api.organization.CreateChildOrganization
+import org.solyton.solawi.bid.module.user.data.api.organization.CreateOrganization
+import org.solyton.solawi.bid.module.user.data.api.organization.Member
+import org.solyton.solawi.bid.module.user.data.api.organization.Organization
+import org.solyton.solawi.bid.module.user.data.api.organization.Organizations
+import org.solyton.solawi.bid.module.user.data.api.organization.ReadOrganizations
+import org.solyton.solawi.bid.module.user.data.api.organization.UpdateOrganization
 
 fun Application.installSerializers() {
     // primitive serializers
@@ -150,4 +157,14 @@ fun Application.installSerializers() {
     serializers[ApplicationContextRelation::class] = ApplicationContextRelation.serializer()
     serializers[ModuleContextRelations::class] = ModuleContextRelations.serializer()
     serializers[ModuleContextRelation::class] = ModuleContextRelation.serializer()
+
+    // Organizations
+    serializers[Organizations::class] = Organizations.serializer()
+    serializers[Organization::class] = Organization.serializer()
+    serializers[Member::class] = Member.serializer()
+
+    serializers[CreateOrganization::class] = CreateOrganization.serializer()
+    serializers[CreateChildOrganization::class] = CreateChildOrganization.serializer()
+    serializers[ReadOrganizations::class] = ReadOrganizations.serializer()
+    serializers[UpdateOrganization::class] = UpdateOrganization.serializer()
 }
