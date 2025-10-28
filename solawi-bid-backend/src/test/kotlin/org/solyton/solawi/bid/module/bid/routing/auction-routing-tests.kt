@@ -12,14 +12,12 @@ import org.evoleq.kotlinx.date.todayWithTime
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultListSerializer
 import org.evoleq.ktorx.result.ResultSerializer
-import org.evoleq.uuid.UUID_ZERO
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
 import org.solyton.solawi.bid.application.permission.Header
 import org.solyton.solawi.bid.module.bid.data.api.*
-import org.solyton.solawi.bid.module.testFramework.getAuctionsApplicationContextId
-import org.solyton.solawi.bid.module.testFramework.getDummyRootContextId
-import org.solyton.solawi.bid.module.testFramework.getTestAuctionContextId
+import org.solyton.solawi.bid.module.bid.routing.util.getAuctionsApplicationContextId
+import org.solyton.solawi.bid.module.bid.routing.util.getTestAuctionContextId
 import org.solyton.solawi.bid.module.testFramework.getTestToken
 import java.io.File
 import kotlin.test.assertEquals
