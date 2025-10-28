@@ -8,7 +8,6 @@ import org.solyton.solawi.bid.module.user.data.api.organization.ApiMember
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiOrganization
 import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
 import org.solyton.solawi.bid.module.user.schema.repository.getChildren
-import java.util.UUID
 import org.solyton.solawi.bid.module.user.schema.User as UserEntity
 
 fun UserEntity.toApiType(): UserD = UserD(
@@ -38,6 +37,3 @@ fun OrganizationEntity.toApiType(transaction: Transaction): ApiOrganization = Ap
         organization -> organization.toApiType(transaction)
     }
 )
-
-
-

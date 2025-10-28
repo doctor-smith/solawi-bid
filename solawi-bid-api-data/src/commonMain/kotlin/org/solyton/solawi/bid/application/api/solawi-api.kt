@@ -7,11 +7,14 @@ import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
+import org.solyton.solawi.bid.module.user.data.api.organization.AddMember
 import org.solyton.solawi.bid.module.user.data.api.organization.CreateChildOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.CreateOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.Organization
 import org.solyton.solawi.bid.module.user.data.api.organization.Organizations
 import org.solyton.solawi.bid.module.user.data.api.organization.ReadOrganizations
+import org.solyton.solawi.bid.module.user.data.api.organization.RemoveMember
+import org.solyton.solawi.bid.module.user.data.api.organization.UpdateMember
 import org.solyton.solawi.bid.module.user.data.api.organization.UpdateOrganization
 
 val solawiApi by lazy {
@@ -215,6 +218,17 @@ val solawiApi by lazy {
             key = UpdateOrganization::class,
             url = "organizations/update"
         )
-
+        post<AddMember, Organization>(
+            key = AddMember::class,
+            url = "organizations/members/add"
+        )
+        patch<UpdateMember, Organization>(
+            key = UpdateMember::class,
+            url = "organizations/members/update"
+        )
+        delete<RemoveMember, Organization>(
+            key = RemoveMember::class,
+            url = "organizations/members/remove"
+        )
     }
 }
