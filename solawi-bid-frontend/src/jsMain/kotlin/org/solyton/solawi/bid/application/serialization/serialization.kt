@@ -15,12 +15,15 @@ import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
+import org.solyton.solawi.bid.module.user.data.api.organization.AddMember
 import org.solyton.solawi.bid.module.user.data.api.organization.CreateChildOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.CreateOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.Member
 import org.solyton.solawi.bid.module.user.data.api.organization.Organization
 import org.solyton.solawi.bid.module.user.data.api.organization.Organizations
 import org.solyton.solawi.bid.module.user.data.api.organization.ReadOrganizations
+import org.solyton.solawi.bid.module.user.data.api.organization.RemoveMember
+import org.solyton.solawi.bid.module.user.data.api.organization.UpdateMember
 import org.solyton.solawi.bid.module.user.data.api.organization.UpdateOrganization
 
 
@@ -157,5 +160,8 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<CreateChildOrganization>(CreateChildOrganization.serializer())
         add<ReadOrganizations>(ReadOrganizations.serializer())
         add<UpdateOrganization>(UpdateOrganization.serializer())
+        add<AddMember>(AddMember.serializer())
+        add<RemoveMember>(RemoveMember.serializer())
+        add<UpdateMember>(UpdateMember.serializer())
     }
 } }
