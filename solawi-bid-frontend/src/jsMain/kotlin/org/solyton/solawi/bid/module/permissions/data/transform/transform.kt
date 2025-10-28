@@ -1,6 +1,8 @@
 package org.solyton.solawi.bid.module.permissions.data.transform
 
 import org.solyton.solawi.bid.module.permission.data.api.ApiContext
+import org.solyton.solawi.bid.module.permission.data.api.ApiRight
+import org.solyton.solawi.bid.module.permission.data.api.ApiRole
 import org.solyton.solawi.bid.module.permission.data.api.ParentChildRelationsOfContexts
 import org.solyton.solawi.bid.module.permissions.data.Context
 import org.solyton.solawi.bid.module.permissions.data.Right
@@ -10,20 +12,24 @@ import org.solyton.solawi.bid.module.permissions.data.Role
 fun ApiContext.toDomainType(): Context = Context(
     contextId = id,
     contextName = name,
-    roles = roles.map { role ->
-        Role(
-            roleId = role.id,
-            roleName = role.name,
-            roleDescription = role.description,
-            rights = role.rights.map { right ->
-                Right(
-                    rightId = right.id,
-                    rightName = right.name,
-                    rightDescription = right.description
-                )
-            }
-        )
+    roles = roles.map {
+        role -> role.toDomainType()
     }
+)
+
+fun ApiRole.toDomainType(): Role = Role(
+    roleId = id,
+    roleName = name,
+    roleDescription = description,
+    rights = rights.map {
+        right -> right.toDomainType()
+    }
+)
+
+fun ApiRight.toDomainType(): Right = Right(
+    rightId = id,
+    rightName = name,
+    rightDescription = description
 )
 
 fun List<Context>.structureBy(parentChildRelations: ParentChildRelationsOfContexts): List<Context> {
