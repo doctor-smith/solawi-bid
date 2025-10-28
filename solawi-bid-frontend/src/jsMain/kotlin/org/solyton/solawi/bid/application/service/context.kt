@@ -8,7 +8,7 @@ import org.solyton.solawi.bid.application.data.context
 import org.solyton.solawi.bid.application.data.userData
 import org.solyton.solawi.bid.module.context.data.current
 import org.solyton.solawi.bid.module.permissions.data.contexts
-import org.solyton.solawi.bid.module.user.data.permissions
+import org.solyton.solawi.bid.module.user.data.user.permissions
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 

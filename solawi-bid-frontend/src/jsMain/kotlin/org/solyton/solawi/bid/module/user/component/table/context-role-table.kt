@@ -23,6 +23,7 @@ import org.solyton.solawi.bid.module.permissions.data.Context
 import org.solyton.solawi.bid.module.permissions.data.contexts
 import org.solyton.solawi.bid.module.permissions.service.readableName
 import org.solyton.solawi.bid.module.user.data.*
+import org.solyton.solawi.bid.module.user.data.user.permissions
 import org.solyton.solawi.bid.module.user.data.managed.permissions as managedPermissions
 
 
