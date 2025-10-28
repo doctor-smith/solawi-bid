@@ -30,12 +30,15 @@ import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
+import org.solyton.solawi.bid.module.user.data.api.organization.AddMember
 import org.solyton.solawi.bid.module.user.data.api.organization.CreateChildOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.CreateOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.Member
 import org.solyton.solawi.bid.module.user.data.api.organization.Organization
 import org.solyton.solawi.bid.module.user.data.api.organization.Organizations
 import org.solyton.solawi.bid.module.user.data.api.organization.ReadOrganizations
+import org.solyton.solawi.bid.module.user.data.api.organization.RemoveMember
+import org.solyton.solawi.bid.module.user.data.api.organization.UpdateMember
 import org.solyton.solawi.bid.module.user.data.api.organization.UpdateOrganization
 
 fun Application.installSerializers() {
@@ -167,4 +170,7 @@ fun Application.installSerializers() {
     serializers[CreateChildOrganization::class] = CreateChildOrganization.serializer()
     serializers[ReadOrganizations::class] = ReadOrganizations.serializer()
     serializers[UpdateOrganization::class] = UpdateOrganization.serializer()
+    serializers[AddMember::class] = AddMember.serializer()
+    serializers[RemoveMember::class] = RemoveMember.serializer()
+    serializers[UpdateMember::class] = UpdateMember.serializer()
 }
