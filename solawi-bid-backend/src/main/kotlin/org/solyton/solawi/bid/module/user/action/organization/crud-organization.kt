@@ -49,7 +49,8 @@ fun CreateChildOrganization(): KlAction<Result<Contextual<CreateChildOrganizatio
             ?: throw OrganizationException.NoSuchChildOrganization(id)
 
         val childOrganization = organization.createChild(data.name, userId)
-        childOrganization.root?.toApiType(this)?: throw OrganizationException.NoRoot(childOrganization.id.value.toString())
+        childOrganization.toApiType(this)
+        // childOrganization.root?.toApiType(this)?: throw OrganizationException.NoRoot(childOrganization.id.value.toString())
     } } x database
 } }
 
