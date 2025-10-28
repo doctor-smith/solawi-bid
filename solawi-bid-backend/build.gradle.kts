@@ -218,6 +218,13 @@ migrations {
         migrations = "migrations"
         sourceSet = "test"
     }
+
+    migration("userManagementApiTest") {
+        domain = "org.solyton.solawi.bid"
+        module = "usermanagement"
+        migrations = "migrations"
+        sourceSet = "test"
+    }
 }
 
 detekt {

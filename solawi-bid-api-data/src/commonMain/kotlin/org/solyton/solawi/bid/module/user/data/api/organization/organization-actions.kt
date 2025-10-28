@@ -9,5 +9,35 @@ data class CreateOrganization(
 
 @Serializable
 data class CreateChildOrganization(
+    val organizationId: String,
     val name: String
+)
+
+@Serializable
+data object ReadOrganizations
+
+@Serializable
+data class UpdateOrganization(
+    val id: String,
+    val name: String
+)
+
+@Serializable
+data class AddMember(
+    val organizationId: String,
+    val userId: String,
+    val roles: List<String>
+)
+
+@Serializable
+data class RemoveMember(
+    val organizationId: String,
+    val userId: String,
+)
+
+@Serializable
+data class UpdateMember(
+    val organizationId: String,
+    val userId: String,
+    val roles: List<String>
 )

@@ -5,6 +5,7 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.ktorx.result.add
 import org.evoleq.ktorx.result.serializers
+import org.jetbrains.compose.web.css.CSSMediaQuery
 import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.application.data.ApiApplication
 import org.solyton.solawi.bid.module.application.data.ApiApplications
@@ -14,6 +15,13 @@ import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
+import org.solyton.solawi.bid.module.user.data.api.organization.CreateChildOrganization
+import org.solyton.solawi.bid.module.user.data.api.organization.CreateOrganization
+import org.solyton.solawi.bid.module.user.data.api.organization.Member
+import org.solyton.solawi.bid.module.user.data.api.organization.Organization
+import org.solyton.solawi.bid.module.user.data.api.organization.Organizations
+import org.solyton.solawi.bid.module.user.data.api.organization.ReadOrganizations
+import org.solyton.solawi.bid.module.user.data.api.organization.UpdateOrganization
 
 
 fun installSerializers() { if(serializers.isEmpty()) {
@@ -139,5 +147,15 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<ApplicationContextRelations>(ApplicationContextRelations.serializer())
         add<ModuleContextRelation>(ModuleContextRelation.serializer())
         add<ModuleContextRelations>(ModuleContextRelations.serializer())
+
+        // Organizations
+        add<Organizations>(Organizations.serializer())
+        add<Organization>(Organization.serializer())
+        add<Member>(Member.serializer())
+
+        add<CreateOrganization>(CreateOrganization.serializer())
+        add<CreateChildOrganization>(CreateChildOrganization.serializer())
+        add<ReadOrganizations>(ReadOrganizations.serializer())
+        add<UpdateOrganization>(UpdateOrganization.serializer())
     }
 } }
