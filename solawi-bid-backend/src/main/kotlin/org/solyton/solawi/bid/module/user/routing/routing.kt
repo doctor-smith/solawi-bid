@@ -20,10 +20,16 @@ import org.solyton.solawi.bid.module.user.action.organization.CreateOrganization
 import org.solyton.solawi.bid.module.user.action.organization.CreateChildOrganization
 import org.solyton.solawi.bid.module.user.action.organization.ReadOrganizations
 import org.solyton.solawi.bid.module.user.action.organization.UpdateOrganization
+import org.solyton.solawi.bid.module.user.action.organization.AddMember
+import org.solyton.solawi.bid.module.user.action.organization.UpdateMember
+import org.solyton.solawi.bid.module.user.action.organization.RemoveMember
 import org.solyton.solawi.bid.module.user.data.api.*
+import org.solyton.solawi.bid.module.user.data.api.organization.AddMember
 import org.solyton.solawi.bid.module.user.data.api.organization.CreateChildOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.CreateOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.ReadOrganizations
+import org.solyton.solawi.bid.module.user.data.api.organization.RemoveMember
+import org.solyton.solawi.bid.module.user.data.api.organization.UpdateMember
 import org.solyton.solawi.bid.module.user.data.api.organization.UpdateOrganization
 
 @KtorDsl
@@ -85,6 +91,27 @@ fun <OrganizationEnv> Routing.organization(
                 IsGranted("UPDATE_ORGANIZATION") *
                 UpdateOrganization() *
                 Respond { transform() } runOn Base(call, environment)
+            }
+
+            route("members") {
+                post("add") {
+                    ReceiveContextual<AddMember>() *
+                    IsGranted("MANAGE_USERS") *
+                    AddMember() *
+                    Respond { transform() } runOn Base(call, environment)
+                }
+                patch("update") {
+                    ReceiveContextual<UpdateMember>() *
+                    IsGranted("MANAGE_USERS") *
+                    UpdateMember() *
+                    Respond { transform() } runOn Base(call, environment)
+                }
+                delete("remove") {
+                    ReceiveContextual<RemoveMember>() *
+                    IsGranted("MANAGE_USERS") *
+                    RemoveMember() *
+                    Respond { transform() } runOn Base(call, environment)
+                }
             }
         }
     }

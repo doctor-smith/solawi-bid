@@ -50,7 +50,6 @@ fun CreateChildOrganization(): KlAction<Result<Contextual<CreateChildOrganizatio
 
         val childOrganization = organization.createChild(data.name, userId)
         childOrganization.toApiType(this)
-        // childOrganization.root?.toApiType(this)?: throw OrganizationException.NoRoot(childOrganization.id.value.toString())
     } } x database
 } }
 
@@ -93,4 +92,3 @@ fun UpdateOrganization(): KlAction<Result<Contextual<UpdateOrganization>>, Resul
         organization.toApiType(this)
     } } x database
  } }
-
