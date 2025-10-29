@@ -8,8 +8,10 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
+import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.action.db.getRolesByUserAndContext
 import org.solyton.solawi.bid.module.permission.action.db.getUserRightContexts
+import org.solyton.solawi.bid.module.permission.action.db.isGranted
 import org.solyton.solawi.bid.module.user.data.api.organization.CreateChildOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.CreateOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.Organization
@@ -18,6 +20,7 @@ import org.solyton.solawi.bid.module.user.data.api.organization.ReadOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.UpdateOrganization
 import org.solyton.solawi.bid.module.user.data.toApiType
 import org.solyton.solawi.bid.module.user.exception.OrganizationException
+import org.solyton.solawi.bid.module.user.permission.OrganizationRight
 import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
 import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import org.solyton.solawi.bid.module.user.schema.repository.createChild
@@ -48,6 +51,12 @@ fun CreateChildOrganization(): KlAction<Result<Contextual<CreateChildOrganizatio
         }.firstOrNull()
             ?: throw OrganizationException.NoSuchChildOrganization(id)
 
+        if(!isGranted(
+                userId,
+                organization.context.id.value,
+                OrganizationRight.Organization.create.value
+        )) throw PermissionException.AccessDenied
+
         val childOrganization = organization.createChild(data.name, userId)
         childOrganization.toApiType(this)
     } } x database
@@ -66,7 +75,7 @@ fun ReadOrganizations(): KlAction<Result<Contextual<ReadOrganizations>>, Result<
 } }
 
 @MathDsl
-@Suppress("FunctionName")
+@Suppress("FunctionName", "CognitiveComplexMethod")
 fun UpdateOrganization(): KlAction<Result<Contextual<UpdateOrganization>>, Result<Organization>> = KlAction{ result ->
     DbAction { database -> result bindSuspend {contextual -> resultTransaction(database) {
         val userId = contextual.userId
@@ -76,6 +85,12 @@ fun UpdateOrganization(): KlAction<Result<Contextual<UpdateOrganization>>, Resul
             OrganizationsTable.id eq UUID.fromString(data.id)
         }.firstOrNull()
             ?: throw OrganizationException.NoSuchOrganization(id)
+
+        if(!isGranted(
+                userId,
+                organization.context.id.value,
+                OrganizationRight.Organization.update.value
+        )) throw PermissionException.AccessDenied
 
         var changed: Boolean = false
         if(organization.name != data.name) {

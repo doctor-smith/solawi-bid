@@ -56,5 +56,9 @@ suspend fun HttpClient.updateOrganization(data: UpdateOrganization, token: Strin
         setBody(Json.encodeToString(UpdateOrganization.serializer(),data))
     }
     assert(response)
-    return Json.decodeFromString(ResultSerializer<ApiOrganization>(), response.bodyAsText())
+    return if(response.status === HttpStatusCode.OK) {
+        Json.decodeFromString(ResultSerializer<ApiOrganization>(), response.bodyAsText())
+    } else {
+        Result.Failure.Message("Something went wrong")
+    }
 }

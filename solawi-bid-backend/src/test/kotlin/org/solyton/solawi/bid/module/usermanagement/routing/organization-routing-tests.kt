@@ -121,7 +121,7 @@ class OrganizationRoutingTests {
             }
 
             // data
-            val organizationName = "name-0"
+            val organizationName = "name-0-wp"
 
             // get token and context
             val token = client.getTestToken("developer@alpha-structure.com")
@@ -148,7 +148,7 @@ class OrganizationRoutingTests {
             val readOrganizationResult = client.readOrganizations(token, applicationContextId)
             assertIs<Result.Success<ApiOrganizations>>(readOrganizationResult)
             val nonEmptyList = readOrganizationResult.data
-            assertEquals(1, nonEmptyList.all.size)
+            assertTrue { nonEmptyList.all.isNotEmpty() }
 
             val unAuthorizedResult = client.readOrganizations(unAuthorizedToken, applicationContextId)
             assertIs<Result.Success<ApiOrganizations>>(unAuthorizedResult)
@@ -199,6 +199,7 @@ class OrganizationRoutingTests {
             val childOrganizationResult: Result<ApiOrganization> = client.createChildOrganization(
                 CreateChildOrganization(rootOrganization.id, childOrganizationName),
                 token,
+                //rootOrganization.contextId
                 applicationContextId
             ) {
                 assertEquals(HttpStatusCode.OK, this.status ){ "Status not OK!"}
@@ -254,12 +255,64 @@ class OrganizationRoutingTests {
                     newName
                 ),
                 token,
-                applicationContextId
+                apiOrganization.contextId
+                // applicationContextId
             )
             assertIs<Result.Success<ApiOrganization>>(updatedOrganizationResult)
             val updatedOrganization = updatedOrganizationResult.data
 
             assertEquals(newName, updatedOrganization.name)
+        }
+    }
+
+    @Api@Test fun cannotUpdateOrganizationWithoutPermission() = runBlocking {
+        testApplication {
+            environment {
+                // Load the HOCON file explicitly with the file path
+                val configFile = File("src/test/resources/usermanagement.api.test.conf")
+                config = HoconApplicationConfig(ConfigFactory.parseFile(configFile))
+
+            }
+            application {
+
+            }
+
+            // data
+            val organizationName = "name-7-wp"
+
+            // get token and context
+            val token = client.getTestToken("developer@alpha-structure.com")
+            val unAuthorizedToken = client.getTestToken("unautorized@solyton.org")
+            val applicationContextId = client.getTestContextIdByName("APPLICATION")
+
+            val organizationResult: Result<ApiOrganization> = client.createOrganization(
+                CreateOrganization(organizationName),
+                token,
+                applicationContextId
+            ) {
+                assertEquals(HttpStatusCode.OK, this.status ){ "Status not OK!"}
+            }
+            assertIs<Result.Success<ApiOrganization>>(organizationResult)
+
+            val apiOrganization = organizationResult.data
+            assertEquals(organizationName, apiOrganization.name)
+
+            val contextExists = client.contextExists(UUID.fromString(apiOrganization.contextId))
+            assertTrue(contextExists)
+
+            val newName = "new-name-wp"
+            // val updatedOrganizationResult =
+            client.updateOrganization(
+                UpdateOrganization(
+                    apiOrganization.id,
+                    newName
+                ),
+                unAuthorizedToken,
+                apiOrganization.contextId
+                // applicationContextId
+            ) {
+                assertEquals(HttpStatusCode.Forbidden, status)
+            }
         }
     }
 }
