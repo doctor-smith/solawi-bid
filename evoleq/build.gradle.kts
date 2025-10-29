@@ -169,6 +169,7 @@ dependencyAnalyser {
         modules = setOf(
             "configuration",
             "csv",
+            "ktorx/date",
             "ktorx/api",
             "ktorx/result",
             "math",
@@ -209,6 +210,7 @@ dependencyAnalyser {
             "i18n",
             "label",
             "layout",
+            "link",
             "modal",
             "routing",
             "storage",
