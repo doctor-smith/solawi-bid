@@ -12,6 +12,10 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.permission.schema.RightEntity
+import org.solyton.solawi.bid.module.permission.schema.RightsTable
+import org.solyton.solawi.bid.module.permission.schema.RoleEntity
+import org.solyton.solawi.bid.module.permission.schema.RolesTable
 import java.util.UUID
 
 
@@ -45,11 +49,34 @@ fun Routing.testContexts(database: Database) {
         }
         call.respondText(context.name)
     }
+    get("/test/role-id-by-name") {
+        val roleName = call.request.queryParameters["role"] as String
+        val role =  transaction(database) {
+            val context = RoleEntity.find { RolesTable.name eq roleName }.first()
+            context
+        }
+        call.respondText(role.id.value.toString())
+    }
+    get("/test/right-id-by-name") {
+        val rightName = call.request.queryParameters["right"] as String
+        val right =  transaction(database) {
+            val context = RightEntity.find { RightsTable.name eq rightName }.first()
+            context
+        }
+        call.respondText(right.id.value.toString())
+    }
+
 }
 
 suspend fun HttpClient.getDummyRootContextId(): String =  get("/test/context-by-name?context-name=DUMMY_ROOT_CONTEXT").bodyAsText()
 
 suspend fun HttpClient.getTestContextIdByName(name: String): String = get("/test/context-by-name?context-name=$name").bodyAsText()
+
+suspend fun HttpClient.getTestRoleIdByName(name: String): String = get("/test/role-id-by-name?role=$name").bodyAsText()
+
+suspend fun HttpClient.getTestRightIdByName(name: String): String = get("/test/right-id-by-name?right=$name").bodyAsText()
+
+
 
 suspend fun HttpClient.contextExists(id: UUID): Boolean =
     try {
