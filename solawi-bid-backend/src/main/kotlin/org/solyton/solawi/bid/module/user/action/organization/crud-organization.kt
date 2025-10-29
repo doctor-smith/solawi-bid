@@ -59,7 +59,7 @@ fun ReadOrganizations(): KlAction<Result<Contextual<ReadOrganizations>>, Result<
     DbAction { database -> result bindSuspend {contextual -> resultTransaction(database) {
         val userId = contextual.userId
         val userRightContextIds = getUserRightContexts(userId, listOf("READ_ORGANIZATION"))
-        val organizations = OrganizationEntity.find { OrganizationsTable.id inList userRightContextIds }
+        val organizations = OrganizationEntity.find { OrganizationsTable.contextId inList userRightContextIds }
             .map { it.root?: it }.distinctBy{it.id.value}
         Organizations(organizations.map { organization -> organization.toApiType(this) })
     } } x database
