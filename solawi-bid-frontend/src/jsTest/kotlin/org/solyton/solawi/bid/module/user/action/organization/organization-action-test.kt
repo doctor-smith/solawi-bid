@@ -9,6 +9,7 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.testutils.ComposeWebExperimentalTestsApi
 import org.jetbrains.compose.web.testutils.runTest
 import org.solyton.solawi.bid.application.data.transform.user.userIso
+import org.solyton.solawi.bid.module.permission.data.api.ApiRole
 import org.solyton.solawi.bid.module.user.data.Application
 import org.solyton.solawi.bid.module.user.data.api.organization.*
 import org.solyton.solawi.bid.module.user.data.organization.Organization
@@ -131,6 +132,116 @@ class OrganizationActionTest {
             val storedOrganization = (storage * userIso * organizationLens.get).emit()
             val expected = updatedOrganization.toDomainType()
             assertEquals(expected, storedOrganization)
+        }
+    }
+
+
+    @OptIn(ComposeWebExperimentalTestsApi::class)
+    @Test fun addMemberTest() = runTest {
+        val myOrganization = ApiOrganization(
+            "organization_id",
+            "organization",
+            "context_id",
+            listOf(),
+            listOf()
+        )
+
+        val updatedOrganization = myOrganization.copy(
+            members = listOf(
+                ApiMember(
+                    "0",
+                    listOf(
+                        ApiRole( "0", "0","0",listOf())
+                    )
+                )
+            )
+        )
+        val organizationLens: Lens<Application, Organization> = user * organizations * FirstBy {
+                organization: Organization -> organization.organizationId == myOrganization.id
+        }
+
+        val action = addMember("0",listOf("0"), organizationLens)
+
+        composition {
+            val storage = TestStorage()
+            (storage * userIso * createOrganization("organization").writer).dispatch(myOrganization)
+            assertIs<AddMember>((storage * userIso * action.reader).emit())
+
+            (storage * userIso * action.writer).dispatch(updatedOrganization)
+            val storedOrganization = (storage * userIso * organizationLens).read()
+            assertEquals(updatedOrganization.toDomainType(), storedOrganization)
+        }
+    }
+
+    @OptIn(ComposeWebExperimentalTestsApi::class)
+    @Test fun updateMemberTest() = runTest {
+        val myOrganization = ApiOrganization(
+            "organization_id",
+            "organization",
+            "context_id",
+            listOf(),
+            listOf()
+        )
+
+        val updatedOrganization = myOrganization.copy(
+            members = listOf(
+                ApiMember(
+                    "0",
+                    listOf(
+                        ApiRole( "0", "0","0",listOf())
+                    )
+                )
+            )
+        )
+        val organizationLens: Lens<Application, Organization> = user * organizations * FirstBy {
+                organization: Organization -> organization.organizationId == myOrganization.id
+        }
+
+        val action = updateMember("0",listOf("0"), organizationLens)
+
+        composition {
+            val storage = TestStorage()
+            (storage * userIso * createOrganization("organization").writer).dispatch(myOrganization)
+            assertIs<UpdateMember>((storage * userIso * action.reader).emit())
+
+            (storage * userIso * action.writer).dispatch(updatedOrganization)
+            val storedOrganization = (storage * userIso * organizationLens).read()
+            assertEquals(updatedOrganization.toDomainType(), storedOrganization)
+        }
+    }
+
+    @OptIn(ComposeWebExperimentalTestsApi::class)
+    @Test fun removeMemberTest() = runTest {
+        val myOrganization = ApiOrganization(
+            "organization_id",
+            "organization",
+            "context_id",
+            listOf(),
+            listOf(ApiMember(
+                "0",
+                listOf(
+                    ApiRole( "0", "0","0",listOf())
+                )
+            ))
+        )
+
+        val updatedOrganization = myOrganization.copy(
+            members = listOf()
+        )
+        val organizationLens: Lens<Application, Organization> = user * organizations * FirstBy {
+                organization: Organization -> organization.organizationId == myOrganization.id
+        }
+
+        val action = removeMember("0", organizationLens)
+
+        composition {
+            val storage = TestStorage()
+            (storage * userIso * createOrganization("organization").writer).dispatch(myOrganization)
+            assertIs<RemoveMember>((storage * userIso * action.reader).emit())
+
+            (storage * userIso * action.writer).dispatch(updatedOrganization)
+            val storedOrganization = (storage * userIso * organizationLens).read()
+            assertEquals(updatedOrganization.toDomainType(), storedOrganization)
         }
     }
 }
