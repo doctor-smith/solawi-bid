@@ -16,4 +16,6 @@ sealed class OrganizationException(override val message: String) : Exception(mes
     data class NoSuchChildOrganization(val id: String) : OrganizationException("No such child organization; id = $id")
 
     data class NoRoot(val id: String): OrganizationException("Child organization '$id' has not root!")
+
+    data class DuplicateMember(val id: String): OrganizationException("Member already exists: id = $id")
 }

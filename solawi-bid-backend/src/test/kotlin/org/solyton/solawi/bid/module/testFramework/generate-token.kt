@@ -25,9 +25,21 @@ fun Routing.provideUserTokens(jwt: JWT, database: Database) {
         }
         call.respondText(token)
     }
+    get("/test/get-user-id") {
+        val username = call.request.queryParameters["user"] as String
+        val userId = transaction(database) {
+            UserEntity.find { UsersTable.username eq username }.first().id.value.toString()
+        }
+        call.respondText( userId)
+    }
 }
 
 suspend fun HttpClient.getTestToken(user: String): String {
     val response = get("/test/get-token?user=$user")
+    return response.bodyAsText()
+}
+
+suspend fun HttpClient.getUserId(user: String): String {
+    val response = get("/test/get-user-id?user=$user")
     return response.bodyAsText()
 }

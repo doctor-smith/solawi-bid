@@ -14,6 +14,8 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
+import org.solyton.solawi.bid.module.permission.PermissionException
+import org.solyton.solawi.bid.module.permission.action.db.isGranted
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.data.api.organization.AddMember
 import org.solyton.solawi.bid.module.user.data.api.organization.Organization
@@ -25,6 +27,7 @@ import org.solyton.solawi.bid.module.user.exception.UserManagementException
 import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
 import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import org.solyton.solawi.bid.module.user.schema.UserEntity
+import org.solyton.solawi.bid.module.user.schema.UserOrganization
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import java.util.UUID
 
@@ -32,18 +35,29 @@ import java.util.UUID
 @Suppress("FunctionName")
 fun AddMember(): KlAction<Result<Contextual<AddMember>>, Result<Organization>> = KlAction{ result ->
     DbAction { database -> result bindSuspend {contextual -> resultTransaction(database) {
-        // val userId = contextual.userId
+        val userId = contextual.userId
         val data = contextual.data
         val memberId = UUID.fromString(data.userId)
 
         val organization = OrganizationEntity.find { OrganizationsTable.id eq UUID.fromString(data.organizationId) }.firstOrNull()
             ?: throw OrganizationException.NoSuchOrganization(data.organizationId)
 
-        val user = UserEntity.find { UsersTable.id eq memberId }.firstOrNull()
+        val member = UserEntity.find { UsersTable.id eq memberId }.firstOrNull()
             ?: throw UserManagementException.UserDoesNotExist.Id(data.userId)
 
+        if(!isGranted(
+            userId,
+            organization.context.id.value,
+            "MANAGE_USERS"
+        )) throw PermissionException.AccessDenied
+
+        if(organization.members.toList().contains(member)) throw OrganizationException.DuplicateMember("$memberId")
+
         // add member
-        organization.members + user
+        UserOrganization.insert {
+            it[UserOrganization.userId] = member.id
+            it[UserOrganization.organizationId] = organization.id
+        }
 
         // add roles to user-role-contexts
         data.roles.forEach { role ->
@@ -63,7 +77,7 @@ fun AddMember(): KlAction<Result<Contextual<AddMember>>, Result<Organization>> =
 @Suppress("FunctionName")
 fun RemoveMember(): KlAction<Result<Contextual<RemoveMember>>, Result<Organization>> = KlAction{ result ->
     DbAction { database -> result bindSuspend {contextual -> resultTransaction(database) {
-        // val userId = contextual.userId
+        val userId = contextual.userId
         val data = contextual.data
         val memberId = UUID.fromString(data.userId)
 
@@ -73,8 +87,17 @@ fun RemoveMember(): KlAction<Result<Contextual<RemoveMember>>, Result<Organizati
         val user = UserEntity.find { UsersTable.id eq memberId }.firstOrNull()
             ?: throw UserManagementException.UserDoesNotExist.Id(data.userId)
 
+        if(!isGranted(
+            userId,
+            organization.context.id.value,
+            "MANAGE_USERS"
+        )) throw PermissionException.AccessDenied
+
         // remove member
-        organization.members - user
+        UserOrganization.deleteWhere {
+            UserOrganization.userId eq user.id and
+            (UserOrganization.organizationId eq organization.id)
+        }
 
         // remove roles from user-role-contexts
         UserRoleContext.deleteWhere {
@@ -91,11 +114,18 @@ fun RemoveMember(): KlAction<Result<Contextual<RemoveMember>>, Result<Organizati
 @Suppress("FunctionName")
 fun UpdateMember(): KlAction<Result<Contextual<UpdateMember>>, Result<Organization>> = KlAction{ result ->
     DbAction { database -> result bindSuspend {contextual -> resultTransaction(database) {
+        val userId = contextual.userId
         val data = contextual.data
         val memberId = UUID.fromString(data.userId)
 
         val organization = OrganizationEntity.find { OrganizationsTable.id eq UUID.fromString(data.organizationId) }.firstOrNull()
             ?: throw OrganizationException.NoSuchOrganization(data.organizationId)
+
+        if(!isGranted(
+            userId,
+            organization.context.id.value,
+            "MANAGE_USERS"
+        )) throw PermissionException.AccessDenied
 
         val roleIds = data.roles.map { UUID.fromString(it) }
         UserRoleContext.deleteWhere {

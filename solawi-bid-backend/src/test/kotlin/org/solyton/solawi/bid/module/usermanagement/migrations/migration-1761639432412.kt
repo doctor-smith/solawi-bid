@@ -58,6 +58,12 @@ class Migration1761639432412(
             createdBy = UUID_ZERO
         }
 
+        RoleEntity.new {
+            name = "USER"
+            description = "Use something"
+            createdBy = UUID_ZERO
+        }
+
         val readOrganization = RightEntity.new {
             name = "READ_ORGANIZATION"
             description = "Create organization"

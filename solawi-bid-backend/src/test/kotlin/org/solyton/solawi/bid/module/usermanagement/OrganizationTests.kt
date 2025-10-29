@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.usermanagement
 
 import org.evoleq.exposedx.test.runSimpleH2Test
 import org.evoleq.uuid.UUID_ZERO
+import org.jetbrains.exposed.sql.insert
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.application.data.db.migrations.setupBasicRolesAndRights
@@ -37,7 +38,11 @@ class OrganizationTests {
 
     @DbFunctional@Test fun createOrganization() = runSimpleH2Test(*neededTables){
         setupBasicRolesAndRights()
-
+        Rights.insert {
+            it[name] = "MANAGE_USERS"
+            it[Roles.description] = "Manage users"
+            it[createdBy] = UUID_ZERO
+        }
         val organization = createRootOrganization(organizationName)
 
 
@@ -50,6 +55,11 @@ class OrganizationTests {
 
     @DbFunctional@Test fun addUser() = runSimpleH2Test(*neededTables){
         setupBasicRolesAndRights()
+        Rights.insert {
+            it[name] = "MANAGE_USERS"
+            it[Roles.description] = "Manage users"
+            it[createdBy] = UUID_ZERO
+        }
         val user = UserEntity.new {
             password = "password"
             username = "username"
@@ -66,7 +76,11 @@ class OrganizationTests {
 
     @DbFunctional@Test fun createChild() = runSimpleH2Test(*neededTables){
         setupBasicRolesAndRights()
-
+        Rights.insert {
+            it[name] = "MANAGE_USERS"
+            it[Roles.description] = "Manage users"
+            it[createdBy] = UUID_ZERO
+        }
         var organization = createRootOrganization(organizationName)
 
         val childOrganization = "TEST_CHILD_ORGANIZATION"
@@ -110,7 +124,11 @@ class OrganizationTests {
 
     @DbFunctional@Test fun ancestors() = runSimpleH2Test(*neededTables){
         setupBasicRolesAndRights()
-
+        Rights.insert {
+            it[name] = "MANAGE_USERS"
+            it[Roles.description] = "Manage users"
+            it[createdBy] = UUID_ZERO
+        }
         val organization = createRootOrganization(organizationName)
         val childOrganization = "TEST_CHILD_ORGANIZATION"
         val child = organization.createChild(childOrganization, UUID_ZERO)
@@ -122,7 +140,11 @@ class OrganizationTests {
 
     @DbFunctional@Test fun removeChild() = runSimpleH2Test(*neededTables){
         setupBasicRolesAndRights()
-
+        Rights.insert {
+            it[name] = "MANAGE_USERS"
+            it[Roles.description] = "Manage users"
+            it[createdBy] = UUID_ZERO
+        }
         val organization = createRootOrganization(organizationName)
         val childOrganization = "TEST_CHILD_ORGANIZATION"
         val child = organization.createChild(childOrganization, UUID_ZERO)

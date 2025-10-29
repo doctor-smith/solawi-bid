@@ -42,6 +42,7 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
         // Organization
         is OrganizationException.NoSuchOrganization -> HttpStatusCode.NotFound
         is OrganizationException.NoSuchChildOrganization -> HttpStatusCode.NotFound
+        is OrganizationException.DuplicateMember -> HttpStatusCode.Conflict
 
         // Permission
         is PermissionException.AccessDenied -> HttpStatusCode.Forbidden
