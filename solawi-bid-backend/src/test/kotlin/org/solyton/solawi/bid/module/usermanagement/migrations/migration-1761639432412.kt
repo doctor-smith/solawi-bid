@@ -39,7 +39,11 @@ class Migration1761639432412(
      */
     override suspend fun Transaction.up() {
         val developer = UserEntity.find{ UsersTable.username eq "developer@alpha-structure.com" }.first()
-
+        val unauthorizedUser = UserEntity.new {
+            username = "unautorized@solyton.org"
+            password = "jfdkdjsöKD"
+            createdBy = UUID_ZERO
+        }
         val applicationContext = createRootContext("APPLICATION")
 
         val developerRole = RoleEntity.new {
@@ -78,6 +82,12 @@ class Migration1761639432412(
             createdBy = UUID_ZERO
         }
 
+        RightEntity.new {
+            name = "MANAGE_USERS"
+            description = "Manage Users"
+            createdBy = UUID_ZERO
+        }
+
         (developerRole of applicationContext).grant(
             // crud
             createOrganization, readOrganization, updateOrganization, deleteOrganization
@@ -85,6 +95,11 @@ class Migration1761639432412(
 
         UserRoleContext.insert {
             it[userId] = developer.id.value
+            it[roleId] = developerRole.id.value
+            it[contextId] = applicationContext.id
+        }
+        UserRoleContext.insert {
+            it[userId] = unauthorizedUser.id.value
             it[roleId] = developerRole.id.value
             it[contextId] = applicationContext.id
         }

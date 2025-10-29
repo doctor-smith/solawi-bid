@@ -64,7 +64,7 @@ class OrganizationRoutingTests {
         }
     }
 
-    @Api@Test fun readOrganization() = runBlocking {
+    @Api@Test fun readOrganizations() = runBlocking {
         testApplication {
             environment {
                 // Load the HOCON file explicitly with the file path
@@ -102,6 +102,59 @@ class OrganizationRoutingTests {
             // read organization
             val readOrganizationResult = client.readOrganizations(token, applicationContextId)
             assertIs<Result.Success<ApiOrganizations>>(readOrganizationResult)
+            val organizations = readOrganizationResult.data.all
+            assertEquals(1, organizations.size)
+
+        }
+    }
+
+    @Api@Test fun readOrganizationsWithoutPermission() = runBlocking {
+        testApplication {
+            environment {
+                // Load the HOCON file explicitly with the file path
+                val configFile = File("src/test/resources/usermanagement.api.test.conf")
+                config = HoconApplicationConfig(ConfigFactory.parseFile(configFile))
+
+            }
+            application {
+
+            }
+
+            // data
+            val organizationName = "name-0"
+
+            // get token and context
+            val token = client.getTestToken("developer@alpha-structure.com")
+            val unAuthorizedToken = client.getTestToken("unautorized@solyton.org")
+            val applicationContextId = client.getTestContextIdByName("APPLICATION")
+
+            val organizationResult: Result<ApiOrganization> = client.createOrganization(
+                CreateOrganization(organizationName),
+                token,
+                applicationContextId
+            ) {
+                assertEquals(HttpStatusCode.OK, this.status ){ "Status not OK!"}
+            }
+            assertIs<Result.Success<ApiOrganization>>(organizationResult)
+
+            val apiOrganization = organizationResult.data
+            assertEquals(organizationName, apiOrganization.name)
+
+            val contextExists = client.contextExists(UUID.fromString(apiOrganization.contextId))
+            assertTrue(contextExists)
+
+
+            // read organization
+            val readOrganizationResult = client.readOrganizations(token, applicationContextId)
+            assertIs<Result.Success<ApiOrganizations>>(readOrganizationResult)
+            val nonEmptyList = readOrganizationResult.data
+            assertEquals(1, nonEmptyList.all.size)
+
+            val unAuthorizedResult = client.readOrganizations(unAuthorizedToken, applicationContextId)
+            assertIs<Result.Success<ApiOrganizations>>(unAuthorizedResult)
+            val organizations = unAuthorizedResult.data
+
+            assertTrue{ organizations.all.isEmpty() }
         }
     }
 

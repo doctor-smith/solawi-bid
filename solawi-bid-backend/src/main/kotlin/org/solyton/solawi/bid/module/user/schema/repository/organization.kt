@@ -62,11 +62,14 @@ fun createRootOrganization(organizationName: String, creatorId: UUID = UUID_ZERO
         createdBy = creatorId
     }
     val manager = RoleEntity.find { Roles.name eq BasicRole.manager.value }.first()
-    val read = RightEntity.find { Rights.name eq OrganizationRight.Organization.create.value }.first()
+    val create = RightEntity.find { Rights.name eq OrganizationRight.Organization.create.value }.first()
+    val read = RightEntity.find { Rights.name eq OrganizationRight.Organization.read.value }.first()
     val write = RightEntity.find { Rights.name eq OrganizationRight.Organization.update.value }.first()
+    val delete = RightEntity.find { Rights.name eq OrganizationRight.Organization.delete.value }.first()
+    val manageUsers = RightEntity.find { Rights.name eq "MANAGE_USERS" }.first()
 
     (manager of organizationContext).grant(
-        read, write
+        create, read, write, delete, manageUsers
     )
 
     val organization = OrganizationEntity.new {
