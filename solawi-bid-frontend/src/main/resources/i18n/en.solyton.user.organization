@@ -1,0 +1,43 @@
+en {
+    solyton {
+        user {
+            organization {
+                managementPage {
+                    title: "Organizations"
+                    buttons {
+                        createOrganization {
+                            title: "Create Organization"
+                            tooltip: "Create Organization"
+                        }
+                        createChildOrganization {
+                            title: "Create child organization"
+                            tooltip: "Create child Organization"
+                        }
+                    }
+                    dialogs {
+                        createOrganization {
+                            title: "Create Organization"
+                            inputs {
+                                name {
+                                    title: "Name"
+                                }
+                            }
+                            okButton {
+                                title: "Ok"
+                            }
+                            cancelButton {
+                                title: "Cancel"
+                            }
+                            errors {
+
+                            }
+                        }
+                    }
+                    errors {
+                        emptyName: "Name is not allowed to be empty"
+                    }
+                }
+            }
+        }
+    }
+}
