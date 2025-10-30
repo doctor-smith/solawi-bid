@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Vertical
+import org.evoleq.compose.link.Link
 import org.evoleq.compose.routing.navigate
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.Lang
@@ -58,7 +59,9 @@ fun DashboardPage(storage: Storage<Application>) {
                 Card({
                     navigate("/app/management")
                 }) {
-                    Wrap { H3 { Text("User Management") } }
+                    Wrap { H3 { Text("Application Management") } }
+                    Link("User Management", "/app/management/users")
+                    Link("Organization Management", "/app/management/organizations")
                 }
             }
 
@@ -124,6 +127,7 @@ fun Card(
             color(Color.black)
             borderRadius(5.px)
         }
+        cursor("pointer")
     }
 }) {
     content()
