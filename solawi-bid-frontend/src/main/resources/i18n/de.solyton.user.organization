@@ -33,6 +33,17 @@ de {
                             }
                         }
                     }
+                    listOfOrganizations {
+                        title: "Liste der Organisationen"
+                        columns {
+                            organization {
+                                title: "Organisation"
+                            }
+                            actions {
+                                tooltip: "Aktionen"
+                            }
+                        }
+                    }
                     errors {
                         emptyName: "Name darf nicht leer sein"
                     }
