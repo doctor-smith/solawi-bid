@@ -9,6 +9,8 @@ val inputs: Reader<Lang.Block, Lang.Block> = subComp("inputs")
 
 val username: Reader<Lang.Block, Lang.Block> = subComp("username")
 
+val name: Reader<Lang.Block, Lang.Block> = subComp("name")
+
 val password: Reader<Lang.Block, Lang.Block> = subComp("password")
 
 val oldPassword: Reader<Lang.Block, Lang.Block> = subComp("oldPassword")

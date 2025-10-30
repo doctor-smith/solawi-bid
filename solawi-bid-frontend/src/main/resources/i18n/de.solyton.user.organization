@@ -1,0 +1,43 @@
+de {
+    solyton {
+        user {
+            organization {
+                managementPage {
+                    title: "Organisationen"
+                    buttons {
+                        createOrganization {
+                            title: "Organisation erstellen"
+                            tooltip: "Organisation erstellen"
+                        }
+                        createChildOrganization {
+                            title: "Sub-Organisation erstellen"
+                            tooltip: "Sub-Organisation erstellen"
+                        }
+                    }
+                    dialogs {
+                        createOrganization {
+                            title: "Organiation erstellen"
+                            inputs {
+                                name {
+                                    title: "Name"
+                                }
+                            }
+                            okButton {
+                                title: "Ok"
+                            }
+                            cancelButton {
+                                title: "Abbrechen"
+                            }
+                            errors {
+
+                            }
+                        }
+                    }
+                    errors {
+                        emptyName: "Name darf nicht leer sein"
+                    }
+                }
+            }
+        }
+    }
+}
