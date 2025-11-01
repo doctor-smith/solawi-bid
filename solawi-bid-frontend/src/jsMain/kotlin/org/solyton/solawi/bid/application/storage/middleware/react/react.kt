@@ -31,45 +31,35 @@ import org.solyton.solawi.bid.module.permission.data.api.ParentChildRelationsOfC
 @MathDsl
 @Suppress("FunctionName")
 fun <S: Any, T: Any> React(action: Action<Application, S, T>): KlState<Storage<Application>, Result<T>, Result<T>> = {
-        result -> State { storage ->
-    if(result is Result.Success) with((storage * actions).read()) react@{
-        when(action.name) {
-            // POC for the current usecase (SMA-230)
-            // 1. Read right role contexts of a user
-            // 2. Read parent-child-relations and all other context-relations
-            // 3. Read right role contexts of all returned contexts
-            "ReadUserPermissions" -> CoroutineScope(Job()).launch{
-                val contextId = (result.data as Contexts).list.first { it.name == Context.Application.value }.id
-                (storage * context * current).write(contextId)
-                // console.log("Emitting readParentChildRelationsOfContextsAction")
-                emit(readParentChildRelationsOfContextsAction("React"))
-                // Read other context-relations
-                emit(applicationManagementModule * readPersonalApplications )
-                emit(applicationManagementModule * readApplications )
-                emit(applicationManagementModule * readApplicationContextRelations )
-                emit(applicationManagementModule * readModuleContextRelations)
+    result -> State { storage ->
+        if(result is Result.Success) with((storage * actions).read()) react@{
+            when(action.name) {
+                // POC for the current usecase (SMA-230)
+                // 1. Read right role contexts of a user
+                // 2. Read parent-child-relations and all other context-relations
+                // 3. Read right role contexts of all returned contexts
+                "ReadUserPermissions" -> CoroutineScope(Job()).launch{
+                    val contextId = (result.data as Contexts).list.first { it.name == Context.Application.value }.id
+                    (storage * context * current).write(contextId)
+                    // console.log("Emitting readParentChildRelationsOfContextsAction")
+                    emit(readParentChildRelationsOfContextsAction("React"))
+                    // Read other context-relations
+                    emit(applicationManagementModule * readPersonalApplications )
+                    emit(applicationManagementModule * readApplications )
+                    emit(applicationManagementModule * readApplicationContextRelations )
+                    emit(applicationManagementModule * readModuleContextRelations)
+                }
+                "ReadParentChildRelationsOfContextsReact" -> CoroutineScope(Job()).launch{
+                    // console.log("Emitting readRightRoleContextsAction")
+                    emit(readRightRoleContextsAction(
+                        "React",
+                        result.data as ParentChildRelationsOfContexts
+                    ))
+                }
+                else -> Unit
+                // One could also use this mechanism to establish pagination
             }
-            "ReadParentChildRelationsOfContextsReact" -> CoroutineScope(Job()).launch{
-                // console.log("Emitting readRightRoleContextsAction")
-                emit(readRightRoleContextsAction(
-                    "React",
-                    result.data as ParentChildRelationsOfContexts
-                ))
-            }
-            "ReadRightRoleContextsReact" -> {
-                /*
-                console.log(
-                    "root contexts:",
-                    storage.read().availablePermissions.contexts.map { it.contextName }
-                )
-                */
-            }
-
-
-            else -> Unit
-            // One could also use this mechanism to establish pagination
         }
+        result x storage
     }
-    result x storage
-}
 }
