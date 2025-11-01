@@ -94,6 +94,11 @@ tasks.withType<Test> {
         junitXml.required = true
         html.required = true
     }
+
+}
+tasks.withType<Test>().configureEach {
+    // Wenn CI-Property gesetzt ist, ignoriere Failures
+    ignoreFailures = project.findProperty("ignoreFailuresInTests")?.toString()?.toBoolean() ?: false
 }
 
 publishing {

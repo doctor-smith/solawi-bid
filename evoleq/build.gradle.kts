@@ -113,6 +113,11 @@ tasks.withType<Test> {
     }
 }
 
+tasks.withType<Test>().configureEach {
+    // Wenn CI-Property gesetzt ist, ignoriere Failures
+    ignoreFailures = project.findProperty("ignoreFailuresInTests")?.toString()?.toBoolean() ?: false
+}
+
 publishing {
     publications {
         withType<MavenPublication>()
