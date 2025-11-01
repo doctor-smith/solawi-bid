@@ -17,6 +17,7 @@ val userIso: Lens<Application, UserModule> by lazy {
 private val preUserIso: Lens<Application, UserModule> by lazy {
     Lens(
         get = { whole -> UserModule(
+            context = whole.context,
             actions = ActionDispatcher { },
             deviceData = whole.deviceData,
             modals = whole.modals,
@@ -27,6 +28,7 @@ private val preUserIso: Lens<Application, UserModule> by lazy {
             availablePermissions = whole.availablePermissions
         ) },
         set = { part -> { whole -> whole.copy(
+            context = part.context,
             modals = part.modals,
             i18N = part.i18n,
             userData = part.user,
