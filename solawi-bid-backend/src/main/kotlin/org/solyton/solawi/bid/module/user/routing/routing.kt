@@ -5,10 +5,7 @@ import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.util.*
 import org.evoleq.exposedx.data.DbEnv
-import org.evoleq.ktorx.Base
-import org.evoleq.ktorx.Receive
-import org.evoleq.ktorx.ReceiveContextual
-import org.evoleq.ktorx.Respond
+import org.evoleq.ktorx.*
 import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
@@ -16,21 +13,9 @@ import org.solyton.solawi.bid.module.permission.action.db.IsGranted
 import org.solyton.solawi.bid.module.user.action.ChangePassword
 import org.solyton.solawi.bid.module.user.action.CreateNewUser
 import org.solyton.solawi.bid.module.user.action.GetAllUsers
-import org.solyton.solawi.bid.module.user.action.organization.CreateOrganization
-import org.solyton.solawi.bid.module.user.action.organization.CreateChildOrganization
-import org.solyton.solawi.bid.module.user.action.organization.ReadOrganizations
-import org.solyton.solawi.bid.module.user.action.organization.UpdateOrganization
-import org.solyton.solawi.bid.module.user.action.organization.AddMember
-import org.solyton.solawi.bid.module.user.action.organization.UpdateMember
-import org.solyton.solawi.bid.module.user.action.organization.RemoveMember
+import org.solyton.solawi.bid.module.user.action.organization.*
 import org.solyton.solawi.bid.module.user.data.api.*
-import org.solyton.solawi.bid.module.user.data.api.organization.AddMember
-import org.solyton.solawi.bid.module.user.data.api.organization.CreateChildOrganization
-import org.solyton.solawi.bid.module.user.data.api.organization.CreateOrganization
-import org.solyton.solawi.bid.module.user.data.api.organization.ReadOrganizations
-import org.solyton.solawi.bid.module.user.data.api.organization.RemoveMember
-import org.solyton.solawi.bid.module.user.data.api.organization.UpdateMember
-import org.solyton.solawi.bid.module.user.data.api.organization.UpdateOrganization
+import org.solyton.solawi.bid.module.user.data.api.organization.*
 
 @KtorDsl
 fun <UserEnv> Routing.user(
@@ -90,6 +75,14 @@ fun <OrganizationEnv> Routing.organization(
                 ReceiveContextual<UpdateOrganization>() *
                 IsGranted("UPDATE_ORGANIZATION") *
                 UpdateOrganization() *
+                Respond { transform() } runOn Base(call, environment)
+            }
+            delete("delete") {
+                ReceiveContextual<DeleteOrganization>() *
+                IsGranted("DELETE_ORGANIZATION") *
+                DeleteOrganization() *
+                Transform { contextual -> contextual map { ReadOrganizations } } *
+                ReadOrganizations() *
                 Respond { transform() } runOn Base(call, environment)
             }
 

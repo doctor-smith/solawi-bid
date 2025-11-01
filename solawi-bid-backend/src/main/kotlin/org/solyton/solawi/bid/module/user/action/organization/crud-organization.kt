@@ -4,20 +4,15 @@ import org.evoleq.exposedx.transaction.resultTransaction
 import org.evoleq.ktorx.Contextual
 import org.evoleq.ktorx.DbAction
 import org.evoleq.ktorx.KlAction
+import org.evoleq.ktorx.map
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.solyton.solawi.bid.module.permission.PermissionException
-import org.solyton.solawi.bid.module.permission.action.db.getRolesByUserAndContext
 import org.solyton.solawi.bid.module.permission.action.db.getUserRightContexts
 import org.solyton.solawi.bid.module.permission.action.db.isGranted
-import org.solyton.solawi.bid.module.user.data.api.organization.CreateChildOrganization
-import org.solyton.solawi.bid.module.user.data.api.organization.CreateOrganization
-import org.solyton.solawi.bid.module.user.data.api.organization.Organization
-import org.solyton.solawi.bid.module.user.data.api.organization.Organizations
-import org.solyton.solawi.bid.module.user.data.api.organization.ReadOrganizations
-import org.solyton.solawi.bid.module.user.data.api.organization.UpdateOrganization
+import org.solyton.solawi.bid.module.user.data.api.organization.*
 import org.solyton.solawi.bid.module.user.data.toApiType
 import org.solyton.solawi.bid.module.user.exception.OrganizationException
 import org.solyton.solawi.bid.module.user.permission.OrganizationRight
@@ -25,7 +20,9 @@ import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
 import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import org.solyton.solawi.bid.module.user.schema.repository.createChild
 import org.solyton.solawi.bid.module.user.schema.repository.createRootOrganization
-import java.util.UUID
+import org.solyton.solawi.bid.module.user.schema.repository.hasChildren
+import org.solyton.solawi.bid.module.user.schema.repository.remove
+import java.util.*
 
 @MathDsl
 @Suppress("FunctionName")
@@ -107,3 +104,23 @@ fun UpdateOrganization(): KlAction<Result<Contextual<UpdateOrganization>>, Resul
         organization.toApiType(this)
     } } x database
  } }
+
+// todo:test
+@MathDsl
+@Suppress("FunctionName")
+fun DeleteOrganization(): KlAction<Result<Contextual<DeleteOrganization>>, Result<Contextual<Unit>>> = KlAction{ result ->
+    DbAction { database -> result bindSuspend {contextual -> resultTransaction(database) {
+        val organizationId = UUID.fromString(contextual.data.id)
+
+        val organization = OrganizationEntity.find { OrganizationsTable.id eq organizationId }.firstOrNull()
+            ?: throw OrganizationException.NoSuchOrganization(organizationId.toString())
+
+        if(organization.hasChildren()) throw OrganizationException.CannotDeleteOrganization(
+            organizationId.toString(),
+            "There are sub organizations"
+        )
+
+        organization.remove()
+        contextual map {}
+    } } x database
+} }
