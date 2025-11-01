@@ -78,3 +78,18 @@ fun List<Int>.nextId(min: Int = 1): Int = when {
         }
     }
 }
+
+fun <T> Storage<List<T>>.split(): List<Storage<T>> = with(read()) {
+    mapIndexed { index, t ->
+        Storage<T>(
+            read = { t },
+            write = { s: T ->
+                this@split.write(listOf(
+                    *take(index).toTypedArray(),
+                    s,
+                    *drop(index + 1).toTypedArray()
+                ))
+            }
+        )
+    }
+}
