@@ -1,6 +1,6 @@
 package org.solyton.solawi.bid.module.user.action.organization
 
-import org.evoleq.math.Push
+import org.evoleq.math.Append
 import org.evoleq.math.Reader
 import org.evoleq.math.contraMap
 import org.evoleq.optics.lens.Lens
@@ -13,8 +13,6 @@ import org.solyton.solawi.bid.module.user.data.api.organization.CreateChildOrgan
 import org.solyton.solawi.bid.module.user.data.organization.Organization
 import org.solyton.solawi.bid.module.user.data.organization.subOrganizations
 import org.solyton.solawi.bid.module.user.data.transform.toDomainType
-import org.solyton.solawi.bid.module.user.data.user
-import org.solyton.solawi.bid.module.user.data.user.organizations
 
 fun createChildOrganization(name: String, parent: Lens<Application, Organization>): Action<Application, CreateChildOrganization, ApiOrganization> = Action(
     name = "CreateChildOrganization",
@@ -25,7 +23,7 @@ fun createChildOrganization(name: String, parent: Lens<Application, Organization
         )
     },
     endPoint = CreateChildOrganization::class,
-    writer = (parent * subOrganizations * Push<Organization>()) contraMap {
+    writer = (parent * subOrganizations * Append<Organization>()) contraMap {
         organization: ApiOrganization -> organization.toDomainType()
     }
 )
