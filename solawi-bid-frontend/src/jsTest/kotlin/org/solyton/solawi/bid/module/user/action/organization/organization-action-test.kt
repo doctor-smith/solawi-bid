@@ -67,9 +67,10 @@ class OrganizationActionTest {
 
             (storage * userIso * createOrganization.writer).dispatch(ApiOrganization("0", "ß", "0", listOf(), listOf()))
             val expected = listOf(
-                Organization("0","ß", "0"),
+
                 Organization("1","1", "1"),
-                Organization("2","2", "2")
+                Organization("2","2", "2"),
+                Organization("0","ß", "0"),
             )
             val result = (storage * userIso * user * organizations).read()
             assertEquals(expected, result)
