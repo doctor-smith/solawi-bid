@@ -169,6 +169,11 @@ tasks.register<Test>("testFrameworkTest") {
 //    finalizedBy(tasks.jacocoTestReport)
 }
 
+tasks.withType<Test>().configureEach {
+    // Wenn CI-Property gesetzt ist, ignoriere Failures
+    ignoreFailures = project.findProperty("ignoreFailuresInTests")?.toString()?.toBoolean() ?: false
+}
+
 /*
 tasks.jacocoTestReport {
     reports {
