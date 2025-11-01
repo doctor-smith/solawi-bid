@@ -13,6 +13,7 @@ import org.evoleq.language.component
 import org.evoleq.language.subComp
 import org.evoleq.language.title
 import org.evoleq.language.tooltip
+import org.evoleq.math.Reader
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.on
@@ -25,9 +26,13 @@ import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.storage.split
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
+import org.jetbrains.compose.web.css.display
+import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.H2
+import org.jetbrains.compose.web.dom.I
+import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.user.effect.trigger
@@ -164,6 +169,10 @@ fun ListOfOrganizations(storage: Storage<Application>) {
 @Composable
 @Suppress("FunctionName")
 fun OrganizationItems(listStyles: ListStyles, organizations: Lens<Application, List<Organization>>, organization: Storage<Organization>, storage: Storage<Application>, deepth: Int = 0) {
+    // State
+    var opened by remember { mutableStateOf(false) }
+
+    // Data
     val texts = storage * i18n * language * component(OrganizationLangComponent.OrganizationManagementPage)
     val dialogs = texts * subComp("dialogs")
 
@@ -171,15 +180,18 @@ fun OrganizationItems(listStyles: ListStyles, organizations: Lens<Application, L
     val organizationName = (organization * name).read()
     val organizationContextId = organization.read().contextId
 
+    val hasSubOrganizations = (organization * subOrganizations * Reader { list:List<Organization> -> list.isNotEmpty() })
+
     ListItemWrapper(listStyles.listItemWrapper) {
         DataWrapper() {
             val offset = (deepth * 2.5)
             Div({style { width(offset.percent); color(Color.transparent) }}){ "-" }
-            TextCell( organization.read().name ){
+            if(hasSubOrganizations.emit() ) {
+                SimpleUpDown(opened) { opened = !opened}
+            }
+            TextCell( organizationName ){
                 width((50 - offset).percent)
             }
-
-
         }
         ActionsWrapper {
             var createChildOrganization by remember{ mutableStateOf(
@@ -274,6 +286,7 @@ fun OrganizationItems(listStyles: ListStyles, organizations: Lens<Application, L
             }
         }
     }
+    if(!opened) return
     (organization * subOrganizations).split().forEach {
         subOrg -> OrganizationItems(
         listStyles,
@@ -283,4 +296,21 @@ fun OrganizationItems(listStyles: ListStyles, organizations: Lens<Application, L
         deepth + 1
         )
     }
+}
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun SimpleUpDown(open: Boolean, toggle: () -> Unit) =  Span({
+    onClick { toggle() }
+    style {
+        width(1.5.em)
+        display(DisplayStyle.Flex)
+        justifyContent(JustifyContent.Center)
+        alignItems(AlignItems.Center)
+        paddingRight(5.px)
+    }
+}) {
+    val icon = if(open) "fa-chevron-down" else "fa-chevron-right"
+    I({classes("fa-solid", icon)}){}
 }
