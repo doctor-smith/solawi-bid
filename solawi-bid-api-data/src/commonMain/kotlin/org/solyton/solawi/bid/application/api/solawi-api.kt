@@ -10,6 +10,7 @@ import org.solyton.solawi.bid.module.user.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.organization.AddMember
 import org.solyton.solawi.bid.module.user.data.api.organization.CreateChildOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.CreateOrganization
+import org.solyton.solawi.bid.module.user.data.api.organization.DeleteOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.Organization
 import org.solyton.solawi.bid.module.user.data.api.organization.Organizations
 import org.solyton.solawi.bid.module.user.data.api.organization.ReadOrganizations
@@ -217,6 +218,10 @@ val solawiApi by lazy {
         patch<UpdateOrganization, Organization>(
             key = UpdateOrganization::class,
             url = "organizations/update"
+        )
+        delete<DeleteOrganization, Organizations>(
+            key = DeleteOrganization::class,
+            url = "organizations/delete"
         )
         post<AddMember, Organization>(
             key = AddMember::class,

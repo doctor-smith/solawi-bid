@@ -9,11 +9,12 @@ import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
 import org.solyton.solawi.bid.module.permission.schema.Rights
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
-import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
 import org.solyton.solawi.bid.module.permission.schema.Roles
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
+import org.solyton.solawi.bid.module.permission.schema.repository.createChild
 import org.solyton.solawi.bid.module.permission.schema.repository.grant
 import org.solyton.solawi.bid.module.permission.schema.repository.of
+import org.solyton.solawi.bid.module.permission.schema.repository.remove
 import org.solyton.solawi.bid.module.user.exception.OrganizationException
 import org.solyton.solawi.bid.module.user.permission.OrganizationRight
 import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
@@ -100,6 +101,25 @@ fun createRootOrganization(organizationName: String, creatorId: UUID = UUID_ZERO
  * Creates a child organization with context = root.context
  */
 fun OrganizationEntity.createChild(name: String, creatorId: UUID): OrganizationEntity {
+    val organizationContextName = name.replace(" ", "_").uppercase()
+    val exists = !ContextEntity.find { ContextsTable.name eq organizationContextName and (ContextsTable.rootId eq null) }.empty()
+    if(exists) throw ContextException.PathAlreadyExists(organizationContextName)
+
+    val organizationContext = context.createChild(
+        organizationContextName,
+        creatorId
+    )
+    val manager = RoleEntity.find { Roles.name eq BasicRole.manager.value }.first()
+    val create = RightEntity.find { Rights.name eq OrganizationRight.Organization.create.value }.first()
+    val read = RightEntity.find { Rights.name eq OrganizationRight.Organization.read.value }.first()
+    val write = RightEntity.find { Rights.name eq OrganizationRight.Organization.update.value }.first()
+    val delete = RightEntity.find { Rights.name eq OrganizationRight.Organization.delete.value }.first()
+    val manageUsers = RightEntity.find { Rights.name eq "MANAGE_USERS" }.first()
+
+    (manager of organizationContext).grant(
+        create, read, write, delete, manageUsers
+    )
+
     val ancestors = ancestors()
     val maxRight = root?.right?:1
     val siblings = OrganizationEntity.find {
@@ -119,15 +139,31 @@ fun OrganizationEntity.createChild(name: String, creatorId: UUID): OrganizationE
         else -> root!!
     }
     val childLevel = level +1
-    return OrganizationEntity.new {
+    val organization = OrganizationEntity.new {
         root = rootOrg
-        context = rootOrg.context
+        context = organizationContext
         this.name = name
         left = oldRight
         right = oldRight + 1
         level = childLevel
         createdBy = creatorId
     }
+
+    // grant manager rights to creator and add it to the organization
+    if(creatorId != UUID_ZERO) {
+
+        UserRoleContext.insert {
+            it[userId] = creatorId
+            it[roleId] = manager.id
+            it[contextId] = organizationContext.id
+        }
+
+        UserOrganization.insert {
+            it[userId] = creatorId
+            it[organizationId] = organization.id
+        }
+    }
+    return organization
 }
 
 fun OrganizationEntity.removeChild(childId: UUID) : OrganizationEntity {
@@ -155,8 +191,12 @@ fun OrganizationEntity.remove(): Unit {
         it.right -= diff
         it.left -= diff
     }
-    descendants.forEach { it.delete() }
+    descendants.forEach { it.remove() }
+
+    UserOrganization.deleteWhere { UserOrganization.organizationId eq this@remove.id }
+    val context = context
     delete()
+    context.remove()
 }
 
 fun OrganizationEntity.getChildren(): SizedIterable<OrganizationEntity> {
@@ -202,3 +242,4 @@ fun OrganizationEntity.removeUsers(): OrganizationEntity {
     return this
 }
 
+fun OrganizationEntity.hasChildren(): Boolean = right-left > 1

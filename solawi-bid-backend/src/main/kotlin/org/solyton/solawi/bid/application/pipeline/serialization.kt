@@ -33,6 +33,7 @@ import org.solyton.solawi.bid.module.user.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.organization.AddMember
 import org.solyton.solawi.bid.module.user.data.api.organization.CreateChildOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.CreateOrganization
+import org.solyton.solawi.bid.module.user.data.api.organization.DeleteOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.Member
 import org.solyton.solawi.bid.module.user.data.api.organization.Organization
 import org.solyton.solawi.bid.module.user.data.api.organization.Organizations
@@ -170,6 +171,7 @@ fun Application.installSerializers() {
     serializers[CreateChildOrganization::class] = CreateChildOrganization.serializer()
     serializers[ReadOrganizations::class] = ReadOrganizations.serializer()
     serializers[UpdateOrganization::class] = UpdateOrganization.serializer()
+    serializers[DeleteOrganization::class] = DeleteOrganization.serializer()
     serializers[AddMember::class] = AddMember.serializer()
     serializers[RemoveMember::class] = RemoveMember.serializer()
     serializers[UpdateMember::class] = UpdateMember.serializer()

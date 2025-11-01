@@ -3,14 +3,14 @@ package org.solyton.solawi.bid.module.usermanagement
 import org.evoleq.exposedx.test.runSimpleH2Test
 import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.selectAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.application.data.db.migrations.setupBasicRolesAndRights
 import org.solyton.solawi.bid.module.db.schema.*
-import org.solyton.solawi.bid.module.permission.schema.Contexts
-import org.solyton.solawi.bid.module.permission.schema.Rights
-import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
-import org.solyton.solawi.bid.module.permission.schema.Roles
+import org.solyton.solawi.bid.module.permission.schema.*
+import org.solyton.solawi.bid.module.permission.schema.ContextEntity
+import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
 import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserOrganization
@@ -31,7 +31,8 @@ class OrganizationTests {
         Roles,
         Rights,
         Contexts,
-        RoleRightContexts
+        RoleRightContexts,
+        UserRoleContext
     )
 
 
@@ -156,5 +157,29 @@ class OrganizationTests {
         assertFalse { organization.getChildren().contains(child) }
         assertEquals(0,result.left)
         assertEquals(1,result.right)
+    }
+
+    @DbFunctional@Test fun deleteOrganization() = runSimpleH2Test(*neededTables) {
+        setupBasicRolesAndRights()
+        Rights.insert {
+            it[name] = "MANAGE_USERS"
+            it[Roles.description] = "Manage users"
+            it[createdBy] = UUID_ZERO
+        }
+        val organization = createRootOrganization(organizationName)
+        val organizationId = organization.id.value
+        val contextId = organization.context.id.value
+        organization.remove()
+        assertTrue { OrganizationEntity.find{ OrganizationsTable.id eq organizationId }.empty() }
+        assertTrue { ContextEntity.find{ ContextsTable.id eq contextId}.empty() }
+        assertTrue { RoleRightContexts.selectAll().where{
+            RoleRightContexts.contextId eq contextId
+        }.empty() }
+        assertTrue { UserRoleContext.selectAll().where{
+            UserRoleContext.contextId eq contextId
+        }.empty() }
+        assertTrue { UserOrganization.selectAll().where{
+            UserOrganization.organizationId eq organizationId
+        }.empty() }
     }
 }

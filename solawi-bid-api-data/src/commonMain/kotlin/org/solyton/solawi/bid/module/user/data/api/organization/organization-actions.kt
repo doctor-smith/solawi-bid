@@ -23,6 +23,11 @@ data class UpdateOrganization(
 )
 
 @Serializable
+data class DeleteOrganization(
+    val id: String
+)
+
+@Serializable
 data class AddMember(
     val organizationId: String,
     val userId: String,

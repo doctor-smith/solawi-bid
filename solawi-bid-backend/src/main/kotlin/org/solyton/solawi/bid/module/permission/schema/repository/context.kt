@@ -3,9 +3,12 @@ package org.solyton.solawi.bid.module.permission.schema.repository
 import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.solyton.solawi.bid.module.permission.exception.ContextException
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import java.util.*
 
 fun ContextEntity.rootId(): EntityID<UUID> = root?.id?:id
@@ -37,7 +40,7 @@ fun createRootContext(contextName: String): ContextEntity {
 }
 
 
-fun ContextEntity.createChild(name: String): ContextEntity {
+fun ContextEntity.createChild(name: String, creatorId: UUID = UUID_ZERO): ContextEntity {
     val ancestors = ancestors()
     val maxRight = root?.right?:1
     val siblings = ContextEntity.find {
@@ -63,7 +66,7 @@ fun ContextEntity.createChild(name: String): ContextEntity {
         left = oldRight
         right = oldRight + 1
         level = childLevel
-        createdBy = UUID_ZERO
+        createdBy = creatorId
     }
 }
 
@@ -134,7 +137,15 @@ fun ContextEntity.remove(): Unit {
         it.right -= diff
         it.left -= diff
     }
-    descendants.forEach { it.delete() }
+
+    descendants.forEach { it.remove() }
+
+    RoleRightContexts.deleteWhere {
+        RoleRightContexts.contextId eq this@remove.id
+    }
+    UserRoleContext.deleteWhere {
+        UserRoleContext.contextId eq this@remove.id
+    }
     delete()
 }
 
