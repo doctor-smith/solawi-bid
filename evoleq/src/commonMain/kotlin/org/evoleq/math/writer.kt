@@ -24,4 +24,9 @@ fun <W> Dispatcher<W>.dispatch(): (w: W)->Unit = {w: W -> dispatch(w)}
 
 @MathDsl
 @Suppress("FunctionName")
-inline fun <reified T> Push(): Writer<List<T>, T> = { t:T -> { list -> listOf(t, *list.toTypedArray())}}
+fun <T> Append(): Writer<List<T>, T> = { t:T -> { list ->
+    with(list.toMutableList()){
+        add(t)
+        this
+    }
+}}
