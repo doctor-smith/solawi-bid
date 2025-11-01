@@ -14,7 +14,6 @@ import org.solyton.solawi.bid.application.data.env.Environment
 import org.solyton.solawi.bid.application.storage.event.*
 import org.solyton.solawi.bid.application.storage.middleware.ProcessAction
 import org.solyton.solawi.bid.module.user.data.user.User
-import kotlin.reflect.KClass
 
 
 @Markup
