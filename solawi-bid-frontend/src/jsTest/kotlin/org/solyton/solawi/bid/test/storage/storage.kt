@@ -18,7 +18,6 @@ import kotlin.test.assertEquals
 @Markup
 @Composable
 fun TestStorage(): Storage<Application> {
-    var pulse by remember { mutableStateOf<Int>(0) }
     // val environment = getEnv()
     var application by remember {
         mutableStateOf<Application>(
