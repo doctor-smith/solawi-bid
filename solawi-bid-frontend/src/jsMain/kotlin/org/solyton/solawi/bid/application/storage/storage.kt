@@ -20,8 +20,7 @@ import kotlin.reflect.KClass
 @Markup
 @Composable
 fun Storage(): Storage<Application> {
-    var pulse by remember { mutableStateOf<Int>(0) }
-
+    // store all data related to the application
     var application by remember{ mutableStateOf<Application>(Application(
         environment = Environment(),
         userData = User()
@@ -41,22 +40,9 @@ fun Storage(): Storage<Application> {
         onCookieDisclaimerConfirmed(oldApplication, newApplication)
         onLocaleChanged(oldApplication, newApplication)
         onLogin(oldApplication, newApplication)
-        pulse++
     }.onDispatch {
         (this@onDispatch * actions).read().flow.collect { action : Action<Application, *, *> ->
             ProcessAction( action ) runOn this
         }
     }
-}
-
-
-inline fun <reified T> type(obj: Any): T? = when(obj) {
-    is T -> obj
-    else -> null
-}
-
-@Suppress("UNCHECKED_CAST")
-inline fun <T : Any> type(obj: Any, clazz: KClass<T>): T? = when {
-    obj::class == clazz -> obj as T
-    else -> null
 }
