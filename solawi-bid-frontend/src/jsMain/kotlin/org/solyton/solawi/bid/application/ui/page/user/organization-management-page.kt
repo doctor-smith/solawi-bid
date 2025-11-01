@@ -1,16 +1,12 @@
 package org.solyton.solawi.bid.application.ui.page.user
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.guard.data.isLoading
+import org.evoleq.compose.guard.data.onNullLaunch
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.component
@@ -21,19 +17,14 @@ import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.on
 import org.evoleq.math.times
+import org.evoleq.optics.lens.FirstBy
+import org.evoleq.optics.lens.Lens
+import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
+import org.evoleq.optics.storage.split
 import org.evoleq.optics.transform.times
-import org.jetbrains.compose.web.css.AlignItems
-import org.jetbrains.compose.web.css.Color
-import org.jetbrains.compose.web.css.JustifyContent
-import org.jetbrains.compose.web.css.alignItems
-import org.jetbrains.compose.web.css.color
-import org.jetbrains.compose.web.css.gap
-import org.jetbrains.compose.web.css.justifyContent
-import org.jetbrains.compose.web.css.percent
-import org.jetbrains.compose.web.css.px
-import org.jetbrains.compose.web.css.width
+import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.H2
@@ -48,43 +39,39 @@ import org.solyton.solawi.bid.module.control.button.PlusButton
 import org.solyton.solawi.bid.module.control.button.TrashCanButton
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
-import org.solyton.solawi.bid.module.list.component.ActionsWrapper
-import org.solyton.solawi.bid.module.list.component.DataWrapper
-import org.solyton.solawi.bid.module.list.component.Header
-import org.solyton.solawi.bid.module.list.component.HeaderCell
-import org.solyton.solawi.bid.module.list.component.HeaderWrapper
-import org.solyton.solawi.bid.module.list.component.ListItemWrapper
-import org.solyton.solawi.bid.module.list.component.ListWrapper
-import org.solyton.solawi.bid.module.list.component.TextCell
-import org.solyton.solawi.bid.module.list.component.Title
-import org.solyton.solawi.bid.module.list.component.TitleWrapper
+import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.ListStyles
 import org.solyton.solawi.bid.module.page.component.Page
+import org.solyton.solawi.bid.module.permissions.service.contextFromPath
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
-import org.solyton.solawi.bid.module.user.action.organization.createOrganization
-import org.solyton.solawi.bid.module.user.action.organization.readOrganizations
+import org.solyton.solawi.bid.module.user.action.organization.*
+import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsAction
+import org.solyton.solawi.bid.module.user.component.modal.showCreateChildOrganizationModal
 import org.solyton.solawi.bid.module.user.component.modal.showCreateOrganizationModal
-import org.solyton.solawi.bid.module.user.data.Application
-import org.solyton.solawi.bid.module.user.data.actions
+import org.solyton.solawi.bid.module.user.component.modal.showUpdateOrganizationModal
+import org.solyton.solawi.bid.module.user.data.*
+import org.solyton.solawi.bid.module.user.data.api.organization.CreateChildOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.CreateOrganization
+import org.solyton.solawi.bid.module.user.data.api.organization.UpdateOrganization
 import org.solyton.solawi.bid.module.user.data.organization.Organization
-import org.solyton.solawi.bid.module.user.data.deviceData
-import org.solyton.solawi.bid.module.user.data.environment
-import org.solyton.solawi.bid.module.user.data.i18n
-import org.solyton.solawi.bid.module.user.data.modals
-import org.solyton.solawi.bid.module.user.data.user
+import org.solyton.solawi.bid.module.user.data.organization.name
+import org.solyton.solawi.bid.module.user.data.organization.organizationId
+import org.solyton.solawi.bid.module.user.data.organization.subOrganizations
+import org.solyton.solawi.bid.module.user.data.reader.isNotGranted
 import org.solyton.solawi.bid.module.user.data.user.organizations
+import org.solyton.solawi.bid.module.user.permission.OrganizationRight
 
 @Markup
 @Composable
 @Suppress("FunctionName")
 fun OrganizationManagementPage(storage: Storage<Application>) = Div {
-    LaunchedEffect(Unit) {
-        (storage * actions).dispatch(readOrganizations())
-    }
-    // Effects
     if(isLoading(
+            onNullLaunch(
+                storage * availablePermissions * contextFromPath("APPLICATION"),
+            ){
+                rememberCoroutineScope().launch { (storage * actions).dispatch(readUserPermissionsAction()) }
+            },
         onMissing(
             OrganizationLangComponent.OrganizationManagementPage,
             storage * i18n.get,
@@ -97,14 +84,9 @@ fun OrganizationManagementPage(storage: Storage<Application>) = Div {
         }
     )) return@Div
 
-
-    // Data
-
-    // State
-    var createOrganizationData by remember{ mutableStateOf(CreateOrganization("")) }
-
-    // val environment = storage * environment
-    // val applicationContextId = storage * availablePermissions * contextFromPath("APPLICATION") * assureValue() * contextId.get
+    LaunchedEffect(Unit) {
+        (storage * actions).dispatch(readOrganizations())
+    }
 
     // Data / I18N
     val texts = storage * i18n * language * component(OrganizationLangComponent.OrganizationManagementPage)
@@ -120,6 +102,7 @@ fun OrganizationManagementPage(storage: Storage<Application>) = Div {
         Wrap{ Horizontal(styles = { justifyContent(JustifyContent.FlexStart); alignItems(AlignItems.Center); width(100.percent); gap(20.px) }) {
             H1 { Text((texts * title).emit()) }
 
+            var createOrganizationData by remember{ mutableStateOf(CreateOrganization("")) }
             PlusButton(
                 Color.black,
                 Color.white,
@@ -144,7 +127,7 @@ fun OrganizationManagementPage(storage: Storage<Application>) = Div {
             }
         } }
 
-        Wrap {ListOfOrganizations(storage) }
+        Wrap { ListOfOrganizations(storage) }
     }
 }
 
@@ -152,67 +135,152 @@ fun OrganizationManagementPage(storage: Storage<Application>) = Div {
 @Composable
 @Suppress("FunctionName")
 fun ListOfOrganizations(storage: Storage<Application>) {
+
     // val texts = storage * i18n * language * component(OrganizationLangComponent.OrganizationManagementPage)
-    val organizations = storage * user * organizations
+    val organizations = user * organizations
+
     val listStyles = ListStyles()
     ListWrapper {
+        // todo:i18n
         TitleWrapper { Title { H2{ Text("Liste der Organisationen") } } }
         HeaderWrapper { Header {
+            // todo:i18n
             HeaderCell("Organisation") {width(50.percent) }
         } }
+
         // Treelike list of organizations
-        organizations.read().forEach { organization ->
-            OrganizationItems(listStyles, organization, storage)
+        (storage * organizations).split().forEach { organization ->
+            OrganizationItems(
+                listStyles,
+                organizations,
+                organization,
+                storage
+            )
         }
     }
-
 }
 
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun OrganizationItems(listStyles: ListStyles, organization: Organization, storage: Storage<Application>, deepth: Int = 0) {
+fun OrganizationItems(listStyles: ListStyles, organizations: Lens<Application, List<Organization>>, organization: Storage<Organization>, storage: Storage<Application>, deepth: Int = 0) {
+    val texts = storage * i18n * language * component(OrganizationLangComponent.OrganizationManagementPage)
+    val dialogs = texts * subComp("dialogs")
+
+    val organizationId = (organization * organizationId).read()
+    val organizationName = (organization * name).read()
+    val organizationContextId = organization.read().contextId
+
     ListItemWrapper(listStyles.listItemWrapper) {
         DataWrapper() {
             val offset = (deepth * 2.5)
             Div({style { width(offset.percent); color(Color.transparent) }}){ "-" }
-            TextCell( organization.name ){
+            TextCell( organization.read().name ){
                 width((50 - offset).percent)
             }
 
 
         }
         ActionsWrapper {
+            var createChildOrganization by remember{ mutableStateOf(
+                CreateChildOrganization(
+                    organizationId,
+                    ""
+                    //organizationName
+                )
+            )}
+            PlusButton(
+                Color.black,
+                Color.white,
+                { "Sub-Organisation anlegen" },
+                storage * deviceData * mediaType.get,
+                (storage * isNotGranted(OrganizationRight.Organization.create, organizationContextId )).emit(),
+                "organization-management-page.organization-list.button.create-child-organization",
+            ) {
+                // open "create organization dialog"
+                (storage * modals).showCreateChildOrganizationModal(
+                    dialogs * subComp("createOrganization"),
+                    storage * deviceData * mediaType.get,
+                    styles = {dev -> auctionModalStyles(dev) },
+                    setOrganizationData = { name -> createChildOrganization = createChildOrganization.copy(name = name) },
+                    cancel = {}
+                ) {
+                    CoroutineScope(Job()).launch {
+                        val action = createChildOrganization(
+                            createChildOrganization.name,
+                            organizations * FirstBy { it.organizationId == organizationId },
+                        )
+                        trigger(action) on storage
+                    }
+                }
+            }
+
             DetailsButton(
                 Color.black,
                 Color.white,
+                // todo:i18n
                 {"Details"},
                 storage * deviceData * mediaType.get,
-                true,
+                (storage * isNotGranted(OrganizationRight.Organization.read, organizationContextId, )).emit(),
             ) {
+
                 console.log("Details button clicked")
             }
+
+            var updateOrganization by remember{ mutableStateOf(
+                UpdateOrganization(
+                    organizationId,
+                    organizationName
+                )
+            )}
             EditButton(
                     Color.black,
             Color.white,
+                // todo:i18n
             {"Bearbeiten"},
             storage * deviceData * mediaType.get,
-            true,
+                (storage * isNotGranted(OrganizationRight.Organization.update, organizationContextId, )).emit(),
             ) {
-            console.log("Edit button clicked")
-        }
+
+                (storage * modals).showUpdateOrganizationModal(
+                    dialogs * subComp("updateOrganization"),
+                    storage * deviceData * mediaType.get,
+                    styles = {dev -> auctionModalStyles(dev) },
+                    organization.read(),
+                    setOrganizationData = { name -> updateOrganization = updateOrganization.copy(name = name) },
+                    cancel = {}
+                ) {
+                    CoroutineScope(Job()).launch {
+                        val action = updateOrganization(
+                            updateOrganization.name,
+                            organizations * FirstBy { it.organizationId == organizationId }
+                        )
+                        trigger(action) on storage
+                    }
+                }
+            }
             TrashCanButton(
                 Color.black,
                 Color.white,
+                // todo:i18n
                 {"Löschen"},
                 storage * deviceData * mediaType.get,
-                true,
+                (storage * isNotGranted(OrganizationRight.Organization.delete, organizationContextId, )).emit(),
             ) {
-                console.log("Trash button clicked")
+                CoroutineScope(Job()).launch {
+                    val action = deleteOrganization(organizationId)
+                    trigger(action) on storage
+                }
             }
         }
     }
-    organization.subOrganizations.forEach {
-        organization -> OrganizationItems(listStyles, organization, storage,deepth + 1)
+    (organization * subOrganizations).split().forEach {
+        subOrg -> OrganizationItems(
+        listStyles,
+        organizations * FirstBy { o -> o.organizationId == organizationId } * subOrganizations,
+        subOrg,
+        storage,
+        deepth + 1
+        )
     }
 }

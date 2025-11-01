@@ -244,4 +244,35 @@ class OrganizationActionTest {
             assertEquals(updatedOrganization.toDomainType(), storedOrganization)
         }
     }
+
+    @OptIn(ComposeWebExperimentalTestsApi::class)
+    @Test fun deleteOrganizationTest() = runTest {
+        val myOrganization = ApiOrganization(
+            "organization_id",
+            "organization",
+            "context_id",
+            listOf(),
+            listOf(ApiMember(
+                "0",
+                listOf(
+                    ApiRole( "0", "0","0",listOf())
+                )
+            ))
+        )
+
+        val apiOrganizations = ApiOrganizations(listOf(myOrganization))
+
+
+        val action = deleteOrganization("0")
+
+        composition {
+            val storage = TestStorage()
+
+            assertIs<DeleteOrganization>((storage * userIso * action.reader).emit())
+
+            (storage * userIso * action.writer).dispatch(apiOrganizations)
+            val storedOrganization = (storage * userIso * user * organizations).read()
+            assertEquals(apiOrganizations.toDomainType(), storedOrganization)
+        }
+    }
 }

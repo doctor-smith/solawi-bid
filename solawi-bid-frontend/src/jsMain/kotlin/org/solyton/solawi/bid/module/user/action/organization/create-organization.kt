@@ -1,6 +1,6 @@
 package org.solyton.solawi.bid.module.user.action.organization
 
-import org.evoleq.math.Push
+import org.evoleq.math.Append
 import org.evoleq.math.contraMap
 import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Action
@@ -17,7 +17,7 @@ fun createOrganization(name: String): Action<Application, CreateOrganization, Ap
     name = "CreateOrganization",
     reader = { CreateOrganization(name) },
     endPoint = CreateOrganization::class,
-    writer = (user * organizations * Push<Organization>()) contraMap {
+    writer = (user * organizations * Append<Organization>()) contraMap {
         organization: ApiOrganization -> organization.toDomainType()
     }
 )

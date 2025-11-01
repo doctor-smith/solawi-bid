@@ -3,7 +3,7 @@ en {
         user {
             organization {
                 managementPage {
-                    title: "Organizations"
+                    title: "Organization Management"
                     buttons {
                         createOrganization {
                             title: "Create Organization"
@@ -17,6 +17,23 @@ en {
                     dialogs {
                         createOrganization {
                             title: "Create Organization"
+                            inputs {
+                                name {
+                                    title: "Name"
+                                }
+                            }
+                            okButton {
+                                title: "Ok"
+                            }
+                            cancelButton {
+                                title: "Cancel"
+                            }
+                            errors {
+
+                            }
+                        }
+                        updateOrganization {
+                            title: "Edit Organization"
                             inputs {
                                 name {
                                     title: "Name"
