@@ -27,6 +27,12 @@ fun ApplicationEntity.buildUserApplicationContextName(userId: UUID): String =
 fun ModuleEntity.buildUserModuleContextName(userId: UUID): String =
     "$name.${id.value}.$userId"
 
+fun ApplicationEntity.buildOrganizationApplicationContextName(userId: UUID): String =
+    "$name.${id.value}.$userId"
+
+fun ModuleEntity.buildOrganizationModuleContextName(userId: UUID): String =
+    "$name.${id.value}.$userId"
+
 /**
  * Drop user and application info
  * Recall: context_name ~ <name>|<name>.<app_id|module_id>.<user_id>
