@@ -10,7 +10,7 @@ data class ConnectApplicationToOrganization(
 )
 
 @Serializable
-data class UpdateOrganizationModules(
+data class UpdateOrganizationModuleRelations(
     val applicationId: String,
     val organizationId: String,
     val moduleIds: List<String>
