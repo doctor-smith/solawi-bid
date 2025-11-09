@@ -134,6 +134,8 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<RegisterForModules>(RegisterForModules.serializer())
         add<StartTrialsOfModules>(StartTrialsOfModules.serializer())
         add<SubscribeModules>(SubscribeModules.serializer())
+        add<ConnectApplicationToOrganization>(ConnectApplicationToOrganization.serializer())
+        add<UpdateOrganizationModules>(UpdateOrganizationModules.serializer())
         add<ApiApplications>(ApiApplications.serializer())
         add<ApiUserApplications>(ApiUserApplications.serializer())
         add<ApiApplication>(ApiApplication.serializer())
@@ -151,6 +153,8 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<ApplicationContextRelations>(ApplicationContextRelations.serializer())
         add<ModuleContextRelation>(ModuleContextRelation.serializer())
         add<ModuleContextRelations>(ModuleContextRelations.serializer())
+        add<ApplicationOrganizationRelation>(ApplicationOrganizationRelation.serializer())
+        add<ApplicationOrganizationRelations>(ApplicationOrganizationRelations.serializer())
 
         // Organizations
         add<Organizations>(Organizations.serializer())

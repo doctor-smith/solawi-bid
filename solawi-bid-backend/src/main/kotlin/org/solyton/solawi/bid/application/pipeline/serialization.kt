@@ -12,6 +12,9 @@ import org.solyton.solawi.bid.module.application.data.ApiModule
 import org.solyton.solawi.bid.module.application.data.ApiUserApplications
 import org.solyton.solawi.bid.module.application.data.ApplicationContextRelation
 import org.solyton.solawi.bid.module.application.data.ApplicationContextRelations
+import org.solyton.solawi.bid.module.application.data.ApplicationOrganizationRelation
+import org.solyton.solawi.bid.module.application.data.ApplicationOrganizationRelations
+import org.solyton.solawi.bid.module.application.data.ConnectApplicationToOrganization
 import org.solyton.solawi.bid.module.application.data.LifecycleStage
 import org.solyton.solawi.bid.module.application.data.ModuleContextRelation
 import org.solyton.solawi.bid.module.application.data.ModuleContextRelations
@@ -26,6 +29,7 @@ import org.solyton.solawi.bid.module.application.data.StartTrialsOfModules
 import org.solyton.solawi.bid.module.application.data.StartTrialsOfApplications
 import org.solyton.solawi.bid.module.application.data.SubscribeApplications
 import org.solyton.solawi.bid.module.application.data.SubscribeModules
+import org.solyton.solawi.bid.module.application.data.UpdateOrganizationModules
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
@@ -144,6 +148,9 @@ fun Application.installSerializers() {
     serializers[RegisterForModules::class] = RegisterForModules.serializer()
     serializers[StartTrialsOfModules::class] = StartTrialsOfModules.serializer()
     serializers[SubscribeModules::class] = SubscribeModules.serializer()
+    serializers[ConnectApplicationToOrganization::class] = ConnectApplicationToOrganization.serializer()
+    serializers[UpdateOrganizationModules::class] = UpdateOrganizationModules.serializer()
+
     serializers[ApiApplications::class] = ApiApplications.serializer()
     serializers[ApiApplication::class] = ApiApplication.serializer()
     serializers[ApiUserApplications::class] = ApiUserApplications.serializer()
@@ -161,6 +168,8 @@ fun Application.installSerializers() {
     serializers[ApplicationContextRelation::class] = ApplicationContextRelation.serializer()
     serializers[ModuleContextRelations::class] = ModuleContextRelations.serializer()
     serializers[ModuleContextRelation::class] = ModuleContextRelation.serializer()
+    serializers[ApplicationOrganizationRelation::class] = ApplicationOrganizationRelation.serializer()
+    serializers[ApplicationOrganizationRelations::class] = ApplicationOrganizationRelations.serializer()
 
     // Organizations
     serializers[Organizations::class] = Organizations.serializer()
