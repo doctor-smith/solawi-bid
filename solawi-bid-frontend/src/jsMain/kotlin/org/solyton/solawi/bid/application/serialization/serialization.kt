@@ -5,7 +5,6 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.ktorx.result.add
 import org.evoleq.ktorx.result.serializers
-import org.jetbrains.compose.web.css.CSSMediaQuery
 import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.application.data.ApiApplication
 import org.solyton.solawi.bid.module.application.data.ApiApplications
@@ -135,7 +134,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<StartTrialsOfModules>(StartTrialsOfModules.serializer())
         add<SubscribeModules>(SubscribeModules.serializer())
         add<ConnectApplicationToOrganization>(ConnectApplicationToOrganization.serializer())
-        add<UpdateOrganizationModules>(UpdateOrganizationModules.serializer())
+        add<UpdateOrganizationModuleRelations>(UpdateOrganizationModuleRelations.serializer())
         add<ApiApplications>(ApiApplications.serializer())
         add<ApiUserApplications>(ApiUserApplications.serializer())
         add<ApiApplication>(ApiApplication.serializer())

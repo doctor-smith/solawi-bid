@@ -201,7 +201,14 @@ val solawiApi by lazy {
             key = SubscribeModules::class,
             url = "applications/modules/personal/subscribe"
         )
-
+        post<ConnectApplicationToOrganization, ApplicationOrganizationRelations>(
+            key = ConnectApplicationToOrganization::class,
+            url = "applications/private/connect-organization"
+        )
+        patch<UpdateOrganizationModuleRelations, ApplicationOrganizationRelations>(
+            key = UpdateOrganizationModuleRelations::class,
+            url = "applications/private/update-organization-module-relations"
+        )
         // Organizations
         post<CreateOrganization, Organization>(
             key = CreateOrganization::class,

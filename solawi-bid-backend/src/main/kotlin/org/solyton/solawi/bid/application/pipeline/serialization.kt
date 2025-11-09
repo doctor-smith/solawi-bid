@@ -29,7 +29,7 @@ import org.solyton.solawi.bid.module.application.data.StartTrialsOfModules
 import org.solyton.solawi.bid.module.application.data.StartTrialsOfApplications
 import org.solyton.solawi.bid.module.application.data.SubscribeApplications
 import org.solyton.solawi.bid.module.application.data.SubscribeModules
-import org.solyton.solawi.bid.module.application.data.UpdateOrganizationModules
+import org.solyton.solawi.bid.module.application.data.UpdateOrganizationModuleRelations
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
@@ -149,7 +149,7 @@ fun Application.installSerializers() {
     serializers[StartTrialsOfModules::class] = StartTrialsOfModules.serializer()
     serializers[SubscribeModules::class] = SubscribeModules.serializer()
     serializers[ConnectApplicationToOrganization::class] = ConnectApplicationToOrganization.serializer()
-    serializers[UpdateOrganizationModules::class] = UpdateOrganizationModules.serializer()
+    serializers[UpdateOrganizationModuleRelations::class] = UpdateOrganizationModuleRelations.serializer()
 
     serializers[ApiApplications::class] = ApiApplications.serializer()
     serializers[ApiApplication::class] = ApiApplication.serializer()
