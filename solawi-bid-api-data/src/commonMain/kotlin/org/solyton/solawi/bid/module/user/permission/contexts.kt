@@ -12,3 +12,13 @@ object OrganizationContext : StringValueWithDescription {
         override val description = ""
     }
 }
+
+object ApplicationContext: StringValueWithDescription {
+    override val value = Value.APPLICATION
+    override val description = ""
+
+    object Organization : StringValueWithDescription {
+        override val value = combine( Value.APPLICATION, Value.ORGANIZATION )
+        override val description = ""
+    }
+}
