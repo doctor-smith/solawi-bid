@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.module.application.action
 
 import org.evoleq.ktorx.result.on
+import org.evoleq.math.dispatch
 import org.evoleq.math.emit
 import org.evoleq.math.write
 import org.evoleq.optics.storage.ActionDispatcher
@@ -10,6 +11,7 @@ import org.jetbrains.compose.web.testutils.runTest
 import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
 import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.application.data.management.ApplicationManagement
+import org.solyton.solawi.bid.module.application.data.management.applicationOrganizationRelations
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
 import org.solyton.solawi.bid.module.application.data.management.personalApplicationContextRelations
 import org.solyton.solawi.bid.module.application.data.management.personalApplications
@@ -462,6 +464,40 @@ class ApplicationActionsTest {
 
             assertEquals(2,applications.size)
             assertEquals(domainApplications, applications)
+        }
+    }
+
+
+    @OptIn(ComposeWebExperimentalTestsApi::class)
+    @Test
+    fun connectApplicationToOrganizationTest() = runTest{
+
+        val action = connectApplicationToOrganization("id", "id", listOf("id"))
+
+        val apiApplicationOrganizationRelations = ApiApplicationOrganizationRelations(
+            listOf(
+                ApiApplicationOrganizationRelation(
+                    "id", "id", listOf("id")
+                )
+            )
+        )
+
+        val domainRelations = apiApplicationOrganizationRelations.toDomainType()
+
+        composition {
+            val storage = TestStorage() * applicationManagementModule
+
+            assertIs<ConnectApplicationToOrganization>((storage * action.reader).emit())
+            assertEquals(0,(storage * applicationOrganizationRelations).read().size)
+
+            (storage * action.writer).dispatch(apiApplicationOrganizationRelations)
+
+            console.log(storage.read())
+
+            val relations = (storage * applicationOrganizationRelations).read()
+
+            assertEquals(1,relations.size)
+            assertEquals(domainRelations, relations)
         }
     }
 }

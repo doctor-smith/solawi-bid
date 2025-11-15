@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.application.data
 
 import org.solyton.solawi.bid.module.application.data.application.Application
 import org.solyton.solawi.bid.module.application.data.module.Module
+import org.solyton.solawi.bid.module.application.data.organizationrelation.ApplicationOrganizationRelation
 import org.solyton.solawi.bid.module.application.data.userapplication.UserApplications
 import org.solyton.solawi.bid.module.permissions.data.relations.ContextRelation
 import kotlin.test.Test
@@ -333,5 +334,57 @@ class TransformationTests {
             expectedContextRelation,
             result
         )
+    }
+
+    @Test fun applicationOrganizationRelationToDomainTypeTest() {
+        val organizationId = "organizationId"
+        val applicationId = "applicationId"
+        val moduleIds = listOf("module_1, module_2")
+
+        val apiApplicationOrganizationRelation = ApiApplicationOrganizationRelation(
+            applicationId, organizationId, moduleIds
+        )
+
+        val expected = ApplicationOrganizationRelation(
+            applicationId, organizationId, moduleIds
+        )
+
+        assertEquals(expected, apiApplicationOrganizationRelation.toDomainType())
+    }
+
+    @Test fun applicationOrganizationRelationsToDomainTypeTest() {
+        val organizationId = "organizationId"
+        val applicationId = "applicationId"
+        val moduleIds = listOf("module_1, module_2")
+
+        val apiApplicationOrganizationRelations = ApiApplicationOrganizationRelations(
+            listOf(
+                ApiApplicationOrganizationRelation(
+                    applicationId + "1",
+                    organizationId+"1",
+                    moduleIds
+                ),
+                ApiApplicationOrganizationRelation(
+                    applicationId + "2",
+                    organizationId+"2",
+                    moduleIds
+                )
+            )
+        )
+
+        val expected = listOf(
+            ApplicationOrganizationRelation(
+                applicationId + "1",
+                organizationId+"1",
+                moduleIds
+            ),
+            ApplicationOrganizationRelation(
+                applicationId + "2",
+                organizationId+"2",
+                moduleIds
+            )
+        )
+
+        assertEquals(expected, apiApplicationOrganizationRelations.toDomainType())
     }
 }
