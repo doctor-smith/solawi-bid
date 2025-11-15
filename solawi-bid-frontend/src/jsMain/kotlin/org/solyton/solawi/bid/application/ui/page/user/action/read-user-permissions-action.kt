@@ -9,8 +9,10 @@ import org.solyton.solawi.bid.module.permissions.data.transform.toDomainType
 import org.solyton.solawi.bid.module.user.service.getSubjectFromJwt
 import org.solyton.solawi.bid.module.permission.data.api.Contexts as ApiContexts
 
+const val READ_USER_PERMISSIONS = "ReadUserPermissions"
+
 fun readUserPermissionsAction(nameSuffix: String = ""): Action<Application, ReadRightRoleContextsOfUser, ApiContexts > = Action(
-    name = "ReadUserPermissions$nameSuffix",
+    name = "$READ_USER_PERMISSIONS$nameSuffix",
     reader = Reader{app: Application -> ReadRightRoleContextsOfUser(getSubjectFromJwt( app.userData.accessToken ) !!) },
     endPoint = ReadRightRoleContextsOfUser::class,
     writer = { contexts: ApiContexts -> {app: Application -> app.copy(
