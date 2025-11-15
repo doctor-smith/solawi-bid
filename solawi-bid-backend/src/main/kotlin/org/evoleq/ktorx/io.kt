@@ -87,3 +87,9 @@ fun Throwable.toMessage(): Result.Failure.Message = Result.Failure.Message(messa
 fun <T:  Any> Fail(message: String): KlAction<Result<T>, Result<T>> = {_ -> ApiAction {
     call -> Result.Failure.Message(message) x call
 }}
+
+@KtorDsl
+@Suppress("FunctionName")
+fun NotImplemented(message: String = ""): Action< Result.Failure.Message> = ApiAction {
+        call -> Result.Failure.Message("Not implemented yet. $message") x call
+}
