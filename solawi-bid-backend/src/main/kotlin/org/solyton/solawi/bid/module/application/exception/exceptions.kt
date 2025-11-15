@@ -22,4 +22,12 @@ sealed class ApplicationException(override val message: String): Exception(messa
 
     data class ApplicationSubscriptionImpossible(val userId: String, val applicationId: String): ApplicationException("Subscription impossible: userId = $userId; applicationId = $applicationId")
     data class ModuleSubscriptionImpossible(val userId: String, val moduleId: String): ApplicationException("Subscription impossible: userId = $userId; moduleId = $moduleId")
+
+    data class UserNotRegisteredForApplication(val userId: String, val applicationId: String): ApplicationException("User $userId not registered for application $applicationId")
+
+    data class UserNotRegisteredForModule(val userId: String, val moduleId: String): ApplicationException("User $userId not registered for module $moduleId")
+
+    data class UserNotRegisteredForModules(val userId: String, val moduleIds: Set<String>): ApplicationException("User $userId not registered for modules ${moduleIds.joinToString(", ") { it }}")
+
+    data class AlreadyConnectedToOrganization(val organizationId: String, val applicationId: String): ApplicationException("Application $applicationId already connected to organization $organizationId")
 }
