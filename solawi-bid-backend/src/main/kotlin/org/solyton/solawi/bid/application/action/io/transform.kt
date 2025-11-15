@@ -62,6 +62,11 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
         is ApplicationException.ModuleRegistrationImpossible -> HttpStatusCode.Conflict
         is ApplicationException.ModuleTrialImpossible -> HttpStatusCode.Conflict
         is ApplicationException.ModuleSubscriptionImpossible -> HttpStatusCode.Conflict
+        // Applications and Organizations
+        is ApplicationException.AlreadyConnectedToOrganization -> HttpStatusCode.Conflict
+        // Application / Module Access
+        is ApplicationException.UserNotRegisteredForApplication -> HttpStatusCode.Forbidden
+        is ApplicationException.UserNotRegisteredForModule -> HttpStatusCode.Forbidden
 
 
         else -> HttpStatusCode.InternalServerError
