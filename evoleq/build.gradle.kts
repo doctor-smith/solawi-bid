@@ -174,7 +174,7 @@ dependencyAnalyser {
         modules = setOf(
             "configuration",
             "csv",
-            "ktorx/date",
+            // "ktorx/date",
             "ktorx/api",
             "ktorx/result",
             "math",
