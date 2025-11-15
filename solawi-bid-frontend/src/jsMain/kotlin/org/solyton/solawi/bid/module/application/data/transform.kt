@@ -3,6 +3,7 @@ package org.solyton.solawi.bid.module.application.data
 import org.solyton.solawi.bid.module.application.data.application.Application
 import org.solyton.solawi.bid.module.application.data.module.Module
 import org.solyton.solawi.bid.module.application.data.userapplication.UserApplications
+import org.solyton.solawi.bid.module.application.data.organizationrelation.ApplicationOrganizationRelation
 import org.solyton.solawi.bid.module.permissions.data.relations.ContextRelation
 
 
@@ -45,3 +46,14 @@ fun ApiModuleContextRelation.toDomainType(): ContextRelation = ContextRelation(
     contextId = contextId,
     relatedId = moduleId
 )
+
+fun ApiApplicationOrganizationRelations.toDomainType(): List<ApplicationOrganizationRelation> = all.map {
+    applicationOrganizationRelation -> applicationOrganizationRelation.toDomainType()
+}
+
+fun ApiApplicationOrganizationRelation.toDomainType(): ApplicationOrganizationRelation =
+    ApplicationOrganizationRelation(
+        applicationId = applicationId,
+        organizationId = organizationId,
+        moduleIds = moduleIds
+    )
