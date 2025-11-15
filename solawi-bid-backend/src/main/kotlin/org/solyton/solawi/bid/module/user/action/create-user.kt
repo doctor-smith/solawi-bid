@@ -12,7 +12,6 @@ import org.evoleq.math.x
 import org.evoleq.permission.Role
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
-import org.solyton.solawi.bid.module.application.permission.ApplicationContext
 import org.solyton.solawi.bid.module.permission.exception.ContextException
 import org.solyton.solawi.bid.module.permission.exception.PermissionException
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
@@ -20,6 +19,7 @@ import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
 import org.solyton.solawi.bid.module.user.data.api.User
+import org.solyton.solawi.bid.module.user.permission.ApplicationContext
 import org.solyton.solawi.bid.module.user.permission.Value
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UsersTable
