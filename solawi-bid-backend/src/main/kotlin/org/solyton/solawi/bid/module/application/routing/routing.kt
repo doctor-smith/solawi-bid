@@ -4,6 +4,8 @@ import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import org.evoleq.exposedx.data.DbEnv
 import org.evoleq.ktorx.Base
+import org.evoleq.ktorx.Fail
+import org.evoleq.ktorx.NotImplemented
 import org.evoleq.ktorx.Receive
 import org.evoleq.ktorx.ReceiveContextual
 import org.evoleq.ktorx.Respond
@@ -57,6 +59,17 @@ fun <ApplicationEnv> Routing.application(
                     IsGranted("SUBSCRIBE_APPLICATION") *
                     SubscribeApplications() *
                     Respond<ApiApplications> { transform() } runOn Base(call, environment)
+                }
+                // End point can only be used as owner of the application
+                // which is to be connected to the organization
+                post("connect-organization") {
+                    ReceiveContextual<ConnectApplicationToOrganization>() *
+                    // Permissions / Ownership is checked during the following step !!
+                    ConnectApplicationToOrganization() *
+                    Respond<ApplicationOrganizationRelations>{ transform() } runOn Base(call, environment)
+                }
+                patch("update-organization-module-relations") {
+                    NotImplemented() * Respond { transform() } runOn Base(call, environment)
                 }
             }
             route("modules") {
