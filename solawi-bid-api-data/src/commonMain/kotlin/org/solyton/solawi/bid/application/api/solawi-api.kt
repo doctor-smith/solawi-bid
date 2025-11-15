@@ -203,11 +203,11 @@ val solawiApi by lazy {
         )
         post<ConnectApplicationToOrganization, ApplicationOrganizationRelations>(
             key = ConnectApplicationToOrganization::class,
-            url = "applications/private/connect-organization"
+            url = "applications/personal/connect-organization"
         )
         patch<UpdateOrganizationModuleRelations, ApplicationOrganizationRelations>(
             key = UpdateOrganizationModuleRelations::class,
-            url = "applications/private/update-organization-module-relations"
+            url = "applications/personal/update-organization-module-relations"
         )
         // Organizations
         post<CreateOrganization, Organization>(
