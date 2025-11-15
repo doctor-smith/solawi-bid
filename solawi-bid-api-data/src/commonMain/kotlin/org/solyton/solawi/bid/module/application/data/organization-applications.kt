@@ -2,6 +2,9 @@ package org.solyton.solawi.bid.module.application.data
 
 import kotlinx.serialization.Serializable
 
+typealias ApiApplicationOrganizationRelations = ApplicationOrganizationRelations
+typealias ApiApplicationOrganizationRelation = ApplicationOrganizationRelation
+
 @Serializable
 data class ConnectApplicationToOrganization(
     val applicationId: String,
