@@ -3,6 +3,8 @@ package org.solyton.solawi.bid.module.application.repository
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.joda.time.DateTime
+import org.solyton.solawi.bid.module.application.data.ApplicationOrganizationRelation
+import org.solyton.solawi.bid.module.application.data.ApplicationOrganizationRelations
 import org.solyton.solawi.bid.module.application.exception.ApplicationException
 import org.solyton.solawi.bid.module.application.schema.ApplicationEntity
 import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
@@ -11,6 +13,8 @@ import org.solyton.solawi.bid.module.application.schema.LifecycleStages
 import org.solyton.solawi.bid.module.application.schema.OrganizationApplicationContext
 import org.solyton.solawi.bid.module.application.schema.OrganizationApplicationContextEntity
 import org.solyton.solawi.bid.module.application.schema.OrganizationApplicationContextsTable
+import org.solyton.solawi.bid.module.application.schema.OrganizationModuleContextEntity
+import org.solyton.solawi.bid.module.application.schema.OrganizationModuleContextsTable
 import org.solyton.solawi.bid.module.permission.schema.repository.cloneRightRoleContext
 import org.solyton.solawi.bid.module.permission.schema.repository.createRootContext
 import java.util.UUID
@@ -65,4 +69,24 @@ fun Transaction.moveLifecycleStage(
     context.modifiedAt = DateTime.now()
 
     return context
+}
+
+fun Transaction.getApplicationOrganizationRelations(
+    organizationId: UUID
+) : ApplicationOrganizationRelations {
+
+    val organizationModules = OrganizationModuleContextEntity.find {
+        OrganizationModuleContextsTable.organizationId eq organizationId
+    }.toList()
+
+    val relations = organizationModules.groupBy {
+        organizationModuleContext -> organizationModuleContext.module.application.id
+    }.map { entry -> ApplicationOrganizationRelation(
+        entry.key.value.toString(),
+        organizationId.toString(),
+        entry.value.map {
+            organizationModuleContext -> organizationModuleContext.module.id.value.toString()
+        }
+    ) }
+    return ApplicationOrganizationRelations(relations)
 }
