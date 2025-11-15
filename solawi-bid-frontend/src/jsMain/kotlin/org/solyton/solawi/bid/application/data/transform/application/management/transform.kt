@@ -24,7 +24,8 @@ private val preApplicationManagement: Lens<Application, ApplicationManagement> b
             personalApplications = whole.personalApplications,
             personalApplicationContextRelations = whole.personalApplicationContextRelations,
             personalModuleContextRelations = whole.personalModuleContextRelations,
-            userApplications = whole.userApplications
+            userApplications = whole.userApplications,
+            applicationOrganizationRelations = whole.applicationOrganizationRelations
         )},
         set = {part -> {whole -> whole.copy(
             i18N = part.i18n,
@@ -33,7 +34,8 @@ private val preApplicationManagement: Lens<Application, ApplicationManagement> b
             personalApplications = part.personalApplications,
             personalApplicationContextRelations = part.personalApplicationContextRelations,
             personalModuleContextRelations = part.personalModuleContextRelations,
-            userApplications = part.userApplications
+            userApplications = part.userApplications,
+            applicationOrganizationRelations = part.applicationOrganizationRelations
         )}}
     )
 }
