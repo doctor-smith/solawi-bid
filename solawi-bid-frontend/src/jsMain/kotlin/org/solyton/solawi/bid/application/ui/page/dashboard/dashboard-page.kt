@@ -60,6 +60,8 @@ fun DashboardPage(storage: Storage<Application>) {
                     navigate("/app/management")
                 }) {
                     Wrap { H3 { Text("Application Management") } }
+
+                    Link("My Apps", "/app/management/private")
                     Link("User Management", "/app/management/users")
                     Link("Organization Management", "/app/management/organizations")
                 }

@@ -3,6 +3,8 @@ package org.solyton.solawi.bid.module.application.repository
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.solyton.solawi.bid.module.application.data.ApplicationOrganizationRelations
+import org.solyton.solawi.bid.module.application.data.LifecycleStage
+import org.solyton.solawi.bid.module.application.data.name
 import org.solyton.solawi.bid.module.application.exception.ApplicationException
 import org.solyton.solawi.bid.module.application.schema.ApplicationEntity
 import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
@@ -64,22 +66,29 @@ fun Transaction.connectApplicationToOrganization(
         createdBy = userId
     }
     // Add modules and transfer lifecycle-stages
-    val userModules = UserModuleEntity.find {
+    val allowedUserModules = UserModuleEntity.find {
         UserModulesTable.userId eq userId and (UserModulesTable.moduleId inList moduleIds)
-    }.distinct().toList()
+    }.distinct().toList().filter {
+        // todo:dev review list of allowed states
+        it.lifecycleStage.name in listOf(
+            LifecycleStage.Registered.name(),
+            LifecycleStage.Trialing.name(),
+            LifecycleStage.Active.name()
+        )
+    }
 
 
     // validate that user has appropriate permissions on all relevant module
-    val unRegisteredModules = moduleIds
-        .filter { it !in userModules.map { userModule -> userModule.module.id.value } }
+    val forbiddenModules = moduleIds
+        .filter { it !in allowedUserModules.map { userModule -> userModule.module.id.value } }
         .map { it.toString() }
         .toSet()
 
-    if(unRegisteredModules.isNotEmpty()) throw ApplicationException.UserNotRegisteredForModules(
-        "$userId", unRegisteredModules
+    if(forbiddenModules.isNotEmpty()) throw ApplicationException.UserNotRegisteredForModules(
+        "$userId", forbiddenModules
     )
 
-    userModules.forEach { userModule ->
+    allowedUserModules.forEach { userModule ->
         val moduleContext = applicationContext.createChild(userModule.module.buildOrganizationModuleContextName(organizationId))
         cloneRightRoleContext(
             userModule.module.defaultContext.id.value,
