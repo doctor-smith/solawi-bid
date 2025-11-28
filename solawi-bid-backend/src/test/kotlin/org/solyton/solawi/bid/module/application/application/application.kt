@@ -8,9 +8,15 @@ import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
+import org.evoleq.exposedx.data.Database
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.solyton.solawi.bid.application.environment.setupEnvironment
+import org.solyton.solawi.bid.application.environment.Environment
+import org.solyton.solawi.bid.application.environment.MailService
+import org.solyton.solawi.bid.application.environment.Smtp
+import org.solyton.solawi.bid.application.environment.User
 import org.solyton.solawi.bid.application.permission.Header
 import org.solyton.solawi.bid.application.pipeline.installAuthentication
 import org.solyton.solawi.bid.application.pipeline.installContentNegotiation
@@ -25,20 +31,24 @@ import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
 import org.solyton.solawi.bid.module.application.schema.ModuleContextsTable
 import org.solyton.solawi.bid.module.application.schema.ModuleEntity
 import org.solyton.solawi.bid.module.application.schema.ModulesTable
+import org.solyton.solawi.bid.module.application.schema.UserApplicationsTable
+import org.solyton.solawi.bid.module.authentication.environment.JWT
 import org.solyton.solawi.bid.module.authentication.migrations.authenticationMigrations
 import org.solyton.solawi.bid.module.authentication.routing.authentication
 import org.solyton.solawi.bid.module.permission.data.api.ApiContext
 import org.solyton.solawi.bid.module.permission.exception.ContextException
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.testFramework.appendDbNameSuffix
 import org.solyton.solawi.bid.module.testFramework.provideUserTokens
 import org.solyton.solawi.bid.module.user.data.api.ApiUser
 import org.solyton.solawi.bid.module.user.data.api.ApiUsers
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UsersTable
+import java.util.UUID
 
 fun Application.applicationTest() {
-    val environment = setupEnvironment()
+    val environment = setupTestEnvironment(UUID.randomUUID().toString())
     installDatabase(environment, authenticationMigrations)
     installDatabase(environment, applicationMigrations)
     installAuthentication(environment.jwt)
@@ -115,6 +125,58 @@ fun Application.applicationTest() {
                     ApiUsers(users)
                 )
             }
+            get("registered-app") {
+                val applicationId = call.parameters["app-id"]!!
+                println("called delete registered app with app-id = $applicationId")
+                transaction(database) {
+                    UserApplicationsTable.deleteWhere {
+                        UserApplicationsTable.applicationId eq UUID.fromString(applicationId)
+                    }
+                }
+            }
         }
     }
 }
+
+fun Application.setupTestEnvironment(dbNameSuffix: String): Environment = with(environment.config){
+    val database = Database(
+        url = with(property("database.url").getString()) url@{
+            appendDbNameSuffix(dbNameSuffix)
+        },
+        driver = property("database.driver").getString(),
+        user = property("database.user").getString(),
+        password = property("database.password").getString()
+    )
+
+    val jwt = JWT(
+        domain = property("jwt.domain").getString(),
+        audience = property("jwt.audience").getString(),
+        realm = property("jwt.realm").getString(),
+        secret = property("jwt.secret").getString(),
+    )
+
+    val applicationOwner = User(
+        username = property("users.owner.username").getString(),
+        password = property("users.owner.password").getString()
+    )
+
+    val mailService = MailService(
+        Smtp(
+            property("mail.smtp.host").getString(),
+            property("mail.smtp.port").getString().toInt(),
+            property("mail.smtp.auth").getString().toBoolean(),
+            property("mail.smtp.user").getString(),
+            property("mail.smtp.password").getString(),
+            property("mail.smtp.startTslEnabled").getString().toBoolean()
+        ),
+        property("mail.defaultResponseAddress").getString()
+    )
+
+    Environment(
+        database,
+        jwt,
+        applicationOwner,
+        mailService
+    )
+}
+
