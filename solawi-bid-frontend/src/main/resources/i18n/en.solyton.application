@@ -1,0 +1,25 @@
+en {
+    solyton {
+        application {
+            private {
+                managementPage {
+                    title: "My Apps"
+                    dialogs {
+                        connectApplicationToOrganization {
+                            title: "Connect App with Organization"
+                            inputs {
+
+                            }
+                            okButton {
+                                title: "Ok"
+                            }
+                            cancelButton {
+                                title: "Cancel"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

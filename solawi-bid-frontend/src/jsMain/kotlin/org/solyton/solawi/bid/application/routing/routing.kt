@@ -16,6 +16,7 @@ import org.solyton.solawi.bid.application.data.transform.navbar.navBarIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.data.userData
 import org.solyton.solawi.bid.application.service.seemsToBeLoggerIn
+import org.solyton.solawi.bid.application.ui.page.application.private.PrivateApplicationManagementPage
 import org.solyton.solawi.bid.application.ui.page.auction.*
 import org.solyton.solawi.bid.application.ui.page.dashboard.DashboardPage
 import org.solyton.solawi.bid.application.ui.page.login.LoginPage
@@ -106,7 +107,11 @@ fun Routing(storage: Storage<Application>): Routes = Routing("/") {
                     H1{Text("Management")}
                     P{Text("To be done")}
                 }
-
+                route("private") {
+                    component{
+                        PrivateApplicationManagementPage(storage)
+                    }
+                }
                 route("users") {
                     component {
                         UserManagementPage(
