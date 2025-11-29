@@ -6,6 +6,7 @@ de{
                 inputs {
                     title: "Name"
                     date: "Datum"
+                    hostOrganization: "Ausrichtende Organisation"
                 }
                 okButton {
                     title: "Ok"
@@ -23,6 +24,7 @@ de{
                     solidarityContribution: "Solibeitrag"
                     minimalBid: "Minimal Gebot"
                     benchmark: "Richtwert"
+                    hostOrganization: "Ausrichtende Organisation"
                 }
                 okButton {
                     title: "Ok"

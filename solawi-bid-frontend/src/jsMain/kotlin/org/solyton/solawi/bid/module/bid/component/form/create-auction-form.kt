@@ -90,6 +90,10 @@ fun AuctionModal(
                 }
             }
         }
+        Div(attrs = {style { fieldDesktopStyle() }}) {
+            Label(inputs["hostOrganization"], id = "host-organization", labelStyle = formLabelDesktopStyle)
+
+        }
     }
 }
 

@@ -6,6 +6,7 @@ en{
                 inputs {
                     title: "Name"
                     date: "Date"
+                    hostOrganization: "Host Organisation"
                 }
                 okButton {
                     title: "Ok"
@@ -23,6 +24,7 @@ en{
                     solidarityContribution: "Solidarity Contribution"
                     minimalBid: "Minimal Bid"
                     benchmark: "Benchmark"
+                    hostOrganization: "Host Organisation"
                 }
                 okButton {
                     title: "Ok"
