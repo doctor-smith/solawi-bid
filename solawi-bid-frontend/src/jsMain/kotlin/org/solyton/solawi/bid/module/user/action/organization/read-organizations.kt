@@ -1,5 +1,6 @@
 package org.solyton.solawi.bid.module.user.action.organization
 
+import org.evoleq.compose.Markup
 import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.transform.times
@@ -10,7 +11,7 @@ import org.solyton.solawi.bid.module.user.data.transform.toDomainType
 import org.solyton.solawi.bid.module.user.data.user
 import org.solyton.solawi.bid.module.user.data.user.organizations
 
-
+@Markup
 fun readOrganizations(): Action<Application, ReadOrganizations, ApiOrganizations> = Action(
     name = "ReadOrganizations",
     reader = { ReadOrganizations },

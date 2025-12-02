@@ -5,7 +5,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
-import org.evoleq.kotlinx.date.today
 import org.evoleq.device.data.mediaType
 import org.evoleq.kotlinx.date.todayWithTime
 import org.evoleq.language.Lang
@@ -25,6 +24,7 @@ import org.solyton.solawi.bid.module.bid.component.form.DEFAULT_AUCTION_ID
 import org.solyton.solawi.bid.module.bid.component.form.showAuctionModal
 import org.solyton.solawi.bid.module.bid.data.*
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
+import org.solyton.solawi.bid.module.bid.data.biduser.organizations
 import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.module.bid.service.isNotGranted
 import org.solyton.solawi.bid.module.control.button.PlusButton
@@ -53,6 +53,7 @@ fun CreateAuctionButton(
     // Show the auction modal
     (storage * modals).showAuctionModal(
         auction = storage * auction,
+        organizations = storage * user * organizations.get,
         texts = ((storage * i18N * language).read() as Lang.Block).component("solyton.auction.createDialog"),
         device = storage * deviceData * mediaType.get,
         cancel = {(storage * auctions).remove { it.auctionId == DEFAULT_AUCTION_ID }}

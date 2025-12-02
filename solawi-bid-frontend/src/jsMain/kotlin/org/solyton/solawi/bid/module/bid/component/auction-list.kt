@@ -10,6 +10,7 @@ import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.language.*
 import org.evoleq.math.Source
 import org.evoleq.math.emit
+import org.evoleq.math.map
 import org.evoleq.math.times
 import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.lens.times
@@ -146,6 +147,7 @@ fun AuctionListItem(
             // open edit dialog
             (modals).showUpdateAuctionModal(
                 auction =  auction,
+                organizations = user map{ user: User -> user.organizations },
                 texts = ((i18n * language).read() as Lang.Block).component("solyton.auction.updateDialog"),
                 device = device,
                 cancel = {}
