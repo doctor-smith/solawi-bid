@@ -34,7 +34,8 @@ val bidApplicationPreIso: Lens<Application, BidApplication> by lazy {
                 i18N = whole.i18N,
                 user = User(
                     username = whole.userData.username,
-                    permissions = whole.userData.permissions
+                    permissions = whole.userData.permissions,
+                    organizations = whole.userData.organizations
                 ),
                 auctions = whole.auctions,
                 bidRounds = whole.bidRounds,
