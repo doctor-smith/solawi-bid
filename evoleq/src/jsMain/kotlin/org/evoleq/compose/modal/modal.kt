@@ -31,7 +31,7 @@ fun <Id> ModalLayer(
     if(modals.read().keys.isNotEmpty()) {
         ModalBackground(zIndex)
         SubLayer("CookieDisclaimer",
-            zIndex +1,
+            zIndex +100,
             modals.components(ModalType.CookieDisclaimer)
         ) {
             flexDirection(FlexDirection.Column)
@@ -40,7 +40,7 @@ fun <Id> ModalLayer(
             marginBottom(100.px)
         }
         SubLayer("Dialogs",
-            zIndex +2,
+            zIndex +200,
             modals.components(ModalType.Dialog)
         ) {
             flexDirection(FlexDirection.Column)
@@ -48,7 +48,7 @@ fun <Id> ModalLayer(
             alignItems(AlignItems.Center)
         }
         SubLayer("Error",
-            zIndex +3,
+            zIndex +300,
             modals.components(ModalType.Error)
         ) {
             flexDirection(FlexDirection.Column)
