@@ -44,4 +44,11 @@ import org.evoleq.math.emit
     return if(empty){ effect(); true } else { false }
 }
 
+@Composable fun  onEmpty(
+    source: Source<String>,
+    effect: @Composable ()->Unit
+): Boolean {
+    val empty = source.emit().isEmpty()
+    return if(empty){ effect(); true } else { false }
+}
 @Composable fun isLoading(vararg booleans: Boolean): Boolean = booleans.any{ it }

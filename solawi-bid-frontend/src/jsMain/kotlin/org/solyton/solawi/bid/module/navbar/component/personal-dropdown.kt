@@ -1,9 +1,9 @@
 package org.solyton.solawi.bid.module.navbar.component
 
 import androidx.compose.runtime.*
-import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
 import org.evoleq.compose.Markup
+import org.evoleq.compose.dropdown.addDropdownCloseHandler
 import org.evoleq.compose.routing.navigate
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.storage.Storage

@@ -22,6 +22,7 @@ import org.solyton.solawi.bid.module.bid.component.form.showUpdateAuctionModal
 import org.solyton.solawi.bid.module.bid.data.*
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.auction.rounds
+import org.solyton.solawi.bid.module.bid.data.biduser.organizations
 import org.solyton.solawi.bid.module.bid.data.reader.auctionAccepted
 import org.solyton.solawi.bid.module.bid.data.reader.existRounds
 import org.solyton.solawi.bid.module.bid.permission.BidRight
@@ -51,6 +52,7 @@ fun UpdateAuctionButton(
     val action: () -> Unit = {
         (storage * modals).showUpdateAuctionModal(
             auction =  storage * auction,
+            organizations = storage * user * organizations.get,
             texts = ((storage * i18N * language).read() as Lang.Block).component("solyton.auction.updateDialog"),
             device = storage * deviceData * mediaType.get,
             cancel = {}

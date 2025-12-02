@@ -10,7 +10,7 @@ import org.evoleq.language.Block
 import org.evoleq.language.component
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
-import org.jetbrains.compose.web.css.px
+import org.solyton.solawi.bid.application.constants.modal.MODAL_LAYER_INDEX
 import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.routing.Routing
 import org.solyton.solawi.bid.module.cookie.component.CookieDisclaimer
@@ -28,7 +28,7 @@ import org.solyton.solawi.bid.module.style.topLogoHeight
     // namely: dialogs, cookie-disclaimers errors, etc
     // Note: Routing is done in the main container just below the navigation section
     ModalLayer<Int>(
-        1000,
+        MODAL_LAYER_INDEX,
         storage * modals,
     ) {
         // The Cookie disclaimer pops up, whenever as user
