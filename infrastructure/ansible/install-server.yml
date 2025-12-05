@@ -23,7 +23,7 @@
     - name: Create Reverse Proxy Container
       community.docker.docker_container:
         name: traefik
-        image: traefik:v3.4
+        image: traefik:v3.6
         pull: true
         networks:
           - name: reverse-proxy
@@ -32,10 +32,11 @@
           - "443:443"
           - "127.0.0.1:8080:8080"
         volumes:
-          - /var/run/docker.sock:/var/run/docker.sock
+          - /var/run/docker.sock:/var/run/docker.sock:ro
           - /var/solawi-bid/traefik/letsencrypt:/letsencrypt
         env:
           TRAEFIK_PROVIDERS_DOCKER: "true"
+          TRAFFIK_PROVIDERS_DOCKER_API_VERSION: "auto"
           TRAEFIK_API: "true"
           TRAEFIK_API_DASHBOARD: "true"
           TRAEFIK_ENTRYPOINTS_LOCAL: "true"
