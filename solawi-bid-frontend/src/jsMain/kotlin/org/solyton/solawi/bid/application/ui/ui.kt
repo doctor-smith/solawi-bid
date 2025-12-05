@@ -10,7 +10,7 @@ import org.evoleq.language.Block
 import org.evoleq.language.component
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
-import org.solyton.solawi.bid.application.constants.modal.MODAL_LAYER_INDEX
+import org.solyton.solawi.bid.module.modal.constants.MODAL_LAYER_INDEX
 import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.routing.Routing
 import org.solyton.solawi.bid.module.cookie.component.CookieDisclaimer

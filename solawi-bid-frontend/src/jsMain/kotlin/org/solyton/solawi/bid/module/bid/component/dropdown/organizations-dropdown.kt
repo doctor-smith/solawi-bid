@@ -10,7 +10,7 @@ import org.evoleq.math.emit
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.application.constants.modal.DIALOG_LAYER_INDEX
+import org.solyton.solawi.bid.module.modal.constants.DIALOG_LAYER_INDEX
 import org.solyton.solawi.bid.module.navbar.component.SimpleUpDown
 import org.solyton.solawi.bid.module.user.data.organization.Organization
 

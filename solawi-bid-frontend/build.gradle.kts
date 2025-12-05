@@ -189,6 +189,7 @@ dependencyAnalyser {
             "localstorage",
             "logo",
             "mobile",
+            "modal",
             "navbar",
             "page",
             "permissions",
