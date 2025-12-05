@@ -8,6 +8,7 @@ import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
 import org.evoleq.compose.guard.data.isLoading
 import org.evoleq.compose.guard.data.onEmpty
+import org.evoleq.compose.guard.data.onStringEmpty
 import org.evoleq.compose.layout.*
 import org.evoleq.compose.routing.openUrlInNewTab
 import org.evoleq.device.data.mediaType
@@ -140,7 +141,7 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
     val buttons = texts * subComp("buttons")
 
     var confirmationModalOpen by remember { mutableStateOf(false)}
-    if(!confirmationModalOpen && onEmpty(
+    if(!confirmationModalOpen && onStringEmpty(
         bidApplicationStorage * auction * contextId.get
     ) {
         confirmationModalOpen = true

@@ -44,7 +44,7 @@ import org.evoleq.math.emit
     return if(empty){ effect(); true } else { false }
 }
 
-@Composable fun  onEmpty(
+@Composable fun  onStringEmpty(
     source: Source<String>,
     effect: @Composable ()->Unit
 ): Boolean {
