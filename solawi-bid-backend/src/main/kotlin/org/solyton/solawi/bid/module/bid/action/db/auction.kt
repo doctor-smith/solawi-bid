@@ -10,7 +10,6 @@ import org.evoleq.ktorx.KlAction
 import org.evoleq.ktorx.map
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
-import org.evoleq.ktorx.result.map
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.evoleq.uuid.UUID_ZERO
@@ -18,7 +17,9 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.update
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.data.toApiType
@@ -33,7 +34,9 @@ import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.RolesTable
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
-import org.solyton.solawi.bid.module.permission.schema.UserRoleContext.userId
+import org.solyton.solawi.bid.module.user.exception.OrganizationException
+import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
+import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import java.util.*
 import org.solyton.solawi.bid.module.bid.data.api.Auctions as ApiAuctions
 
@@ -67,13 +70,27 @@ fun Transaction.createAuction(
     val context = ContextEntity.find { ContextsTable.id eq contextId }.firstOrNull()
         ?: throw ContextException.NoSuchContext(contextId.toString())
 
-    return AuctionEntity.new {
+    val organization = OrganizationEntity.find {
+        OrganizationsTable.contextId eq contextId
+    }.firstOrNull()
+        //?: throw OrganizationException.NoSuchOrganization("${context.name}.id = $contextId")
+
+    val auction = AuctionEntity.new {
         this.name = name
         this.date = date.toJoda()
         this.type = auctionType
         createdBy = UUID_ZERO
         this.context = context
     }
+
+    if(organization != null) {
+        OrganizationAuctionsTable.insert {
+            it[auctionId] = auction.id.value
+            it[organizationId] = organization.id.value
+        }
+    }
+
+    return auction
 }
 
 @MathDsl
@@ -159,8 +176,12 @@ val DeleteAuctions = KlAction<Result<Contextual<DeleteAuctions>>, Result<Context
 }
 
 fun Transaction.deleteAuctions(auctionIds: List<UUID>) {
-    // todo:dev validation: There could be accepted auctions in the list -> What to do?
-    Auctions.deleteWhere { Auctions.id inList auctionIds }
+    // todo:dev validation: There could be accepted auctions in the list -> What to do?; First solu: filter
+    val acceptedAuctionIds = AcceptedRoundEntity.find { AcceptedRoundsTable.auctionId inList auctionIds }
+        .toList().map { it.id.value }
+    val auctionsToDelete = auctionIds.filterNot{ it in acceptedAuctionIds }
+    OrganizationAuctions.deleteWhere { OrganizationAuctions.auctionId inList auctionsToDelete }
+    Auctions.deleteWhere { Auctions.id inList auctionsToDelete }
 }
 
 @MathDsl
@@ -201,11 +222,23 @@ fun Transaction.configureAuction(auction: ConfigureAuction): ApiAuction {
 
     val auctionDetails = setAuctionDetails(auctionEntity, auction.auctionDetails)
 
+    val newContext = ContextEntity.find { ContextsTable.id eq UUID.fromString(auction.contextId) }.firstOrNull()
+        ?: throw ContextException.NoSuchContext(auction.contextId)
+
+    if(newContext.id != auctionEntity.context.id) {
+        // switch organization auction
+        val organization = OrganizationEntity.find { OrganizationsTable.contextId eq newContext.id }.firstOrNull()
+            ?: throw OrganizationException.NoSuchOrganization("contextId = ${newContext.id}")
+
+        OrganizationAuctionsTable.update(where = { OrganizationAuctionsTable.auctionId eq auctionId }){
+            it[organizationId] = organization.id.value
+        }
+    }
+
     return with(auctionEntity) {
         name = auction.name
         date = DateTime().withDate(auction.date.year, auction.date.monthNumber, auction.date.dayOfMonth)
-
-
+        context = newContext
         this
     }.toApiType().copy(
         bidderInfo = getBidderDetails(auctionEntity).map{det -> det.toBidderInfo()},

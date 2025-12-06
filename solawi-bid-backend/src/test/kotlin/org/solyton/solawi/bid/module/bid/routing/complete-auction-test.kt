@@ -61,8 +61,9 @@ class CompleteAuctionTest {
             val configuredAuction = client.configureAuction(ConfigureAuction(
                     auctionId,
                     auction.name,
+                    auctionContext,
                     auction.date,
-                    auctionDetails
+                    auctionDetails,
                 ),
                 token,
                 context

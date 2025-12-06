@@ -17,6 +17,9 @@ import org.solyton.solawi.bid.module.db.schema.*
 import org.solyton.solawi.bid.module.permission.schema.Context
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
+import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
+import org.solyton.solawi.bid.module.user.schema.repository.createRootOrganization
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -42,12 +45,22 @@ class AuctionTests {
         Bidders,
         BidderDetailsSolawiTuebingenTable,
         Rounds,
-        RoundComments
+        RoundComments,
+        OrganizationsTable,
+        OrganizationAuctionsTable
     ) {
         val context = Context.new {
             this.name = "context"
             createdBy = UUID_ZERO
         }
+
+        // val organization =
+        OrganizationEntity.new {
+            name = "organization"
+            createdBy = UUID_ZERO
+            this.context = context
+        }
+
         val name = "TestAuction"
         val link = "TestLink"
         AuctionType.new {
@@ -86,11 +99,20 @@ class AuctionTests {
         Bidders,
         BidderDetailsSolawiTuebingenTable,
         Rounds,
-        ContextsTable
+        ContextsTable,
+        OrganizationsTable,
+        OrganizationAuctionsTable
     ) {
         val context = Context.new {
             this.name = "context"
             createdBy = UUID_ZERO
+        }
+
+        // val organization =
+        OrganizationEntity.new {
+            name = "organization"
+            createdBy = UUID_ZERO
+            this.context = context
         }
 
         val name = "TestAuction"
@@ -135,11 +157,19 @@ class AuctionTests {
         Auctions,
         Bidders,
         BidderDetailsSolawiTuebingenTable,
-        Rounds
+        Rounds,OrganizationsTable,
+        OrganizationAuctionsTable
     ) {
         val context = Context.new {
             this.name = "context"
             createdBy = UUID_ZERO
+        }
+
+        // val organization =
+        OrganizationEntity.new {
+            name = "organization"
+            createdBy = UUID_ZERO
+            this.context = context
         }
 
         val name = "TestAuction"
@@ -175,12 +205,19 @@ class AuctionTests {
         Bidders,
         BidderDetailsSolawiTuebingenTable,
         Rounds,
-        ContextsTable
+        ContextsTable,OrganizationsTable,
+        OrganizationAuctionsTable
     ) {
-
         val context = Context.new {
             this.name = "context"
             createdBy = UUID_ZERO
+        }
+
+        // val organization =
+        OrganizationEntity.new {
+            name = "organization"
+            createdBy = UUID_ZERO
+            this.context = context
         }
 
         val auctionType = AuctionType.new {

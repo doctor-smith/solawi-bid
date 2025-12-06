@@ -9,6 +9,8 @@ import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.evoleq.value.StringValueWithDescription
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
@@ -42,6 +44,26 @@ fun <T> IsGranted(right: UUID): KlAction<Result<Contextual<T>>,Result<Contextual
     } x database }
 }
 
+@MathDsl
+@Suppress("FunctionName")
+fun <T> IsGrantedOneOf(vararg rights: String, accessCheckNeeded: (Contextual<T>)->Boolean = {true}): KlAction<Result<Contextual<T>>,Result<Contextual<T>>> = KlAction { result ->
+    DbAction { database ->
+        result bindSuspend { contextual ->
+            resultTransaction(database) {
+                when {
+                    !accessCheckNeeded(contextual) -> contextual
+                    isGrantedOneOf(
+                        contextual.userId,
+                        UUID.fromString(contextual.context),
+                        listOf(*rights)
+                    ) -> contextual
+
+                    else -> throw PermissionException.AccessDenied
+                }
+            }
+        } x database
+    }
+}
 fun Transaction.isGranted(userId: UUID, context: String, right: String): Boolean {
 
     val contextEntity = ContextEntity.find { Contexts.name eq context }.firstOrNull()
@@ -82,4 +104,30 @@ fun Transaction.isGranted(userId: UUID, contextId: UUID, right: StringValueWithD
         ?: throw PermissionException.NoSuchRight(right.value)
 
     return isGranted(userId, contextId, rightId.value)
+}
+
+/**
+ * Check if the user is granted at least on of the presented rights in a certain context
+ */
+fun Transaction.isGrantedOneOf(userId: UUID, contextId: UUID, rightIds: List<String>): Boolean {
+    return !UserRoleContext
+        .join(
+            RoleRightContexts,
+            JoinType.INNER,
+            onColumn = UserRoleContext.roleId,
+            otherColumn = RoleRightContexts.roleId
+        ).join(
+            Rights,
+            JoinType.INNER,
+            onColumn = RoleRightContexts.rightId,
+            otherColumn = RightsTable.id
+        )
+        .select(UserRoleContext.userId)
+        .adjustWhere {
+            (UserRoleContext.userId eq userId) and
+            (RoleRightContexts.contextId eq contextId) and
+            (Rights.name inList rightIds)
+        }
+        .limit(1)
+        .empty()
 }
