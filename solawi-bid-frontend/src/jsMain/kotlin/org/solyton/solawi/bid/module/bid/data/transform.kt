@@ -51,6 +51,7 @@ fun ApiBidRound.toDomainType(showSuccessMessage: Boolean = false): BidRound = Bi
 fun ApiAuction.toDomainType(): Auction = Auction(
     auctionId = id,
     name = name,
+    contextId = contextId,
     date = date,
     rounds = rounds.map { round -> round.toDomainType() },
     bidderInfo = bidderInfo.map { info ->
