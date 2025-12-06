@@ -68,6 +68,7 @@ class BidRoundEvaluationRoutingTest {
                         ConfigureAuction(
                             auction.id,
                             "test-name",
+                            auctionContext,
                             auction.date,
                             auctionDetails = AuctionDetails.SolawiTuebingen(
                                 2.0, 2.0, 2.0, 2.0,
@@ -160,6 +161,7 @@ class BidRoundEvaluationRoutingTest {
                         ConfigureAuction(
                             auction.id,
                             "test-name",
+                            auctionContext,
                             auction.date,
                             auctionDetails = AuctionDetails.SolawiTuebingen(
                                 2.0, 2.0, 2.0, 2.0,
@@ -249,6 +251,7 @@ class BidRoundEvaluationRoutingTest {
                             ConfigureAuction(
                                 auction.id,
                                 "test-name",
+                                auctionContext,
                                 auction.date,
                                 auctionDetails = AuctionDetails.SolawiTuebingen(
                                     2.0, 2.0, 2.0, 2.0,
@@ -339,6 +342,7 @@ class BidRoundEvaluationRoutingTest {
                         ConfigureAuction(
                             auction.id,
                             "test-name",
+                            auctionContext,
                             auction.date,
                             auctionDetails = AuctionDetails.SolawiTuebingen(
                                 2.0, 2.0, 2.0, 2.0,

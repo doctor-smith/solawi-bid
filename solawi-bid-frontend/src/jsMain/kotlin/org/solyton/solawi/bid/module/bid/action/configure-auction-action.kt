@@ -20,6 +20,7 @@ fun configureAuction(auction: Lens<BidApplication, Auction>) =
         reader = auction * Reader{ a: Auction -> ConfigureAuction(
             a.auctionId,
             a.name,
+            a.contextId,
             a.date,
             AuctionDetails.SolawiTuebingen (
                 a.auctionDetails.minimalBid?:0.0,

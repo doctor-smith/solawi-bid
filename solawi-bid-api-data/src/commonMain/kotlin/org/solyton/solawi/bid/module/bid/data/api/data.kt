@@ -116,6 +116,7 @@ data class CreateAuction(
 data class ConfigureAuction(
     val id: String,
     val name: String,
+    val contextId: String,
     val date: LocalDateTime,
     val auctionDetails: AuctionDetails = AuctionDetails.Empty
 )
@@ -124,6 +125,7 @@ data class ConfigureAuction(
 data class Auction(
     val id: String,
     val name: String,
+    val contextId: String,
     val date: LocalDateTime,
     val rounds: List<Round> = listOf(),
     val bidderInfo: List<BidderInfo> = listOf(),

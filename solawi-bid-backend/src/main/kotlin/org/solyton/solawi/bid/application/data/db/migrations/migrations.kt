@@ -32,6 +32,6 @@ val applicationMigrations: ArrayList<Database.()-> Migration> by lazy{
         { Migration1760694080848(this) },
         { Migration1761575845606(this) },
         { Migration1761577961366(this) },
-        { Migration1763214147468(this) }
+        { Migration1763214147468(this) },
     )
 }

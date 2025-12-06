@@ -1,6 +1,5 @@
 package org.solyton.solawi.bid.module.bid.action
 
-import kotlinx.datetime.LocalDate
 import org.evoleq.kotlinx.date.todayWithTime
 import org.evoleq.ktorx.result.on
 import org.evoleq.math.emit
@@ -19,14 +18,12 @@ import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.auction.rounds
 import org.solyton.solawi.bid.module.bid.data.bidder.BidderInfo
 import org.solyton.solawi.bid.module.bid.data.bidenv.Environment
-import org.solyton.solawi.bid.module.bid.data.bidround.RoundComment
 import org.solyton.solawi.bid.module.bid.data.bidround.comments
 import org.solyton.solawi.bid.module.bid.data.bidround.rawResults
 import org.solyton.solawi.bid.test.storage.TestStorage
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlin.test.fail
 import org.solyton.solawi.bid.module.bid.data.bidround.Round as DomainRound
 import org.solyton.solawi.bid.module.bid.data.evaluation.WeightedBid as DomainWeightedBid
 
@@ -42,8 +39,8 @@ class ActionTests{
         val date = todayWithTime()
         val auction: Auction = Auction("id",name, date)
         val action = deleteAuctionAction(auction)
-
-        val apiAuction = ApiAuction("id",name, date)
+        val contextId = "context_id"
+        val apiAuction = ApiAuction("id",name, contextId,date)
         val apiAuctions = ApiAuctions(listOf(apiAuction))
 
 
@@ -81,12 +78,14 @@ class ActionTests{
             assertEquals(bid.username, apiBid.username)
             assertEquals(bid.amount, apiBid.amount)
 
+            val contextId = "context_id"
             val apiBidRound = ApiBidRound(
                 "",
                 Round("","", "", 0, ApiRoundComments(listOf())),
                 ApiAuction(
                     "",
                     "",
+                    contextId,
                     date,
                     listOf(),
                     listOf(),
@@ -125,6 +124,7 @@ class ActionTests{
             val apiAuction = ApiAuction(
                 id ="id",
                 name= "name",
+                contextId = "context_id",
                 date = date,
                 rounds = listOf(),
                 bidderInfo = listOf(ApiBidderInfo("1",1))
@@ -163,6 +163,7 @@ class ActionTests{
             val apiAuction = ApiAuction(
                 id ="id",
                 name= "name",
+                contextId = "context_id",
                 date = date,
                 rounds = listOf(),
                 bidderInfo = listOf(ApiBidderInfo("1",1)),
@@ -200,6 +201,7 @@ class ActionTests{
             val apiAuction = ApiAuction(
                 id ="id",
                 name= "name",
+                contextId = "context_id",
                 date = date,
                 rounds = listOf(),
                 bidderInfo = listOf(ApiBidderInfo("1",1)),

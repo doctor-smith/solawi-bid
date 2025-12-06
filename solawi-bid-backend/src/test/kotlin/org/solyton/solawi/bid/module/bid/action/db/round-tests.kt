@@ -12,11 +12,14 @@ import org.solyton.solawi.bid.module.bid.repository.addComment
 import org.solyton.solawi.bid.module.bid.schema.AcceptedRoundsTable
 import org.solyton.solawi.bid.module.bid.schema.AuctionTypesTable
 import org.solyton.solawi.bid.module.bid.schema.AuctionsTable
+import org.solyton.solawi.bid.module.bid.schema.OrganizationAuctionsTable
 import org.solyton.solawi.bid.module.bid.schema.RoundCommentsTable
 import org.solyton.solawi.bid.module.bid.schema.RoundEntity
 import org.solyton.solawi.bid.module.bid.schema.RoundsTable
 import org.solyton.solawi.bid.module.permission.schema.Context
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
+import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import kotlin.test.assertEquals
 
 class RoundTests {
@@ -26,11 +29,19 @@ class RoundTests {
         AcceptedRoundsTable,
         RoundsTable,
         RoundCommentsTable,
-        ContextsTable
-    ){
+        ContextsTable,OrganizationsTable,
+        OrganizationAuctionsTable
+    ) {
         val context = Context.new {
             this.name = "context"
             createdBy = UUID_ZERO
+        }
+
+        // val organization =
+        OrganizationEntity.new {
+            name = "organization"
+            createdBy = UUID_ZERO
+            this.context = context
         }
 
         AuctionTypesTable.insert {

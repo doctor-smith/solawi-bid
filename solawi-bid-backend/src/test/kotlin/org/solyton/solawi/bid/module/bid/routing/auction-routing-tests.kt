@@ -107,6 +107,7 @@ class AuctionRoutingTests {
                         ConfigureAuction(
                             auction.id,
                             "test-name",
+                            auction.contextId,
                             auction.date,
                             auctionDetails = AuctionDetails.SolawiTuebingen(
                                 2.0, 2.0, 2.0, 2.0,

@@ -40,10 +40,11 @@ class AuctionTests {
     @Test fun readAuctionsTest() = runTest{
         val date = todayWithTime()
         val name = "name"
+        val contextId = "context_id"
         installSerializers()
         val action = readAuctions()
 
-        val apiAuction = ApiAuction("id", name, date)
+        val apiAuction = ApiAuction("id", name,contextId, date)
         val apiAuctions = ApiAuctions(listOf(apiAuction))
 
         val application = BidApplication(Environment(),ActionDispatcher{}, )

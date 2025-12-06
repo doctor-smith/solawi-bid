@@ -12,6 +12,7 @@ import org.solyton.solawi.bid.module.application.repository.registerForApplicati
 import org.solyton.solawi.bid.module.application.schema.*
 import org.solyton.solawi.bid.module.application.schema.LifecycleStageEntity
 import org.solyton.solawi.bid.module.application.schema.LifecycleTransitionEntity
+import org.solyton.solawi.bid.module.bid.schema.OrganizationAuctionsTable
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
 import org.solyton.solawi.bid.module.permission.schema.RightsTable
@@ -23,6 +24,8 @@ import org.solyton.solawi.bid.module.permission.schema.repository.createChild
 import org.solyton.solawi.bid.module.permission.schema.repository.createRootContext
 import org.solyton.solawi.bid.module.permission.schema.repository.grant
 import org.solyton.solawi.bid.module.permission.schema.repository.of
+import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
+import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.Users
 
@@ -68,7 +71,9 @@ class Migration1761552589179(
             UserApplicationsTable,
             UserModulesTable,
             LifecycleStagesTable,
-            LifecycleTransitionsTable
+            LifecycleTransitionsTable,
+            OrganizationsTable,
+            OrganizationAuctionsTable
         )
 
         // get auction context
@@ -77,8 +82,13 @@ class Migration1761552589179(
             createdBy = UUID_ZERO
         }
 
-        // val testAuctionContext =
-        auctionsApplicationContext.createChild("TEST_AUCTION_CONTEXT")
+        val testAuctionContext = auctionsApplicationContext.createChild("TEST_AUCTION_CONTEXT")
+
+        OrganizationEntity.new {
+            name = "TEST_ORGANIZATION"
+            context = testAuctionContext
+            createdBy = UUID_ZERO
+        }
 
         // define roles <-> modules
         // given roles

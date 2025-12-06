@@ -12,7 +12,9 @@ import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
 import org.solyton.solawi.bid.module.bid.action.db.*
 import org.solyton.solawi.bid.module.bid.data.api.*
+import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
+import org.solyton.solawi.bid.module.permission.action.db.IsGrantedOneOf
 
 @KtorDsl
 fun <BidEnv> Routing.sendBid(
@@ -61,7 +63,7 @@ fun <BidEnv> Routing.auction(
             }
             patch("update") {
                 (ReceiveContextual<UpdateAuctions>() *
-                IsGranted("UPDATE_AUCTION") *
+                IsGranted("UPDATE_AUCTION",) *
                 UpdateAuctions *
                 ReadAllAuctions *
                 Respond<Auctions>{ transform() }

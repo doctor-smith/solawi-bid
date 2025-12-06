@@ -17,6 +17,7 @@ fun List<AuctionEntity>.toApiType(): List<Auction> = map {
 fun AuctionEntity.toApiType(): Auction = Auction(
     id = id.value.toString(),
     name = name,
+    contextId = context.id.value.toString(),
     date = date.toKotlinxWithZone(),
     rounds = try{ rounds.map {
         it.toApiType()
