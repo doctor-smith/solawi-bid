@@ -36,7 +36,16 @@ fun <T> assureValue(): Reader<T?, T> = Reader{value -> require(value != null); v
 fun <T> not(reader: Reader<T, Boolean>): Reader<T, Boolean> = {t: T -> !reader(t)}
 
 @MathDsl
+infix fun <S, T> Reader<S, Boolean>.or(other: Reader<T, Boolean>): Reader<Pair<S, T>, Boolean> = Reader{
+    pair ->  this(pair.first) || other(pair.second)
+}
+
+@MathDsl
+infix fun <S, T> Reader<S, Boolean>.and(other: Reader<T, Boolean>): Reader<Pair<S, T>, Boolean> = Reader{
+    pair ->  this(pair.first) && other(pair.second)
+}
+
+@MathDsl
 infix fun <S, T> Source<S>.x(other: Source<T>): Source<Pair<S, T>> = Source {
     Pair(emit(), other.emit())
 }
-
