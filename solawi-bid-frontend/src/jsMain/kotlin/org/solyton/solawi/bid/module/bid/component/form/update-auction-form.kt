@@ -148,13 +148,13 @@ fun UpdateAuctionModal(
         Div(attrs = {style { fieldDesktopStyle() }}) {
             Label(inputs["hostOrganization"], id = "host-organization", labelStyle = formLabelDesktopStyle)
             OrganizationsDropdown(
-                selected = with((auction * contextId).read()){
-                    organizations map { orgs -> orgs.firstOrNull { it.contextId == this }}},
+                selected = with((auction * contextId).read())  contextId@{
+                    organizations map { orgs -> orgs.firstOrNull { it.contextId == this@contextId }}},
                 organizations = organizations,
                 scope = CoroutineScope(Job())
             ) {
                 // add organization context to auction
-                    organization -> (auction * contextId).write(organization.contextId)
+                organization -> (auction * contextId).write(organization.contextId)
             }
         }
     }

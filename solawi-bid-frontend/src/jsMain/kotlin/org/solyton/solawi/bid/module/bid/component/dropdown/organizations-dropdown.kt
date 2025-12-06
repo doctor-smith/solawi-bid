@@ -7,6 +7,8 @@ import org.evoleq.compose.Markup
 import org.evoleq.compose.dropdown.addDropdownCloseHandler
 import org.evoleq.math.Source
 import org.evoleq.math.emit
+import org.evoleq.math.map
+import org.evoleq.math.x
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
@@ -27,9 +29,12 @@ fun OrganizationsDropdown(
 ) {
     var open by remember { mutableStateOf(false) }
 
-    val placeHolderText = when {
-        organizations.emit().isEmpty() -> "You need to connect the auction app to at least one organization"
-        else -> selected.emit()?.name?: "Click to choose an organizations"
+    val selectedText: Source<String> = selected x organizations map {
+        val (selected, organizations) = it
+        when {
+            organizations.isEmpty() -> "You need to connect the auction app to at least one organization"
+            else -> selected?.name?: "Click to choose an organizations"
+        }
     }
 
     // Dropdown Container
@@ -52,7 +57,7 @@ fun OrganizationsDropdown(
         }) {
             SimpleUpDown(open)
             // organization name
-            Text(placeHolderText)
+            Text(selectedText.emit())
         }
 
         // Dropdown-List
