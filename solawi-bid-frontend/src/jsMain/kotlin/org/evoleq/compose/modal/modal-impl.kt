@@ -33,10 +33,10 @@ fun <Id> Modal(
 ):  @Composable ElementScope<HTMLElement>.()->Unit = {
 
     val close: Id.()-> Unit = { modals.remove( this )}
-
     ModalContainer(
         styles.containerStyle
     ) {
+
         ModalHeader(
             id = id,
             device = device,
@@ -71,7 +71,7 @@ fun <Id> Modal(
 fun ModalContainer(
     styles : StyleScope.() -> Unit,
     content: @Composable ElementScope<HTMLElement>.()->Unit
-): @Composable ElementScope<HTMLElement>.()->Unit  = {Div({
+)  = Div({
     style {
         // minHeight("300px")
         border {
@@ -90,7 +90,7 @@ fun ModalContainer(
     }
 }) {
     content()
-}}
+}
 
 @Markup
 @Composable
@@ -144,7 +144,7 @@ fun ModalContentWrapper(
    dataId: String? = null,
    styles: StyleScope.()->Unit,
    content: @Composable ElementScope<HTMLElement>.()->Unit
-): @Composable ElementScope<HTMLElement>.()->Unit = {Div({ // content Wrapper
+) = Div({ // content Wrapper
 
     if(dataId != null) dataId("$dataId.modal.content-wrapper")
     style {
@@ -155,7 +155,7 @@ fun ModalContentWrapper(
     }
 }) {
        content()
-}}
+}
 
 @Markup
 @Composable
