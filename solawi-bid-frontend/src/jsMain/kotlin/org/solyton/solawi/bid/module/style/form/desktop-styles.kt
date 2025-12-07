@@ -8,7 +8,7 @@ val formPageDesktopStyle: StyleScope.()->Unit by lazy { {
 } }
 
 val formDesktopStyle: StyleScope.()->Unit by lazy { {
-    width(50.percent)
+    width(100.percent)
     padding(10.px)
     borderRadius(8.px)
 
@@ -16,7 +16,7 @@ val formDesktopStyle: StyleScope.()->Unit by lazy { {
 } }
 
 val fieldDesktopStyle: StyleScope.()->Unit by lazy {{
-    width(100.percent)
+    width(98.percent)
     display(DisplayStyle.Flex)
     flexDirection(FlexDirection.Column)
     alignItems(AlignItems.Center)
@@ -34,7 +34,6 @@ val formControlBarDesktopStyle: StyleScope.()->Unit by lazy { {
     display(DisplayStyle.Flex)
     flexDirection(FlexDirection.Row)
     alignItems(AlignItems.FlexEnd)
-    //justifyContent(JustifyContent.Right)
 } }
 
 val textInputDesktopStyle: StyleScope.()->Unit by lazy {{

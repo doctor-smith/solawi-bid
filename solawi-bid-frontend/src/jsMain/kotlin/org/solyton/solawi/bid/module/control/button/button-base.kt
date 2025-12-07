@@ -22,12 +22,20 @@ import org.solyton.solawi.bid.module.style.data.Side
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun SubmitButton(texts: Source<String>,deviceType: DeviceType,disabled: Boolean = false, dataId: String? = null, onClick: ()->Unit) = Button(
+fun SubmitButton(
+    texts: Source<String>,
+    deviceType: DeviceType,
+    disabled: Boolean = false,
+    styles: StyleScope.()->Unit = {},
+    dataId: String? = null,
+    onClick: ()->Unit
+) = Button(
     attrs = {
         if(disabled) disabled()
         if(dataId != null) dataId(dataId)
         style {
             submitButtonStyle(deviceType)()
+            styles()
             if(disabled) cursor("not-allowed")
         }
         onClick {
@@ -42,12 +50,20 @@ fun SubmitButton(texts: Source<String>,deviceType: DeviceType,disabled: Boolean 
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun CancelButton(texts: Source<String>,deviceType: DeviceType, disabled: Boolean = false, dataId: String? = null, onClick: ()->Unit) = Button(
+fun CancelButton(
+    texts: Source<String>,
+    deviceType: DeviceType,
+    disabled: Boolean = false,
+    styles: StyleScope.()->Unit = {},
+    dataId: String? = null,
+    onClick: ()->Unit
+) = Button(
     attrs = {
         if(disabled) disabled()
         if(dataId != null) dataId(dataId)
         style {
             cancelButtonStyle(deviceType)()
+            styles()
         }
         onClick {
             if(disabled) return@onClick
@@ -61,18 +77,27 @@ fun CancelButton(texts: Source<String>,deviceType: DeviceType, disabled: Boolean
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun StdButton(texts: Source<String>,deviceType: Source<DeviceType>,disabled: Boolean = false, dataId: String? = null, onClick: ()->Unit) =
-    StdButton(texts, deviceType.emit(), disabled, dataId, onClick)
+fun StdButton(
+    texts: Source<String>,
+    deviceType: Source<DeviceType>,
+    disabled: Boolean = false,
+    styles: StyleScope.()->Unit = {},
+    dataId: String? = null,
+    onClick: ()->Unit
+) =
+    StdButton(texts, deviceType.emit(), disabled, styles, dataId, onClick)
 
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun StdButton(texts: Source<String>, deviceType: DeviceType, isDisabled: Boolean = false, dataId: String? = null, onClick: ()->Unit) = Button(
+fun StdButton(texts: Source<String>, deviceType: DeviceType, isDisabled: Boolean = false,
+              styles: StyleScope.()->Unit = {}, dataId: String? = null, onClick: ()->Unit) = Button(
     attrs = {
         if(isDisabled) disabled()
         if(dataId != null) dataId(dataId)
         style {
             buttonStyle(deviceType)()
+            styles()
         }
         onClick {
             if(isDisabled) return@onClick

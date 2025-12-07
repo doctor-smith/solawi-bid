@@ -34,109 +34,173 @@ fun <Id> Modal(
 
     val close: Id.()-> Unit = { modals.remove( this )}
 
-    Div({
-        style {
-            // minHeight("300px")
-            border {
-                style = LineStyle.Solid
-                color = Color("black")
-                width = 1.px
-            }
-            borderRadius(10.px)
-            backgroundColor(Color.white)
-            width(90.percent)
-            marginLeft(5.percent)
-            padding(10.px)
-            display(DisplayStyle.Flex)
-            flexDirection(FlexDirection.Column)
-            with(styles){containerStyle()}
-        }
-    }) {
-        //
-        // Header
-        //
-        if(onCancel != null) {
-            Div({
-                style {
-                    display(DisplayStyle.Flex)
-                    justifyContent(JustifyContent.FlexEnd)
-                }
-            }) {
-                Button({
-                    if(dataId != null) dataId("$dataId.modal.close-x")
-                    //classes("button")
-                    style{
-                        symbolicButtonStyle(device.emit())()
-                        // backgroundColor(Color.crimson)
-                    }
-                    onClick { id.close() }
-                }) {
-                    I({
-                        classes("fa-solid", "fa-xmark")
-                    })
-                }
-            }
-        }
-
-        H3({
-            if(dataId != null) dataId("$dataId.modal.title")
-            style {
-                marginTop(10.px)
-                marginLeft(10.px)
-                marginBottom(10.px)
-            }
-        }){
-            Text(texts["title"])
-        }
-
-        //
-        // Content area
-        //
-        Div({
-
-            if(dataId != null) dataId("$dataId.modal.content-wrapper")
-            style {
-                maxWidth(80.pc)
-                marginLeft(10.px)
-                marginBottom(10.px)
-                minHeight(1.px)
-                maxHeight(80.vh)
-            }
-        }) {
+    ModalContainer(
+        styles.containerStyle
+    ) {
+        ModalHeader(
+            id = id,
+            device = device,
+            close = if(onCancel != null) {close} else {null},
+            texts = texts
+        )
+        ModalContentWrapper(
+            dataId = dataId,
+            styles = styles.contentWrapperStyle
+        ) {
             content()
         }
         // Vertical space
         Div({style { flexGrow(1) }}){}
-        //
-        // Footer
-        //
+        ModalFooter(
+            id,
+            device,
+            onOk,
+            onCancel,
+            close,
+            texts,
+            styles,
+            dataId,
+            isOkButtonDisabled,
+        )
+    }
+}
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun ModalContainer(
+    styles : StyleScope.() -> Unit,
+    content: @Composable ElementScope<HTMLElement>.()->Unit
+): @Composable ElementScope<HTMLElement>.()->Unit  = {Div({
+    style {
+        // minHeight("300px")
+        border {
+            style = LineStyle.Solid
+            color = Color("black")
+            width = 1.px
+        }
+        borderRadius(10.px)
+        backgroundColor(Color.white)
+        width(90.percent)
+        marginLeft(5.percent)
+        padding(10.px)
+        display(DisplayStyle.Flex)
+        flexDirection(FlexDirection.Column)
+        styles()
+    }
+}) {
+    content()
+}}
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun <Id> ModalHeader(
+    id: Id,
+    device: Source<DeviceType>,
+    close: (Id.() -> Unit)?,
+    texts: Block,
+    dataId: String? = null,
+) {
+    if(close != null) {
         Div({
             style {
-                height(30.px)
-                marginBottom(0.px)
                 display(DisplayStyle.Flex)
                 justifyContent(JustifyContent.FlexEnd)
             }
         }) {
-            if(onCancel != null) {
-                CancelButton(
-                    {texts["cancelButton.title"]},
-                    device.emit(),
-                    dataId = "$dataId.modal.close-button",
-                ) {
-                    onCancel()
-                    id.close()
+            Button({
+                if(dataId != null) dataId("$dataId.modal.close-x")
+                //classes("button")
+                style{
+                    symbolicButtonStyle(device.emit())()
+                    // backgroundColor(Color.crimson)
                 }
-            }
-            SubmitButton(
-                {texts["okButton.title"]},
-                device.emit(),
-                dataId = "$dataId.modal.submit-button",
-                disabled = isOkButtonDisabled()
-            ) {
-                onOk()
-                id.close()
+                onClick { id.close() }
+            }) {
+                I({
+                    classes("fa-solid", "fa-xmark")
+                })
             }
         }
     }
+
+    H3({
+        if(dataId != null) dataId("$dataId.modal.title")
+        style {
+            marginTop(10.px)
+            marginLeft(10.px)
+            marginBottom(10.px)
+        }
+    }){
+        Text(texts["title"])
+    }
 }
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun ModalContentWrapper(
+   dataId: String? = null,
+   styles: StyleScope.()->Unit,
+   content: @Composable ElementScope<HTMLElement>.()->Unit
+): @Composable ElementScope<HTMLElement>.()->Unit = {Div({ // content Wrapper
+
+    if(dataId != null) dataId("$dataId.modal.content-wrapper")
+    style {
+        marginBottom(10.px)
+        minHeight(1.px)
+        maxHeight(80.vh)
+        styles()
+    }
+}) {
+       content()
+}}
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun <Id> ModalFooter(
+    id: Id,
+    device: Source<DeviceType>,
+    onOk: ()->Unit,
+    onCancel: (()->Unit)?,
+    close: Id.()->Unit,
+    texts: Block,
+    styles: ModalStyles = ModalStyles(),
+    dataId: String? = null,
+    isOkButtonDisabled: ()->Boolean = {false},
+) = Div({
+    style {
+        height(30.px)
+        marginBottom(0.px)
+        display(DisplayStyle.Flex)
+        justifyContent(JustifyContent.FlexEnd)
+        with(styles) {
+            footerWrapperStyle()
+        }
+    }
+}) {
+    if(onCancel != null) {
+        CancelButton(
+            texts = {texts["cancelButton.title"]},
+            deviceType = device.emit(),
+            styles = styles.cancelButtonStyles,
+            dataId = "$dataId.modal.close-button",
+        ) {
+            onCancel()
+            id.close()
+        }
+    }
+    SubmitButton(
+        texts = {texts["okButton.title"]},
+        deviceType = device.emit(),
+        styles = styles.okButtonStyles,
+        dataId = "$dataId.modal.submit-button",
+        disabled = isOkButtonDisabled()
+    ) {
+        onOk()
+        id.close()
+    }
+}
+
