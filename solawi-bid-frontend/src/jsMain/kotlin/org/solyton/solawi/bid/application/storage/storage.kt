@@ -32,6 +32,7 @@ fun Storage(): Storage<Application> {
         }
     )
     .onInit {
+        checkContext()
         checkCookie()
         checkUserData()
     }
