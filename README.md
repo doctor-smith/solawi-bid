@@ -40,6 +40,19 @@ Open a terminal, move to the root folder of the project and run the command
 ```shell
 docker compose -f docker-compose.yml up -d
 ```
+This command will start the database and the backend container. There are now two options to start the frontend:
+1. Webpack dev server:
+Use one of the gradle tasks:
+   - ``` jsBrowserRun --continuous```
+   - ``` jsBrowserDevelopmentRun --continuous```
+   - ``` jsBrowserProductinRun --continuous```
+2. Frontend Container:
+   Adding the option ``` --profile fe up``` the frontend container will be started as well.
+   ```shell
+   docker compose -f docker-compose.yml up -d --profile fe up
+   ```
+
+
 Stop it using command
 ```shell
 docker compose down --remove-orphans

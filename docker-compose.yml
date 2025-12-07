@@ -1,6 +1,7 @@
 services:
 
   solawi-bid_frontend:
+    profiles: ["fe"]
     build:
       dockerfile_inline: |
         FROM gradle:8-jdk17-noble
