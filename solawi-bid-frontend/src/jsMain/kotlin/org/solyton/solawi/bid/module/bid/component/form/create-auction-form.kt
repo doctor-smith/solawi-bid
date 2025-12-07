@@ -21,6 +21,7 @@ import org.evoleq.language.component
 import org.evoleq.language.get
 import org.evoleq.math.Reader
 import org.evoleq.math.Source
+import org.evoleq.math.emit
 import org.evoleq.math.map
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
@@ -106,6 +107,8 @@ fun AuctionModal(
                 selected = with((auction * contextId).read()) contextId@{
                     organizations map { orgs -> orgs.firstOrNull { it.contextId == this@contextId }}},
                 organizations = organizations,
+                // todo:dev SMA-403 POC
+                isSelectable = { organizations.emit().any { o -> o.organizationId == organizationId } },
                 scope = CoroutineScope(Job())
             ) {
                 // add organization context to auction

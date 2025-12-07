@@ -18,6 +18,7 @@ import org.evoleq.language.Locale
 import org.evoleq.language.component
 import org.evoleq.language.get
 import org.evoleq.math.Source
+import org.evoleq.math.emit
 import org.evoleq.math.map
 import org.evoleq.math.onIsDouble
 import org.evoleq.optics.storage.Storage
@@ -151,6 +152,8 @@ fun UpdateAuctionModal(
                 selected = with((auction * contextId).read())  contextId@{
                     organizations map { orgs -> orgs.firstOrNull { it.contextId == this@contextId }}},
                 organizations = organizations,
+                // todo:dev SMA-403 POC
+                isSelectable = { organizations.emit().any { o -> o.organizationId == organizationId } },
                 scope = CoroutineScope(Job())
             ) {
                 // add organization context to auction
@@ -169,18 +172,18 @@ fun Storage<Modals<Int>>.showUpdateAuctionModal(
     cancel: ()->Unit,
     update: ()->Unit
 ) = with(nextId()) {
-    put(this to ModalData(
-        ModalType.Dialog,
-        UpdateAuctionModal(
-            this,
-            texts,
-            this@showUpdateAuctionModal,
-            auction,
-            organizations,
-            device,
-            cancel,
-            update
+        put(this to ModalData(
+            ModalType.Dialog,
+            UpdateAuctionModal(
+                this,
+                texts,
+                this@showUpdateAuctionModal,
+                auction,
+                organizations,
+                device,
+                cancel,
+                update
+            )
         )
-    )
     )
 }

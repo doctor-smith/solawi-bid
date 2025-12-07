@@ -24,22 +24,32 @@ fun OrganizationsDropdown(
     layerIndex: Int = DIALOG_LAYER_INDEX + 1,
     selected: Source<Organization?>,
     organizations: Source<List<Organization>>,
+    isSelectable: Organization.() -> Boolean,
     scope: CoroutineScope,
     select: (Organization) -> Unit
 ) {
     var open by remember { mutableStateOf(false) }
 
-    val selectedText: Source<String> = selected x organizations map {
-        val (selected, organizations) = it
-        when {
-            organizations.isEmpty() -> "You need to connect the auction app to at least one organization"
-            else -> selected?.name?: "Click to choose an organizations"
+    val organizationsMap = organizations map { it.flat() }
+
+    val nameOfSelected: (Organization?) -> String? ={ organization ->
+        when(organization) {
+            null -> null
+            else ->
+                organizationsMap.emit().entries.first { it.value.organizationId == organization.organizationId }.key
         }
     }
 
+    val selectedText: Source<String> = selected x organizations map { (selected, organizations) ->
+        when {
+            organizations.isEmpty() -> "You need to connect the auction app to at least one organization"
+            else -> nameOfSelected(selected)?: "Click to choose an organizations"
+        }
+    }
     // Dropdown Container
     Div(attrs = {
         style {
+            alignSelf(AlignSelf.Stretch)
             position(Position.Relative)
             cursor("pointer")
         }
@@ -50,6 +60,7 @@ fun OrganizationsDropdown(
             style {
                 display(DisplayStyle.Flex)
                 alignItems(AlignItems.FlexStart)
+                gap(4.px)
                 backgroundColor(Color.white)
                 border(1.px, LineStyle.Solid, Color.black)
                 padding(4.px)
@@ -74,17 +85,17 @@ fun OrganizationsDropdown(
                     top(100.percent)
                     left(0.px)
                     width(100.percent)
+                    paddingLeft(20.px)
                     backgroundColor(Color.white)
                     border(1.px, LineStyle.Solid, Color.black)
                     borderRadius(4.px)
                     property("z-index", layerIndex)
                 }
-            }) {
+            }) {/*
                 organizations.emit().forEach { org ->
                     Div(attrs = {
                         style {
                             display(DisplayStyle.Flex)
-                            // flexGrow(1)
                             minHeight(20.px)
                             alignItems(AlignItems.FlexStart)
                             padding(4.px)
@@ -98,7 +109,42 @@ fun OrganizationsDropdown(
                         Text(org.name)
                     }
                 }
+                */
+                organizationsMap.emit()
+                    .filter { (_, org) -> org.isSelectable() }
+                    .forEach { (key, org) -> Div(attrs = {
+                        style {
+                            display(DisplayStyle.Flex)
+                            // flexGrow(1)
+                            minHeight(20.px)
+                            alignItems(AlignItems.FlexStart)
+                            padding(4.px)
+                        }
+                        onClick { event ->
+                            scope.launch{
+                                select(org)
+                            }
+                        }
+                    }) {
+                        Text(key)
+                    }
+                }
             }
         }
     }
 }
+
+fun List<Organization>.flat(): Map<String, Organization> = map {
+    it.flat()
+}.fold(mapOf()){
+    accumulator, element -> mapOf(
+        *accumulator.entries.map { (key, value) -> key to value}.toTypedArray(),
+        *element.entries.map { (key, value) -> key to value}.toTypedArray()
+    )
+}
+
+
+fun Organization.flat(): Map<String, Organization> = mapOf (
+    name to this,
+    *subOrganizations.flat().entries.map { (key, value) -> "$name >> $key" to value}.toTypedArray()
+)
