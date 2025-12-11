@@ -177,8 +177,10 @@ dependencyAnalyser {
             // "ktorx/date",
             "ktorx/api",
             "ktorx/result",
+            "language",
             "math",
             "optics",
+            "parser",
             "permission",
             "serializationx",
             "test",
@@ -196,8 +198,6 @@ dependencyAnalyser {
             "compose",
             "device",
             "ktorx/client",
-            "language",
-            "parser"
         )
         checkCyclesBeforeBuild = true
         checkAppModalDependencies = false

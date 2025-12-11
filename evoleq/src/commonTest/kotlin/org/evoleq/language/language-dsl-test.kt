@@ -17,7 +17,6 @@ class LanguageDslTest {
 
         assertEquals(l.key, "testKey")
         assertIs<Lang.Block>(l)
-        console.log("l = $l")
         assertEquals(1, l.value.size)
 
         val f = l.value[0] as Lang.Variable
