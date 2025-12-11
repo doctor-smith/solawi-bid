@@ -51,7 +51,7 @@ inline fun <Base: Any, reified I : Any, reified O : Any> Action(
 
 /**
  * Constructor function for Actions
- */
+ *
 inline fun <Base: Any, reified I : Any, reified O : Any> Action(
     name: String,
     noinline reader: Reader<in Base, out I>,
@@ -66,6 +66,7 @@ inline fun <Base: Any, reified I : Any, reified O : Any> Action(
     Serializer<I>(),
     ResultListSerializer<O>()
 )
+*/
 
 /**
  * Functoriality of Action
@@ -82,7 +83,7 @@ inline fun <Base: Any, I : Any, reified J: Any,  reified O : Any> Action<Base, I
 /**
  * Contra-Functoriality of Action
  */
-inline fun <Base: Any, reified I : Any,  reified O : Any, reified P : Any> Action<Base, I, O>.map(noinline f: (P)->O): Action<Base, I, P> = Action(
+inline fun <Base: Any, reified I : Any,  reified O : Any, reified P : Any> Action<Base, I, O>.contraMap(noinline f: (P)->O): Action<Base, I, P> = Action(
     name,
     reader,
     endPoint,
