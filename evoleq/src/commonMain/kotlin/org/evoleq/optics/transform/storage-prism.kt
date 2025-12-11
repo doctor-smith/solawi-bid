@@ -6,7 +6,7 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.add
 import org.evoleq.optics.storage.put
 
-fun <Id, T> Storage<Map<Id, T>>.prism(): Prism<Id, T, Id, Pair<Id, T>> = Prism(
+inline fun <reified Id, reified T> Storage<Map<Id, T>>.prismFromMap(): Prism<Id, T, Id, Pair<Id, T>> = Prism(
     {id ->  with(read()[id]){
         when(this){
             null -> Either.Left(id)
@@ -19,7 +19,7 @@ fun <Id, T> Storage<Map<Id, T>>.prism(): Prism<Id, T, Id, Pair<Id, T>> = Prism(
     }
 )
 
-inline fun <reified T> Storage<List<T>>.prism(): Prism<Int, T, Int, T> = Prism(
+inline fun <reified T> Storage<List<T>>.prismFromList(): Prism<Int, T, Int, T> = Prism(
     {index -> try {
         Either.Right(read()[index]!!)
     }catch (exception: Exception) {

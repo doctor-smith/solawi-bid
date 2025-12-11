@@ -7,7 +7,7 @@ import org.evoleq.math.MathDsl
  */
 @MathDsl
 @Suppress("FunctionName")
-fun <T> FirstBy (predicate: (T)->Boolean): Lens<List<T>,T> {
+inline fun <reified T> FirstBy (noinline predicate: (T)->Boolean): Lens<List<T>,T> {
     var lead:Array<T>? = null
     var tail:Array<T>? = null
     return Lens(

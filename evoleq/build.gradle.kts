@@ -178,6 +178,7 @@ dependencyAnalyser {
             "ktorx/api",
             "ktorx/result",
             "math",
+            "optics",
             "permission",
             "serializationx",
             "test",
@@ -196,7 +197,6 @@ dependencyAnalyser {
             "device",
             "ktorx/client",
             "language",
-            "optics",
             "parser"
         )
         checkCyclesBeforeBuild = true

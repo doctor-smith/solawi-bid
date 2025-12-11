@@ -79,7 +79,7 @@ fun List<Int>.nextId(min: Int = 1): Int = when {
     }
 }
 
-fun <T> Storage<List<T>>.split(): List<Storage<T>> = with(read()) {
+inline fun <reified T> Storage<List<T>>.split(): List<Storage<T>> = with(read()) {
     mapIndexed { index, t ->
         Storage<T>(
             read = { t },
