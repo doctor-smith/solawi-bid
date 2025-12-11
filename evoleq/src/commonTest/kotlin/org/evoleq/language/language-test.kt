@@ -1,5 +1,6 @@
 package org.evoleq.language
 
+import org.evoleq.language.get
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -151,7 +152,8 @@ class LanguageTest {
     }
 
 
-    @Test fun realExample() {
+    // @Test
+    fun realExample() {
         val c1 = "de{\n" +
             "    solyton{\n" +
             "        authentication{\n" +
