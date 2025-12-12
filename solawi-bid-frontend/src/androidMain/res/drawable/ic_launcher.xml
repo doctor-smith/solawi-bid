@@ -1,0 +1,56 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+         android:width="64dp"
+         android:height="64dp"
+         android:viewportWidth="64"
+         android:viewportHeight="64">
+
+<!-- Flower center -->
+<path
+        android:fillColor="#8B4513"
+        android:pathData="M32,18
+                          a14,14 0 1,0 0,28
+                          a14,14 0 1,0 0,-28"/>
+
+<!-- Petals -->
+<group
+        android:translateX="32"
+        android:translateY="32"
+        android:fillColor="#FFCA28">
+
+    <path android:pathData="M0,-22
+                                 a6,12 0 1,0 0,0" />
+    <path android:pathData="M0,-22
+                                 a6,12 0 1,0 0,0"
+          android:rotation="30"/>
+    <path android:pathData="M0,-22
+                                 a6,12 0 1,0 0,0"
+          android:rotation="60"/>
+    <path android:pathData="M0,-22
+                                 a6,12 0 1,0 0,0"
+          android:rotation="90"/>
+    <path android:pathData="M0,-22
+                                 a6,12 0 1,0 0,0"
+          android:rotation="120"/>
+    <path android:pathData="M0,-22
+                                 a6,12 0 1,0 0,0"
+          android:rotation="150"/>
+    <path android:pathData="M0,-22
+                                 a6,12 0 1,0 0,0"
+          android:rotation="180"/>
+    <path android:pathData="M0,-22
+                                 a6,12 0 1,0 0,0"
+          android:rotation="210"/>
+    <path android:pathData="M0,-22
+                                 a6,12 0 1,0 0,0"
+          android:rotation="240"/>
+    <path android:pathData="M0,-22
+                                 a6,12 0 1,0 0,0"
+          android:rotation="270"/>
+    <path android:pathData="M0,-22
+                                 a6,12 0 1,0 0,0"
+          android:rotation="300"/>
+    <path android:pathData="M0,-22
+                                 a6,12 0 1,0 0,0"
+          android:rotation="330"/>
+</group>
+</vector>

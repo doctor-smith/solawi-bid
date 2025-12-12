@@ -17,6 +17,7 @@ kotlinx-datetime = "0.6.1"
 kover = "0.7.5"
 ktor = "2.3.12"
 ktor-plugin = "2.3.12"
+ktor-client-android="2.3.12"#
 ktor-client-js="2.3.12"#
 ktor-client-core="2.3.12"
 logback = "1.5.13"
@@ -50,6 +51,7 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime" , version.ref = "kotlinx-datetime"}
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlin-serialization-json"}
 
+ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor-client-android"}
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor-client-core"}
 ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor-client-js"}
 ktor-client-serialization = { module = "io.ktor:ktor-client-serialization", version.ref = "ktor"}

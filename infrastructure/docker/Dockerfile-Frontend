@@ -18,7 +18,7 @@ COPY evoleq/build.gradle*  ./
 RUN --mount=type=cache,target=/home/gradle/.gradle \
     --mount=type=cache,target=/root/.gradle \
     --mount=type=cache,target=.gradle \
-    ./gradlew --no-daemon --stacktrace --parallel --build-cache build -x test -x jsBrowserTest || true
+    ./gradlew --no-daemon --stacktrace --parallel --build-cache jsBrowserProductionWebpack -x test -x jsBrowserTest || true
 
 # ---- Step 3: Copy the rest of the source code ----
 COPY . .
@@ -28,7 +28,8 @@ RUN --mount=type=cache,target=/home/gradle/.gradle \
     --mount=type=cache,target=/root/.gradle \
     --mount=type=cache,target=.gradle \
     ./gradlew --no-daemon --continue --parallel --build-cache \
-      :solawi-bid-frontend:build -x jsBrowserTest
+      :solawi-bid-frontend:jsBrowserProductionWebpack -x jsBrowserTest \
+      :solawi-bid-frontend:jsBrowserDistribution
 
 # ---- Step 5: Run JS tests for selected subprojects ----
 RUN --mount=type=cache,target=/home/gradle/.gradle \
