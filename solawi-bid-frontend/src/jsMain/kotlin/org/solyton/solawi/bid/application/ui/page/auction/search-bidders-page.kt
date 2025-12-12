@@ -35,7 +35,6 @@ import org.solyton.solawi.bid.module.bid.data.deviceData
 import org.solyton.solawi.bid.module.bid.data.i18N
 import org.solyton.solawi.bid.module.bid.data.reader.*
 import org.solyton.solawi.bid.module.control.button.StdButton
-import org.solyton.solawi.bid.module.i18n.data.componentLoaded
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
 import org.solyton.solawi.bid.module.style.form.fieldStyle

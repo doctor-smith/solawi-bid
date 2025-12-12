@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 
 plugins {
+    alias(libs.plugins.android)
     alias(libs.plugins.mpp)
     alias(libs.plugins.compose)
     alias(libs.plugins.compose.compiler)
@@ -38,6 +39,11 @@ kotlin {
         }
         binaries.executable()
     }
+
+    androidTarget {
+
+    }
+
     sourceSets {
         val jsMain by getting {
             kotlin.srcDir("src/jsMain/kotlin")
@@ -110,15 +116,55 @@ kotlin {
                 implementation(libs.ktor.client.serialization)
             }
 
-            val commonTest by getting {
-                kotlin.srcDir("src/commonTest/kotlin")
-                dependencies {
-                    implementation(libs.kotlinx.coroutines.core)
-                    implementation(kotlin("test"))
-                }
+
+        }
+        val commonTest by getting {
+            kotlin.srcDir("src/commonTest/kotlin")
+            dependencies {
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(kotlin("test"))
+            }
+        }
+
+        val androidMain by getting{
+            kotlin.srcDir("src/androidMain/kotlin")
+            dependencies {
+                // kotlin coroutines
+                implementation(libs.kotlinx.coroutines.core)
+
+                // datetime
+                implementation(libs.kotlinx.datetime)
+
+                // ktor client
+                implementation(libs.ktor.client.core)
+                implementation(libs.ktor.client.js)
+                implementation(libs.ktor.http)
+                implementation(libs.ktor.http.cio)
+
+                // own dependencies
+                implementation(project(":solawi-bid-api-data"))
+                implementation(project(":evoleq"))
+                // Serialization
+                implementation(libs.kotlinx.serialization.json)
+                implementation(libs.ktor.client.serialization)
+            }
+        }
+        val androidUnitTest by getting {
+            kotlin.srcDir("src/androidUnitTest/kotlin")
+            dependencies {
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(kotlin("test"))
             }
         }
     }
+}
+android {
+        namespace = "org.solyton.solawi.bid"
+        compileSdk = 34
+
+        defaultConfig {
+            minSdk = 21
+        }
 }
 
 optics{
@@ -139,6 +185,7 @@ tasks.withType<Test>().configureEach {
 
 compose {
     web{ }
+    android {  }
 }
 
 // a temporary workaround for a bug in jsRun invocation - see https://youtrack.jetbrains.com/issue/KT-48273
