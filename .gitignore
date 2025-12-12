@@ -1,6 +1,7 @@
 .env
 !.env.dist
 hanoi
+local.properties
 .gradle
 .idea
 *.iml

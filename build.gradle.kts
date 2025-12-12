@@ -9,6 +9,7 @@ allprojects {
 }
 
 plugins{
+    alias(libs.plugins.android) apply false
     alias(libs.plugins.jvm) apply false
     alias(libs.plugins.serialization) apply false
     alias(libs.plugins.mpp) apply false

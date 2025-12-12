@@ -56,7 +56,7 @@ fun <BidEnv> Routing.auction(
         route("auction"){
             post("create") {
                 ReceiveContextual<CreateAuction>() *
-                IsGranted("CREATE_AUCTION") *
+                // IsGranted("CREATE_AUCTION") *
                 CreateAuction *
                 Respond<Auction>{ transform() } runOn
                 Base(call, environment)

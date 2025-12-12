@@ -36,7 +36,7 @@ class FailureWriterTest {
 
 
 
-            Result.Return((storage.failureWriter()).dispatch()).apply() on Result.Success(Failure("f"))
+            Result.Return((storage.failureWriter()).dispatch()).apply() on Result.Success(Failure("org/evoleq/compose/f"))
             assertEquals(3, (storage * modals).read().size)
         }
     }

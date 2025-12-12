@@ -1,4 +1,5 @@
 [versions]
+android = "8.4.0"
 benasher-uuid = "0.6.0"
 cdimascio-dotenv-kotlin =  "6.4.1"
 compose = "1.8.0"
@@ -73,6 +74,7 @@ slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "sl4j"}
 
 
 [plugins]
+android = { id = "com.android.library", version.ref = "android" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt"}
 jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor-plugin" }
