@@ -5,9 +5,8 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
-import org.solyton.solawi.bid.application.permission.Header
+import org.evoleq.ktorx.headers.Header
 import org.solyton.solawi.bid.module.authentication.data.api.Login
-import org.solyton.solawi.bid.module.authentication.data.api.RefreshToken
 import org.solyton.solawi.bid.module.permission.data.api.ApiContext
 
 const val USERNAME = "developer@solyton.org"

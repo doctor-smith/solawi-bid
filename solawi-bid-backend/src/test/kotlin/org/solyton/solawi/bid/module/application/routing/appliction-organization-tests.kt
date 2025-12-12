@@ -19,7 +19,7 @@ import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.test.setupData
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
-import org.solyton.solawi.bid.application.permission.Header
+import org.evoleq.ktorx.headers.Header
 import org.solyton.solawi.bid.module.application.USERNAME
 import org.solyton.solawi.bid.module.application.data.ApiApplications
 import org.solyton.solawi.bid.module.application.data.ApplicationOrganizationRelations

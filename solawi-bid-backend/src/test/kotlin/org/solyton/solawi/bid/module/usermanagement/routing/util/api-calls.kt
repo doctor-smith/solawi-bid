@@ -8,7 +8,7 @@ import kotlinx.serialization.json.Json
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
 import org.solyton.solawi.bid.application.api.solawiApi
-import org.solyton.solawi.bid.application.permission.Header
+import org.evoleq.ktorx.headers.Header
 import org.solyton.solawi.bid.module.user.data.api.organization.AddMember
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiOrganizations

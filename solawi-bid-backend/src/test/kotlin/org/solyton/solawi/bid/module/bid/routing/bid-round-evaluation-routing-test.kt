@@ -13,7 +13,7 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
-import org.solyton.solawi.bid.application.permission.Header
+import org.evoleq.ktorx.headers.Header
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.routing.util.getAuctionsApplicationContextId
 import org.solyton.solawi.bid.module.bid.routing.util.getTestAuctionContextId

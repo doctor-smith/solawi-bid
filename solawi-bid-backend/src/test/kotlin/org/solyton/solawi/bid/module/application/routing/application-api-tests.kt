@@ -15,14 +15,13 @@ import org.evoleq.test.setupData
 import org.evoleq.uuid.UUID_ZERO
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
-import org.solyton.solawi.bid.application.permission.Header
+import org.evoleq.ktorx.headers.Header
 import org.solyton.solawi.bid.module.application.PASSWORD
 import org.solyton.solawi.bid.module.application.USERNAME
 import org.solyton.solawi.bid.module.application.data.ConnectApplicationToOrganization
 import org.solyton.solawi.bid.module.application.data.ApiApplications
 import org.solyton.solawi.bid.module.application.data.ApiUserApplications
 import org.solyton.solawi.bid.module.application.data.ApplicationContextRelations
-import org.solyton.solawi.bid.module.application.data.ApplicationOrganizationRelation
 import org.solyton.solawi.bid.module.application.data.ApplicationOrganizationRelations
 import org.solyton.solawi.bid.module.application.data.LifecycleStage
 import org.solyton.solawi.bid.module.application.data.ModuleContextRelations

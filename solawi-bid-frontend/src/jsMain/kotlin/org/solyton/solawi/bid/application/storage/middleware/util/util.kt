@@ -15,16 +15,14 @@ import org.evoleq.math.state.State
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
-import org.evoleq.optics.storage.write
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.application.data.context
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.failure.Failure
 import org.solyton.solawi.bid.application.data.failure.accept
 import org.solyton.solawi.bid.application.data.modals
 import org.solyton.solawi.bid.application.service.setContext
-import org.solyton.solawi.bid.module.context.data.Contextual
+import org.evoleq.ktorx.context.data.Contextual
 import org.solyton.solawi.bid.module.error.component.ErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
 

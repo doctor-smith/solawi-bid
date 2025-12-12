@@ -3,7 +3,7 @@ package org.solyton.solawi.bid.application.pipeline
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.cors.routing.*
-import org.solyton.solawi.bid.application.permission.Header
+import org.evoleq.ktorx.headers.Header
 
 
 fun Application.installCors() = try {

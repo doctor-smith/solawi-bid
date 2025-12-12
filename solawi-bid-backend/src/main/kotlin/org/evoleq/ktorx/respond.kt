@@ -7,7 +7,7 @@ import kotlinx.serialization.json.Json
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.math.x
-import org.solyton.solawi.bid.application.permission.Header
+import org.evoleq.ktorx.headers.Header
 import org.solyton.solawi.bid.module.application.permission.Context
 
 

@@ -16,7 +16,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.solyton.solawi.bid.Api
-import org.solyton.solawi.bid.application.permission.Header
+import org.evoleq.ktorx.headers.Header
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.routing.util.getAuctionsApplicationContextId
 import org.solyton.solawi.bid.module.bid.routing.util.getTestAuctionContextId
