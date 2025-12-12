@@ -17,7 +17,7 @@ import org.solyton.solawi.bid.application.environment.Environment
 import org.solyton.solawi.bid.application.environment.MailService
 import org.solyton.solawi.bid.application.environment.Smtp
 import org.solyton.solawi.bid.application.environment.User
-import org.solyton.solawi.bid.application.permission.Header
+import org.evoleq.ktorx.headers.Header
 import org.solyton.solawi.bid.application.pipeline.installAuthentication
 import org.solyton.solawi.bid.application.pipeline.installContentNegotiation
 import org.solyton.solawi.bid.application.pipeline.installCors

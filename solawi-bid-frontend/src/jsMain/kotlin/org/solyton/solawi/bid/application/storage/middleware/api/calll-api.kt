@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.application.storage.middleware.api
 
 import org.evoleq.ktorx.api.EndPoint
+import org.evoleq.ktorx.client.*
 import org.evoleq.ktorx.result.Result
 import org.evoleq.math.MathDsl
 import org.evoleq.math.state.KlState
@@ -17,7 +18,7 @@ import org.solyton.solawi.bid.application.data.env.backendUrl
 import org.solyton.solawi.bid.application.data.environment
 import org.solyton.solawi.bid.application.data.userData
 import org.solyton.solawi.bid.application.service.seemsToBeLoggerIn
-import org.solyton.solawi.bid.module.context.data.Contextual
+import org.evoleq.ktorx.context.data.Contextual
 
 @MathDsl
 @Suppress("FunctionName")

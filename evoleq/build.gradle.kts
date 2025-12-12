@@ -64,6 +64,16 @@ kotlin{
 
                 implementation(compose.runtime)
                 implementation(compose.foundation)
+
+                // ktor client
+                implementation(libs.ktor.client.core)
+                implementation(libs.ktor.http)
+                implementation(libs.ktor.http.cio)
+
+                // Serialization
+                implementation(libs.kotlinx.serialization.json)
+                implementation(libs.ktor.client.serialization)
+
             }
         }
         val commonTest by getting {
@@ -227,7 +237,7 @@ dependencyAnalyser {
     }
     analyse("evoleqOptics") {
         domain = "org.evoleq.optics"
-        sourceSet = "jsMain"
+        sourceSet = "commonMain"
         modulePath = ""
         modules = setOf(
             "iso",

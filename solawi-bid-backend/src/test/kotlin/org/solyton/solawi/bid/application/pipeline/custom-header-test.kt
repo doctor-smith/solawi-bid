@@ -17,7 +17,7 @@ import org.evoleq.test.setup
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
 import org.solyton.solawi.bid.application.exception.ApplicationException
-import org.solyton.solawi.bid.application.permission.Header
+import org.evoleq.ktorx.headers.Header
 import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.context.data
+package org.evoleq.ktorx.context.data
 
 data class Contextual<T>(
     val context: String,

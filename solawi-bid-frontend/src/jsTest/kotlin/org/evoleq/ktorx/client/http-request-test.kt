@@ -11,7 +11,6 @@ import org.evoleq.ktorx.result.Serializer
 import org.evoleq.ktorx.result.serializers
 import org.jetbrains.compose.web.testutils.ComposeWebExperimentalTestsApi
 import org.jetbrains.compose.web.testutils.runTest
-import org.solyton.solawi.bid.application.api.post
 import org.solyton.solawi.bid.application.api.solawiApi
 import org.solyton.solawi.bid.application.serialization.installSerializers
 import org.solyton.solawi.bid.module.authentication.data.api.LoggedIn

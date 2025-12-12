@@ -9,7 +9,7 @@ import org.evoleq.exposedx.NO_MESSAGE_PROVIDED
 import org.evoleq.ktorx.result.*
 import org.evoleq.math.state.times
 import org.evoleq.math.x
-import org.solyton.solawi.bid.application.permission.Header
+import org.evoleq.ktorx.headers.Header
 import org.solyton.solawi.bid.module.authentication.exception.AuthenticationException
 import java.util.*
 

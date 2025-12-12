@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.application.permission
+package org.evoleq.ktorx.headers
 
 data object Header {
     const val CONTEXT = "Context"
