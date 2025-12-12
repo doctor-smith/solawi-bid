@@ -44,6 +44,14 @@ kotlin {
 
     }
 
+    targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget> {
+        compilations.all {
+            kotlinOptions {
+                jvmTarget = "1.8"
+            }
+        }
+    }
+
     sourceSets {
         val jsMain by getting {
             kotlin.srcDir("src/jsMain/kotlin")
@@ -99,12 +107,14 @@ kotlin {
                 // kotlin coroutines
                 implementation(libs.kotlinx.coroutines.core)
 
+                // compose
+                implementation(compose.runtime)
+
                 // datetime
                 implementation(libs.kotlinx.datetime)
 
                 // ktor client
                 implementation(libs.ktor.client.core)
-                implementation(libs.ktor.client.js)
                 implementation(libs.ktor.http)
                 implementation(libs.ktor.http.cio)
 
@@ -132,12 +142,28 @@ kotlin {
                 // kotlin coroutines
                 implementation(libs.kotlinx.coroutines.core)
 
+                // compose
+                /*
+                val composeBom = platform("androidx.compose:compose-bom:2024.10.00")
+                implementation(composeBom)
+
+                implementation("androidx.activity:activity-compose")
+                implementation("androidx.compose.ui:ui")
+                implementation("androidx.compose.material3:material3")
+
+
+                 */
+                implementation("androidx.activity:activity-compose")
+                implementation(compose.runtime)
+                implementation(compose.foundation)
+                implementation(compose.material)
+
                 // datetime
                 implementation(libs.kotlinx.datetime)
 
                 // ktor client
                 implementation(libs.ktor.client.core)
-                implementation(libs.ktor.client.js)
+                implementation(libs.ktor.client.android)
                 implementation(libs.ktor.http)
                 implementation(libs.ktor.http.cio)
 
@@ -159,18 +185,34 @@ kotlin {
     }
 }
 android {
-        namespace = "org.solyton.solawi.bid"
-        compileSdk = 34
+    namespace = "org.solyton.solawi.bid"
+    compileSdk = 35
 
-        defaultConfig {
-            minSdk = 21
-        }
+    defaultConfig {
+        minSdk = 24
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+
+
+    buildFeatures {
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.15"
+    }
 }
 
 optics{
     sourceSet = "jsMain"
     defaultPackage = "org.solyton.solawi.bid.data"
 }
+
 tasks.withType<Test> {
     reports {
         junitXml.required = true
