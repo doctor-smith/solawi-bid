@@ -18,6 +18,7 @@ import org.solyton.solawi.bid.module.application.data.ConnectApplicationToOrgani
 import org.solyton.solawi.bid.module.application.data.LifecycleStage
 import org.solyton.solawi.bid.module.application.data.ModuleContextRelation
 import org.solyton.solawi.bid.module.application.data.ModuleContextRelations
+import org.solyton.solawi.bid.module.application.data.ReadApplicationOrganizationContextRelations
 import org.solyton.solawi.bid.module.application.data.ReadApplications
 import org.solyton.solawi.bid.module.application.data.ReadPersonalUserApplications
 import org.solyton.solawi.bid.module.application.data.ReadPersonalApplicationContextRelations
@@ -148,6 +149,7 @@ fun Application.installSerializers() {
     serializers[RegisterForModules::class] = RegisterForModules.serializer()
     serializers[StartTrialsOfModules::class] = StartTrialsOfModules.serializer()
     serializers[SubscribeModules::class] = SubscribeModules.serializer()
+    serializers[ReadApplicationOrganizationContextRelations::class] = ReadApplicationOrganizationContextRelations.serializer()
     serializers[ConnectApplicationToOrganization::class] = ConnectApplicationToOrganization.serializer()
     serializers[UpdateOrganizationModuleRelations::class] = UpdateOrganizationModuleRelations.serializer()
 

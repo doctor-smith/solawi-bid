@@ -209,6 +209,10 @@ val solawiApi by lazy {
             key = UpdateOrganizationModuleRelations::class,
             url = "applications/personal/update-organization-module-relations"
         )
+        get<ReadApplicationOrganizationContextRelations,  ApplicationOrganizationRelations>(
+            key = ReadApplicationOrganizationContextRelations::class,
+            url = "applications/personal/organization-context-relations"
+        )
         // Organizations
         post<CreateOrganization, Organization>(
             key = CreateOrganization::class,

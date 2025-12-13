@@ -6,6 +6,9 @@ typealias ApiApplicationOrganizationRelations = ApplicationOrganizationRelations
 typealias ApiApplicationOrganizationRelation = ApplicationOrganizationRelation
 
 @Serializable
+data object ReadApplicationOrganizationContextRelations
+
+@Serializable
 data class ConnectApplicationToOrganization(
     val applicationId: String,
     val organizationId: String,
@@ -28,5 +31,6 @@ data class ApplicationOrganizationRelations(
 data class ApplicationOrganizationRelation(
     val applicationId: String,
     val organizationId: String,
+    val contextId: String,
     val moduleIds: List<String>
 )

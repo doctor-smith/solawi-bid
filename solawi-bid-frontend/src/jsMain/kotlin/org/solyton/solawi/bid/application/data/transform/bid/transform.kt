@@ -39,7 +39,8 @@ val bidApplicationPreIso: Lens<Application, BidApplication> by lazy {
                 ),
                 auctions = whole.auctions,
                 bidRounds = whole.bidRounds,
-                bidderMailAddresses = whole.bidderMailAddresses
+                bidderMailAddresses = whole.bidderMailAddresses,
+                applicationOrganizationRelations = whole.applicationOrganizationRelations
             )
         },
         set = { part -> { whole ->
@@ -48,7 +49,8 @@ val bidApplicationPreIso: Lens<Application, BidApplication> by lazy {
                   i18N = part.i18N,
                   auctions = part.auctions,
                   bidRounds = part.bidRounds,
-                  bidderMailAddresses = part.bidderMailAddresses
+                  bidderMailAddresses = part.bidderMailAddresses,
+                  applicationOrganizationRelations = part.applicationOrganizationRelations
               )
         } }
     )
