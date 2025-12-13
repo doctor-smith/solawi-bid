@@ -6,7 +6,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
+import org.evoleq.compose.guard.data.ConditionalActionInput
+import org.evoleq.compose.guard.data.ExecutableAction
 import org.evoleq.compose.guard.data.isLoading
+import org.evoleq.compose.guard.data.onFulfilled
+import org.evoleq.compose.guard.data.sequentiallyExecuted
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.compose.layout.VerticalAccent
@@ -21,16 +25,21 @@ import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
+import org.evoleq.optics.storage.read
+import org.evoleq.optics.storage.times
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.Text
+import org.jetbrains.letsPlot.core.plot.base.DataFrame
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.service.useI18nTransform
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
+import org.solyton.solawi.bid.application.data.availableApplications
+import org.solyton.solawi.bid.module.application.data.application.id as applicationId
 import org.solyton.solawi.bid.module.bid.action.readAuctions
 import org.solyton.solawi.bid.module.bid.component.AuctionList
 import org.solyton.solawi.bid.module.bid.component.button.CreateAuctionButton
@@ -46,6 +55,7 @@ import org.solyton.solawi.bid.module.style.layout.accent.vertical.verticalAccent
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.action.organization.readOrganizations
+import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsAction
 
 @Markup
 @Composable
@@ -54,6 +64,7 @@ fun AuctionsPage(storage: Storage<Application>) = Div {
     // Bid Application Storage
     val bidApplicationStorage = storage * bidApplicationIso
     // Effect
+
     LaunchedEffect(Unit) {
         (bidApplicationStorage * actions).dispatch(readAuctions())
     }
@@ -61,6 +72,20 @@ fun AuctionsPage(storage: Storage<Application>) = Div {
     LaunchedEffect(Unit) {
         (storage * userIso * userActions).dispatch(readOrganizations())
     }
+
+    if(sequentiallyExecuted(
+        onFulfilled(
+            source = { ConditionalActionInput(
+                (storage * availableApplications).read(),
+                (storage * availableApplications).read()
+            )},
+            predicate = { it.isEmpty() },
+        ){
+            LaunchedEffect(Unit) {
+                (storage * userIso * userActions).dispatch(readUserPermissionsAction("React"))
+            }
+        }
+    )) return@Div
 
     if(isLoading(
         onMissing(
@@ -81,6 +106,7 @@ fun AuctionsPage(storage: Storage<Application>) = Div {
     // Texts
     val texts = (bidApplicationStorage * i18N * language * component(BidComponent.AuctionsPage))
 
+    val applicationId = storage * availableApplications * FirstBy { it.name == "AUCTIONS" } * applicationId.get
     // Markup
     Vertical(style = verticalPageStyle) {
         VerticalAccent(
@@ -92,6 +118,7 @@ fun AuctionsPage(storage: Storage<Application>) = Div {
                 CreateAuctionButton(
                     storage = bidApplicationStorage,
                     auction = auction,
+                    applicationId = applicationId,
                     texts = texts * subComp("buttons") * subComp("createAuction")
                 )
             }

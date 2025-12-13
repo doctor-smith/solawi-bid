@@ -13,14 +13,14 @@ import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.evoleq.uuid.UUID_ZERO
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
-import org.jetbrains.exposed.sql.Transaction
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.update
 import org.joda.time.DateTime
+import org.solyton.solawi.bid.module.application.exception.ApplicationException
+import org.solyton.solawi.bid.module.application.schema.ApplicationEntity
+import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
+import org.solyton.solawi.bid.module.application.schema.OrganizationApplicationContextEntity
+import org.solyton.solawi.bid.module.application.schema.OrganizationApplicationContextsTable
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.data.toApiType
 import org.solyton.solawi.bid.module.bid.exception.BidRoundException
@@ -50,8 +50,8 @@ val CreateAuction = KlAction<Result<Contextual<CreateAuction>>, Result<ApiAuctio
             addUserAsOwnerToContext(contextual.userId, auctionContextId)
 
             createAuction(
-                contextual.data.name,
-                contextual.data.date,
+                name = contextual.data.name,
+                date = contextual.data.date,
                 contextId = auctionContextId
             ).toApiType()
         } }  x database
@@ -70,10 +70,8 @@ fun Transaction.createAuction(
     val context = ContextEntity.find { ContextsTable.id eq contextId }.firstOrNull()
         ?: throw ContextException.NoSuchContext(contextId.toString())
 
-    val organization = OrganizationEntity.find {
-        OrganizationsTable.contextId eq contextId
-    }.firstOrNull()
-        //?: throw OrganizationException.NoSuchOrganization("${context.name}.id = $contextId")
+    val application = ApplicationEntity.find { ApplicationsTable.name eq "AUCTIONS" }.firstOrNull()
+        ?: throw  ApplicationException.NoSuchApplication("AUCTIONS")
 
     val auction = AuctionEntity.new {
         this.name = name
@@ -83,14 +81,41 @@ fun Transaction.createAuction(
         this.context = context
     }
 
+    // eventually connect auction with an organization
+    eventuallyConnectAuctionWithOrganization(
+        applicationId = application.id.value,
+        auctionId = auction.id.value,
+        contextId = contextId
+    )
+
+    // eventually connect auction with other stuff
+
+    return auction
+}
+
+fun Transaction.eventuallyConnectAuctionWithOrganization(
+    applicationId: UUID,
+    auctionId: UUID,
+    contextId: UUID
+) {
+    val organizationApplicationContext = OrganizationApplicationContextEntity.find {
+        OrganizationApplicationContextsTable.applicationId eq applicationId and
+                (OrganizationApplicationContextsTable.contextId eq contextId)
+    }.firstOrNull()
+
+    val organization = if(organizationApplicationContext != null) {
+        OrganizationEntity.find {
+            OrganizationsTable.id eq organizationApplicationContext.organizationId
+        }.firstOrNull()
+    } else {
+        null
+    }
     if(organization != null) {
         OrganizationAuctionsTable.insert {
-            it[auctionId] = auction.id.value
+            it[OrganizationAuctions.auctionId] = auctionId
             it[organizationId] = organization.id.value
         }
     }
-
-    return auction
 }
 
 @MathDsl
