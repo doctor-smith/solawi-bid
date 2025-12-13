@@ -96,16 +96,18 @@ fun Transaction.isGranted(userId: UUID, context: String, right: String): Boolean
 }
 
 fun Transaction.isGranted(userId: UUID, contextId: UUID, rightId: UUID): Boolean {
+
     val context = ContextEntity.find { ContextsTable.id eq contextId }.firstOrNull()
         ?: throw PermissionException.NoSuchContext(contextId.toString())
-    val roleIds = context.roles.filter { it.rights.map { r -> r.id.value }.contains(rightId) }.map { it.id }
-
+    val roleIds = context.roles.filter { it.rights.any { r -> r.id.value == rightId }}.map { it.id }.distinct()
 
     return !UserRoleContext.selectAll().where {
         UserRoleContext.userId eq userId and
         ( UserRoleContext.contextId eq contextId ) and
         ( UserRoleContext.roleId inList roleIds  )
-    }.empty()
+    }
+        .limit(1)
+        .empty()
 }
 
 fun Transaction.isGranted(userId: UUID, contextId: UUID, right: String): Boolean {

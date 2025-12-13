@@ -70,6 +70,9 @@ fun <ApplicationEnv> Routing.application(
                 post("connect-organization") {
                     ReceiveContextual<ConnectApplicationToOrganization>() *
                     // Permissions / Ownership is checked during the following step !!
+                    // Background:
+                    // if the current user has not purchased the application,
+                    // an exception will be thrown
                     ConnectApplicationToOrganization() *
                     Respond<ApplicationOrganizationRelations>{ transform() } runOn Base(call, environment)
                 }

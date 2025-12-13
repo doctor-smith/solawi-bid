@@ -11,6 +11,7 @@ import org.solyton.solawi.bid.module.application.schema.ApplicationEntity
 import org.solyton.solawi.bid.module.application.schema.LifecycleStageEntity
 import org.solyton.solawi.bid.module.application.schema.OrganizationApplicationContextEntity
 import org.solyton.solawi.bid.module.application.schema.OrganizationModuleContextEntity
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.permission.schema.repository.cloneRightRoleContext
 import org.solyton.solawi.bid.module.permission.schema.repository.createRootContext
 import java.util.*
@@ -68,32 +69,36 @@ fun Transaction.moveLifecycleStage(
 }
 
 fun Transaction.getApplicationOrganizationRelations(
-    organizationId: UUID,
+    userId: UUID,
 ) : ApplicationOrganizationRelations {
 
+    val userContextIds = UserRoleContext.select(UserRoleContext.contextId)
+        .where { UserRoleContext.userId eq userId }
+        .distinct().map { row -> row[UserRoleContext.contextId] }
+
     val organizationApplications = OrganizationApplicationContextEntity.find {
-        OrganizationApplicationContextsTable.organizationId eq organizationId
+        OrganizationApplicationContextsTable.contextId inList userContextIds
     }.toList()
 
     val organizationModules = OrganizationModuleContextEntity.find {
-        OrganizationModuleContextsTable.organizationId eq organizationId
+        OrganizationModuleContextsTable.contextId inList  userContextIds
     }.toList()
 
-    val contextId : (applicationId: UUID) -> UUID = {applicationId  ->
-        organizationApplications.first {
-            it.application.id.value == applicationId
-        }.context.id.value
+    val applicationModules:(applicationId: UUID,organizationId: UUID)->List<String> = {applicationId: UUID,organizationId: UUID ->
+        organizationModules.filter{
+            it.module.application.id.value == applicationId && it.organizationId == organizationId
+        }.map{
+            it.module.id.value.toString()
+        }
     }
 
-    val relations = organizationModules.groupBy {
-        organizationModuleContext -> organizationModuleContext.module.application.id
-    }.map { entry -> ApplicationOrganizationRelation(
-        entry.key.value.toString(),
-        organizationId.toString(),
-        contextId(entry.key.value).toString(),
-        entry.value.map {
-            organizationModuleContext -> organizationModuleContext.module.id.value.toString()
-        }
-    ) }
+    val relations = organizationApplications.map {
+        ApplicationOrganizationRelation(
+            applicationId = it.application.id.value.toString(),
+            organizationId = it.organizationId.toString(),
+            contextId = it.context.id.value.toString(),
+            moduleIds = applicationModules(it.application.id.value, it.organizationId)
+        )
+    }
     return ApplicationOrganizationRelations(relations)
 }

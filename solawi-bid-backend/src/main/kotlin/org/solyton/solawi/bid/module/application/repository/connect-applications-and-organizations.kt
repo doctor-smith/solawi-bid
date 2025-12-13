@@ -18,7 +18,7 @@ import org.solyton.solawi.bid.module.application.schema.UserModulesTable
 import org.solyton.solawi.bid.module.permission.schema.repository.cloneRightRoleContext
 import org.solyton.solawi.bid.module.permission.schema.repository.createChild
 import org.solyton.solawi.bid.module.permission.schema.repository.createRootContext
-import java.util.UUID
+import java.util.*
 
 /**
  * This function can only be used by the owner of the underlying application.
@@ -34,6 +34,7 @@ fun Transaction.connectApplicationToOrganization(
         ?: throw ApplicationException.NoSuchApplication(applicationId.toString())
 
     // if the user-application exists, the user is necessarily the owner!
+    // so this step can be viewed as a permission chack
     val userApplication = UserApplicationEntity.find {
         UserApplicationsTable.userId eq userId and (UserApplicationsTable.applicationId eq applicationId)
     }.firstOrNull()?: throw ApplicationException.UserNotRegisteredForApplication(
@@ -51,7 +52,7 @@ fun Transaction.connectApplicationToOrganization(
         "$applicationId"
     )
 
-    // Create context as sub context of the
+    // Create context
     val applicationContext = createRootContext(application.buildOrganizationApplicationContextName(organizationId))
     cloneRightRoleContext(
         application.defaultContext.id.value,
@@ -65,6 +66,7 @@ fun Transaction.connectApplicationToOrganization(
         lifecycleStage = userApplication.lifecycleStage
         createdBy = userId
     }
+
     // Add modules and transfer lifecycle-stages
     val allowedUserModules = UserModuleEntity.find {
         UserModulesTable.userId eq userId and (UserModulesTable.moduleId inList moduleIds)
@@ -76,7 +78,6 @@ fun Transaction.connectApplicationToOrganization(
             LifecycleStage.Active.name()
         )
     }
-
 
     // validate that user has appropriate permissions on all relevant module
     val forbiddenModules = moduleIds
@@ -105,5 +106,7 @@ fun Transaction.connectApplicationToOrganization(
         }
     }
 
-    return getApplicationOrganizationRelations(organizationId)
+    commit()
+
+    return getApplicationOrganizationRelations(userId)
 }
