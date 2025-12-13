@@ -8,8 +8,7 @@ services:
         WORKDIR /app
         COPY . .
         # Entrypoint runs the application
-        CMD ./gradlew --parallel solawi-bid-frontend:jsBrowserProductionWebpack --profile && \
-            ./gradlew --parallel solawi-bid-frontend:jsBrowserProductionRun
+        CMD ./gradlew --parallel solawi-bid-frontend:jsBrowserProductionRun --profile
     pull_policy: build
     ports:
       - "8080:8080"
@@ -38,8 +37,7 @@ services:
         FROM gradle:8-jdk17-noble
         WORKDIR /app
         COPY . .
-        CMD ./gradlew --parallel solawi-bid-backend:buildFatJar --profile && \
-            ./gradlew --parallel solawi-bid-backend:runFatJar
+        CMD ./gradlew clean solawi-bid-backend:runFatJar --profile
     pull_policy: build
     ports:
       - "8081:8081"
