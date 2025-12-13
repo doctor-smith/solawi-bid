@@ -477,7 +477,7 @@ class ApplicationActionsTest {
         val apiApplicationOrganizationRelations = ApiApplicationOrganizationRelations(
             listOf(
                 ApiApplicationOrganizationRelation(
-                    "id", "id", listOf("id")
+                    "id", "id", "id",listOf("id")
                 )
             )
         )

@@ -60,6 +60,11 @@ fun <ApplicationEnv> Routing.application(
                     SubscribeApplications() *
                     Respond<ApiApplications> { transform() } runOn Base(call, environment)
                 }
+                get("organization-context-relations") {
+                    ReceiveContextual(ReadApplicationOrganizationContextRelations) *
+                    ReadApplicationOrganizationContextRelations() *
+                    Respond<ApplicationOrganizationRelations>{ transform() } runOn Base(call, environment)
+                }
                 // End point can only be used as owner of the application
                 // which is to be connected to the organization
                 post("connect-organization") {

@@ -55,5 +55,6 @@ fun ApiApplicationOrganizationRelation.toDomainType(): ApplicationOrganizationRe
     ApplicationOrganizationRelation(
         applicationId = applicationId,
         organizationId = organizationId,
+        contextId = contextId,
         moduleIds = moduleIds
     )

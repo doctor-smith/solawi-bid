@@ -152,6 +152,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<ApplicationContextRelations>(ApplicationContextRelations.serializer())
         add<ModuleContextRelation>(ModuleContextRelation.serializer())
         add<ModuleContextRelations>(ModuleContextRelations.serializer())
+        add<ReadApplicationOrganizationContextRelations>(ReadApplicationOrganizationContextRelations.serializer())
         add<ApplicationOrganizationRelation>(ApplicationOrganizationRelation.serializer())
         add<ApplicationOrganizationRelations>(ApplicationOrganizationRelations.serializer())
 

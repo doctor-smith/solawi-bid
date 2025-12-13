@@ -12,6 +12,7 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.solyton.solawi.bid.module.permission.PermissionException
+import org.solyton.solawi.bid.module.permission.data.api.ContextId
 import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
@@ -24,6 +25,21 @@ fun <T> IsGranted(right: String, accessCheckNeeded: (Contextual<T>)->Boolean = {
         resultTransaction(database) {
             when {
                 !accessCheckNeeded(contextual) -> contextual
+                isGranted(contextual.userId, UUID.fromString(contextual.context), right) -> contextual
+                else -> throw PermissionException.AccessDenied
+            }
+        }
+    } x database }
+}
+
+@MathDsl
+@Suppress("FunctionName")
+fun <T : ContextId> IsGrantedInSpecialContext(right: String, accessCheckNeeded: (Contextual<T>)->Boolean = {true}): KlAction<Result<Contextual<T>>,Result<Contextual<T>>> = KlAction {
+    result -> DbAction { database -> result bindSuspend  { contextual ->
+        resultTransaction(database) {
+            when {
+                !accessCheckNeeded(contextual) -> contextual
+                isGranted(contextual.userId, UUID.fromString(contextual.data.contextId), right) -> contextual
                 isGranted(contextual.userId, UUID.fromString(contextual.context), right) -> contextual
                 else -> throw PermissionException.AccessDenied
             }
@@ -126,6 +142,29 @@ fun Transaction.isGrantedOneOf(userId: UUID, contextId: UUID, rightIds: List<Str
         .adjustWhere {
             (UserRoleContext.userId eq userId) and
             (RoleRightContexts.contextId eq contextId) and
+            (Rights.name inList rightIds)
+        }
+        .limit(1)
+        .empty()
+}
+
+fun Transaction.isGrantedOneOf(userId: UUID, contextIds: List<UUID>, rightIds: List<String>): Boolean {
+    return !UserRoleContext
+        .join(
+            RoleRightContexts,
+            JoinType.INNER,
+            onColumn = UserRoleContext.roleId,
+            otherColumn = RoleRightContexts.roleId
+        ).join(
+            Rights,
+            JoinType.INNER,
+            onColumn = RoleRightContexts.rightId,
+            otherColumn = RightsTable.id
+        )
+        .select(UserRoleContext.userId)
+        .adjustWhere {
+            (UserRoleContext.userId eq userId) and
+            (RoleRightContexts.contextId inList  contextIds) and
             (Rights.name inList rightIds)
         }
         .limit(1)

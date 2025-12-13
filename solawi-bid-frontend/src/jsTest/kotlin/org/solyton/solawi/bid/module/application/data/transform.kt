@@ -339,14 +339,15 @@ class TransformationTests {
     @Test fun applicationOrganizationRelationToDomainTypeTest() {
         val organizationId = "organizationId"
         val applicationId = "applicationId"
+        val contextId = "contextId"
         val moduleIds = listOf("module_1, module_2")
 
         val apiApplicationOrganizationRelation = ApiApplicationOrganizationRelation(
-            applicationId, organizationId, moduleIds
+            applicationId, organizationId, contextId, moduleIds
         )
 
         val expected = ApplicationOrganizationRelation(
-            applicationId, organizationId, moduleIds
+            applicationId, organizationId, contextId, moduleIds
         )
 
         assertEquals(expected, apiApplicationOrganizationRelation.toDomainType())
@@ -355,6 +356,7 @@ class TransformationTests {
     @Test fun applicationOrganizationRelationsToDomainTypeTest() {
         val organizationId = "organizationId"
         val applicationId = "applicationId"
+        val contextId = "contextId"
         val moduleIds = listOf("module_1, module_2")
 
         val apiApplicationOrganizationRelations = ApiApplicationOrganizationRelations(
@@ -362,11 +364,13 @@ class TransformationTests {
                 ApiApplicationOrganizationRelation(
                     applicationId + "1",
                     organizationId+"1",
+                    contextId,
                     moduleIds
                 ),
                 ApiApplicationOrganizationRelation(
                     applicationId + "2",
                     organizationId+"2",
+                    contextId,
                     moduleIds
                 )
             )
@@ -376,11 +380,13 @@ class TransformationTests {
             ApplicationOrganizationRelation(
                 applicationId + "1",
                 organizationId+"1",
+                contextId,
                 moduleIds
             ),
             ApplicationOrganizationRelation(
                 applicationId + "2",
                 organizationId+"2",
+                contextId,
                 moduleIds
             )
         )
