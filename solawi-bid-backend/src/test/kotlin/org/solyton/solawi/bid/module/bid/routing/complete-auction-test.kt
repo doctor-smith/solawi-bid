@@ -263,10 +263,12 @@ suspend fun HttpClient.createAuction(name: String, token: String, context: Strin
             )
         )
     }.bodyAsText()
-    val result = Json.decodeFromString<Result<ApiAuction>>(
+    val result = try{Json.decodeFromString<Result<ApiAuction>>(
         ResultSerializer(),
         createAuctionText
-    )
+    )} catch (e: Exception){
+        Result.Failure.Message(e.message?: "unknown error")
+    }
     return result
 }
 

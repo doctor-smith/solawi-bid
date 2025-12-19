@@ -8,6 +8,7 @@ import io.ktor.server.config.*
 import io.ktor.server.testing.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
+import org.evoleq.ktorx.headers.Header
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.test.setup
@@ -15,26 +16,17 @@ import org.evoleq.test.setupData
 import org.evoleq.uuid.UUID_ZERO
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
-import org.evoleq.ktorx.headers.Header
 import org.solyton.solawi.bid.module.application.PASSWORD
 import org.solyton.solawi.bid.module.application.USERNAME
-import org.solyton.solawi.bid.module.application.data.ConnectApplicationToOrganization
-import org.solyton.solawi.bid.module.application.data.ApiApplications
-import org.solyton.solawi.bid.module.application.data.ApiUserApplications
-import org.solyton.solawi.bid.module.application.data.ApplicationContextRelations
-import org.solyton.solawi.bid.module.application.data.ApplicationOrganizationRelations
-import org.solyton.solawi.bid.module.application.data.LifecycleStage
-import org.solyton.solawi.bid.module.application.data.ModuleContextRelations
-import org.solyton.solawi.bid.module.application.data.ReadUserApplications
-import org.solyton.solawi.bid.module.application.data.RegisterForApplications
-import org.solyton.solawi.bid.module.application.data.StartTrialsOfApplications
+import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.application.getRootContextByName
 import org.solyton.solawi.bid.module.application.login
 import org.solyton.solawi.bid.module.authentication.data.api.LoggedIn
-import org.solyton.solawi.bid.module.testFramework.getTestToken
+import org.solyton.solawi.bid.module.bid.routing.util.getApplications
+import org.solyton.solawi.bid.module.testFramework.*
 import org.solyton.solawi.bid.module.user.data.api.ApiUsers
 import java.io.File
-import java.util.UUID
+import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
@@ -619,7 +611,7 @@ class ApplicationApiTests {
         }
     }
 
-    // @Api@Test
+    @Api@Test
     fun connectApplicationToOrganizationTest() = runBlocking {
         class Data(
             val contextId: String,
@@ -628,8 +620,6 @@ class ApplicationApiTests {
         )
 
         testApplication() {
-
-
             val data = setupData {
                 environment {
                     // Load the HOCON file explicitly with the file path
@@ -642,17 +632,10 @@ class ApplicationApiTests {
 
                 val applicationContextId = getRootContextByName("APPLICATION", accessToken).id
 
-                val applicationsResponse = client.get("applications/all") {
-                    header(HttpHeaders.ContentType, ContentType.Application.Json)
-                    header(HttpHeaders.Authorization, "Bearer $accessToken")
-                    header(Header.CONTEXT, applicationContextId)
-                }
-                val applicationsResult = Json.decodeFromString(
-                    ResultSerializer,
-                    applicationsResponse.bodyAsText()
+                val applicationsResult = client.getApplications(
+                    accessToken,
+                    applicationContextId
                 )
-                assertIs<Result.Success<ApiApplications>>(applicationsResult)
-
                 Data(
                     applicationContextId,
                     accessToken,
@@ -679,8 +662,6 @@ class ApplicationApiTests {
                     )
                 )
             }
-
-//            assertEquals(HttpStatusCode.OK, registerApplicationsResponse.status, "Wrong status during setup")
 
             val registerApplicationsResult = Json.decodeFromString(
                 ResultSerializer,
