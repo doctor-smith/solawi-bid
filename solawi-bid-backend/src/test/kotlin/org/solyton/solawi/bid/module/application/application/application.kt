@@ -1,14 +1,12 @@
 package org.solyton.solawi.bid.module.application.application
 
+import io.ktor.server.application.*
 import io.ktor.server.application.Application
-import io.ktor.server.application.call
-import io.ktor.server.auth.authenticate
-import io.ktor.server.response.respond
-import io.ktor.server.response.respondText
-import io.ktor.server.routing.get
-import io.ktor.server.routing.route
-import io.ktor.server.routing.routing
+import io.ktor.server.auth.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import org.evoleq.exposedx.data.Database
+import org.evoleq.ktorx.headers.Header
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
@@ -17,21 +15,12 @@ import org.solyton.solawi.bid.application.environment.Environment
 import org.solyton.solawi.bid.application.environment.MailService
 import org.solyton.solawi.bid.application.environment.Smtp
 import org.solyton.solawi.bid.application.environment.User
-import org.evoleq.ktorx.headers.Header
-import org.solyton.solawi.bid.application.pipeline.installAuthentication
-import org.solyton.solawi.bid.application.pipeline.installContentNegotiation
-import org.solyton.solawi.bid.application.pipeline.installCors
-import org.solyton.solawi.bid.application.pipeline.installDatabase
-import org.solyton.solawi.bid.application.pipeline.installSerializers
+import org.solyton.solawi.bid.application.pipeline.*
 import org.solyton.solawi.bid.module.application.migrations.applicationMigrations
 import org.solyton.solawi.bid.module.application.routing.application
-import org.solyton.solawi.bid.module.application.schema.ApplicationContextsTable
+import org.solyton.solawi.bid.module.application.schema.*
 import org.solyton.solawi.bid.module.application.schema.ApplicationEntity
-import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
-import org.solyton.solawi.bid.module.application.schema.ModuleContextsTable
 import org.solyton.solawi.bid.module.application.schema.ModuleEntity
-import org.solyton.solawi.bid.module.application.schema.ModulesTable
-import org.solyton.solawi.bid.module.application.schema.UserApplicationsTable
 import org.solyton.solawi.bid.module.authentication.environment.JWT
 import org.solyton.solawi.bid.module.authentication.migrations.authenticationMigrations
 import org.solyton.solawi.bid.module.authentication.routing.authentication
@@ -41,11 +30,12 @@ import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.testFramework.appendDbNameSuffix
 import org.solyton.solawi.bid.module.testFramework.provideUserTokens
+import org.solyton.solawi.bid.module.testFramework.testContexts
 import org.solyton.solawi.bid.module.user.data.api.ApiUser
 import org.solyton.solawi.bid.module.user.data.api.ApiUsers
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UsersTable
-import java.util.UUID
+import java.util.*
 
 fun Application.applicationTest() {
     val environment = setupTestEnvironment(UUID.randomUUID().toString())
@@ -62,6 +52,7 @@ fun Application.applicationTest() {
         }
         val database = environment.connectToDatabase()
         provideUserTokens(environment.jwt, database)
+        testContexts(database)
         route("setup") {
             get("root-context-by-name") {
                 val contextName = call.request.headers[Header.CONTEXT]!!

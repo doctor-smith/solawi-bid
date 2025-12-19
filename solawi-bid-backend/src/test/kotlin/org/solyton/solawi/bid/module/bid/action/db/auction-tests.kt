@@ -1,6 +1,5 @@
 package org.solyton.solawi.bid.module.bid.action.db
 
-import kotlinx.datetime.LocalDate
 import org.evoleq.exposedx.test.runSimpleH2Test
 import org.evoleq.kotlinx.date.todayWithTime
 import org.evoleq.uuid.UUID_ZERO
@@ -8,6 +7,11 @@ import org.jetbrains.exposed.sql.selectAll
 import org.joda.time.DateTime
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
+import org.solyton.solawi.bid.module.application.repository.createApplication
+import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
+import org.solyton.solawi.bid.module.application.schema.ModulesTable
+import org.solyton.solawi.bid.module.application.schema.OrganizationApplicationContextsTable
+import org.solyton.solawi.bid.module.application.schema.OrganizationModuleContextsTable
 import org.solyton.solawi.bid.module.bid.data.api.CreateRound
 import org.solyton.solawi.bid.module.bid.data.api.NewBidder
 import org.solyton.solawi.bid.module.bid.data.toApiType
@@ -15,11 +19,9 @@ import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.bid.schema.AuctionEntity
 import org.solyton.solawi.bid.module.db.schema.*
 import org.solyton.solawi.bid.module.permission.schema.Context
-import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
 import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
-import org.solyton.solawi.bid.module.user.schema.repository.createRootOrganization
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -47,7 +49,11 @@ class AuctionTests {
         Rounds,
         RoundComments,
         OrganizationsTable,
-        OrganizationAuctionsTable
+        OrganizationAuctionsTable,
+        OrganizationModuleContextsTable,
+        OrganizationApplicationContextsTable,
+        ApplicationsTable,
+        ModulesTable
     ) {
         val context = Context.new {
             this.name = "context"
@@ -66,6 +72,8 @@ class AuctionTests {
         AuctionType.new {
             type = "SOLAWI_TUEBINGEN"
         }
+
+        createApplication("AUCTIONS", "TEST APP", UUID_ZERO, false, context.id.value)
         val auction = createAuction(name,todayWithTime(), contextId = context.id.value).toApiType()
         assertEquals(name, auction.name)
         val round = addRound(
@@ -101,7 +109,11 @@ class AuctionTests {
         Rounds,
         ContextsTable,
         OrganizationsTable,
-        OrganizationAuctionsTable
+        OrganizationAuctionsTable,
+        OrganizationModuleContextsTable,
+        OrganizationApplicationContextsTable,
+        ApplicationsTable,
+        ModulesTable
     ) {
         val context = Context.new {
             this.name = "context"
@@ -119,6 +131,8 @@ class AuctionTests {
         AuctionType.new {
             type = "SOLAWI_TUEBINGEN"
         }
+
+        createApplication("AUCTIONS", "TEST APP", UUID_ZERO, false, context.id.value)
         val auction = createAuction(name,todayWithTime(), contextId = context.id.value).toApiType()
 
         val bidders = listOf<NewBidder>(
@@ -157,8 +171,13 @@ class AuctionTests {
         Auctions,
         Bidders,
         BidderDetailsSolawiTuebingenTable,
-        Rounds,OrganizationsTable,
-        OrganizationAuctionsTable
+        Rounds,
+        OrganizationsTable,
+        OrganizationAuctionsTable,
+        OrganizationModuleContextsTable,
+        OrganizationApplicationContextsTable,
+        ApplicationsTable,
+        ModulesTable
     ) {
         val context = Context.new {
             this.name = "context"
@@ -176,6 +195,8 @@ class AuctionTests {
         AuctionType.new {
             type = "SOLAWI_TUEBINGEN"
         }
+
+        createApplication("AUCTIONS", "TEST APP", UUID_ZERO, false, context.id.value)
         val auction1 = createAuction(name, todayWithTime(), contextId = context.id.value)
         assertEquals(name, auction1.name)
 

@@ -1,6 +1,5 @@
 package org.solyton.solawi.bid.module.bid.transform
 
-import kotlinx.datetime.LocalDate
 import org.evoleq.exposedx.joda.toKotlinxWithZone
 import org.evoleq.exposedx.test.runSimpleH2Test
 import org.evoleq.kotlinx.date.todayWithTime
@@ -8,6 +7,11 @@ import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.insert
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
+import org.solyton.solawi.bid.module.application.repository.createApplication
+import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
+import org.solyton.solawi.bid.module.application.schema.ModulesTable
+import org.solyton.solawi.bid.module.application.schema.OrganizationApplicationContextsTable
+import org.solyton.solawi.bid.module.application.schema.OrganizationModuleContextsTable
 import org.solyton.solawi.bid.module.bid.action.db.addRound
 import org.solyton.solawi.bid.module.bid.action.db.createAuction
 import org.solyton.solawi.bid.module.bid.data.api.ApiRound
@@ -16,12 +20,7 @@ import org.solyton.solawi.bid.module.bid.data.api.ApiRoundComments
 import org.solyton.solawi.bid.module.bid.data.api.CreateRound
 import org.solyton.solawi.bid.module.bid.data.toApiType
 import org.solyton.solawi.bid.module.bid.repository.addComment
-import org.solyton.solawi.bid.module.bid.schema.AcceptedRoundsTable
-import org.solyton.solawi.bid.module.bid.schema.AuctionTypesTable
-import org.solyton.solawi.bid.module.bid.schema.AuctionsTable
-import org.solyton.solawi.bid.module.bid.schema.OrganizationAuctionsTable
-import org.solyton.solawi.bid.module.bid.schema.RoundCommentsTable
-import org.solyton.solawi.bid.module.bid.schema.RoundsTable
+import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.permission.schema.Context
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
@@ -36,8 +35,14 @@ class TransformRoundTests {
             AcceptedRoundsTable,
             RoundsTable,
             RoundCommentsTable,
-            ContextsTable,OrganizationsTable,
-            OrganizationAuctionsTable
+            ContextsTable,
+            OrganizationsTable,
+            OrganizationsTable,
+            OrganizationAuctionsTable,
+            OrganizationModuleContextsTable,
+            OrganizationApplicationContextsTable,
+            ApplicationsTable,
+            ModulesTable
         ) {
             val context = Context.new {
                 this.name = "context"
@@ -55,6 +60,7 @@ class TransformRoundTests {
                 it[type] = "AUCTION_TYPE"
             }
 
+            createApplication("AUCTIONS", "TEST APP", UUID_ZERO, false, context.id.value)
             val auction = createAuction("name", todayWithTime(), "AUCTION_TYPE", context.id.value)
             val round = addRound(CreateRound("${auction.id.value}"))
             round.addComment("comment-1", UUID_ZERO)
@@ -81,8 +87,13 @@ class TransformRoundTests {
             AcceptedRoundsTable,
             RoundsTable,
             RoundCommentsTable,
-            ContextsTable,OrganizationsTable,
-            OrganizationAuctionsTable
+            ContextsTable,
+            OrganizationsTable,
+            OrganizationAuctionsTable,
+            OrganizationModuleContextsTable,
+            OrganizationApplicationContextsTable,
+            ApplicationsTable,
+            ModulesTable
         ) {
             val context = Context.new {
                 this.name = "context"
@@ -99,8 +110,8 @@ class TransformRoundTests {
             AuctionTypesTable.insert {
                 it[type] = "AUCTION_TYPE"
             }
-
-            val auction = createAuction("name", todayWithTime(), "AUCTION_TYPE", context.id.value)
+            createApplication("AUCTIONS", "TEST APP", UUID_ZERO, false, context.id.value)
+            val auction = createAuction("name", todayWithTime(), "AUCTION_TYPE", context.id.value,)
             val round = addRound(CreateRound("${auction.id.value}"))
             round.addComment("comment-1", UUID_ZERO)
 
@@ -131,8 +142,13 @@ class TransformRoundTests {
             AcceptedRoundsTable,
             RoundsTable,
             RoundCommentsTable,
-            ContextsTable,OrganizationsTable,
-            OrganizationAuctionsTable
+            ContextsTable,
+            OrganizationsTable,
+            OrganizationAuctionsTable,
+            OrganizationModuleContextsTable,
+            OrganizationApplicationContextsTable,
+            ApplicationsTable,
+            ModulesTable
         ) {
             val context = Context.new {
                 this.name = "context"
@@ -149,6 +165,7 @@ class TransformRoundTests {
                 it[type] = "AUCTION_TYPE"
             }
 
+            createApplication("AUCTIONS", "TEST APP", UUID_ZERO, false, context.id.value)
             val auction = createAuction("name", todayWithTime(), "AUCTION_TYPE", context.id.value)
             val round = addRound(CreateRound("${auction.id.value}"))
             round.addComment("comment-1", UUID_ZERO)
