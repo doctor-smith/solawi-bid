@@ -55,6 +55,14 @@ kotlin{
                 implementation(libs.kotlinx.datetime)
 
                 implementation(project(":evoleq"))
+
+
+                // Ermöglicht dem Backend-Code den Zugriff auf Klassen in buildSrc (wie Api und EndPoint)
+                implementation(files("${rootProject.rootDir}/buildSrc/build/classes/kotlin/main"))
+
+                // Falls du Kotlin-Reflection in der DSL nutzt, stelle sicher, dass dies auch da ist
+                implementation(kotlin("reflect"))
+
             }
         }
         val commonTest by getting {
@@ -65,6 +73,7 @@ kotlin{
         val jvmMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") // Specific for JVM
+
             }
         }
         val jvmTest by getting {
