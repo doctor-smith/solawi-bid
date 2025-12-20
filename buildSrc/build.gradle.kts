@@ -20,6 +20,19 @@ gradlePlugin {
             version = "0.0.1"
             implementationClass = "org.evoleq.api.documentation.ApiDocPlugin"
         }
+        register("exposedxMigrations") {
+            id = "org.evoleq.exposedx.migrations"
+
+            implementationClass = "org.evoleq.exposedx.migration.MigrationPlugin"
+        }
+        register("architectureDependency") {
+            id = "org.evoleq.architecture.dependency"
+            implementationClass = "org.evoleq.architecture.dependency.DependencyPlugin"
+        }
+        register("mathcatOptics") {
+            id = "org.evoleq.math.cat.gradle.optics"
+            implementationClass = "org.evoleq.math.cat.gradle.optics.OpticsPlugin"
+        }
     }
 }
 

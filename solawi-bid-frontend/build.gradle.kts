@@ -6,8 +6,8 @@ plugins {
     alias(libs.plugins.compose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.serialization)
-    id("org.evoleq.math.cat.gradle.optics")
-    id("org.evoleq.architecture.dependency")
+    alias(libs.plugins.evoleq.math.cat.gradle.optics)
+    alias(libs.plugins.evoleq.architecture.dependency)
     alias(libs.plugins.detekt)
     alias(libs.plugins.kover)
 }
