@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.shadow)
     id("org.evoleq.exposedx.migration")
     id("org.evoleq.architecture.dependency")
+    alias(libs.plugins.evoleq.api.doc)
     alias(libs.plugins.detekt)
     alias(libs.plugins.kover)
 }
@@ -186,6 +187,13 @@ tasks.jacocoTestReport {
 
 
  */
+
+// Konfiguration des Plugins
+apiDoc {
+    apiPath.set("org.solyton.solawi.bid.application.api.Solawi_apiKt.getSolawiApi")
+    outputFile.set(layout.projectDirectory.file("API_DOCUMENTATION.md"))
+}
+
 
 migrations {
     migration("dbMain") {

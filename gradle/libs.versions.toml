@@ -6,6 +6,7 @@ compose = "1.8.0"
 detekt = "1.23.8"
 # evoleq-exposedx-migrations = "1"
 exposed = "0.48.0"
+evoleq-api = "0.0.1"
 h2 = "2.2.220"
 java-jwt = "4.0.0"
 jjwt = "0.11.5"
@@ -77,6 +78,7 @@ slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "sl4j"}
 
 [plugins]
 android = { id = "com.android.library", version.ref = "android" }
+evoleq-api-doc = { id = "org.evoleq.api-doc" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt"}
 jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor-plugin" }
