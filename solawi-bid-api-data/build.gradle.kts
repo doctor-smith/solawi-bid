@@ -4,7 +4,7 @@ plugins {
      `maven-publish`
     alias(libs.plugins.detekt)
   //  alias(libs.plugins.kover)
-    id("org.evoleq.architecture.dependency")
+    alias(libs.plugins.evoleq.architecture.dependency)
 }
 
 

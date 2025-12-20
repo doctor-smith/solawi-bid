@@ -1,6 +1,6 @@
 plugins {
     kotlin("jvm")
-    id("org.evoleq.exposedx.migration")
+    alias(libs.plugins.evoleq.exposedx.migrations)
 }
 
 repositories {

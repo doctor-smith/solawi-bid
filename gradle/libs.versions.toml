@@ -79,6 +79,9 @@ slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "sl4j"}
 [plugins]
 android = { id = "com.android.library", version.ref = "android" }
 evoleq-api-doc = { id = "org.evoleq.api-doc" }
+evoleq-architecture-dependency = {id = "org.evoleq.architecture.dependency" }
+evoleq-math-cat-gradle-optics = {id = "org.evoleq.math.cat.gradle.optics"}
+evoleq-exposedx-migrations = { id = "org.evoleq.exposedx.migrations" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt"}
 jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor-plugin" }
@@ -88,4 +91,3 @@ compose = {id = "org.jetbrains.compose", version.ref = "compose"}
 compose-compiler = {id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin"}
 shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover"}
-# evoleq-exposedx-migrations = { module = "org.evoleq.exposedx.migration", version.ref = "evoleq-exposedx-migrations" }
