@@ -10,6 +10,7 @@ import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.selectAll
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.Context
@@ -23,8 +24,6 @@ import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
 import org.solyton.solawi.bid.module.permission.schema.RolesTable
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
-import org.solyton.solawi.bid.module.permission.schema.repository.descendants
-import org.solyton.solawi.bid.module.permission.schema.repository.getChildren
 import java.util.*
 import kotlin.Pair
 import kotlin.String
@@ -58,6 +57,23 @@ val GetRoleRightContextsOfUsers: KlAction<Result<Contextual<ReadRightRoleContext
     } } x database }
 }
 
+/**
+ * Represents an action to read and map parent-child relationships between contexts
+ * from a database. This action transforms a `Result` containing context IDs into a
+ * `Result` containing a comprehensive hierarchical representation of parent-child relationships.
+ *
+ * The action:
+ * - Extracts context IDs from the input data and fetches the corresponding context entities
+ *   from the database.
+ * - Identifies root contexts of all provided contexts and collects their
+ *   descendants -> The minimal tree containing the provided contexts
+ * - Constructs a flattened structure of all contexts, ensuring uniqueness and maintaining relationships.
+ * - Maps the collected data into `ParentChildRelationsOfContext` objects, capturing each context's
+ *   ID, name, root ID (if available), and the IDs of its children.
+ *
+ * This action operates within the boundaries of a database transaction and ensures safe error
+ * handling by utilizing the `Result` type.
+ */
 @MathDsl
 @Suppress("FunctionName", "UnsafeCallOnNullableType")
 val ReadParentChildRelationsOfContexts: KlAction<Result<Contextual<ReadParentChildRelationsOfContexts>>, Result<ParentChildRelationsOfContexts>> =
@@ -65,38 +81,60 @@ val ReadParentChildRelationsOfContexts: KlAction<Result<Contextual<ReadParentChi
         DbAction { database ->
             result bindSuspend {contextual: Contextual<ReadParentChildRelationsOfContexts> ->
                 resultTransaction(database) {
-                    val contextUuids = contextual.data.contextIds.map{ UUID.fromString(it) }
-                    val contextEntities = ContextEntity.find {
-                        ContextsTable.id inList contextUuids
-                    }.toList()
-                    val roots = contextEntities.filter { it.root == null }
-                    val otherRoots = contextEntities.filter { it.root != null }.map { it.root!! }
-                    val contextRoots = listOf(
-                        *roots.toTypedArray(),
-                        *otherRoots.toTypedArray()
-                    ).distinctBy { root -> root.id }
-
-                    val allContexts: List<ContextEntity> = listOf(
-                        *contextRoots.toTypedArray(),
-                        *contextRoots.map {
-                            root -> root.descendants()
-                        }.flatten().toTypedArray(),
-                    ).distinctBy{context -> context.id}
-
-                    ParentChildRelationsOfContexts(
-                        list = allContexts.map { contextEntity ->
-                            ParentChildRelationsOfContext(
-                                contextId = contextEntity.id.value.toString(),
-                                name = contextEntity.name,
-                                rootId = contextEntity.root?.id?.value?.toString(),
-                                children = contextEntity.getChildren().map { child -> child.id.value.toString() }
-                            )
-                        }
-                    )
+                    readParentChildRelationsOfContexts(contextual.data)
                 }
             } x database
         }
     }
+
+/**
+ * Reads the parent-child relationships of contexts based on the provided context identifiers.
+ * The function:
+ * - Extracts context IDs from the input data and fetches the corresponding context entities
+ *    from the database.
+ *  - Identifies root contexts of all provided contexts and collects their
+ *    descendants -> The minimal tree containing the provided contexts
+ *  - Constructs a flattened structure of all contexts, ensuring uniqueness and maintaining relationships.
+ *  - Maps the collected data into `ParentChildRelationsOfContext` objects, capturing each context's
+ *    ID, name, root ID (if available), and the IDs of its children.
+ *
+ * @param parentChildRelationsOfContexts The data class containing a list of context IDs for which the parent-child relationships should be determined.
+ * @return A `ParentChildRelationsOfContexts` object containing a list of parent-child relationships for each context.
+ */
+fun Transaction.readParentChildRelationsOfContexts(parentChildRelationsOfContexts: ReadParentChildRelationsOfContexts): ParentChildRelationsOfContexts {
+    val contextUuids = parentChildRelationsOfContexts.contextIds.map{ UUID.fromString(it) }
+    val contextEntities = ContextEntity.find {
+        ContextsTable.id inList contextUuids
+    }.toList()
+    val roots = contextEntities.filter { it.root == null }
+    @Suppress("UnsafeCallOnNullableType")
+    val otherRoots = contextEntities.filter { it.root != null }.map { it.root!! }
+    val contextRoots = listOf(
+        *roots.toTypedArray(),
+        *otherRoots.toTypedArray()
+    ).distinctBy { root -> root.id.value }
+
+    val contextRootIds = contextRoots.map { it.id.value }
+    val allContexts = ContextEntity.find {
+        (ContextsTable.rootId inList contextRootIds) or
+        (ContextsTable.id inList contextRootIds)
+    }.toList()
+
+    return ParentChildRelationsOfContexts(
+        list = allContexts.map { contextEntity ->
+            ParentChildRelationsOfContext(
+                contextId = contextEntity.id.value.toString(),
+                name = contextEntity.name,
+                rootId = contextEntity.root?.id?.value?.toString(),
+                children = allContexts.filter {
+                        context ->
+                    (context.root?.id == (contextEntity.root?.id ?: contextEntity.id)) &&
+                            (context.level == contextEntity.level + 1)
+                }.map { context -> context.id.value.toString() }
+            )
+        }
+    )
+}
 
 /**
  * Returns a complete list of cumulated right-role-contexts [Context] of a user
