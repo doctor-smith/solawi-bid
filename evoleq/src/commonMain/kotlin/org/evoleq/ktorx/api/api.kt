@@ -60,6 +60,24 @@ data class Api(
         this
 
     }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun group(name: String, configure: Api.() -> Api): Api = with(this) {
+        val subApi = Api().configure()
+        subApi.endPoints.forEach { (key, value) -> endPoints[key] = EndPoint.Get<Any, Any>(value.url) }
+        this
+    }
+
+    fun module(path: String, module: Api): Api = with(this) {
+        module.endPoints.forEach { (key, value) -> endPoints[key] = EndPoint.Get<Any, Any>("$path/${value.url}") }
+        this
+    }
+    fun module(path: String, configure: Api.() -> Api): Api = with(this) {
+        val subApi = Api().configure()
+        subApi.endPoints.forEach { (key, value) -> endPoints[key] = EndPoint.Get<Any, Any>("$path/${value.url}") }
+        this
+    }
+
     companion object {
         operator fun invoke(configure: Api.() -> Api): Api = Api().configure()
     }
