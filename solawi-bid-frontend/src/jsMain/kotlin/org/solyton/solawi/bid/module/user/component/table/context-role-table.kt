@@ -22,7 +22,10 @@ import org.solyton.solawi.bid.module.list.style.ListStyles
 import org.solyton.solawi.bid.module.permissions.data.Context
 import org.solyton.solawi.bid.module.permissions.data.contexts
 import org.solyton.solawi.bid.module.permissions.service.readableName
-import org.solyton.solawi.bid.module.user.data.*
+import org.solyton.solawi.bid.module.user.data.Application
+import org.solyton.solawi.bid.module.user.data.availablePermissions
+import org.solyton.solawi.bid.module.user.data.managedUsers
+import org.solyton.solawi.bid.module.user.data.user
 import org.solyton.solawi.bid.module.user.data.user.permissions
 import org.solyton.solawi.bid.module.user.data.managed.permissions as managedPermissions
 
@@ -85,13 +88,20 @@ fun ListUserPermissions (application: Storage<Application>, texts: Source<Lang.B
                 width(50.percent)
             }
             HeaderCell((columns * subComp("roles") * title).emit()){
-                width(50.percent)
+                width(25.percent)
+            }
+            HeaderCell((columns * subComp("rights") * title).emit()){
+                width(25.percent)
             }
         }}
+        /**/
         val userContexts = (application * user * permissions * contexts.get).emit()
         (application * availablePermissions * contexts.get).emit()
             .filter(userContexts)
             .forEach{ context -> UserItems(listStyles, context, userContexts, allRoles) }
+        /**/
+        //val userContexts = (application * user * permissions * contexts.get).emit()
+        //userContexts.forEach{ context -> UserItems(listStyles, context, userContexts, allRoles) }
     }
 }
 
@@ -110,16 +120,21 @@ fun UserItems(listStyles: ListStyles, context: Context, userContexts: List<Conte
         DataWrapper {
             val offset = (deepth * 2.5)
             Div({style { width(offset.percent); color(Color.transparent) }}){ "-" }
-            TextCell( context.contextName.readableName() ){
+            TextCell( context.contextName ){ //.readableName()
                 width((50 - offset).percent)
             }
             val userContext = userContexts.first{ c -> c.contextId == context.contextId }
             val userRoles = when(allRoles) {
                 true -> context.roles
-                false -> context.roles.filter { it.roleId in userContext.roles.map { it.roleId } }
+                false -> userContext.roles // context.roles.filter { it.roleId in userContext.roles.map { r -> r.roleId } }
             }
             TextCell(userRoles.joinToString(", ") { it.roleName }) {
-                width(50.percent)
+                width(25.percent)
+            }
+            TextCell(userRoles.map { it.rights }.flatten()
+                .map { it.rightName }.distinct()
+                .joinToString(", ") { it }) {
+                width(25.percent)
             }
         }
     }

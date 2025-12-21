@@ -3,7 +3,7 @@ package org.solyton.solawi.bid.module.bid.component.form
 import androidx.compose.runtime.*
 import io.ktor.util.*
 import org.evoleq.compose.Markup
-import org.evoleq.compose.label.Label
+import org.evoleq.compose.form.label.Label
 import org.evoleq.compose.style.data.device.DeviceType
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.color

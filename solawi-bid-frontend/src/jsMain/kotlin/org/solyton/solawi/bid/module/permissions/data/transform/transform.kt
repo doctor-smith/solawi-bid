@@ -55,13 +55,19 @@ fun ApiRight.toDomainType(): Right = Right(
  * @param parentChildRelations the parent-child relationship data specifying how contexts are related to each other
  * @return a list of contexts structured hierarchically with nested child contexts
  */
+@Suppress("ReturnCount")
 fun List<Context>.structureBy(parentChildRelations: ParentChildRelationsOfContexts): List<Context> {
+    if (isEmpty()) return emptyList()
+    if (size == 1) return this
+    val contextIds = map { it.contextId }
+    val rootLikeRelations =  parentChildRelations.list.filter { rel -> rel.rootId !in contextIds }
     val roots: List<Context> = filter { ctx -> parentChildRelations.list.any {
-        rel -> rel.contextId == ctx.contextId && (rel.rootId == null )
+        rel -> rel.contextId == ctx.contextId && rel in rootLikeRelations
     } }
     val rootIds = roots.map { it.contextId }
     val nonRoots = filter { ctx -> ctx.contextId !in rootIds }
-    return roots.map { it.setupChildren(parentChildRelations, nonRoots) }
+    val result = roots.map { it.setupChildren(parentChildRelations, nonRoots) }
+    return result
 }
 
 /**
@@ -74,10 +80,10 @@ fun List<Context>.structureBy(parentChildRelations: ParentChildRelationsOfContex
  */
 fun Context.setupChildren(
     parentChildRelations: ParentChildRelationsOfContexts,
-contextPool: List<Context>
+    contextPool: List<Context>
 ): Context {
     // Prepare lookups for O(1) access instead of O(N) filtering in every step
-    val childrenIdMap = parentChildRelations.list.associate { it.rootId to it.children }
+    val childrenIdMap = parentChildRelations.list.associate { it.contextId to it.children }
     val poolMap = (contextPool + this).associateBy { it.contextId }
 
     /**
@@ -122,25 +128,3 @@ contextPool: List<Context>
 
     return resultMap[this.contextId] ?: this
 }
-
-
-/*
-fun Context.setupChildren(parentChildRelations: ParentChildRelationsOfContexts, contextPool: List<Context>): Context {
-    val relations = parentChildRelations.list.firstOrNull { rel -> rel.rootId == contextId }
-    if(relations == null) return this
-
-    val children = contextPool.filter {
-        ctx -> ctx.contextId in relations.children
-    }.map {
-        ctx -> ctx.setupChildren(
-            parentChildRelations,
-            contextPool.filter {
-                ctx -> ctx.contextId !in relations.children
-            }
-        )
-    }
-    return copy(children = children)
-}
-
-
- */

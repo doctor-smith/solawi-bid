@@ -3,7 +3,7 @@ package org.solyton.solawi.bid.module.user.component.modal
 
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
-import org.evoleq.compose.label.Label
+import org.evoleq.compose.form.label.Label
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.compose.modal.*
 import org.evoleq.compose.style.data.device.DeviceType
