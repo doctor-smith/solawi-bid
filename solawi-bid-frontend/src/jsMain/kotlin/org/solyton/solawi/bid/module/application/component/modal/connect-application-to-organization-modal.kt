@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import org.evoleq.compose.Markup
-import org.evoleq.compose.label.Label
+import org.evoleq.compose.form.label.Label
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.compose.modal.Modal
 import org.evoleq.compose.modal.ModalData

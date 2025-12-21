@@ -6,7 +6,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.guard.data.isLoading
-import org.evoleq.compose.label.Label
+import org.evoleq.compose.form.label.Label
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.device.data.mediaType

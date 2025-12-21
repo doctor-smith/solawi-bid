@@ -3,7 +3,7 @@ package org.solyton.solawi.bid.module.authentication.component
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
 import org.evoleq.compose.attribute.dataId
-import org.evoleq.compose.label.Label
+import org.evoleq.compose.form.label.Label
 import org.evoleq.language.Lang
 import org.evoleq.language.component
 import org.evoleq.language.get

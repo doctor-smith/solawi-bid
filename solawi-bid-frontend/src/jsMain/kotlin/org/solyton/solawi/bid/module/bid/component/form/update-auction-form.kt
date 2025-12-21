@@ -6,7 +6,7 @@ import kotlinx.coroutines.Job
 import org.evoleq.compose.Markup
 import org.evoleq.compose.date.format
 import org.evoleq.compose.date.parse
-import org.evoleq.compose.label.Label
+import org.evoleq.compose.form.label.Label
 import org.evoleq.compose.modal.Modal
 import org.evoleq.compose.modal.ModalData
 import org.evoleq.compose.modal.ModalType

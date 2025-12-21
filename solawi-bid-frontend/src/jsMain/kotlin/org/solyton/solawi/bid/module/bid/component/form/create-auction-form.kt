@@ -3,12 +3,11 @@ package org.solyton.solawi.bid.module.bid.component.form
 import androidx.compose.runtime.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.selects.select
 import org.evoleq.compose.Markup
 import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.date.format
 import org.evoleq.compose.date.parse
-import org.evoleq.compose.label.Label
+import org.evoleq.compose.form.label.Label
 import org.evoleq.compose.modal.Modal
 import org.evoleq.compose.modal.ModalData
 import org.evoleq.compose.modal.ModalType
@@ -19,7 +18,6 @@ import org.evoleq.language.Lang
 import org.evoleq.language.Locale
 import org.evoleq.language.component
 import org.evoleq.language.get
-import org.evoleq.math.Reader
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.map
@@ -32,11 +30,9 @@ import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.Input
 import org.jetbrains.compose.web.dom.TextInput
-import org.solyton.solawi.bid.module.application.data.ApplicationOrganizationRelations
 import org.solyton.solawi.bid.module.application.data.organizationrelation.ApplicationOrganizationRelation
 import org.solyton.solawi.bid.module.bid.component.dropdown.OrganizationsDropdown
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
-import org.solyton.solawi.bid.module.bid.data.applicationOrganizationRelations
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.auction.contextId
 import org.solyton.solawi.bid.module.bid.data.auction.date
@@ -44,7 +40,6 @@ import org.solyton.solawi.bid.module.bid.data.auction.name
 import org.solyton.solawi.bid.module.style.form.*
 import org.solyton.solawi.bid.module.user.data.organization.Organization
 import org.w3c.dom.HTMLElement
-import kotlin.uuid.Uuid
 
 const val DEFAULT_AUCTION_ID = "DEFAULT_AUCTION_ID"
 
