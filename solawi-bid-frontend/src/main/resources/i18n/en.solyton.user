@@ -88,6 +88,9 @@ en {
                             roles {
                                 title: "Roles"
                             }
+                            rights {
+                                title: "Rights"
+                            }
                         }
                     }
                 }
