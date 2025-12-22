@@ -2,11 +2,20 @@ package org.solyton.solawi.bid.module.list.component
 
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
+import org.evoleq.math.Source
+import org.evoleq.math.emit
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
 import kotlin.js.Date
 
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun HeaderCell(
+    text: Source<String>,
+    style: StyleScope.()->Unit = {}
+) = HeaderCell(text.emit(), style)
 
 @Markup
 @Composable
@@ -27,16 +36,38 @@ fun HeaderCell(
 @Composable
 @Suppress("FunctionName")
 fun TextCell(
+    text: Source<String>,
+    tooltip: String? = null,
+    style: StyleScope.()->Unit = {
+    }
+) = TextCell(text.emit(), tooltip, style)
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun TextCell(
     text: String,
+    tooltip: String? = null,
     style: StyleScope.()->Unit = {
     }
 ){
-    Div({style {
-        textAlign("left")
-        width(10.percent)
-        style()
-    }}){Text(text)}
+    Div({
+        if(tooltip != null) title(tooltip)
+        style {
+            textAlign("left")
+            width(10.percent)
+            style()
+        }
+    }){Text(text)}
 }
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun NumberCell(
+    number: Source<Number>,
+    style: StyleScope.()->Unit = { }
+) = NumberCell(number.emit(), style)
 
 @Markup
 @Composable
@@ -51,6 +82,15 @@ fun NumberCell(
         style()
     }}){Text("$number")}
 }
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun TimeCell(
+    date: Source<Date>,
+    showDate: Boolean = false,
+    style: StyleScope.()->Unit = { }
+) = TimeCell(date.emit(), showDate, style)
 
 @Markup
 @Composable

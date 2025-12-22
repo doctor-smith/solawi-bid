@@ -20,6 +20,98 @@ de {
                     }
                 }
             }
+            management {
+                applicationManagementPage {
+                    title: "Applikationen der Solyton Platform verwalten"
+                    subTitle: "Alle technischen Aspekte der Solyton-Apps verwalten"
+                    listOfApplications {
+                        title: "Applikationen"
+                        headers {
+                            application {
+                                title: "Applikation"
+                            }
+                            modules {
+                                title: "Module"
+                            }
+                        }
+                        actions {
+                            showDetails {
+                                tooltip: "Details der Applikation anzeigen"
+                            }
+                            edit {
+                                tooltip: "Applikation bearbeiten"
+                            }
+                        }
+                    }
+                }
+                applicationPage {
+                    title: "Applikation"
+                    actions {
+                        navToAppManPage {
+                            tooltip: "Gehe zu 'Applikationen der Solyton Platform verwalten'"
+                        }
+                    }
+                    listOfModules {
+                        title: "Module"
+                        headers {
+                            module {
+                                title: "Modul"
+                            }
+                        }
+                        actions {
+                            showDetails {
+                                tooltip: "Details des Moduls anzeigen"
+                            }
+                        }
+                    }
+                    defaultContext {
+                        title: "Rollen und Rechte des Standard Kontexts"
+                        headers {
+                            role {
+                                title: "Rolle"
+                            }
+                            rights {
+                                title: "Rechte"
+                            }
+                        }
+                        actions {
+                            editContext{
+                                tooltip: "Standard Kontext bearbeiten"
+                            }
+                            editRole {
+                                tooltip: "Rolle und Rechte bearbeiten"
+                            }
+                        }
+                    }
+                }
+                modulePage {
+                    title: "Modul"
+                    actions {
+                        navToParentApplication {
+                            tooltip: "Gehe zur Mutter Application"
+                        }
+                    }
+                    defaultContext {
+                        title: "Rollen und Rechte des Standard Kontexts"
+                        headers {
+                            role {
+                                title: "Rolle"
+                            }
+                            rights {
+                                title: "Rechte"
+                            }
+                        }
+                        actions {
+                            editContext{
+                                tooltip: "Standard Kontext bearbeiten"
+                            }
+                            editRole {
+                                tooltip: "Rolle und Rechte bearbeiten"
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

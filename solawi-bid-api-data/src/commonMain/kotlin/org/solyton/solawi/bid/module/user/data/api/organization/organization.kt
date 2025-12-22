@@ -24,5 +24,6 @@ data class Organization(
 @Serializable
 data class Member(
     val userId: String,
+    val username: String,
     val roles: List<ApiRole>
 )

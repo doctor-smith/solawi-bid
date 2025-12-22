@@ -11,6 +11,13 @@ import org.evoleq.compose.guard.data.onNullLaunch
 import org.evoleq.compose.routing.navigate
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.component
+import org.evoleq.language.subComp
+import org.evoleq.language.subTitle
+import org.evoleq.language.title
+import org.evoleq.language.tooltip
+import org.evoleq.math.emit
+import org.evoleq.math.o
+import org.evoleq.math.times
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.transform.times
@@ -26,6 +33,7 @@ import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
+import org.solyton.solawi.bid.module.application.i18n.Component
 import org.solyton.solawi.bid.module.control.button.DetailsButton
 import org.solyton.solawi.bid.module.control.button.EditButton
 import org.solyton.solawi.bid.module.dialog.component.showDialogModal
@@ -36,7 +44,10 @@ import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.defaultListStyles
 import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.permissions.service.contextFromPath
+import org.solyton.solawi.bid.module.style.page.PageTitle
+import org.solyton.solawi.bid.module.style.page.SubTitle
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
+import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.action.organization.readOrganizations
 import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsAction
 import org.solyton.solawi.bid.module.application.data.management.modals as applicationManagementModals
@@ -55,11 +66,11 @@ fun ApplicationManagementPage(storage: Storage<Application>) = Div {
                 CoroutineScope(Job()).launch { (storage * userIso * userActions).dispatch(readUserPermissionsAction()) }
             },
             onMissing(
-                ApplicationLangComponent.PrivateApplicationManagementPage,
+                ApplicationLangComponent.ApplicationManagementPage,
                 storage * i18N.get
             ) {
                 LaunchComponentLookup(
-                    langComponent = ApplicationLangComponent.PrivateApplicationManagementPage,
+                    langComponent = ApplicationLangComponent.ApplicationManagementPage,
                     environment = storage * environment * i18nEnvironment,
                     i18n = (storage * i18N)
                 )
@@ -75,23 +86,31 @@ fun ApplicationManagementPage(storage: Storage<Application>) = Div {
 
     val device = storage * deviceData * mediaType.get
 
-    val texts = storage * i18N * language * component(ApplicationLangComponent.PrivateApplicationManagementPage)
+    val texts = storage * i18N * language * component(ApplicationLangComponent.ApplicationManagementPage)
+    val pageTitle = texts * title
+    val subTitle = texts * subTitle
+    val applicationList = texts * subComp("listOfApplications")
+    val applicationListHeaders = applicationList * subComp("headers")
+    val applicationListActions = applicationList * subComp("actions")
 
     val availableApplications = storage * applicationManagementModule * availableApplications
     val modals = storage * applicationManagementModule * applicationManagementModals
     Page(verticalPageStyle) {
-        H1{ Text("Application Management") }
+        Wrap {
+            PageTitle(pageTitle)
+            SubTitle(subTitle)
+        }
         ListWrapper {
             TitleWrapper {
-                H3{ Title { Text("Applications") } }
+                Title { H3{ Text((applicationList * title).emit()) } }
             }
             HeaderWrapper {
                 Header {
-                    HeaderCell("Application") { width(40.percent) }
-                    HeaderCell("Modules") { width(40.percent) }
+                    HeaderCell(applicationListHeaders * Component.application * title) { width(40.percent) }
+                    HeaderCell(applicationListHeaders * Component.modules * title) { width(40.percent) }
                 }
             }
-            availableApplications.read().forEach { application ->
+            ListItems(availableApplications){ application ->
                 ListItemWrapper {
                     DataWrapper {
                         TextCell(application.name) { width(40.percent) }
@@ -104,7 +123,15 @@ fun ApplicationManagementPage(storage: Storage<Application>) = Div {
                         }) {
                             application.modules.forEach { module ->
                                 Div(attrs = {
-                                    style { width(100.percent) }
+                                    style {
+                                        width(100.percent)
+                                        cursor("pointer")
+                                    }
+                                    onClick {
+                                        CoroutineScope(Job()).launch {
+                                            navigate("/app/management/application/${application.id}/module/${module.id}")
+                                        }
+                                    }
                                 }) {
                                     Text(module.name)
                                 }
@@ -118,7 +145,7 @@ fun ApplicationManagementPage(storage: Storage<Application>) = Div {
                         DetailsButton(
                             Color.black,
                             Color.white,
-                            { "Show Application Details" },
+                            applicationListActions * Component.showDetails * tooltip,
                             device,
                         ) {
                             CoroutineScope(Job()).launch {
@@ -130,7 +157,7 @@ fun ApplicationManagementPage(storage: Storage<Application>) = Div {
                         EditButton(
                             Color.black,
                             Color.white,
-                            { "Edit Application" },
+                            applicationListActions * Component.edit * tooltip,
                             device,
 
                             ) {

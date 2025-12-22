@@ -10,10 +10,14 @@ import org.evoleq.compose.Markup
 import org.evoleq.compose.guard.data.isLoading
 import org.evoleq.compose.guard.data.onEmpty
 import org.evoleq.compose.guard.data.onNullLaunch
+import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.routing.navigate
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.component
-import org.evoleq.language.subComp
+import org.evoleq.language.title
+import org.evoleq.language.tooltip
+import org.evoleq.math.emit
+import org.evoleq.math.map
 import org.evoleq.math.times
 import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.prism.Either
@@ -23,12 +27,8 @@ import org.evoleq.optics.transform.firstByOrNull
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
-import org.jetbrains.compose.web.dom.H1
-import org.jetbrains.compose.web.dom.H2
 import org.jetbrains.compose.web.dom.H3
-import org.jetbrains.compose.web.dom.H4
 import org.jetbrains.compose.web.dom.Text
-import org.jetbrains.letsPlot.commons.xml.Xml
 import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.data.env.i18nEnvironment
 import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
@@ -37,26 +37,28 @@ import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
 import org.solyton.solawi.bid.module.application.action.readApplicationContextRelations
 import org.solyton.solawi.bid.module.application.action.readApplications
+import org.solyton.solawi.bid.module.application.data.application.modules
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
 import org.solyton.solawi.bid.module.application.data.management.personalApplicationContextRelations
+import org.solyton.solawi.bid.module.application.i18n.Component
+import org.solyton.solawi.bid.module.application.i18n.Component.editContext
+import org.solyton.solawi.bid.module.control.button.ArrowUpButton
 import org.solyton.solawi.bid.module.control.button.DetailsButton
 import org.solyton.solawi.bid.module.control.button.EditButton
-import org.solyton.solawi.bid.module.dialog.component.showDialogModal
-import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.defaultListStyles
+import org.solyton.solawi.bid.module.loading.component.Loading
 import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.permissions.data.contexts
 import org.solyton.solawi.bid.module.permissions.service.contextFromPath
+import org.solyton.solawi.bid.module.style.page.PageTitle
+import org.solyton.solawi.bid.module.style.page.SubTitle
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
+import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.action.organization.readOrganizations
 import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsAction
-import org.solyton.solawi.bid.module.user.data.user
-import org.solyton.solawi.bid.module.user.data.user.organizations
-import org.solyton.solawi.bid.module.user.data.user.permissions
-import org.solyton.solawi.bid.module.application.data.management.modals as applicationManagementModals
 import org.solyton.solawi.bid.module.application.data.management.actions as applicationManagementActions
 import org.solyton.solawi.bid.module.user.data.actions as userActions
 
@@ -87,17 +89,17 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = Div 
                 CoroutineScope(Job()).launch { (storage * userIso * userActions).dispatch(readUserPermissionsAction()) }
             },
             onMissing(
-                ApplicationLangComponent.PrivateApplicationManagementPage,
+                ApplicationLangComponent.ApplicationPage,
                 storage * i18N.get
             ) {
                 LaunchComponentLookup(
-                    langComponent = ApplicationLangComponent.PrivateApplicationManagementPage,
+                    langComponent = ApplicationLangComponent.ApplicationPage,
                     environment = storage * environment * i18nEnvironment,
                     i18n = (storage * i18N)
                 )
             }
         )
-    ) return@Div
+    ) {Loading()} else {
 
 
     LaunchedEffect(Unit) {
@@ -107,9 +109,14 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = Div 
     }
 
     val device = storage * deviceData * mediaType.get
-/*
-    val texts = storage * i18N * language * component(ApplicationLangComponent.PrivateApplicationManagementPage)
 
+    val texts = storage * i18N * language * component(ApplicationLangComponent.ApplicationPage)
+    val pageTitle = texts * title
+    val allApps = texts * Component.actions * Component.navToAppManPage
+    val listOfModules = texts * Component.listOfModules
+    val defaultContextTexts = texts * Component.defaultContext
+
+/*
     val organizations = storage * userIso * user * organizations
     val modals = storage * applicationManagementModule * applicationManagementModals
 */
@@ -121,57 +128,38 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = Div 
     val defaultContext = defaultContextPrism.match{ it.contextId == defaultContextId }
 
     Page({verticalPageStyle() }) {
-        H1{ Text(application.read().name) }
-
-        H3{ Text("Default Context") }
-
-        ListWrapper {
-            TitleWrapper {
-                Title { H4{ Text("Roles and Rights") } }
-            }
-            HeaderWrapper {
-                Header {
-                    HeaderCell("Role") { width(40.percent) }
-                    HeaderCell("Rights") { width(40.percent) }
-                }
-            }
-            if(defaultContext is Either.Right) {
-                defaultContext.value.roles.forEach { role ->
-                    ListItemWrapper {
-                        DataWrapper {
-                            TextCell(role.roleName) { width(40.percent) }
-                            Div({
-                                style {
-                                    display(DisplayStyle.Flex)
-                                    flexDirection(FlexDirection.Column)
-                                    width(40.percent)
-                                }
-                            }) {
-                                role.rights.forEach { right ->
-                                    TextCell(right.rightName) { width(100.percent) }
-                                }
-                            }
-                        }
+        Wrap {
+            Horizontal(styles = {
+                justifyContent(JustifyContent.SpaceBetween)
+                alignItems(AlignItems.Center)
+                width(100.percent)
+            }) {
+                PageTitle( pageTitle map{ "$it ${application.read().name}"})
+                Horizontal {
+                    ArrowUpButton(
+                        Color.black,
+                        Color.white,
+                        allApps * tooltip,
+                        device,
+                        false,
+                    ) {
+                        navigate("/app/management")
                     }
                 }
-            } else {
-                TextCell("No default context available") { width(100.percent); color(Color.red) }
             }
+            SubTitle("Application Description ...")
         }
 
-
-
-        ListWrapper {
+        ListWrapper{
             TitleWrapper {
-                Title { H3{ Text("Modules") }}
+                Title { H3{ Text((listOfModules * title).emit()) }}
             }
             HeaderWrapper {
                 Header {
-                    TextCell("Module") { width(40.percent) }
-                    TextCell("Actions") { width(40.percent) }
+                    HeaderCell(listOfModules * Component.headers * Component.module * title) { width(40.percent) }
                 }
             }
-            application.read().modules.forEach { module ->
+            ListItems(application * modules) { module ->
                 ListItemWrapper {
                     DataWrapper {
                         TextCell(module.name) { width(40.percent) }
@@ -184,9 +172,9 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = Div 
                         DetailsButton(
                             Color.black,
                             Color.white,
-                            { "Edit Module" },
+                            listOfModules * Component.actions * Component.showDetails * tooltip,
                             device,
-                            ) {
+                        ) {
                             CoroutineScope(Job()).launch {
                                 navigate(
                                     "/app/management/application/${applicationId}/module/${module.id}"
@@ -197,5 +185,65 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = Div 
                 }
             }
         }
+
+        ListWrapper {
+            TitleWrapper({
+                defaultListStyles.titleWrapper(this)
+                justifyContent(JustifyContent.SpaceBetween)
+            }) {
+                Title { H3{ Text((defaultContextTexts * title).emit()) } }
+                Horizontal {
+                    EditButton(
+                        Color.black,
+                        Color.white,
+                        defaultContextTexts * Component.actions * editContext * tooltip,
+                        device,
+                    ) {}
+                }
+            }
+            HeaderWrapper {
+                Header {
+                    HeaderCell(defaultContextTexts * Component.headers * Component.role * title) { width(40.percent) }
+                    HeaderCell(defaultContextTexts * Component.headers * Component.rights * title) { width(40.percent) }
+                }
+            }
+            if(defaultContext is Either.Right) {
+                ListItems(defaultContext.value.roles) { role ->
+                    ListItemWrapper {
+                        DataWrapper {
+                            TextCell(role.roleName) { width(40.percent) }
+                            Div({style {
+                                display(DisplayStyle.Flex)
+                                flexDirection(FlexDirection.Row)
+                                flexWrap(FlexWrap.Wrap)
+                                width(60.percent)
+                                flexShrink(0)
+                            }}) { role.rights.forEach { right ->
+                                TextCell(right.rightName,right.rightName){
+                                    flexWrap(FlexWrap.Wrap)
+                                    width(31.percent)
+                                    padding(1.percent)
+                                    flexShrink(0)
+                                    overflow("hidden")
+                                }
+                            } }
+                        }
+                        ActionsWrapper({
+                            defaultListStyles.actionsWrapper(this)
+                            alignSelf(AlignSelf.FlexStart)
+                        }) {
+                            EditButton(
+                                Color.black,
+                                Color.white,
+                                defaultContextTexts * Component.actions * Component.editRole * tooltip,
+                                device,
+                            ) {}
+                        }
+                    }
+                }
+            } else {
+                TextCell("No default context available") { width(100.percent); color(Color.red) }
+            }
+        }
     }
-}
+}}
