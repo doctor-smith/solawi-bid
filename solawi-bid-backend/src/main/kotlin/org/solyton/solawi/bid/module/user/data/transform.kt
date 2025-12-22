@@ -22,8 +22,9 @@ fun OrganizationEntity.toApiType(transaction: Transaction): ApiOrganization = Ap
     contextId = context.id.value.toString(),
     members = members.map {
         user -> ApiMember(
-            user.id.value.toString(),
-            with(transaction) {
+            userId = user.id.value.toString(),
+            username = user.username,
+            roles = with(transaction) {
                 getRolesByUserAndContext(user.id.value, context.id.value)
             }.map { role -> ApiRole(
                 role.id.value.toString(),

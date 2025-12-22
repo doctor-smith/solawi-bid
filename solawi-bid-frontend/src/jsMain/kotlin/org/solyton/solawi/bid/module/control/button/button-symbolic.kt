@@ -7,6 +7,27 @@ import org.evoleq.math.Source
 import org.jetbrains.compose.web.css.CSSColorValue
 import org.jetbrains.compose.web.css.Color
 
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun ArrowUpButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-arrow-up"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
 
 @Markup
 @Composable
@@ -383,3 +404,27 @@ fun CommentButton(
     dataId,
     onClick
 )
+
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun UsersButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-users"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+

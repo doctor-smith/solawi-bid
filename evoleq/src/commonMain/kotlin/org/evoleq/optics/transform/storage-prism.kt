@@ -30,3 +30,9 @@ inline fun <reified T> Storage<List<T>>.prismFromList(): Prism<Int, T, Int, T> =
         t
     }
 )
+
+inline fun <reified T> Storage<List<T>>.firstByOrNull(): Prism<(T)->Boolean, T, Unit, T> = Prism(
+    {f -> read().firstOrNull(f)?.let{Either.Right(it)} ?: Either.Left(Unit)},
+    {t:T  -> add(t); t }
+)
+
