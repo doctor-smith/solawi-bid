@@ -25,5 +25,6 @@ fun ApiOrganization.toDomainType(): Organization = Organization(
 
 fun ApiMember.toDomainType(): Member = Member(
     memberId = userId,
+    username = username,
     roles = roles.map { role -> role.toDomainType() }
 )

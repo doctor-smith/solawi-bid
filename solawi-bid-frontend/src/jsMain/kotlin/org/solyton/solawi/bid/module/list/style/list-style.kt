@@ -41,7 +41,13 @@ data class ListStyles (
         width(100.percent)
         height(100.percent)
     },
-    val titleWrapper: StyleScope.()->Unit = {},
+    val titleWrapper: StyleScope.()->Unit = {
+        display(DisplayStyle.Flex)
+        flexDirection(FlexDirection.Row)
+        alignItems(AlignItems.Center)
+        width(100.percent)
+        gap(listItemGap)
+    },
     val title: StyleScope.()-> Unit = {},
     val headerWrapper: StyleScope.()->Unit = {
         justifyContent(JustifyContent.SpaceBetween)
