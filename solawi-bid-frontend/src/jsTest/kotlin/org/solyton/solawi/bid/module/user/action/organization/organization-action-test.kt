@@ -151,6 +151,7 @@ class OrganizationActionTest {
             members = listOf(
                 ApiMember(
                     "0",
+                    "username",
                     listOf(
                         ApiRole( "0", "0","0",listOf())
                     )
@@ -188,6 +189,7 @@ class OrganizationActionTest {
             members = listOf(
                 ApiMember(
                     "0",
+                    "username",
                     listOf(
                         ApiRole( "0", "0","0",listOf())
                     )
@@ -220,6 +222,7 @@ class OrganizationActionTest {
             listOf(),
             listOf(ApiMember(
                 "0",
+                "username",
                 listOf(
                     ApiRole( "0", "0","0",listOf())
                 )
@@ -255,6 +258,7 @@ class OrganizationActionTest {
             listOf(),
             listOf(ApiMember(
                 "0",
+                "username",
                 listOf(
                     ApiRole( "0", "0","0",listOf())
                 )

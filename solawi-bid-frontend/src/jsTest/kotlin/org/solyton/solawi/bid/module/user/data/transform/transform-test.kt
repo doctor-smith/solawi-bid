@@ -1,5 +1,6 @@
 package org.solyton.solawi.bid.module.user.data.transform
 
+import kotlinx.datetime.internal.JSJoda.use
 import org.solyton.solawi.bid.module.permission.data.api.ApiRight
 import org.solyton.solawi.bid.module.permission.data.api.ApiRole
 import org.solyton.solawi.bid.module.permissions.data.transform.toDomainType
@@ -12,8 +13,9 @@ import kotlin.test.assertEquals
 
 class TransformTests {
 
-    fun apiMember(userId: String,  roles: List<ApiRole>) = ApiMember(
+    fun apiMember(userId: String,username: String,  roles: List<ApiRole>) = ApiMember(
         userId,
+        username,
         roles
     )
 
@@ -25,6 +27,7 @@ class TransformTests {
     @Test fun transformMember() {
         val apiMember = apiMember(
             "user_id",
+            "username",
             listOf(
                 apiRole(
                     "ROLE",
@@ -35,6 +38,7 @@ class TransformTests {
 
         val expected = Member(
             "user_id",
+            "username",
             apiMember.roles.map { it.toDomainType() }
         )
 
@@ -52,6 +56,7 @@ class TransformTests {
             listOf(
                 apiMember(
                     "user_id",
+                    "username",
                     listOf(
                         apiRole(
                             "ROLE",

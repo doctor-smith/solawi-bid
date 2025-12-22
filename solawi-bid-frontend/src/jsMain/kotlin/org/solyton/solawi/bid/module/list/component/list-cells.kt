@@ -75,3 +75,52 @@ fun Int.fix(): String = when(this){
     in (0..9) -> "0$this"
     else -> "$this"
 }
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun ActionCell(
+    style: StyleScope.()->Unit = {},
+    actions: @Composable ()->Unit
+){
+    Div({style {
+        textAlign("left")
+        width(10.percent)
+        display(DisplayStyle.Flex)
+        flexDirection(FlexDirection.Row)
+        gap(5.px)
+        style()
+    }}){
+        actions()
+    }
+}
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun ActionCellItem(
+    text: String,
+    style: StyleScope.()->Unit = {},
+    onClick: () -> Unit = {},
+    action: @Composable ()->Unit
+){
+    Div({
+        onClick { onClick() }
+        style {
+            display(DisplayStyle.Flex)
+            flexDirection(FlexDirection.Row)
+            gap(5.px)
+        }
+    }) {
+        Div({
+            style {
+                textAlign("left")
+                style()
+            }
+        }) {
+            Text(text)
+        }
+        action()
+    }
+}
+
