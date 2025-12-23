@@ -61,8 +61,8 @@ import org.solyton.solawi.bid.module.style.page.SubTitle
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsAction
-import org.solyton.solawi.bid.module.application.data.management.actions as applicationManagementActions
-import org.solyton.solawi.bid.module.user.data.actions as userActions
+import org.solyton.solawi.bid.module.application.data.management.applicationManagementActions
+import org.solyton.solawi.bid.module.user.data.userActions
 
 
 @Markup

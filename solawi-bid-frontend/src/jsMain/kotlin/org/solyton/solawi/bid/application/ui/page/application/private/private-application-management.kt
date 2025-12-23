@@ -37,8 +37,8 @@ import org.solyton.solawi.bid.module.user.action.organization.readOrganizations
 import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsAction
 import org.solyton.solawi.bid.module.user.data.user
 import org.solyton.solawi.bid.module.user.data.user.organizations
-import org.solyton.solawi.bid.module.application.data.management.modals as applicationManagementModals
-import org.solyton.solawi.bid.module.user.data.actions as userActions
+import org.solyton.solawi.bid.module.application.data.management.applicationManagementModals
+import org.solyton.solawi.bid.module.user.data.userActions
 
 @Markup
 @Composable
