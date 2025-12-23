@@ -5,6 +5,7 @@ import org.evoleq.language.Lang
 import org.evoleq.language.subComp
 import org.evoleq.math.Reader
 import org.evoleq.math.times
+import org.solyton.solawi.bid.application.ui.page.application.i18n.BASE_PATH
 import org.solyton.solawi.bid.application.ui.page.application.i18n.camelCase
 
 val name: Reader<Lang.Block, Lang.Block> = subComp("name")
@@ -12,6 +13,7 @@ val inputs: Reader<Lang.Block, Lang.Block> = subComp("inputs")
 object Component {
     val application: Reader<Lang.Block, Lang.Block> = subComp("application")
     val applications: Reader<Lang.Block, Lang.Block> = subComp("applications")
+    val base: Reader<Lang, Lang.Block> = subComp(BASE_PATH)
     val modules: Reader<Lang.Block, Lang.Block> = subComp("modules")
     val module: Reader<Lang.Block, Lang.Block> = subComp("module")
     val actions: Reader<Lang.Block, Lang.Block> = subComp("actions")
