@@ -1,5 +1,6 @@
 package org.solyton.solawi.bid.module.application.i18n
 
+import org.evoleq.language.I18N
 import org.evoleq.language.Lang
 import org.evoleq.language.subComp
 import org.evoleq.math.Reader
@@ -34,7 +35,9 @@ object Component {
 
 }
 
+@I18N
 fun application(key: String): Reader<Lang.Block, Lang.Block> = subComp(key.camelCase())
+@I18N
 fun module(appKey: String, moduleKey: String): Reader<Lang.Block, Lang.Block> =
     subComp(appKey.camelCase()) *
     Component.modules *
