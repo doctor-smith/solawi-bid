@@ -2,7 +2,6 @@ package org.solyton.solawi.bid.application.ui.page.application.management
 
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -16,7 +15,6 @@ import org.evoleq.compose.routing.navigate
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.component
 import org.evoleq.language.description
-import org.evoleq.language.subComp
 import org.evoleq.language.title
 import org.evoleq.language.tooltip
 import org.evoleq.math.emit
@@ -38,7 +36,6 @@ import org.solyton.solawi.bid.application.data.transform.application.management.
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
-import org.solyton.solawi.bid.application.ui.page.application.i18n.BASE_PATH
 import org.solyton.solawi.bid.module.application.action.readApplicationContextRelations
 import org.solyton.solawi.bid.module.application.action.readApplications
 import org.solyton.solawi.bid.module.application.data.application.modules
@@ -63,7 +60,6 @@ import org.solyton.solawi.bid.module.style.page.PageTitle
 import org.solyton.solawi.bid.module.style.page.SubTitle
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
-import org.solyton.solawi.bid.module.user.action.organization.readOrganizations
 import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsAction
 import org.solyton.solawi.bid.module.application.data.management.actions as applicationManagementActions
 import org.solyton.solawi.bid.module.user.data.actions as userActions
@@ -124,7 +120,7 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
             (storage * userIso * userActions).dispatch(readOrganizations())
         }
     }
-    
+
      */
 
     // Data
@@ -138,7 +134,7 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
     val defaultContext = defaultContextPrism.match{ it.contextId == defaultContextId }
 
     // Texts
-    val applicationTexts = storage * i18N * language * subComp(BASE_PATH)
+    val applicationTexts = storage * i18N * language * Component.base
     val texts = storage * i18N * language * component(ApplicationLangComponent.ApplicationPage)
     val pageTitle = texts * title
     val allApps = texts * Component.actions * Component.navToAppManPage
