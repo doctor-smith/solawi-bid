@@ -3,6 +3,7 @@ package org.evoleq.compose.guard.data
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
+import org.evoleq.compose.Markup
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 
@@ -53,5 +54,7 @@ import org.evoleq.math.emit
 }
 @Composable fun isLoading(vararg booleans: Boolean): Boolean = booleans.any{ it }
 
-@Composable fun withLoading(isLoading: Boolean, onLoading: @Composable () -> Unit, content: @Composable () -> Unit) =
+@Markup
+@Composable
+fun withLoading(isLoading: Boolean, onLoading: @Composable () -> Unit, content: @Composable () -> Unit) =
     if(isLoading) onLoading() else content()
