@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.guard.data.isLoading
 import org.evoleq.compose.guard.data.onNullLaunch
+import org.evoleq.compose.guard.data.withLoading
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.component
@@ -46,6 +47,7 @@ import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.ListStyles
+import org.solyton.solawi.bid.module.loading.component.Loading
 import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.permissions.service.contextFromPath
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
@@ -70,8 +72,8 @@ import org.solyton.solawi.bid.module.user.permission.OrganizationRight
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun OrganizationManagementPage(storage: Storage<Application>) = Div {
-    if(isLoading(
+fun OrganizationManagementPage(storage: Storage<Application>) = withLoading(
+    isLoading = isLoading(
             onNullLaunch(
                 storage * availablePermissions * contextFromPath("APPLICATION"),
             ){
@@ -87,8 +89,9 @@ fun OrganizationManagementPage(storage: Storage<Application>) = Div {
                 i18n = (storage * i18n)
             )
         }
-    )) return@Div
-
+    ),
+    onLoading = { Loading() }
+){
     LaunchedEffect(Unit) {
         (storage * actions).dispatch(readOrganizations())
     }
@@ -100,8 +103,6 @@ fun OrganizationManagementPage(storage: Storage<Application>) = Div {
 
     // Permission
     val cannotCreateOrganization = Source { false }
-
-
 
     Page(verticalPageStyle){
         Wrap{ Horizontal(styles = { justifyContent(JustifyContent.FlexStart); alignItems(AlignItems.Center); width(100.percent); gap(20.px) }) {
