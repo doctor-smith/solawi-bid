@@ -33,6 +33,8 @@ object Component {
     val navToAppManPage: Reader<Lang.Block, Lang.Block> = subComp("navToAppManPage")
     val navToParentApplication: Reader<Lang.Block, Lang.Block> = subComp("navToParentApplication")
     val listOfModules: Reader<Lang.Block, Lang.Block> = subComp("listOfModules")
+
+    val listOfApplications: Reader<Lang.Block, Lang.Block> = subComp("listOfApplications")
     val defaultContext: Reader<Lang.Block, Lang.Block> = subComp("defaultContext")
     val showDetails: Reader<Lang.Block, Lang.Block> = subComp("showDetails")
     val edit: Reader<Lang.Block, Lang.Block> = subComp("edit")

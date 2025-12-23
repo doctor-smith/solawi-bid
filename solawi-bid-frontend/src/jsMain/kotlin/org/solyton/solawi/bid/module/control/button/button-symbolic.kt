@@ -96,6 +96,31 @@ fun DetailsButton(
     onClick
 )
 
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun ShareNodesButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-share-nodes"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
+
 @Markup
 @Composable
 @Suppress("FunctionName")
