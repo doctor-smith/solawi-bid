@@ -9,7 +9,7 @@ package org.solyton.solawi.bid.module.context.data
 import org.evoleq.optics.Lensify
 import org.evoleq.optics.ReadWrite
 import org.evoleq.optics.lens.Lens
-import org.solyton.solawi.bid.module.application.permission.Context as C
+import org.evoleq.permission.EmptyContext
 
 /**
  * Generator class.
@@ -22,7 +22,7 @@ import org.solyton.solawi.bid.module.application.permission.Context as C
  * If not, just omit the annotation or annotate it with @Ignore.
  */
 @Lensify data class Context(
-    @ReadWrite val current: String = C.Empty.value,
+    @ReadWrite val current: String = EmptyContext.value,
     @ReadWrite val next: String? = null
 )
 

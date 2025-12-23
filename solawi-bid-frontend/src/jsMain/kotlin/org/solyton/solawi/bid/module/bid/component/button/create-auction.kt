@@ -19,7 +19,6 @@ import org.evoleq.optics.storage.add
 import org.evoleq.optics.storage.remove
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.Color
-import org.solyton.solawi.bid.application.data.context
 import org.solyton.solawi.bid.module.bid.action.createAuction
 import org.solyton.solawi.bid.module.bid.component.form.DEFAULT_AUCTION_ID
 import org.solyton.solawi.bid.module.bid.component.form.showAuctionModal

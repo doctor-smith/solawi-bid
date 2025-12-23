@@ -4,12 +4,7 @@ import org.evoleq.language.I18N
 import org.evoleq.language.Lang
 import org.evoleq.language.subComp
 import org.evoleq.math.Reader
-import org.evoleq.math.Source
-import org.evoleq.math.emit
 import org.evoleq.math.times
-import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.application.ui.page.application.i18n.BASE_PATH
-import org.solyton.solawi.bid.application.ui.page.application.i18n.camelCase
 
 val name: Reader<Lang.Block, Lang.Block> = subComp("name")
 val inputs: Reader<Lang.Block, Lang.Block> = subComp("inputs")
