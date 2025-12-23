@@ -8,22 +8,17 @@ import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.guard.data.isLoading
 import org.evoleq.compose.guard.data.onNullLaunch
+import org.evoleq.compose.guard.data.withLoading
 import org.evoleq.compose.routing.navigate
 import org.evoleq.device.data.mediaType
-import org.evoleq.language.component
-import org.evoleq.language.subComp
-import org.evoleq.language.subTitle
-import org.evoleq.language.title
-import org.evoleq.language.tooltip
+import org.evoleq.language.*
 import org.evoleq.math.emit
-import org.evoleq.math.o
 import org.evoleq.math.times
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
-import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.*
@@ -33,7 +28,6 @@ import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
 import org.solyton.solawi.bid.application.ui.page.application.i18n.BASE_PATH
-import org.solyton.solawi.bid.application.ui.page.application.i18n.camelCase
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
 import org.solyton.solawi.bid.module.application.i18n.Component
 import org.solyton.solawi.bid.module.application.i18n.application
@@ -62,11 +56,8 @@ import org.solyton.solawi.bid.module.user.data.actions as userActions
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun ApplicationManagementPage(storage: Storage<Application>) = Div {
-
-
-    when {
-    isLoading(
+fun ApplicationManagementPage(storage: Storage<Application>) = withLoading(
+    isLoading = isLoading(
         onNullLaunch(
             storage * availablePermissions * contextFromPath("APPLICATION"),
         ) {
@@ -94,29 +85,30 @@ fun ApplicationManagementPage(storage: Storage<Application>) = Div {
                 )
             }
         }.toBooleanArray()
-
-    ) -> Loading()
-
-    else -> {
-
-        LaunchedEffect(Unit) {
-            launch {
-                (storage * userIso * userActions).dispatch(readOrganizations())
-            }
+    ),
+    onLoading = {
+        Loading()
+    }
+){
+    LaunchedEffect(Unit) {
+        launch {
+            (storage * userIso * userActions).dispatch(readOrganizations())
         }
-
-        val device = storage * deviceData * mediaType.get
-
-        val applicationTexts = storage * i18N * language * subComp(BASE_PATH)
-        val texts = storage * i18N * language * component(ApplicationLangComponent.ApplicationManagementPage)
-        val pageTitle = texts * title
-        val subTitle = texts * subTitle
-        val applicationList = texts * subComp("listOfApplications")
-        val applicationListHeaders = applicationList * subComp("headers")
-        val applicationListActions = applicationList * subComp("actions")
-
+    }
+    // Data
+    val device = storage * deviceData * mediaType.get
     val availableApplications = storage * applicationManagementModule * availableApplications
     val modals = storage * applicationManagementModule * applicationManagementModals
+
+    // Texts
+    val applicationTexts = storage * i18N * language * subComp(BASE_PATH)
+    val texts = storage * i18N * language * component(ApplicationLangComponent.ApplicationManagementPage)
+    val pageTitle = texts * title
+    val subTitle = texts * subTitle
+    val applicationList = texts * subComp("listOfApplications")
+    val applicationListHeaders = applicationList * subComp("headers")
+    val applicationListActions = applicationList * subComp("actions")
+
     Page(verticalPageStyle) {
         Wrap {
             PageTitle(pageTitle)
@@ -124,7 +116,7 @@ fun ApplicationManagementPage(storage: Storage<Application>) = Div {
         }
         ListWrapper {
             TitleWrapper {
-                Title { H3{ Text((applicationList * title).emit()) } }
+                Title { H3 { Text((applicationList * title).emit()) } }
             }
             HeaderWrapper {
                 Header {
@@ -132,7 +124,7 @@ fun ApplicationManagementPage(storage: Storage<Application>) = Div {
                     HeaderCell(applicationListHeaders * Component.modules * title) { width(40.percent) }
                 }
             }
-            ListItems(availableApplications){ application ->
+            ListItems(availableApplications) { application ->
                 ListItemWrapper {
                     DataWrapper {
                         TextCell(applicationTexts * application(application.name) * title) { width(40.percent) }
@@ -182,14 +174,13 @@ fun ApplicationManagementPage(storage: Storage<Application>) = Div {
                             applicationListActions * Component.edit * tooltip,
                             device,
 
-                                ) {
-                                modals.showDialogModal(
-                                    texts = dialogModalTexts("Not Implemented"),
-                                    device = device,
-                                    dataId = "application-management.page.edit-application.not-implemented",
-                                ) {
-                                    CoroutineScope(Job()).launch {}
-                                }
+                            ) {
+                            modals.showDialogModal(
+                                texts = dialogModalTexts("Not Implemented"),
+                                device = device,
+                                dataId = "application-management.page.edit-application.not-implemented",
+                            ) {
+                                CoroutineScope(Job()).launch {}
                             }
                         }
                     }
@@ -197,4 +188,4 @@ fun ApplicationManagementPage(storage: Storage<Application>) = Div {
             }
         }
     }
-}}
+}
