@@ -1,7 +1,5 @@
 package org.solyton.solawi.bid.application.ui.page.application.management
 
-
-
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.CoroutineScope
@@ -31,9 +29,7 @@ import org.evoleq.optics.transform.firstByOrNull
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
-import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.H3
-import org.jetbrains.compose.web.dom.H4
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.data.env.i18nEnvironment
@@ -69,8 +65,8 @@ import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.action.organization.readOrganizations
 import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsAction
-import org.solyton.solawi.bid.module.application.data.management.actions as applicationManagementActions
-import org.solyton.solawi.bid.module.user.data.actions as userActions
+import org.solyton.solawi.bid.module.application.data.management.applicationManagementActions
+import org.solyton.solawi.bid.module.user.data.userActions
 
 
 @Markup
