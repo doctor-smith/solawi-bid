@@ -11,10 +11,12 @@ import org.evoleq.compose.Markup
 import org.evoleq.compose.guard.data.isLoading
 import org.evoleq.compose.guard.data.onEmpty
 import org.evoleq.compose.guard.data.onNullLaunch
+import org.evoleq.compose.guard.data.withLoading
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.routing.navigate
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.component
+import org.evoleq.language.description
 import org.evoleq.language.title
 import org.evoleq.language.tooltip
 import org.evoleq.math.emit
@@ -49,6 +51,7 @@ import org.solyton.solawi.bid.module.application.data.management.personalModuleC
 import org.solyton.solawi.bid.module.application.data.management.personalApplicationContextRelations
 import org.solyton.solawi.bid.module.application.i18n.Component
 import org.solyton.solawi.bid.module.application.i18n.Component.editContext
+import org.solyton.solawi.bid.module.application.i18n.module
 import org.solyton.solawi.bid.module.control.button.ArrowUpButton
 import org.solyton.solawi.bid.module.application.data.application.Application as App
 import org.solyton.solawi.bid.module.control.button.EditButton
@@ -73,8 +76,8 @@ import org.solyton.solawi.bid.module.user.data.actions as userActions
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun ModulePage(storage: Storage<Application>, applicationId: String, moduleId: String) = Div { when {
-    isLoading(
+fun ModulePage(storage: Storage<Application>, applicationId: String, moduleId: String) = withLoading(
+    isLoading = isLoading(
         onEmpty(storage * applicationManagementModule * availableApplications.get) {
             CoroutineScope(Job()).launch {
                 (storage * applicationManagementModule * applicationManagementActions).dispatch(
@@ -110,131 +113,145 @@ fun ModulePage(storage: Storage<Application>, applicationId: String, moduleId: S
                 environment = storage * environment * i18nEnvironment,
                 i18n = (storage * i18N)
             )
-        }
-    ) -> Loading()
-    else -> {
-        LaunchedEffect(Unit) {
-            launch {
-                (storage * userIso * userActions).dispatch(readOrganizations())
+        },
+        *(storage * applicationManagementModule * availableApplications).read().map {
+            onMissing(
+                ApplicationLangComponent.ApplicationDetails(it.name),
+                storage * i18N.get
+            ){
+                LaunchComponentLookup(
+                    langComponent = ApplicationLangComponent.ApplicationDetails(it.name),
+                    environment = storage * environment * i18nEnvironment,
+                    i18n = (storage * i18N)
+                )
             }
+        }.toBooleanArray()
+    ),
+    onLoading = { Loading() }
+){
+    LaunchedEffect(Unit) {
+        launch {
+            (storage * userIso * userActions).dispatch(readOrganizations())
         }
+    }
+    // Data
+    val device = storage * deviceData * mediaType.get
 
-        val device = storage * deviceData * mediaType.get
+    val managementStorage = storage * applicationManagementModule
+    val application = availableApplications * FirstBy<App> { it.id == applicationId }
 
-        val texts = storage * i18N * language * component(ApplicationLangComponent.ModulePage)
-        val pageTitle = texts * title
-        val parentApp = texts * Component.actions * Component.navToParentApplication
-        val defaultContextTexts = texts * Component.defaultContext
-        /*
-    val organizations = storage * userIso * user * organizations
-    val modals = storage * applicationManagementModule * applicationManagementModals
-    */
-        val managementStorage = storage * applicationManagementModule
-        val application = availableApplications * FirstBy<App> { it.id == applicationId }
+    val module = application * modules * FirstBy { it.id == moduleId }
 
-        val module = application * modules * FirstBy { it.id == moduleId }
+    val appContextRelations =
+        (storage * applicationManagementModule * personalApplicationContextRelations).read()
+    val defaultAppContextId =
+        appContextRelations.first { relation -> relation.relatedId == applicationId }.contextId
 
-        val appContextRelations =
-            (storage * applicationManagementModule * personalApplicationContextRelations).read()
-        val defaultAppContextId =
-            appContextRelations.first { relation -> relation.relatedId == applicationId }.contextId
+    val contextRelations = (storage * applicationManagementModule * personalModuleContextRelations).read()
+    val defaultModuleContextId = contextRelations.first { relation -> relation.relatedId == moduleId }.contextId
 
-        val contextRelations = (storage * applicationManagementModule * personalModuleContextRelations).read()
-        val defaultModuleContextId = contextRelations.first { relation -> relation.relatedId == moduleId }.contextId
+    val defaultAppContextPrism = (storage * availablePermissions * contexts).firstByOrNull()
+    val defaultAppContext = defaultAppContextPrism.match { it.contextId == defaultAppContextId }
+    require(defaultAppContext is Either.Right) { "No default app context available" }
+    val defaultModuleContext =
+        defaultAppContext.value.children.firstOrNull { it.contextId == defaultModuleContextId }
 
+    // Texts
+    val base = storage * i18N * language * Component.base
+    val texts = storage * i18N * language * component(ApplicationLangComponent.ModulePage)
+    val pageTitle = texts * title
+    val parentApp = texts * Component.actions * Component.navToParentApplication
+    val defaultContextTexts = texts * Component.defaultContext
 
-        val defaultAppContextPrism = (storage * availablePermissions * contexts).firstByOrNull()
-        val defaultAppContext = defaultAppContextPrism.match { it.contextId == defaultAppContextId }
-        require(defaultAppContext is Either.Right) { "No default app context available" }
-        val defaultModuleContext =
-            defaultAppContext.value.children.firstOrNull { it.contextId == defaultModuleContextId }
+    val moduleTexts = module(
+        (managementStorage * application).read().name,
+        (managementStorage * module).read().name
+    )
+    val moduleTitle = base * moduleTexts * title
+    val moduleDescription = base * moduleTexts * description
 
-        Page({ verticalPageStyle() }) {
-            Wrap {
-                Horizontal(styles = {
-                    justifyContent(JustifyContent.SpaceBetween)
-                    alignItems(AlignItems.Center)
-                    width(100.percent)
-                }) {
-                    PageTitle(pageTitle map { "$it ${(managementStorage * module).read().name}" })
-                    Horizontal {
-                        ArrowUpButton(
-                            Color.black,
-                            Color.white,
-                            parentApp map { "$it ${(managementStorage * application * name).read()}" },
-                            device,
-                        ) {
-                            navigate("/app/management/application/$applicationId")
-                        }
+    Page({ verticalPageStyle() }) {
+        Wrap {
+            Horizontal(styles = {
+                justifyContent(JustifyContent.SpaceBetween)
+                alignItems(AlignItems.Center)
+                width(100.percent)
+            }) {
+                PageTitle(pageTitle map { "$it: ${moduleTitle.emit()}" })
+                Horizontal {
+                    ArrowUpButton(
+                        Color.black,
+                        Color.white,
+                        parentApp map { "$it ${(managementStorage * application * name).read()}" },
+                        device,
+                    ) {
+                        navigate("/app/management/application/$applicationId")
                     }
                 }
-                SubTitle("Module Description ...")
             }
+            SubTitle(moduleDescription)
+        }
 
-
-
-            ListWrapper {
-                TitleWrapper({
-                    defaultListStyles.titleWrapper(this)
-                    justifyContent(JustifyContent.SpaceBetween)
-                }) {
-                    Title { H3 { Text((defaultContextTexts * title).emit()) } }
-                    Horizontal {
+        ListWrapper {
+            TitleWrapper({
+                defaultListStyles.titleWrapper(this)
+                justifyContent(JustifyContent.SpaceBetween)
+            }) {
+                Title { H3 { Text((defaultContextTexts * title).emit()) } }
+                Horizontal {
+                    EditButton(
+                        Color.black,
+                        Color.white,
+                        defaultContextTexts * Component.actions * editContext * tooltip,
+                        device,
+                    ) {}
+                }
+            }
+            HeaderWrapper {
+                Header {
+                    HeaderCell(defaultContextTexts * Component.headers * Component.role * title) { width(40.percent) }
+                    HeaderCell(defaultContextTexts * Component.headers * Component.rights * title) { width(40.percent) }
+                }
+            }
+            ListItems(defaultModuleContext?.roles ?: emptyList()) { role ->
+                ListItemWrapper {
+                    DataWrapper {
+                        TextCell(role.roleName) { width(40.percent) }
+                        Div({
+                            style {
+                                display(DisplayStyle.Flex)
+                                flexDirection(FlexDirection.Row)
+                                flexWrap(FlexWrap.Wrap)
+                                width(60.percent)
+                                flexShrink(0)
+                            }
+                        }) {
+                            role.rights.forEach { right ->
+                                TextCell(right.rightName, right.rightName) {
+                                    flexWrap(FlexWrap.Wrap)
+                                    width(31.percent)
+                                    padding(1.percent)
+                                    flexShrink(0)
+                                    overflow("hidden")
+                                }
+                            }
+                        }
+                    }
+                    ActionsWrapper({
+                        defaultListStyles.actionsWrapper(this)
+                        alignSelf(AlignSelf.FlexStart)
+                    }) {
                         EditButton(
                             Color.black,
                             Color.white,
                             defaultContextTexts * Component.actions * editContext * tooltip,
                             device,
-                        ) {}
-                    }
-                }
-                HeaderWrapper {
-                    Header {
-                        HeaderCell(defaultContextTexts * Component.headers * Component.role * title) { width(40.percent) }
-                        HeaderCell(defaultContextTexts * Component.headers * Component.rights * title) { width(40.percent) }
-                    }
-                }
-                ListItems(defaultModuleContext?.roles ?: emptyList()) { role ->
-                    ListItemWrapper {
-                        DataWrapper {
-                            TextCell(role.roleName) { width(40.percent) }
-                            Div({
-                                style {
-                                    display(DisplayStyle.Flex)
-                                    flexDirection(FlexDirection.Row)
-                                    flexWrap(FlexWrap.Wrap)
-                                    width(60.percent)
-                                    flexShrink(0)
-                                }
-                            }) {
-                                role.rights.forEach { right ->
-                                    TextCell(right.rightName, right.rightName) {
-                                        flexWrap(FlexWrap.Wrap)
-                                        width(31.percent)
-                                        padding(1.percent)
-                                        flexShrink(0)
-                                        overflow("hidden")
-                                    }
-                                }
-                            }
-                        }
-                        ActionsWrapper({
-                            defaultListStyles.actionsWrapper(this)
-                            alignSelf(AlignSelf.FlexStart)
-                        }) {
-                            EditButton(
-                                Color.black,
-                                Color.white,
-                                defaultContextTexts * Component.actions * editContext * tooltip,
-                                device,
-                            ) {
+                        ) {
 
-                            }
                         }
                     }
                 }
             }
         }
-    }}
+    }
 }
-
