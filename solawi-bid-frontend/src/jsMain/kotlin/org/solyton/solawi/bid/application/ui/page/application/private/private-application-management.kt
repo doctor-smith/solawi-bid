@@ -6,15 +6,27 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.guard.data.isLoading
+import org.evoleq.compose.guard.data.onEmpty
 import org.evoleq.compose.guard.data.onNullLaunch
 import org.evoleq.compose.guard.data.withLoading
+import org.evoleq.compose.layout.Horizontal
 import org.evoleq.device.data.mediaType
+import org.evoleq.device.data.screenWidth
 import org.evoleq.language.component
 import org.evoleq.language.subComp
+import org.evoleq.language.subTitle
+import org.evoleq.language.title
+import org.evoleq.language.tooltip
 import org.evoleq.math.times
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.transform.times
+import org.jetbrains.compose.web.css.AlignSelf
+import org.jetbrains.compose.web.css.Color
+import org.jetbrains.compose.web.css.alignSelf
+import org.jetbrains.compose.web.css.percent
+import org.jetbrains.compose.web.css.width
+import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.Li
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.dom.Ul
@@ -26,15 +38,39 @@ import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
 import org.solyton.solawi.bid.module.application.action.connectApplicationToOrganization
+import org.solyton.solawi.bid.module.application.action.readApplications
 import org.solyton.solawi.bid.module.application.component.modal.showConnectApplicationToOrganizationModule
 import org.solyton.solawi.bid.module.application.data.LifecycleStage
 import org.solyton.solawi.bid.module.application.data.management.actions
+import org.solyton.solawi.bid.module.application.data.management.applicationManagementActions
 import org.solyton.solawi.bid.module.application.data.management.applicationManagementModals
+import org.solyton.solawi.bid.module.application.data.management.availableApplications
+import org.solyton.solawi.bid.module.application.i18n.Component
+import org.solyton.solawi.bid.module.application.i18n.application
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
+import org.solyton.solawi.bid.module.control.button.ShareNodesButton
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
+import org.solyton.solawi.bid.module.list.component.ActionsWrapper
+import org.solyton.solawi.bid.module.list.component.DataWrapper
+import org.solyton.solawi.bid.module.list.component.Header
+import org.solyton.solawi.bid.module.list.component.HeaderCell
+import org.solyton.solawi.bid.module.list.component.HeaderWrapper
+import org.solyton.solawi.bid.module.list.component.ListItemWrapper
+import org.solyton.solawi.bid.module.list.component.ListItems
+import org.solyton.solawi.bid.module.list.component.ListWrapper
+import org.solyton.solawi.bid.module.list.component.TextCell
+import org.solyton.solawi.bid.module.list.component.Title
+import org.solyton.solawi.bid.module.list.component.TitleWrapper
+import org.solyton.solawi.bid.module.list.style.defaultListStyles
 import org.solyton.solawi.bid.module.loading.component.Loading
+import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.permissions.service.contextFromPath
+import org.solyton.solawi.bid.module.style.page.PageTitle
+import org.solyton.solawi.bid.module.style.page.SubTitle
+import org.solyton.solawi.bid.module.style.page.Title
+import org.solyton.solawi.bid.module.style.page.verticalPageStyle
+import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.action.organization.readOrganizations
 import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsAction
 import org.solyton.solawi.bid.module.user.data.user
@@ -51,6 +87,13 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) = withLoadin
         ){
             CoroutineScope(Job()).launch { (storage * userIso * userActions ).dispatch(readUserPermissionsAction()) }
         },
+        onEmpty(storage * applicationManagementModule * availableApplications.get) {
+            CoroutineScope(Job()).launch {
+                (storage * applicationManagementModule * applicationManagementActions).dispatch(
+                    readApplications
+                )
+            }
+        },
         onMissing(
             ApplicationLangComponent.PrivateApplicationManagementPage,
             storage * i18N.get
@@ -60,7 +103,19 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) = withLoadin
                 environment = storage * environment * i18nEnvironment,
                 i18n = (storage * i18N)
             )
-        }
+        },
+        *(storage * applicationManagementModule * availableApplications).read().map {
+            onMissing(
+                ApplicationLangComponent.ApplicationDetails(it.name),
+                storage * i18N.get
+            ){
+                LaunchComponentLookup(
+                    langComponent = ApplicationLangComponent.ApplicationDetails(it.name),
+                    environment = storage * environment * i18nEnvironment,
+                    i18n = (storage * i18N)
+                )
+            }
+        }.toBooleanArray()
     ),
     onLoading = { Loading() },
 ){
@@ -71,43 +126,74 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) = withLoadin
     }
 
     val device = storage * deviceData * mediaType.get
-
+    val base = storage * i18N * language * Component.base
     val texts = storage * i18N * language * component(ApplicationLangComponent.PrivateApplicationManagementPage)
     val connectDialogTexts = texts * subComp("dialogs") * subComp("connectApplicationToOrganization")
 
     val personalApplications = storage * personalApplications
     val organizations = storage * userIso * user * organizations
     val modals = storage * applicationManagementModule * applicationManagementModals
-    Ul {
-        var organizationId by remember { mutableStateOf("") }
-        personalApplications.read().forEach { application ->
 
-            Li(attrs = {
+    var organizationId by remember { mutableStateOf("") }
 
-                onClick {
-                    modals.showConnectApplicationToOrganizationModule(
-                        texts = connectDialogTexts,
-                        device = device,
-                        styles = {dev -> auctionModalStyles(dev) },
-                        application = application,
-                        organizations = organizations.read().import(),
-                        setOrganizationId = {id -> organizationId = id},
-                        cancel = {}
+    Page(verticalPageStyle) {
+        Wrap {
+            Horizontal {
+                PageTitle(texts * title)
+            }
+            SubTitle(texts * subTitle)
+        }
+        ListWrapper {
+            TitleWrapper { Title("") {  } }
+        }
+        HeaderWrapper {
+            Header {
+                HeaderCell(
+                    texts * with(Component){listOfApplications * headers * application} * title
+                ){ width(40.percent) }
+            }
+        }
+        ListItems(personalApplications) { application ->
+            ListItemWrapper {
+                DataWrapper {
+                    TextCell(
+                    base * application(application.name) * title
+                    ) { width(40.percent) }
+                }
+                ActionsWrapper({
+                    defaultListStyles.actionsWrapper(this)
+                    alignSelf(AlignSelf.FlexStart)
+                }) {
+                    ShareNodesButton(
+                        Color.black,
+                        Color.white,
+                        texts * Component.listOfApplications * Component.actions * subComp("connectApplication") * tooltip,
+                        device,
                     ) {
-                        CoroutineScope(Job()).launch {
-                            (storage * applicationManagementModule * actions).dispatch(
-                                connectApplicationToOrganization(
-                                    application.id,
-                                    organizationId,
-                                    application.modules.filter{
-                                        module -> module.state == LifecycleStage.Active
-                                    }.map { it.id }
+                        modals.showConnectApplicationToOrganizationModule(
+                            texts = connectDialogTexts,
+                            device = device,
+                            styles = {dev -> auctionModalStyles(dev) },
+                            application = application,
+                            organizations = organizations.read().import(),
+                            setOrganizationId = {id -> organizationId = id},
+                            cancel = {}
+                        ) {
+                            CoroutineScope(Job()).launch {
+                                (storage * applicationManagementModule * actions).dispatch(
+                                    connectApplicationToOrganization(
+                                        application.id,
+                                        organizationId,
+                                        application.modules.filter{
+                                                module -> module.state == LifecycleStage.Active
+                                        }.map { it.id }
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }
-            }) { Text(application.name) }
+            }
         }
     }
 }

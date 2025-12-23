@@ -4,6 +4,30 @@ de {
             private {
                 managementPage {
                     title: "Meine Apps"
+                    subTitle: "Persönliche Apps verwalten"
+                    listOfApplications {
+                        title: "Applikationen"
+                        headers {
+                            application {
+                                title: "Applikation"
+                            }
+                            modules {
+                                title: "Module"
+                            }
+                        }
+                        actions {
+                            connectApplication {
+                                tooltip: "Applikation mit Organisationen teilen"
+                            }
+                            showDetails {
+                                tooltip: "Details der Applikation anzeigen"
+                            }
+                            edit {
+                                tooltip: "Applikation bearbeiten"
+                            }
+                        }
+                    }
+
                     dialogs {
                         connectApplicationToOrganization {
                             title: "Verbinde App mit Organization"
