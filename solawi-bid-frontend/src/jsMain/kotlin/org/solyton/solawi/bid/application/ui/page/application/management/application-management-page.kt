@@ -32,8 +32,12 @@ import org.solyton.solawi.bid.application.data.transform.application.management.
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
+import org.solyton.solawi.bid.application.ui.page.application.i18n.BASE_PATH
+import org.solyton.solawi.bid.application.ui.page.application.i18n.camelCase
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
 import org.solyton.solawi.bid.module.application.i18n.Component
+import org.solyton.solawi.bid.module.application.i18n.application
+import org.solyton.solawi.bid.module.application.i18n.module
 import org.solyton.solawi.bid.module.control.button.DetailsButton
 import org.solyton.solawi.bid.module.control.button.EditButton
 import org.solyton.solawi.bid.module.dialog.component.showDialogModal
@@ -42,6 +46,7 @@ import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.defaultListStyles
+import org.solyton.solawi.bid.module.loading.component.Loading
 import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.permissions.service.contextFromPath
 import org.solyton.solawi.bid.module.style.page.PageTitle
@@ -59,39 +64,56 @@ import org.solyton.solawi.bid.module.user.data.actions as userActions
 @Suppress("FunctionName")
 fun ApplicationManagementPage(storage: Storage<Application>) = Div {
 
-    if (isLoading(
-            onNullLaunch(
-                storage * availablePermissions * contextFromPath("APPLICATION"),
-            ) {
-                CoroutineScope(Job()).launch { (storage * userIso * userActions).dispatch(readUserPermissionsAction()) }
-            },
+
+    when {
+    isLoading(
+        onNullLaunch(
+            storage * availablePermissions * contextFromPath("APPLICATION"),
+        ) {
+            CoroutineScope(Job()).launch { (storage * userIso * userActions).dispatch(readUserPermissionsAction()) }
+        },
+        onMissing(
+            ApplicationLangComponent.ApplicationManagementPage,
+            storage * i18N.get
+        ) {
+            LaunchComponentLookup(
+                langComponent = ApplicationLangComponent.ApplicationManagementPage,
+                environment = storage * environment * i18nEnvironment,
+                i18n = (storage * i18N)
+            )
+        },
+        *(storage * applicationManagementModule * availableApplications).read().map {
             onMissing(
-                ApplicationLangComponent.ApplicationManagementPage,
+                ApplicationLangComponent.ApplicationDetails(it.name),
                 storage * i18N.get
-            ) {
+            ){
                 LaunchComponentLookup(
-                    langComponent = ApplicationLangComponent.ApplicationManagementPage,
+                    langComponent = ApplicationLangComponent.ApplicationDetails(it.name),
                     environment = storage * environment * i18nEnvironment,
                     i18n = (storage * i18N)
                 )
             }
-        )
-    ) return@Div
+        }.toBooleanArray()
 
-    LaunchedEffect(Unit) {
-        launch {
-            (storage * userIso * userActions).dispatch(readOrganizations())
+    ) -> Loading()
+
+    else -> {
+
+        LaunchedEffect(Unit) {
+            launch {
+                (storage * userIso * userActions).dispatch(readOrganizations())
+            }
         }
-    }
 
-    val device = storage * deviceData * mediaType.get
+        val device = storage * deviceData * mediaType.get
 
-    val texts = storage * i18N * language * component(ApplicationLangComponent.ApplicationManagementPage)
-    val pageTitle = texts * title
-    val subTitle = texts * subTitle
-    val applicationList = texts * subComp("listOfApplications")
-    val applicationListHeaders = applicationList * subComp("headers")
-    val applicationListActions = applicationList * subComp("actions")
+        val applicationTexts = storage * i18N * language * subComp(BASE_PATH)
+        val texts = storage * i18N * language * component(ApplicationLangComponent.ApplicationManagementPage)
+        val pageTitle = texts * title
+        val subTitle = texts * subTitle
+        val applicationList = texts * subComp("listOfApplications")
+        val applicationListHeaders = applicationList * subComp("headers")
+        val applicationListActions = applicationList * subComp("actions")
 
     val availableApplications = storage * applicationManagementModule * availableApplications
     val modals = storage * applicationManagementModule * applicationManagementModals
@@ -113,7 +135,7 @@ fun ApplicationManagementPage(storage: Storage<Application>) = Div {
             ListItems(availableApplications){ application ->
                 ListItemWrapper {
                     DataWrapper {
-                        TextCell(application.name) { width(40.percent) }
+                        TextCell(applicationTexts * application(application.name) * title) { width(40.percent) }
                         Div(attrs = {
                             style {
                                 width(40.percent)
@@ -133,7 +155,7 @@ fun ApplicationManagementPage(storage: Storage<Application>) = Div {
                                         }
                                     }
                                 }) {
-                                    Text(module.name)
+                                    Text((applicationTexts * module(application.name, module.name) * title).emit())
                                 }
                             }
                         }
@@ -160,13 +182,14 @@ fun ApplicationManagementPage(storage: Storage<Application>) = Div {
                             applicationListActions * Component.edit * tooltip,
                             device,
 
-                            ) {
-                            modals.showDialogModal(
-                                texts = dialogModalTexts("Not Implemented"),
-                                device = device,
-                                dataId = "application-management.page.edit-application.not-implemented",
-                            ) {
-                                CoroutineScope(Job()).launch {}
+                                ) {
+                                modals.showDialogModal(
+                                    texts = dialogModalTexts("Not Implemented"),
+                                    device = device,
+                                    dataId = "application-management.page.edit-application.not-implemented",
+                                ) {
+                                    CoroutineScope(Job()).launch {}
+                                }
                             }
                         }
                     }
@@ -174,4 +197,4 @@ fun ApplicationManagementPage(storage: Storage<Application>) = Div {
             }
         }
     }
-}
+}}

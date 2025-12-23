@@ -20,4 +20,14 @@ sealed class ApplicationLangComponent(override val path: String, override val va
     data object ModulePage : ApplicationLangComponent(
         "$BASE_PATH.management.modulePage"
     )
+
+    data class ApplicationDetails(val key: String) : ApplicationLangComponent(
+        "$BASE_PATH.${key.lowercase().camelCase()}",
+        "$BASE_PATH.${key.lowercase().camelCase()}"
+    )
+
 }
+
+fun String.camelCase() = split("_").mapIndexed { index, s ->
+    if(index==0) s.lowercase() else s.first().uppercase() + s.drop(1).lowercase()
+}.joinToString("")

@@ -1,0 +1,28 @@
+en {
+    solyton {
+        application {
+            applicationManagement {
+                title: "Application Management"
+                description: "Manage the Solyton Platform"
+                modules {
+                    applicationUserManagement {
+                        title: "Application User Management"
+                        description: "Manage users of the Solyton Platform"
+                    }
+                    technicalApplicationManagement {
+                        title: "Technical Application Management"
+                        description: ""
+                    }
+                    organizationManagement {
+                        title: "Organization Management"
+                        description: "Manage organizations, departments or teams of Solyton Platform"
+                    }
+                    financialTooling {
+                        title: "Financial Tooling"
+                        descriptions: "Financial Tools"
+                    }
+                }
+            }
+        }
+    }
+}

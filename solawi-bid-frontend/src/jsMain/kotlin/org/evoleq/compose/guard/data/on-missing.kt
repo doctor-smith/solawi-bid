@@ -52,3 +52,6 @@ import org.evoleq.math.emit
     return if(empty){ effect(); true } else { false }
 }
 @Composable fun isLoading(vararg booleans: Boolean): Boolean = booleans.any{ it }
+
+@Composable fun withLoading(isLoading: Boolean, onLoading: @Composable () -> Unit, content: @Composable () -> Unit) =
+    if(isLoading) onLoading() else content()

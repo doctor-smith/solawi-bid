@@ -14,6 +14,7 @@ import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.routing.navigate
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.component
+import org.evoleq.language.subComp
 import org.evoleq.language.title
 import org.evoleq.language.tooltip
 import org.evoleq.math.emit
@@ -35,6 +36,7 @@ import org.solyton.solawi.bid.application.data.transform.application.management.
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
+import org.solyton.solawi.bid.application.ui.page.application.i18n.BASE_PATH
 import org.solyton.solawi.bid.module.application.action.readApplicationContextRelations
 import org.solyton.solawi.bid.module.application.action.readApplications
 import org.solyton.solawi.bid.module.application.data.application.modules
