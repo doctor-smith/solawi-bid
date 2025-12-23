@@ -2,6 +2,8 @@ package org.solyton.solawi.bid.application.ui.page.user
 
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.guard.data.isLoading
+import org.evoleq.compose.guard.data.withLoading
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Property
 import org.evoleq.compose.layout.ReadOnlyProperty
@@ -24,15 +26,20 @@ import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.H2
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.*
+import org.solyton.solawi.bid.application.data.env.i18nEnvironment
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.service.useI18nTransform
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
+import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
 import org.solyton.solawi.bid.application.ui.page.user.effect.TriggerPasswordChange
 import org.solyton.solawi.bid.application.ui.page.user.i18n.UserLangComponent
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.componentLoaded
 import org.solyton.solawi.bid.module.i18n.data.language
+import org.solyton.solawi.bid.module.i18n.guard.onMissing
+import org.solyton.solawi.bid.module.loading.component.Loading
+import org.solyton.solawi.bid.module.style.page.PageTitle
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.component.modal.showChangePasswordModal
@@ -45,11 +52,23 @@ import org.solyton.solawi.bid.module.user.data.user.username
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun PrivateUserPage(storage: Storage<Application>) = Div {
+fun PrivateUserPage(storage: Storage<Application>) = withLoading(
+    isLoading = isLoading(
+        onMissing(
+            UserLangComponent.UserPrivatePage,
+            storage * i18N.get
+        ) {
+            LaunchComponentLookup(
+                langComponent = UserLangComponent.UserPrivatePage,
+                environment = storage * environment * i18nEnvironment,
+                i18n = (storage * i18N)
+            )
+        },
+    ),
+    onLoading = {Loading()}
+) {
     // Data
     val userData = storage * userData
-    val environment = storage * environment
-    val i18n = storage * i18N
 
     // Data / I18N
     val texts = storage * i18N * language * component(UserLangComponent.UserPrivatePage)
@@ -57,23 +76,14 @@ fun PrivateUserPage(storage: Storage<Application>) = Div {
     val dialogs = texts * subComp("dialogs")
     val permissions = texts * subComp("permissions")
 
-    // Effect
-    LaunchComponentLookup(
-        langComponent = UserLangComponent.UserPrivatePage,
-        environment = Reader{ environment.read().useI18nTransform() },
-        i18n = i18n,
-    )
-
     // State
     var user by remember { mutableStateOf(ChangePassword("","")) }
-    val loaded = (i18n * componentLoaded(UserLangComponent.UserPrivatePage)).emit()
-    if(!loaded) return@Div
 
     // Markup
     Vertical(verticalPageStyle) {
         Wrap {
             Horizontal(styles = { justifyContent(JustifyContent.SpaceBetween); width(100.percent) }) {
-                H1 { Text((texts * title).emit()) }
+                PageTitle(texts * title)
                 Horizontal {
                     StdButton(
                         buttons * changePassword * title,
