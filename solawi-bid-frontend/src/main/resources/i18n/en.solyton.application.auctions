@@ -1,0 +1,32 @@
+en {
+    solyton {
+        application {
+            auctions{
+                title: "Autions"
+                description: "Do auctions"
+                modules {
+                    auctionManagement {
+                        title: "Auction Management"
+                        description: "Manage auctions"
+                    }
+                    organizationManagement {
+                        title: "Organization Management"
+                        description: "Manage organzations, departments or teams"
+                    }
+                    financialTooling {
+                        title: "Financial Tooling"
+                        description: "Financial tooling"
+                    }
+                    organizationToProsumerCommunication {
+                        title: "Organization To Member Communication"
+                        description: "Communicate to the members of the organization"
+                    }
+                    consensingTools {
+                        title: "Consensing Tools"
+                        description: "Consensing Tools"
+                    }
+                }
+            }
+        }
+    }
+}

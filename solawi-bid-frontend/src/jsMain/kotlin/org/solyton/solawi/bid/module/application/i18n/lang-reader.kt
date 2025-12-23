@@ -3,6 +3,8 @@ package org.solyton.solawi.bid.module.application.i18n
 import org.evoleq.language.Lang
 import org.evoleq.language.subComp
 import org.evoleq.math.Reader
+import org.evoleq.math.times
+import org.solyton.solawi.bid.application.ui.page.application.i18n.camelCase
 
 val name: Reader<Lang.Block, Lang.Block> = subComp("name")
 val inputs: Reader<Lang.Block, Lang.Block> = subComp("inputs")
@@ -29,4 +31,12 @@ object Component {
     val editRole: Reader<Lang.Block, Lang.Block> = subComp("editRole")
     val editRight: Reader<Lang.Block, Lang.Block> = subComp("editRight")
     val editContext: Reader<Lang.Block, Lang.Block> = subComp("editContext")
+
 }
+
+fun application(key: String): Reader<Lang.Block, Lang.Block> = subComp(key.camelCase())
+fun module(appKey: String, moduleKey: String): Reader<Lang.Block, Lang.Block> =
+    subComp(appKey.camelCase()) *
+    Component.modules *
+    subComp(moduleKey.camelCase())
+

@@ -30,10 +30,11 @@ suspend fun Environment.componentOnDemand(langComponent: LangComponent, lang: La
     }
     val componentBaseBath = langComponent.value
     val loadedComponent = readLang("$locale.$componentBaseBath") as Lang.Block
+    val mergedLang = lang.merge(loadedComponent)
 
     return ComponentLookup(
         loadedComponent,
-        lang.merge(loadedComponent),
+        mergedLang,
         true
     )
 }
