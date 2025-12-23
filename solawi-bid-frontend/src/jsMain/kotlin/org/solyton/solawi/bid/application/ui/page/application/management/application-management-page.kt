@@ -27,8 +27,9 @@ import org.solyton.solawi.bid.application.data.transform.application.management.
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
-import org.solyton.solawi.bid.application.ui.page.application.i18n.BASE_PATH
+import org.solyton.solawi.bid.module.application.data.management.applicationManagementModals
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
+import org.solyton.solawi.bid.module.application.i18n.BASE_PATH
 import org.solyton.solawi.bid.module.application.i18n.Component
 import org.solyton.solawi.bid.module.application.i18n.application
 import org.solyton.solawi.bid.module.application.i18n.module
@@ -49,7 +50,6 @@ import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.action.organization.readOrganizations
 import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsAction
-import org.solyton.solawi.bid.module.application.data.management.applicationManagementModals
 import org.solyton.solawi.bid.module.user.data.userActions
 
 

@@ -1,8 +1,9 @@
 package org.solyton.solawi.bid.application.ui.page.application.i18n
 
 import org.evoleq.language.LangComponent
+import org.solyton.solawi.bid.module.application.i18n.BASE_PATH
+import org.solyton.solawi.bid.module.application.i18n.camelCase
 
-const val BASE_PATH = "solyton.application"
 
 sealed class ApplicationLangComponent(override val path: String, override val value: String = BASE_PATH) : LangComponent {
     data object PrivateApplicationManagementPage : ApplicationLangComponent(
@@ -27,7 +28,3 @@ sealed class ApplicationLangComponent(override val path: String, override val va
     )
 
 }
-
-fun String.camelCase() = split("_").mapIndexed { index, s ->
-    if(index==0) s.lowercase() else s.first().uppercase() + s.drop(1).lowercase()
-}.joinToString("")
