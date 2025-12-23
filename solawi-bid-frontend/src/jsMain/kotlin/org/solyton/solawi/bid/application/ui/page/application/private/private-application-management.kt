@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.guard.data.isLoading
 import org.evoleq.compose.guard.data.onNullLaunch
+import org.evoleq.compose.guard.data.withLoading
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.component
 import org.evoleq.language.subComp
@@ -14,7 +15,6 @@ import org.evoleq.math.times
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.transform.times
-import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Li
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.dom.Ul
@@ -29,23 +29,23 @@ import org.solyton.solawi.bid.module.application.action.connectApplicationToOrga
 import org.solyton.solawi.bid.module.application.component.modal.showConnectApplicationToOrganizationModule
 import org.solyton.solawi.bid.module.application.data.LifecycleStage
 import org.solyton.solawi.bid.module.application.data.management.actions
+import org.solyton.solawi.bid.module.application.data.management.applicationManagementModals
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
+import org.solyton.solawi.bid.module.loading.component.Loading
 import org.solyton.solawi.bid.module.permissions.service.contextFromPath
 import org.solyton.solawi.bid.module.user.action.organization.readOrganizations
 import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsAction
 import org.solyton.solawi.bid.module.user.data.user
 import org.solyton.solawi.bid.module.user.data.user.organizations
-import org.solyton.solawi.bid.module.application.data.management.applicationManagementModals
 import org.solyton.solawi.bid.module.user.data.userActions
 
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun PrivateApplicationManagementPage(storage: Storage<Application>) = Div {
-
-    if(isLoading(
+fun PrivateApplicationManagementPage(storage: Storage<Application>) = withLoading(
+    isLoading = isLoading(
         onNullLaunch(
             storage * availablePermissions * contextFromPath("APPLICATION"),
         ){
@@ -61,8 +61,9 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) = Div {
                 i18n = (storage * i18N)
             )
         }
-    )) return@Div
-
+    ),
+    onLoading = { Loading() },
+){
     LaunchedEffect(Unit) {
         launch {
             (storage * userIso * userActions).dispatch(readOrganizations())
