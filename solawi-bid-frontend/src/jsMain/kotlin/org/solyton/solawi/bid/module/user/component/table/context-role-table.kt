@@ -7,6 +7,7 @@ import org.evoleq.language.subComp
 import org.evoleq.language.title
 import org.evoleq.math.Source
 import org.evoleq.math.emit
+import org.evoleq.math.search
 import org.evoleq.math.times
 import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.lens.times
@@ -20,12 +21,14 @@ import org.jetbrains.compose.web.dom.*
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.ListStyles
 import org.solyton.solawi.bid.module.permissions.data.Context
+import org.solyton.solawi.bid.module.permissions.data.children
 import org.solyton.solawi.bid.module.permissions.data.contexts
 import org.solyton.solawi.bid.module.permissions.service.readableName
 import org.solyton.solawi.bid.module.user.data.Application
 import org.solyton.solawi.bid.module.user.data.availablePermissions
 import org.solyton.solawi.bid.module.user.data.managedUsers
 import org.solyton.solawi.bid.module.user.data.user
+import org.solyton.solawi.bid.module.user.data.user.organizations
 import org.solyton.solawi.bid.module.user.data.user.permissions
 import org.solyton.solawi.bid.module.user.data.managed.permissions as managedPermissions
 
@@ -80,28 +83,44 @@ fun ListUserPermissions (application: Storage<Application>, texts: Source<Lang.B
     val columns = texts * subComp("columns")
     val listStyles = ListStyles()
         .modifyListItemWrapper { width(100.percent) }
-        // .modifyDataWrapper { }
+    val userContexts = (application * user * permissions * contexts.get).emit()
+    val contextsToDisplay = (application * availablePermissions * contexts.get).emit().filter(userContexts)
+
+    val organizations = application * user * organizations.get
+
+    val nameExtensions = userContexts.map {
+        it.contextId to it.contextName.split(".")
+    }.associate { (contextId, contextNameParts) ->
+        contextId to when {
+            contextNameParts.size == 1 -> contextNameParts.first()
+            else -> {
+                val organizationId = contextNameParts.last()
+                val contextName = contextNameParts.first()
+
+                organizations.emit().search { it.organizationId == organizationId }?.let { organization ->
+                    organization.name + " / " + contextName
+                } ?: contextName
+            }
+        }
+    }
+
+    // nameExtensions.forEach{ println(it) }
+
     ListWrapper {
         TitleWrapper { Title { H2{Text((texts * title).emit())} } }
         HeaderWrapper { Header {
-            HeaderCell((columns * subComp("context") * title).emit()){
+            HeaderCell(columns * subComp("context") * title){
                 width(50.percent)
             }
-            HeaderCell((columns * subComp("roles") * title).emit()){
+            HeaderCell(columns * subComp("roles") * title){
                 width(25.percent)
             }
-            HeaderCell((columns * subComp("rights") * title).emit()){
+            HeaderCell(columns * subComp("rights") * title){
                 width(25.percent)
             }
         }}
-        /**/
-        val userContexts = (application * user * permissions * contexts.get).emit()
-        (application * availablePermissions * contexts.get).emit()
-            .filter(userContexts)
-            .forEach{ context -> UserItems(listStyles, context, userContexts, allRoles) }
-        /**/
-        //val userContexts = (application * user * permissions * contexts.get).emit()
-        //userContexts.forEach{ context -> UserItems(listStyles, context, userContexts, allRoles) }
+
+        contextsToDisplay.sortedBy { nameExtensions[it.contextId] }.forEach{ context -> UserItems(listStyles, context, userContexts, nameExtensions, allRoles) }
     }
 }
 
@@ -109,24 +128,25 @@ fun List<Context>.filter(userContexts: List<Context>): List<Context>  {
     return filter{ context ->
         userContexts.any { it.contextId == context.contextId } ||
         context.children.filter(userContexts).isNotEmpty()
+        // context.children.map{ it.copy(children = it.children.filter(userContexts)) }.isNotEmpty()
     }
 }
 
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun UserItems(listStyles: ListStyles, context: Context, userContexts: List<Context>, allRoles: Boolean = false, deepth: Int = 0) {
+fun UserItems(listStyles: ListStyles, context: Context, userContexts: List<Context>,nameExtensions: Map<String, String>, allRoles: Boolean = false, deepth: Int = 0) {
     ListItemWrapper(listStyles.listItemWrapper) {
         DataWrapper {
             val offset = (deepth * 2.5)
             Div({style { width(offset.percent); color(Color.transparent) }}){ "-" }
-            TextCell( context.contextName ){ //.readableName()
+            TextCell( nameExtensions[context.contextId]!! ){ //.readableName()
                 width((50 - offset).percent)
             }
             val userContext = userContexts.first{ c -> c.contextId == context.contextId }
             val userRoles = when(allRoles) {
                 true -> context.roles
-                false -> userContext.roles // context.roles.filter { it.roleId in userContext.roles.map { r -> r.roleId } }
+                false -> userContext.roles.filter { it.rights.isNotEmpty() } // context.roles.filter { it.roleId in userContext.roles.map { r -> r.roleId } }
             }
             TextCell(userRoles.joinToString(", ") { it.roleName }) {
                 width(25.percent)
@@ -138,8 +158,8 @@ fun UserItems(listStyles: ListStyles, context: Context, userContexts: List<Conte
             }
         }
     }
-    context.children.filter(userContexts).forEach {
-        context -> UserItems(listStyles, context, userContexts,allRoles, deepth + 1)
+    context.children.filter(userContexts).sortedBy { nameExtensions[it.contextId] }.forEach {
+        context -> UserItems(listStyles, context, userContexts, nameExtensions, allRoles, deepth + 1)
     }
 }
 

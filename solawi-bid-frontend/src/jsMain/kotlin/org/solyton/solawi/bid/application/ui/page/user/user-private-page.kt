@@ -1,8 +1,13 @@
 package org.solyton.solawi.bid.application.ui.page.user
 
 import androidx.compose.runtime.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.guard.data.isLoading
+import org.evoleq.compose.guard.data.onEmpty
+import org.evoleq.compose.guard.data.onNullLaunch
 import org.evoleq.compose.guard.data.withLoading
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Property
@@ -16,6 +21,7 @@ import org.evoleq.math.Reader
 import org.evoleq.math.emit
 import org.evoleq.math.times
 import org.evoleq.optics.storage.Storage
+import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.JustifyContent
 import org.jetbrains.compose.web.css.justifyContent
@@ -39,15 +45,21 @@ import org.solyton.solawi.bid.module.i18n.data.componentLoaded
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
 import org.solyton.solawi.bid.module.loading.component.Loading
+import org.solyton.solawi.bid.module.permissions.service.contextFromPath
 import org.solyton.solawi.bid.module.style.page.PageTitle
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
+import org.solyton.solawi.bid.module.user.action.organization.readOrganizations
+import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsAction
 import org.solyton.solawi.bid.module.user.component.modal.showChangePasswordModal
 import org.solyton.solawi.bid.module.user.component.table.ListUserPermissions
 import org.solyton.solawi.bid.module.user.data.api.ChangePassword
 import org.solyton.solawi.bid.module.user.data.user.password
 import org.solyton.solawi.bid.module.user.data.reader.*
+import org.solyton.solawi.bid.module.user.data.user
+import org.solyton.solawi.bid.module.user.data.user.organizations
 import org.solyton.solawi.bid.module.user.data.user.username
+import org.solyton.solawi.bid.module.user.data.userActions
 
 @Markup
 @Composable
@@ -64,6 +76,32 @@ fun PrivateUserPage(storage: Storage<Application>) = withLoading(
                 i18n = (storage * i18N)
             )
         },
+        onNullLaunch(
+            storage * availablePermissions * contextFromPath("APPLICATION"),
+        ) {
+            CoroutineScope(Job()).launch {
+                (storage * userIso * userActions).dispatch(readUserPermissionsAction())
+            }
+        },
+        onEmpty(
+            storage * userIso * user * organizations.get
+        ) {
+            LaunchedEffect(Unit) {
+                launch {
+                    (storage * userIso * userActions).dispatch(readOrganizations())
+                }
+            }
+        },/*
+        onEmpty(
+            storage * availableApplications.get
+        ) {
+            LaunchedEffect(Unit) {
+                launch {
+                    (storage * appIsl).dispatch(readOrganizations())
+                }
+            }
+        }
+        */
     ),
     onLoading = {Loading()}
 ) {
