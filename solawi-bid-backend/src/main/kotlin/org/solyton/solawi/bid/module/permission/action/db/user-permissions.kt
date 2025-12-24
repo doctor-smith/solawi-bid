@@ -137,65 +137,76 @@ fun Transaction.readParentChildRelationsOfContexts(parentChildRelationsOfContext
 }
 
 /**
- * Returns a complete list of cumulated right-role-contexts [Context] of a user
- * Note:
- * - structure is flat: no parent-child structure of contexts is established
+ * Retrieves a list of contexts with their associated roles and rights for a specific user.
+ *
+ * The method processes the user's role assignments across different contexts, fetches the associated
+ * rights for those roles within the relevant contexts, and constructs a hierarchical model of
+ * contexts, roles, and rights.
+ *
+ * But Note:
+ * The returned structure is flat: no parent-child structure of contexts is established
+ *
+ * @param userId The unique identifier of the user for whom to retrieve role and right contexts.
+ * @return A list of Context objects, each containing roles with their associated rights for the user.
  */
 fun Transaction.getRoleRightContexts(userId: UUID): List<Context> {
-    val userRoleContexts = UserRoleContext.selectAll().where {
-        UserRoleContext.userId eq userId
-    }.map { Pair(it[UserRoleContext.roleId].value, it[UserRoleContext.contextId].value)  }.toList()
+    // 1. Get all role-context assignments of the user
+    val userAssignments = UserRoleContext.selectAll()
+        .where { UserRoleContext.userId eq userId }
+        .map { it[UserRoleContext.roleId].value to it[UserRoleContext.contextId].value }
 
-    val contextIds = userRoleContexts.map { it.second }.distinct()
-    val roleIds = userRoleContexts.map { it.first }.distinct()
+    if (userAssignments.isEmpty()) return emptyList()
 
-    val roleRightContexts = RoleRightContexts.selectAll().where {
-        (RoleRightContexts.contextId inList contextIds) and
-        (RoleRightContexts.roleId inList roleIds)
-    }.map {
-        Triple(it[RoleRightContexts.roleId].value, it[RoleRightContexts.contextId].value,  it[RoleRightContexts.rightId].value)
-    }.filter { Pair(it.first, it.second) in userRoleContexts }
+    val uniqueContextIds = userAssignments.map { it.second }.distinct()
+    val uniqueRoleIds = userAssignments.map { it.first }.distinct()
 
-    val rightIds = roleRightContexts.map { it.third }.distinct()
+    // 2. Get all relevant relations between roles, rights and contexts
+    // -> Structure of the returned triples: (RoleId, ContextId, RightId)
+    val roleRightContextRelations = RoleRightContexts.selectAll()
+        .where { (RoleRightContexts.contextId inList uniqueContextIds) and (RoleRightContexts.roleId inList uniqueRoleIds) }
+        .map {
+            Triple(it[RoleRightContexts.roleId].value, it[RoleRightContexts.contextId].value, it[RoleRightContexts.rightId].value)
+        }
+        .filter { (roleId, contextId, _) -> (roleId to contextId) in userAssignments }
 
-    val rights = RightEntity.find{
-        RightsTable.id inList rightIds
-    }.toList()
+    // 3. Prepare data models and Lookup-Maps
+    val rightIds = roleRightContextRelations.map { it.third }.distinct()
+    val rightModelsById = RightEntity.find { RightsTable.id inList rightIds }
+        .associate { it.id.value to Right(it.id.value.toString(), it.name, it.description) }
 
-    val roles: List<RoleEntity> = RoleEntity.find {
-        RolesTable.id inList roleIds
-    }.toList()
+    val roleEntitiesById = RoleEntity.find { RolesTable.id inList uniqueRoleIds }
+        .associateBy { it.id.value }
 
-    val contexts =  ContextEntity
-        .find { ContextsTable.id inList contextIds }.toList()
-        .map { context -> Context(
-            context.id.value.toString(),
-            context.name,
-            roles.filter{ role: RoleEntity ->
-                userRoleContexts.any {
-                    pair -> pair.second == context.id.value && pair.first == role.id.value
-                }
-            }.map { role ->
+    // Group rights w.r.t. roles and contexts: Map<(ContextId, RoleId), List<Right>>
+    val rightsMap = roleRightContextRelations.groupBy(
+        keySelector = { (roleId, contextId, _) -> contextId to roleId },
+        valueTransform = { (_, _, rightId) -> rightModelsById[rightId] }
+    ).mapValues { it.value.filterNotNull() }
+
+    // 4. Build the final structure
+    return ContextEntity.find { ContextsTable.id inList uniqueContextIds }.map { contextEntity ->
+        val currentContextId = contextEntity.id.value
+
+        // Find all context-specific roles of the user
+        val rolesForThisContext = userAssignments
+            .filter { (_, contextId) -> contextId == currentContextId }
+            .mapNotNull { (roleId, _) -> roleEntitiesById[roleId] }
+            .map { roleEntity ->
+                val currentRoleId = roleEntity.id.value
                 Role(
-                    role.id.value.toString(),
-                    role.name,
-                    role.description,
-                    rights.filter { right -> roleRightContexts.any{ triple ->
-                        triple.first == role.id.value &&
-                        triple.second == context.id.value &&
-                        triple.third == right.id.value
-                    }  }.map { right ->
-                        Right(
-                            right.id.value.toString(),
-                            right.name,
-                            right.description
-                        )
-                    }
+                    id = currentRoleId.toString(),
+                    name = roleEntity.name,
+                    description = roleEntity.description,
+                    rights = rightsMap[currentContextId to currentRoleId].orEmpty()
                 )
             }
+
+        Context(
+            id = currentContextId.toString(),
+            name = contextEntity.name,
+            roles = rolesForThisContext
         )
     }
-    return contexts
 }
 
 /**
@@ -262,6 +273,7 @@ fun Transaction.getRoleRightContexts(userIds: List<UUID>): Map<UUID, List<Contex
         contexts.filter { context -> userRoleContexts.any { it.second == UUID.fromString(context.id) && it.third == userId } }
     }
 }
+
 
 fun Transaction.getRolesAndRights(userIds: List<UUID>, contextId: UUID): Map<String, List<Role>> {
     val userRoles = UserRoleContext.selectAll().where {
