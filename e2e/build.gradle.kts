@@ -10,10 +10,10 @@ repositories {
 
 dependencies {
     testImplementation(project(":solawi-bid-backend"))
-    testImplementation("com.microsoft.playwright:playwright:1.51.0")
+    testImplementation(libs.microsoft.playwright)
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.jupiter.v581)
 }
 
 java {
