@@ -10,6 +10,7 @@ evoleq-api = "0.0.1"
 h2 = "2.2.220"
 java-jwt = "4.0.0"
 jjwt = "0.11.5"
+junitJupiter = "5.8.1"
 jupiter = "5.9.3"
 kotlin = "2.1.0"#
 kotlin-serialization-json="1.6.3"
@@ -24,6 +25,7 @@ ktor-client-core="2.3.12"
 logback = "1.5.13"
 mindrot-jbcrypt = "0.4"
 mysql-connector = "8.0.33"
+playwright = "1.51.0"
 shadow = "8.1.0"
 sl4j = "2.0.7"
 solawi = "1.0.4"
@@ -46,6 +48,7 @@ jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
 jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "jupiter"}
 
+junit-jupiter-v581 = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junitJupiter" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 kotlin-test-js = { module = "org.jetbrains.kotlin:kotlin-test-js", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines-core" }
@@ -72,6 +75,7 @@ ktor-http = { module = "io.ktor:ktor-http", version.ref = "ktor"}
 ktor-http-cio = { module = "io.ktor:ktor-http-cio", version.ref = "ktor"}
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 mindrot-jbcrypt = { module = "org.mindrot:jbcrypt", version.ref = "mindrot-jbcrypt" }
+microsoft-playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
 mysql-connector-java = { module = "mysql:mysql-connector-java", version.ref = "mysql-connector" }
 slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "sl4j"}
 
