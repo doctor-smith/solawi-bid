@@ -1,7 +1,8 @@
 package org.evoleq.math
 
-interface Children<T> {
+interface Children<T>{
     val getChildren: () -> List<T>
+    val setChildren: (List<T>) -> T
 }
 
 fun <T : Children<T>> T.search(predicate: (T) -> Boolean, children: List<T> = this.getChildren()): T? = when {

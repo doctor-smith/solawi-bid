@@ -34,6 +34,7 @@ import org.solyton.solawi.bid.application.ui.page.test.MobileTestPage
 import org.solyton.solawi.bid.application.ui.page.test.TestButtonsPage
 import org.solyton.solawi.bid.application.ui.page.test.TestPage
 import org.solyton.solawi.bid.application.ui.page.user.OrganizationManagementPage
+import org.solyton.solawi.bid.application.ui.page.user.OrganizationPage
 import org.solyton.solawi.bid.application.ui.page.user.PrivateUserPage
 import org.solyton.solawi.bid.application.ui.page.user.UserManagementPage
 import org.solyton.solawi.bid.module.navbar.action.logoutAction
@@ -144,6 +145,14 @@ fun Routing(storage: Storage<Application>): Routes = Routing("/") {
                         OrganizationManagementPage(
                             storage * userIso
                         )
+                    }
+                    route(":organizationId") {
+                        component {
+                            OrganizationPage(
+                                storage * userIso,
+                                parameter("organizationId")!!
+                            )
+                        }
                     }
                 }
             }

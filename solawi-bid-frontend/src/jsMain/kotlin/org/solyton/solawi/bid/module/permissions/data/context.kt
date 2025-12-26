@@ -6,6 +6,7 @@
 // lens generator. See below for more details.
 package org.solyton.solawi.bid.module.permissions.data
 
+import org.evoleq.identity.Identity
 import org.evoleq.math.Children
 import org.evoleq.optics.Lensify
 import org.evoleq.optics.ReadWrite
@@ -25,10 +26,12 @@ import org.evoleq.optics.lens.Lens
     @ReadWrite val contextId: String = "",
     @ReadWrite val contextName: String = "",
     @ReadWrite val roles: List<Role> = listOf(),
-    @ReadWrite val children: List<Context> = listOf()
-) : Children<Context> {
-    override val getChildren: () -> List<Context>
-        get() = {children}
+    @ReadWrite val children: List<Context> = listOf(),
+) : Children<Context>, Identity<String> {
+    override val getChildren: () -> List<Context> = {children}
+    override val setChildren: (List<Context>) -> Context = {list ->copy(children = list)}
+    override val getIdentity: () -> String = {contextId}
+
 }
 
 /**

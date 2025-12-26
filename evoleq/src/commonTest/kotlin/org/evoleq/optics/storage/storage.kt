@@ -4,7 +4,9 @@ import org.evoleq.math.*
 
 import org.evoleq.optics.P
 import org.evoleq.optics.W
+import org.evoleq.optics.lens.IdLens
 import org.evoleq.optics.lens.Lens
+import org.evoleq.optics.lens.LensType
 import org.evoleq.optics.transform.merge
 import org.evoleq.optics.transform.times
 import org.evoleq.optics.transform.timesW
@@ -151,4 +153,37 @@ class StorageTest {
 
     }
 
+    @Test
+    fun composeStorageWithStdLensType() {
+        var w: W = W(0, P(""))
+        val storage = Storage<W>(
+            {w},
+            {w = it}
+        )
+        val pLens = Lens<W, P>(
+            {whole -> whole.p},
+            {part -> {whole -> whole.copy(p = part)}}
+        ) as LensType<W, P>
+
+        val combined = storage * pLens
+
+        combined.write(P("flo"))
+        assertEquals("flo", storage.read().p.name)
+
+
+    }
+    @Test
+    fun composeStorageWithIdLensType() {
+        var w: W = W(0, P(""))
+        val storage = Storage<W>(
+            {w},
+            {w = it}
+        )
+        val idLens = IdLens<W>()
+        val combined: Storage<W> = storage * idLens
+
+        val whole = W(1,P("flo"))
+        combined.write(whole)
+        assertEquals(whole, storage.read())
+    }
 }

@@ -9,6 +9,7 @@ import org.evoleq.compose.guard.data.isLoading
 import org.evoleq.compose.guard.data.onNullLaunch
 import org.evoleq.compose.guard.data.withLoading
 import org.evoleq.compose.layout.Horizontal
+import org.evoleq.compose.routing.navigate
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.component
 import org.evoleq.language.subComp
@@ -236,8 +237,7 @@ fun OrganizationItems(listStyles: ListStyles, organizations: Lens<Application, L
                 storage * deviceData * mediaType.get,
                 (storage * isNotGranted(OrganizationRight.Organization.read, organizationContextId, )).emit(),
             ) {
-
-                console.log("Details button clicked")
+                navigate("/app/management/organizations/$organizationId")
             }
 
             var updateOrganization by remember{ mutableStateOf(
