@@ -16,4 +16,6 @@ sealed class OrganizationLangComponent(
     override val value: String = ORGANIZATION_BASE_PATH
 ) : LangComponent {
     data object OrganizationManagementPage : OrganizationLangComponent("$ORGANIZATION_BASE_PATH.managementPage")
+
+    data object OrganizationPage : OrganizationLangComponent("$ORGANIZATION_BASE_PATH.organizationPage")
 }

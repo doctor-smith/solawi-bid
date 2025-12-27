@@ -65,6 +65,43 @@ de {
                         emptyName: "Name darf nicht leer sein"
                     }
                 }
+                organizationPage {
+                    title: "Organization"
+                    subTitle: "trelala"
+                    actions {
+                        navToManagementPage {
+                            tooltip: "Goto Organization Overview"
+                        }
+                    }
+                    listOfMembers {
+                        title: "Mitglieder"
+                        headers {
+                            standard {
+                                title: "Standard"
+                                username {
+                                    title: "Nutzername"
+                                }
+                                roles {
+                                    title: "Rollen"
+                                }
+                            }
+                            userProfile {
+                                title: "Nutzerprofil"
+                                name {
+                                    title: "Name"
+                                }
+                                address {
+                                    title: "Adresse"
+                                }
+                            }
+                        }
+                        actions {
+                            edit {
+                                tooltip: "Mitglied bearbeiten"
+                            }
+                        }
+                    }
+                }
             }
         }
     }
