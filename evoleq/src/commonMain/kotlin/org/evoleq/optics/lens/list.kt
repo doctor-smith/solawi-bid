@@ -43,7 +43,7 @@ fun <T> FirstBy(predicate: (T) -> Boolean): Lens<List<T>, T> {
  *         of type `T` or `null` if none is found.
  */
 @Suppress("FunctionName")
-fun <T: Children<T>> DeepRead(predicate: (Children<*>) -> Boolean): Reader<List<T>, T?> = {
+fun <T: Children<T>> DeepRead(predicate: (T) -> Boolean): Reader<List<T>, T?> = {
     list:List<T> -> when{
         list.isEmpty() -> null
         else -> {
