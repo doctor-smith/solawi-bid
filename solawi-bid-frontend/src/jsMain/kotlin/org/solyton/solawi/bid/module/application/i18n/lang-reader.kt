@@ -19,6 +19,7 @@ object Component {
     val actions: Reader<Lang.Block, Lang.Block> = subComp("actions")
     val action: Reader<Lang.Block, Lang.Block> = subComp("action")
     val details: Reader<Lang.Block, Lang.Block> = subComp("details")
+    val linkedOrganizations: Reader<Lang.Block, Lang.Block> = subComp("linkedOrganizations")
     val role: Reader<Lang.Block, Lang.Block> = subComp("role")
     val roles: Reader<Lang.Block, Lang.Block> = subComp("roles")
     val rights: Reader<Lang.Block, Lang.Block> = subComp("rights")

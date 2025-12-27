@@ -14,6 +14,9 @@ en {
                             modules {
                                 title: "Modules"
                             }
+                            linkedOrganizations {
+                                title: "Linked Organizations"
+                            }
                         }
                         actions {
                             connectApplication {

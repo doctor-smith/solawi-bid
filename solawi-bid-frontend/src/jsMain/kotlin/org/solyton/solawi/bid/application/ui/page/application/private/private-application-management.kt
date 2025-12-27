@@ -11,13 +11,14 @@ import org.evoleq.compose.guard.data.onNullLaunch
 import org.evoleq.compose.guard.data.withLoading
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.device.data.mediaType
-import org.evoleq.device.data.screenWidth
 import org.evoleq.language.component
 import org.evoleq.language.subComp
 import org.evoleq.language.subTitle
 import org.evoleq.language.title
 import org.evoleq.language.tooltip
+import org.evoleq.math.emit
 import org.evoleq.math.times
+import org.evoleq.optics.lens.DeepRead
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.transform.times
@@ -26,10 +27,6 @@ import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.alignSelf
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.width
-import org.jetbrains.compose.web.dom.H1
-import org.jetbrains.compose.web.dom.Li
-import org.jetbrains.compose.web.dom.Text
-import org.jetbrains.compose.web.dom.Ul
 import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.data.env.i18nEnvironment
 import org.solyton.solawi.bid.application.data.transform.application.import
@@ -38,13 +35,16 @@ import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
 import org.solyton.solawi.bid.module.application.action.connectApplicationToOrganization
+import org.solyton.solawi.bid.module.application.action.readApplicationContextRelations
 import org.solyton.solawi.bid.module.application.action.readApplications
+import org.solyton.solawi.bid.module.application.action.readPersonalApplicationOrganizationContextRelations
 import org.solyton.solawi.bid.module.application.component.modal.showConnectApplicationToOrganizationModule
 import org.solyton.solawi.bid.module.application.data.LifecycleStage
 import org.solyton.solawi.bid.module.application.data.management.actions
 import org.solyton.solawi.bid.module.application.data.management.applicationManagementActions
 import org.solyton.solawi.bid.module.application.data.management.applicationManagementModals
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
+import org.solyton.solawi.bid.module.application.data.management.personalApplicationContextRelations
 import org.solyton.solawi.bid.module.application.i18n.Component
 import org.solyton.solawi.bid.module.application.i18n.application
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
@@ -60,7 +60,6 @@ import org.solyton.solawi.bid.module.list.component.ListItemWrapper
 import org.solyton.solawi.bid.module.list.component.ListItems
 import org.solyton.solawi.bid.module.list.component.ListWrapper
 import org.solyton.solawi.bid.module.list.component.TextCell
-import org.solyton.solawi.bid.module.list.component.Title
 import org.solyton.solawi.bid.module.list.component.TitleWrapper
 import org.solyton.solawi.bid.module.list.style.defaultListStyles
 import org.solyton.solawi.bid.module.loading.component.Loading
@@ -76,6 +75,7 @@ import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsA
 import org.solyton.solawi.bid.module.user.data.user
 import org.solyton.solawi.bid.module.user.data.user.organizations
 import org.solyton.solawi.bid.module.user.data.userActions
+import kotlin.with
 
 @Markup
 @Composable
@@ -91,6 +91,27 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) = withLoadin
             CoroutineScope(Job()).launch {
                 (storage * applicationManagementModule * applicationManagementActions).dispatch(
                     readApplications
+                )
+            }
+        },
+        onEmpty(storage * applicationManagementModule * personalApplicationContextRelations.get) {
+            CoroutineScope(Job()).launch {
+                (storage * applicationManagementModule * applicationManagementActions).dispatch(
+                    readApplicationContextRelations
+                )
+            }
+        },
+        onEmpty(storage * applicationManagementModule * applicationOrganizationRelations.get) {
+            CoroutineScope(Job()).launch {
+                (storage * applicationManagementModule * applicationManagementActions).dispatch(
+                    readPersonalApplicationOrganizationContextRelations()
+                )
+            }
+        },
+        onEmpty(storage * userIso * user * organizations.get) {
+            CoroutineScope(Job()).launch {
+                (storage * userIso * userActions).dispatch(
+                    readOrganizations()
                 )
             }
         },
@@ -119,11 +140,6 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) = withLoadin
     ),
     onLoading = { Loading() },
 ){
-    LaunchedEffect(Unit) {
-        launch {
-            (storage * userIso * userActions).dispatch(readOrganizations())
-        }
-    }
 
     val device = storage * deviceData * mediaType.get
     val base = storage * i18N * language * Component.base
@@ -134,6 +150,15 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) = withLoadin
     val organizations = storage * userIso * user * organizations
     val modals = storage * applicationManagementModule * applicationManagementModals
 
+    val organizationRelations = storage * applicationManagementModule * applicationOrganizationRelations
+
+    val mapOfLinkedOrganizations = personalApplications.read().associate { application ->
+        application.id to organizationRelations.read()
+            .filter { it.applicationId == application.id }
+            .mapNotNull { relation -> (organizations * DeepRead { org -> org.organizationId == relation.organizationId }).emit() }
+    }
+
+    // state
     var organizationId by remember { mutableStateOf("") }
 
     Page(verticalPageStyle) {
@@ -151,6 +176,12 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) = withLoadin
                 HeaderCell(
                     texts * with(Component){listOfApplications * headers * application} * title
                 ){ width(40.percent) }
+                HeaderCell("Status") {
+                    width(5.percent)
+                }
+                HeaderCell(texts * with(Component){listOfApplications * headers * linkedOrganizations} * title) {
+                    width(35.percent)
+                }
             }
         }
         ListItems(personalApplications) { application ->
@@ -159,6 +190,10 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) = withLoadin
                     TextCell(
                     base * application(application.name) * title
                     ) { width(40.percent) }
+                    TextCell(application.state.toString()) { width(5.percent) }
+                    TextCell(mapOfLinkedOrganizations[application.id]?.joinToString(", ") { it.name }?:""){
+                        width(35.percent)
+                    }
                 }
                 ActionsWrapper({
                     defaultListStyles.actionsWrapper(this)
