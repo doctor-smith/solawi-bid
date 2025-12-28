@@ -24,3 +24,24 @@ fun <T> ListItems(
         item(it)
     }
 }
+
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun <T> ListItemsIndexed(
+    items: Storage<List<T>>,
+    item: @Composable (Int, T)->Unit
+) = ListItemsIndexed(items.read(), item)
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun <T> ListItemsIndexed(
+    items: List<T>,
+    item: @Composable (Int, T)->Unit
+) {
+    items.forEachIndexed() {index, item ->
+        item(index,item)
+    }
+}

@@ -25,7 +25,10 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.AlignSelf
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.alignSelf
+import org.jetbrains.compose.web.css.paddingRight
+import org.jetbrains.compose.web.css.paddingTop
 import org.jetbrains.compose.web.css.percent
+import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.width
 import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.data.env.i18nEnvironment
@@ -34,6 +37,7 @@ import org.solyton.solawi.bid.application.data.transform.application.management.
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
+import org.solyton.solawi.bid.application.ui.page.application.style.actionsWrapperStyle
 import org.solyton.solawi.bid.module.application.action.connectApplicationToOrganization
 import org.solyton.solawi.bid.module.application.action.readApplicationContextRelations
 import org.solyton.solawi.bid.module.application.action.readApplications
@@ -47,20 +51,12 @@ import org.solyton.solawi.bid.module.application.data.management.availableApplic
 import org.solyton.solawi.bid.module.application.data.management.personalApplicationContextRelations
 import org.solyton.solawi.bid.module.application.i18n.Component
 import org.solyton.solawi.bid.module.application.i18n.application
+import org.solyton.solawi.bid.application.ui.page.application.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
 import org.solyton.solawi.bid.module.control.button.ShareNodesButton
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
-import org.solyton.solawi.bid.module.list.component.ActionsWrapper
-import org.solyton.solawi.bid.module.list.component.DataWrapper
-import org.solyton.solawi.bid.module.list.component.Header
-import org.solyton.solawi.bid.module.list.component.HeaderCell
-import org.solyton.solawi.bid.module.list.component.HeaderWrapper
-import org.solyton.solawi.bid.module.list.component.ListItemWrapper
-import org.solyton.solawi.bid.module.list.component.ListItems
-import org.solyton.solawi.bid.module.list.component.ListWrapper
-import org.solyton.solawi.bid.module.list.component.TextCell
-import org.solyton.solawi.bid.module.list.component.TitleWrapper
+import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.defaultListStyles
 import org.solyton.solawi.bid.module.loading.component.Loading
 import org.solyton.solawi.bid.module.page.component.Page
@@ -75,6 +71,14 @@ import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsA
 import org.solyton.solawi.bid.module.user.data.user
 import org.solyton.solawi.bid.module.user.data.user.organizations
 import org.solyton.solawi.bid.module.user.data.userActions
+import kotlin.Suppress
+import kotlin.collections.associate
+import kotlin.collections.filter
+import kotlin.collections.joinToString
+import kotlin.collections.map
+import kotlin.collections.mapNotNull
+import kotlin.collections.toBooleanArray
+import kotlin.to
 import kotlin.with
 
 @Markup
@@ -171,7 +175,7 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) = withLoadin
         ListWrapper {
             TitleWrapper { Title("") {  } }
         }
-        HeaderWrapper {
+        HeaderWrapper{
             Header {
                 HeaderCell(
                     texts * with(Component){listOfApplications * headers * application} * title
@@ -184,8 +188,10 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) = withLoadin
                 }
             }
         }
-        ListItems(personalApplications) { application ->
-            ListItemWrapper {
+        ListItemsIndexed(personalApplications) { index, application ->
+            ListItemWrapper({
+                listItemWrapperStyle(this , index)
+            }) {
                 DataWrapper {
                     TextCell(
                     base * application(application.name) * title
@@ -196,8 +202,7 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) = withLoadin
                     }
                 }
                 ActionsWrapper({
-                    defaultListStyles.actionsWrapper(this)
-                    alignSelf(AlignSelf.FlexStart)
+                    actionsWrapperStyle(this)
                 }) {
                     ShareNodesButton(
                         Color.black,

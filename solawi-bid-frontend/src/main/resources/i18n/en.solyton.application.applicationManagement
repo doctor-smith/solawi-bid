@@ -19,7 +19,7 @@ en {
                     }
                     financialTooling {
                         title: "Financial Tooling"
-                        descriptions: "Financial Tools"
+                        description: "Financial Tools"
                     }
                 }
             }

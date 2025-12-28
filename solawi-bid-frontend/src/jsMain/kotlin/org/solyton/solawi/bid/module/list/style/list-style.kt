@@ -1,23 +1,6 @@
 package org.solyton.solawi.bid.module.list.style
 
-import org.jetbrains.compose.web.css.AlignItems
-import org.jetbrains.compose.web.css.DisplayStyle
-import org.jetbrains.compose.web.css.FlexDirection
-import org.jetbrains.compose.web.css.JustifyContent
-import org.jetbrains.compose.web.css.StyleScope
-import org.jetbrains.compose.web.css.alignItems
-import org.jetbrains.compose.web.css.display
-import org.jetbrains.compose.web.css.flexDirection
-import org.jetbrains.compose.web.css.gap
-import org.jetbrains.compose.web.css.height
-import org.jetbrains.compose.web.css.justifyContent
-import org.jetbrains.compose.web.css.marginBottom
-import org.jetbrains.compose.web.css.marginLeft
-import org.jetbrains.compose.web.css.marginRight
-import org.jetbrains.compose.web.css.marginTop
-import org.jetbrains.compose.web.css.percent
-import org.jetbrains.compose.web.css.px
-import org.jetbrains.compose.web.css.width
+import org.jetbrains.compose.web.css.*
 import org.solyton.solawi.bid.module.style.listItemGap
 
 val defaultListStyles: ListStyles by lazy { ListStyles() }
@@ -50,17 +33,22 @@ data class ListStyles (
     },
     val title: StyleScope.()-> Unit = {},
     val headerWrapper: StyleScope.()->Unit = {
-        justifyContent(JustifyContent.SpaceBetween)
+        //justifyContent(JustifyContent.SpaceBetween)
+        display(DisplayStyle.Flex)
+        flexDirection(FlexDirection.Row)
         alignItems(AlignItems.Center)
         width(100.percent)
     },
     val header: StyleScope.()->Unit = {
         display(DisplayStyle.Flex)
         flexDirection(FlexDirection.Row)
+        alignItems(AlignItems.FlexStart)
         width(80.percent)
-        marginLeft(20.px)
-        marginTop(10.px)
-        marginBottom(10.px)
+
+        paddingLeft(20.px)
+        paddingTop(10.px)
+        paddingBottom(10.px)
+
     },
     val listItemWrapper: StyleScope.()->Unit = {
         display(DisplayStyle.Flex)
@@ -72,16 +60,16 @@ data class ListStyles (
         display(DisplayStyle.Flex)
         flexDirection(FlexDirection.Row)
         width(80.percent)
-        marginTop(10.px)
-        marginBottom(10.px)
-        marginLeft(20.px)
+
+        paddingLeft(20.px)
+        paddingTop(10.px)
+        paddingBottom(10.px)
     },
     val actionsWrapper: StyleScope.()->Unit = {
         display(DisplayStyle.Flex)
         flexDirection(FlexDirection.Row)
         justifyContent(JustifyContent.End)
         width(20.percent)
-        marginRight(10.px)
         gap(2.px)
     }
 )  {

@@ -27,12 +27,14 @@ import org.solyton.solawi.bid.application.data.transform.application.management.
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
+import org.solyton.solawi.bid.application.ui.page.application.style.actionsWrapperStyle
 import org.solyton.solawi.bid.module.application.data.management.applicationManagementModals
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
 import org.solyton.solawi.bid.module.application.i18n.BASE_PATH
 import org.solyton.solawi.bid.module.application.i18n.Component
 import org.solyton.solawi.bid.module.application.i18n.application
 import org.solyton.solawi.bid.module.application.i18n.module
+import org.solyton.solawi.bid.application.ui.page.application.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.control.button.DetailsButton
 import org.solyton.solawi.bid.module.control.button.EditButton
 import org.solyton.solawi.bid.module.dialog.component.showDialogModal
@@ -124,8 +126,10 @@ fun ApplicationManagementPage(storage: Storage<Application>) = withLoading(
                     HeaderCell(applicationListHeaders * Component.modules * title) { width(40.percent) }
                 }
             }
-            ListItems(availableApplications) { application ->
-                ListItemWrapper {
+            ListItemsIndexed(availableApplications) { index, application ->
+                ListItemWrapper({
+                    listItemWrapperStyle(this, index)
+                }) {
                     DataWrapper {
                         TextCell(applicationTexts * application(application.name) * title) { width(40.percent) }
                         Div(attrs = {
@@ -153,8 +157,7 @@ fun ApplicationManagementPage(storage: Storage<Application>) = withLoading(
                         }
                     }
                     ActionsWrapper({
-                        defaultListStyles.actionsWrapper(this)
-                        alignSelf(AlignSelf.FlexStart)
+                        actionsWrapperStyle(this)
                     }) {
                         DetailsButton(
                             Color.black,
