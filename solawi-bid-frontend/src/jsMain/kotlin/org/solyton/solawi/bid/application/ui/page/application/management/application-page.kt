@@ -36,15 +36,18 @@ import org.solyton.solawi.bid.application.data.transform.application.management.
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
+import org.solyton.solawi.bid.application.ui.page.application.style.actionsWrapperStyle
 import org.solyton.solawi.bid.module.application.action.readApplicationContextRelations
 import org.solyton.solawi.bid.module.application.action.readApplications
 import org.solyton.solawi.bid.module.application.data.application.modules
+import org.solyton.solawi.bid.module.application.data.management.applicationManagementActions
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
 import org.solyton.solawi.bid.module.application.data.management.personalApplicationContextRelations
 import org.solyton.solawi.bid.module.application.i18n.Component
 import org.solyton.solawi.bid.module.application.i18n.Component.editContext
 import org.solyton.solawi.bid.module.application.i18n.application
 import org.solyton.solawi.bid.module.application.i18n.module
+import org.solyton.solawi.bid.application.ui.page.application.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.control.button.ArrowUpButton
 import org.solyton.solawi.bid.module.control.button.DetailsButton
 import org.solyton.solawi.bid.module.control.button.EditButton
@@ -61,7 +64,6 @@ import org.solyton.solawi.bid.module.style.page.SubTitle
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsAction
-import org.solyton.solawi.bid.module.application.data.management.applicationManagementActions
 import org.solyton.solawi.bid.module.user.data.userActions
 
 
@@ -173,8 +175,10 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
                     HeaderCell(listOfModules * Component.headers * Component.module * title) { width(40.percent) }
                 }
             }
-            ListItems(application * modules) { module ->
-                ListItemWrapper {
+            ListItemsIndexed(application * modules) { index, module ->
+                ListItemWrapper({
+                    listItemWrapperStyle(this, index)
+                }) {
                     DataWrapper {
                         TextCell(
                             applicationTexts *
@@ -184,8 +188,7 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
 
                     }
                     ActionsWrapper({
-                        defaultListStyles.actionsWrapper(this)
-                        alignSelf(AlignSelf.FlexStart)
+                        actionsWrapperStyle(this)
                     }) {
                         DetailsButton(
                             Color.black,
@@ -226,8 +229,10 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
                 }
             }
             if(defaultContext is Either.Right) {
-                ListItems(defaultContext.value.roles) { role ->
-                    ListItemWrapper {
+                ListItemsIndexed(defaultContext.value.roles) { index, role ->
+                    ListItemWrapper({
+                        listItemWrapperStyle(this, index)
+                    }) {
                         DataWrapper {
                             TextCell(role.roleName) { width(40.percent) }
                             Div({style {
@@ -247,8 +252,7 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
                             } }
                         }
                         ActionsWrapper({
-                            defaultListStyles.actionsWrapper(this)
-                            alignSelf(AlignSelf.FlexStart)
+                            actionsWrapperStyle(this)
                         }) {
                             EditButton(
                                 Color.black,
