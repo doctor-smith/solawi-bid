@@ -16,6 +16,7 @@ import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.actions
 import org.solyton.solawi.bid.application.data.context
 import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
+import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.page.user.action.READ_PARENT_CHILD_RELATIONS_OF_CONTEXT
 import org.solyton.solawi.bid.application.ui.page.user.action.READ_USER_PERMISSIONS
 import org.solyton.solawi.bid.application.ui.page.user.action.readParentChildRelationsOfContextsAction
@@ -31,6 +32,7 @@ import org.solyton.solawi.bid.module.application.permission.Context
 import org.solyton.solawi.bid.module.context.data.current
 import org.solyton.solawi.bid.module.permission.data.api.Contexts
 import org.solyton.solawi.bid.module.permission.data.api.ParentChildRelationsOfContexts
+import org.solyton.solawi.bid.module.user.action.permission.readPermissionsOfUsersAction
 
 
 @MathDsl
@@ -54,6 +56,7 @@ fun <S: Any, T: Any> React(action: Action<Application, S, T>): KlState<Storage<A
                     emit(applicationManagementModule * readApplicationContextRelations )
                     emit(applicationManagementModule * readModuleContextRelations)
                     emit(applicationManagementModule * readPersonalApplicationOrganizationContextRelations())
+                    // emit(userIso * readPermissionsOfUsersAction())
                 }
                 "${READ_PARENT_CHILD_RELATIONS_OF_CONTEXT}React" -> CoroutineScope(Job()).launch{
                     // console.log("Emitting readRightRoleContextsAction")

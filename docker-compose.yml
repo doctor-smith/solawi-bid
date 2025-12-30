@@ -60,8 +60,7 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./infrastructure/database/dump-clean.sql:/docker-entrypoint-initdb.d/setup.sql
-      # - ./infrastructure/database/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+      - ./infrastructure/database/setup.sql:/docker-entrypoint-initdb.d/setup.sql
     environment:
       - MYSQL_DATABASE=solawi-bid
       - MYSQL_USER=solawi-bid

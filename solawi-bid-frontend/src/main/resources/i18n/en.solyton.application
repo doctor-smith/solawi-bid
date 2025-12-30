@@ -45,6 +45,40 @@ en {
                         }
                     }
                 }
+                applicationOrganizationManagementPage {
+                    title: "Organization and Application"
+                    subTitle: "Manage Application on Organizations Level"
+                    listOfMembers{
+                        title: "Members"
+                        headers{
+                            username {
+                                title: "Username"
+                            }
+                            roles{
+                                title: "Roles"
+                            }
+                        }
+                        actions {
+                            manageUserPermissions {
+                                tooltip: "Manage Permissions for $user"
+                            }
+                        }
+                    }
+                    dialogs {
+                        manageUsersPermissions {
+                            title: "Manage User Permissions"
+                            inputs {
+
+                            }
+                            okButton {
+                                title: "Ok"
+                            }
+                            cancelButton {
+                                title: "Cancel"
+                            }
+                        }
+                    }
+                }
             }
             management {
                 applicationManagementPage {

@@ -129,12 +129,14 @@ fun Application.installSerializers() {
     serializers[ReadRightRoleContextsOfUser::class] = ReadRightRoleContextsOfUser.serializer()
     serializers[ReadRightRoleContextsOfUsers::class] = ReadRightRoleContextsOfUsers.serializer()
     serializers[ReadParentChildRelationsOfContexts::class] = ReadParentChildRelationsOfContexts.serializer()
+    serializers[PutUserRoleContext::class] = PutUserRoleContext.serializer()
     serializers[ParentChildRelationsOfContext::class] = ParentChildRelationsOfContext.serializer()
     serializers[ParentChildRelationsOfContexts::class] = ParentChildRelationsOfContexts.serializer()
     serializers[Contexts::class] = Contexts.serializer()
     serializers[Context::class] = Context.serializer()
     serializers[Role::class] = Role.serializer()
     serializers[Right::class] = Right.serializer()
+    serializers[UserContext::class] = UserContext.serializer()
     serializers[UserToContextsMap::class] = UserToContextsMap.serializer()
 
     // Application / Modules

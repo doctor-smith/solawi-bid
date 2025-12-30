@@ -20,6 +20,7 @@ import org.solyton.solawi.bid.application.ui.page.application.management.Applica
 import org.solyton.solawi.bid.application.ui.page.application.management.ApplicationPage
 import org.solyton.solawi.bid.application.ui.page.application.management.ModulePage
 import org.solyton.solawi.bid.application.ui.page.application.private.PrivateApplicationManagementPage
+import org.solyton.solawi.bid.application.ui.page.application.private.PrivateApplicationOrganizationManagementPage
 import org.solyton.solawi.bid.application.ui.page.auction.*
 import org.solyton.solawi.bid.application.ui.page.dashboard.DashboardPage
 import org.solyton.solawi.bid.application.ui.page.login.LoginPage
@@ -132,6 +133,17 @@ fun Routing(storage: Storage<Application>): Routes = Routing("/") {
                     component{
                         PrivateApplicationManagementPage(storage)
                     }
+                    route("application/:applicationId") {
+                        route("organization/:organizationId") {
+                            component {
+                                PrivateApplicationOrganizationManagementPage(
+                                    storage,
+                                    parameter("applicationId")!!,
+                                    parameter("organizationId")!!
+                                )
+                            }
+                        }
+                    }
                 }
                 route("users") {
                     component {
@@ -149,7 +161,7 @@ fun Routing(storage: Storage<Application>): Routes = Routing("/") {
                     route(":organizationId") {
                         component {
                             OrganizationPage(
-                                storage * userIso,
+                                storage,
                                 parameter("organizationId")!!
                             )
                         }

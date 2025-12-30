@@ -71,4 +71,5 @@
 | PATCH | permissions/contexts/parent-child-relations | ReadParentChildRelationsOfContexts  | ReadParentChildRelationsOfContexts | ParentChildRelationsOfContext |
 | PATCH | permissions/contexts/roles-and-rights | ReadRightRoleContexts  | ReadRightRoleContexts | Contexts |
 | PATCH | permissions/user/role-right-contexts | ReadRightRoleContextsOfUser  | ReadRightRoleContextsOfUser | Contexts |
+| PUT | permissions/user/user-role-context | PutUserRoleContext  | PutUserRoleContext | UserContext |
 | PATCH | permissions/users/role-right-contexts | ReadRightRoleContextsOfUsers  | ReadRightRoleContextsOfUsers | UserToContextsMap |
