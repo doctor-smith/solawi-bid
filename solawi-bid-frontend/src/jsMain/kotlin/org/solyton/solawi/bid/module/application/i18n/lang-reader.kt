@@ -6,6 +6,8 @@ import org.evoleq.language.subComp
 import org.evoleq.math.Reader
 import org.evoleq.math.times
 
+typealias ApplicationComponent = Component
+
 val name: Reader<Lang.Block, Lang.Block> = subComp("name")
 val inputs: Reader<Lang.Block, Lang.Block> = subComp("inputs")
 

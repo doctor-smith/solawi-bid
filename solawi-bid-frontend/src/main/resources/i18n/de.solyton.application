@@ -46,6 +46,40 @@ de {
                         }
                     }
                 }
+                applicationOrganizationManagementPage {
+                    title: "Organisation und Applikation"
+                    subTitle: "Applikation auf Organisations Ebene verwalten"
+                    listOfMembers{
+                        title: "Mitglieder"
+                        headers {
+                            username {
+                                title: "Nutzername"
+                            }
+                            roles{
+                                title: "Rollen"
+                            }
+                        }
+                        actions {
+                            manageUserPermissions {
+                                tooltip: "Bearbeite Berechtigungen des Nutzers $user"
+                            }
+                        }
+                    }
+                    dialogs {
+                        manageUsersPermissions {
+                            title: "Nutzer Berechtigungen verwalten"
+                            inputs {
+
+                            }
+                            okButton {
+                                title: "Ok"
+                            }
+                            cancelButton {
+                                title: "Abbrechen"
+                            }
+                        }
+                    }
+                }
             }
             management {
                 applicationManagementPage {

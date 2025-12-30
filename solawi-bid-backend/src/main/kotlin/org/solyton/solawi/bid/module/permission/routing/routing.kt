@@ -31,6 +31,11 @@ fun <PermissionEnv> Routing.permissions(
                     GetRoleRightContexts *
                     Respond<Contexts> { transform() } runOn Base(call, environment)
                 }
+                put("user-role-context") {
+                    ReceiveContextual<PutUserRoleContext>() *
+                    // IsGranted()
+                    PutUserRoleContext * Respond<UserContext> { transform() } runOn Base(call, environment)
+                }
             }
 
             route("users") {

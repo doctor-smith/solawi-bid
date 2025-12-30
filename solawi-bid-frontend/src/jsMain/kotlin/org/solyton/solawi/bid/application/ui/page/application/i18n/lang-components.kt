@@ -9,6 +9,9 @@ sealed class ApplicationLangComponent(override val path: String, override val va
     data object PrivateApplicationManagementPage : ApplicationLangComponent(
         "$BASE_PATH.private.managementPage"
     )
+    data object PrivateApplicationOrganizationManagementPage : ApplicationLangComponent(
+        "$BASE_PATH.private.applicationOrganizationManagementPage"
+    )
 
     data object ApplicationManagementPage : ApplicationLangComponent(
         "$BASE_PATH.management.applicationManagementPage"

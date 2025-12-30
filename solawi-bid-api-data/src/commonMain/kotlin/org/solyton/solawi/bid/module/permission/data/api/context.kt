@@ -89,3 +89,16 @@ data class ParentChildRelationsOfContext(
     val rootId: String?,
     val children: List<String>
 )
+
+@Serializable
+data class PutUserRoleContext(
+    val userId: String,
+    val contextId: String,
+    val roleIds: List<String>
+)
+
+@Serializable
+data class UserContext(
+    val userId: String,
+    val context: Context
+)

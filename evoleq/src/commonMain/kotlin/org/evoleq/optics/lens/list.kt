@@ -60,3 +60,12 @@ fun <T: Children<T>> DeepRead(predicate: (T) -> Boolean): Reader<List<T>, T?> = 
     }
 }
 
+/**
+ *
+ */
+@Suppress("FunctionName")
+fun <T> FilterBy(predicate: (T)-> Boolean): Lens<List<T>,  List<T>> = Lens(
+    get = {list -> list.filter(predicate)},
+    set = {list -> {ts -> list.filterNot(predicate) + ts}}
+)
+

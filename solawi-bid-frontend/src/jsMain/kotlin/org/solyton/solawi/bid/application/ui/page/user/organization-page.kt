@@ -1,7 +1,6 @@
 package org.solyton.solawi.bid.application.ui.page.user
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.guard.data.isLoading
@@ -17,17 +16,29 @@ import org.evoleq.language.tooltip
 import org.evoleq.math.emit
 import org.evoleq.math.times
 import org.evoleq.optics.lens.DeepSearch
+import org.evoleq.optics.lens.FilterBy
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.application.data.env.i18nEnvironment
+import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.application.data.applicationOrganizationRelations
+import org.solyton.solawi.bid.application.data.i18N
+import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
+import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.user.i18n.OrganizationLangComponent
+import org.solyton.solawi.bid.application.ui.page.user.style.actionsWrapperStyle
+import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
+import org.solyton.solawi.bid.module.application.action.readApplications
+import org.solyton.solawi.bid.module.application.action.readPersonalApplicationOrganizationContextRelations
+import org.solyton.solawi.bid.module.application.data.management.applicationManagementActions
+import org.solyton.solawi.bid.module.application.data.management.availableApplications
 import org.solyton.solawi.bid.module.control.button.ArrowUpButton
 import org.solyton.solawi.bid.module.control.button.EditButton
+import org.solyton.solawi.bid.module.control.button.UsersButton
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
 import org.solyton.solawi.bid.module.list.component.*
@@ -38,53 +49,77 @@ import org.solyton.solawi.bid.module.style.page.PageTitle
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.action.organization.readOrganizations
-import org.solyton.solawi.bid.module.user.data.Application
-import org.solyton.solawi.bid.module.user.data.deviceData
-import org.solyton.solawi.bid.module.user.data.environment
-import org.solyton.solawi.bid.module.user.data.i18n
+import org.solyton.solawi.bid.module.user.data.*
 import org.solyton.solawi.bid.module.user.data.organization.members
 import org.solyton.solawi.bid.module.user.data.organization.name
-import org.solyton.solawi.bid.module.user.data.user
 import org.solyton.solawi.bid.module.user.data.user.organizations
-import org.solyton.solawi.bid.module.user.data.userActions
 import org.solyton.solawi.bid.module.user.i18n.Component
+import org.solyton.solawi.bid.module.application.i18n.ApplicationComponent
 
 
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun OrganizationPage(storage: Storage<Application>, organizationId: String) = withLoading(
+fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: String) = withLoading(
     isLoading = isLoading(
         onMissing(
             OrganizationLangComponent.OrganizationPage,
-            storage * i18n.get
+            applicationStorage * userIso * i18n.get
         ) {
             LaunchComponentLookup(
                 langComponent = OrganizationLangComponent.OrganizationPage,
-                environment = storage * environment.get,
-                i18n = (storage * i18n)
+                environment = applicationStorage * userIso * environment.get,
+                i18n = (applicationStorage * userIso * i18n)
             )
         },
         onEmpty(
-            storage * user * organizations.get
+            applicationStorage * userIso * user * organizations.get
         ){
             LaunchedEffect(Unit) {
                 launch {
-                    (storage * userActions).dispatch(readOrganizations())
+                    (applicationStorage * userIso * userActions).dispatch(readOrganizations())
                 }
             }
         },
-
+        onEmpty(applicationStorage * applicationManagementModule * availableApplications.get) {
+            LaunchedEffect(Unit) {
+                launch {
+                    (applicationStorage *applicationManagementModule * applicationManagementActions).dispatch(
+                        readApplications
+                    )
+                }
+            }
+        },
+        onEmpty(applicationStorage * applicationManagementModule * applicationOrganizationRelations.get) {
+            LaunchedEffect(Unit) {
+                launch {
+                    (applicationStorage *applicationManagementModule * applicationManagementActions).dispatch(
+                        readPersonalApplicationOrganizationContextRelations()
+                    )
+                }
+            }
+        }
     ),
     onLoading = { Loading() }
 ) {
-    val device = storage * deviceData * mediaType
+    val userModuleStorage = applicationStorage * userIso
+    val device = userModuleStorage * deviceData * mediaType
 
-    val organization = storage * user * organizations * DeepSearch { it.organizationId == organizationId }
+    val organization = userModuleStorage * user * organizations * DeepSearch { it.organizationId == organizationId }
     val members = organization * members
 
+
+
+    val applicationManagementStorage = applicationStorage * applicationManagementModule
+    val availableApplications = applicationManagementStorage * availableApplications
+    val applicationOrganizationRelations = applicationManagementStorage * applicationOrganizationRelations
+    val connectedApplications = availableApplications * FilterBy { app ->
+        applicationOrganizationRelations.read().any { it.applicationId == app.id && it.organizationId == organizationId }
+    }
+
     // texts
-    val texts = storage * i18n * language * component(OrganizationLangComponent.OrganizationPage)
+    val base = applicationStorage * i18N * language * ApplicationComponent.base
+    val texts = userModuleStorage * i18n * language * component(OrganizationLangComponent.OrganizationPage)
     val listOfMembers = texts * subComp("listOfMembers")
     val listOfMembersHeaders = texts * subComp("listOfMembers") * subComp("headers")
 
@@ -108,76 +143,123 @@ fun OrganizationPage(storage: Storage<Application>, organizationId: String) = wi
                 }
             }
         }
-        /*
-        ListWrapper {
-            TitleWrapper { Title {  H3{ Text("Applications") }} }
-            HeaderWrapper {
-                Header {
-                    HeaderCell("Name") { width(40.percent) }
-                    HeaderCell("Modules") { width(40.percent) }
-                }
+
+        ListWrapper({
+            defaultListStyles.listWrapper(this)
+            overflowX("auto")
+        }) {
+            var open by remember { mutableStateOf(false) }
+            TitleWrapper {
+                Title { H3{ Text((listOfMembers * title).emit()) }}
+                SimpleUpDown(open, {open = !open})
             }
-
-        }
-
-         */
-
-        ListWrapper {
-            TitleWrapper { Title { H3{ Text((listOfMembers * title).emit()) }}}
-            HeaderWrapper { Header {
-                HeaderCell(listOfMembersHeaders * Component.standard * title){width(30.percent)}
-                HeaderCell(listOfMembersHeaders * Component.userProfile * title){width(30.percent)}
-                HeaderCell("Solawi Anteile | Status"){width(40.percent)}
-            } }
-            HeaderWrapper { Header{
-                HeaderCell(listOfMembersHeaders * Component.standard * Component.username * title) {
-                    width(10.percent);  overflow("hidden")
-                }
-                HeaderCell(listOfMembersHeaders * Component.standard * Component.roles * title){width(20.percent)}
-                HeaderCell(listOfMembersHeaders * Component.userProfile * Component.name * title){width(10.percent)}
-                HeaderCell(listOfMembersHeaders * Component.userProfile * Component.address * title){width(20.percent)}
-                HeaderCell("Gemüse"){width(10.percent)}
-                HeaderCell("Eier"){width(10.percent)}
-                HeaderCell("Obst"){width(10.percent)}
-                HeaderCell("Status"){width(10.percent)}
-
-            } }
-            ListItems(members) { member ->
-                ListItemWrapper {
-                    DataWrapper{
-                        TextCell(member.username){
-                            width(10.percent); minWidth(10.percent); overflow("hidden")
-                        }
-                        TextCell(member.roles.joinToString(", "){it.roleName}){
-                            width(20.percent);minWidth(10.percent); overflow("hidden")
-                        }
-                        TextCell("Vorname + Nachname"){
-                            width(10.percent);minWidth(10.percent);overflow("hidden")
-                        }
-                        TextCell("Adam-Müller-Guttenbrunn-Str. 5, 72827 Wannweil"){
-                            width(20.percent); minWidth(20.percent);overflow("hidden")
-                        }
-                        NumberCell(1){width(10.percent)}
-                        NumberCell(0){width(10.percent)}
-                        NumberCell(1){width(10.percent)}
-                        TextCell("Aktiv"){width(10.percent)}
+            if(open) {
+                HeaderWrapper {
+                    Header {
+                        HeaderCell(listOfMembersHeaders * Component.standard * title) { width(30.percent) }
+                        HeaderCell(listOfMembersHeaders * Component.userProfile * title) { width(30.percent) }
+                        HeaderCell("Solawi Anteile | Status") { width(40.percent) }
                     }
-                    ActionsWrapper({
-                        defaultListStyles.actionsWrapper(this)
-                        alignSelf(AlignSelf.FlexStart)
+                }
+                HeaderWrapper {
+                    Header {
+                        HeaderCell(listOfMembersHeaders * Component.standard * Component.username * title) {
+                            width(10.percent); overflow("hidden")
+                        }
+                        HeaderCell(listOfMembersHeaders * Component.standard * Component.roles * title) { width(20.percent) }
+                        HeaderCell(listOfMembersHeaders * Component.userProfile * Component.name * title) { width(10.percent) }
+                        HeaderCell(listOfMembersHeaders * Component.userProfile * Component.address * title) { width(20.percent) }
+                        HeaderCell("Gemüse") { width(10.percent) }
+                        HeaderCell("Eier") { width(10.percent) }
+                        HeaderCell("Obst") { width(10.percent) }
+                        HeaderCell("Status") { width(10.percent) }
+
+                    }
+                }
+                ListItemsIndexed(members) { index, member ->
+                    ListItemWrapper({
+                        listItemWrapperStyle(this, index)
                     }) {
-                        EditButton(
-                            Color.black,
-                            Color.white,
-                            listOfMembers * Component.actions * Component.edit * tooltip,
-                            {device.read()}
-                        ) {
-                            navigate("/app/management/user/${member.username}")
+                        DataWrapper {
+                            TextCell(member.username) {
+                                width(10.percent); minWidth(10.percent); overflow("hidden")
+                            }
+                            TextCell(member.roles.joinToString(", ") { it.roleName }) {
+                                width(20.percent);minWidth(10.percent); overflow("hidden")
+                            }
+                            TextCell("Vorname + Nachname") {
+                                width(10.percent);minWidth(10.percent);overflow("hidden")
+                            }
+                            TextCell("Adam-Müller-Guttenbrunn-Str. 5, 72827 Wannweil") {
+                                width(20.percent); minWidth(20.percent);overflow("hidden")
+                            }
+                            NumberCell(1) { width(10.percent) }
+                            NumberCell(0) { width(10.percent) }
+                            NumberCell(1) { width(10.percent) }
+                            TextCell("Aktiv") { width(10.percent) }
+                        }
+                        ActionsWrapper({
+                            actionsWrapperStyle(this)
+                            /*
+                        position(Position.Sticky)
+                        right(0.px)
+                        backgroundColor(Color.white) // Verdeckt den scollenden Inhalt darunter
+                        property("z-index", 1) // Bleibt über den anderen Zellen
+                        // width(200.px)
+*/
+                        }) {
+                            EditButton(
+                                Color.black,
+                                Color.white,
+                                listOfMembers * Component.actions * Component.edit * tooltip,
+                                { device.read() }
+                            ) {
+                                navigate("/app/management/user/${member.username}")
+                            }
                         }
                     }
                 }
             }
         }
 
+        ListWrapper({
+            defaultListStyles.listWrapper(this)
+        }) {
+            var open by remember { mutableStateOf(false) }
+            TitleWrapper {
+                Title { H3{ Text("Connected Applications") }}
+                SimpleUpDown(open, {open = !open})
+            }
+            if(open) {
+                HeaderWrapper {
+                    Header {
+                        HeaderCell("Application") { width(40.percent) }
+                        HeaderCell("Modules") { width(40.percent) }
+                    }
+                }
+                ListItemsIndexed(connectedApplications) { index, application ->
+                    ListItemWrapper({
+                        listItemWrapperStyle(this, index)
+                    }) {
+                        DataWrapper {
+                            TextCell(application.name) { width(40.percent) }
+                            TextCell(application.modules.joinToString(", ") { it.name }) { width(40.percent) }
+                        }
+                        ActionsWrapper({
+                            actionsWrapperStyle(this)
+                        }) {
+                            UsersButton(
+                                Color.black,
+                                Color.white,
+                                {"Manage User Rights"},
+                                { device.read() }
+                            ) {
+                                navigate("/app/management/private/application/${application.id}/organization/$organizationId")
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

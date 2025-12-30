@@ -8,8 +8,12 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.neq
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.selectAll
 import org.solyton.solawi.bid.module.permission.data.api.*
@@ -53,9 +57,47 @@ val GetRoleRightContexts: KlAction<Result<Contextual<ReadRightRoleContextsOfUser
 val GetRoleRightContextsOfUsers: KlAction<Result<Contextual<ReadRightRoleContextsOfUsers>>, Result<UserToContextsMap>> = KlAction {
     result ->  DbAction { database -> result bindSuspend { data: Contextual<ReadRightRoleContextsOfUsers> ->
         resultTransaction(database){
-            UserToContextsMap(getRoleRightContexts(data.data.userIds.map { UUID.fromString(it) }).mapKeys { it.value.toString() })
+            UserToContextsMap(getRoleRightContexts(data.data.userIds.map { UUID.fromString(it) }).mapKeys { it.key.toString() })
     } } x database }
 }
+
+@MathDsl
+@Suppress("FunctionName")
+val PutUserRoleContext: KlAction<Result<Contextual<PutUserRoleContext>>, Result<UserContext>> = KlAction {
+    result ->  DbAction { database -> result bindSuspend { data: Contextual<PutUserRoleContext> ->
+        resultTransaction(database){
+            val userId = UUID.fromString(data.data.userId)
+            val roleIds = data.data.roleIds.map { UUID.fromString(it) }
+            val contextId = UUID.fromString(data.data.contextId)
+
+            // delete all roles except owner
+            UserRoleContext.deleteWhere { (UserRoleContext.userId eq userId) and (UserRoleContext.contextId eq contextId) }
+            roleIds.forEach { roleId -> UserRoleContext.insert { it[this.userId] = userId; it[this.contextId] = contextId; it[this.roleId] = roleId } }
+
+            val context = ContextEntity.findById(contextId) ?: throw NoSuchElementException("Context with id $contextId not found")
+
+            UserContext(
+                data.data.userId,
+                Context(data.data.contextId,
+                    context.name,
+                getRolesByUserAndContext(userId, contextId).map {
+                    role -> Role(
+                    role.id.value.toString(),
+                    role.name,
+                    role.description,
+                    role.rights.map {
+                        right -> Right(
+                            right.id.value.toString(),
+                            right.name,
+                            right.description
+                        )
+                    } )
+                } )
+            )
+    } } x database }
+}
+
+
 
 /**
  * Represents an action to read and map parent-child relationships between contexts
