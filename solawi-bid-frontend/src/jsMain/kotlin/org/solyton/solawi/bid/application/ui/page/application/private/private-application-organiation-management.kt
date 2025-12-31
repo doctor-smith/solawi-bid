@@ -11,15 +11,10 @@ import org.evoleq.compose.guard.data.onNullLaunch
 import org.evoleq.compose.guard.data.withLoading
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.device.data.mediaType
-import org.evoleq.language.component
-import org.evoleq.language.subComp
-import org.evoleq.language.subTitle
-import org.evoleq.language.title
-import org.evoleq.language.tooltip
+import org.evoleq.language.*
 import org.evoleq.math.emit
 import org.evoleq.math.map
 import org.evoleq.math.times
-import org.evoleq.optics.lens.DeepRead
 import org.evoleq.optics.lens.DeepSearch
 import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.storage.Storage
@@ -31,7 +26,6 @@ import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.H2
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.application.api.solawiApi
 import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.data.env.i18nEnvironment
 import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
@@ -50,7 +44,6 @@ import org.solyton.solawi.bid.module.application.data.management.applicationMana
 import org.solyton.solawi.bid.module.application.data.management.applicationManagementModals
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
 import org.solyton.solawi.bid.module.application.data.management.personalApplicationContextRelations
-import org.solyton.solawi.bid.module.application.i18n.Component
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
 import org.solyton.solawi.bid.module.control.button.UserLockButton
 import org.solyton.solawi.bid.module.i18n.data.language
@@ -58,7 +51,6 @@ import org.solyton.solawi.bid.module.i18n.guard.onMissing
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.loading.component.Loading
 import org.solyton.solawi.bid.module.page.component.Page
-import org.solyton.solawi.bid.module.permission.data.api.PutUserRoleContext
 import org.solyton.solawi.bid.module.permissions.data.contexts
 import org.solyton.solawi.bid.module.permissions.service.contextFromPath
 import org.solyton.solawi.bid.module.style.page.PageTitle

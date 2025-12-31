@@ -16,19 +16,14 @@ import org.evoleq.language.subComp
 import org.evoleq.language.subTitle
 import org.evoleq.language.title
 import org.evoleq.language.tooltip
+import org.evoleq.math.DeepRead
 import org.evoleq.math.emit
 import org.evoleq.math.times
-import org.evoleq.optics.lens.DeepRead
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.transform.times
-import org.jetbrains.compose.web.css.AlignSelf
 import org.jetbrains.compose.web.css.Color
-import org.jetbrains.compose.web.css.alignSelf
-import org.jetbrains.compose.web.css.paddingRight
-import org.jetbrains.compose.web.css.paddingTop
 import org.jetbrains.compose.web.css.percent
-import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.width
 import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.data.env.i18nEnvironment
@@ -38,10 +33,10 @@ import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
 import org.solyton.solawi.bid.application.ui.page.application.style.actionsWrapperStyle
+import org.solyton.solawi.bid.application.ui.page.application.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.application.action.connectApplicationToOrganization
 import org.solyton.solawi.bid.module.application.action.readApplicationContextRelations
 import org.solyton.solawi.bid.module.application.action.readApplications
-import org.solyton.solawi.bid.module.application.action.readPersonalApplicationOrganizationContextRelations
 import org.solyton.solawi.bid.module.application.component.modal.showConnectApplicationToOrganizationModule
 import org.solyton.solawi.bid.module.application.data.LifecycleStage
 import org.solyton.solawi.bid.module.application.data.management.actions
@@ -51,13 +46,11 @@ import org.solyton.solawi.bid.module.application.data.management.availableApplic
 import org.solyton.solawi.bid.module.application.data.management.personalApplicationContextRelations
 import org.solyton.solawi.bid.module.application.i18n.Component
 import org.solyton.solawi.bid.module.application.i18n.application
-import org.solyton.solawi.bid.application.ui.page.application.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
 import org.solyton.solawi.bid.module.control.button.ShareNodesButton
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
 import org.solyton.solawi.bid.module.list.component.*
-import org.solyton.solawi.bid.module.list.style.defaultListStyles
 import org.solyton.solawi.bid.module.loading.component.Loading
 import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.permissions.service.contextFromPath
@@ -105,16 +98,6 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) = withLoadin
                 )
             }
         },
-        /*
-        onEmpty(storage * applicationManagementModule * applicationOrganizationRelations.get) {
-            CoroutineScope(Job()).launch {
-                (storage * applicationManagementModule * applicationManagementActions).dispatch(
-                    readPersonalApplicationOrganizationContextRelations()
-                )
-            }
-        },
-
-         */
         onEmpty(storage * userIso * user * organizations.get) {
             CoroutineScope(Job()).launch {
                 (storage * userIso * userActions).dispatch(
