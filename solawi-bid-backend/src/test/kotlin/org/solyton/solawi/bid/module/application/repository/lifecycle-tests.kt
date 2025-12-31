@@ -9,7 +9,7 @@ import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.module.application.exception.ApplicationException
 import org.solyton.solawi.bid.module.application.schema.*
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
-import org.solyton.solawi.bid.module.permission.schema.repository.createRootContext
+import org.solyton.solawi.bid.module.permission.repository.createRootContext
 import java.util.*
 import kotlin.test.*
 

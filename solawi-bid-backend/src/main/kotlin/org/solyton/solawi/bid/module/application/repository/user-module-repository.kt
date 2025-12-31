@@ -8,8 +8,8 @@ import org.solyton.solawi.bid.module.application.schema.*
 import org.solyton.solawi.bid.module.application.schema.LifecycleStageEntity
 import org.solyton.solawi.bid.module.application.schema.ModuleEntity
 import org.solyton.solawi.bid.module.application.schema.UserApplicationEntity
-import org.solyton.solawi.bid.module.permission.schema.repository.cloneRightRoleContext
-import org.solyton.solawi.bid.module.permission.schema.repository.createChild
+import org.solyton.solawi.bid.module.permission.repository.cloneRightRoleContext
+import org.solyton.solawi.bid.module.permission.repository.createChild
 import java.util.*
 
 fun Transaction.registerForModule(userId: UUID, moduleId: UUID): UserModule {

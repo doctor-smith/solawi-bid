@@ -3,10 +3,10 @@ package org.solyton.solawi.bid.module.user
 import org.evoleq.exposedx.test.runSimpleH2Test
 import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.insert
-import org.solyton.solawi.bid.module.permission.action.db.getRoleRightContexts
 import org.solyton.solawi.bid.module.permission.data.api.Context
 import org.solyton.solawi.bid.module.permission.data.api.Right
 import org.solyton.solawi.bid.module.permission.data.api.Role
+import org.solyton.solawi.bid.module.permission.repository.getRoleRightContexts
 import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.RightEntity

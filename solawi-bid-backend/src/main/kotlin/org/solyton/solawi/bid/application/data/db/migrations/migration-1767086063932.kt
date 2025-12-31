@@ -43,7 +43,7 @@ class Migration1767086063932(
      * Upwards migration
      */
     override suspend fun Transaction.up() {
-        val user = UserEntity.find { UsersTable.username eq "owner@solyton.org" }.first()
+        val user = UserEntity.find { UsersTable.username eq "owner@solyton.org" }.firstOrNull() ?: return
         val application = ApplicationEntity.find { ApplicationsTable.name eq "APPLICATION_MANAGEMENT" }.first()
         val active = LifecycleStageEntity.find { LifecycleStagesTable.name eq "ACTIVE" }.first()
         val notRegistered = UserApplicationEntity.find {

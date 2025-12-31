@@ -4,13 +4,11 @@ import org.evoleq.exposedx.migrations.Migration
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Transaction
-import org.solyton.solawi.bid.module.permission.data.api.ReadRightRoleContexts
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.permission.schema.RightsTable
 import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
 import org.solyton.solawi.bid.module.permission.schema.RolesTable
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
-import org.solyton.solawi.bid.module.permission.schema.repository.RightRoleContextIds
 import org.solyton.solawi.bid.module.user.schema.AddressesTable
 import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import org.solyton.solawi.bid.module.user.schema.UserOrganization

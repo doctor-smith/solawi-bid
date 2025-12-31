@@ -17,8 +17,8 @@ import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
-import org.solyton.solawi.bid.module.permission.schema.repository.grant
-import org.solyton.solawi.bid.module.permission.schema.repository.of
+import org.solyton.solawi.bid.module.permission.repository.grant
+import org.solyton.solawi.bid.module.permission.repository.of
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 

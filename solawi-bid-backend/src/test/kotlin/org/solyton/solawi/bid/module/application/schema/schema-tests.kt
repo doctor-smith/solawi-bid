@@ -7,7 +7,7 @@ import org.solyton.solawi.bid.Schema
 import org.solyton.solawi.bid.module.application.schema.ApplicationEntity
 import org.solyton.solawi.bid.module.application.schema.ModuleEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
-import org.solyton.solawi.bid.module.permission.schema.repository.createRootContext
+import org.solyton.solawi.bid.module.permission.repository.createRootContext
 import kotlin.test.assertEquals
 
 class ApplicationSchemaTests {
