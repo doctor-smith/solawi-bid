@@ -23,7 +23,6 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.width
-import org.jetbrains.compose.web.dom.H2
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.*
@@ -44,6 +43,7 @@ import org.solyton.solawi.bid.module.application.data.management.applicationMana
 import org.solyton.solawi.bid.module.application.data.management.applicationManagementModals
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
 import org.solyton.solawi.bid.module.application.data.management.personalApplicationContextRelations
+import org.solyton.solawi.bid.module.application.i18n.ApplicationComponent
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
 import org.solyton.solawi.bid.module.control.button.UserLockButton
 import org.solyton.solawi.bid.module.i18n.data.language
@@ -65,6 +65,8 @@ import org.solyton.solawi.bid.module.user.data.organization.members
 import org.solyton.solawi.bid.module.user.data.user
 import org.solyton.solawi.bid.module.user.data.user.organizations
 import org.solyton.solawi.bid.module.user.data.userActions
+import org.solyton.solawi.bid.module.application.data.application.name as nameOfApplication
+import org.solyton.solawi.bid.module.user.data.organization.name as nameOfOrganization
 
 @Markup
 @Composable
@@ -152,7 +154,7 @@ fun PrivateApplicationOrganizationManagementPage(
 
     val device = storage * deviceData * mediaType.get
 
-    // val base = storage * i18N * language * Component.base
+    val base = storage * i18N * language * ApplicationComponent.base
     val texts = storage * i18N * language * component(ApplicationLangComponent.PrivateApplicationOrganizationManagementPage)
     // val connectDialogTexts = texts * subComp("dialogs") * subComp("connectApplicationToOrganization")
 
@@ -190,13 +192,12 @@ fun PrivateApplicationOrganizationManagementPage(
     Page(verticalPageStyle) {
         Wrap {
             Horizontal {
-                PageTitle(texts * title)
+                PageTitle((texts * title).inject(
+                    Injection("organization", organization * nameOfOrganization.get),
+                    Injection("application", app * nameOfApplication.get * ApplicationComponent.applicationName(base) * title)
+                ))
             }
             SubTitle(texts * subTitle)
-        }
-        Wrap {
-            H2 { Text("Application: ${(app * org.solyton.solawi.bid.module.application.data.application.name.get).emit()}") }
-            H2 { Text("Organization: ${(organization * org.solyton.solawi.bid.module.user.data.organization.name.get).emit()}") }
         }
         ListWrapper {
             TitleWrapper { Title{ H3{Text((texts * subComp("listOfMembers") * title).emit()) } } }
@@ -229,7 +230,7 @@ fun PrivateApplicationOrganizationManagementPage(
                         UserLockButton(
                             Color.black,
                             Color.white,
-                            texts * subComp("listOfMembers") * subComp("actions") * subComp("manageUserPermissions") * tooltip map{ it.replace("\$user" , member.username) },
+                            texts * subComp("listOfMembers") * subComp("actions") * subComp("manageUserPermissions") * tooltip  * inject("user" , member.username),
                             device,
                         ) {
                             (storage * applicationManagementModule * applicationManagementModals).showManageUserPermissionsModule(

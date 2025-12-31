@@ -47,7 +47,7 @@ de {
                     }
                 }
                 applicationOrganizationManagementPage {
-                    title: "Organisation und Applikation"
+                    title: "${organization} / ${application}"
                     subTitle: "Applikation auf Organisations Ebene verwalten"
                     listOfMembers{
                         title: "Mitglieder"
@@ -61,7 +61,7 @@ de {
                         }
                         actions {
                             manageUserPermissions {
-                                tooltip: "Bearbeite Berechtigungen des Nutzers $user"
+                                tooltip: "Bearbeite Berechtigungen des Nutzers ${user}"
                             }
                         }
                     }
