@@ -1,8 +1,6 @@
 package org.evoleq.optics.lens
 
-import org.evoleq.math.Children
 import org.evoleq.math.MathDsl
-import org.evoleq.math.Reader
 
 /**
  * Creates a `Lens` for a `List<T>` that focuses on the first element matching the given predicate.
@@ -35,37 +33,19 @@ fun <T> FirstBy(predicate: (T) -> Boolean): Lens<List<T>, T> {
 }
 
 /**
- * Searches for an element within a hierarchy of `Children` starting from a given list and traversing
- * depth-first until an element matching the provided predicate is found.
+ * Creates a `Lens` for filtering elements within a list based on a given predicate.
+ * The resulting `Lens` allows access to the filtered elements or applying transformations
+ * that replace the filtered elements with a new list while preserving non-matching elements.
  *
- * @param predicate A function that evaluates each `Children` object and determines whether it matches the condition.
- * @return A `Reader` function that takes a list of `Children` objects and returns the first matching child
- *         of type `T` or `null` if none is found.
+ * @param predicate A filtering function that takes an element of type `T` and returns a
+ *                  boolean indicating whether the element satisfies the condition.
+ * @return A `Lens` that focuses on elements of a list matching the specified predicate,
+ *         enabling functional access and transformation of those elements.
  */
-@Suppress("FunctionName")
-fun <T: Children<T>> DeepRead(predicate: (T) -> Boolean): Reader<List<T>, T?> = {
-    list:List<T> -> when{
-        list.isEmpty() -> null
-        else -> {
-            val found = list.firstOrNull(predicate)
-            when{
-                found != null -> found
-                else -> {
-                    val newList = list.drop(1).toMutableList()
-                    newList.addAll(list.first().getChildren())
-                    DeepRead<T>(predicate)(newList)
-                }
-            }
-        }
-    }
-}
-
-/**
- *
- */
+@MathDsl
 @Suppress("FunctionName")
 fun <T> FilterBy(predicate: (T)-> Boolean): Lens<List<T>,  List<T>> = Lens(
     get = {list -> list.filter(predicate)},
-    set = {list -> {ts -> list.filterNot(predicate) + ts}}
+    set = {ts -> {list -> list.filterNot(predicate) + ts}}
 )
 
