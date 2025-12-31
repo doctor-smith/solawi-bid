@@ -29,7 +29,7 @@ import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
-import org.solyton.solawi.bid.module.permission.schema.repository.parent
+import org.solyton.solawi.bid.module.permission.repository.parent
 import org.solyton.solawi.bid.module.user.permission.OrganizationContext
 import org.solyton.solawi.bid.module.user.permission.OrganizationRight
 import org.solyton.solawi.bid.module.user.schema.UserEntity

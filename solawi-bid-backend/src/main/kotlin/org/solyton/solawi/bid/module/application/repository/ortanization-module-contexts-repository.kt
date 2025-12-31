@@ -10,8 +10,8 @@ import org.solyton.solawi.bid.module.application.schema.ModuleEntity
 import org.solyton.solawi.bid.module.application.schema.ModulesTable
 import org.solyton.solawi.bid.module.application.schema.OrganizationModuleContextEntity
 import org.solyton.solawi.bid.module.application.schema.OrganizationModuleContextsTable
-import org.solyton.solawi.bid.module.permission.schema.repository.cloneRightRoleContext
-import org.solyton.solawi.bid.module.permission.schema.repository.createRootContext
+import org.solyton.solawi.bid.module.permission.repository.cloneRightRoleContext
+import org.solyton.solawi.bid.module.permission.repository.createRootContext
 import java.util.UUID
 
 fun Transaction.registerOrganizationForModule(

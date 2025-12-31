@@ -6,9 +6,17 @@ import org.jetbrains.exposed.sql.selectAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.module.db.schema.*
+import org.solyton.solawi.bid.module.permission.repository.ContextToNest
+import org.solyton.solawi.bid.module.permission.repository.addChild
+import org.solyton.solawi.bid.module.permission.repository.cloneContext
+import org.solyton.solawi.bid.module.permission.repository.createChild
+import org.solyton.solawi.bid.module.permission.repository.createRootContext
+import org.solyton.solawi.bid.module.permission.repository.nest
+import org.solyton.solawi.bid.module.permission.repository.parent
+import org.solyton.solawi.bid.module.permission.repository.path
+import org.solyton.solawi.bid.module.permission.repository.pathAsList
 import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
-import org.solyton.solawi.bid.module.permission.schema.repository.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 

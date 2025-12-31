@@ -1,8 +1,8 @@
 package org.solyton.solawi.bid.module.user.data
 
 import org.jetbrains.exposed.sql.Transaction
-import org.solyton.solawi.bid.module.permission.action.db.getRolesByUserAndContext
 import org.solyton.solawi.bid.module.permission.data.api.ApiRole
+import org.solyton.solawi.bid.module.permission.repository.getRolesByUserAndContext
 import org.solyton.solawi.bid.module.user.data.api.UserD
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiMember
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiOrganization

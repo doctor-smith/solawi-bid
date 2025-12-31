@@ -14,7 +14,7 @@ import org.solyton.solawi.bid.module.application.schema.ModulesTable
 import org.solyton.solawi.bid.module.application.schema.UserApplications
 import org.solyton.solawi.bid.module.application.schema.UserModules
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
-import org.solyton.solawi.bid.module.permission.schema.repository.createRootContext
+import org.solyton.solawi.bid.module.permission.repository.createRootContext
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertIs

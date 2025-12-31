@@ -6,8 +6,8 @@ import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.application.exception.ApplicationException
 import org.solyton.solawi.bid.module.application.schema.*
 import org.solyton.solawi.bid.module.application.schema.LifecycleStageEntity
-import org.solyton.solawi.bid.module.permission.schema.repository.cloneRightRoleContext
-import org.solyton.solawi.bid.module.permission.schema.repository.createRootContext
+import org.solyton.solawi.bid.module.permission.repository.cloneRightRoleContext
+import org.solyton.solawi.bid.module.permission.repository.createRootContext
 import java.util.*
 
 fun Transaction.registerForApplication(userId: UUID, applicationId: UUID): UserApplication {

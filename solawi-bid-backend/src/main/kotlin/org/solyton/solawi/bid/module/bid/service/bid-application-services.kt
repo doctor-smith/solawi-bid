@@ -14,9 +14,9 @@ import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.RolesTable
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
-import org.solyton.solawi.bid.module.permission.schema.repository.RightRoleContextIds
-import org.solyton.solawi.bid.module.permission.schema.repository.cloneRightRoleContextWrtRoles
-import org.solyton.solawi.bid.module.permission.schema.repository.createChild
+import org.solyton.solawi.bid.module.permission.repository.RightRoleContextIds
+import org.solyton.solawi.bid.module.permission.repository.cloneRightRoleContextWrtRoles
+import org.solyton.solawi.bid.module.permission.repository.createChild
 import java.util.UUID
 
 /**

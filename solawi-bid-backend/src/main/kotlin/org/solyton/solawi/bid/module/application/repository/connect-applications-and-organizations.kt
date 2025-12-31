@@ -15,9 +15,9 @@ import org.solyton.solawi.bid.module.application.schema.UserApplicationEntity
 import org.solyton.solawi.bid.module.application.schema.UserApplicationsTable
 import org.solyton.solawi.bid.module.application.schema.UserModuleEntity
 import org.solyton.solawi.bid.module.application.schema.UserModulesTable
-import org.solyton.solawi.bid.module.permission.schema.repository.cloneRightRoleContext
-import org.solyton.solawi.bid.module.permission.schema.repository.createChild
-import org.solyton.solawi.bid.module.permission.schema.repository.createRootContext
+import org.solyton.solawi.bid.module.permission.repository.cloneRightRoleContext
+import org.solyton.solawi.bid.module.permission.repository.createChild
+import org.solyton.solawi.bid.module.permission.repository.createRootContext
 import java.util.*
 
 /**

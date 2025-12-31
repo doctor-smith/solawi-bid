@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.permission.schema.repository
+package org.solyton.solawi.bid.module.permission.repository
 
 import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.dao.id.EntityID

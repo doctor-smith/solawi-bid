@@ -20,10 +20,10 @@ import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
 import org.solyton.solawi.bid.module.permission.schema.RolesTable
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
-import org.solyton.solawi.bid.module.permission.schema.repository.createChild
-import org.solyton.solawi.bid.module.permission.schema.repository.createRootContext
-import org.solyton.solawi.bid.module.permission.schema.repository.grant
-import org.solyton.solawi.bid.module.permission.schema.repository.of
+import org.solyton.solawi.bid.module.permission.repository.createChild
+import org.solyton.solawi.bid.module.permission.repository.createRootContext
+import org.solyton.solawi.bid.module.permission.repository.grant
+import org.solyton.solawi.bid.module.permission.repository.of
 import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
 import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import org.solyton.solawi.bid.module.user.schema.UserEntity

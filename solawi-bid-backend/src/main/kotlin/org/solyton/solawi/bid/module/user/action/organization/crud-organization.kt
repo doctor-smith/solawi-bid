@@ -10,8 +10,8 @@ import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.solyton.solawi.bid.module.permission.PermissionException
-import org.solyton.solawi.bid.module.permission.action.db.getUserRightContexts
 import org.solyton.solawi.bid.module.permission.action.db.isGranted
+import org.solyton.solawi.bid.module.permission.repository.getUserRightContexts
 import org.solyton.solawi.bid.module.user.data.api.organization.*
 import org.solyton.solawi.bid.module.user.data.toApiType
 import org.solyton.solawi.bid.module.user.exception.OrganizationException
