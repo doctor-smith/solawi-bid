@@ -46,7 +46,7 @@ en {
                     }
                 }
                 applicationOrganizationManagementPage {
-                    title: "Organization and Application"
+                    title: "${organization} / ${application}"
                     subTitle: "Manage Application on Organizations Level"
                     listOfMembers{
                         title: "Members"
@@ -60,7 +60,7 @@ en {
                         }
                         actions {
                             manageUserPermissions {
-                                tooltip: "Manage Permissions for $user"
+                                tooltip: "Manage Permissions for ${user}"
                             }
                         }
                     }

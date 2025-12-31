@@ -3,7 +3,10 @@ package org.solyton.solawi.bid.module.application.i18n
 import org.evoleq.language.I18N
 import org.evoleq.language.Lang
 import org.evoleq.language.subComp
+import org.evoleq.language.title
 import org.evoleq.math.Reader
+import org.evoleq.math.Source
+import org.evoleq.math.emit
 import org.evoleq.math.times
 
 typealias ApplicationComponent = Component
@@ -40,10 +43,16 @@ object Component {
     val editRight: Reader<Lang.Block, Lang.Block> = subComp("editRight")
     val editContext: Reader<Lang.Block, Lang.Block> = subComp("editContext")
 
+    fun applicationName(texts: Source<Lang.Block>): Reader<String, Lang.Block> =
+        Reader{ key: String -> application(key)(texts.emit()) }
 }
 
 @I18N
 fun application(key: String): Reader<Lang.Block, Lang.Block> = subComp(key.camelCase())
+
+//@I18N
+
+// fun <T> Reader<T, String>.times(reader: Reader<String, Lang.Block>: Reader<Lang.Block, Lang.Block> = this * Component.application
 @I18N
 fun module(appKey: String, moduleKey: String): Reader<Lang.Block, Lang.Block> =
     subComp(appKey.camelCase()) *
