@@ -11,6 +11,18 @@ import org.solyton.solawi.bid.module.application.data.ApiApplications
 import org.solyton.solawi.bid.module.application.data.ApiModule
 import org.solyton.solawi.bid.module.application.data.ApiUserApplications
 import org.solyton.solawi.bid.module.authentication.data.api.*
+import org.solyton.solawi.bid.module.banking.data.api.BankAccount
+import org.solyton.solawi.bid.module.banking.data.api.CreateBankAccount
+import org.solyton.solawi.bid.module.banking.data.api.CreateFiscalYear
+import org.solyton.solawi.bid.module.banking.data.api.DeleteBankAccount
+import org.solyton.solawi.bid.module.banking.data.api.DeleteFiscalYear
+import org.solyton.solawi.bid.module.banking.data.api.FiscalYear
+import org.solyton.solawi.bid.module.banking.data.api.ReadBankAccount
+import org.solyton.solawi.bid.module.banking.data.api.ReadBankAccounts
+import org.solyton.solawi.bid.module.banking.data.api.ReadFiscalYear
+import org.solyton.solawi.bid.module.banking.data.api.ReadFiscalYears
+import org.solyton.solawi.bid.module.banking.data.api.UpdateBankAccount
+import org.solyton.solawi.bid.module.banking.data.api.UpdateFiscalYear
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
@@ -25,6 +37,14 @@ import org.solyton.solawi.bid.module.user.data.api.organization.ReadOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.RemoveMember
 import org.solyton.solawi.bid.module.user.data.api.organization.UpdateMember
 import org.solyton.solawi.bid.module.user.data.api.organization.UpdateOrganization
+import org.solyton.solawi.bid.module.user.data.api.userprofile.Address
+import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateUserProfile
+import org.solyton.solawi.bid.module.user.data.api.userprofile.DeleteUserProfile
+import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfile
+import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfiles
+import org.solyton.solawi.bid.module.user.data.api.userprofile.UpdateUserProfile
+import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfile
+import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfiles
 
 
 fun installSerializers() { if(serializers.isEmpty()) {
@@ -40,17 +60,17 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add(Nothing::class, Unit.serializer())
        // add(List::class, ListSerializer)
         //...
-
+        add<Identifier>(Identifier.serializer())
         // Result
         add<Result<*>>(ResultSerializer)
         add<Result.Failure>(Result.Failure.serializer())
         add<Result.Failure.Message>(Result.Failure.Message.serializer())
-        add(Result.Success::class, ResultSerializer)
 
         // Authorization
         add<Login>(Login.serializer())
         add<LoggedIn>(LoggedIn.serializer())
         add<RefreshToken>(RefreshToken.serializer())
+        add<AccessToken>(AccessToken.serializer())
         add<Logout>(Logout.serializer())
         add<IsLoggedIn>(IsLoggedIn.serializer())
         add<LoggedInAs>(LoggedInAs.serializer())
@@ -101,12 +121,33 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<SearchBidderData>(SearchBidderData.serializer())
         add<AddBidders>(AddBidders.serializer())
 
+        // Shares
+        add<Share>(Share.serializer())
+        add<Shares>(Shares.serializer())
+        add<ShareType>(ShareType.serializer())
+        // DistributionPoints
+        add<DistributionPoint>(DistributionPoint.serializer())
+        add<DistributionPoints>(DistributionPoints.serializer())
+        add<CreateDistributionPoint>(CreateDistributionPoint.serializer())
+        add<UpdateDistributionPoint>(UpdateDistributionPoint.serializer())
+        add<DeleteDistributionPoint>(DeleteDistributionPoint.serializer())
+        add<ReadDistributionPoint>(ReadDistributionPoint.serializer())
+        add<ReadDistributionPoints>(ReadDistributionPoints.serializer())
+
         // UserManagement
         add<CreateUser>(CreateUser.serializer())
         add<User>(User.serializer())
         add<Users>(Users.serializer())
         add<GetUsers>(GetUsers.serializer())
         add<ChangePassword>(ChangePassword.serializer())
+        add<UserProfile>(UserProfile.serializer())
+        add<UserProfiles>(UserProfiles.serializer())
+        add<ReadUserProfile>(ReadUserProfile.serializer())
+        add<ReadUserProfiles>(ReadUserProfiles.serializer())
+        add<UpdateUserProfile>(UpdateUserProfile.serializer())
+        add<CreateUserProfile>(CreateUserProfile.serializer())
+        add<DeleteUserProfile>(DeleteUserProfile.serializer())
+        add<Address>(Address.serializer())
 
         // Permissions
         add<ReadRightRoleContexts>(ReadRightRoleContexts.serializer())
@@ -171,5 +212,20 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<AddMember>(AddMember.serializer())
         add<RemoveMember>(RemoveMember.serializer())
         add<UpdateMember>(UpdateMember.serializer())
+
+        // Banking
+        add<BankAccount>(BankAccount.serializer())
+        add<ReadBankAccounts>(ReadBankAccounts.serializer())
+        add<ReadBankAccount>(ReadBankAccount.serializer())
+        add<UpdateBankAccount>(UpdateBankAccount.serializer())
+        add<CreateBankAccount>(CreateBankAccount.serializer())
+        add<DeleteBankAccount>(DeleteBankAccount.serializer())
+
+        add<FiscalYear>(FiscalYear.serializer())
+        add<CreateFiscalYear>(CreateFiscalYear.serializer())
+        add<ReadFiscalYears>(ReadFiscalYears.serializer())
+        add<ReadFiscalYear>(ReadFiscalYear.serializer())
+        add<UpdateFiscalYear>(UpdateFiscalYear.serializer())
+        add<DeleteFiscalYear>(DeleteFiscalYear.serializer())
     }
 } }
