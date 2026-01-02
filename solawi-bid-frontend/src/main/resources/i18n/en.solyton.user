@@ -75,6 +75,18 @@ en {
                         username{
                             value: "Username"
                         }
+                        firstname {
+                            value: "Firstname"
+                        }
+                        lastname {
+                            value: "Lastname"
+                        }
+                        title {
+                            value: "Title"
+                        }
+                        address {
+                            value: "Address"
+                        }
                     }
                 }
                 permissions {
