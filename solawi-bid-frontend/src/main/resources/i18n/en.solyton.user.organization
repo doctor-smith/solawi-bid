@@ -101,6 +101,22 @@ en {
                             }
                         }
                     }
+                    listOfConnectedApplications {
+                        title: "Linked Applications"
+                        headers {
+                            application {
+                                title: "Application"
+                            }
+                            modules {
+                                title: "Modules"
+                            }
+                        }
+                        actions {
+                            manageUserPermissions {
+                                tooltip: "Manage User Permissions"
+                            }
+                        }
+                    }
                 }
             }
         }

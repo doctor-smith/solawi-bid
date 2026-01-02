@@ -25,10 +25,13 @@ import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.applicationOrganizationRelations
+import org.solyton.solawi.bid.application.data.env.i18nEnvironment
+import org.solyton.solawi.bid.application.data.environment as appEnv
 import org.solyton.solawi.bid.application.data.i18N
 import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
+import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
 import org.solyton.solawi.bid.application.ui.page.user.i18n.OrganizationLangComponent
 import org.solyton.solawi.bid.application.ui.page.user.style.actionsWrapperStyle
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
@@ -55,6 +58,8 @@ import org.solyton.solawi.bid.module.user.data.organization.name
 import org.solyton.solawi.bid.module.user.data.user.organizations
 import org.solyton.solawi.bid.module.user.i18n.Component
 import org.solyton.solawi.bid.module.application.i18n.ApplicationComponent
+import org.solyton.solawi.bid.module.application.i18n.application
+import org.solyton.solawi.bid.module.application.i18n.module
 
 
 @Markup
@@ -84,7 +89,7 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
         onEmpty(applicationStorage * applicationManagementModule * availableApplications.get) {
             LaunchedEffect(Unit) {
                 launch {
-                    (applicationStorage *applicationManagementModule * applicationManagementActions).dispatch(
+                    (applicationStorage * applicationManagementModule * applicationManagementActions).dispatch(
                         readApplications
                     )
                 }
@@ -93,12 +98,24 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
         onEmpty(applicationStorage * applicationManagementModule * applicationOrganizationRelations.get) {
             LaunchedEffect(Unit) {
                 launch {
-                    (applicationStorage *applicationManagementModule * applicationManagementActions).dispatch(
+                    (applicationStorage * applicationManagementModule * applicationManagementActions).dispatch(
                         readPersonalApplicationOrganizationContextRelations()
                     )
                 }
             }
-        }
+        },
+        *(applicationStorage * applicationManagementModule * availableApplications).read().map {
+            onMissing(
+                ApplicationLangComponent.ApplicationDetails(it.name),
+                applicationStorage * i18N.get
+            ){
+                LaunchComponentLookup(
+                    langComponent = ApplicationLangComponent.ApplicationDetails(it.name),
+                    environment = applicationStorage * appEnv * i18nEnvironment,
+                    i18n = (applicationStorage * i18N)
+                )
+            }
+        }.toBooleanArray()
     ),
     onLoading = { Loading() }
 ) {
@@ -123,6 +140,9 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
     val listOfMembers = texts * subComp("listOfMembers")
     val listOfMembersHeaders = texts * subComp("listOfMembers") * subComp("headers")
 
+    val listOfConnectedApplications = texts * subComp("listOfConnectedApplications")
+    val listOfConnectedApplicationsHeaders = listOfConnectedApplications * subComp("headers")
+    val listOfConnectedApplicationsActions = listOfConnectedApplications * subComp("actions")
 
     Page(verticalPageStyle) {
         Wrap {
@@ -227,14 +247,14 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
         }) {
             var open by remember { mutableStateOf(false) }
             TitleWrapper {
-                Title { H3{ Text("Connected Applications") }}
+                Title { H3{ Text((listOfConnectedApplications * title).emit()) }}
                 SimpleUpDown(open, {open = !open})
             }
             if(open) {
                 HeaderWrapper {
                     Header {
-                        HeaderCell("Application") { width(40.percent) }
-                        HeaderCell("Modules") { width(40.percent) }
+                        HeaderCell(listOfConnectedApplicationsHeaders * subComp("application") * title ) { width(40.percent) }
+                        HeaderCell(listOfConnectedApplicationsHeaders * subComp("modules") * title) { width(40.percent) }
                     }
                 }
                 ListItemsIndexed(connectedApplications) { index, application ->
@@ -242,8 +262,10 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                         listItemWrapperStyle(this, index)
                     }) {
                         DataWrapper {
-                            TextCell(application.name) { width(40.percent) }
-                            TextCell(application.modules.joinToString(", ") { it.name }) { width(40.percent) }
+                            TextCell(base * application(application.name) * title) { width(40.percent) }
+                            TextCell(application.modules.joinToString(", ") {
+                                (base * module(application.name, it.name) * title).emit()
+                            }) { width(40.percent) }
                         }
                         ActionsWrapper({
                             actionsWrapperStyle(this)
@@ -251,7 +273,7 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                             UsersButton(
                                 Color.black,
                                 Color.white,
-                                {"Manage User Rights"},
+                                listOfConnectedApplicationsActions * subComp("manageUserPermissions") * tooltip,
                                 { device.read() }
                             ) {
                                 navigate("/app/management/private/application/${application.id}/organization/$organizationId")
