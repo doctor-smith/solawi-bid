@@ -3,10 +3,13 @@ package org.solyton.solawi.bid.module.user.schema
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.SizedIterable
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.auditable.AuditableEntity
 import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
-import java.util.*
+import org.solyton.solawi.bid.module.banking.schema.BankAccount
+import org.solyton.solawi.bid.module.banking.schema.BankAccounts
+import java.util.UUID
 
 typealias UserProfilesTable = UserProfiles
 typealias UserProfileEntity = UserProfile
@@ -14,12 +17,12 @@ typealias UserProfileEntity = UserProfile
 
 object UserProfiles : AuditableUUIDTable("user_profiles") {
     val userId = reference("user_id", Users)
-
-    // val addressId = reference("address_id", Addresses).nullable()
+    val firstName = varchar("first_name", 50)
+    val lastName = varchar("last_name", 50)
+    // professor, doctor, ...
+    val title = varchar("title", 50).nullable()
 
     val phoneNumber = varchar("phone_number", 15).nullable()
-
-    // val bankAccountId = reference("bank_account_id", BankAccounts).nullable()// nullable default
 }
 
 class UserProfile(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
@@ -27,13 +30,14 @@ class UserProfile(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
 
     var user by User referencedOn UserProfiles.userId
 
-   // var address by Address optionalReferencedOn  UserProfiles.addressId
+    var firstName by UserProfiles.firstName
+    var lastName by UserProfiles.lastName
+    var title by UserProfiles.title
 
     var phoneNumber by UserProfiles.phoneNumber
+    val addresses by Address referrersOn Addresses.userProfile
 
-    // var bankAccount by BankAccount optionalReferencedOn UserProfiles.bankAccountId
-
-    // val shares: SizedIterable<Share> by Share.Companion referrersOn Shares.userProfileId
+    // val shares by Share referrersOn Shares.userProfileId
 
 
     override var createdAt: DateTime by UserProfiles.createdAt
