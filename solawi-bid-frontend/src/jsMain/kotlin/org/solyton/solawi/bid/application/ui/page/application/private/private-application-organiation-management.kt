@@ -10,6 +10,7 @@ import org.evoleq.compose.guard.data.onEmpty
 import org.evoleq.compose.guard.data.onNullLaunch
 import org.evoleq.compose.guard.data.withLoading
 import org.evoleq.compose.layout.Horizontal
+import org.evoleq.compose.routing.navigate
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.*
 import org.evoleq.math.emit
@@ -20,7 +21,11 @@ import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.transform.times
+import org.jetbrains.compose.web.css.AlignItems
 import org.jetbrains.compose.web.css.Color
+import org.jetbrains.compose.web.css.JustifyContent
+import org.jetbrains.compose.web.css.alignItems
+import org.jetbrains.compose.web.css.justifyContent
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.H3
@@ -45,6 +50,7 @@ import org.solyton.solawi.bid.module.application.data.management.availableApplic
 import org.solyton.solawi.bid.module.application.data.management.personalApplicationContextRelations
 import org.solyton.solawi.bid.module.application.i18n.ApplicationComponent
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
+import org.solyton.solawi.bid.module.control.button.ArrowUpButton
 import org.solyton.solawi.bid.module.control.button.UserLockButton
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
@@ -191,11 +197,25 @@ fun PrivateApplicationOrganizationManagementPage(
 
     Page(verticalPageStyle) {
         Wrap {
-            Horizontal {
+            Horizontal({
+                justifyContent(JustifyContent.SpaceBetween)
+                alignItems(AlignItems.Center)
+            }) {
                 PageTitle((texts * title).inject(
                     Injection("organization", organization * nameOfOrganization.get),
                     Injection("application", app * nameOfApplication.get * ApplicationComponent.applicationName(base) * title)
                 ))
+                Horizontal {
+                    ArrowUpButton(
+                        Color.black,
+                        Color.white,
+                        texts * subComp("actions") * subComp("navToOrganizationPage") * tooltip * inject(
+                            "organizationName" by organization * nameOfOrganization.get),
+                        device
+                    ) {
+                        navigate("/app/management/organizations/$organizationId")
+                    }
+                }
             }
             SubTitle(texts * subTitle)
         }

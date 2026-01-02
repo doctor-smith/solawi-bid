@@ -48,6 +48,11 @@ en {
                 applicationOrganizationManagementPage {
                     title: "${organization} / ${application}"
                     subTitle: "Manage Application on Organizations Level"
+                    actions {
+                        navToOrganizationPage {
+                            tooltip: "Goto Organization ${organizationName}"
+                        }
+                    }
                     listOfMembers{
                         title: "Members"
                         headers{
