@@ -32,6 +32,19 @@ import org.solyton.solawi.bid.module.application.data.SubscribeApplications
 import org.solyton.solawi.bid.module.application.data.SubscribeModules
 import org.solyton.solawi.bid.module.application.data.UpdateOrganizationModuleRelations
 import org.solyton.solawi.bid.module.authentication.data.api.*
+import org.solyton.solawi.bid.module.banking.data.api.BankAccount
+import org.solyton.solawi.bid.module.banking.data.api.CreateBankAccount
+import org.solyton.solawi.bid.module.banking.data.api.CreateFiscalYear
+import org.solyton.solawi.bid.module.banking.data.api.DeleteBankAccount
+import org.solyton.solawi.bid.module.banking.data.api.DeleteFiscalYear
+import org.solyton.solawi.bid.module.banking.data.api.FiscalYear
+import org.solyton.solawi.bid.module.banking.data.api.ReadBankAccount
+import org.solyton.solawi.bid.module.banking.data.api.ReadBankAccounts
+import org.solyton.solawi.bid.module.banking.data.api.ReadFiscalYear
+import org.solyton.solawi.bid.module.banking.data.api.ReadFiscalYears
+import org.solyton.solawi.bid.module.banking.data.api.UpdateBankAccount
+import org.solyton.solawi.bid.module.banking.data.api.UpdateFiscalYear
+import org.solyton.solawi.bid.module.banking.schema.BankAccounts
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
@@ -46,8 +59,16 @@ import org.solyton.solawi.bid.module.user.data.api.organization.ReadOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.RemoveMember
 import org.solyton.solawi.bid.module.user.data.api.organization.UpdateMember
 import org.solyton.solawi.bid.module.user.data.api.organization.UpdateOrganization
+import org.solyton.solawi.bid.module.user.data.api.userprofile.Address
+import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateUserProfile
+import org.solyton.solawi.bid.module.user.data.api.userprofile.DeleteUserProfile
+import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfile
+import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfiles
+import org.solyton.solawi.bid.module.user.data.api.userprofile.UpdateUserProfile
+import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfile
+import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfiles
 
-fun Application.installSerializers() {
+fun installSerializers() {
     // primitive serializers
     serializers[Int::class] = Int.serializer()
     serializers[Boolean::class] = Boolean.serializer()
@@ -59,7 +80,6 @@ fun Application.installSerializers() {
     serializers[Result.Success::class] = ResultSerializer
     serializers[Result.Failure::class] = ResultSerializer
     serializers[Result.Failure.Message::class] = ResultSerializer
-    serializers[Result.Failure.Exception::class] = ResultSerializer
 
     // General
     serializers[Identifier::class] = Identifier.serializer()
@@ -116,6 +136,18 @@ fun Application.installSerializers() {
     serializers[BidderData::class] = BidderData.serializer()
     serializers[SearchBidderData::class] = SearchBidderData.serializer()
     serializers[AddBidders::class] = AddBidders.serializer()
+    // Shares
+    serializers[Share::class] = Share.serializer()
+    serializers[Shares::class] = Shares.serializer()
+    serializers[ShareType::class] = ShareType.serializer()
+    // Distribution Points
+    serializers[DistributionPoint::class] = DistributionPoint.serializer()
+    serializers[DistributionPoints::class] = DistributionPoints.serializer()
+    serializers[CreateDistributionPoint::class] = CreateDistributionPoint.serializer()
+    serializers[UpdateDistributionPoint::class] = UpdateDistributionPoint.serializer()
+    serializers[DeleteDistributionPoint::class] = DeleteDistributionPoint.serializer()
+    serializers[ReadDistributionPoints::class] = ReadDistributionPoints.serializer()
+    serializers[ReadDistributionPoint::class] = ReadDistributionPoint.serializer()
 
     // UserManagement
     serializers[CreateUser::class] = CreateUser.serializer()
@@ -123,7 +155,14 @@ fun Application.installSerializers() {
     serializers[Users::class] = Users.serializer()
     serializers[GetUsers::class] = GetUsers.serializer()
     serializers[ChangePassword::class] = ChangePassword.serializer()
-
+    serializers[UserProfile::class] = UserProfile.serializer()
+    serializers[UserProfiles::class] = UserProfiles.serializer()
+    serializers[ReadUserProfiles::class] = ReadUserProfiles.serializer()
+    serializers[ReadUserProfile::class] = ReadUserProfile.serializer()
+    serializers[UpdateUserProfile::class] = UpdateUserProfile.serializer()
+    serializers[CreateUserProfile::class] = CreateUserProfile.serializer()
+    serializers[DeleteUserProfile::class] = DeleteUserProfile.serializer()
+    serializers[Address::class] = Address.serializer()
     // Permissions
     serializers[ReadRightRoleContexts::class] = ReadRightRoleContexts.serializer()
     serializers[ReadRightRoleContextsOfUser::class] = ReadRightRoleContextsOfUser.serializer()
@@ -188,4 +227,20 @@ fun Application.installSerializers() {
     serializers[AddMember::class] = AddMember.serializer()
     serializers[RemoveMember::class] = RemoveMember.serializer()
     serializers[UpdateMember::class] = UpdateMember.serializer()
+
+    // Banking
+    serializers[BankAccount::class] = BankAccount.serializer()
+    serializers[ReadBankAccounts::class] = ReadBankAccounts.serializer()
+    serializers[ReadBankAccount::class] = ReadBankAccount.serializer()
+    serializers[CreateBankAccount::class] = CreateBankAccount.serializer()
+    serializers[UpdateBankAccount::class] = UpdateBankAccount.serializer()
+    serializers[DeleteBankAccount::class] = DeleteBankAccount.serializer()
+
+    serializers[FiscalYear::class] = FiscalYear.serializer()
+    serializers[CreateFiscalYear::class] = CreateFiscalYear.serializer()
+    serializers[ReadFiscalYears::class] = ReadFiscalYears.serializer()
+    serializers[ReadFiscalYear::class] = ReadFiscalYear.serializer()
+    serializers[UpdateFiscalYear::class] = UpdateFiscalYear.serializer()
+    serializers[DeleteFiscalYear::class] = FiscalYear.serializer()
+
 }
