@@ -49,6 +49,11 @@ de {
                 applicationOrganizationManagementPage {
                     title: "${organization} / ${application}"
                     subTitle: "Applikation auf Organisations Ebene verwalten"
+                    actions {
+                        navToOrganizationPage {
+                            tooltip: "Gehe zu Organisation ${organizationName}"
+                        }
+                    }
                     listOfMembers{
                         title: "Mitglieder"
                         headers {
