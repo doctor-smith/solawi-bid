@@ -131,6 +131,10 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) = withLoadin
     onLoading = { Loading() },
 ){
 
+    LaunchedEffect(Unit){
+        (storage * userIso * userActions).dispatch(readOrganizations())
+    }
+
     val device = storage * deviceData * mediaType.get
     val base = storage * i18N * language * Component.base
     val texts = storage * i18N * language * component(ApplicationLangComponent.PrivateApplicationManagementPage)
