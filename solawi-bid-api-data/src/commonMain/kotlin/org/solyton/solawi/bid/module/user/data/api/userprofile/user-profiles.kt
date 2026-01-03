@@ -30,6 +30,7 @@ data class CreateUserProfile(
     val userId: String,
     val firstName: String,
     val lastName: String,
+    val title: String?,
     val phoneNumber: String?,
     val address: Address
 )
@@ -39,9 +40,23 @@ data class UpdateUserProfile(
     val userProfileId: String,
     val firstName: String,
     val lastName: String,
+    val title: String?,
     val phoneNumber: String?,
     val address: Address
 )
 
 @Serializable
 data class DeleteUserProfile(val userProfileId: String)
+
+@Serializable
+data class UserProfileToImport(
+    val username: String,
+    val firstName: String,
+    val lastName: String,
+    val title: String?,
+    val phoneNumber: String?,
+    val address: CreateAddress
+)
+
+@Serializable
+data class ImportUserProfiles(val profiles: List<UserProfileToImport>)

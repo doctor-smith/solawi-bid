@@ -1,6 +1,5 @@
 package org.solyton.solawi.bid.module.user.data
 
-import org.solyton.solawi.bid.module.bid.data.modals
 
 /**
  * Alias for [actions]

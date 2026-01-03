@@ -93,6 +93,12 @@ fun <OrganizationEnv> Routing.organization(
                     AddMember() *
                     Respond { transform() } runOn Base(call, environment)
                 }
+                post("import") {
+                    ReceiveContextual<ImportMembers>() *
+                    IsGranted("MANAGE_USERS") *
+                    ImportMembers() *
+                    Respond { transform() } runOn Base(call, environment)
+                }
                 patch("update") {
                     ReceiveContextual<UpdateMember>() *
                     IsGranted("MANAGE_USERS") *

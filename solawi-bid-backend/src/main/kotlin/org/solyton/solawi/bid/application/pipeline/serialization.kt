@@ -60,12 +60,19 @@ import org.solyton.solawi.bid.module.user.data.api.organization.RemoveMember
 import org.solyton.solawi.bid.module.user.data.api.organization.UpdateMember
 import org.solyton.solawi.bid.module.user.data.api.organization.UpdateOrganization
 import org.solyton.solawi.bid.module.user.data.api.userprofile.Address
+import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateUserProfile
+import org.solyton.solawi.bid.module.user.data.api.userprofile.DeleteAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.DeleteUserProfile
+import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfiles
+import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadAddress
+import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadAddresses
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfile
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfiles
+import org.solyton.solawi.bid.module.user.data.api.userprofile.UpdateAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UpdateUserProfile
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfile
+import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfileToImport
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfiles
 
 fun installSerializers() {
@@ -162,7 +169,14 @@ fun installSerializers() {
     serializers[UpdateUserProfile::class] = UpdateUserProfile.serializer()
     serializers[CreateUserProfile::class] = CreateUserProfile.serializer()
     serializers[DeleteUserProfile::class] = DeleteUserProfile.serializer()
+    serializers[UserProfileToImport::class] = UserProfileToImport.serializer()
+    serializers[ImportUserProfiles::class] = ImportUserProfiles.serializer()
     serializers[Address::class] = Address.serializer()
+    serializers[CreateAddress::class] = CreateAddress.serializer()
+    serializers[UpdateAddress::class] = UpdateAddress.serializer()
+    serializers[DeleteAddress::class] = DeleteAddress.serializer()
+    serializers[ReadAddresses::class] = ReadAddresses.serializer()
+    serializers[ReadAddress::class] = ReadAddress.serializer()
     // Permissions
     serializers[ReadRightRoleContexts::class] = ReadRightRoleContexts.serializer()
     serializers[ReadRightRoleContextsOfUser::class] = ReadRightRoleContextsOfUser.serializer()

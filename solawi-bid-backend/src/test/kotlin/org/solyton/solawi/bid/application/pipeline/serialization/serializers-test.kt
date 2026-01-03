@@ -37,12 +37,19 @@ import org.solyton.solawi.bid.module.bid.data.api.ShareType
 import org.solyton.solawi.bid.module.bid.data.api.Shares
 import org.solyton.solawi.bid.module.bid.data.api.UpdateDistributionPoint
 import org.solyton.solawi.bid.module.user.data.api.userprofile.Address
+import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateUserProfile
+import org.solyton.solawi.bid.module.user.data.api.userprofile.DeleteAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.DeleteUserProfile
+import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfiles
+import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadAddress
+import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadAddresses
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfile
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfiles
+import org.solyton.solawi.bid.module.user.data.api.userprofile.UpdateAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UpdateUserProfile
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfile
+import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfileToImport
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfiles
 import kotlin.reflect.KClass
 import kotlin.test.Test
@@ -60,8 +67,8 @@ class SerializersTest {
             Boolean::class,
             Unit::class,
 
-            org.evoleq.ktorx.result.Result::class,
-            org.evoleq.ktorx.result.Result.Failure::class,
+            Result::class,
+            Result.Failure::class,
             Result.Failure.Message::class,
 
             Identifier::class,
@@ -87,8 +94,16 @@ class SerializersTest {
             CreateUserProfile::class,
             UpdateUserProfile::class,
             DeleteUserProfile::class,
+            UserProfileToImport::class,
+            ImportUserProfiles::class,
+
 
             Address::class,
+            CreateAddress::class,
+            ReadAddress::class,
+            ReadAddresses::class,
+            UpdateAddress::class,
+            DeleteAddress::class,
 
             Share::class,
             Shares::class,
@@ -114,9 +129,12 @@ class SerializersTest {
             ReadFiscalYears::class,
             CreateFiscalYear::class,
             UpdateFiscalYear::class,
-            DeleteFiscalYear::class
+            DeleteFiscalYear::class,
+
+            *organizationSerializers.toTypedArray()
         )
         val installed = serializers.keys.toList()
         classes.forEach { assertEquals(true, installed.contains(it), "Serializer for Class $it not installed") }
     }
 }
+
