@@ -16,8 +16,11 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.action.db.isGranted
+import org.solyton.solawi.bid.module.permission.schema.RoleEntity
+import org.solyton.solawi.bid.module.permission.schema.RolesTable
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.data.api.organization.AddMember
+import org.solyton.solawi.bid.module.user.data.api.organization.ImportMembers
 import org.solyton.solawi.bid.module.user.data.api.organization.Organization
 import org.solyton.solawi.bid.module.user.data.api.organization.RemoveMember
 import org.solyton.solawi.bid.module.user.data.api.organization.UpdateMember
@@ -147,5 +150,53 @@ fun UpdateMember(): KlAction<Result<Contextual<UpdateMember>>, Result<Organizati
     } } x database
 } }
 
+/**
+ * Handles the inclusion of new members into an organization. It validates the requesting user's permissions,
+ * identifies members that need to be added, creates user accounts for new members, and assigns the necessary roles.
+ *
+ * @return A `KlAction` that processes a `Result` wrapping a `Contextual` object containing data about the
+ *         organization and new members to be added. It ultimately yields a `Result` wrapping the updated organization.
+ */
+@MathDsl
+@Suppress("FunctionName")
+fun ImportMembers(): KlAction<Result<Contextual<ImportMembers>>, Result<Organization>> = KlAction{ result ->
+    DbAction { database -> result bindSuspend {contextual -> resultTransaction(database) {
+        val userId = contextual.userId
+        val data = contextual.data
+        val newMembers = data.usernames
 
+        val organization = OrganizationEntity.find { OrganizationsTable.id eq UUID.fromString(data.organizationId) }.firstOrNull()
+            ?: throw OrganizationException.NoSuchOrganization(data.organizationId)
 
+        if(!isGranted(
+                userId,
+                organization.context.id.value,
+                "MANAGE_USERS"
+            )) throw PermissionException.AccessDenied
+
+        //
+        val existingMembers = organization.members.map { it.username }.toSet()
+        val membersToAdd = newMembers.filter { it !in existingMembers }
+        val membersWithUserAccounts = UserEntity.find { UsersTable.username inList membersToAdd }
+        val userAccountsToAdd = membersToAdd.filter { it !in membersWithUserAccounts.map { user -> user.username} }
+        val recentlyAddedUserAccounts = userAccountsToAdd.map { UserEntity.new { username = it; password = "NOT_SET" } }
+
+        val userRole = RoleEntity.find { RolesTable.name eq "USER" }.first()
+
+        // Add users to the organization and give them the user role
+        listOf(membersWithUserAccounts, recentlyAddedUserAccounts).flatten().forEach { member ->
+            UserOrganization.insert {
+                it[UserOrganization.userId] = member.id
+                it[UserOrganization.organizationId] = organization.id
+            }
+            UserRoleContext.insert {
+                it[UserRoleContext.userId] = member.id.value
+                it[UserRoleContext.roleId] = userRole.id.value
+                it[UserRoleContext.contextId] = organization.context.id.value
+            }
+        }
+
+        // return
+        organization.toApiType(this)
+    } } x database
+    } }

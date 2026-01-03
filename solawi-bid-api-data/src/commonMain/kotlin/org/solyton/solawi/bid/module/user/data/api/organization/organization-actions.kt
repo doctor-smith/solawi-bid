@@ -46,3 +46,9 @@ data class UpdateMember(
     val userId: String,
     val roles: List<String>
 )
+
+@Serializable
+data class ImportMembers(
+    val organizationId: String,
+    val usernames: List<String>
+)

@@ -30,6 +30,7 @@
 | POST | organizations/create-child | CreateChildOrganization  | CreateChildOrganization | Organization |
 | DELETE | organizations/delete | DeleteOrganization  | DeleteOrganization | Organizations |
 | POST | organizations/members/add | AddMember  | AddMember | Organization |
+| POST | organizations/members/import | ImportMembers  | ImportMembers | Organization |
 | DELETE | organizations/members/remove | RemoveMember  | RemoveMember | Organization |
 | PATCH | organizations/members/update | UpdateMember  | UpdateMember | Organization |
 | PATCH | organizations/update | UpdateOrganization  | UpdateOrganization | Organization |

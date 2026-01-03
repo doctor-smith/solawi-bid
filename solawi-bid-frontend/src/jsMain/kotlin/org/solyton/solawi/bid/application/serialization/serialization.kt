@@ -11,40 +11,12 @@ import org.solyton.solawi.bid.module.application.data.ApiApplications
 import org.solyton.solawi.bid.module.application.data.ApiModule
 import org.solyton.solawi.bid.module.application.data.ApiUserApplications
 import org.solyton.solawi.bid.module.authentication.data.api.*
-import org.solyton.solawi.bid.module.banking.data.api.BankAccount
-import org.solyton.solawi.bid.module.banking.data.api.CreateBankAccount
-import org.solyton.solawi.bid.module.banking.data.api.CreateFiscalYear
-import org.solyton.solawi.bid.module.banking.data.api.DeleteBankAccount
-import org.solyton.solawi.bid.module.banking.data.api.DeleteFiscalYear
-import org.solyton.solawi.bid.module.banking.data.api.FiscalYear
-import org.solyton.solawi.bid.module.banking.data.api.ReadBankAccount
-import org.solyton.solawi.bid.module.banking.data.api.ReadBankAccounts
-import org.solyton.solawi.bid.module.banking.data.api.ReadFiscalYear
-import org.solyton.solawi.bid.module.banking.data.api.ReadFiscalYears
-import org.solyton.solawi.bid.module.banking.data.api.UpdateBankAccount
-import org.solyton.solawi.bid.module.banking.data.api.UpdateFiscalYear
+import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
-import org.solyton.solawi.bid.module.user.data.api.organization.AddMember
-import org.solyton.solawi.bid.module.user.data.api.organization.CreateChildOrganization
-import org.solyton.solawi.bid.module.user.data.api.organization.CreateOrganization
-import org.solyton.solawi.bid.module.user.data.api.organization.DeleteOrganization
-import org.solyton.solawi.bid.module.user.data.api.organization.Member
-import org.solyton.solawi.bid.module.user.data.api.organization.Organization
-import org.solyton.solawi.bid.module.user.data.api.organization.Organizations
-import org.solyton.solawi.bid.module.user.data.api.organization.ReadOrganizations
-import org.solyton.solawi.bid.module.user.data.api.organization.RemoveMember
-import org.solyton.solawi.bid.module.user.data.api.organization.UpdateMember
-import org.solyton.solawi.bid.module.user.data.api.organization.UpdateOrganization
-import org.solyton.solawi.bid.module.user.data.api.userprofile.Address
-import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateUserProfile
-import org.solyton.solawi.bid.module.user.data.api.userprofile.DeleteUserProfile
-import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfile
-import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfiles
-import org.solyton.solawi.bid.module.user.data.api.userprofile.UpdateUserProfile
-import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfile
-import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfiles
+import org.solyton.solawi.bid.module.user.data.api.organization.*
+import org.solyton.solawi.bid.module.user.data.api.userprofile.*
 
 
 fun installSerializers() { if(serializers.isEmpty()) {
@@ -147,7 +119,14 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<UpdateUserProfile>(UpdateUserProfile.serializer())
         add<CreateUserProfile>(CreateUserProfile.serializer())
         add<DeleteUserProfile>(DeleteUserProfile.serializer())
+        add<UserProfileToImport>(UserProfileToImport.serializer())
+        add<ImportUserProfiles>(ImportUserProfiles.serializer())
         add<Address>(Address.serializer())
+        add<CreateAddress>(CreateAddress.serializer())
+        add<UpdateAddress>(UpdateAddress.serializer())
+        add<DeleteAddress>(DeleteAddress.serializer())
+        add<ReadAddress>(ReadAddress.serializer())
+        add<ReadAddresses>(ReadAddresses.serializer())
 
         // Permissions
         add<ReadRightRoleContexts>(ReadRightRoleContexts.serializer())
@@ -212,6 +191,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<AddMember>(AddMember.serializer())
         add<RemoveMember>(RemoveMember.serializer())
         add<UpdateMember>(UpdateMember.serializer())
+        add<ImportMembers>(ImportMembers.serializer())
 
         // Banking
         add<BankAccount>(BankAccount.serializer())
