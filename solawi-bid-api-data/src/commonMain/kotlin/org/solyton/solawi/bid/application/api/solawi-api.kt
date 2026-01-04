@@ -7,17 +7,9 @@ import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
-import org.solyton.solawi.bid.module.user.data.api.organization.AddMember
-import org.solyton.solawi.bid.module.user.data.api.organization.CreateChildOrganization
-import org.solyton.solawi.bid.module.user.data.api.organization.CreateOrganization
-import org.solyton.solawi.bid.module.user.data.api.organization.DeleteOrganization
-import org.solyton.solawi.bid.module.user.data.api.organization.ImportMembers
-import org.solyton.solawi.bid.module.user.data.api.organization.Organization
-import org.solyton.solawi.bid.module.user.data.api.organization.Organizations
-import org.solyton.solawi.bid.module.user.data.api.organization.ReadOrganizations
-import org.solyton.solawi.bid.module.user.data.api.organization.RemoveMember
-import org.solyton.solawi.bid.module.user.data.api.organization.UpdateMember
-import org.solyton.solawi.bid.module.user.data.api.organization.UpdateOrganization
+import org.solyton.solawi.bid.module.user.data.api.organization.*
+import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfiles
+import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfiles
 
 val solawiApi by lazy {
     // Authentication
@@ -164,6 +156,11 @@ val solawiApi by lazy {
             post<SendMailForRegistrationConfirmation, MailForRegistrationConfirmationSent>(
                 key = SendMailForRegistrationConfirmation::class,
                 url = "user/send-registration-mail"
+            )
+
+            post<ImportUserProfiles, UserProfiles> (
+                key = ImportUserProfiles::class,
+                url = "users/profiles/import"
             )
 
             // Organizations

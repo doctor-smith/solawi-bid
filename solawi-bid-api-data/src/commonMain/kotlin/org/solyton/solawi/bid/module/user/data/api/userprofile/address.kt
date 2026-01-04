@@ -2,6 +2,8 @@ package org.solyton.solawi.bid.module.user.data.api.userprofile
 
 import kotlinx.serialization.Serializable
 
+typealias ApiAddress = Address
+
 @Serializable
 data class Address(
     val id: String,

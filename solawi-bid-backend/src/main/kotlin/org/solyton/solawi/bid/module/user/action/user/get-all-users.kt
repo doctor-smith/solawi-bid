@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.user.action
+package org.solyton.solawi.bid.module.user.action.user
 
 import org.evoleq.exposedx.transaction.resultTransaction
 import org.evoleq.ktorx.Action

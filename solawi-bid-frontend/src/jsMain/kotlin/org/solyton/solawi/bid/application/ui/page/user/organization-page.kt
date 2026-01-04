@@ -26,10 +26,10 @@ import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.applicationOrganizationRelations
 import org.solyton.solawi.bid.application.data.env.i18nEnvironment
-import org.solyton.solawi.bid.application.data.environment as appEnv
 import org.solyton.solawi.bid.application.data.i18N
 import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
 import org.solyton.solawi.bid.application.data.transform.user.userIso
+import org.solyton.solawi.bid.application.service.organization.importMembersFromCsv
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
 import org.solyton.solawi.bid.application.ui.page.user.i18n.OrganizationLangComponent
@@ -39,8 +39,12 @@ import org.solyton.solawi.bid.module.application.action.readApplications
 import org.solyton.solawi.bid.module.application.action.readPersonalApplicationOrganizationContextRelations
 import org.solyton.solawi.bid.module.application.data.management.applicationManagementActions
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
+import org.solyton.solawi.bid.module.application.i18n.ApplicationComponent
+import org.solyton.solawi.bid.module.application.i18n.application
+import org.solyton.solawi.bid.module.application.i18n.module
 import org.solyton.solawi.bid.module.control.button.ArrowUpButton
 import org.solyton.solawi.bid.module.control.button.EditButton
+import org.solyton.solawi.bid.module.control.button.UploadButton
 import org.solyton.solawi.bid.module.control.button.UsersButton
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
@@ -52,14 +56,13 @@ import org.solyton.solawi.bid.module.style.page.PageTitle
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.action.organization.readOrganizations
+import org.solyton.solawi.bid.module.user.component.modal.showImportMembersToOrganizationModal
 import org.solyton.solawi.bid.module.user.data.*
 import org.solyton.solawi.bid.module.user.data.organization.members
 import org.solyton.solawi.bid.module.user.data.organization.name
 import org.solyton.solawi.bid.module.user.data.user.organizations
 import org.solyton.solawi.bid.module.user.i18n.Component
-import org.solyton.solawi.bid.module.application.i18n.ApplicationComponent
-import org.solyton.solawi.bid.module.application.i18n.application
-import org.solyton.solawi.bid.module.application.i18n.module
+import org.solyton.solawi.bid.application.data.environment as appEnv
 
 
 @Markup
@@ -137,6 +140,8 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
     // texts
     val base = applicationStorage * i18N * language * ApplicationComponent.base
     val texts = userModuleStorage * i18n * language * component(OrganizationLangComponent.OrganizationPage)
+    val dialogs = texts * subComp("dialogs")
+    val importMembersToOrganization = dialogs * subComp("importMembersToOrganization")
     val listOfMembers = texts * subComp("listOfMembers")
     val listOfMembersHeaders = texts * subComp("listOfMembers") * subComp("headers")
 
@@ -172,6 +177,8 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
             TitleWrapper {
                 Title { H3{ Text((listOfMembers * title).emit()) }}
                 SimpleUpDown(open, {open = !open})
+
+
             }
             if(open) {
                 HeaderWrapper {
@@ -179,6 +186,28 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                         HeaderCell(listOfMembersHeaders * Component.standard * title) { width(30.percent) }
                         HeaderCell(listOfMembersHeaders * Component.userProfile * title) { width(30.percent) }
                         HeaderCell("Solawi Anteile | Status") { width(40.percent) }
+                    }
+                    ActionsWrapper({
+                        defaultListStyles.actionsWrapper(this)
+                        alignSelf(AlignSelf.FlexEnd)
+                    }){
+                        var csv: String? by remember { mutableStateOf<String?>(null) }
+                        UploadButton(
+                            color = Color.black,
+                            bgColor = Color.white,
+                            texts = listOfMembers * Component.actions * Component.importMembersToOrganization * tooltip,
+                            deviceType = { device.read() }
+                        ) {
+                            (userModuleStorage * userModals).showImportMembersToOrganizationModal(
+                                texts = importMembersToOrganization.emit(),
+                                device = { device.read() },
+                                csv = csv,
+                                setCsv = {csv = it},
+                                isOkButtonDisabled = {csv == null}
+                            ) {
+                                applicationStorage.importMembersFromCsv(organizationId, csv!!, ';')
+                            }
+                        }
                     }
                 }
                 HeaderWrapper {

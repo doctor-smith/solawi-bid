@@ -5,7 +5,7 @@ import org.evoleq.compose.Markup
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
-import org.w3c.dom.asList
+import org.w3c.dom.get
 import org.w3c.files.File
 import org.w3c.files.FileReader
 
@@ -19,6 +19,7 @@ fun Dropzone(
 ) {
     var isDragging by remember { mutableStateOf(false) }
     var isProcessing by remember { mutableStateOf(false) }
+
     Div(
         attrs = {
             style {
@@ -30,26 +31,60 @@ fun Dropzone(
             }
             onDragOver {
                 it.preventDefault()
+                it.stopPropagation()
                 isDragging = true
             }
             onDragLeave {
                 it.preventDefault()
+                it.stopPropagation()
+                it.dataTransfer?.dropEffect = "copy"
                 isDragging = false
             }
             onDrop { event ->
                 event.preventDefault()
-                if(isProcessing) return@onDrop
+                event.stopPropagation()
+
+                if (isProcessing) return@onDrop
                 isDragging = false
-                isProcessing = true
-                onProcessingStarted()
-                val files = event.dataTransfer?.files
-                if (files != null) {
-                    val fileList = files.asList()
-                    console.log(fileList.map { it.name })
-                    onFilesDropped(fileList)
+
+                val dt = event.dataTransfer ?: return@onDrop
+                val fileList = mutableListOf<File>()
+
+                console.log("Dropzone: Drop-Event gefangen. dt = ${dt.files}")
+
+                // 1. Versuch: Über dt.files
+                val files = dt.files
+                if (files.length > 0) {
+                    for (i in 0 until files.length) {
+                        files.item(i)?.let { fileList.add(it) }
+                    }
                 }
-                onProcessingStopped()
-                isProcessing = false
+
+                // 2. Versuch: Fallback auf dt.items (falls files leer ist)
+                if (fileList.isEmpty()) {
+                    val items = dt.items
+                    for (i in 0 until items.length) {
+                        val item = items[i]
+                        if (item?.kind == "file") {
+                            item.getAsFile()?.let { fileList.add(it) }
+                        }
+                    }
+                }
+
+                if (fileList.isNotEmpty()) {
+                    isProcessing = true
+                    onProcessingStarted()
+
+                    // Wir übergeben die Liste.
+                    // WICHTIG: Die Verarbeitung (FileReader) sollte sofort starten.
+                    onFilesDropped(fileList)
+
+                    isProcessing = false
+                    onProcessingStopped()
+                } else {
+                    console.warn("Keine Dateien im Drop-Event gefunden.")
+                }
+
             }
         }
     ) {
