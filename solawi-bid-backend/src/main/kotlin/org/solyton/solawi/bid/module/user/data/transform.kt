@@ -6,7 +6,11 @@ import org.solyton.solawi.bid.module.permission.repository.getRolesByUserAndCont
 import org.solyton.solawi.bid.module.user.data.api.UserD
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiMember
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiOrganization
+import org.solyton.solawi.bid.module.user.data.api.userprofile.ApiAddress
+import org.solyton.solawi.bid.module.user.data.api.userprofile.ApiUserProfile
+import org.solyton.solawi.bid.module.user.schema.AddressEntity
 import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
+import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
 import org.solyton.solawi.bid.module.user.schema.repository.getChildren
 import org.solyton.solawi.bid.module.user.schema.User as UserEntity
 
@@ -37,4 +41,29 @@ fun OrganizationEntity.toApiType(transaction: Transaction): ApiOrganization = Ap
     subOrganizations = getChildren().map {
         organization -> organization.toApiType(transaction)
     }
+)
+
+fun UserProfileEntity.toApiType(transaction: Transaction): ApiUserProfile =
+    ApiUserProfile(
+        id = id.value.toString(),
+        firstName = firstName,
+        lastName = lastName,
+        title = title,
+        phoneNumber = phoneNumber,
+        address = with(transaction) {addresses.toList().toApiType().first()},
+    )
+
+
+fun List<AddressEntity>.toApiType(): List<ApiAddress> = map { address -> address.toApiType() }
+
+fun AddressEntity.toApiType(): ApiAddress = ApiAddress(
+    id = id.value.toString(),
+    recipientName = recipientName,
+    organizationName = organizationName,
+    addressLine1 = addressLine1,
+    addressLine2 = addressLine2,
+    city = city,
+    postalCode = postalCode,
+    countryCode = countryCode,
+    stateOrProvince = stateOrProvince
 )

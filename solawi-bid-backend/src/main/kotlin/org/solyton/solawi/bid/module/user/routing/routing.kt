@@ -10,12 +10,15 @@ import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
-import org.solyton.solawi.bid.module.user.action.ChangePassword
-import org.solyton.solawi.bid.module.user.action.CreateNewUser
-import org.solyton.solawi.bid.module.user.action.GetAllUsers
 import org.solyton.solawi.bid.module.user.action.organization.*
+import org.solyton.solawi.bid.module.user.action.user.ChangePassword
+import org.solyton.solawi.bid.module.user.action.user.CreateNewUser
+import org.solyton.solawi.bid.module.user.action.user.GetAllUsers
+import org.solyton.solawi.bid.module.user.action.user.ImportProfiles
 import org.solyton.solawi.bid.module.user.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.organization.*
+import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfiles
+import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfiles
 
 @KtorDsl
 fun <UserEnv> Routing.user(
@@ -38,6 +41,26 @@ fun <UserEnv> Routing.user(
 
             patch("change-password") {
                 ReceiveContextual<ChangePassword>() * ChangePassword * Respond<User>{ transform() } runOn Base(call, environment)
+            }
+            route("profiles") {
+                patch("by-ids") {
+                    NotImplemented() * Respond { transform() } runOn Base(call, environment)
+                }
+                post("import") {
+                    ReceiveContextual<ImportUserProfiles>() *
+                    IsGranted("MANAGE_USERS") *
+                    ImportProfiles() *
+                    Respond<UserProfiles> { transform() } runOn Base(call, environment)
+                }
+                post("create") {
+                    NotImplemented() * Respond { transform() } runOn Base(call, environment)
+                }
+                patch("update") {
+                    NotImplemented() * Respond { transform() } runOn Base(call, environment)
+                }
+                delete("delete") {
+                    NotImplemented() * Respond { transform() } runOn Base(call, environment)
+                }
             }
         }
     }
@@ -93,7 +116,7 @@ fun <OrganizationEnv> Routing.organization(
                     AddMember() *
                     Respond { transform() } runOn Base(call, environment)
                 }
-                post("import") {
+                post("import") { // todo:test write api test
                     ReceiveContextual<ImportMembers>() *
                     IsGranted("MANAGE_USERS") *
                     ImportMembers() *

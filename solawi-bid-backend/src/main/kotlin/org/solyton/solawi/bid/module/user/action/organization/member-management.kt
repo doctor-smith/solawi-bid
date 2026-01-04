@@ -19,11 +19,9 @@ import org.solyton.solawi.bid.module.permission.action.db.isGranted
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.RolesTable
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
-import org.solyton.solawi.bid.module.user.data.api.organization.AddMember
-import org.solyton.solawi.bid.module.user.data.api.organization.ImportMembers
-import org.solyton.solawi.bid.module.user.data.api.organization.Organization
-import org.solyton.solawi.bid.module.user.data.api.organization.RemoveMember
-import org.solyton.solawi.bid.module.user.data.api.organization.UpdateMember
+import org.solyton.solawi.bid.module.user.service.user.createUserEntity
+import org.solyton.solawi.bid.module.user.data.api.CreateUser
+import org.solyton.solawi.bid.module.user.data.api.organization.*
 import org.solyton.solawi.bid.module.user.data.toApiType
 import org.solyton.solawi.bid.module.user.exception.OrganizationException
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
@@ -32,7 +30,7 @@ import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserOrganization
 import org.solyton.solawi.bid.module.user.schema.UsersTable
-import java.util.UUID
+import java.util.*
 
 @MathDsl
 @Suppress("FunctionName")
@@ -174,17 +172,21 @@ fun ImportMembers(): KlAction<Result<Contextual<ImportMembers>>, Result<Organiza
                 "MANAGE_USERS"
             )) throw PermissionException.AccessDenied
 
-        //
         val existingMembers = organization.members.map { it.username }.toSet()
         val membersToAdd = newMembers.filter { it !in existingMembers }
-        val membersWithUserAccounts = UserEntity.find { UsersTable.username inList membersToAdd }
+        val membersWithUserAccounts = UserEntity.find { UsersTable.username inList membersToAdd }.toList()
         val userAccountsToAdd = membersToAdd.filter { it !in membersWithUserAccounts.map { user -> user.username} }
-        val recentlyAddedUserAccounts = userAccountsToAdd.map { UserEntity.new { username = it; password = "NOT_SET" } }
+        val recentlyAddedUserAccounts = userAccountsToAdd.map {
+            createUserEntity(
+                CreateUser(it, "NOT_SET"),
+                userId
+            )
+        }
 
         val userRole = RoleEntity.find { RolesTable.name eq "USER" }.first()
 
         // Add users to the organization and give them the user role
-        listOf(membersWithUserAccounts, recentlyAddedUserAccounts).flatten().forEach { member ->
+        listOf(membersWithUserAccounts, recentlyAddedUserAccounts).flatten().distinctBy { it.username }.forEach { member ->
             UserOrganization.insert {
                 it[UserOrganization.userId] = member.id
                 it[UserOrganization.organizationId] = organization.id

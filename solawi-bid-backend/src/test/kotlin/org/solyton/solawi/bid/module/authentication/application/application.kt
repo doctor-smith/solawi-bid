@@ -19,7 +19,7 @@ import org.solyton.solawi.bid.module.authentication.routing.authentication
 import org.solyton.solawi.bid.module.bid.routing.bid
 import org.solyton.solawi.bid.module.bid.routing.migrations.bidRoutingMigrations
 import org.solyton.solawi.bid.module.bid.routing.sendBid
-import org.solyton.solawi.bid.module.user.action.GetUserById
+import org.solyton.solawi.bid.module.user.action.user.GetUserById
 import org.solyton.solawi.bid.module.user.routing.user
 import java.util.*
 
