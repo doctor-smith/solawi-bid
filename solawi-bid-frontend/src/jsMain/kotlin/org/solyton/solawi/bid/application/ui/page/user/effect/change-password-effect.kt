@@ -5,7 +5,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.math.on
 import org.evoleq.optics.storage.Storage
-import org.solyton.solawi.bid.application.ui.page.user.action.changePassword
+import org.solyton.solawi.bid.module.user.action.user.changePassword
 import org.solyton.solawi.bid.module.user.data.Application
 import org.solyton.solawi.bid.module.user.data.api.ChangePassword
 
