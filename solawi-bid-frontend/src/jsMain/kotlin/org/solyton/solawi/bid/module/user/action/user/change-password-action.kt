@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.application.ui.page.user.action
+package org.solyton.solawi.bid.module.user.action.user
 
 
 import org.evoleq.compose.Markup

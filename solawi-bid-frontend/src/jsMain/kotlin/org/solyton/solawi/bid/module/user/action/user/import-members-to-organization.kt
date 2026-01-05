@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.application.ui.page.user.action
+package org.solyton.solawi.bid.module.user.action.user
 
 import org.evoleq.compose.Markup
 import org.evoleq.math.Reader
@@ -15,6 +15,7 @@ import org.solyton.solawi.bid.module.user.data.user.organizations
 
 @Markup
 fun importMembersToOrganization(importMembers: ImportMembers, nameSuffix: String = ""): Action<Application, ImportMembers, ApiOrganization> = Action(
+    // todo:test write api test
     name = "ImportMembers$nameSuffix",
     reader = Reader { _: Application -> importMembers },
     endPoint = ImportMembers::class,

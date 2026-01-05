@@ -18,8 +18,6 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
-import org.solyton.solawi.bid.application.ui.page.user.action.createUser
-import org.solyton.solawi.bid.application.ui.page.user.action.getUsers
 import org.solyton.solawi.bid.application.ui.page.user.effect.trigger
 import org.solyton.solawi.bid.application.ui.page.user.i18n.UserLangComponent
 import org.solyton.solawi.bid.module.application.permission.AppRight
@@ -31,6 +29,8 @@ import org.solyton.solawi.bid.module.permissions.data.contextId
 import org.solyton.solawi.bid.module.permissions.service.contextFromPath
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
+import org.solyton.solawi.bid.module.user.action.user.createUser
+import org.solyton.solawi.bid.module.user.action.user.getUsers
 import org.solyton.solawi.bid.module.user.component.modal.showCreateUserModal
 import org.solyton.solawi.bid.module.user.data.*
 import org.solyton.solawi.bid.module.user.data.api.CreateUser

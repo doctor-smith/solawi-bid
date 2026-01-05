@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.application.ui.page.user.action
+package org.solyton.solawi.bid.module.user.action.user
 
 import org.evoleq.compose.Markup
 import org.evoleq.math.Reader
@@ -8,6 +8,7 @@ import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfile
 
 @Markup
 fun importUserProfiles(userProfiles: ImportUserProfiles, nameSuffix: String = ""): Action<Application, ImportUserProfiles, Unit> = Action(
+    // todo:test write api test
     name = "ImportUserProfiles$nameSuffix",
     reader = Reader { _: Application -> userProfiles },
     endPoint = ImportUserProfiles::class,

@@ -9,8 +9,8 @@ import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.transform.user.userIso
-import org.solyton.solawi.bid.application.ui.page.user.action.importMembersToOrganization
-import org.solyton.solawi.bid.application.ui.page.user.action.importUserProfiles
+import org.solyton.solawi.bid.module.user.action.user.importMembersToOrganization
+import org.solyton.solawi.bid.module.user.action.user.importUserProfiles
 import org.solyton.solawi.bid.module.user.data.api.organization.ImportMembers
 import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfiles
