@@ -18,7 +18,7 @@ COPY evoleq/build.gradle*  ./
 RUN --mount=type=cache,target=/home/gradle/.gradle \
     --mount=type=cache,target=/root/.gradle \
     --mount=type=cache,target=.gradle \
-    ./gradlew --no-daemon --stacktrace --parallel --build-cache jsBrowserProductionWebpack -x test -x jsBrowserTest || true
+    ./gradlew --no-daemon --stacktrace --build-cache jsBrowserProductionWebpack -x test -x jsBrowserTest || true
 
 # ---- Step 3: Copy the rest of the source code ----
 COPY . .
