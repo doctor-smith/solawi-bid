@@ -9,6 +9,7 @@ import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.organization.*
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfiles
+import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfiles
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfiles
 
 val solawiApi by lazy {
@@ -161,6 +162,10 @@ val solawiApi by lazy {
             post<ImportUserProfiles, UserProfiles> (
                 key = ImportUserProfiles::class,
                 url = "users/profiles/import"
+            )
+            patch<ReadUserProfiles, UserProfiles>(
+                key = ReadUserProfiles::class,
+                url = "users/profiles/read-by-ids"
             )
 
             // Organizations

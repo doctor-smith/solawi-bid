@@ -5,75 +5,19 @@ import kotlinx.serialization.builtins.serializer
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.ktorx.result.serializers
+import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.application.data.ApiApplication
 import org.solyton.solawi.bid.module.application.data.ApiApplications
 import org.solyton.solawi.bid.module.application.data.ApiLifecycleStage
 import org.solyton.solawi.bid.module.application.data.ApiModule
 import org.solyton.solawi.bid.module.application.data.ApiUserApplications
-import org.solyton.solawi.bid.module.application.data.ApplicationContextRelation
-import org.solyton.solawi.bid.module.application.data.ApplicationContextRelations
-import org.solyton.solawi.bid.module.application.data.ApplicationOrganizationRelation
-import org.solyton.solawi.bid.module.application.data.ApplicationOrganizationRelations
-import org.solyton.solawi.bid.module.application.data.ConnectApplicationToOrganization
-import org.solyton.solawi.bid.module.application.data.LifecycleStage
-import org.solyton.solawi.bid.module.application.data.ModuleContextRelation
-import org.solyton.solawi.bid.module.application.data.ModuleContextRelations
-import org.solyton.solawi.bid.module.application.data.ReadApplicationOrganizationContextRelations
-import org.solyton.solawi.bid.module.application.data.ReadApplications
-import org.solyton.solawi.bid.module.application.data.ReadPersonalUserApplications
-import org.solyton.solawi.bid.module.application.data.ReadPersonalApplicationContextRelations
-import org.solyton.solawi.bid.module.application.data.ReadPersonalModuleContextRelations
-import org.solyton.solawi.bid.module.application.data.ReadUserApplications
-import org.solyton.solawi.bid.module.application.data.RegisterForApplications
-import org.solyton.solawi.bid.module.application.data.RegisterForModules
-import org.solyton.solawi.bid.module.application.data.StartTrialsOfModules
-import org.solyton.solawi.bid.module.application.data.StartTrialsOfApplications
-import org.solyton.solawi.bid.module.application.data.SubscribeApplications
-import org.solyton.solawi.bid.module.application.data.SubscribeModules
-import org.solyton.solawi.bid.module.application.data.UpdateOrganizationModuleRelations
 import org.solyton.solawi.bid.module.authentication.data.api.*
-import org.solyton.solawi.bid.module.banking.data.api.BankAccount
-import org.solyton.solawi.bid.module.banking.data.api.CreateBankAccount
-import org.solyton.solawi.bid.module.banking.data.api.CreateFiscalYear
-import org.solyton.solawi.bid.module.banking.data.api.DeleteBankAccount
-import org.solyton.solawi.bid.module.banking.data.api.DeleteFiscalYear
-import org.solyton.solawi.bid.module.banking.data.api.FiscalYear
-import org.solyton.solawi.bid.module.banking.data.api.ReadBankAccount
-import org.solyton.solawi.bid.module.banking.data.api.ReadBankAccounts
-import org.solyton.solawi.bid.module.banking.data.api.ReadFiscalYear
-import org.solyton.solawi.bid.module.banking.data.api.ReadFiscalYears
-import org.solyton.solawi.bid.module.banking.data.api.UpdateBankAccount
-import org.solyton.solawi.bid.module.banking.data.api.UpdateFiscalYear
-import org.solyton.solawi.bid.module.banking.schema.BankAccounts
+import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
-import org.solyton.solawi.bid.module.user.data.api.organization.AddMember
-import org.solyton.solawi.bid.module.user.data.api.organization.CreateChildOrganization
-import org.solyton.solawi.bid.module.user.data.api.organization.CreateOrganization
-import org.solyton.solawi.bid.module.user.data.api.organization.DeleteOrganization
-import org.solyton.solawi.bid.module.user.data.api.organization.Member
-import org.solyton.solawi.bid.module.user.data.api.organization.Organization
-import org.solyton.solawi.bid.module.user.data.api.organization.Organizations
-import org.solyton.solawi.bid.module.user.data.api.organization.ReadOrganizations
-import org.solyton.solawi.bid.module.user.data.api.organization.RemoveMember
-import org.solyton.solawi.bid.module.user.data.api.organization.UpdateMember
-import org.solyton.solawi.bid.module.user.data.api.organization.UpdateOrganization
-import org.solyton.solawi.bid.module.user.data.api.userprofile.Address
-import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateAddress
-import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateUserProfile
-import org.solyton.solawi.bid.module.user.data.api.userprofile.DeleteAddress
-import org.solyton.solawi.bid.module.user.data.api.userprofile.DeleteUserProfile
-import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfiles
-import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadAddress
-import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadAddresses
-import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfile
-import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfiles
-import org.solyton.solawi.bid.module.user.data.api.userprofile.UpdateAddress
-import org.solyton.solawi.bid.module.user.data.api.userprofile.UpdateUserProfile
-import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfile
-import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfileToImport
-import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfiles
+import org.solyton.solawi.bid.module.user.data.api.organization.*
+import org.solyton.solawi.bid.module.user.data.api.userprofile.*
 
 fun installSerializers() {
     // primitive serializers
@@ -241,6 +185,7 @@ fun installSerializers() {
     serializers[AddMember::class] = AddMember.serializer()
     serializers[RemoveMember::class] = RemoveMember.serializer()
     serializers[UpdateMember::class] = UpdateMember.serializer()
+    serializers[ImportMembers::class] = ImportMembers.serializer()
 
     // Banking
     serializers[BankAccount::class] = BankAccount.serializer()

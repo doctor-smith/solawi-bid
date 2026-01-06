@@ -21,7 +21,7 @@ data class UserProfile(
 )
 
 @Serializable
-data object ReadUserProfiles
+data class ReadUserProfiles(val userIds: List<String>)
 
 @Serializable
 data class ReadUserProfile(val userId: String)
