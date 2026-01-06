@@ -29,10 +29,6 @@ gradlePlugin {
             id = "org.evoleq.architecture.dependency"
             implementationClass = "org.evoleq.architecture.dependency.DependencyPlugin"
         }
-        register("mathcatOptics") {
-            id = "org.evoleq.math.cat.gradle.optics"
-            implementationClass = "org.evoleq.math.cat.gradle.optics.OpticsPlugin"
-        }
     }
 }
 

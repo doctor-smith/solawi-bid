@@ -307,6 +307,7 @@ exceptions:
 
 naming:
   active: true
+  excludes: ['**/build/**']
   BooleanPropertyNaming:
     active: false
     allowedPattern: '^(is|has|are)'

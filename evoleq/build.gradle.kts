@@ -223,7 +223,6 @@ dependencyAnalyser {
             "dnd",
             "error",
             "i18n",
-            "label",
             "layout",
             "link",
             "modal",

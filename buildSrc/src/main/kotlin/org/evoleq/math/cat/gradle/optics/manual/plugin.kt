@@ -1,4 +1,4 @@
-package org.evoleq.math.cat.gradle.optics
+package org.evoleq.math.cat.gradle.optics.manual
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project

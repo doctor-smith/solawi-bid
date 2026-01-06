@@ -3,6 +3,7 @@ allprojects {
         google()
         mavenLocal()
         mavenCentral()
+        maven { url = uri("https://jitpack.io") }
         maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
@@ -21,6 +22,8 @@ plugins{
     alias(libs.plugins.evoleq.api.doc) apply false
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.kover) apply false
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.evoleq.fp.axioms) apply false
 }
 
 tasks.register("detektAll") {

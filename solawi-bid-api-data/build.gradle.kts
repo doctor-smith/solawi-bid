@@ -56,10 +56,6 @@ kotlin{
 
                 implementation(project(":evoleq"))
 
-
-                // Ermöglicht dem Backend-Code den Zugriff auf Klassen in buildSrc (wie Api und EndPoint)
-                implementation(files("${rootProject.rootDir}/buildSrc/build/classes/kotlin/main"))
-
                 // Falls du Kotlin-Reflection in der DSL nutzt, stelle sicher, dass dies auch da ist
                 implementation(kotlin("reflect"))
 
@@ -121,7 +117,7 @@ publishing {
 
 detekt {
     toolVersion = libs.versions.detekt.get()
-    config = files("$rootDir/detekt/detekt.yml")
+    config.setFrom(files("$rootDir/detekt/detekt.yml"))
     buildUponDefaultConfig = true
     allRules = false
 

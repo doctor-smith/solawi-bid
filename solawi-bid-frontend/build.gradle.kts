@@ -6,10 +6,11 @@ plugins {
     alias(libs.plugins.compose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.serialization)
-    alias(libs.plugins.evoleq.math.cat.gradle.optics)
     alias(libs.plugins.evoleq.architecture.dependency)
     alias(libs.plugins.detekt)
     alias(libs.plugins.kover)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.evoleq.fp.axioms)
 }
 
 repositories {
@@ -208,10 +209,13 @@ android {
     }
 }
 
+/*
 optics{
     sourceSet = "jsMain"
     defaultPackage = "org.solyton.solawi.bid.data"
 }
+
+ */
 
 tasks.withType<Test> {
     reports {

@@ -1,6 +1,7 @@
-package org.evoleq.math.cat.gradle.optics
+package org.evoleq.math.cat.gradle.optics.manual
 
 import java.io.File
+import kotlin.collections.map
 
 val defaultImports by lazy { listOf(
     "import org.evoleq.optics.Lensify",
@@ -125,7 +126,7 @@ fun ClassDescriptor.renderOptics(): String  {
     val members: List<String> =
         properties.filterNot{
             item -> item.name.startsWith("${Modifier.Ignore}")
-    }.map{ item: PropertyDescriptor ->
+    }.map { item: PropertyDescriptor ->
 
         LensDescriptor(
             type = typeOfTheWhole.name,

@@ -7,10 +7,11 @@ plugins {
     alias(libs.plugins.shadow)
     alias(libs.plugins.evoleq.exposedx.migrations)
     alias(libs.plugins.evoleq.architecture.dependency)
-    //id("org.evoleq.architecture.dependency")
     alias(libs.plugins.evoleq.api.doc)
     alias(libs.plugins.detekt)
     alias(libs.plugins.kover)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.evoleq.fp.axioms)
 }
 
 group = libs.versions.solytonGroup
