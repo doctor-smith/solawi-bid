@@ -39,6 +39,7 @@ import org.solyton.solawi.bid.module.application.component.modal.CheckedUserRole
 import org.solyton.solawi.bid.module.application.component.modal.showManageUserPermissionsModule
 import org.solyton.solawi.bid.module.application.data.management.applicationManagementActions
 import org.solyton.solawi.bid.module.application.data.management.applicationManagementModals
+import org.solyton.solawi.bid.module.application.data.management.applicationOrganizationRelations
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
 import org.solyton.solawi.bid.module.application.data.management.personalApplicationContextRelations
 import org.solyton.solawi.bid.module.application.i18n.ApplicationComponent
