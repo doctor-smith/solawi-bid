@@ -7,6 +7,7 @@ detekt = "1.23.8"
 # evoleq-exposedx-migrations = "1"
 exposed = "0.48.0"
 evoleq-api = "0.0.1"
+fpAxioms = "0.0.3"
 h2 = "2.2.220"
 java-jwt = "4.0.0"
 jjwt = "0.11.5"
@@ -17,6 +18,7 @@ kotlin-serialization-json="1.6.3"
 kotlinx-coroutines-core = "1.9.0"
 kotlinx-datetime = "0.6.1"
 kover = "0.7.5"
+ksp = "2.1.0-1.0.29"
 ktor = "2.3.12"
 ktor-plugin = "2.3.12"
 ktor-client-android="2.3.12"#
@@ -34,6 +36,7 @@ solytonGroup = "org.solyton"
 [libraries]
 benasher-uuid = { module = "com.benasher44:uuid", version.ref = "benasher-uuid" }
 cdimascio-dotenv-kotlin = { module = "io.github.cdimascio:dotenv-kotlin", version.ref = "cdimascio-dotenv-kotlin" }
+evoleq-fp-axioms-definitions = { module = "org.evoleq:fp-axioms-definitions", version.ref = "fpAxioms" }
 exposed-core = {  module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed"}
 exposed-crypt = {  module = "org.jetbrains.exposed:exposed-crypt", version.ref = "exposed"}
 exposed-dao = {  module = "org.jetbrains.exposed:exposed-dao", version.ref = "exposed"}
@@ -84,11 +87,13 @@ slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "sl4j"}
 android = { id = "com.android.library", version.ref = "android" }
 evoleq-api-doc = { id = "org.evoleq.api-doc" }
 evoleq-architecture-dependency = {id = "org.evoleq.architecture.dependency" }
-evoleq-math-cat-gradle-optics = {id = "org.evoleq.math.cat.gradle.optics"}
+evoleq-math-cat-gradle-optics-manual = {id = "org.evoleq.math.cat.gradle.optics.manual"}
 evoleq-exposedx-migrations = { id = "org.evoleq.exposedx.migrations" }
+evoleq-fp-axioms = { id = "org.evoleq.fp-axioms-plugin", version.ref = "fpAxioms" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt"}
 jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor-plugin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 serialization = {id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 mpp = {id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 compose = {id = "org.jetbrains.compose", version.ref = "compose"}

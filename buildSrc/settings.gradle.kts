@@ -17,7 +17,5 @@ pluginManagement {
                 useModule("com.google.protobuf:protobuf-gradle-plugin:${requested.version}")
             }
         }
-
-
     }
 }
