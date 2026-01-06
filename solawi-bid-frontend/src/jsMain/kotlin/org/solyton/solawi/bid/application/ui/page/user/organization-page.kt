@@ -24,7 +24,6 @@ import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.application.data.applicationOrganizationRelations
 import org.solyton.solawi.bid.application.data.env.i18nEnvironment
 import org.solyton.solawi.bid.application.data.i18N
 import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
@@ -38,6 +37,7 @@ import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyl
 import org.solyton.solawi.bid.module.application.action.readApplications
 import org.solyton.solawi.bid.module.application.action.readPersonalApplicationOrganizationContextRelations
 import org.solyton.solawi.bid.module.application.data.management.applicationManagementActions
+import org.solyton.solawi.bid.module.application.data.management.applicationOrganizationRelations
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
 import org.solyton.solawi.bid.module.application.i18n.ApplicationComponent
 import org.solyton.solawi.bid.module.application.i18n.application
