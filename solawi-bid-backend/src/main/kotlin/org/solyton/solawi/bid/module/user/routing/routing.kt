@@ -15,9 +15,11 @@ import org.solyton.solawi.bid.module.user.action.user.ChangePassword
 import org.solyton.solawi.bid.module.user.action.user.CreateNewUser
 import org.solyton.solawi.bid.module.user.action.user.GetAllUsers
 import org.solyton.solawi.bid.module.user.action.user.ImportProfiles
+import org.solyton.solawi.bid.module.user.action.user.ReadUserProfiles
 import org.solyton.solawi.bid.module.user.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.organization.*
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfiles
+import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfiles
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfiles
 
 @KtorDsl
@@ -43,10 +45,13 @@ fun <UserEnv> Routing.user(
                 ReceiveContextual<ChangePassword>() * ChangePassword * Respond<User>{ transform() } runOn Base(call, environment)
             }
             route("profiles") {
-                patch("by-ids") {
-                    NotImplemented() * Respond { transform() } runOn Base(call, environment)
+                patch("read-by-ids") { // todo:test write api test
+                    ReceiveContextual<ReadUserProfiles>() *
+                    IsGranted("MANAGE_USERS") *
+                    ReadUserProfiles() *
+                    Respond<UserProfiles>{ transform() } runOn Base(call, environment)
                 }
-                post("import") {
+                post("import") { // todo:test write api test
                     ReceiveContextual<ImportUserProfiles>() *
                     IsGranted("MANAGE_USERS") *
                     ImportProfiles() *

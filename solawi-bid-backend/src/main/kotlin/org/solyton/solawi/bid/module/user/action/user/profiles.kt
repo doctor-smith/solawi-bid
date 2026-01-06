@@ -15,12 +15,15 @@ import org.solyton.solawi.bid.module.user.data.api.CreateUser
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ApiAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ApiUserProfile
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfiles
+import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfiles
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfiles
+import org.solyton.solawi.bid.module.user.data.toApiType
 import org.solyton.solawi.bid.module.user.schema.AddressEntity
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfilesTable
 import org.solyton.solawi.bid.module.user.schema.UsersTable
+import java.util.UUID
 
 @MathDsl
 @Suppress("FunctionName", "MapGetWithNotNullAssertionOperator", "UnsafeCallOnNullableType")
@@ -94,5 +97,18 @@ fun ImportProfiles(): KlAction<Result<Contextual<ImportUserProfiles>>, Result<Us
                 }
             )
         })
+    } } x database }
+}
+
+@MathDsl
+@Suppress("FunctionName")
+fun ReadUserProfiles(): KlAction<Result<Contextual<ReadUserProfiles>>, Result<UserProfiles>> = KlAction{ result ->
+    DbAction { database -> result bindSuspend {contextual -> resultTransaction(database) {
+        // val userId = contextual.userId
+        val data = contextual.data
+        val userIds = data.userIds.map { UUID.fromString(it) }
+
+        val userProfileList = UserProfileEntity.find { UserProfilesTable.userId inList userIds }.toList().map { it.toApiType(this)  }
+        UserProfiles(userProfileList)
     } } x database }
 }
