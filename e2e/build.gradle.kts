@@ -1,11 +1,14 @@
 plugins {
     kotlin("jvm")
     alias(libs.plugins.evoleq.exposedx.migrations)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.evoleq.fp.axioms)
 }
 
 repositories {
     google()
     mavenCentral()
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
