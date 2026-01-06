@@ -33,7 +33,7 @@ runs:
       uses: docker/metadata-action@v5
       with:
         images: |
-          ${{ inputs.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}
+          ${{ inputs.registry }}/${{ github.repository }}/${{ inputs.image_name }}
         tags: |
           type=ref,event=branch,prefix=branch-
           type=ref,event=tag,prefix=tag-
