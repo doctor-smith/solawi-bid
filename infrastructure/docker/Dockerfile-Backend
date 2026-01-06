@@ -5,7 +5,8 @@ FROM gradle:8-jdk17-noble AS build
 WORKDIR /build
 
 # ---- Step 1: Copy Gradle wrapper and build scripts only ----
-COPY gradlew gradle/ ./
+COPY gradlew ./
+COPY gradle/ ./gradle/
 COPY settings.gradle.kts.backend ./settings.gradle.kts
 COPY build.gradle*  gradle.properties ./
 COPY buildSrc/build.gradle* buildSrc/settings.gradle* ./
