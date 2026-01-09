@@ -2,11 +2,17 @@ package org.solyton.solawi.bid.application.storage.middleware.react
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.evoleq.ktorx.result.Result
 import org.evoleq.math.MathDsl
+import org.evoleq.math.Reader
+import org.evoleq.math.dispatch
+import org.evoleq.math.map
+import org.evoleq.math.on
 import org.evoleq.math.state.KlState
 import org.evoleq.math.state.State
+import org.evoleq.math.write
 import org.evoleq.math.x
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.storage.Storage
@@ -15,6 +21,8 @@ import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.actions
 import org.solyton.solawi.bid.application.data.context
+import org.solyton.solawi.bid.application.data.managedUsers
+import org.solyton.solawi.bid.application.data.processes
 import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.page.user.action.READ_PARENT_CHILD_RELATIONS_OF_CONTEXT
@@ -32,7 +40,13 @@ import org.solyton.solawi.bid.module.application.permission.Context
 import org.solyton.solawi.bid.module.context.data.current
 import org.solyton.solawi.bid.module.permission.data.api.Contexts
 import org.solyton.solawi.bid.module.permission.data.api.ParentChildRelationsOfContexts
+import org.solyton.solawi.bid.module.process.data.process.ProcessState
+import org.solyton.solawi.bid.module.process.data.processes.SetStateOf
+import org.solyton.solawi.bid.module.process.data.processes.SetStatesOf
+import org.solyton.solawi.bid.module.process.data.processes.UnRegister
 import org.solyton.solawi.bid.module.user.action.permission.readPermissionsOfUsersAction
+import org.solyton.solawi.bid.module.user.action.user.GET_USERS
+import org.solyton.solawi.bid.module.user.action.user.READ_USER_PROFILES
 
 
 @MathDsl
@@ -67,6 +81,16 @@ fun <S: Any, T: Any> React(action: Action<Application, S, T>): KlState<Storage<A
                 }
                 "${CONNECT_APPLICATION_TO_ORGANIZATION}React" -> CoroutineScope(Job()).launch {
                     emit(readUserPermissionsAction())
+                }
+                "${GET_USERS}ReactAndDeactivateProcess" -> CoroutineScope(Job()).launch {
+                    (storage * processes * SetStateOf(
+                        GET_USERS)
+                            ) dispatch ProcessState.Inactive
+                }
+                "${READ_USER_PROFILES}ReactAndStopProcess" -> CoroutineScope(Job()).launch {
+                    (storage * processes * SetStatesOf(
+                        GET_USERS, READ_USER_PROFILES)
+                    ) dispatch ProcessState.Finished
                 }
                 else -> Unit
                 // One could also use this mechanism to establish pagination

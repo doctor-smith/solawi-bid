@@ -26,6 +26,7 @@ import org.solyton.solawi.bid.module.cookie.data.CookieDisclaimer
 import org.solyton.solawi.bid.module.i18n.data.I18N
 import org.solyton.solawi.bid.module.permissions.data.Permissions
 import org.solyton.solawi.bid.module.permissions.data.relations.ContextRelation
+import org.solyton.solawi.bid.module.process.data.processes.Processes
 import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 import org.solyton.solawi.bid.module.user.data.user.User
 
@@ -43,6 +44,7 @@ import org.solyton.solawi.bid.module.user.data.user.User
     @ReadOnly val environment: Environment,
     @ReadOnly val api: Api = solawiApi,
     @ReadOnly val actions: MutableSharedFlowActionDispatcher<Application> = MutableSharedFlowActionDispatcher(MutableSharedFlow()),
+    @ReadWrite val processes: Processes = Processes(),
     @ReadWrite val deviceData: Device = Device(),
     @ReadWrite val modals: Modals<Int> = mapOf(),
     @ReadWrite val i18N: I18N = I18N(),

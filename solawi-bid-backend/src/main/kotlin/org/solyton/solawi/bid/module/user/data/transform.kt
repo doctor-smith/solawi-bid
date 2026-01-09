@@ -46,11 +46,12 @@ fun OrganizationEntity.toApiType(transaction: Transaction): ApiOrganization = Ap
 fun UserProfileEntity.toApiType(transaction: Transaction): ApiUserProfile =
     ApiUserProfile(
         id = id.value.toString(),
+        userId = user.id.value.toString(),
         firstName = firstName,
         lastName = lastName,
         title = title,
         phoneNumber = phoneNumber,
-        address = with(transaction) {addresses.toList().toApiType().first()},
+        addresses = with(transaction) { addresses.toList().map{ it.toApiType() }},
     )
 
 

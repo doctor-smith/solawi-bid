@@ -9,9 +9,11 @@ import org.solyton.solawi.bid.module.user.data.api.GetUsers
 import org.solyton.solawi.bid.module.user.data.api.Users
 import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 
+const val GET_USERS = "GetUsers"
+
 @Markup
-fun getUsers() = Action<Application, GetUsers, Users>(
-    name = "GetUsers",
+fun getUsers(nameSuffix: String = "") = Action<Application, GetUsers, Users>(
+    name = "$GET_USERS$nameSuffix",
     reader = Reader { _: Application -> GetUsers },
     endPoint = GetUsers::class,
     writer = {users: Users ->

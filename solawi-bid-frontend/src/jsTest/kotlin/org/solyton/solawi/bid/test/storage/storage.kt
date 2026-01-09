@@ -23,7 +23,7 @@ fun TestStorage(): Storage<Application> {
         mutableStateOf<Application>(
             Application(
                 environment = Environment(true,"DEV"),
-                userData = User("", "", "", "",Permissions())
+                userData = User("", "", "", "",null,Permissions())
             )
         )
     }
