@@ -10,6 +10,6 @@ import org.solyton.solawi.bid.module.user.data.address.Address
     @ReadWrite val firstname: String = "",
     @ReadWrite val lastname: String = "",
     @ReadWrite val title: String? = null,
-    @ReadWrite val phoneNumber: String = "",
-    @ReadWrite val address: Address = Address.default()
+    @ReadWrite val phoneNumber: String? = null,
+    @ReadWrite val addresses: List<Address> = listOf()
 )

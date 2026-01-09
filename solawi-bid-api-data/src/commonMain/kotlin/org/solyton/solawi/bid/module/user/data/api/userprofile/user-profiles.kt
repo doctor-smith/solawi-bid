@@ -13,11 +13,12 @@ data class UserProfiles(val all: List<UserProfile>)
 @Serializable
 data class UserProfile(
     val id: String,
+    val userId: String,
     val firstName: String,
     val lastName: String,
     val title: String?,
     val phoneNumber: String?,
-    val address: Address
+    val addresses: List<Address>
 )
 
 @Serializable
@@ -43,7 +44,7 @@ data class UpdateUserProfile(
     val lastName: String,
     val title: String?,
     val phoneNumber: String?,
-    val address: Address
+    val addresses: List<Address>
 )
 
 @Serializable

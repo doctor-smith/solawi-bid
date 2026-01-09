@@ -10,10 +10,7 @@ import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.selectAll
-import org.solyton.solawi.bid.module.user.service.user.createUserEntity
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
-import org.solyton.solawi.bid.module.user.data.api.userprofile.ApiAddress
-import org.solyton.solawi.bid.module.user.data.api.userprofile.ApiUserProfile
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfiles
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfiles
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfiles
@@ -23,7 +20,8 @@ import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfilesTable
 import org.solyton.solawi.bid.module.user.schema.UsersTable
-import java.util.UUID
+import org.solyton.solawi.bid.module.user.service.user.createUserEntity
+import java.util.*
 
 @MathDsl
 @Suppress("FunctionName", "MapGetWithNotNullAssertionOperator", "UnsafeCallOnNullableType")
@@ -45,7 +43,7 @@ fun ImportProfiles(): KlAction<Result<Contextual<ImportUserProfiles>>, Result<Us
         val recentlyAddedUserAccounts = usersToCreate.map {
             createUserEntity(CreateUser(it, "NOT_SET"), userId)
         }
-        listOf(existingUsers, recentlyAddedUserAccounts).flatten().distinctBy { it.username }.forEach { user ->
+        val userProfiles: List<UserProfileEntity> = listOf(existingUsers, recentlyAddedUserAccounts).flatten().distinctBy { it.username }.map { user ->
             val userProfileData = userProfileMap[user.username]!!
             val userProfile = UserProfileEntity.new {
                 this.user = user
@@ -70,32 +68,11 @@ fun ImportProfiles(): KlAction<Result<Contextual<ImportUserProfiles>>, Result<Us
             }
 
             userProfile.addresses + address
+            userProfile
         }
 
-
-        UserProfiles(recentlyAddedUserAccounts.map {
-            val userProfile = userProfileMap[it.username]!!
-            ApiUserProfile(
-                it.id.value.toString(),
-                userProfile.firstName,
-                userProfile.lastName,
-                userProfile.title,
-                userProfile.phoneNumber,
-
-                with(userProfile.address) {
-                    ApiAddress(
-                        it.id.value.toString(),
-                        recipientName,
-                        organizationName,
-                        addressLine1,
-                        addressLine2,
-                        city,
-                        postalCode,
-                        countryCode,
-                        stateOrProvince
-                    )
-                }
-            )
+        UserProfiles(userProfiles.map { userProfile ->
+            userProfile.toApiType(this)
         })
     } } x database }
 }

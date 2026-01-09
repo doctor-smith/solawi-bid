@@ -20,7 +20,7 @@ import kotlin.reflect.KClass
 data class Action<Base: Any, out I : Any,  O : Any>(
 
     val name: String,
-    val reader: Reader<in Base, out I>,
+    val reader: Reader<Base, I>,
     // key of the needed endpoint EndPoint<I,O>
     val endPoint: KClass<*>,
     val writer: Writer<Base, O>,
@@ -35,7 +35,7 @@ data class Action<Base: Any, out I : Any,  O : Any>(
  */
 inline fun <Base: Any, reified I : Any, reified O : Any> Action(
     name: String,
-    noinline reader: Reader<in Base, out I>,
+    noinline reader: Reader<Base, I>,
     // key of the needed endpoint EndPoint<I,O>
     endPoint: KClass<*>,
     noinline writer: Writer<Base, O>,
