@@ -5,13 +5,12 @@ import org.evoleq.compose.routing.*
 import org.evoleq.device.data.mediaType
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
-import org.jetbrains.compose.web.dom.H1
-import org.jetbrains.compose.web.dom.P
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.env.type
 import org.solyton.solawi.bid.application.data.environment
+import org.solyton.solawi.bid.application.data.processes
 import org.solyton.solawi.bid.application.data.transform.navbar.navBarIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.data.userData
@@ -40,6 +39,9 @@ import org.solyton.solawi.bid.application.ui.page.user.PrivateUserPage
 import org.solyton.solawi.bid.application.ui.page.user.UserManagementPage
 import org.solyton.solawi.bid.module.navbar.action.logoutAction
 import org.solyton.solawi.bid.module.navbar.component.NavBar
+import org.solyton.solawi.bid.module.process.component.ClearProcessOnRouteChange
+import org.solyton.solawi.bid.module.user.action.user.GET_USERS
+import org.solyton.solawi.bid.module.user.action.user.READ_USER_PROFILES
 
 @RoutingDsl
 @Composable
@@ -160,10 +162,16 @@ fun Routing(storage: Storage<Application>): Routes = Routing("/") {
                     }
                     route(":organizationId") {
                         component {
-                            OrganizationPage(
-                                storage,
-                                parameter("organizationId")!!
-                            )
+                            ClearProcessOnRouteChange(
+                                storage * processes,
+                                GET_USERS,
+                                READ_USER_PROFILES
+                            ) {
+                                OrganizationPage(
+                                    storage,
+                                    parameter("organizationId")!!
+                                )
+                            }
                         }
                     }
                 }
