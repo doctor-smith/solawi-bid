@@ -69,6 +69,8 @@ import org.solyton.solawi.bid.module.user.data.organization.members
 import org.solyton.solawi.bid.module.user.data.organization.name
 import org.solyton.solawi.bid.module.user.data.user.organizations
 import org.solyton.solawi.bid.module.user.i18n.Component
+import org.solyton.solawi.bid.module.user.service.profile.firstAddress
+import org.solyton.solawi.bid.module.user.service.profile.fullname
 import org.solyton.solawi.bid.application.data.environment as appEnv
 
 
@@ -283,33 +285,11 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                             }
                             val userProfile = (memberProfilesMap * Get(member.memberId)).emit()
 
-                            val name = when{
-                                userProfile == null -> ""
-                                userProfile.firstname.isBlank() -> userProfile.lastname
-                                userProfile.lastname.isBlank() -> userProfile.firstname
-                                else -> userProfile.firstname + " " + userProfile.lastname
-                            }
-                            TextCell(name) {
+                            TextCell(userProfile.fullname()) {
                                 width(10.percent);minWidth(10.percent);overflow("hidden")
                             }
-                            val address = when {
-                                userProfile == null -> ""
-                                else -> userProfile.addresses.firstOrNull()?.let { addr ->
-                                    buildString {
-                                        append(addr.addressLine1)
-                                        if (addr.addressLine2.isNotBlank()) {
-                                            append(", ")
-                                            append(addr.addressLine2)
-                                        }
-                                        append(", ")
-                                        append(addr.postalCode)
-                                        append(" ")
-                                        append(addr.city)
-                                    }
-                                } ?: ""
-                            }
 
-                            TextCell(address) {
+                            TextCell(userProfile.firstAddress()) {
                                 width(20.percent); minWidth(20.percent);overflow("hidden")
                             }
                             NumberCell(1) { width(10.percent) }
