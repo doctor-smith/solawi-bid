@@ -3,12 +3,7 @@ package org.solyton.solawi.bid.application.ui.page.user
 import androidx.compose.runtime.*
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
-import org.evoleq.compose.guard.data.ConditionalActionInput
-import org.evoleq.compose.guard.data.isLoading
-import org.evoleq.compose.guard.data.onEmpty
-import org.evoleq.compose.guard.data.onFulfilled
-import org.evoleq.compose.guard.data.sequentiallyExecuted
-import org.evoleq.compose.guard.data.withLoading
+import org.evoleq.compose.guard.data.*
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.routing.navigate
 import org.evoleq.device.data.mediaType
@@ -16,12 +11,7 @@ import org.evoleq.language.component
 import org.evoleq.language.subComp
 import org.evoleq.language.title
 import org.evoleq.language.tooltip
-import org.evoleq.math.Get
-import org.evoleq.math.dispatch
-import org.evoleq.math.emit
-import org.evoleq.math.map
-import org.evoleq.math.times
-import org.evoleq.math.write
+import org.evoleq.math.*
 import org.evoleq.optics.lens.DeepSearch
 import org.evoleq.optics.lens.FilterBy
 import org.evoleq.optics.storage.Storage
@@ -63,7 +53,6 @@ import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.process.data.process.Process
 import org.solyton.solawi.bid.module.process.data.processes.IsInactive
 import org.solyton.solawi.bid.module.process.data.processes.IsNotRegistered
-import org.solyton.solawi.bid.module.process.data.processes.IsRegistered
 import org.solyton.solawi.bid.module.process.data.processes.Register
 import org.solyton.solawi.bid.module.process.data.processes.registry
 import org.solyton.solawi.bid.module.style.page.PageTitle
@@ -76,7 +65,6 @@ import org.solyton.solawi.bid.module.user.action.user.getUsers
 import org.solyton.solawi.bid.module.user.action.user.readUserProfiles
 import org.solyton.solawi.bid.module.user.component.modal.showImportMembersToOrganizationModal
 import org.solyton.solawi.bid.module.user.data.*
-import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfiles
 import org.solyton.solawi.bid.module.user.data.organization.members
 import org.solyton.solawi.bid.module.user.data.organization.name
 import org.solyton.solawi.bid.module.user.data.user.organizations
@@ -304,8 +292,24 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                             TextCell(name) {
                                 width(10.percent);minWidth(10.percent);overflow("hidden")
                             }
+                            val address = when {
+                                userProfile == null -> ""
+                                else -> userProfile.addresses.firstOrNull()?.let { addr ->
+                                    buildString {
+                                        append(addr.addressLine1)
+                                        if (addr.addressLine2.isNotBlank()) {
+                                            append(", ")
+                                            append(addr.addressLine2)
+                                        }
+                                        append(", ")
+                                        append(addr.postalCode)
+                                        append(" ")
+                                        append(addr.city)
+                                    }
+                                } ?: ""
+                            }
 
-                            TextCell("TODO") {
+                            TextCell(address) {
                                 width(20.percent); minWidth(20.percent);overflow("hidden")
                             }
                             NumberCell(1) { width(10.percent) }
