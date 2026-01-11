@@ -22,6 +22,8 @@ val UnRegister: Writer<Processes, String> = Writer { processId -> {processes ->
     }
 }
 
+val UnRegisterAllOf: Writer<Processes, List<String>> = Writer { { processes -> processes.copy(registry = processes.registry.filterKeys { id -> id !in it })} }
+
 @Suppress("FunctionName")
 fun SetStateOf(processId: String) : Writer<Processes, ProcessState> = Writer { state -> {processes ->
         processes.copy(registry = processes.registry.mapValues { (id, process) ->
