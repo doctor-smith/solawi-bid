@@ -51,7 +51,7 @@ fun main() {
             DistributionPointsTable,
             RoundsTable,
             BidRounds,
-            SharesTable,
+            ShareSubscriptionsTable,
             ShareTypesTable,
             SearchBiddersTable
         )

@@ -8,7 +8,7 @@ import org.solyton.solawi.bid.module.banking.schema.BankAccounts
 import org.solyton.solawi.bid.module.banking.schema.FiscalYears
 import org.solyton.solawi.bid.module.bid.schema.DistributionPoints
 import org.solyton.solawi.bid.module.bid.schema.ShareTypes
-import org.solyton.solawi.bid.module.bid.schema.Shares
+import org.solyton.solawi.bid.module.bid.schema.ShareSubscriptions
 import org.solyton.solawi.bid.module.user.schema.Addresses
 import org.solyton.solawi.bid.module.user.schema.Organisations
 import org.solyton.solawi.bid.module.user.schema.UserOrganization
@@ -45,7 +45,7 @@ class Migration1735334305003(
      */
     override suspend fun Transaction.up() {
         SchemaUtils.create(
-            Shares,
+            ShareSubscriptions,
             ShareTypes,
             BankAccounts,
             FiscalYears,

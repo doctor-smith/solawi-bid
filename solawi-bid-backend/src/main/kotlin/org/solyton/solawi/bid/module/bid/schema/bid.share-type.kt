@@ -9,14 +9,16 @@ import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
 import java.util.*
 
 typealias ShareTypesTable = ShareTypes
-typealias ShareTypeEntity = Share
+typealias ShareTypeEntity = ShareSubscription
 
 object ShareTypes : AuditableUUIDTable("share_types") {
+    val providerId = uuid("provider_id")
     val name = varchar("name", 250)
     val description = varchar("description", 5000).default("")
-    val fixedPrize = double("fixed_price").nullable()
-    val ahcAuthorizationRequired = bool("ahc_auth_required").default(false)
-    // val currency = varchar("currency", 10).default("Euro") <- import exposed package
+
+    init {
+        uniqueIndex(providerId, name)
+    }
 }
 
 class ShareType(id : EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
@@ -24,8 +26,6 @@ class ShareType(id : EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
 
     var name by ShareTypes.name
     var description by ShareTypes.description
-    var fixedPrize by ShareTypes.fixedPrize
-    var ahcAuthorizationRequired by ShareTypes.ahcAuthorizationRequired
 
     override var createdAt: DateTime by ShareTypes.createdAt
     override var createdBy: UUID by ShareTypes.createdBy
