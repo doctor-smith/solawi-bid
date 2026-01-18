@@ -80,7 +80,7 @@ val columnsToAdd: List<AddMissingColumns> by lazy {
             ColumnDef.Missing<UUID?>("modified_by",null),
             ColumnDef.Missing<DateTime?>("modified_at", null),
         ),
-        SharesTable.addColumnsIfMissing(
+        ShareSubscriptionsTable.addColumnsIfMissing(
             ColumnDef.Missing<UUID>("created_by", UUID_ZERO),
             ColumnDef.Missing<DateTime>("created_at", DateTime.now()),
             ColumnDef.Missing<UUID?>("modified_by",null),
