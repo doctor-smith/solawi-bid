@@ -5,7 +5,7 @@ import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.solyton.solawi.bid.module.permission.exception.ContextException
-import org.solyton.solawi.bid.module.permission.exception.PermissionException
+import org.solyton.solawi.bid.module.permission.exception.PermissionExceptionD
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
@@ -40,7 +40,7 @@ fun Transaction.createUser(data: CreateUser, creatorId: UUID): ApiUser {
  * @return The created or existing user entity.
  * @throws ContextException.NoSuchRootContext If the application's root context cannot be found.
  * @throws ContextException.NoSuchContext If the application's organization context cannot be found.
- * @throws PermissionException.NoSuchRole If the default user role could not be found.
+ * @throws PermissionExceptionD.NoSuchRole If the default user role could not be found.
  */
 fun Transaction.createUserEntity(data: CreateUser, creatorId: UUID): UserEntity {
     val user = UserEntity.find { UsersTable.username eq data.username }.firstOrNull()
@@ -54,7 +54,7 @@ fun Transaction.createUserEntity(data: CreateUser, creatorId: UUID): UserEntity 
                 .firstOrNull()
                 ?: throw ContextException.NoSuchContext("${ApplicationContext.value}/${Value.ORGANIZATION}")
         val userRole = applicationContext.roles.find { it.name == Role.user.value }
-            ?: throw PermissionException.NoSuchRole(Role.user.value)
+            ?: throw PermissionExceptionD.NoSuchRole(Role.user.value)
 
         val userEntity = UserEntity.new {
             username = data.username
