@@ -24,7 +24,7 @@ object OrganizationBundles : AuditableUUIDTable("organization_bundles") {
 class OrganizationBundle(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     companion object : UUIDEntityClass<OrganizationBundle>(OrganizationBundles)
 
-    var user by OrganizationBundles.organizationId
+    var organization by OrganizationBundles.organizationId
     var bundle by OrganizationBundles.bundleId
 
     override var createdAt: DateTime by OrganizationBundles.createdAt
