@@ -30,4 +30,16 @@ sealed class ApplicationException(override val message: String): Exception(messa
     data class UserNotRegisteredForModules(val userId: String, val moduleIds: Set<String>): ApplicationException("User $userId not registered for modules ${moduleIds.joinToString(", ") { it }}")
 
     data class AlreadyConnectedToOrganization(val organizationId: String, val applicationId: String): ApplicationException("Application $applicationId already connected to organization $organizationId")
+
+    data class DuplicateBundleName(val name: String) : ApplicationException("bundle with name '$name' already exists")
+
+    data class NoSuchBundle(val id: String): ApplicationException("No such bundle id = $id")
+
+    data class NoSuchAppsOrModules(val appIds: List<String>, val modIds: List<String>): ApplicationException(
+        message = "No such apps and modules; apps: ${appIds.joinToString(", ") { it }}; modules: ${modIds.joinToString(", ") { it }}"
+    )
+
+    data class CannotDeleteBundle(val bundleId: String, val reason: String): ApplicationException(
+        "Cannot delete bundle $bundleId; Reason: $reason"
+    )
 }
