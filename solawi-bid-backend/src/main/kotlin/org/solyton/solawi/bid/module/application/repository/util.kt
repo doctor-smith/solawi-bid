@@ -5,7 +5,7 @@ import org.jetbrains.exposed.sql.insertAndGetId
 import org.solyton.solawi.bid.module.application.schema.ApplicationEntity
 import org.solyton.solawi.bid.module.application.schema.ModuleEntity
 import org.solyton.solawi.bid.module.permission.exception.ContextException
-import org.solyton.solawi.bid.module.permission.exception.PermissionException
+import org.solyton.solawi.bid.module.permission.exception.PermissionExceptionD
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
@@ -46,7 +46,7 @@ fun String.reduceContextName(): String = with(split(".")) { when{
 
 fun createUserRoleContext(userId: UUID, role: String, contextId: UUID): UUID {
     val ownerRoleId = RoleEntity.find { RolesTable.name eq role }.firstOrNull()?.id?.value
-        ?: throw PermissionException.NoSuchRole(role)
+        ?: throw PermissionExceptionD.NoSuchRole(role)
     return UserRoleContext.insertAndGetId {
         it[UserRoleContext.userId] = userId
         it[UserRoleContext.roleId] = ownerRoleId

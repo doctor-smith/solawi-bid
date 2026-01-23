@@ -8,14 +8,19 @@ import org.solyton.solawi.bid.module.application.exception.ApplicationException
 import org.solyton.solawi.bid.module.authentication.exception.AuthenticationException
 import org.solyton.solawi.bid.module.bid.data.api.RoundStateException
 import org.solyton.solawi.bid.module.bid.exception.BidRoundException
+import org.solyton.solawi.bid.module.bid.exception.DistributionPointException
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.exception.ContextException
+import org.solyton.solawi.bid.module.permission.exception.PermissionExceptionD
+import org.solyton.solawi.bid.module.user.exception.AddressException
 import org.solyton.solawi.bid.module.user.exception.OrganizationException
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
 
 
 fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Message> =
     when(this.value) {
+        // Authentication
+        is AuthenticationException.InvalidOrExpiredToken -> HttpStatusCode.Unauthorized
 
         // BidRound
         is BidRoundException.RoundNotStarted -> HttpStatusCode.Conflict
@@ -31,10 +36,11 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
         // RoundState
         is RoundStateException.IllegalTransition -> HttpStatusCode.BadRequest
         is RoundStateException.IllegalRoundState -> HttpStatusCode.BadRequest
-        //
 
-        // Authentication
-        is AuthenticationException.InvalidOrExpiredToken -> HttpStatusCode.Unauthorized
+        // DistributionPoint
+        is DistributionPointException.NoSuchDistributionPoint -> HttpStatusCode.NotFound
+        is DistributionPointException.DuplicateNameInOrganization -> HttpStatusCode.Conflict
+
         //User
         is UserManagementException.UserDoesNotExist -> HttpStatusCode.Unauthorized
         is UserManagementException.WrongCredentials -> HttpStatusCode.Unauthorized
@@ -43,12 +49,19 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
         is OrganizationException.NoSuchOrganization -> HttpStatusCode.NotFound
         is OrganizationException.NoSuchChildOrganization -> HttpStatusCode.NotFound
         is OrganizationException.DuplicateMember -> HttpStatusCode.Conflict
+        // Address
+        is AddressException.NoSuchAddress -> HttpStatusCode.NotFound
 
         // Permission
         is PermissionException.AccessDenied -> HttpStatusCode.Forbidden
+
         // todo:dev how to handle these permission exceptions?
-        //is PermissionException.NoSuchContext -> HttpStatusCode.Forbidden
-        //is PermissionException.NoSuchRight -> HttpStatusCode.Forbidden
+        is PermissionException.NoSuchContext -> HttpStatusCode.Forbidden
+        is PermissionException.NoSuchRight -> HttpStatusCode.Forbidden
+        is PermissionExceptionD.NoSuchRole -> HttpStatusCode.NotFound
+        is PermissionExceptionD.DuplicateRoleName -> HttpStatusCode.Conflict
+        is PermissionExceptionD.DuplicateRightName -> HttpStatusCode.Conflict
+
         is ContextException.NoContextProvided -> HttpStatusCode.BadRequest
 
         // Application (Module!)
@@ -68,7 +81,10 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
         is ApplicationException.UserNotRegisteredForApplication -> HttpStatusCode.Forbidden
         is ApplicationException.UserNotRegisteredForModule -> HttpStatusCode.Forbidden
         is ApplicationException.UserNotRegisteredForModules -> HttpStatusCode.Forbidden
-
+        // Bundles
+        is ApplicationException.DuplicateBundleName -> HttpStatusCode.Conflict
+        is ApplicationException.NoSuchAppsOrModules -> HttpStatusCode.NotFound
+        is ApplicationException.CannotDeleteBundle -> HttpStatusCode.Conflict
 
         else -> HttpStatusCode.InternalServerError
     } x this.value.toMessage()

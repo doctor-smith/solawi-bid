@@ -19,6 +19,9 @@ import org.solyton.solawi.bid.module.application.schema.ModuleEntity
 import org.solyton.solawi.bid.module.application.schema.ModulesTable
 import java.util.*
 
+/**
+ * Create [org.solyton.solawi.bid.module.application.schema.Bundle] together with [org.solyton.solawi.bid.module.application.schema.BundleDefinitions]
+ */
 fun Transaction.createBundle(
     name: String,
     description: String,
@@ -98,6 +101,7 @@ fun Transaction.deleteBundle(bundleId: UUID): UUID {
     )
 
     removeBundleDefinitionOfBundle(bundleId)
+    BundlesTable.deleteWhere { BundlesTable.id eq bundleId }
     return bundleId
 }
 
