@@ -8,7 +8,7 @@ import org.solyton.solawi.bid.module.auditable.AuditableEntity
 import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
-import java.util.UUID
+import java.util.*
 
 typealias OrganizationApplicationContextsTable = OrganizationApplicationContexts
 typealias OrganizationApplicationContextEntity = OrganizationApplicationContext
