@@ -13,7 +13,7 @@ typealias FiscalYearsTable = FiscalYears
 typealias FiscalYearEntity = FiscalYear
 
 object FiscalYears : AuditableUUIDTable("fiscal_years") {
-
+    val legalEntityId = uuid("legal_entity_id")
     val start = date("start")
     val end = date("end")
 
@@ -22,6 +22,7 @@ object FiscalYears : AuditableUUIDTable("fiscal_years") {
 class FiscalYear(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     companion object : UUIDEntityClass<FiscalYear>(FiscalYears)
 
+    var legalEntityId by FiscalYears.legalEntityId
     var start by FiscalYears.start
     var end by FiscalYears.end
 

@@ -103,6 +103,7 @@ val columnsToAdd: List<AddMissingColumns> by lazy {
             ColumnDef.Missing<DateTime>("created_at", DateTime.now()),
             ColumnDef.Missing<UUID?>("modified_by",null),
             ColumnDef.Missing<DateTime?>("modified_at", null),
+            ColumnDef.Missing<UUID>("legal_entity_id", UUID_ZERO)
         ),
         AddressesTable.addColumnsIfMissing(
             ColumnDef.Missing<UUID>("created_by", UUID_ZERO),
