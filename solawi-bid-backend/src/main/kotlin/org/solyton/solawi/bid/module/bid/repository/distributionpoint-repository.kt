@@ -114,3 +114,7 @@ fun Transaction.validateNameInOrganization(
         name, organizationId.toString()
     )
 }
+
+fun Transaction.validatedDistributionPoint(distributionPointId: UUID): DistributionPointEntity =
+    DistributionPointEntity.findById(distributionPointId)?: throw DistributionPointException.NoSuchDistributionPoint(distributionPointId.toString())
+
