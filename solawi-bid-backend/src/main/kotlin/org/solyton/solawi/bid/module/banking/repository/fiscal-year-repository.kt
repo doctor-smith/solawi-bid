@@ -105,6 +105,10 @@ fun Transaction.deleteFiscalYearsOfLegalEntity(legalEntityId: UUID) {
     FiscalYearsTable.deleteWhere { FiscalYearsTable.legalEntityId eq legalEntityId}
 }
 
+
+fun Transaction.validatedFiscalYear(fiscalYearId: UUID): FiscalYearEntity =
+    FiscalYearEntity.findById(fiscalYearId)?: throw FiscalYearException.NoSuchFiscalYear(fiscalYearId.toString())
+
 /**
  * Validate that provided start and end date yield a proper interval
  * (end > start)
