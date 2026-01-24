@@ -9,7 +9,7 @@ import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
 import java.util.*
 
 typealias ShareTypesTable = ShareTypes
-typealias ShareTypeEntity = ShareSubscription
+typealias ShareTypeEntity = ShareType
 
 object ShareTypes : AuditableUUIDTable("share_types") {
     val providerId = uuid("provider_id")
@@ -24,8 +24,11 @@ object ShareTypes : AuditableUUIDTable("share_types") {
 class ShareType(id : EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     companion object : UUIDEntityClass<ShareType>(ShareTypes)
 
+    var providerId by ShareTypes.providerId
     var name by ShareTypes.name
     var description by ShareTypes.description
+
+    val shareOffers by ShareOfferEntity referrersOn ShareOffers.shareTypeId
 
     override var createdAt: DateTime by ShareTypes.createdAt
     override var createdBy: UUID by ShareTypes.createdBy
