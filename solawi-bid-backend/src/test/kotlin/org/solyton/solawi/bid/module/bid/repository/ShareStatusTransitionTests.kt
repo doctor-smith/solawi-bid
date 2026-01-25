@@ -26,21 +26,23 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 
-data class TestCase(
-    override val testId: String,
-    override val description: String,
-    val fromStatus: ShareStatus,
-    val toStatus: ShareStatus,
-    val reason: ChangeReason,
-    val modifier: ChangedBy,
-    val humanModifierId: UUID? = null,
-    val comment: String? = null,
-    val shareSubscription: ShareSubscription? = null,
-    val actAndAssert: Transaction.(TestCase) -> Unit
-) : TestCaseSpecification
 
 
 class ShareStatusTransitionTests {
+
+    data class TestCase(
+        override val testId: String,
+        override val description: String,
+        val fromStatus: ShareStatus,
+        val toStatus: ShareStatus,
+        val reason: ChangeReason,
+        val modifier: ChangedBy,
+        val humanModifierId: UUID? = null,
+        val comment: String? = null,
+        val shareSubscription: ShareSubscription? = null,
+        val actAndAssert: Transaction.(TestCase) -> Unit
+    ) : TestCaseSpecification
+
     /**
      * Want to test the status transition function [next], which transforms the status of share-subscription.
      * It depends on the properties

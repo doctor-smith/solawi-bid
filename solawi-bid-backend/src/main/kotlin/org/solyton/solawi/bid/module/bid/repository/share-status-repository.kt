@@ -1,6 +1,8 @@
 package org.solyton.solawi.bid.module.bid.repository
 
+import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.Transaction
+import org.jetbrains.exposed.sql.and
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.bid.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.bid.exception.ShareException
@@ -11,6 +13,7 @@ import org.solyton.solawi.bid.module.bid.data.internal.shareStatusTransitionsWit
 import org.solyton.solawi.bid.module.bid.schema.ShareStatusEntity
 import org.solyton.solawi.bid.module.bid.schema.ShareStatusTable
 import org.solyton.solawi.bid.module.bid.schema.ShareSubscriptionEntity
+import org.solyton.solawi.bid.module.bid.schema.ShareSubscriptionStatusHistory
 import org.solyton.solawi.bid.module.bid.schema.ShareSubscriptionStatusHistoryEntry
 import java.util.UUID
 
@@ -66,6 +69,26 @@ fun Transaction.next(
         throw ShareStatusException.InvalidHistoryEntry(exception.message?: "No message provided")
     }
 
+
+    if(nextState != ShareStatus.Subscribed)  return shareSubscription
+
+    // check if there is a rolling-over companion
+    // Yes => move companions' state to RolledOver
+    val rollingOverCompanion = ShareSubscriptionStatusHistoryEntry.find {
+        (ShareSubscriptionStatusHistory.shareSubscriptionId eq shareSubscriptionId) and
+        (ShareSubscriptionStatusHistory.rollingOverFromSubscriptionId neq null)
+    }.firstOrNull()
+    if(rollingOverCompanion != null) {
+        next(
+            rollingOverCompanion.id.value,
+            ShareStatus.RolledOver,
+            ChangeReason.ROLLOVER,
+            changedBy,
+            modifier,
+            "state moved automatically during rollover"
+        )
+    }
+
     return shareSubscription
 }
 
@@ -81,12 +104,31 @@ fun Transaction.rollover(
     val shareSubscription = ShareSubscriptionEntity.findById(shareSubscriptionId)
         ?: throw ShareException.NoSuchShareSubscription(shareSubscriptionId.toString())
 
+    validateTransition(
+        ShareStatus.from(shareSubscription.status.name),
+        ShareStatus.RollingOver,
+        ChangeReason.NEW_PERIOD,
+        changedBy
+    )
+
+    val rollingOverStatus = statusEntity(ShareStatus.RollingOver)
+
+    next(
+        shareSubscription.id.value,
+        ShareStatus.RollingOver,
+        ChangeReason.NEW_PERIOD,
+        changedBy,
+        modifiedBy,
+        "state moved automatically during rollover"
+    )
+
+
     val toShareOffer = validatedShareOffer(toShareOfferId)
 
-    val rolledOverStatus = statusEntity(ShareStatus.RolledOver)
 
     val rolledOverShareSubscription = ShareSubscriptionEntity.new {
-        this.status = rolledOverStatus
+        createdBy = modifiedBy?: UUID_ZERO
+        this.status = rollingOverStatus
         shareOffer = toShareOffer
         fiscalYear = toShareOffer.fiscalYear
         userProfile = shareSubscription.userProfile
@@ -100,9 +142,10 @@ fun Transaction.rollover(
     // history entries !!!
     try{
         ShareSubscriptionStatusHistoryEntry.new {
+            this.rollingOverFromShareSubscription = shareSubscription
             this.shareSubscription = rolledOverShareSubscription
             this.fromStatus = null
-            this.toStatus = rolledOverStatus
+            this.toStatus = rollingOverStatus
             this.reason = ChangeReason.ROLLOVER
             this.changedBy = changedBy
             this.humanModifierId = modifiedBy

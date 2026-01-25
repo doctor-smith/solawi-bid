@@ -4,7 +4,7 @@ package org.solyton.solawi.bid.module.bid.data.internal
 enum class ChangeReason {
     // === INITIAL CREATION & ROLLOVER ===
     INITIAL_CREATION,       // First creation of the share
-    ROLLOVER,               // Subscription moved to next period (Subscribed -> PendingActivation)
+    ROLLOVER,               // Subscription moved to next period
     ROLLED_OVER,            // Completed rollover at end of season
     NEW_PERIOD,             // Start of a new subscription/fiscal period
 
