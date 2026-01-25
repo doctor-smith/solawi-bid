@@ -8,7 +8,8 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.neq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.or
-import org.solyton.solawi.bid.module.auditable.AuditableEntity
+import org.solyton.solawi.bid.module.bid.data.internal.ChangeReason
+import org.solyton.solawi.bid.module.bid.data.internal.ChangedBy
 import java.util.UUID
 
 object ShareSubscriptionStatusHistory : UUIDTable("share_subscription_status_history") {
@@ -35,11 +36,14 @@ object ShareSubscriptionStatusHistory : UUIDTable("share_subscription_status_his
         // check rollover and former subscription ids
         check("chk_rollover") {
             (reason eq ChangeReason.ROLLOVER and (rollingOverFromSubscriptionId.isNotNull())) or
-            (reason neq ChangeReason.ROLLOVER and (rollingOverFromSubscriptionId.isNull()))        
+            (reason neq ChangeReason.ROLLOVER and (rollingOverFromSubscriptionId.isNull()))
         }
 
         check("chk_human_modification_requires_modifier_id_and_comment") {
             (changedBy eq ChangedBy.SYSTEM) or (humanModifierId.isNotNull() and comment.isNotNull())
+        }
+        check("chk_system_modification_rules_out_human_modifiers") {
+            (changedBy neq ChangedBy.SYSTEM) or humanModifierId.isNull()
         }
     }
 }
@@ -48,6 +52,7 @@ class ShareSubscriptionStatusHistoryEntry(id: EntityID<UUID>): UUIDEntity(id) {
     companion object : UUIDEntityClass<ShareSubscriptionStatusHistoryEntry>(ShareSubscriptionStatusHistory)
 
     var shareSubscription by ShareSubscriptionEntity referencedOn ShareSubscriptionStatusHistory.shareSubscriptionId
+    var rollingOverFromShareSubscription by ShareSubscriptionEntity optionalReferencedOn ShareSubscriptionStatusHistory.rollingOverFromSubscriptionId
     var fromStatus by ShareStatusEntity optionalReferencedOn ShareSubscriptionStatusHistory.fromStatusId
     var toStatus by ShareStatusEntity referencedOn ShareSubscriptionStatusHistory.toStatusId
 
@@ -55,20 +60,4 @@ class ShareSubscriptionStatusHistoryEntry(id: EntityID<UUID>): UUIDEntity(id) {
     var changedBy by ShareSubscriptionStatusHistory.changedBy
     var humanModifierId by ShareSubscriptionStatusHistory.humanModifierId
     var comment by ShareSubscriptionStatusHistory.comment
-}
-
-enum class ChangeReason {
-    INITIAL_CREATION,        // first creation of the share
-    ROLLOVER,         // moved to next year (Subscribed -> PendingActivation)
-    USER_ACTION,             // pause, cancel, resume
-    PAYMENT_EVENT,           // payment failed / recovered
-    AUTHORIZATION_EVENT,     // AHC / mandate approved or rejected
-    ADMIN_ACTION,            // manual override
-    SYSTEM_EVENT             // automatic expiration / suspension
-}
-
-enum class ChangedBy {
-    USER,
-    PROVIDER,
-    SYSTEM
 }

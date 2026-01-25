@@ -87,6 +87,34 @@ fun Database.modifyColumnNames(vararg dataSets: ModifyColumnNames) {
     }
 }
 
+@Suppress("UnusedParameter")
+fun Database.modifyColumnProperties(vararg columns: ModifyColumnProperties<*>) {
+    /*
+    transaction(this) {
+        columns.forEach { col ->
+            col.newLength?.let { length ->
+                exec(
+                    "ALTER TABLE ${col.table.tableName} ALTER COLUMN ${col.columnName} TYPE VARCHAR($length)"
+                )
+            }
+            col.nullable?.let { nullable ->
+                val nullability = if (nullable) "DROP NOT NULL" else "SET NOT NULL"
+                exec(
+                    "ALTER TABLE ${col.table.tableName} ALTER COLUMN ${col.columnName} $nullability"
+                )
+            }
+            col.newDefault?.let { default ->
+                exec(
+                    "ALTER TABLE ${col.table.tableName} ALTER COLUMN ${col.columnName} SET DEFAULT $default"
+                )
+            }
+        }
+    }
+
+     */
+}
+
+
 fun String.fixColumnName(): String = when{
     listOf("varchar").contains(this) -> "`$this`"
     else -> this

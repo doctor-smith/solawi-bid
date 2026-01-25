@@ -3,11 +3,11 @@ package org.solyton.solawi.bid.module.bid.repository
 import org.jetbrains.exposed.sql.Transaction
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.bid.data.internal.ShareStatus
-import org.solyton.solawi.bid.module.bid.data.internal.shareStatusTransitions
 import org.solyton.solawi.bid.module.bid.exception.ShareException
 import org.solyton.solawi.bid.module.bid.exception.ShareStatusException
-import org.solyton.solawi.bid.module.bid.schema.ChangeReason
-import org.solyton.solawi.bid.module.bid.schema.ChangedBy
+import org.solyton.solawi.bid.module.bid.data.internal.ChangeReason
+import org.solyton.solawi.bid.module.bid.data.internal.ChangedBy
+import org.solyton.solawi.bid.module.bid.data.internal.shareStatusTransitionsWithPermissions
 import org.solyton.solawi.bid.module.bid.schema.ShareStatusEntity
 import org.solyton.solawi.bid.module.bid.schema.ShareStatusTable
 import org.solyton.solawi.bid.module.bid.schema.ShareSubscriptionEntity
@@ -37,11 +37,14 @@ fun Transaction.next(
     val shareSubscription = ShareSubscriptionEntity.findById(shareSubscriptionId)
         ?: throw ShareException.NoSuchShareSubscription(shareSubscriptionId.toString())
 
-    val currentStatus = ShareStatus.from(shareSubscription.status.name)
-    val allowed = shareStatusTransitions[currentStatus]
-    if (allowed == null) throw ShareStatusException.NoSuchStatusTransition(
-        currentStatus.toString(),
-        nextState.toString()
+    val currentStatusEntity = shareSubscription.status
+    val currentStatus = ShareStatus.from(currentStatusEntity.name)
+
+    validateTransition(
+        currentStatus,
+        nextState,
+        reason,
+        changedBy
     )
 
     val nextStatusEntity = statusEntity(nextState)
@@ -52,7 +55,7 @@ fun Transaction.next(
     try{
         ShareSubscriptionStatusHistoryEntry.new {
             this.shareSubscription = shareSubscription
-            this.fromStatus = shareSubscription.status
+            this.fromStatus = currentStatusEntity
             this.toStatus = nextStatusEntity
             this.reason = reason
             this.changedBy = changedBy
@@ -110,4 +113,26 @@ fun Transaction.rollover(
     }
 
     return rolledOverShareSubscription
+}
+
+
+fun validateTransition(
+    fromStatus: ShareStatus,
+    toStatus: ShareStatus,
+    reason: ChangeReason,
+    modifier: ChangedBy
+) {
+    val sharePermissions = shareStatusTransitionsWithPermissions[fromStatus]
+        ?: throw ShareStatusException.NoSuchStatusTransition("$fromStatus", "$toStatus")
+
+    val permissions = sharePermissions.firstOrNull {
+            permissions -> permissions.shareStatus == toStatus
+    }?.permissions?: throw ShareStatusException.NoSuchStatusTransition("$fromStatus", "$toStatus")
+
+    val reasons = permissions[modifier]?: throw ShareStatusException.TransitionNotAllowedForModifier(
+        "$fromStatus", "$toStatus", "$modifier"
+    )
+    if(!reasons.contains(reason)) throw ShareStatusException.MissingTransitionPermission(
+        "$fromStatus", "$toStatus", "$modifier", "$reason"
+    )
 }

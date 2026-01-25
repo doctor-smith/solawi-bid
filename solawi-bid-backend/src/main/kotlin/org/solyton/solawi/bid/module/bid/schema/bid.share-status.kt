@@ -7,7 +7,7 @@ import org.jetbrains.exposed.dao.id.UUIDTable
 import java.util.UUID
 
 object ShareStatusTable : UUIDTable("share_status") {
-    val name = varchar( "name", length = 20).uniqueIndex()
+    val name = varchar( "name", length = 50).uniqueIndex()
 
     val description = text("description")
 }

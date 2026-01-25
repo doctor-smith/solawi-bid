@@ -2,20 +2,35 @@ package org.evoleq.exposedx.test
 
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.util.UUID
+
+interface TestDbConfig {
+    val url: String
+    val driver: String
+    val user: String
+    val password: String
+}
 
 object Config {
-    object H2 {
-        const val url: String = "jdbc:h2:mem:test"
-        const val driver: String = "org.h2.Driver"
-        const val user: String = "root"
-        const val password: String = ""
+    object H2 : TestDbConfig {
+        override val url: String = "jdbc:h2:mem:test"
+        override val driver: String = "org.h2.Driver"
+        override val user: String = "root"
+        override val password: String = ""
     }
-    object H2NoClose {
-        const val url: String = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
-        const val driver: String = "org.h2.Driver"
-        const val user: String = "root"
-        const val password: String = ""
+    object H2NoClose : TestDbConfig  {
+        override val url: String = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
+        override val driver: String = "org.h2.Driver"
+        override val user: String = "root"
+        override val password: String = ""
     }
+
+    val H2NoCloseUniqueDB : (String) -> TestDbConfig = {dbName: String -> object: TestDbConfig {
+        override val url: String = "jdbc:h2:mem:test-$dbName;DB_CLOSE_DELAY=-1"
+        override val driver: String = "org.h2.Driver"
+        override val user: String = "root"
+        override val password: String = ""
+    }}
 }
 
 fun runSimpleH2Test(vararg tables: Table, block: Transaction.()->Unit) {
@@ -30,7 +45,29 @@ fun runSimpleH2Test(vararg tables: Table, block: Transaction.()->Unit) {
         addLogger(StdOutSqlLogger)
         SchemaUtils.create(*tables)
         block()
+
+    }
+    transaction{
+        exec("SET REFERENTIAL_INTEGRITY FALSE")
         SchemaUtils.drop(*tables)
+        exec("SET REFERENTIAL_INTEGRITY TRUE")
+    }
+}
+
+fun runSimpleH2Test(databaseId: String,vararg tables: Table, block: Transaction.()->Unit) {
+    val config = Config.H2NoCloseUniqueDB(databaseId)
+    Database.connect(
+        url = config.url,
+        driver = config.driver,
+        user = config.user,
+        password = config.password
+    )
+
+    transaction {
+        addLogger(StdOutSqlLogger)
+        SchemaUtils.create(*tables)
+        exec("SET REFERENTIAL_INTEGRITY FALSE")
+        block()
     }
 }
 

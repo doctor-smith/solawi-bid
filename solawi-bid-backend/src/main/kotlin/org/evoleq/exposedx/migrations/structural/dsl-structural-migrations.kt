@@ -15,3 +15,10 @@ fun Table.modifyColumnNames(vararg columnDefs: ColumnDef.ModifyName): ModifyColu
         *columnDefs
     )
 )
+
+fun Table.modifyColumnProperties(vararg columnDefs: ColumnDef.ModifyProperties<Any?>): ModifyColumnProperties<Any?> = ModifyColumnProperties(
+    this,
+    listOf(
+        *columnDefs
+    )
+)
