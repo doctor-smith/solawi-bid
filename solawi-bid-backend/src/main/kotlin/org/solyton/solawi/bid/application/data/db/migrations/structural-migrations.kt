@@ -5,6 +5,7 @@ import org.evoleq.exposedx.migrations.structural.ColumnDef
 import org.evoleq.exposedx.migrations.structural.StructuralMigrations
 import org.evoleq.exposedx.migrations.structural.addColumnsIfMissing
 import org.evoleq.exposedx.migrations.structural.modifyColumnNames
+import org.evoleq.exposedx.migrations.structural.modifyColumnProperties
 import org.evoleq.uuid.UUID_ZERO
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
@@ -13,6 +14,7 @@ import org.solyton.solawi.bid.module.application.schema.UserApplicationsTable
 import org.solyton.solawi.bid.module.application.schema.UserModulesTable
 import org.solyton.solawi.bid.module.banking.schema.BankAccountsTable
 import org.solyton.solawi.bid.module.banking.schema.FiscalYears
+import org.solyton.solawi.bid.module.bid.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.permission.schema.Resources
@@ -28,7 +30,8 @@ import java.util.*
 val structuralMigrations by lazy {
     StructuralMigrations(
         addMissingColumns = columnsToAdd,
-        modifyColumnNames = columnNamesToModify
+        modifyColumnNames = columnNamesToModify,
+        modifyColumnProperties = columnPropertiesToModify
     )
 }
 
@@ -177,6 +180,17 @@ val columnNamesToModify by lazy {
             "varchar",
             "password"
             ),
+        )
+    )
+}
+
+val columnPropertiesToModify by lazy {
+    listOf(
+        ShareStatusTable.modifyColumnProperties(
+            ColumnDef.ModifyProperties(
+                "name",
+                newLength = 50,
+            )
         )
     )
 }
