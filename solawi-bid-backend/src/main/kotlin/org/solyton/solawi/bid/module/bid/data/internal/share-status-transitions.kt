@@ -52,9 +52,10 @@ val shareStatusTransitionsWithPermissions: Map<ShareStatus, Set<ShareStatusPermi
         ),
 
         ShareStatus.Subscribed to setOf(
-            ShareStatus.RolledOver permit mapOf(
-                ChangedBy.PROVIDER to setOf(ChangeReason.ROLLED_OVER),
-                ChangedBy.SYSTEM to setOf(ChangeReason.ROLLED_OVER)
+
+            ShareStatus.RollingOver permit mapOf(
+                ChangedBy.PROVIDER to setOf(ChangeReason.NEW_PERIOD),
+                ChangedBy.SYSTEM to setOf(ChangeReason.NEW_PERIOD)
             ),
             ShareStatus.Paused permit mapOf(
                 ChangedBy.USER to setOf(ChangeReason.USER_PAUSED)
@@ -123,14 +124,24 @@ val shareStatusTransitionsWithPermissions: Map<ShareStatus, Set<ShareStatusPermi
             )
         ),
 
-        ShareStatus.Cancelled to emptySet(),
-        ShareStatus.RolledOver to emptySet(),
+
 
         ShareStatus.RollingOver to setOf(
             ShareStatus.PendingActivation permit mapOf(
                 ChangedBy.USER to setOf(ChangeReason.USER_EVENTUAL_CHANGE)
-            )
-        )
+            ),
+            // Happens when the provider accepts a share in pending-activation state
+            // which has a rolling-over companion. The rolling-over companions state
+            // will be set to RolledOver in this case
+            ShareStatus.RolledOver permit mapOf(
+                ChangedBy.PROVIDER to setOf(ChangeReason.ROLLED_OVER),
+                ChangedBy.SYSTEM to setOf(ChangeReason.ROLLED_OVER)
+            ),
+        ),
+
+        // Terminal states
+        ShareStatus.Cancelled to emptySet(),
+        ShareStatus.RolledOver to emptySet(),
     )
 }
 
