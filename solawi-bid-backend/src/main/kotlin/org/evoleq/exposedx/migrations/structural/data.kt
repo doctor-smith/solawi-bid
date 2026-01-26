@@ -32,12 +32,24 @@ sealed class ColumnDef(open val name: String) {
         val newName: String
     ) : ColumnDef(oldName)
 
-    data class ModifyProperties<T : Any?>(
+    sealed class ModifyProperties<out T : Any?>(
         override val name: String,
-        val newLength: Int? = null,
-        val newDefault: T? = null,
-        val nullable: Boolean? = null
-    ) : ColumnDef(name)
+        // Be careful: only varchars can be handled by now
+
+        open val newDefault: T? = null,
+        open val nullable: Boolean? = null
+    ) : ColumnDef(name) {
+        data class Varchar(
+            override val name: String,
+            override val newDefault: String? = null,
+            override val nullable: Boolean? = null,
+            val newLength: Int? = null,
+        ): ModifyProperties<String>(
+            name,
+            newDefault,
+            nullable
+        )
+    }
 }
 
 data class StructuralMigrations(
