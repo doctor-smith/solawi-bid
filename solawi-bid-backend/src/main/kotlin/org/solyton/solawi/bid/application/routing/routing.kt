@@ -9,6 +9,7 @@ import org.solyton.solawi.bid.module.authentication.routing.authentication
 import org.solyton.solawi.bid.module.banking.routing.banking
 import org.solyton.solawi.bid.module.bid.routing.auction
 import org.solyton.solawi.bid.module.bid.routing.bidders
+import org.solyton.solawi.bid.module.bid.routing.distributionPoints
 import org.solyton.solawi.bid.module.bid.routing.round
 import org.solyton.solawi.bid.module.bid.routing.sendBid
 import org.solyton.solawi.bid.module.health.routing.health
@@ -37,6 +38,9 @@ fun Application.setupRouting(environment: Environment) {
             authenticate("auth-jwt"){ it() }
         }
         bidders(environment){
+            authenticate("auth-jwt"){ it() }
+        }
+        distributionPoints(environment) {
             authenticate("auth-jwt"){ it() }
         }
         application(environment){
