@@ -105,6 +105,9 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<DeleteDistributionPoint>(DeleteDistributionPoint.serializer())
         add<ReadDistributionPoint>(ReadDistributionPoint.serializer())
         add<ReadDistributionPoints>(ReadDistributionPoints.serializer())
+        add<CreateOrUseAddress>(CreateOrUseAddress.serializer())
+        add<CreateOrUseAddress.Create>(CreateOrUseAddress.Create.serializer())
+        add<CreateOrUseAddress.Use>(CreateOrUseAddress.Use.serializer())
 
         // UserManagement
         add<CreateUser>(CreateUser.serializer())

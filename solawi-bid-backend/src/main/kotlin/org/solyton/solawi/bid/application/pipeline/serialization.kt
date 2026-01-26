@@ -99,6 +99,9 @@ fun installSerializers() {
     serializers[DeleteDistributionPoint::class] = DeleteDistributionPoint.serializer()
     serializers[ReadDistributionPoints::class] = ReadDistributionPoints.serializer()
     serializers[ReadDistributionPoint::class] = ReadDistributionPoint.serializer()
+    serializers[CreateOrUseAddress::class] = CreateOrUseAddress.serializer()
+    serializers[CreateOrUseAddress.Create::class] = CreateOrUseAddress.Create.serializer()
+    serializers[CreateOrUseAddress.Use::class] = CreateOrUseAddress.Use.serializer()
 
     // UserManagement
     serializers[CreateUser::class] = CreateUser.serializer()

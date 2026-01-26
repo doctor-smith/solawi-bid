@@ -28,6 +28,7 @@ import org.solyton.solawi.bid.module.bid.data.api.Auction
 import org.solyton.solawi.bid.module.bid.data.api.Auctions
 import org.solyton.solawi.bid.module.bid.data.api.CreateAuction
 import org.solyton.solawi.bid.module.bid.data.api.CreateDistributionPoint
+import org.solyton.solawi.bid.module.bid.data.api.CreateOrUseAddress
 import org.solyton.solawi.bid.module.bid.data.api.DeleteDistributionPoint
 import org.solyton.solawi.bid.module.bid.data.api.DistributionPoint
 import org.solyton.solawi.bid.module.bid.data.api.DistributionPoints
@@ -117,6 +118,9 @@ class SerializersTest {
             ReadDistributionPoint::class,
             ReadDistributionPoints::class,
             DeleteDistributionPoint::class,
+            CreateOrUseAddress::class,
+            CreateOrUseAddress.Create::class,
+            CreateOrUseAddress.Use::class,
 
             BankAccount::class,
             ReadBankAccount::class,

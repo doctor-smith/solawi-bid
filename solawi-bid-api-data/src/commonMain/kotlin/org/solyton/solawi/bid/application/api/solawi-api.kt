@@ -4,11 +4,7 @@ package org.solyton.solawi.bid.application.api
 import org.evoleq.ktorx.api.Api
 import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.authentication.data.api.*
-import org.solyton.solawi.bid.module.banking.data.api.CreateFiscalYear
-import org.solyton.solawi.bid.module.banking.data.api.FiscalYear
-import org.solyton.solawi.bid.module.banking.data.api.FiscalYears
-import org.solyton.solawi.bid.module.banking.data.api.ReadFiscalYears
-import org.solyton.solawi.bid.module.banking.data.api.UpdateFiscalYear
+import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
@@ -138,6 +134,23 @@ val solawiApi by lazy {
             post<AddBidders, Unit>(
                 key = AddBidders::class, "bidders/add"
             )
+
+            // Distribution Points
+            // ===================
+            // takes parameter "provider: UUID"
+            get<ReadDistributionPoints, DistributionPoints> (
+                key = ReadDistributionPoints::class,
+                url = "distribution-points/all"
+            )
+            post<CreateDistributionPoint, DistributionPoint> (
+                key = CreateDistributionPoint::class,
+                url = "distribution-points/create"
+            )
+            patch<UpdateDistributionPoint, DistributionPoint>(
+                key = UpdateDistributionPoint::class,
+                url = "distribution-points/update"
+            )
+
         }
         // User Management and Organizations
         group("User management and organizations") {

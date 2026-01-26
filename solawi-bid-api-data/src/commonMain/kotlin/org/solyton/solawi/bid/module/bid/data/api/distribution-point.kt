@@ -15,7 +15,8 @@ data class DistributionPoints(
 data class DistributionPoint(
     val id: String,
     val name: String,
-    val address: Address
+    val organizationId: String,
+    val address: Address?
 )
 
 @Serializable
@@ -29,17 +30,38 @@ data class ReadDistributionPoint(
 @Serializable
 data class CreateDistributionPoint(
     val name: String,
-    val address: Address
+    val organizationId: String,
+    val address: CreateOrUseAddress?
 )
 
 @Serializable
 data class UpdateDistributionPoint(
     val id: String,
     val name: String,
-    val address: Address
+    val organizationId: String,
+    val address: Address?
 )
 
 @Serializable
 data class DeleteDistributionPoint(
     val id: String
 )
+
+@Serializable
+sealed class CreateOrUseAddress {
+
+    @Serializable
+    data class Use(val addressId: String) : CreateOrUseAddress()
+
+    @Serializable
+    data class Create(
+        val recipientName: String,
+        val organizationName: String?,
+        val addressLine1: String,
+        val addressLine2: String,
+        val city: String,
+        val stateOrProvince: String,
+        val postalCode: String,
+        val countryCode: String
+    ) : CreateOrUseAddress()
+}
