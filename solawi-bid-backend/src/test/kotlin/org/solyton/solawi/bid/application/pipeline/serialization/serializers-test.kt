@@ -17,6 +17,7 @@ import org.solyton.solawi.bid.module.banking.data.api.CreateFiscalYear
 import org.solyton.solawi.bid.module.banking.data.api.DeleteBankAccount
 import org.solyton.solawi.bid.module.banking.data.api.DeleteFiscalYear
 import org.solyton.solawi.bid.module.banking.data.api.FiscalYear
+import org.solyton.solawi.bid.module.banking.data.api.FiscalYears
 import org.solyton.solawi.bid.module.banking.data.api.ReadBankAccount
 import org.solyton.solawi.bid.module.banking.data.api.ReadBankAccounts
 import org.solyton.solawi.bid.module.banking.data.api.ReadFiscalYear
@@ -125,6 +126,7 @@ class SerializersTest {
             DeleteBankAccount::class,
 
             FiscalYear::class,
+            FiscalYears::class,
             ReadFiscalYear::class,
             ReadFiscalYears::class,
             CreateFiscalYear::class,

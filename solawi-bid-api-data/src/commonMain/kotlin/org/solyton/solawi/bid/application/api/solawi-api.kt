@@ -4,6 +4,11 @@ package org.solyton.solawi.bid.application.api
 import org.evoleq.ktorx.api.Api
 import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.authentication.data.api.*
+import org.solyton.solawi.bid.module.banking.data.api.CreateFiscalYear
+import org.solyton.solawi.bid.module.banking.data.api.FiscalYear
+import org.solyton.solawi.bid.module.banking.data.api.FiscalYears
+import org.solyton.solawi.bid.module.banking.data.api.ReadFiscalYears
+import org.solyton.solawi.bid.module.banking.data.api.UpdateFiscalYear
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
@@ -268,6 +273,22 @@ val solawiApi by lazy {
                     url = "personal/organization-context-relations"
                 )
             }
+        }
+
+        module("banking") {
+            // takes parameter "provider: UUID"
+            get<ReadFiscalYears, FiscalYears>(
+                key = ReadFiscalYears::class,
+                url = "fiscal-years/all"
+            )
+            post<CreateFiscalYear, FiscalYear>(
+                key = CreateFiscalYear::class,
+                url = "fiscal-years/create"
+            )
+            patch<UpdateFiscalYear, FiscalYear>(
+                key = UpdateFiscalYear::class,
+                url = "fiscal-years/update"
+            )
         }
     }
 }

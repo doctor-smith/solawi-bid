@@ -6,6 +6,7 @@ import io.ktor.server.routing.*
 import org.solyton.solawi.bid.application.environment.Environment
 import org.solyton.solawi.bid.module.application.routing.application
 import org.solyton.solawi.bid.module.authentication.routing.authentication
+import org.solyton.solawi.bid.module.banking.routing.banking
 import org.solyton.solawi.bid.module.bid.routing.auction
 import org.solyton.solawi.bid.module.bid.routing.bidders
 import org.solyton.solawi.bid.module.bid.routing.round
@@ -39,6 +40,9 @@ fun Application.setupRouting(environment: Environment) {
             authenticate("auth-jwt"){ it() }
         }
         application(environment){
+            authenticate("auth-jwt"){ it() }
+        }
+        banking(environment) {
             authenticate("auth-jwt"){ it() }
         }
     }

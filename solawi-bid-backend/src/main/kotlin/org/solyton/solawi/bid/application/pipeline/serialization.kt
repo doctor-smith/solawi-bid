@@ -196,6 +196,7 @@ fun installSerializers() {
     serializers[DeleteBankAccount::class] = DeleteBankAccount.serializer()
 
     serializers[FiscalYear::class] = FiscalYear.serializer()
+    serializers[FiscalYears::class] = FiscalYears.serializer()
     serializers[CreateFiscalYear::class] = CreateFiscalYear.serializer()
     serializers[ReadFiscalYears::class] = ReadFiscalYears.serializer()
     serializers[ReadFiscalYear::class] = ReadFiscalYear.serializer()

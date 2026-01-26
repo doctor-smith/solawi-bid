@@ -202,6 +202,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<DeleteBankAccount>(DeleteBankAccount.serializer())
 
         add<FiscalYear>(FiscalYear.serializer())
+        add<FiscalYears>(FiscalYears.serializer())
         add<CreateFiscalYear>(CreateFiscalYear.serializer())
         add<ReadFiscalYears>(ReadFiscalYears.serializer())
         add<ReadFiscalYear>(ReadFiscalYear.serializer())
