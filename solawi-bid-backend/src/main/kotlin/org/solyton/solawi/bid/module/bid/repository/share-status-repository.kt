@@ -9,6 +9,7 @@ import org.solyton.solawi.bid.module.bid.exception.ShareStatusException
 import org.solyton.solawi.bid.module.bid.data.internal.ChangeReason
 import org.solyton.solawi.bid.module.bid.data.internal.ChangedBy
 import org.solyton.solawi.bid.module.bid.data.internal.shareStatusTransitionsWithPermissions
+import org.solyton.solawi.bid.module.bid.processes.Processes
 import org.solyton.solawi.bid.module.bid.schema.ShareStatusEntity
 import org.solyton.solawi.bid.module.bid.schema.ShareStatusTable
 import org.solyton.solawi.bid.module.bid.schema.ShareSubscriptionEntity
@@ -125,7 +126,7 @@ fun Transaction.rollover(
 
     val toShareOffer = validatedShareOffer(toShareOfferId)
 
-    val changesDoneBy = modifiedBy?: validatedSystemProcess("").id.value
+    val changesDoneBy = modifiedBy?: validatedSystemProcess(Processes.Auctions.SHARE_MANAGEMENT).id.value
     val rolledOverShareSubscription = ShareSubscriptionEntity.new {
         createdBy = changesDoneBy
         this.status = rollingOverStatus

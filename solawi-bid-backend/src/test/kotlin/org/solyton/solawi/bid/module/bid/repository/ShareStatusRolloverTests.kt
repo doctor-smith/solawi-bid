@@ -15,10 +15,12 @@ import org.solyton.solawi.bid.module.bid.data.internal.ChangeReason
 import org.solyton.solawi.bid.module.bid.data.internal.ChangedBy
 import org.solyton.solawi.bid.module.bid.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.bid.exception.ShareStatusException
+import org.solyton.solawi.bid.module.bid.processes.AuctionProcesses
 import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.bid.schema.ShareOfferEntity
 import org.solyton.solawi.bid.module.bid.schema.ShareSubscriptionEntity
 import org.solyton.solawi.bid.module.bid.schema.ShareTypeEntity
+import org.solyton.solawi.bid.module.system.repository.createSystemProcess
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
 import java.util.*
@@ -43,6 +45,7 @@ class ShareStatusRolloverTests {
     @MethodSource("testCases")
     fun test(testCase: TestCase) = with(testCase) {
         runSimpleH2Test(testCase.testId, *tables) {
+            createSystemProcess(AuctionProcesses.SHARE_MANAGEMENT, "")
             val user = UserEntity.new {
                 this.createdBy = UUID_ZERO
                 username = "username"

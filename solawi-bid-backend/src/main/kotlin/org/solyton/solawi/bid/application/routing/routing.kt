@@ -12,6 +12,7 @@ import org.solyton.solawi.bid.module.bid.routing.bidders
 import org.solyton.solawi.bid.module.bid.routing.distributionPoints
 import org.solyton.solawi.bid.module.bid.routing.round
 import org.solyton.solawi.bid.module.bid.routing.sendBid
+import org.solyton.solawi.bid.module.bid.routing.shares
 import org.solyton.solawi.bid.module.health.routing.health
 import org.solyton.solawi.bid.module.permission.routing.permissions
 import org.solyton.solawi.bid.module.user.routing.organization
@@ -41,6 +42,9 @@ fun Application.setupRouting(environment: Environment) {
             authenticate("auth-jwt"){ it() }
         }
         distributionPoints(environment) {
+            authenticate("auth-jwt"){ it() }
+        }
+        shares(environment) {
             authenticate("auth-jwt"){ it() }
         }
         application(environment){
