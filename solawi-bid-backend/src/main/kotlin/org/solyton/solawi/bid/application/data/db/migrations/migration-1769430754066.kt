@@ -3,6 +3,9 @@ package org.solyton.solawi.bid.application.data.db.migrations
 import org.evoleq.exposedx.migrations.Migration
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Transaction
+import org.solyton.solawi.bid.module.bid.processes.Processes.Auctions as AuctionProcesses
+import org.solyton.solawi.bid.module.application.processes.Processes.Application as ApplicationProcesses
+import org.solyton.solawi.bid.module.user.processes.Processes.Users as UsersProcesses
 import org.solyton.solawi.bid.module.system.schema.SystemProcess
 
 /**
@@ -29,17 +32,17 @@ class Migration1769430754066(
      */
     override suspend fun Transaction.up() {
         SystemProcess.new{
-            name = "USER_MANAGEMENT"
+            name = UsersProcesses.USER_MANAGEMENT
             description = "Processes related automatic changes of user data"
         }
 
         SystemProcess.new{
-            name = "AUCTIONS/SHARE_MANAGEMENT"
+            name = AuctionProcesses.SHARE_MANAGEMENT
             description = "Processes related automatic changes of shares within the Auctions application"
         }
 
         SystemProcess.new{
-            name = "APPLICATION/LIFECYCLE_MANAGEMENT"
+            name = ApplicationProcesses.LIFECYCLE_MANAGEMENT
             description = "Processes related automatic changes of lifecycle stages in application management"
         }
     }

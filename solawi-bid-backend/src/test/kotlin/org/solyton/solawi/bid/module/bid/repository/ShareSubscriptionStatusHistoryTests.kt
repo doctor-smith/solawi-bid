@@ -18,6 +18,7 @@ import org.solyton.solawi.bid.module.banking.schema.FiscalYearsTable
 import org.solyton.solawi.bid.module.bid.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.bid.data.internal.ChangeReason
 import org.solyton.solawi.bid.module.bid.data.internal.ChangedBy
+import org.solyton.solawi.bid.module.bid.processes.AuctionProcesses
 import org.solyton.solawi.bid.module.bid.schema.PricingType
 import org.solyton.solawi.bid.module.bid.schema.ShareOfferEntity
 import org.solyton.solawi.bid.module.bid.schema.ShareOffersTable
@@ -28,6 +29,8 @@ import org.solyton.solawi.bid.module.bid.schema.ShareSubscriptionStatusHistoryEn
 import org.solyton.solawi.bid.module.bid.schema.ShareSubscriptionsTable
 import org.solyton.solawi.bid.module.bid.schema.ShareTypeEntity
 import org.solyton.solawi.bid.module.bid.schema.ShareTypesTable
+import org.solyton.solawi.bid.module.system.repository.createSystemProcess
+import org.solyton.solawi.bid.module.system.schema.SystemProcesses
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfilesTable
@@ -44,7 +47,8 @@ val tables = arrayOf(
     ShareTypesTable,
     FiscalYearsTable,
     UserProfilesTable,
-    UsersTable
+    UsersTable,
+    SystemProcesses
 )
 
 class ShareSubscriptionStatusHistoryTests {
@@ -74,6 +78,11 @@ class ShareSubscriptionStatusHistoryTests {
     @MethodSource("testCases")
     fun test(testCase: TestCase) = with(testCase) testCase@{
         runSimpleH2Test(testId, *tables) {
+            createSystemProcess(
+                AuctionProcesses.SHARE_MANAGEMENT,
+                ""
+            )
+
             val user = UserEntity.new {
                 this.createdBy = UUID_ZERO
                 username = "username"
