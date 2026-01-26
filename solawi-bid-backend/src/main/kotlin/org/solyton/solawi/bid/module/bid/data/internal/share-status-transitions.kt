@@ -144,5 +144,3 @@ val shareStatusTransitionsWithPermissions: Map<ShareStatus, Set<ShareStatusPermi
         ShareStatus.RolledOver to emptySet(),
     )
 }
-
-

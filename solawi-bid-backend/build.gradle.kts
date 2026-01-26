@@ -275,9 +275,9 @@ dependencyAnalyser {
             "bid",
             "health",
             "permission",
+            "system",
             "user",
         )
         checkCyclesBeforeBuild = true
     }
 }
-
