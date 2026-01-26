@@ -1,6 +1,5 @@
 package org.solyton.solawi.bid.module.bid.repository
 
-import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.joda.time.DateTime
@@ -15,6 +14,7 @@ import org.solyton.solawi.bid.module.bid.schema.ShareStatusTable
 import org.solyton.solawi.bid.module.bid.schema.ShareSubscriptionEntity
 import org.solyton.solawi.bid.module.bid.schema.ShareSubscriptionStatusHistory
 import org.solyton.solawi.bid.module.bid.schema.ShareSubscriptionStatusHistoryEntry
+import org.solyton.solawi.bid.module.system.repository.validatedSystemProcess
 import java.util.UUID
 
 fun Transaction.initStatus(): ShareStatusEntity = ShareStatusEntity.find {
@@ -125,9 +125,9 @@ fun Transaction.rollover(
 
     val toShareOffer = validatedShareOffer(toShareOfferId)
 
-
+    val changesDoneBy = modifiedBy?: validatedSystemProcess("").id.value
     val rolledOverShareSubscription = ShareSubscriptionEntity.new {
-        createdBy = modifiedBy?: UUID_ZERO
+        createdBy = changesDoneBy
         this.status = rollingOverStatus
         shareOffer = toShareOffer
         fiscalYear = toShareOffer.fiscalYear
