@@ -39,6 +39,8 @@
 | GET | users/all | GetUsers  | GetUsers | Users |
 | PATCH | users/change-password | ChangePassword  | ChangePassword | User |
 | POST | users/create | CreateUser  | CreateUser | User |
+| POST | users/profiles/import | ImportUserProfiles  | ImportUserProfiles | UserProfiles |
+| PATCH | users/profiles/read-by-ids | ReadUserProfiles  | ReadUserProfiles | UserProfiles |
 ## applications and modules
 
 | Methode | URL | Key | Request Type | Response Type |
@@ -65,6 +67,13 @@
 | POST | login | Login  | Login | LoggedIn |
 | PATCH | logout | Logout  | Logout | Unit |
 | POST | refresh | RefreshToken  | RefreshToken | LoggedIn |
+## banking
+
+| Methode | URL | Key | Request Type | Response Type |
+| :--- | :--- | :--- | :--- | :--- |
+| GET | banking/fiscal-years/all | ReadFiscalYears  | ReadFiscalYears | FiscalYears |
+| POST | banking/fiscal-years/create | CreateFiscalYear  | CreateFiscalYear | FiscalYear |
+| PATCH | banking/fiscal-years/update | UpdateFiscalYear  | UpdateFiscalYear | FiscalYear |
 ## permissions
 
 | Methode | URL | Key | Request Type | Response Type |

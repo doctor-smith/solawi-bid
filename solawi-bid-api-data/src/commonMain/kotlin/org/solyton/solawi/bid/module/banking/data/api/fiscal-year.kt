@@ -4,11 +4,18 @@ import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 
 typealias ApiFiscalYear = FiscalYear
+typealias ApiFiscalYears = FiscalYears
+
+@Serializable
+data class FiscalYears(
+    val all: List<FiscalYear>
+)
 
 @Serializable
 data class FiscalYear(
     val id: String,
-    val start: LocalDate
+    val start: LocalDate,
+    val end: LocalDate
 )
 
 @Serializable
@@ -21,6 +28,7 @@ data class ReadFiscalYear(
 
 @Serializable
 data class CreateFiscalYear(
+    val legalEntityId: String,
     val start: LocalDate,
     val end: LocalDate
 )
@@ -28,6 +36,7 @@ data class CreateFiscalYear(
 @Serializable
 data class UpdateFiscalYear(
     val id: String,
+    val legalEntityId: String,
     val start: LocalDate,
     val end: LocalDate
 )
