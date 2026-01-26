@@ -5,7 +5,6 @@ import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.dao.flushCache
 import org.jetbrains.exposed.sql.Transaction
 import org.joda.time.DateTime
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -16,20 +15,15 @@ import org.solyton.solawi.bid.module.bid.data.internal.ChangeReason
 import org.solyton.solawi.bid.module.bid.data.internal.ChangedBy
 import org.solyton.solawi.bid.module.bid.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.bid.exception.ShareStatusException
-import org.solyton.solawi.bid.module.bid.schema.PricingType
-import org.solyton.solawi.bid.module.bid.schema.ShareOffer
+import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.bid.schema.ShareOfferEntity
-import org.solyton.solawi.bid.module.bid.schema.ShareSubscription
 import org.solyton.solawi.bid.module.bid.schema.ShareSubscriptionEntity
-import org.solyton.solawi.bid.module.bid.schema.ShareSubscriptionStatusHistory
-import org.solyton.solawi.bid.module.bid.schema.ShareSubscriptionStatusHistoryEntry
 import org.solyton.solawi.bid.module.bid.schema.ShareTypeEntity
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
-import java.util.UUID
+import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.fail
 
 
 class ShareStatusRolloverTests {
@@ -44,11 +38,6 @@ class ShareStatusRolloverTests {
         val nextShareOffer: ShareOffer? = null,
         val actAndAssert: Transaction.(TestCase) -> Unit
     ) : TestCaseSpecification
-
-    @DbFunctional@Test
-    fun preventDeployment() {
-        fail("Let test fail to prevent deployment")
-    }
 
     @DbFunctional@ParameterizedTest
     @MethodSource("testCases")

@@ -187,7 +187,7 @@ val columnNamesToModify by lazy {
 val columnPropertiesToModify by lazy {
     listOf(
         ShareStatusTable.modifyColumnProperties(
-            ColumnDef.ModifyProperties(
+            ColumnDef.ModifyProperties.Varchar(
                 "name",
                 newLength = 50,
             )
