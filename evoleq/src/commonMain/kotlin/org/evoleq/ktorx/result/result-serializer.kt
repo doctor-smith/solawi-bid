@@ -64,7 +64,10 @@ object ResultSerializer : KSerializer<Result<*>> {
         dec.endStructure(descriptor)
 
         return when (type) {
-            "Success" -> Result.Success(data ?: "")
+            "Success" -> {
+                requireNotNull(data) { "Success result missing data" }
+                Result.Success(data)
+            }
             "Failure" -> Result.Failure.Message(message ?: "Unknown message")
             else -> throw SerializationException("Unknown type $type")
         }
