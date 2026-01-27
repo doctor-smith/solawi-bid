@@ -3,6 +3,13 @@ package org.solyton.solawi.bid.module.bid.data.internal
 
 val shareStatusTransitionsWithPermissions: Map<ShareStatus, Set<ShareStatusPermissions>> by lazy {
     mapOf(
+        // === Initial States ===
+        // ======================
+        ShareStatus.External to setOf(
+            *internalStatuses.map { it permit mapOf(
+                ChangedBy.PROVIDER to setOf(ChangeReason.IMPORT)
+            ) }.toTypedArray()
+        ),
 
         ShareStatus.PendingActivation to setOf(
             ShareStatus.ActivationRejected permit mapOf(
@@ -11,6 +18,9 @@ val shareStatusTransitionsWithPermissions: Map<ShareStatus, Set<ShareStatusPermi
             ShareStatus.AwaitingAhcAuthorization permit mapOf(
                 ChangedBy.PROVIDER to setOf(ChangeReason.PAYMENT_MANDATE_REQUESTED),
                 ChangedBy.SYSTEM to setOf(ChangeReason.PAYMENT_MANDATE_REQUESTED)
+            ),
+            ShareStatus.ClearedForAuction permit mapOf(
+                ChangedBy.PROVIDER to setOf(ChangeReason.SUBSCRIPTION_APPROVED)
             ),
             ShareStatus.Subscribed permit mapOf(
                 ChangedBy.PROVIDER to setOf(ChangeReason.NO_PAYMENT_MANDATE_REQUIRED, ChangeReason.SUBSCRIPTION_APPROVED),
@@ -22,6 +32,8 @@ val shareStatusTransitionsWithPermissions: Map<ShareStatus, Set<ShareStatusPermi
             )
         ),
 
+        // === Intermediate states ===
+        // ===========================
         ShareStatus.ActivationRejected to setOf(
             ShareStatus.PendingActivation permit mapOf(
                 ChangedBy.USER to setOf(ChangeReason.NEW_REQUIREMENTS)
@@ -52,7 +64,6 @@ val shareStatusTransitionsWithPermissions: Map<ShareStatus, Set<ShareStatusPermi
         ),
 
         ShareStatus.Subscribed to setOf(
-
             ShareStatus.RollingOver permit mapOf(
                 ChangedBy.PROVIDER to setOf(ChangeReason.NEW_PERIOD),
                 ChangedBy.SYSTEM to setOf(ChangeReason.NEW_PERIOD)
@@ -124,8 +135,6 @@ val shareStatusTransitionsWithPermissions: Map<ShareStatus, Set<ShareStatusPermi
             )
         ),
 
-
-
         ShareStatus.RollingOver to setOf(
             ShareStatus.PendingActivation permit mapOf(
                 ChangedBy.USER to setOf(ChangeReason.USER_EVENTUAL_CHANGE)
@@ -139,8 +148,25 @@ val shareStatusTransitionsWithPermissions: Map<ShareStatus, Set<ShareStatusPermi
             ),
         ),
 
-        // Terminal states
+        // === Terminal states ===
+        // =======================
         ShareStatus.Cancelled to emptySet(),
         ShareStatus.RolledOver to emptySet(),
     )
 }
+
+val internalStatuses: Set<ShareStatus> by lazy { setOf(
+    // All statuses except EXTERNAL
+    ShareStatus.Subscribed,
+    ShareStatus.Paused,
+    ShareStatus.Suspended,
+    ShareStatus.PendingActivation,
+    ShareStatus.ClearedForAuction,
+    ShareStatus.ActivationRejected,
+    ShareStatus.AwaitingAhcAuthorization,
+    ShareStatus.PaymentFailed,
+    ShareStatus.Cancelled,
+    ShareStatus.Expired,
+    ShareStatus.RolledOver,
+    ShareStatus.RollingOver
+) }

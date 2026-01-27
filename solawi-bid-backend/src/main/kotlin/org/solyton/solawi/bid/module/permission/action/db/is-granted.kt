@@ -49,6 +49,25 @@ fun <T : ContextId> IsGrantedInSpecialContext(right: String, accessCheckNeeded: 
 
 @MathDsl
 @Suppress("FunctionName")
+fun <T> IsGrantedInDerivedContext(
+    right: String,
+    accessCheckNeeded: (Contextual<T>)->Boolean = {true},
+    deriveContextId: Transaction.(Contextual<T>)-> UUID
+): KlAction<Result<Contextual<T>>,Result<Contextual<T>>> = KlAction {
+    result -> DbAction { database -> result bindSuspend  { contextual ->
+        resultTransaction(database) {
+            val contextId = deriveContextId(contextual)
+            when {
+                !accessCheckNeeded(contextual) -> contextual
+                isGranted(contextual.userId, contextId, right) -> contextual
+                else -> throw PermissionException.AccessDenied
+            }
+        }
+    } x database }
+}
+
+@MathDsl
+@Suppress("FunctionName")
 fun <T> IsGranted(right: UUID): KlAction<Result<Contextual<T>>,Result<Contextual<T>>> = KlAction {
     result -> DbAction { database -> result bindSuspend  { data ->
         resultTransaction(database) {
@@ -62,16 +81,21 @@ fun <T> IsGranted(right: UUID): KlAction<Result<Contextual<T>>,Result<Contextual
 
 @MathDsl
 @Suppress("FunctionName")
-fun <T> IsGrantedOneOf(vararg rights: String, accessCheckNeeded: (Contextual<T>)->Boolean = {true}): KlAction<Result<Contextual<T>>,Result<Contextual<T>>> = KlAction { result ->
+fun <T> IsGrantedOneOf(
+    rights: Set<String>,
+    accessCheckNeeded: (Contextual<T>)->Boolean = yes,
+    deriveContextId: Transaction.(Contextual<T>) -> UUID
+): KlAction<Result<Contextual<T>>,Result<Contextual<T>>> = KlAction { result ->
     DbAction { database ->
         result bindSuspend { contextual ->
             resultTransaction(database) {
+                val contextId = deriveContextId(contextual)
                 when {
                     !accessCheckNeeded(contextual) -> contextual
                     isGrantedOneOf(
                         contextual.userId,
-                        UUID.fromString(contextual.context),
-                        listOf(*rights)
+                        contextId,
+                        rights.toList()
                     ) -> contextual
 
                     else -> throw PermissionException.AccessDenied
@@ -172,3 +196,8 @@ fun Transaction.isGrantedOneOf(userId: UUID, contextIds: List<UUID>, rightIds: L
         .limit(1)
         .empty()
 }
+
+fun rights (vararg rights: String): Set<String> = setOf(*rights)
+
+val no: (Contextual<*>)-> Boolean = {false}
+val yes:(Contextual<*>)-> Boolean = {true}

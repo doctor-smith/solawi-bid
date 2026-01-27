@@ -106,18 +106,21 @@ fun installSerializers() {
         add<ShareType>(ShareType.serializer())
         add<ShareTypes>(ShareTypes.serializer())
         add<CreateShareType>(CreateShareType.serializer())
+        add<ReadShareTypes>(ReadShareTypes.serializer())
         add<UpdateShareType>(UpdateShareType.serializer())
 
         // ShareOffer
         add<ShareOffer>(ShareOffer.serializer())
         add<ShareOffers>(ShareOffers.serializer())
         add<CreateShareOffer>(CreateShareOffer.serializer())
+        add<ReadShareOffers>(ReadShareOffers.serializer())
         add<UpdateShareOffer>(UpdateShareOffer.serializer())
 
         // ShareSubscription
         add<ShareSubscription>(ShareSubscription.serializer())
         add<ShareSubscriptions>(ShareSubscriptions.serializer())
         add<CreateShareSubscription>(CreateShareSubscription.serializer())
+        add<ReadShareSubscriptions>(ReadShareSubscriptions.serializer())
         add<UpdateShareSubscription>(UpdateShareSubscription.serializer())
 
         // ShareStatus

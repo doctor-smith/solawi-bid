@@ -40,4 +40,6 @@ sealed class ShareException(override val message: String): Exception(message) {
     data class InvalidNumberOfShares(val number: Int): ShareException(
         "Invalid number of shares: $number"
     )
+
+    data object ProviderMismatch: ShareException("Provider mismatch")
 }

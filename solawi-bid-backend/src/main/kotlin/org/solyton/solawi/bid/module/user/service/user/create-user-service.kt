@@ -14,6 +14,7 @@ import org.solyton.solawi.bid.module.user.data.api.CreateUser
 import org.solyton.solawi.bid.module.user.permission.ApplicationContext
 import org.solyton.solawi.bid.module.user.permission.Value
 import org.solyton.solawi.bid.module.user.schema.UserEntity
+import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.user.service.bcrypt.hashPassword
 import java.util.*
@@ -59,6 +60,7 @@ fun Transaction.createUserEntity(data: CreateUser, creatorId: UUID): UserEntity 
         val userEntity = UserEntity.new {
             username = data.username
             password = hashPassword(data.password)
+            status = UserStatus.ACTIVE
             createdBy = creatorId
         }
 

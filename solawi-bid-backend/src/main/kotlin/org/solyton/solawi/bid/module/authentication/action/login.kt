@@ -18,10 +18,12 @@ import org.solyton.solawi.bid.module.authentication.exception.AuthenticationExce
 import org.solyton.solawi.bid.module.authentication.service.generateAccessToken
 import org.solyton.solawi.bid.module.authentication.service.generateRefreshToken
 import org.solyton.solawi.bid.module.authentication.service.isUuid
+import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
 import org.solyton.solawi.bid.module.user.schema.Token
 import org.solyton.solawi.bid.module.user.schema.Tokens
 import org.solyton.solawi.bid.module.user.schema.User
+import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.Users
 import org.solyton.solawi.bid.module.user.service.bcrypt.credentialsAreOK
 import java.util.*
@@ -60,7 +62,11 @@ fun Transaction.login(login: Login, jwt: JWT): LoggedIn {
     val user = User.find{ Users.username eq login.username }.firstOrNull()
         ?: throw UserManagementException.UserDoesNotExist.Username(login.username)
 
-    if(!credentialsAreOK(login.password, user.password))
+    val loginImpossible = user.status in setOf(UserStatus.REGISTERED, UserStatus.DISABLED, UserStatus.INVITED)
+    if(loginImpossible) throw PermissionException.AccessDenied
+
+    val password = requireNotNull(user.password)
+    if(!credentialsAreOK(login.password, password))
         throw UserManagementException.WrongCredentials
 
     val accessToken = generateAccessToken(user.id.value.toString(), jwt)

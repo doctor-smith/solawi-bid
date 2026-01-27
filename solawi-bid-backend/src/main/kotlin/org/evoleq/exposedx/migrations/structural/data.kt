@@ -52,14 +52,33 @@ sealed class ColumnDef(open val name: String) {
     }
 }
 
+sealed class TableDef(open val table: Table) {
+    sealed class CheckConstraint(
+        override val table: Table,
+        open val check: String,
+    ) : TableDef(table) {
+        data class Update(
+            override val table: Table,
+            override val check: String,
+            val sql: String
+        ): CheckConstraint(table, check)
+        data class Remove(
+            override val table: Table,
+            override val check: String
+        ): CheckConstraint(table, check)
+    }
+}
+
 data class StructuralMigrations(
     val addMissingColumns: List<AddMissingColumns> = emptyList(),
     val modifyColumnNames: List<ModifyColumnNames> = emptyList(),
-    val modifyColumnProperties: List<ModifyColumnProperties<*>> = emptyList()
+    val modifyColumnProperties: List<ModifyColumnProperties<*>> = emptyList(),
+    val modifyTableChecks: List<TableDef.CheckConstraint>
 ) {
     fun runOn(database: Database) {
         database.addMissingColumns(*addMissingColumns.toTypedArray())
         database.modifyColumnNames(*modifyColumnNames.toTypedArray())
         database.modifyColumnProperties(*modifyColumnProperties.toTypedArray())
+        database.modifyCheckConstraints(*modifyTableChecks.toTypedArray())
     }
 }

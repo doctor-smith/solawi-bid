@@ -1,15 +1,37 @@
 package org.solyton.solawi.bid.module.bid.routing
 
-import io.ktor.server.application.call
+import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.util.*
 import org.evoleq.exposedx.data.DbEnv
 import org.evoleq.ktorx.Base
 import org.evoleq.ktorx.NotImplemented
+import org.evoleq.ktorx.ReceiveContextual
 import org.evoleq.ktorx.Respond
 import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
+import org.evoleq.uuid.UUID_ZERO
+import org.solyton.solawi.bid.module.application.repository.contextIdOf
+import org.solyton.solawi.bid.module.bid.action.api.shares.CreateShareOffer
+import org.solyton.solawi.bid.module.bid.action.api.shares.CreateShareSubscription
+import org.solyton.solawi.bid.module.bid.action.api.shares.CreateShareType
+import org.solyton.solawi.bid.module.bid.action.api.shares.ReadShareOffersByProvider
+import org.solyton.solawi.bid.module.bid.action.api.shares.ReadShareShareSubscriptionsByProvider
+import org.solyton.solawi.bid.module.bid.action.api.shares.ReadShareSubscriptionsByProvider
+import org.solyton.solawi.bid.module.bid.action.api.shares.ReadShareTypesByProvider
+import org.solyton.solawi.bid.module.bid.action.api.shares.UpdateShareOffer
+import org.solyton.solawi.bid.module.bid.action.api.shares.UpdateShareSubscription
+import org.solyton.solawi.bid.module.bid.action.api.shares.UpdateShareType
+import org.solyton.solawi.bid.module.bid.data.api.*
+import org.solyton.solawi.bid.module.permission.action.db.IsGranted
+import org.solyton.solawi.bid.module.permission.action.db.IsGrantedOneOf
+import org.solyton.solawi.bid.module.permission.action.db.no
+import org.solyton.solawi.bid.module.permission.action.db.rights
+import org.solyton.solawi.bid.module.permission.action.db.yes
+import java.util.UUID
+
+const val SHARE_APPLICATION = "AUCTIONS"
 
 @KtorDsl
 fun <SharesEnv> Routing.shares(
@@ -19,6 +41,185 @@ fun <SharesEnv> Routing.shares(
 authenticate {
     val transform = environment.transformException
     route("shares") {
+        route("types") {
+            post("create") {
+                ReceiveContextual<CreateShareType>() *
+                IsGrantedOneOf(rights(
+                    "CREATE_SHARE_TYPES",
+                    "MANAGE_SHARE_TYPES",
+                    "MANAGE_SHARES"
+                ),
+                    no, // todo:permission enable access check
+                ) { contextual ->
+                    val providerId = UUID.fromString(contextual.data.providerId)
+                    contextIdOf(providerId, SHARE_APPLICATION)
+                } *
+                CreateShareType() *
+                Respond<ShareType> { transform() } runOn Base(call, environment)
+            }
+            patch("update"){
+                ReceiveContextual<UpdateShareType>() *
+                IsGrantedOneOf(
+                    rights(
+                        "UPDATE_SHARE_TYPES",
+                        "MANAGE_SHARE_TYPES",
+                        "MANAGE_SHARES"
+                    ),
+                    no // todo:permission enable access check
+                ) { contextual ->
+                    val providerId = UUID.fromString(contextual.data.providerId)
+                    contextIdOf(providerId, SHARE_APPLICATION)
+                } *
+                UpdateShareType() *
+                Respond<ShareType> { transform() } runOn Base(call, environment)
+            }
+            get("all") {
+                @Suppress("UnsafeCallOnNullableType")
+                ReceiveContextual{
+                    params -> ReadShareTypesByProvider(
+                    UUID.fromString(params["provider"]!!)
+                    )
+                } *
+                IsGrantedOneOf(
+                    rights(
+                        "READ_SHARE_TYPES",
+                        "MANAGE_SHARE_TYPES",
+                        "MANAGE_SHARES"
+                    ),
+                    no // todo:permission enable access check
+                ) { contextual ->
+                    val providerId = contextual.data.providerId
+                    contextIdOf(providerId, SHARE_APPLICATION)
+                } *
+                ReadShareTypesByProvider() *
+                Respond<ShareTypes> { transform() } runOn Base(call, environment)
+            }
+            delete {
+                NotImplemented() * Respond<Unit> { transform() } runOn Base(call, environment)
+            }
+        }
+        route("offers") {
+            post("create") {
+                ReceiveContextual<CreateShareOffer>() *
+                IsGrantedOneOf(
+                    rights(
+                        "CREATE_SHARE_OFFERS",
+                        "MANAGE_SHARE_OFFERS",
+                        "MANAGE_SHARES"
+                    ),
+                    no // todo:permission enable access check
+                ) { contextual ->
+                    val providerId = UUID.fromString(contextual.data.providerId)
+                    contextIdOf(providerId, SHARE_APPLICATION)
+                } *
+                CreateShareOffer() *
+                Respond<ShareOffer> { transform() } runOn Base(call, environment)
+            }
+            patch("update"){
+                ReceiveContextual<UpdateShareOffer>() *
+                IsGrantedOneOf(
+                    rights(
+                        "UPDATE_SHARE_OFFERS",
+                        "MANAGE_SHARE_OFFERS",
+                        "MANAGE_SHARES"
+                    ),
+                    no // todo:permission enable access check
+                ) { contextual ->
+                    val providerId = UUID.fromString(contextual.data.providerId)
+                    contextIdOf(providerId, SHARE_APPLICATION)
+                } *
+                UpdateShareOffer() *
+                Respond<ShareOffer> { transform() } runOn Base(call, environment)
+            }
+            get("all") {
+                @Suppress("UnsafeCallOnNullableType")
+                ReceiveContextual{
+                    params -> ReadShareOffersByProvider(
+                        UUID.fromString(params["provider"]!!),
+                        params.getAll("fiscalYearIds")?.map{
+                            UUID.fromString(it)
+                        }?.toSet().orEmpty()
+                    )
+                } *
+                IsGrantedOneOf(
+                    rights(
+                        "READ_SHARE_OFFERS",
+                        "MANAGE_SHARE_OFFERS",
+                        "MANAGE_SHARES"
+                    ),
+                    no // todo:permission enable access check
+                ) { contextual ->
+                    val providerId = contextual.data.providerId
+                    contextIdOf(providerId, SHARE_APPLICATION)
+                } *
+                ReadShareOffersByProvider() *
+                Respond<ShareOffers> { transform() } runOn Base(call, environment)
+            }
+            delete {
+                NotImplemented() * Respond<Unit> { transform() } runOn Base(call, environment)
+            }
+        }
+        route("subscriptions") {
+            post("create") {
+                ReceiveContextual<CreateShareSubscription>() *
+                IsGrantedOneOf(
+                    rights(
+                        "CREATE_SHARE_SUBSCRIPTIONS",
+                        "MANAGE_SHARE_SUBSCRIPTIONS",
+                        "MANAGE_SHARES"
+                    ),
+                    no // todo:permission enable access check
+                ) { contextual ->
+                    val providerId = UUID.fromString(contextual.data.providerId)
+                    contextIdOf(providerId, SHARE_APPLICATION)
+                } *
+                CreateShareSubscription() *
+                Respond<ShareSubscription> { transform() } runOn Base(call, environment)
+            }
+            patch("update"){
+                ReceiveContextual<UpdateShareSubscription>() *
+                IsGrantedOneOf(
+                    rights(
+                        "UPDATE_SHARE_SUBSCRIPTIONS",
+                        "MANAGE_SHARE_SUBSCRIPTIONS",
+                        "MANAGE_SHARES"
+                    ),
+                    no // todo:permission enable access check
+                ) { contextual ->
+                    val providerId = UUID.fromString(contextual.data.providerId)
+                    contextIdOf(providerId, SHARE_APPLICATION)
+                } *
+                UpdateShareSubscription() *
+                Respond<ShareSubscription> { transform() } runOn Base(call, environment)
+            }
+            get("all") {
+                @Suppress("UnsafeCallOnNullableType")
+                ReceiveContextual{
+                    params -> ReadShareSubscriptionsByProvider(
+                        UUID.fromString(params["provider"]!!),
+                        params.getAll("fiscalYearIds")?.map{
+                            UUID.fromString(it)
+                        }?.toSet().orEmpty()
+                    )
+                } *
+                IsGrantedOneOf(
+                    rights(
+                        "READ_SHARE_SUBSCRIPTIONS",
+                        "MANAGE_SHARE_SUBSCRIPTIONS",
+                        "MANAGE_SHARES"
+                    ),
+                    no // todo:permission enable access check
+                ) { contextual ->
+                    val providerId = contextual.data.providerId
+                    contextIdOf(providerId, SHARE_APPLICATION)
+                } *
+                ReadShareShareSubscriptionsByProvider() * Respond<ShareSubscriptions> { transform() } runOn Base(call, environment)
+            }
+            delete {
+                NotImplemented() * Respond<Unit> { transform() } runOn Base(call, environment)
+            }
+        }
+
         get() {
             NotImplemented() * Respond<Unit> { transform() } runOn Base(call, environment)
         }

@@ -6,6 +6,7 @@ import org.evoleq.uuid.UUID_ZERO
 import org.junit.Test
 import org.solyton.solawi.bid.Schema
 import org.solyton.solawi.bid.module.user.schema.User
+import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.Users
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -17,6 +18,7 @@ class UserDTest {
         User.new {
             username = "name"
             password = "pw"
+            status = UserStatus.ACTIVE
             createdBy = UUID_ZERO
         }
 

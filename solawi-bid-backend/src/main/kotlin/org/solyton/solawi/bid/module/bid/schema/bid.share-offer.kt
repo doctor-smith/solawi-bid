@@ -11,7 +11,7 @@ import org.solyton.solawi.bid.module.banking.schema.FiscalYears
 import java.util.UUID
 
 typealias ShareOfferEntity = ShareOffer
-typealias ShareOffersTable = ShareStatusTable
+typealias ShareOffersTable = ShareOffers
 
 object ShareOffers : AuditableUUIDTable("share_offers") {
     val shareTypeId = reference("share_type_id", ShareTypes)

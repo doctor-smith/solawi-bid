@@ -6,6 +6,7 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Transaction
 import org.solyton.solawi.bid.module.user.schema.UserEntity
+import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 
 /**
@@ -36,18 +37,21 @@ class Migration1760819440375(
         UserEntity.new {
             username = "user@solyton.org"
             password = "egal - only uses token"
+            status = UserStatus.ACTIVE
             createdBy = UUID_ZERO
         }
 
         UserEntity.new {
             username = "auction.manager@solyton.org"
             password = "dddddd   fda"
+            status = UserStatus.ACTIVE
             createdBy = UUID_ZERO
         }
 
         UserEntity.new {
             username = "owner@solyton.org"
             password = "dddddd   fda"
+            status = UserStatus.ACTIVE
             createdBy = UUID_ZERO
         }
     }

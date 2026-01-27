@@ -1,6 +1,8 @@
 package org.solyton.solawi.bid.module.bid.data.api
 
 import kotlinx.serialization.Serializable
+import org.evoleq.ktorx.client.Parameters
+import org.evoleq.ktorx.client.QueryParams
 import org.solyton.solawi.bid.module.banking.data.api.FiscalYear
 
 typealias ApiShareOffer = ShareOffer
@@ -23,6 +25,7 @@ data class ShareOffers(
 
 @Serializable
 data class CreateShareOffer(
+    val providerId: String,
     val shareTypeId: String,
     val fiscalYearId: String,
     val price: Double?,
@@ -31,7 +34,12 @@ data class CreateShareOffer(
 )
 
 @Serializable
+data class ReadShareOffers(override val all: QueryParams): Parameters()
+
+@Serializable
 data class UpdateShareOffer(
+    val id: String,
+    val providerId: String,
     val shareTypeId: String,
     val fiscalYearId: String,
     val price: Double?,

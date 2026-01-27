@@ -9,13 +9,13 @@ import kotlin.test.assertEquals
 class ParameterSerializerTest {
 
     @Serializable
-    data class Data(val name: String, override val all: Map<String, String>): Parameters()
+    data class Data(val name: String, override val all: List<Pair<String, String>>): Parameters()
 
     @Serializable
     data class Empty(val x: Int) : EmptyParams()
 
     @Test fun testIt() {
-        val data = Data("child", mapOf("age" to "10"))
+        val data = Data("child", listOf("age" to "10"))
         val serialized = Json.encodeToString(data )
 
         val deserialized = Json.decodeFromString<Data>(serialized)

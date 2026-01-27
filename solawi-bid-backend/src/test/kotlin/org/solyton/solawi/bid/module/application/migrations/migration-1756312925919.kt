@@ -23,6 +23,7 @@ import org.solyton.solawi.bid.module.permission.repository.of
 import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import org.solyton.solawi.bid.module.user.schema.TokensTable
 import org.solyton.solawi.bid.module.user.schema.UserEntity
+import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 
 /**
@@ -72,6 +73,7 @@ class Migration1756312925919(
         val developer = UserEntity.new {
             username = "developer@solyton.org"
             password = "$2a$10$5EENEnXKE4oNT0AejWzy8Oa09DkBDiQTnk2LyqtqpBa3DrZijo51O"
+            status = UserStatus.ACTIVE
             createdBy = UUID_ZERO
         }
 
@@ -80,6 +82,7 @@ class Migration1756312925919(
             UserEntity.new {
                 username = "dummy_$it@solyton.org"
                 password = "$2a$10$5EENEnXKE4oNT0AejWzy8Oa09DkBDiQTnk2LyqtqpBa3DrZijo51O"
+                status = UserStatus.ACTIVE
                 createdBy = UUID_ZERO
             }
         }.toTypedArray()

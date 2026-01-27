@@ -29,6 +29,7 @@ import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfile
 import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfilesTable
+import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.user.schema.repository.createRootOrganization
 import org.solyton.solawi.bid.module.user.service.user.createUser
@@ -86,6 +87,7 @@ class DistributionPointRepositoryTest {
         val user = UserEntity.new {
             createdBy = UUID_ZERO
             username = "test-user@solyton.org"
+            status = UserStatus.ACTIVE
             password = "pw"
         }
         val userProfile = UserProfileEntity.new {

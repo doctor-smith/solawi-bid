@@ -19,6 +19,7 @@ import org.solyton.solawi.bid.module.bid.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.bid.data.internal.ChangeReason
 import org.solyton.solawi.bid.module.bid.data.internal.ChangedBy
 import org.solyton.solawi.bid.module.bid.processes.AuctionProcesses
+import org.solyton.solawi.bid.module.bid.schema.CoSubscribersTable
 import org.solyton.solawi.bid.module.bid.schema.PricingType
 import org.solyton.solawi.bid.module.bid.schema.ShareOfferEntity
 import org.solyton.solawi.bid.module.bid.schema.ShareOffersTable
@@ -29,11 +30,15 @@ import org.solyton.solawi.bid.module.bid.schema.ShareSubscriptionStatusHistoryEn
 import org.solyton.solawi.bid.module.bid.schema.ShareSubscriptionsTable
 import org.solyton.solawi.bid.module.bid.schema.ShareTypeEntity
 import org.solyton.solawi.bid.module.bid.schema.ShareTypesTable
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.permission.schema.RightsTable
+import org.solyton.solawi.bid.module.permission.schema.RolesTable
 import org.solyton.solawi.bid.module.system.repository.createSystemProcess
 import org.solyton.solawi.bid.module.system.schema.SystemProcesses
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfilesTable
+import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -48,14 +53,18 @@ val tables = arrayOf(
     FiscalYearsTable,
     UserProfilesTable,
     UsersTable,
-    SystemProcesses
+    SystemProcesses,
+    CoSubscribersTable,
+    RolesTable,
+    RightsTable,
+    ContextsTable,
 )
 
 class ShareSubscriptionStatusHistoryTests {
 
     data class TestCase(
-        val testId: String = "",
-        val testDescription: String = "",
+        override val testId: String = "",
+        override val description: String = "",
         val fromStatus: ShareStatus? = null,
         val toStatus: ShareStatus,
         val reason: ChangeReason? = null,
@@ -66,7 +75,7 @@ class ShareSubscriptionStatusHistoryTests {
         val isRollingOverFromSubscription: Boolean = false,
         val rollingOverFromSubscription: ShareSubscriptionEntity? = null,
         val actAndAssert: Transaction.(TestCase) -> Unit
-    )
+    ): TestCaseSpecification
     @DbFunctional@Test fun x() {
         val x = shareStatuses.size
         val y = modifiers.size
@@ -87,6 +96,7 @@ class ShareSubscriptionStatusHistoryTests {
                 this.createdBy = UUID_ZERO
                 username = "username"
                 password = "password"
+                status = UserStatus.ACTIVE
             }
             val userProfile = UserProfileEntity.new {
                 this.createdBy = UUID_ZERO
@@ -183,7 +193,7 @@ class ShareSubscriptionStatusHistoryTests {
             // INITIAL CREATION
             TestCase(
                 testId = "${UUID.randomUUID()}",
-                testDescription = """
+                description = """
                     Test initial creation by USER: no failure
                 """.trimIndent(),
                 fromStatus = null,
@@ -197,7 +207,7 @@ class ShareSubscriptionStatusHistoryTests {
             },
             TestCase(
                 testId = "${UUID.randomUUID()}",
-                testDescription = """
+                description = """
                     Test initial creation by provider: no failure
                 """.trimIndent(),
                 fromStatus = null,
@@ -210,7 +220,7 @@ class ShareSubscriptionStatusHistoryTests {
                     testCase -> assertDoesNotThrow { createHistoryEntry(testCase) }
             },
             TestCase(
-                testDescription = "INITIAL_CREATION by system",
+                description = "INITIAL_CREATION by system",
                 fromStatus = null,
                 toStatus = ShareStatus.PendingActivation,
                 reason = ChangeReason.INITIAL_CREATION,
@@ -223,7 +233,7 @@ class ShareSubscriptionStatusHistoryTests {
             *(shareStatuses cross modifiers).map { (status, modifier) ->
                 TestCase(
                     testId = "${UUID.randomUUID()}",
-                    testDescription = """
+                    description = """
                         initial creation by $modifier: failure due to non-null fromStatus
                     """.trimIndent(),
                     fromStatus = status,
@@ -240,7 +250,7 @@ class ShareSubscriptionStatusHistoryTests {
 
             *changeReasons.map{
                 TestCase(
-                    testDescription = "$it by system: failure du to non-null humanModifierId",
+                    description = "$it by system: failure du to non-null humanModifierId",
                     fromStatus = null,
                     toStatus = ShareStatus.PendingActivation,
                     reason = it,
@@ -256,7 +266,7 @@ class ShareSubscriptionStatusHistoryTests {
 
             TestCase(
                 testId = "${UUID.randomUUID()}",
-                testDescription = """
+                description = """
                     Test initial creation by system: no failure due missing humanModifierId
                 """.trimIndent(),
                 fromStatus = null,
@@ -272,7 +282,7 @@ class ShareSubscriptionStatusHistoryTests {
 
             // ROLLOVER
             TestCase(
-                testDescription = "ROLLOVER by system",
+                description = "ROLLOVER by system",
                 fromStatus = null,
                 toStatus = ShareStatus.PendingActivation,
                 reason = ChangeReason.ROLLOVER,
@@ -284,7 +294,7 @@ class ShareSubscriptionStatusHistoryTests {
                 assertDoesNotThrow { createHistoryEntry(it) }
             },
             TestCase(
-                testDescription = "ROLLOVER by provider",
+                description = "ROLLOVER by provider",
                 fromStatus = null,
                 toStatus = ShareStatus.PendingActivation,
                 reason = ChangeReason.ROLLOVER,
@@ -297,7 +307,7 @@ class ShareSubscriptionStatusHistoryTests {
             },
             // todo:test is this correct?
             TestCase(
-                testDescription = "ROLLOVER by user",
+                description = "ROLLOVER by user",
                 fromStatus = null,
                 toStatus = ShareStatus.PendingActivation,
                 reason = ChangeReason.ROLLOVER,
@@ -311,7 +321,7 @@ class ShareSubscriptionStatusHistoryTests {
             // Failures
             TestCase(
                 testId = "${UUID.randomUUID()}",
-                testDescription = """
+                description = """
                     ROLLOVER by system: failure due to invalid rollover
                 """.trimIndent(),
                 fromStatus = null,
@@ -328,7 +338,7 @@ class ShareSubscriptionStatusHistoryTests {
             },
             TestCase(
                 testId = "${UUID.randomUUID()}",
-                testDescription = """
+                description = """
                     ROLLOVER by user: failure due to invalid rollover
                 """.trimIndent(),
                 fromStatus = null,
@@ -352,7 +362,7 @@ class ShareSubscriptionStatusHistoryTests {
             ).map {
                 TestCase(
                     testId = "${UUID.randomUUID()}",
-                    testDescription = """
+                    description = """
                     ROLLOVER by user: failure due to invalid rollover
                 """.trimIndent(),
                     fromStatus = null,
@@ -368,7 +378,7 @@ class ShareSubscriptionStatusHistoryTests {
             }.toTypedArray(),
             TestCase(
                 testId = "${UUID.randomUUID()}",
-                testDescription = """
+                description = """
                     ROLLOVER by provider: failure due to invalid rollover
                 """.trimIndent(),
                 fromStatus = null,
@@ -385,7 +395,7 @@ class ShareSubscriptionStatusHistoryTests {
 
             TestCase(
                 testId = "${UUID.randomUUID()}",
-                testDescription = """
+                description = """
                     ROLLOVER by user: failure due missing humanModifierId
                 """.trimIndent(),
                 fromStatus = null,
@@ -400,7 +410,7 @@ class ShareSubscriptionStatusHistoryTests {
             },
             TestCase(
                 testId = "${UUID.randomUUID()}",
-                testDescription = """
+                description = """
                     ROLLOVER by provider: failure due missing humanModifierId
                 """.trimIndent(),
                 fromStatus = null,

@@ -13,7 +13,7 @@ interface TestDbConfig {
 
 object Config {
     object H2 : TestDbConfig {
-        override val url: String = "jdbc:h2:mem:test"
+        override val url: String = "jdbc:h2:mem:test-${UUID.randomUUID()}"
         override val driver: String = "org.h2.Driver"
         override val user: String = "root"
         override val password: String = ""

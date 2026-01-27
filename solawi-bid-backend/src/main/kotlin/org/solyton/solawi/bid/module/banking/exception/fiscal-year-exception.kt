@@ -10,4 +10,9 @@ sealed class FiscalYearException(override val message: String): Exception(messag
         @Suppress("UnusedPrivateMember")
         private fun readResolve(): Any = Overlaps
     }
+
+    @Suppress("UnusedPrivateMember")
+    data object FiscalYearMismatch : FiscalYearException("FiscalYearMismatch") {
+        private fun readResolve(): Any = FiscalYearMismatch
+    }
 }

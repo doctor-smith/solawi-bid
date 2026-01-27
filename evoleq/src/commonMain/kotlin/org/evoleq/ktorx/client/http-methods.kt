@@ -10,6 +10,8 @@ import org.evoleq.ktorx.context.data.Contextual
 import org.evoleq.ktorx.result.map
 import org.evoleq.ktorx.headers.Header
 import org.evoleq.permission.EmptyContext
+import kotlin.collections.component1
+import kotlin.collections.component2
 
 
 fun <S: Any,T: Any> HttpClient.post(url: String, port: Int, serializer: KSerializer<S>, deserializer: KSerializer<Result<T>>): suspend (S)-> Result<Contextual<T>> = { s: S ->
@@ -73,12 +75,3 @@ suspend fun <T : Any> HttpResponse.decode(deserializer : KSerializer<Result<T>>)
     context = headers[Header.CONTEXT]?: EmptyContext.value ,
     data =  value
 ) }
-
-fun Map<String, String>.toQueryString(): String =
-    if (isEmpty()) ""
-    else entries.joinToString(
-        prefix = "?",
-        separator = "&"
-    ) { (key, value) ->
-        "${encode(key)}=${encode(value)}"
-    }

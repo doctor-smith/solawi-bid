@@ -11,6 +11,7 @@ import org.solyton.solawi.bid.module.application.schema.ApplicationEntity
 import org.solyton.solawi.bid.module.application.schema.LifecycleStageEntity
 import org.solyton.solawi.bid.module.application.schema.OrganizationApplicationContextEntity
 import org.solyton.solawi.bid.module.application.schema.OrganizationModuleContextEntity
+import org.solyton.solawi.bid.module.permission.exception.ContextException
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.permission.repository.cloneRightRoleContext
 import org.solyton.solawi.bid.module.permission.repository.createRootContext
@@ -102,3 +103,31 @@ fun Transaction.getApplicationOrganizationRelations(
     }
     return ApplicationOrganizationRelations(relations)
 }
+
+/**
+ * Compute contextId related to organization and application
+ */
+fun Transaction.contextIdOf(organizationId: UUID, applicationId: UUID): UUID {
+    return OrganizationApplicationContextEntity.find {
+        (OrganizationApplicationContextsTable.organizationId eq organizationId) and
+        (OrganizationApplicationContextsTable.applicationId eq applicationId)
+    }.firstOrNull()?.context?.id?.value ?: throw ContextException.NoSuchContext(
+        "with app=$applicationId, org = $organizationId"
+    )
+}
+
+/**
+ * Compute contextId related to organization and application
+ */
+fun Transaction.contextIdOf(organizationId: UUID, applicationName: String): UUID {
+    val application = ApplicationEntity.find {
+        ApplicationsTable.name eq applicationName
+    }.firstOrNull()?: throw ApplicationException.NoSuchApplication(applicationName)
+    return OrganizationApplicationContextEntity.find {
+        (OrganizationApplicationContextsTable.organizationId eq organizationId) and
+        (OrganizationApplicationContextsTable.applicationId eq application.id)
+    }.firstOrNull()?.context?.id?.value?: throw ContextException.NoSuchContext(
+        "with app=$application, org = $organizationId"
+    )
+}
+

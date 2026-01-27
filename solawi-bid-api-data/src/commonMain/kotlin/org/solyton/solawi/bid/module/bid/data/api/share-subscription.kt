@@ -2,6 +2,8 @@ package org.solyton.solawi.bid.module.bid.data.api
 
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
+import org.evoleq.ktorx.client.Parameters
+import org.evoleq.ktorx.client.QueryParams
 
 typealias ApiShareSubscription = ShareSubscription
 typealias ApiShareSubscriptions = ShareSubscriptions
@@ -26,6 +28,7 @@ data class ShareSubscription(
 
 @Serializable
 data class CreateShareSubscription(
+    val providerId: String,
     val shareOfferId: String,
     val userProfileId: String,
     val distributionPointId: String?,
@@ -36,8 +39,12 @@ data class CreateShareSubscription(
 )
 
 @Serializable
+data class ReadShareSubscriptions(override val all: QueryParams): Parameters()
+
+@Serializable
 data class UpdateShareSubscription(
     val id: String,
+    val providerId: String,
     val shareOfferId: String,
     val userProfileId: String,
     val distributionPointId: String?,

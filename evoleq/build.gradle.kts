@@ -90,6 +90,7 @@ kotlin{
         }
         val jvmTest by getting {
             dependencies {
+                implementation(libs.ktor.server.tests.jvm)
                 implementation(libs.kotlin.test.junit)
             }
         }
