@@ -1,6 +1,8 @@
 package org.solyton.solawi.bid.module.bid.data.api
 
 import kotlinx.serialization.Serializable
+import org.evoleq.ktorx.client.EmptyParams
+import org.evoleq.ktorx.client.Parameters
 import org.solyton.solawi.bid.module.user.data.api.userprofile.Address
 
 typealias ApiDistributionPoint = DistributionPoint
@@ -20,7 +22,7 @@ data class DistributionPoint(
 )
 
 @Serializable
-data object ReadDistributionPoints
+data object ReadDistributionPoints : EmptyParams()
 
 @Serializable
 data class ReadDistributionPoint(

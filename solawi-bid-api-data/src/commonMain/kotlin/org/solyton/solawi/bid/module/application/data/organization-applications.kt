@@ -1,12 +1,14 @@
 package org.solyton.solawi.bid.module.application.data
 
 import kotlinx.serialization.Serializable
+import org.evoleq.ktorx.client.EmptyParams
+import org.evoleq.ktorx.client.Parameters
 
 typealias ApiApplicationOrganizationRelations = ApplicationOrganizationRelations
 typealias ApiApplicationOrganizationRelation = ApplicationOrganizationRelation
 
 @Serializable
-data object ReadApplicationOrganizationContextRelations
+data object ReadApplicationOrganizationContextRelations : EmptyParams()
 
 @Serializable
 data class ConnectApplicationToOrganization(

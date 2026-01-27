@@ -1,5 +1,6 @@
 package org.solyton.solawi.bid.application.serialization
 
+import org.evoleq.ktorx.client.Parameters
 import org.evoleq.ktorx.result.serializers
 import kotlin.reflect.KClass
 import kotlin.test.Test
@@ -30,15 +31,28 @@ import org.solyton.solawi.bid.module.bid.data.api.Auctions
 import org.solyton.solawi.bid.module.bid.data.api.CreateAuction
 import org.solyton.solawi.bid.module.bid.data.api.CreateDistributionPoint
 import org.solyton.solawi.bid.module.bid.data.api.CreateOrUseAddress
+import org.solyton.solawi.bid.module.bid.data.api.CreateShareOffer
+import org.solyton.solawi.bid.module.bid.data.api.CreateShareSubscription
+import org.solyton.solawi.bid.module.bid.data.api.CreateShareType
 import org.solyton.solawi.bid.module.bid.data.api.DeleteDistributionPoint
 import org.solyton.solawi.bid.module.bid.data.api.DistributionPoint
 import org.solyton.solawi.bid.module.bid.data.api.DistributionPoints
+import org.solyton.solawi.bid.module.bid.data.api.PricingType
 import org.solyton.solawi.bid.module.bid.data.api.ReadDistributionPoint
 import org.solyton.solawi.bid.module.bid.data.api.ReadDistributionPoints
 import org.solyton.solawi.bid.module.bid.data.api.Share
+import org.solyton.solawi.bid.module.bid.data.api.ShareOffer
+import org.solyton.solawi.bid.module.bid.data.api.ShareOffers
+import org.solyton.solawi.bid.module.bid.data.api.ShareStatus
+import org.solyton.solawi.bid.module.bid.data.api.ShareSubscription
+import org.solyton.solawi.bid.module.bid.data.api.ShareSubscriptions
 import org.solyton.solawi.bid.module.bid.data.api.ShareType
+import org.solyton.solawi.bid.module.bid.data.api.ShareTypes
 import org.solyton.solawi.bid.module.bid.data.api.Shares
 import org.solyton.solawi.bid.module.bid.data.api.UpdateDistributionPoint
+import org.solyton.solawi.bid.module.bid.data.api.UpdateShareOffer
+import org.solyton.solawi.bid.module.bid.data.api.UpdateShareSubscription
+import org.solyton.solawi.bid.module.bid.data.api.UpdateShareType
 import org.solyton.solawi.bid.module.user.data.api.userprofile.Address
 import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateUserProfile
@@ -66,6 +80,8 @@ class SerializersTest {
             Double::class,
             Boolean::class,
             Unit::class,
+
+            Parameters::class,
 
             Result::class,
             Result.Failure::class,
@@ -107,6 +123,19 @@ class SerializersTest {
             Share::class,
             Shares::class,
             ShareType::class,
+            ShareTypes::class,
+            CreateShareType::class,
+            UpdateShareType::class,
+            ShareOffer::class,
+            ShareOffers::class,
+            CreateShareOffer::class,
+            UpdateShareOffer::class,
+            ShareSubscription::class,
+            ShareSubscriptions::class,
+            CreateShareSubscription::class,
+            UpdateShareSubscription::class,
+            ShareStatus::class,
+            PricingType::class,
 
             DistributionPoint::class,
             DistributionPoints::class,

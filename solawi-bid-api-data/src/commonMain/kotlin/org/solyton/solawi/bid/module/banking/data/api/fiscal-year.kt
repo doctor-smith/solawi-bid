@@ -2,6 +2,8 @@ package org.solyton.solawi.bid.module.banking.data.api
 
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
+import org.evoleq.ktorx.client.EmptyParams
+import org.evoleq.ktorx.client.Parameters
 
 typealias ApiFiscalYear = FiscalYear
 typealias ApiFiscalYears = FiscalYears
@@ -19,7 +21,7 @@ data class FiscalYear(
 )
 
 @Serializable
-data object ReadFiscalYears
+data object ReadFiscalYears : EmptyParams()
 
 @Serializable
 data class ReadFiscalYear(

@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.application.serialization
 
 import kotlinx.serialization.builtins.serializer
+import org.evoleq.ktorx.client.Parameters
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.ktorx.result.add
@@ -33,6 +34,8 @@ fun installSerializers() { if(serializers.isEmpty()) {
        // add(List::class, ListSerializer)
         //...
         add<Identifier>(Identifier.serializer())
+        // API
+        add<Parameters>(Parameters.serializer())
         // Result
         add<Result<*>>(ResultSerializer)
         add<Result.Failure>(Result.Failure.serializer())
@@ -97,6 +100,28 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<Share>(Share.serializer())
         add<Shares>(Shares.serializer())
         add<ShareType>(ShareType.serializer())
+        add<ShareTypes>(ShareTypes.serializer())
+        add<CreateShareType>(CreateShareType.serializer())
+        add<UpdateShareType>(UpdateShareType.serializer())
+
+        // ShareOffer
+        add<ShareOffer>(ShareOffer.serializer())
+        add<ShareOffers>(ShareOffers.serializer())
+        add<CreateShareOffer>(CreateShareOffer.serializer())
+        add<UpdateShareOffer>(UpdateShareOffer.serializer())
+
+        // ShareSubscription
+        add<ShareSubscription>(ShareSubscription.serializer())
+        add<ShareSubscriptions>(ShareSubscriptions.serializer())
+        add<CreateShareSubscription>(CreateShareSubscription.serializer())
+        add<UpdateShareSubscription>(UpdateShareSubscription.serializer())
+
+        // ShareStatus
+        add<ShareStatus>(ShareStatus.serializer())
+
+        // PricingType
+        add<PricingType>(PricingType.serializer())
+
         // DistributionPoints
         add<DistributionPoint>(DistributionPoint.serializer())
         add<DistributionPoints>(DistributionPoints.serializer())

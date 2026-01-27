@@ -1,6 +1,8 @@
 package org.solyton.solawi.bid.module.user.data.api.organization
 
 import kotlinx.serialization.Serializable
+import org.evoleq.ktorx.client.EmptyParams
+import org.evoleq.ktorx.client.Parameters
 
 @Serializable
 data class CreateOrganization(
@@ -14,7 +16,7 @@ data class CreateChildOrganization(
 )
 
 @Serializable
-data object ReadOrganizations
+data object ReadOrganizations : EmptyParams()
 
 @Serializable
 data class UpdateOrganization(
