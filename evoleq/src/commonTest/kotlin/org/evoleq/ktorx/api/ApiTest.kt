@@ -1,5 +1,6 @@
 package org.evoleq.ktorx.api
 
+import org.evoleq.ktorx.client.Parameters
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -14,7 +15,7 @@ class ApiTest {
                 key = Key1::class,
                 url = "test-url-1"
             )
-            get<Int, String>(
+            get<Parameters, String>(
                 key = Key2::class,
                 url = "test-url-2"
             )
@@ -22,6 +23,6 @@ class ApiTest {
 
         assertEquals(2, api.keys.size)
         assertIs<EndPoint.Post<Int,String>>(api[Key1::class])
-        assertIs<EndPoint.Get<Int,String>>(api[Key2::class])
+        assertIs<EndPoint.Get<Parameters,String>>(api[Key2::class])
     }
 }

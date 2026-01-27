@@ -1,6 +1,8 @@
 package org.solyton.solawi.bid.module.application.data
 
 import kotlinx.serialization.Serializable
+import org.evoleq.ktorx.client.EmptyParams
+import org.evoleq.ktorx.client.Parameters
 
 typealias ApiApplications = Applications
 typealias ApiApplication = Application
@@ -13,9 +15,9 @@ typealias ApiModuleContextRelations = ModuleContextRelations
 typealias ApiModuleContextRelation = ModuleContextRelation
 
 @Serializable
-data object ReadApplications
+data object ReadApplications: EmptyParams()
 @Serializable
-data object ReadPersonalUserApplications
+data object ReadPersonalUserApplications : EmptyParams()
 
 @Serializable
 data class ReadUserApplications(
@@ -23,10 +25,10 @@ data class ReadUserApplications(
 )
 
 @Serializable
-data object ReadPersonalApplicationContextRelations
+data object ReadPersonalApplicationContextRelations : EmptyParams()
 
 @Serializable
-data object ReadPersonalModuleContextRelations
+data object ReadPersonalModuleContextRelations : EmptyParams()
 
 @Serializable
 data class RegisterForApplications(

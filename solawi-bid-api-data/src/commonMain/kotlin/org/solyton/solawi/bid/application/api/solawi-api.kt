@@ -151,6 +151,23 @@ val solawiApi by lazy {
                 url = "distribution-points/update"
             )
 
+            // Shares
+            // ======
+            // ShareType
+            post<CreateShareType, ShareType>(
+                key = CreateShareType::class,
+                url = "shares/types/create"
+            )
+            // ShareOffer
+            post<CreateShareOffer, ShareOffer>(
+                key = CreateShareOffer::class,
+                url = "shares/offers/create"
+            )
+            // ShareSubscription
+            post<CreateShareSubscription, ShareSubscription>(
+                key = CreateShareSubscription::class,
+                url = "shares/subscriptions/create"
+            )
         }
         // User Management and Organizations
         group("User management and organizations") {
@@ -292,7 +309,8 @@ val solawiApi by lazy {
             // takes parameter "provider: UUID"
             get<ReadFiscalYears, FiscalYears>(
                 key = ReadFiscalYears::class,
-                url = "fiscal-years/all"
+                url = "fiscal-years/all",
+                parameters = setOf("provider")
             )
             post<CreateFiscalYear, FiscalYear>(
                 key = CreateFiscalYear::class,

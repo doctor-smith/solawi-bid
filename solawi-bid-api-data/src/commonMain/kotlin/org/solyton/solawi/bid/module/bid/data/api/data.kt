@@ -2,6 +2,8 @@ package org.solyton.solawi.bid.module.bid.data.api
 
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
+import org.evoleq.ktorx.client.EmptyParams
+import org.evoleq.ktorx.client.Parameters
 import org.solyton.solawi.bid.module.bid.data.validation.ValidationException
 import org.solyton.solawi.bid.module.permission.data.api.ContextId
 
@@ -102,7 +104,7 @@ data class CreateRound(
 @Serializable
 data class GetRound(
     val id: String
-)
+) : EmptyParams()
 
 
 @Serializable
@@ -156,7 +158,7 @@ sealed class AuctionDetails {
 }
 
 @Serializable
-data object GetAuctions
+data object GetAuctions : EmptyParams()
 
 @Serializable
 data class Auctions(

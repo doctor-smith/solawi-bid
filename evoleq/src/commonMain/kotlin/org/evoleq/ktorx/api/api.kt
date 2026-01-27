@@ -1,5 +1,6 @@
 package org.evoleq.ktorx.api
 
+import org.evoleq.ktorx.client.Parameters
 import org.evoleq.math.MathDsl
 import org.evoleq.math.Reader
 import kotlin.collections.set
@@ -14,8 +15,8 @@ data class Api(
         endPoints[key] = EndPoint.Head<S,T>(url, S::class, T::class)
         this
     }
-    inline fun < reified S, reified T> get(key: KClass<*>, url: String): Api = with(this) {
-        endPoints[key] = EndPoint.Get<S,T>(url, S::class, T::class)
+    inline fun < reified S, reified T> get(key: KClass<*>, url: String, parameters: Set<String> = emptySet()): Api where S: Parameters = with(this) {
+        endPoints[key] = EndPoint.Get<S,T>(url, S::class, T::class, parameters = parameters)
         this
     }
     inline fun < reified S, reified T> post(key: KClass<*>, url: String): Api = with(this) {
@@ -35,8 +36,8 @@ data class Api(
         this
     }
 
-    inline fun <reified N: Any, reified S, reified T> get(url: String): Api = with(this) {
-        endPoints[N::class] = EndPoint.Get<S,T>(url, S::class, T::class)
+    inline fun <reified N: Any, reified S, reified T> get(url: String, parameters: Set<String> = emptySet()): Api where S: Parameters = with(this) {
+        endPoints[N::class] = EndPoint.Get<S,T>(url,  S::class, T::class, parameters = parameters)
         this
     }
     inline fun <reified N: Any, reified S, reified T> post(url: String): Api = with(this) {
@@ -118,19 +119,21 @@ sealed class EndPoint<in S, out T>(
     open val url: String,
     open val requestType: KClass<*>,
     open val responseType: KClass<*>,
-    open val group: String? = null
+    open val group: String? = null,
+    open val parameters: Set<String> = emptySet()
 ) {
     data class Get<in S, out T>(
         override val url: String,
         override val requestType: KClass<*>,
         override val responseType: KClass<*>,
-        override val group: String? = null
+        override val group: String? = null,
+        override val parameters: Set<String> = emptySet()
     ) : EndPoint<S, T>(
         url,
         requestType,
         responseType,
         group
-    )
+    ) where S : Parameters
     data class Post<in S, out T>(
         override val url: String,
         override val requestType: KClass<*>,

@@ -14,6 +14,9 @@
 | POST | bid/send | Bid  | Bid | BidRound |
 | POST | bidders/add | AddBidders  | AddBidders | Unit |
 | PATCH | bidders/search | SearchBidderData  | SearchBidderData | BidderMails |
+| GET | distribution-points/all | ReadDistributionPoints  | ReadDistributionPoints | DistributionPoints |
+| POST | distribution-points/create | CreateDistributionPoint  | CreateDistributionPoint | DistributionPoint |
+| PATCH | distribution-points/update | UpdateDistributionPoint  | UpdateDistributionPoint | DistributionPoint |
 | POST | round/add-comment | CommentOnRound  | CommentOnRound | RoundComments |
 | PATCH | round/change-state | ChangeRoundState  | ChangeRoundState | Round |
 | POST | round/create | CreateRound  | CreateRound | Round |
