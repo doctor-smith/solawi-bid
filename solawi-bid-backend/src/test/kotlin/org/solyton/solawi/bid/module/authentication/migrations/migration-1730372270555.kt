@@ -7,6 +7,7 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Transaction
 import org.solyton.solawi.bid.module.user.schema.Tokens
 import org.solyton.solawi.bid.module.user.schema.User
+import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.Users
 
 /**
@@ -48,6 +49,7 @@ class Migration1730372270555(
         User.new {
             username = "developer@alpha-structure.com"
             password = "$2a$10$5EENEnXKE4oNT0AejWzy8Oa09DkBDiQTnk2LyqtqpBa3DrZijo51O"
+            status = UserStatus.ACTIVE
             createdBy = UUID_ZERO
         }
         commit()

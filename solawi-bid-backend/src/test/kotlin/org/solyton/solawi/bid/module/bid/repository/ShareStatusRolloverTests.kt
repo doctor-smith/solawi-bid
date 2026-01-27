@@ -23,6 +23,7 @@ import org.solyton.solawi.bid.module.bid.schema.ShareTypeEntity
 import org.solyton.solawi.bid.module.system.repository.createSystemProcess
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
+import org.solyton.solawi.bid.module.user.schema.UserStatus
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -50,6 +51,7 @@ class ShareStatusRolloverTests {
                 this.createdBy = UUID_ZERO
                 username = "username"
                 password = "password"
+                status = UserStatus.ACTIVE
             }
             val userProfile = UserProfileEntity.new {
                 this.createdBy = UUID_ZERO

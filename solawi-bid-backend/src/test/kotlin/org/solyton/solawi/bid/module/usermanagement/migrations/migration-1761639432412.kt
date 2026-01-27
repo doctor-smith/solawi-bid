@@ -12,6 +12,7 @@ import org.solyton.solawi.bid.module.permission.repository.createRootContext
 import org.solyton.solawi.bid.module.permission.repository.grant
 import org.solyton.solawi.bid.module.permission.repository.of
 import org.solyton.solawi.bid.module.user.schema.UserEntity
+import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 
 /**
@@ -41,6 +42,7 @@ class Migration1761639432412(
         val unauthorizedUser = UserEntity.new {
             username = "unautorized@solyton.org"
             password = "jfdkdjsöKD"
+            status = UserStatus.ACTIVE
             createdBy = UUID_ZERO
         }
         val applicationContext = createRootContext("APPLICATION")

@@ -13,6 +13,7 @@ import org.solyton.solawi.bid.module.permission.schema.RightEntity
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.repository.cloneRightRoleContext
 import org.solyton.solawi.bid.module.user.schema.UserEntity
+import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import java.util.*
 import kotlin.test.assertEquals
@@ -35,6 +36,7 @@ class PermissionTests {
         val user = UserEntity.new {
             username = "x-$ts"
             password = "y"
+            status = UserStatus.ACTIVE
             createdBy = UUID(0L,0L)
         }
         val readRight = RightEntity.new {
@@ -104,6 +106,7 @@ class PermissionTests {
         val user = UserEntity.new {
             username = "x-$ts"
             password = "y"
+            status = UserStatus.ACTIVE
             createdBy = UUID(0L,0L)
         }
         val readRight = RightEntity.new {
@@ -167,6 +170,7 @@ class PermissionTests {
         val user = UserEntity.new {
             username = "x-$ts"
             password = "y"
+            status = UserStatus.ACTIVE
             createdBy = UUID(0L,0L)
         }
         val readRight = RightEntity.new {
@@ -227,6 +231,7 @@ class PermissionTests {
         UserEntity.new {
             username = "x-$ts"
             password = "y"
+            status = UserStatus.ACTIVE
             createdBy = UUID(0L,0L)
         }
         val readRight = RightEntity.new {

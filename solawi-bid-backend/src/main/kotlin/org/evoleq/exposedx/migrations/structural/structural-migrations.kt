@@ -10,6 +10,7 @@ import org.evoleq.exposedx.migrations.structural.mysql.alterVarcharLength
 import org.evoleq.exposedx.migrations.structural.postresql.alterDefault
 import org.evoleq.exposedx.migrations.structural.postresql.alterNullability
 import org.evoleq.exposedx.migrations.structural.postresql.alterVarcharLength
+import org.evoleq.ktorx.result.Result
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -184,6 +185,47 @@ fun Database.modifyVarchar(table: Table, colDef: ColumnDef.ModifyProperties.Varc
                 dialect.alterVarcharLength(table.tableName, column.name, length)
             )}
             else -> error("Unsupported dialect: ${database.dialect.name}")
+        }
+    }
+}
+
+fun Database.modifyCheckConstraints(vararg dataSets: TableDef.CheckConstraint) {
+    val database = this
+    val existingTables = transaction(database) {
+        SchemaUtils.listTables().map { it.substringAfterLast(".") }
+    }
+    val relevantDataSets = dataSets.filter { it.table.tableName in existingTables }
+    transaction(database) {
+        // Enable SQL logging
+        addLogger(StdOutSqlLogger)
+
+        relevantDataSets.filterIsInstance<TableDef.CheckConstraint.Update>().forEach { def ->
+            val tableName = def.table.tableName
+            val check = def.check
+            val sql = def.sql
+            val dropStatement = """
+                |ALTER TABLE $tableName DROP CHECK chk_$check;
+            """.trimMargin()
+
+
+            val createStatement = """
+                |ALTER TABLE $tableName
+                |ADD CONSTRAINT chk_$check
+                |CHECK ($sql);
+            """.trimMargin()
+
+            try{exec(dropStatement)}catch(_: Exception){}
+            exec(createStatement)
+        }
+        relevantDataSets.filterIsInstance<TableDef.CheckConstraint.Remove>().forEach { def ->
+            val tableName = def.table.tableName
+            val check = def.check
+            val dropStatement = """
+                |ALTER TABLE $tableName
+                |DROP CHECK chk_$check;
+            """.trimMargin()
+
+            exec(dropStatement)
         }
     }
 }

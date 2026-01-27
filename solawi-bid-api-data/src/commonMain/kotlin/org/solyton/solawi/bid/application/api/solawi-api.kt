@@ -158,15 +158,39 @@ val solawiApi by lazy {
                 key = CreateShareType::class,
                 url = "shares/types/create"
             )
+            get<ReadShareTypes, ShareTypes> (
+                key = ReadShareTypes::class,
+                url = "shares/types/read"
+            )
+            patch<UpdateShareType, ShareType>(
+                key = UpdateShareType::class,
+                url = "shares/types/update"
+            )
             // ShareOffer
             post<CreateShareOffer, ShareOffer>(
                 key = CreateShareOffer::class,
                 url = "shares/offers/create"
             )
+            get<ReadShareOffers, ShareOffers> (
+                key = ReadShareOffers::class,
+                url = "shares/offers/read"
+            )
+            patch<UpdateShareOffer, ShareOffer>(
+                key = UpdateShareOffer::class,
+                url = "shares/offers/update"
+            )
             // ShareSubscription
             post<CreateShareSubscription, ShareSubscription>(
                 key = CreateShareSubscription::class,
                 url = "shares/subscriptions/create"
+            )
+            get<ReadShareSubscriptions, ShareSubscriptions> (
+                key = ReadShareSubscriptions::class,
+                url = "shares/subscriptions/read"
+            )
+            patch<UpdateShareSubscription, ShareSubscription>(
+                key = UpdateShareSubscription::class,
+                url = "shares/subscriptions/update"
             )
         }
         // User Management and Organizations

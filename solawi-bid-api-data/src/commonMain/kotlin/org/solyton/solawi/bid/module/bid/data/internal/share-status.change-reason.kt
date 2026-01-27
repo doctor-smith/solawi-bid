@@ -7,6 +7,7 @@ enum class ChangeReason {
     ROLLOVER,               // Subscription moved to next period
     ROLLED_OVER,            // Completed rollover at end of season
     NEW_PERIOD,             // Start of a new subscription/fiscal period
+    IMPORT,                 // Import share subscriptions
 
     // === USER ACTIONS ===
     USER_ACTION,                   // Generic user action (pause, cancel, resume)

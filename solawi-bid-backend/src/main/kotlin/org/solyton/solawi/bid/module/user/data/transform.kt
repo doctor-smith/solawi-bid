@@ -17,7 +17,7 @@ import org.solyton.solawi.bid.module.user.schema.User as UserEntity
 fun UserEntity.toApiType(): UserD = UserD(
     id.value,
     username,
-    password
+    password.orEmpty()
 )
 
 fun OrganizationEntity.toApiType(transaction: Transaction): ApiOrganization = ApiOrganization(

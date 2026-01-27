@@ -14,6 +14,7 @@ import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
 import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserOrganization
+import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.user.schema.repository.*
 import java.util.*
@@ -64,6 +65,7 @@ class OrganizationTests {
         val user = UserEntity.new {
             password = "password"
             username = "username"
+            status = UserStatus.ACTIVE
             createdBy = UUID(0L, 0L)
         }
         val organization = createRootOrganization(organizationName)

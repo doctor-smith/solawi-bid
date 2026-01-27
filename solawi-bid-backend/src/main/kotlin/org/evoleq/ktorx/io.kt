@@ -1,5 +1,6 @@
 package org.evoleq.ktorx
 
+import io.ktor.http.Parameters
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
@@ -30,6 +31,17 @@ fun  Principle(): Action<Result<JWTPrincipal>> = ApiAction {
 @KtorDsl
 @Suppress("FunctionName")
 fun <T : Any> Success(): KlAction<Result<T>, Result<Boolean>> = KlAction { _ -> Action { r -> Result.Success(true) to  r } }
+
+@KtorDsl
+@Suppress("FunctionName")
+suspend inline fun <reified T : Any>  ReceiveContextual(crossinline params: (Parameters) -> T): Action<Result<Contextual<T>>> = Principle() * {
+    principle -> ApiAction { call -> principle mapSuspend  { jwtp ->
+        val data: T = params(call.request.queryParameters)
+        val userId = jwtp.payload.subject
+        val context = call.request.headers[Header.CONTEXT]!!
+        Contextual(UUID.fromString(userId), context, data)
+    } x call }
+}
 
 @KtorDsl
 @Suppress("FunctionName")

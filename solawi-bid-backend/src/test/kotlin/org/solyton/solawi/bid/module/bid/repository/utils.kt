@@ -15,8 +15,10 @@ fun Transaction.createTestShareStatus(shareStatus: ShareStatus) {
 }
 
 fun Transaction.createTestShareStatuses() {
+    createTestShareStatus(ShareStatus.External)
     createTestShareStatus(ShareStatus.ActivationRejected)
     createTestShareStatus(ShareStatus.PendingActivation)
+    createTestShareStatus(ShareStatus.ClearedForAuction)
     createTestShareStatus(ShareStatus.Suspended)
     createTestShareStatus(ShareStatus.Subscribed)
     createTestShareStatus(ShareStatus.Paused)
@@ -40,7 +42,9 @@ val changeReasons = arrayOf(
 )
 
 val shareStatuses = arrayOf(
+    ShareStatus.External,
     ShareStatus.PendingActivation,
+    ShareStatus.ClearedForAuction,
     ShareStatus.Subscribed,
     ShareStatus.Paused,
     ShareStatus.Expired,

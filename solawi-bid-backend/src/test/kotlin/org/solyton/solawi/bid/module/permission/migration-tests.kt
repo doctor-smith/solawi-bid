@@ -33,6 +33,7 @@ import org.solyton.solawi.bid.module.permission.repository.parent
 import org.solyton.solawi.bid.module.user.permission.OrganizationContext
 import org.solyton.solawi.bid.module.user.permission.OrganizationRight
 import org.solyton.solawi.bid.module.user.schema.UserEntity
+import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import java.util.*
 import kotlin.test.assertEquals
@@ -174,6 +175,7 @@ fun injectApplicationOwner(ownerUsername: String, ownerPassword: String):UUID {
     val applicationOwner = UserEntity.new {
         username = ownerUsername
         password = ownerPassword
+        status = UserStatus.ACTIVE
         createdBy = UUID(0L,0L)
     }
 

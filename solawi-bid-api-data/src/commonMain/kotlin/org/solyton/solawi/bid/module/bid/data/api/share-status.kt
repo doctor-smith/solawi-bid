@@ -6,6 +6,10 @@ typealias ApiShareStatus = ShareStatus
 
 @Serializable
 sealed class ShareStatus(protected open val value: String) {
+    // External
+    @Serializable
+    data object External : ShareStatus("SUBSCRIBED")
+
     // Active
     @Serializable
     data object Subscribed : ShareStatus("SUBSCRIBED")
@@ -18,6 +22,9 @@ sealed class ShareStatus(protected open val value: String) {
     // flow
     @Serializable
     data object PendingActivation : ShareStatus("PENDING_ACTIVATION")
+    @Serializable
+    data object ClearedForAuction : ShareStatus("CLEARED_FOR_AUCTION")
+
     @Serializable
     data object ActivationRejected : ShareStatus("ACTIVATION_REJECTED")
     @Serializable

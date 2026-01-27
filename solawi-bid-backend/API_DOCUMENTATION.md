@@ -24,6 +24,15 @@
 | PATCH | round/evaluate | EvaluateBidRound  | EvaluateBidRound | BidRoundEvaluation |
 | PATCH | round/export-results | ExportBidRound  | ExportBidRound | BidRoundResults |
 | PATCH | round/pre-evaluate | PreEvaluateBidRound  | PreEvaluateBidRound | BidRoundPreEvaluation |
+| POST | shares/offers/create | CreateShareOffer  | CreateShareOffer | ShareOffer |
+| GET | shares/offers/read | ReadShareOffers  | ReadShareOffers | ShareOffers |
+| PATCH | shares/offers/update | UpdateShareOffer  | UpdateShareOffer | ShareOffer |
+| POST | shares/subscriptions/create | CreateShareSubscription  | CreateShareSubscription | ShareSubscription |
+| GET | shares/subscriptions/read | ReadShareSubscriptions  | ReadShareSubscriptions | ShareSubscriptions |
+| PATCH | shares/subscriptions/update | UpdateShareSubscription  | UpdateShareSubscription | ShareSubscription |
+| POST | shares/types/create | CreateShareType  | CreateShareType | ShareType |
+| GET | shares/types/read | ReadShareTypes  | ReadShareTypes | ShareTypes |
+| PATCH | shares/types/update | UpdateShareType  | UpdateShareType | ShareType |
 ## User management and organizations
 
 | Methode | URL | Key | Request Type | Response Type |

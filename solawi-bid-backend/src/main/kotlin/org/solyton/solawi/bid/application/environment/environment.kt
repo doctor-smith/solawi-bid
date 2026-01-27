@@ -21,6 +21,7 @@ import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.Roles
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.schema.UserEntity
+import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.Users
 import org.jetbrains.exposed.sql.Database as SqlDatabase
 
@@ -93,6 +94,7 @@ data class Environment(
             val applicationOwner = UserEntity.new {
                 username = applicationOwner.username
                 password = applicationOwner.password
+                status = UserStatus.ACTIVE
                 createdBy = UUID_ZERO
             }
 

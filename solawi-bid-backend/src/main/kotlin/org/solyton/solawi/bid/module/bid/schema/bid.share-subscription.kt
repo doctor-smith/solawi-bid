@@ -46,6 +46,8 @@ class ShareSubscription(id: EntityID<UUID>): UUIDEntity(id), AuditableEntity<UUI
     var status by ShareStatusEntity referencedOn ShareSubscriptions.statusId
     var statusUpdatedAt by ShareSubscriptions.statusUpdatedAt
 
+    val coSubscribers by CoSubscriberEntity referrersOn CoSubscribersTable.shareSubscriptionId
+
     override var createdAt: DateTime by ShareSubscriptions.createdAt
     override var createdBy: UUID by ShareSubscriptions.createdBy
     override var modifiedAt: DateTime? by ShareSubscriptions.modifiedAt

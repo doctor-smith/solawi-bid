@@ -1,6 +1,8 @@
 package org.solyton.solawi.bid.module.bid.data.api
 
 import kotlinx.serialization.Serializable
+import org.evoleq.ktorx.client.Parameters
+import org.evoleq.ktorx.client.QueryParams
 
 typealias ApiShareType = ShareType
 typealias ApiShareTypes = ShareTypes
@@ -24,6 +26,9 @@ data class CreateShareType(
     val description: String,
     val providerId: String
 )
+
+@Serializable
+data class ReadShareTypes(override val all: QueryParams): Parameters()
 
 @Serializable
 data class UpdateShareType(
