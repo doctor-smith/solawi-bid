@@ -16,13 +16,16 @@ data class ShareSubscriptions(
 @Serializable
 data class ShareSubscription(
     val id: String,
-    val shareOffer: ShareOffer,
+    val providerId: String,
+    val fiscalYearId: String,
+    val shareOfferId: String,
+    val userProfileId: String,
+    val distributionPointId: String?,
     val numberOfShares: Int,
     val pricePerShare: Double?,
     val ahcAuthorized: Boolean?,
-    val distributionPointId: String?,
-    val userProfileId: String,
     val status: ShareStatus,
+    val coSubscribers: List<String> = emptyList(),
     val statusUpdatedAt: LocalDateTime
 )
 
@@ -39,6 +42,14 @@ data class CreateShareSubscription(
     val coSubscribers: List<String> = emptyList()
 )
 
+/**
+ * Represents the parameters required to retrieve share subscriptions.
+ *
+ * This class extends the `Parameters` superclass and encapsulates the query parameters
+ * necessary for operations involving share subscriptions.
+ *
+ * @property queryParams Specifies query parameters used in the request.  It requires the parameter: provider_id: UUID
+ */
 @Serializable
 data class ReadShareSubscriptions(override val queryParams: QueryParams): Parameters()
 

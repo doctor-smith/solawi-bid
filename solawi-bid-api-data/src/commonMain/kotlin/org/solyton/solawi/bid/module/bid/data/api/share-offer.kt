@@ -33,6 +33,14 @@ data class CreateShareOffer(
     val ahcAuthorizationRequired: Boolean
 )
 
+/**
+ * Represents the parameters required to read share offers.
+ *
+ * This class extends the `Parameters` class and encapsulates the query parameters
+ * necessary for fetching share offer details.
+ *
+ * @property queryParams Represents query parameters required for the request.  It requires the parameter: provider_id: UUID
+ */
 @Serializable
 data class ReadShareOffers(override val queryParams: QueryParams): Parameters()
 
