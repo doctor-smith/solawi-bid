@@ -1,6 +1,8 @@
 package org.solyton.solawi.bid.module.banking.data.api
 
 import kotlinx.serialization.Serializable
+import org.evoleq.ktorx.client.Parameters
+import org.evoleq.ktorx.client.QueryParams
 
 typealias ApiBankAccount = BankAccount
 typealias ApiBankAccounts = BankAccounts
@@ -19,7 +21,13 @@ data class BankAccount(
 )
 
 @Serializable
-data object ReadBankAccounts
+data class ReadBankAccounts(
+    /**
+     * takes param
+     * "legal_entity: UUID"
+     */
+    override val queryParams: QueryParams
+) : Parameters()
 
 @Serializable
 data class ReadBankAccount(
