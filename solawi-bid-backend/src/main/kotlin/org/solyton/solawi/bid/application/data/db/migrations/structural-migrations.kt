@@ -33,7 +33,8 @@ val structuralMigrations by lazy {
         addMissingColumns = columnsToAdd,
         modifyColumnNames = columnNamesToModify,
         modifyColumnProperties = columnPropertiesToModify,
-        modifyTableChecks = tableChecks
+        modifyTableChecks = tableChecks,
+        modifyTableUniques = uniqueIndexes
     )
 }
 
@@ -47,6 +48,16 @@ val tableChecks: List<TableDef.CheckConstraint> by lazy {
                 OR
                 (status IN ('ACTIVE', 'DISABLED', 'REGISTERED') AND password IS NOT NULL)
             """.trimIndent()
+        )
+    )
+}
+
+val uniqueIndexes: List<TableDef.UniqueIndex> by lazy {
+    listOf(
+        TableDef.UniqueIndex.Update(
+            "",
+            ShareTypesTable,
+            listOf("key", "provider_key")
         )
     )
 }
@@ -111,6 +122,7 @@ val columnsToAdd: List<AddMissingColumns> by lazy {
             ColumnDef.Missing<DateTime>("created_at", DateTime.now()),
             ColumnDef.Missing<UUID?>("modified_by",null),
             ColumnDef.Missing<DateTime?>("modified_at", null),
+            ColumnDef.Missing<String>("key", "")
         ),
         BankAccountsTable.addColumnsIfMissing(
             ColumnDef.Missing<UUID>("created_by", UUID_ZERO),

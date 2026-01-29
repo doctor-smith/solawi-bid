@@ -28,6 +28,7 @@ import java.util.UUID
 fun Transaction.createShareType(
     providerId: UUID,
     name: String,
+    key: String,
     description: String,
     creator: UUID
 ): ShareTypeEntity {
@@ -39,6 +40,7 @@ fun Transaction.createShareType(
     return ShareTypeEntity.new{
         createdBy = creator
         this.name = name
+        this.key = key
         this.providerId = providerId
         this.description = description
     }
@@ -51,6 +53,7 @@ fun Transaction.updateShareType(
     shareTypeId: UUID,
     providerId: UUID,
     name: String,
+    key: String,
     description: String,
     modifier: UUID
 ): ShareTypeEntity {
@@ -58,6 +61,7 @@ fun Transaction.updateShareType(
 
     val providerIdChanged = shareType.providerId != providerId
     val nameChanged = shareType.name != name
+    val keyChanged = shareType.key != key
     val descriptionChanged = shareType.description != description
 
     if(providerIdChanged) {
@@ -65,6 +69,9 @@ fun Transaction.updateShareType(
     }
     if(nameChanged) {
         shareType.name = name
+    }
+    if(keyChanged) {
+        shareType.key = key
     }
     if(descriptionChanged) {
         shareType.description = description

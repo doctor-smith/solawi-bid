@@ -67,13 +67,28 @@ sealed class TableDef(open val table: Table) {
             override val check: String
         ): CheckConstraint(table, check)
     }
+    sealed class UniqueIndex(
+        table: Table,
+        open val columns: List<String>
+    ): TableDef(table) {
+        data class Update(
+            val indexName: String,
+            override val table: Table,
+            override val columns: List<String>
+        ): UniqueIndex(
+            table,
+            columns
+        )
+    }
+    sealed class ForeignKey(table: Table): TableDef(table)
 }
 
 data class StructuralMigrations(
     val addMissingColumns: List<AddMissingColumns> = emptyList(),
     val modifyColumnNames: List<ModifyColumnNames> = emptyList(),
     val modifyColumnProperties: List<ModifyColumnProperties<*>> = emptyList(),
-    val modifyTableChecks: List<TableDef.CheckConstraint>
+    val modifyTableChecks: List<TableDef.CheckConstraint>,
+    val modifyTableUniques: List<TableDef.UniqueIndex>,
 ) {
     fun runOn(database: Database) {
         database.addMissingColumns(*addMissingColumns.toTypedArray())

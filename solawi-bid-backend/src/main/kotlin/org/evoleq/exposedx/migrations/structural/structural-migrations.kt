@@ -22,6 +22,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.vendors.H2Dialect
 import org.jetbrains.exposed.sql.vendors.MysqlDialect
 import org.jetbrains.exposed.sql.vendors.PostgreSQLDialect
+import java.sql.ResultSet
 
 
 fun Database.addMissingColumns(vararg dataSets: AddMissingColumns){
@@ -227,6 +228,52 @@ fun Database.modifyCheckConstraints(vararg dataSets: TableDef.CheckConstraint) {
 
             exec(dropStatement)
         }
+    }
+}
+
+fun Database.modifyTableUniques(vararg dataSets : TableDef.UniqueIndex) {
+    val database = this
+    val existingTables = transaction(database) {
+        SchemaUtils.listTables().map { it.substringAfterLast(".") }
+    }
+    val relevantDataSets = dataSets.filter { it.table.tableName in existingTables }
+    transaction(database) {
+        // Enable SQL logging
+        addLogger(StdOutSqlLogger)
+        relevantDataSets.filterIsInstance<TableDef.UniqueIndex.Update>().forEach { def ->
+            val tableName = def.table.tableName
+            val indexName = "ux_${def.indexName}"
+            val columns = def.columns.joinToString(", ") { it.fixColumnName() }
+
+            val firstColumn = def.columns.firstOrNull()
+            val otherColumns = def.columns.drop(1)
+            val isPossibleStatement = """
+                SELECT 1
+                FROM $tableName t1
+                JOIN $tableName t2
+                  ON t1.$firstColumn = t2.$firstColumn
+                  ${otherColumns.joinToString(" AND ") { "AND t1.$it = t2.$it" }}
+                 AND t1.id != t2.id
+                LIMIT 1;
+            """.trimIndent()
+
+            val dropStatement = """
+                |ALTER TABLE $tableName DROP INDEX uk_$tableName;
+            """.trimMargin()
+            val createStatement = """
+                CREATE UNIQUE INDEX $indexName ON $tableName ($columns);
+            """.trimIndent()
+
+            val isNotPossible = exec(isPossibleStatement) {
+                rs: ResultSet -> rs.next()
+            } ?: false
+
+            if(isNotPossible) return@forEach
+
+            try{exec(dropStatement)}catch(_: Exception){}
+            exec(createStatement)
+        }
+
     }
 }
 

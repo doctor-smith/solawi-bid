@@ -25,6 +25,7 @@ fun UpdateShareType() = KlAction<Result<Contextual<UpdateShareType>>, Result<Sha
             UUID.fromString(data.id),
             UUID.fromString(data.providerId),
             data.name,
+            data.key,
             data.description,
             userId
         ).toApiType()
