@@ -34,7 +34,7 @@ data class CreateShareOffer(
 )
 
 @Serializable
-data class ReadShareOffers(override val all: QueryParams): Parameters()
+data class ReadShareOffers(override val queryParams: QueryParams): Parameters()
 
 @Serializable
 data class UpdateShareOffer(

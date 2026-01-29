@@ -10,8 +10,6 @@ import org.evoleq.ktorx.context.data.Contextual
 import org.evoleq.ktorx.result.map
 import org.evoleq.ktorx.headers.Header
 import org.evoleq.permission.EmptyContext
-import kotlin.collections.component1
-import kotlin.collections.component2
 
 
 fun <S: Any,T: Any> HttpClient.post(url: String, port: Int, serializer: KSerializer<S>, deserializer: KSerializer<Result<T>>): suspend (S)-> Result<Contextual<T>> = { s: S ->
@@ -26,7 +24,7 @@ fun <S: Any,T: Any> HttpClient.post(url: String, port: Int, serializer: KSeriali
     } }
 
 fun <S: Parameters, T: Any> HttpClient.get(url: String, port: Int, deserializer: KSerializer<Result<T>>): suspend (S)-> Result<Contextual<T>> = { s: S ->
-    with(get(url + s.all.toQueryString()) {
+    with(get(url + s.queryParams.toQueryString()) {
         this.port = port
 
     }) {

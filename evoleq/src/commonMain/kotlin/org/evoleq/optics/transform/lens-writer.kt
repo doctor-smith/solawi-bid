@@ -155,3 +155,40 @@ infix fun <P, Q> Writer<P, Q>.liftBy(select: (P, List<Q>) -> Q): Writer<List<P>,
 sealed class LensWriterException(override val message: String) : Exception(message) {
     data object InvalidSelector : LensWriterException("Selector invalid")
 }
+
+/**
+ * Adds a new element to the list focused by the current `Lens`.
+ *
+ * This extension function creates a `Writer` that, given a new element of type `P` to add,
+ * modifies the list within the structure of type `W` by appending the element while preserving
+ * immutability.
+ *
+ * @return A `Writer` that appends an element to the focused list within the structure of type `W`.
+ */
+fun <W, P> Lens<W, List<P>>.add(): Writer<W, P> = Writer{
+    p -> { w -> set(get(w) + listOf(p) )(w)}
+}
+
+
+/**
+ * Updates the element in the list-like structure within a `Lens`, replacing the first element
+ * that matches the `compare` condition with a new value.
+ *
+ * @param compare A predicate function used to locate the element to be updated within the list.
+ *                Takes an updated element (updatedData) and current list element (listItem) as parameters
+ *                and returns a Boolean indicating if the element matches the condition.
+ * @return A `Writer` that, when invoked with a new value of type `P` and the original structure
+ *         of type `W`, produces a new structure of type `W` with the specified update applied.
+ */
+fun <W, P> Lens<W, List<P>>.update(compare: (updatedData: P, listItem: P) -> Boolean): Writer<W, P> =
+    Writer { updatedData -> { w -> with(get(w)) list@{
+        val start = this@list.takeWhile { listItem -> !compare(updatedData, listItem) }
+        val result = when {
+            start.size == this@list.size -> start
+            else -> start + listOf(updatedData) + dropWhile { listItem ->
+                !compare( updatedData, listItem )
+            }.drop(1)
+        }
+        set( result ) (w) }
+    }
+}

@@ -40,7 +40,7 @@ data class CreateShareSubscription(
 )
 
 @Serializable
-data class ReadShareSubscriptions(override val all: QueryParams): Parameters()
+data class ReadShareSubscriptions(override val queryParams: QueryParams): Parameters()
 
 @Serializable
 data class UpdateShareSubscription(
