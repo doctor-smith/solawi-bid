@@ -241,6 +241,13 @@ fun Database.modifyTableUniques(vararg dataSets : TableDef.UniqueIndex) {
         // Enable SQL logging
         addLogger(StdOutSqlLogger)
         relevantDataSets.filterIsInstance<TableDef.UniqueIndex.Update>().forEach { def ->
+            
+            // Check if all columns exist. If not => continue
+            val tableColumns = def.table.columns.map { it.name.lowercase() }
+            if (!def.columns.all { it.lowercase() in tableColumns }) {
+                return@forEach
+            }
+
             val tableName = def.table.tableName
             val indexName = "ux_${def.indexName}"
             val columns = def.columns.joinToString(", ") { it.fixColumnName() }

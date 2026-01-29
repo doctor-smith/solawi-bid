@@ -122,7 +122,8 @@ fun installSerializers() {
         add<CreateShareSubscription>(CreateShareSubscription.serializer())
         add<ReadShareSubscriptions>(ReadShareSubscriptions.serializer())
         add<UpdateShareSubscription>(UpdateShareSubscription.serializer())
-
+        add<ImportShareSubscription>(ImportShareSubscription.serializer())
+        add<ImportShareSubscriptions>(ImportShareSubscriptions.serializer())
         // ShareStatus
         add<ShareStatus>(ShareStatus.serializer())
 

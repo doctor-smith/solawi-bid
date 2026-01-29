@@ -55,9 +55,9 @@ val tableChecks: List<TableDef.CheckConstraint> by lazy {
 val uniqueIndexes: List<TableDef.UniqueIndex> by lazy {
     listOf(
         TableDef.UniqueIndex.Update(
-            "",
+            "provider_key",
             ShareTypesTable,
-            listOf("key", "provider_key")
+            listOf("share_key", "provider_id")
         )
     )
 }
@@ -122,7 +122,7 @@ val columnsToAdd: List<AddMissingColumns> by lazy {
             ColumnDef.Missing<DateTime>("created_at", DateTime.now()),
             ColumnDef.Missing<UUID?>("modified_by",null),
             ColumnDef.Missing<DateTime?>("modified_at", null),
-            ColumnDef.Missing<String>("key", "")
+            ColumnDef.Missing<String>("share_key", "")
         ),
         BankAccountsTable.addColumnsIfMissing(
             ColumnDef.Missing<UUID>("created_by", UUID_ZERO),
