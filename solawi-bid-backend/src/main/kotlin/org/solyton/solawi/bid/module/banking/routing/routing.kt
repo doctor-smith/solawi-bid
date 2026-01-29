@@ -31,8 +31,10 @@ fun <BankingEnv> Routing.banking (
         route("banking") {
             route("fiscal-years") {
                 get("all") {
-                    val legalEntityId = call.parameters["legal-entity"]
-                    ReceiveContextual(legalEntityId) *
+                    @Suppress("UnsafeCallOnNullableType")
+                    ReceiveContextual<String>{
+                        parameters -> parameters["legal-entity"]!!
+                    } *
                     IsGranted("READ_FISCAL_YEARS") *
                     ReadFiscalYearsByProvider() *
                     Respond{ transform() } runOn Base(call, environment)

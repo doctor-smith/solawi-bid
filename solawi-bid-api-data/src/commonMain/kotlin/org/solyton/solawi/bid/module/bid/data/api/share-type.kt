@@ -29,7 +29,7 @@ data class CreateShareType(
 )
 
 @Serializable
-data class ReadShareTypes(override val all: QueryParams): Parameters()
+data class ReadShareTypes(override val queryParams: QueryParams): Parameters()
 
 @Serializable
 data class UpdateShareType(

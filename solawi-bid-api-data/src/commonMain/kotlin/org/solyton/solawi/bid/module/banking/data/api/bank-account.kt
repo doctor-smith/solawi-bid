@@ -3,6 +3,12 @@ package org.solyton.solawi.bid.module.banking.data.api
 import kotlinx.serialization.Serializable
 
 typealias ApiBankAccount = BankAccount
+typealias ApiBankAccounts = BankAccounts
+
+@Serializable
+data class BankAccounts(
+    val all: List<BankAccount>
+)
 
 @Serializable
 data class BankAccount(

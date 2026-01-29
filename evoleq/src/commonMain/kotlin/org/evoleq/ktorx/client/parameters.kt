@@ -7,12 +7,12 @@ typealias QueryParams = List<Pair<String, String>>
 @Serializable
 abstract class Parameters {
     @Serializable(with = QueryParamsSerializer::class)
-    abstract val all: QueryParams
+    abstract val queryParams: QueryParams
 }
 
 @Serializable
 abstract class EmptyParams: Parameters() {
-    override val all: QueryParams
+    override val queryParams: QueryParams
         get() = emptyList()
 }
 

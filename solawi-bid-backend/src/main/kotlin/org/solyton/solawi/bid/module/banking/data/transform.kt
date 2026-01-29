@@ -17,6 +17,7 @@ fun List<FiscalYearEntity>.toApiType(): ApiFiscalYears = ApiFiscalYears(
  */
 fun FiscalYearEntity.toApiType(): ApiFiscalYear = ApiFiscalYear(
     id.value.toString(),
+    legalEntityId.toString(),
     start.toKotlinxWithZone().date,
     end.toKotlinxWithZone().date
 )

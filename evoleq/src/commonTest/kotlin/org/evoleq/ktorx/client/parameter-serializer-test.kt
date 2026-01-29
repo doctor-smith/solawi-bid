@@ -9,7 +9,7 @@ import kotlin.test.assertEquals
 class ParameterSerializerTest {
 
     @Serializable
-    data class Data(val name: String, override val all: List<Pair<String, String>>): Parameters()
+    data class Data(val name: String, override val queryParams: List<Pair<String, String>>): Parameters()
 
     @Serializable
     data class Empty(val x: Int) : EmptyParams()
