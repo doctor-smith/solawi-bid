@@ -28,6 +28,14 @@ data class CreateShareType(
     val providerId: String
 )
 
+/**
+ * Represents the parameters required to read share types.
+ *
+ * This class extends the `Parameters` class and allows the encapsulation of query parameters
+ * needed for operations involving share types.
+ *
+ * @property queryParams Represents query parameters used in the request. It requires the parameter: provider_id: UUID
+ */
 @Serializable
 data class ReadShareTypes(override val queryParams: QueryParams): Parameters()
 
