@@ -18,6 +18,7 @@ import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
 import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.repository.createRootOrganization
+import java.util.UUID
 
 
 // Complex Setup
@@ -92,9 +93,10 @@ fun Transaction.complexSetup(testCase: TestCase): TestCase {
             val shareTypesMap = shareTypeIds.map { (name, pair) ->
                 val (creatorId, provider) = pair
                 name to createShareType(
-                    providersMap[provider]!!.id.value,
+                    providersMap[provider]!!.id.value as UUID,
                     name,
-                    "",
+                    name,
+                    "description",
                     creatorId
                 )
             }.associateBy({ it.first }, { it.second })

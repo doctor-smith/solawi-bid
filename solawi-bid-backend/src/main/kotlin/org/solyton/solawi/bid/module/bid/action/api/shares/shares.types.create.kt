@@ -23,6 +23,7 @@ fun CreateShareType() = KlAction<Result<Contextual<CreateShareType>>, Result<Sha
         createShareType(
             UUID.fromString(data.providerId),
             data.name,
+            data.key,
             data.description,
             userId
         ).toApiType()

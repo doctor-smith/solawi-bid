@@ -120,6 +120,7 @@ class ShareSubscriptionStatusHistoryTests {
             val shareType = ShareTypeEntity.new {
                 this.createdBy = UUID_ZERO
                 providerId = UUID_ONE
+                key = "TestKey"
                 name = "TestShareType"
                 description = "TestShareType"
             }

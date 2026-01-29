@@ -82,6 +82,7 @@ class ShareStatusRolloverTests {
                 this.createdBy = UUID_ZERO
                 providerId = UUID_ONE
                 name = "TestShareType"
+                key = "TestKey"
                 description = "TestShareType"
             }
             // share offer

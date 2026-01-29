@@ -23,6 +23,7 @@ data class ShareTypes(
 @Serializable
 data class CreateShareType(
     val name: String,
+    val key: String,
     val description: String,
     val providerId: String
 )
@@ -34,6 +35,7 @@ data class ReadShareTypes(override val all: QueryParams): Parameters()
 data class UpdateShareType(
     val id: String,
     val name: String,
+    val key: String,
     val description: String,
     val providerId: String
 )
