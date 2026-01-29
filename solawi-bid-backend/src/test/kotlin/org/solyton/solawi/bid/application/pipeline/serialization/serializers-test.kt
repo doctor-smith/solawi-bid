@@ -36,6 +36,7 @@ import org.solyton.solawi.bid.module.bid.data.api.CreateShareType
 import org.solyton.solawi.bid.module.bid.data.api.DeleteDistributionPoint
 import org.solyton.solawi.bid.module.bid.data.api.DistributionPoint
 import org.solyton.solawi.bid.module.bid.data.api.DistributionPoints
+import org.solyton.solawi.bid.module.bid.data.api.ImportShareSubscriptions
 import org.solyton.solawi.bid.module.bid.data.api.PricingType
 import org.solyton.solawi.bid.module.bid.data.api.ReadDistributionPoint
 import org.solyton.solawi.bid.module.bid.data.api.ReadDistributionPoints
@@ -143,6 +144,8 @@ class SerializersTest {
             CreateShareSubscription::class,
             ReadShareSubscriptions::class,
             UpdateShareSubscription::class,
+            ImportShareSubscriptions::class,
+            ImportShareSubscriptions::class,
             ShareStatus::class,
             PricingType::class,
 

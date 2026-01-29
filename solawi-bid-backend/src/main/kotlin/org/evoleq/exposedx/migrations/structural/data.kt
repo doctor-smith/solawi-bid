@@ -95,5 +95,6 @@ data class StructuralMigrations(
         database.modifyColumnNames(*modifyColumnNames.toTypedArray())
         database.modifyColumnProperties(*modifyColumnProperties.toTypedArray())
         database.modifyCheckConstraints(*modifyTableChecks.toTypedArray())
+        database.modifyTableUniques(*modifyTableUniques.toTypedArray())
     }
 }

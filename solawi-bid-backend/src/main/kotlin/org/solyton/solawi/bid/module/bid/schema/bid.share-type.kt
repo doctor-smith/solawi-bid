@@ -13,13 +13,13 @@ typealias ShareTypeEntity = ShareType
 
 object ShareTypes : AuditableUUIDTable("share_types") {
     val providerId = uuid("provider_id")
-    val key = varchar("key", 10)
+    val shareKey = varchar("share_key", 20)
     val name = varchar("name", 250)
     val description = varchar("description", 5000).default("")
 
     init {
         uniqueIndex(providerId, name)
-        uniqueIndex("ux_provider_key",providerId, key)
+        uniqueIndex("ux_provider_key",providerId, shareKey)
     }
 }
 
@@ -28,7 +28,7 @@ class ShareType(id : EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
 
     var providerId by ShareTypes.providerId
     var name by ShareTypes.name
-    var key by ShareTypes.key
+    var key by ShareTypes.shareKey
     var description by ShareTypes.description
 
     val shareOffers by ShareOfferEntity referrersOn ShareOffers.shareTypeId

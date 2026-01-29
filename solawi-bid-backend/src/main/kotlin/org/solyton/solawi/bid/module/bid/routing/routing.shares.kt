@@ -12,10 +12,13 @@ import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
 import org.evoleq.uuid.UUID_ZERO
+import org.evoleq.uuid.toUuid
+import org.evoleq.uuid.toUuidOrNull
 import org.solyton.solawi.bid.module.application.repository.contextIdOf
 import org.solyton.solawi.bid.module.bid.action.api.shares.CreateShareOffer
 import org.solyton.solawi.bid.module.bid.action.api.shares.CreateShareSubscription
 import org.solyton.solawi.bid.module.bid.action.api.shares.CreateShareType
+import org.solyton.solawi.bid.module.bid.action.api.shares.ImportShareSubscriptions
 import org.solyton.solawi.bid.module.bid.action.api.shares.ReadShareOffersByProvider
 import org.solyton.solawi.bid.module.bid.action.api.shares.ReadShareShareSubscriptionsByProvider
 import org.solyton.solawi.bid.module.bid.action.api.shares.ReadShareSubscriptionsByProvider
@@ -217,6 +220,19 @@ authenticate {
             }
             delete {
                 NotImplemented() * Respond<Unit> { transform() } runOn Base(call, environment)
+            }
+            post("import") {
+                ReceiveContextual<ImportShareSubscriptions>() *
+                IsGrantedOneOf(
+                    rights("IMPORT_SHARE_SUBSCRIPTIONS"),
+                    no
+                ) { contextual ->
+                    val providerId = contextual.data.providerId.toUuid()
+                    contextIdOf(providerId, SHARE_APPLICATION)
+
+                } *
+                ImportShareSubscriptions() *
+                Respond<ShareSubscriptions> { transform() } runOn Base(call, environment)
             }
         }
 

@@ -36,6 +36,7 @@ data class CreateShareSubscription(
     val numberOfShares: Int,
     val pricePerShare: Double?,
     val ahcAuthorized: Boolean?,
+    val coSubscribers: List<String> = emptyList()
 )
 
 @Serializable
@@ -52,4 +53,26 @@ data class UpdateShareSubscription(
     val numberOfShares: Int,
     val pricePerShare: Double?,
     val ahcAuthorized: Boolean?,
+    val coSubscribers: List<String> = emptyList()
+)
+
+@Serializable
+data class ImportShareSubscriptions(
+    val override: Boolean = false,
+    val providerId: String,
+    val fiscalYearId: String,
+    val shareSubscriptions: List<ImportShareSubscription>,
+)
+
+@Serializable
+data class ImportShareSubscription(
+    val shareOfferId: String,
+    val userProfileId: String,
+    val distributionPointId: String?,
+    val fiscalYearId: String,
+    val numberOfShares: Int,
+    val pricePerShare: Double?,
+    val ahcAuthorized: Boolean?,
+    val status: ShareStatus,
+    val coSubscribers: List<String> = emptyList()
 )
