@@ -20,6 +20,7 @@ import org.solyton.solawi.bid.module.bid.data.bidder.BidderInfo
 import org.solyton.solawi.bid.module.bid.data.bidenv.Environment
 import org.solyton.solawi.bid.module.bid.data.bidround.comments
 import org.solyton.solawi.bid.module.bid.data.bidround.rawResults
+import org.solyton.solawi.bid.test.base.runComposeTest
 import org.solyton.solawi.bid.test.storage.TestStorage
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -33,7 +34,7 @@ class ActionTests{
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
-    fun deleteAuctionsTest() = runTest{
+    fun deleteAuctionsTest() = runComposeTest {
         val name = "name"
         installSerializers()
         val date = todayWithTime()
@@ -64,7 +65,7 @@ class ActionTests{
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
-    fun sendBidTest() = runTest{
+    fun sendBidTest() = runComposeTest{
         val bid = Bid("name", "link",2.0)
 
         val action = sendBidAction(bid)
@@ -104,7 +105,7 @@ class ActionTests{
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
-    fun importBiddersTest() = runTest{
+    fun importBiddersTest() = runComposeTest{
 
         val date = todayWithTime()
         val auction = Auction("id", "name", date)
@@ -138,7 +139,7 @@ class ActionTests{
     }
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
-    @Test fun createRoundTest() = runTest{
+    @Test fun createRoundTest() = runComposeTest{
         val date = todayWithTime()
         val auction = Auction("id", "name", date)
         val auctionLens = auctions * FirstBy<Auction> { auc -> auc.auctionId == auction.auctionId }
@@ -185,7 +186,7 @@ class ActionTests{
     }
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
-    @Test fun configureAuctionTest() = runTest {
+    @Test fun configureAuctionTest() = runComposeTest{
         val date = todayWithTime()
         val auction = Auction("id", "name", date)
         val auctionLens = auctions * FirstBy<Auction> { auc -> auc.auctionId == auction.auctionId }
@@ -222,7 +223,7 @@ class ActionTests{
     }
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
-    @Test fun changeRoundStateTest() = runTest {
+    @Test fun changeRoundStateTest() = runComposeTest{
         val date = todayWithTime()
         val auction = Auction("id", "name", date)
         val auctionLens = auctions * FirstBy<Auction> { auc -> auc.auctionId == auction.auctionId }
@@ -263,7 +264,7 @@ class ActionTests{
     }
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
-    @Test fun exportBidRoundTest() = runTest {
+    @Test fun exportBidRoundTest() = runComposeTest{
         val date = todayWithTime()
         val auction = Auction("id", "name", date)
         val auctionLens = auctions * FirstBy<Auction> { auc -> auc.auctionId == auction.auctionId }
@@ -310,7 +311,7 @@ class ActionTests{
     }
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
-    @Test fun evaluateBidRoundTest() = runTest {
+    @Test fun evaluateBidRoundTest() = runComposeTest{
         val date = todayWithTime()
         val auction = Auction("id", "name", date)
         val auctionLens = auctions * FirstBy<Auction> { auc -> auc.auctionId == auction.auctionId }
@@ -376,7 +377,7 @@ class ActionTests{
     }
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
-    @Test fun preEvaluateBidRoundTest() = runTest {
+    @Test fun preEvaluateBidRoundTest() = runComposeTest{
         val date = todayWithTime()
         val auction = Auction("id", "name", date)
         val auctionLens = auctions * FirstBy<Auction> { auc -> auc.auctionId == auction.auctionId }
@@ -433,7 +434,7 @@ class ActionTests{
     }
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
-    @Test fun acceptRoundTest() = runTest {
+    @Test fun acceptRoundTest() = runComposeTest{
         val date = todayWithTime()
         val auction = Auction("id", "name", date)
         val auctionLens = auctions * FirstBy<Auction> { auc -> auc.auctionId == auction.auctionId }
@@ -474,7 +475,7 @@ class ActionTests{
     }
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
-    @Test fun commentOnRoundTest() = runTest {
+    @Test fun commentOnRoundTest() = runComposeTest{
         val date = todayWithTime()
         val auction = Auction("id", "name", date)
         val auctionLens = auctions * FirstBy<Auction> { auc -> auc.auctionId == auction.auctionId }
@@ -522,7 +523,7 @@ class ActionTests{
     }
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
-    @Test fun addBidders() = runTest {
+    @Test fun addBidders() = runComposeTest{
 
         val bidders = AddBidders()
         val addBidders = addBidders(bidders)
@@ -537,7 +538,7 @@ class ActionTests{
     }
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
-    @Test fun searchBidders() = runTest {
+    @Test fun searchBidders() = runComposeTest{
 
         val bidders = SearchBidderData(
             "",

@@ -14,9 +14,9 @@ import org.solyton.solawi.bid.module.banking.data.toDomainType
  * @param nameSuffix Optional suffix to append to the action name for identification purposes. Defaults to an empty string.
  * @return An `Action` object configured to read fiscal years from the API and update the application state with domain-level fiscal year data.
  */
-fun readFiscalYears(providerId: String, nameSuffix: String = "") = Action<BankingApplication, ReadFiscalYears, ApiFiscalYears>(
+fun readFiscalYears(legalEntityId: String, nameSuffix: String = "") = Action<BankingApplication, ReadFiscalYears, ApiFiscalYears>(
     name = "ReadFiscalYears$nameSuffix",
-    reader = {_ -> ReadFiscalYears(listOf("legal_entity" to providerId))},
+    reader = {_ -> ReadFiscalYears(listOf("legal_entity" to legalEntityId))},
     endPoint = ReadFiscalYears::class,
     writer = fiscalYears.set contraMap { fiscalYears -> fiscalYears.toDomainType() }
 )
