@@ -8,7 +8,7 @@ import org.solyton.solawi.bid.module.application.exception.ApplicationException
 import org.solyton.solawi.bid.module.authentication.exception.AuthenticationException
 import org.solyton.solawi.bid.module.bid.data.api.RoundStateException
 import org.solyton.solawi.bid.module.bid.exception.BidRoundException
-import org.solyton.solawi.bid.module.bid.exception.DistributionPointException
+import org.solyton.solawi.bid.module.distribution.exception.DistributionPointException
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.exception.ContextException
 import org.solyton.solawi.bid.module.permission.exception.PermissionExceptionD

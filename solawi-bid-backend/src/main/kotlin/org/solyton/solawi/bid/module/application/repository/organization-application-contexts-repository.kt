@@ -12,9 +12,9 @@ import org.solyton.solawi.bid.module.application.schema.LifecycleStageEntity
 import org.solyton.solawi.bid.module.application.schema.OrganizationApplicationContextEntity
 import org.solyton.solawi.bid.module.application.schema.OrganizationModuleContextEntity
 import org.solyton.solawi.bid.module.permission.exception.ContextException
-import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.permission.repository.cloneRightRoleContext
 import org.solyton.solawi.bid.module.permission.repository.createRootContext
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import java.util.*
 
 fun Transaction.registerOrganizationForApplication(

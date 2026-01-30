@@ -10,13 +10,13 @@ import org.evoleq.ktorx.Respond
 import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
-import org.solyton.solawi.bid.module.bid.action.api.distributionpoints.CreateDistributionPoint
-import org.solyton.solawi.bid.module.bid.action.api.distributionpoints.ReadDistributionPoints
-import org.solyton.solawi.bid.module.bid.action.api.distributionpoints.UpdateDistributionPoint
-import org.solyton.solawi.bid.module.bid.data.api.CreateDistributionPoint
-import org.solyton.solawi.bid.module.bid.data.api.DistributionPoint
-import org.solyton.solawi.bid.module.bid.data.api.DistributionPoints
-import org.solyton.solawi.bid.module.bid.data.api.UpdateDistributionPoint
+import org.solyton.solawi.bid.module.distribution.action.api.CreateDistributionPoint
+import org.solyton.solawi.bid.module.distribution.action.api.ReadDistributionPoints
+import org.solyton.solawi.bid.module.distribution.action.api.UpdateDistributionPoint
+import org.solyton.solawi.bid.module.distribution.data.api.CreateDistributionPoint
+import org.solyton.solawi.bid.module.distribution.data.api.DistributionPoint
+import org.solyton.solawi.bid.module.distribution.data.api.DistributionPoints
+import org.solyton.solawi.bid.module.distribution.data.api.UpdateDistributionPoint
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
 
 @KtorDsl

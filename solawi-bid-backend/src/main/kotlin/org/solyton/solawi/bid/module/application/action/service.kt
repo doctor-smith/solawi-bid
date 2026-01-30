@@ -6,7 +6,7 @@ import org.solyton.solawi.bid.module.application.schema.UserApplicationEntity
 import org.solyton.solawi.bid.module.application.schema.UserApplicationsTable
 import org.solyton.solawi.bid.module.application.schema.UserModuleEntity
 import org.solyton.solawi.bid.module.application.schema.UserModulesTable
-import java.util.UUID
+import java.util.*
 
 fun readUserApplications(userId: UUID): ApiApplications {
     val applications = UserApplicationEntity.find{ UserApplicationsTable.userId eq userId }.toList()

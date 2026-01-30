@@ -20,11 +20,7 @@ import org.solyton.solawi.bid.module.authentication.service.generateRefreshToken
 import org.solyton.solawi.bid.module.authentication.service.isUuid
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
-import org.solyton.solawi.bid.module.user.schema.Token
-import org.solyton.solawi.bid.module.user.schema.Tokens
-import org.solyton.solawi.bid.module.user.schema.User
-import org.solyton.solawi.bid.module.user.schema.UserStatus
-import org.solyton.solawi.bid.module.user.schema.Users
+import org.solyton.solawi.bid.module.user.schema.*
 import org.solyton.solawi.bid.module.user.service.bcrypt.credentialsAreOK
 import java.util.*
 

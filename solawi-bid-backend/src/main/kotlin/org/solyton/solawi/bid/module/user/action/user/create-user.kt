@@ -9,9 +9,9 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
-import org.solyton.solawi.bid.module.user.service.user.createUser
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
 import org.solyton.solawi.bid.module.user.data.api.User
+import org.solyton.solawi.bid.module.user.service.user.createUser
 
 @MathDsl
 @Suppress("FunctionName")

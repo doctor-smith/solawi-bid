@@ -4,7 +4,10 @@ import org.jetbrains.exposed.sql.Table
 import org.solyton.solawi.bid.module.banking.schema.BankAccounts
 import org.solyton.solawi.bid.module.banking.schema.FiscalYears
 import org.solyton.solawi.bid.module.bid.schema.*
+import org.solyton.solawi.bid.module.distribution.schema.DistributionPointsTable
 import org.solyton.solawi.bid.module.permission.schema.*
+import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionsTable
+import org.solyton.solawi.bid.module.shares.schema.ShareTypesTable
 import org.solyton.solawi.bid.module.user.schema.*
 import java.io.File
 
