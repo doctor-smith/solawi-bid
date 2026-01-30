@@ -6,7 +6,7 @@ import org.solyton.solawi.bid.module.permission.schema.RightEntity
 import org.solyton.solawi.bid.module.permission.schema.RightsTable
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.RolesTable
-import java.util.UUID
+import java.util.*
 
 fun Transaction.createRole(name: String, description:String, creator: UUID): RoleEntity {
     val roleExists = !RoleEntity.find { RolesTable.name eq name }.empty()

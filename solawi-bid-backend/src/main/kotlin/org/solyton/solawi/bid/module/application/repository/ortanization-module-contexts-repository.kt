@@ -12,7 +12,7 @@ import org.solyton.solawi.bid.module.application.schema.OrganizationModuleContex
 import org.solyton.solawi.bid.module.application.schema.OrganizationModuleContextsTable
 import org.solyton.solawi.bid.module.permission.repository.cloneRightRoleContext
 import org.solyton.solawi.bid.module.permission.repository.createRootContext
-import java.util.UUID
+import java.util.*
 
 fun Transaction.registerOrganizationForModule(
     organizationId: UUID,

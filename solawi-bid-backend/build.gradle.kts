@@ -273,8 +273,10 @@ dependencyAnalyser {
             "authentication",
             "banking",
             "bid",
+            "distribution",
             "health",
             "permission",
+            "shares",
             "system",
             "user",
         )

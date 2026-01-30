@@ -10,14 +10,14 @@ import org.solyton.solawi.bid.module.application.schema.UserApplication
 import org.solyton.solawi.bid.module.application.schema.UserApplicationEntity
 import org.solyton.solawi.bid.module.application.schema.UserApplicationsTable
 import org.solyton.solawi.bid.module.bid.schema.Auction
+import org.solyton.solawi.bid.module.permission.repository.RightRoleContextIds
+import org.solyton.solawi.bid.module.permission.repository.cloneRightRoleContextWrtRoles
+import org.solyton.solawi.bid.module.permission.repository.createChild
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.RolesTable
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
-import org.solyton.solawi.bid.module.permission.repository.RightRoleContextIds
-import org.solyton.solawi.bid.module.permission.repository.cloneRightRoleContextWrtRoles
-import org.solyton.solawi.bid.module.permission.repository.createChild
-import java.util.UUID
+import java.util.*
 
 /**
  * Creates a new standalone context under the user’s auctionApplication and updates auction.context if it already exists

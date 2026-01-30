@@ -6,9 +6,9 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Transaction
 import org.solyton.solawi.bid.module.banking.schema.BankAccounts
 import org.solyton.solawi.bid.module.banking.schema.FiscalYears
-import org.solyton.solawi.bid.module.bid.schema.DistributionPoints
-import org.solyton.solawi.bid.module.bid.schema.ShareTypes
-import org.solyton.solawi.bid.module.bid.schema.ShareSubscriptions
+import org.solyton.solawi.bid.module.distribution.schema.DistributionPoints
+import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptions
+import org.solyton.solawi.bid.module.shares.schema.ShareTypes
 import org.solyton.solawi.bid.module.user.schema.Addresses
 import org.solyton.solawi.bid.module.user.schema.Organisations
 import org.solyton.solawi.bid.module.user.schema.UserOrganization

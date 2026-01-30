@@ -3,13 +3,10 @@ package org.solyton.solawi.bid.module.user.schema
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.SizedIterable
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.auditable.AuditableEntity
 import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
-import org.solyton.solawi.bid.module.banking.schema.BankAccount
-import org.solyton.solawi.bid.module.banking.schema.BankAccounts
-import java.util.UUID
+import java.util.*
 
 typealias UserProfilesTable = UserProfiles
 typealias UserProfileEntity = UserProfile

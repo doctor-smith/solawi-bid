@@ -191,7 +191,9 @@ dependencyAnalyser {
             "application",
             "authentication",
             "bid",
+            "distribution",
             "permission",
+            "shares",
             "user",
         )
         checkCyclesBeforeBuild = true

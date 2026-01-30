@@ -8,7 +8,7 @@ import org.solyton.solawi.bid.module.application.schema.LifecycleStageEntity
 import org.solyton.solawi.bid.module.application.schema.LifecycleStagesTable
 import org.solyton.solawi.bid.module.application.schema.LifecycleTransitionEntity
 import org.solyton.solawi.bid.module.application.schema.LifecycleTransitionsTable
-import java.util.UUID
+import java.util.*
 
 fun Transaction.createLifecycleStage(nameofLifecycle: String, descriptionOfLifecycle: String, creatorId: UUID): LifecycleStageEntity {
     val nameAvailable = LifecycleStageEntity.find{ LifecycleStagesTable.name eq nameofLifecycle }.empty()
