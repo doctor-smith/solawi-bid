@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+import org.gradle.api.tasks.testing.Test
 
 plugins {
     alias(libs.plugins.android)
@@ -144,20 +145,11 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.core)
 
                 // compose
-                /*
                 val composeBom = platform("androidx.compose:compose-bom:2024.10.00")
                 implementation(composeBom)
-
                 implementation("androidx.activity:activity-compose")
                 implementation("androidx.compose.ui:ui")
                 implementation("androidx.compose.material3:material3")
-
-
-                 */
-                implementation("androidx.activity:activity-compose")
-                implementation(compose.runtime)
-                implementation(compose.foundation)
-                implementation(compose.material)
 
                 // datetime
                 implementation(libs.kotlinx.datetime)
@@ -187,7 +179,7 @@ kotlin {
 }
 android {
     namespace = "org.solyton.solawi.bid"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 24
@@ -198,14 +190,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-
-
     buildFeatures {
         compose = true
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
+        kotlinCompilerExtensionVersion = "1.6.0"
     }
 }
 
@@ -228,6 +218,21 @@ tasks.withType<Test>().configureEach {
     // Wenn CI-Property gesetzt ist, ignoriere Failures
     ignoreFailures = project.findProperty("ignoreFailuresInTests")?.toString()?.toBoolean() ?: false
 }
+
+
+
+/*
+tasks.matching { it.name == "jsBrowserTest" }.configureEach {
+    // verhindert parallele Ausführung dieses Tasks mit anderen Tasks
+    usesService(
+        gradle.sharedServices.registerIfAbsent(
+            "jsBrowserTestLock",
+            BuildService::class.java // as Class<BuildService<BuildServiceParameters.None>>
+        ) {})
+}
+
+ */
+
 
 compose {
     web{ }

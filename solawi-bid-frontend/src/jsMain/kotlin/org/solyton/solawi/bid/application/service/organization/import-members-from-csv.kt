@@ -19,6 +19,7 @@ import org.solyton.solawi.bid.module.user.data.userActions
 
 fun Storage<Application>.importMembersFromCsv(organizationId: String, csv: String, delimiter: Char = ',') {
     val memberMaps: List<Map<String, String>> = parseCsv(csv, delimiter.toString())
+    // val columnNames = memberMaps.first().keys
     val membersToImport = memberMaps.map { it["username"]!! }
     val importMembers = ImportMembers(organizationId, membersToImport)
 
@@ -42,6 +43,14 @@ fun Storage<Application>.importMembersFromCsv(organizationId: String, csv: Strin
         )
     }
     val importUserProfiles = ImportUserProfiles(userProfilesToImport)
+
+    // val possibleShareTypes =
+        listOf(
+        // (shareType - columns)
+        "vegy" to listOf("number_of_shares", "price_pr_share", "depository", "ahc_authorized", "co_subscribers"),
+        "eggs" to listOf("number_of_shares", "depository", "ahc_authorized", "co_subscribers")
+    )
+
 
 
     val userActionStorage = this * userIso * userActions

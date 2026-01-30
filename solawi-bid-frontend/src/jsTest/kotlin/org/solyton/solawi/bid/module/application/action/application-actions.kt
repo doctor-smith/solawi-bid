@@ -20,6 +20,7 @@ import org.solyton.solawi.bid.module.application.data.management.userApplication
 import org.solyton.solawi.bid.module.i18n.data.Environment
 import org.solyton.solawi.bid.module.i18n.data.I18N
 import org.solyton.solawi.bid.module.i18n.data.I18nResources
+import org.solyton.solawi.bid.test.base.runComposeTest
 import org.solyton.solawi.bid.test.storage.TestStorage
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -41,7 +42,7 @@ class ApplicationActionsTest {
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
-    fun readApplicationsTest() = runTest{
+    fun readApplicationsTest() = runComposeTest {
 
         val action = readApplications
 
@@ -80,7 +81,7 @@ class ApplicationActionsTest {
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
-    fun readPersonalUserApplicationsTest() = runTest{
+    fun readPersonalUserApplicationsTest() = runComposeTest {
 
         val action = readPersonalApplications
 
@@ -120,7 +121,7 @@ class ApplicationActionsTest {
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
-    fun readUserApplicationsTest() = runTest{
+    fun readUserApplicationsTest() = runComposeTest {
 
         val action = readUserApplications(listOf("USER_ID"))
 
@@ -163,7 +164,7 @@ class ApplicationActionsTest {
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
-    fun registerForApplicationsTest() = runTest{
+    fun registerForApplicationsTest() = runComposeTest {
 
         val action = registerForApplications(listOf("APP_ID"))
 
@@ -203,7 +204,7 @@ class ApplicationActionsTest {
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
-    fun startTrialOfApplicationsTest() = runTest{
+    fun startTrialOfApplicationsTest() = runComposeTest {
 
         val action = startTrialsOfApplications(listOf("APP_ID"))
 
@@ -243,7 +244,7 @@ class ApplicationActionsTest {
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
-    fun subscribeApplicationsTest() = runTest{
+    fun subscribeApplicationsTest() = runComposeTest {
 
         val action = subscribeApplications(listOf("APP_ID"))
 
@@ -284,7 +285,7 @@ class ApplicationActionsTest {
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
-    fun registerForModulesTest() = runTest{
+    fun registerForModulesTest() = runComposeTest {
 
         val action = registerForModules(listOf("MODULE_ID"))
 
@@ -324,7 +325,7 @@ class ApplicationActionsTest {
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
-    fun startTrialsOfModulesTest() = runTest{
+    fun startTrialsOfModulesTest() = runComposeTest {
 
         val action = startTrialsOfModules(listOf("MODULE_ID"))
 
@@ -363,7 +364,7 @@ class ApplicationActionsTest {
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
-    fun subscribeModulesTest() = runTest{
+    fun subscribeModulesTest() = runComposeTest {
 
         val action = subscribeModules(listOf("MODULE_ID"))
 
@@ -403,7 +404,7 @@ class ApplicationActionsTest {
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
-    fun readModuleContextRelationsTest() = runTest{
+    fun readModuleContextRelationsTest() = runComposeTest {
 
         val action = readModuleContextRelations
 
@@ -436,7 +437,7 @@ class ApplicationActionsTest {
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
-    fun readApplicationContextRelationsTest() = runTest{
+    fun readApplicationContextRelationsTest() = runComposeTest {
 
         val action = readApplicationContextRelations
 
@@ -470,7 +471,7 @@ class ApplicationActionsTest {
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
-    fun connectApplicationToOrganizationTest() = runTest{
+    fun connectApplicationToOrganizationTest() = runComposeTest {
 
         val action = connectApplicationToOrganization("id", "id", listOf("id"))
 

@@ -18,5 +18,5 @@ fun readBankAccounts(providerId: String, nameSuffix: String = "") = Action<Banki
     name = "ReadBankAccounts$nameSuffix",
     reader = {_ -> ReadBankAccounts(listOf("legal_entity" to providerId))},
     endPoint = ReadBankAccounts::class,
-    writer = bankAccounts.set contraMap { bankAccounts -> bankAccounts.toDomainType() }
+    writer = bankAccounts.set contraMap { bA -> bA.toDomainType() }
 )

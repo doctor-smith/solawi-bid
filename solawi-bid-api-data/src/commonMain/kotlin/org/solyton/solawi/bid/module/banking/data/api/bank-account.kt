@@ -44,6 +44,7 @@ data class CreateBankAccount(
 @Serializable
 data class UpdateBankAccount(
     val id: String,
+    val userId: String,
     val bic: String,
     val iban: String
 )

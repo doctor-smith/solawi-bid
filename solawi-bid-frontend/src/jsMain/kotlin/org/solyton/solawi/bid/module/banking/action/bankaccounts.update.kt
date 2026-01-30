@@ -21,13 +21,16 @@ import org.solyton.solawi.bid.module.banking.data.toDomainType
  */
 fun updateBankAccount(
     bankAccountId: String,
+
+    userId: String,
     iban: String,
     bic: String,
     nameSuffix: String = ""
 ): Action<BankingApplication, UpdateBankAccount, ApiBankAccount> = Action(
-    name = "CreateBankAccount$nameSuffix",
+    name = "UpdateBankAccount$nameSuffix",
     reader = { _ -> UpdateBankAccount(
         bankAccountId,
+        userId,
         bic,
         iban,
     ) },

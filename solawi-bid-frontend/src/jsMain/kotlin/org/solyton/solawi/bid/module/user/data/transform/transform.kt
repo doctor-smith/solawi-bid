@@ -1,14 +1,14 @@
 package org.solyton.solawi.bid.module.user.data.transform
 
+import org.solyton.solawi.bid.module.permissions.data.transform.toDomainType
+import org.solyton.solawi.bid.module.user.data.address.Address
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiMember
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiOrganizations
-import org.solyton.solawi.bid.module.user.data.member.Member
-import org.solyton.solawi.bid.module.user.data.organization.Organization
-import org.solyton.solawi.bid.module.permissions.data.transform.toDomainType
-import org.solyton.solawi.bid.module.user.data.address.Address
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ApiAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ApiUserProfile
+import org.solyton.solawi.bid.module.user.data.member.Member
+import org.solyton.solawi.bid.module.user.data.organization.Organization
 import org.solyton.solawi.bid.module.user.data.profile.UserProfile
 
 fun ApiOrganizations.toDomainType(): List<Organization> = all.map {
@@ -44,6 +44,18 @@ fun ApiUserProfile.toDomainType(): UserProfile = UserProfile(
 
 fun ApiAddress.toDomainType(): Address = Address(
     addressId = id,
+    recipientName = recipientName,
+    organizationName = organizationName,
+    addressLine1 = addressLine1,
+    addressLine2 = addressLine2,
+    city = city,
+    stateOrProvince = stateOrProvince,
+    postalCode = postalCode,
+    countryCode = countryCode
+)
+
+fun Address.toApiType(): ApiAddress = ApiAddress(
+    id = addressId,
     recipientName = recipientName,
     organizationName = organizationName,
     addressLine1 = addressLine1,

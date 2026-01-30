@@ -4,6 +4,7 @@ import org.jetbrains.compose.web.testutils.ComposeWebExperimentalTestsApi
 import org.jetbrains.compose.web.testutils.runTest
 import org.solyton.solawi.bid.application.serialization.installSerializers
 import org.solyton.solawi.bid.application.ui.page.login.action.logoutAction
+import org.solyton.solawi.bid.test.base.runComposeTest
 import org.solyton.solawi.bid.test.storage.TestStorage
 import kotlin.test.Test
 
@@ -12,7 +13,7 @@ class AuthorizationActionTests {
     // todo:test improve
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
-    fun logoutActionTest() = runTest{
+    fun logoutActionTest() = runComposeTest {
 
         val name = "name"
         installSerializers()

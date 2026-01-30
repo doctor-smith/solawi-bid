@@ -36,6 +36,21 @@ fun TestStorage(): Storage<Application> {
     )
 }
 
+@Markup
+@Composable
+fun <Data> TestStorage(data: Data): Storage<Data>  {
+    var storedData by remember {
+        mutableStateOf<Data>(data)
+    }
+
+    return Storage<Data>(
+        read = { storedData },
+        write = {
+                newApplication -> storedData = newApplication
+        }
+    )
+}
+
 class TestStorageTest {
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test fun testStorageTest() = runTest {
@@ -47,6 +62,24 @@ class TestStorageTest {
             (storage * userData * username).write(name)
 
             val result = (storage * userData * username).read()
+
+            assertEquals(name, result)
+        }
+    }
+
+
+    @OptIn(ComposeWebExperimentalTestsApi::class)
+    @Test fun testGenericStorageTest() = runTest {
+        composition {
+
+            val storage = TestStorage("Johannes")
+
+            assertEquals("Johannes", storage.read())
+
+            val name = "Alfred"
+            storage.write(name)
+
+            val result = storage.read()
 
             assertEquals(name, result)
         }
