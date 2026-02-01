@@ -11,6 +11,7 @@ typealias ApiShareTypes = ShareTypes
 data class ShareType(
     val id: String,
     val name: String,
+    val key: String,
     val description: String,
     val providerId: String
 )

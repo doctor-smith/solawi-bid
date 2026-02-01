@@ -1,7 +1,5 @@
 package org.solyton.solawi.bid.module.shares.data.internal
 
-import org.solyton.solawi.bid.module.bid.data.internal.*
-
 
 val shareStatusTransitionsWithPermissions: Map<ShareStatus, Set<ShareStatusPermissions>> by lazy {
     mapOf(

@@ -1,6 +1,6 @@
 package org.solyton.solawi.bid.module.shares.data
 
-import org.solyton.solawi.bid.module.bid.data.api.ApiPricingType
+import org.solyton.solawi.bid.module.shares.data.api.ApiPricingType
 import org.solyton.solawi.bid.module.shares.schema.PricingType
 
 fun ApiPricingType.toDomainType(): PricingType = when(this) {

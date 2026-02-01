@@ -11,6 +11,7 @@ fun List<ShareTypeEntity>.toApiType() : ApiShareTypes = ApiShareTypes(
 fun ShareTypeEntity.toApiType(): ApiShareType = ApiShareType(
     id = id.value.toString(),
     name = name,
+    key = key,
     description = description,
     providerId = providerId.toString(),
 )

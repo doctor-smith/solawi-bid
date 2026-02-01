@@ -1,9 +1,9 @@
 package org.solyton.solawi.bid.module.shares.repository
 
 import org.jetbrains.exposed.sql.Transaction
-import org.solyton.solawi.bid.module.bid.data.internal.ChangeReason
-import org.solyton.solawi.bid.module.bid.data.internal.ChangedBy
-import org.solyton.solawi.bid.module.bid.data.internal.ShareStatus
+import org.solyton.solawi.bid.module.shares.data.internal.ChangeReason
+import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
+import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.shares.schema.ShareStatusEntity
 
 

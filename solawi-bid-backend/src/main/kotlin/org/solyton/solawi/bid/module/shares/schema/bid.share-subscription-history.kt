@@ -8,8 +8,8 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.neq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.or
-import org.solyton.solawi.bid.module.bid.data.internal.ChangeReason
-import org.solyton.solawi.bid.module.bid.data.internal.ChangedBy
+import org.solyton.solawi.bid.module.shares.data.internal.ChangeReason
+import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
 import java.util.*
 
 object ShareSubscriptionStatusHistory : UUIDTable("share_subscription_status_history") {

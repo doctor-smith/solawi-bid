@@ -6,9 +6,9 @@ import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.joda.time.DateTime
-import org.solyton.solawi.bid.module.bid.data.internal.ChangeReason
-import org.solyton.solawi.bid.module.bid.data.internal.ChangedBy
-import org.solyton.solawi.bid.module.bid.data.internal.ShareStatus
+import org.solyton.solawi.bid.module.shares.data.internal.ChangeReason
+import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
+import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.distribution.repository.validatedDistributionPoint
 import org.solyton.solawi.bid.module.shares.exception.ShareException
 import org.solyton.solawi.bid.module.shares.exception.ShareStatusException

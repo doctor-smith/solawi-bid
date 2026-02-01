@@ -1,7 +1,7 @@
 package org.solyton.solawi.bid.module.shares.data
 
 import org.evoleq.exposedx.joda.toKotlinxWithZone
-import org.solyton.solawi.bid.module.bid.data.internal.ShareStatus
+import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.shares.data.api.ApiShareSubscription
 import org.solyton.solawi.bid.module.shares.data.api.ApiShareSubscriptions
 import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionEntity

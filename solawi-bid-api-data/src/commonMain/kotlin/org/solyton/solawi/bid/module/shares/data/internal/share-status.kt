@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.bid.data.internal
+package org.solyton.solawi.bid.module.shares.data.internal
 
 
 sealed class ShareStatus(protected open val value: String) {

@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.bid.data.api
+package org.solyton.solawi.bid.module.shares.data.api
 
 import kotlinx.serialization.Serializable
 

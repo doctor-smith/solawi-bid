@@ -3,13 +3,13 @@ package org.solyton.solawi.bid.module.shares.repository
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.joda.time.DateTime
-import org.solyton.solawi.bid.module.bid.data.internal.ChangeReason
-import org.solyton.solawi.bid.module.bid.data.internal.ChangedBy
-import org.solyton.solawi.bid.module.bid.data.internal.ShareStatus
-import org.solyton.solawi.bid.module.bid.processes.Processes
+import org.solyton.solawi.bid.module.shares.data.internal.ChangeReason
+import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
+import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.shares.data.internal.shareStatusTransitionsWithPermissions
 import org.solyton.solawi.bid.module.shares.exception.ShareException
 import org.solyton.solawi.bid.module.shares.exception.ShareStatusException
+import org.solyton.solawi.bid.module.shares.processes.ShareManagementProcesses
 import org.solyton.solawi.bid.module.shares.schema.ShareStatusEntity
 import org.solyton.solawi.bid.module.shares.schema.ShareStatusTable
 import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionEntity
@@ -126,7 +126,7 @@ fun Transaction.rollover(
 
     val toShareOffer = validatedShareOffer(toShareOfferId)
 
-    val changesDoneBy = modifiedBy?: validatedSystemProcess(Processes.Auctions.SHARE_MANAGEMENT).id.value
+    val changesDoneBy = modifiedBy?: validatedSystemProcess(ShareManagementProcesses.SHARE_MANAGEMENT).id.value
     val rolledOverShareSubscription = ShareSubscriptionEntity.new {
         createdBy = changesDoneBy
         this.status = rollingOverStatus
