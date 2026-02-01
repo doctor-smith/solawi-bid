@@ -3,7 +3,7 @@ package org.solyton.solawi.bid.module.shares.action
 import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.transform.add
-import org.solyton.solawi.bid.module.bid.data.api.PricingType
+import org.solyton.solawi.bid.module.shares.data.api.PricingType
 import org.solyton.solawi.bid.module.shares.data.toDomainType
 import org.solyton.solawi.bid.module.shares.data.api.ApiShareOffer
 import org.solyton.solawi.bid.module.shares.data.api.CreateShareOffer

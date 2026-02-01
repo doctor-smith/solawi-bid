@@ -8,7 +8,7 @@ import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.Auction
 import org.solyton.solawi.bid.module.bid.data.api.Auctions
 import org.solyton.solawi.bid.module.bid.data.api.CreateAuction
-import org.solyton.solawi.bid.module.bid.data.api.PricingType
+import org.solyton.solawi.bid.module.shares.data.api.PricingType
 import org.solyton.solawi.bid.module.distribution.data.api.*
 import org.solyton.solawi.bid.module.shares.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.userprofile.*
