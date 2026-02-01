@@ -25,6 +25,7 @@ import org.solyton.solawi.bid.application.data.env.i18nEnvironment
 import org.solyton.solawi.bid.application.data.i18N
 import org.solyton.solawi.bid.application.data.processes
 import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
+import org.solyton.solawi.bid.application.data.transform.shares.shareManagementIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.service.organization.importMembersFromCsv
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
@@ -55,6 +56,11 @@ import org.solyton.solawi.bid.module.process.data.processes.IsInactive
 import org.solyton.solawi.bid.module.process.data.processes.IsNotRegistered
 import org.solyton.solawi.bid.module.process.data.processes.Register
 import org.solyton.solawi.bid.module.process.data.processes.registry
+import org.solyton.solawi.bid.module.shares.action.readShareOffers
+import org.solyton.solawi.bid.module.shares.action.readShareTypes
+import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
+import org.solyton.solawi.bid.module.shares.data.mappings.ShareManagementMappings
+import org.solyton.solawi.bid.module.shares.data.shareManagementActions
 import org.solyton.solawi.bid.module.style.page.PageTitle
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
@@ -184,6 +190,37 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
         applicationOrganizationRelations.read().any { it.applicationId == app.id && it.organizationId == organizationId }
     }
 
+    val shareManagementStorage = applicationStorage * shareManagementIso
+    val shareManagementActions = shareManagementStorage * shareManagementActions
+    LaunchedEffect(Unit) {
+        launch {
+            shareManagementActions.dispatch(
+                readShareTypes(organizationId)
+            )
+            shareManagementActions.dispatch(
+                readShareOffers(organizationId)
+            )
+        }
+    }
+    @Suppress("UnusedPrivateProperty")
+    val shareManagementMappings: Reader<ShareManagement, ShareManagementMappings?> = Reader {
+        shareManagement ->
+            val shareOffers = shareManagement.shareOffers.associate { offer ->
+                offer.shareType.key to offer.shareOfferId
+            }
+        val fiscalYearId = shareManagement.shareOffers.firstOrNull()?.fiscalYear?.fiscalYearId
+
+        when {
+            fiscalYearId == null -> null
+            else -> ShareManagementMappings(
+                override = false,
+                providerId = organizationId,
+                fiscalYearId = fiscalYearId,
+                shareOffers = shareOffers,
+                distributionPoints = emptyMap()
+            )
+        }
+    }
     // texts
     val base = applicationStorage * i18N * language * ApplicationComponent.base
     val texts = userModuleStorage * i18n * language * component(OrganizationLangComponent.OrganizationPage)
@@ -252,7 +289,11 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                 setCsv = {csv = it},
                                 isOkButtonDisabled = {csv == null}
                             ) {
-                                applicationStorage.importMembersFromCsv(organizationId, csv!!, ';')
+                                applicationStorage.importMembersFromCsv(
+                                    organizationId,
+                                    csv!!, ';',
+                                    (shareManagementStorage * shareManagementMappings).emit()
+                                )
                             }
                         }
                     }
