@@ -6,6 +6,15 @@ sealed class FiscalYearException(override val message: String): Exception(messag
         @Suppress("UnusedPrivateMember")
         private fun readResolve(): Any = StartAfterEnd
     }
+
+    data object DurationTooLong : FiscalYearException("Duration too long") {
+        @Suppress("UnusedPrivateMember")
+        private fun readResolve(): Any = DurationTooLong
+    }
+    data object TooManyPerYear : FiscalYearException("Too many per year") {
+        @Suppress("UnusedPrivateMember")
+        private fun readResolve(): Any = DurationTooLong
+    }
     data object Overlaps : FiscalYearException("Overlaps") {
         @Suppress("UnusedPrivateMember")
         private fun readResolve(): Any = Overlaps

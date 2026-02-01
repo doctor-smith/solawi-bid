@@ -17,6 +17,7 @@ import kotlin.test.assertEquals
 val UUID_ONE: UUID = UUID.fromString("00000000-0000-0000-0000-000000000001")
 
 
+@Suppress("LargeClass")
 class FiscalYearRepositoryTest {
     @DbFunctional@Test
     fun createFiscalYearForTheVeryFirstTime() = runSimpleH2Test(FiscalYears){
@@ -524,6 +525,26 @@ class FiscalYearRepositoryTest {
         }
     }
 
+
+
+    @DbFunctional@Test
+    fun validateMaximumDuration() {
+        val start = DateTime.now()
+        val end = start.plusMonths(25)
+        assertThrows<FiscalYearException.DurationTooLong> {
+            validateInterval(start, end)
+        }
+    }
+
+    @DbFunctional@Test
+    fun validateValidDuration() {
+        val start = DateTime.now()
+        val end = start.plusMonths(12)
+        assertDoesNotThrow {
+            validateInterval(start, end)
+        }
+    }
+
     @DbFunctional@Test
     fun validateOverlaps1() = runSimpleH2Test(FiscalYears){
         val start1 = DateTime.now()
@@ -677,6 +698,99 @@ class FiscalYearRepositoryTest {
                 UUID_ZERO,
                 start2,
                 end2,
+            )
+        }
+    }
+
+    @DbFunctional
+    @Test
+    fun validateNumberPerYearSuccessStandardCase() = runSimpleH2Test(FiscalYears) {
+        val legalEntityId = UUID_ONE
+        val start = DateTime.now()
+
+        createFiscalYear(
+            legalEntityId,
+            start,
+            start.plusYears(1).minusDays(1),
+            UUID_ZERO
+        )
+
+        assertDoesNotThrow {
+            validateNumberPerYear(
+                legalEntityId,
+                start.plusYears(1),
+                start.plusYears(2).minusDays(1)
+            )
+        }
+    }
+
+    @DbFunctional
+    @Test
+    fun validateNumberPerYearSuccess() = runSimpleH2Test(FiscalYears) {
+        val legalEntityId = UUID_ONE
+        val start = DateTime(2025,1, 1, 0, 0)
+
+        createFiscalYear(
+            legalEntityId,
+            start,
+            start.plusMonths(6),
+            UUID_ZERO
+        )
+
+        assertDoesNotThrow {
+            validateNumberPerYear(
+                legalEntityId,
+                start.plusMonths(7),
+                start.plusYears(1)
+            )
+        }
+    }
+
+    @DbFunctional
+    @Test
+    fun validateNumberPerYearFail() = runSimpleH2Test(FiscalYears) {
+        val legalEntityId = UUID_ONE
+        val start = DateTime(2025,1, 1, 0, 0)
+
+        createFiscalYear(
+            legalEntityId,
+            start,
+            start.plusMonths(6),
+            UUID_ZERO
+        )
+
+        assertThrows<FiscalYearException.TooManyPerYear> {
+            validateNumberPerYear(
+                legalEntityId,
+                start.plusMonths(6).plusDays(1),
+                DateTime(2025,12, 31, 23, 59)
+            )
+        }
+    }
+
+    @DbFunctional
+    @Test
+    fun validateNumberPerYearDifferentLegalEntities() = runSimpleH2Test(FiscalYears) {
+        val start = DateTime.now()
+
+        createFiscalYear(
+            UUID_ONE,
+            start,
+            start.plusMonths(6),
+            UUID_ZERO
+        )
+        createFiscalYear(
+            UUID_ONE,
+            start.plusMonths(7),
+            start.plusYears(1).plusMonths(10),
+            UUID_ZERO
+        )
+
+        assertDoesNotThrow {
+            validateNumberPerYear(
+                UUID_ZERO,
+                start.plusMonths(3),
+                start.plusMonths(8)
             )
         }
     }
