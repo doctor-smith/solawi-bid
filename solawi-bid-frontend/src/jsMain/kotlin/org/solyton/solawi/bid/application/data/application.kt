@@ -27,6 +27,9 @@ import org.solyton.solawi.bid.module.i18n.data.I18N
 import org.solyton.solawi.bid.module.permissions.data.Permissions
 import org.solyton.solawi.bid.module.permissions.data.relations.ContextRelation
 import org.solyton.solawi.bid.module.process.data.processes.Processes
+import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
+import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscription
+import org.solyton.solawi.bid.module.shares.data.types.ShareType
 import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 import org.solyton.solawi.bid.module.user.data.user.User
 
@@ -53,7 +56,11 @@ import org.solyton.solawi.bid.module.user.data.user.User
     @ReadWrite val cookieDisclaimer: CookieDisclaimer = CookieDisclaimer(),
     @ReadWrite val auctions: List<Auction> = listOf(),
     @ReadWrite val bidRounds: List<BidRound> = listOf(),
-    @ReadWrite val bidderMailAddresses:  BidderMails = BidderMails(),
+    // ShareManagement
+    @ReadWrite val bidderMailAddresses:  BidderMails = BidderMails(),@ReadWrite val shareSubscriptions: List<ShareSubscription> = emptyList(),
+    @ReadWrite val shareOffers: List<ShareOffer> = emptyList(),
+    @ReadWrite val shareTypes: List<ShareType> = emptyList(),
+    //
     @ReadWrite val managedUsers: List<ManagedUser> = listOf(),
     @ReadWrite val availablePermissions: Permissions = Permissions(),
     @ReadWrite val availableApplications: List<org.solyton.solawi.bid.module.application.data.application.Application> = listOf(),

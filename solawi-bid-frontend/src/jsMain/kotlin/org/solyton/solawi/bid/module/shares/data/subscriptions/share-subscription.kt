@@ -4,7 +4,7 @@ import kotlinx.datetime.LocalDateTime
 import org.evoleq.axioms.definition.Lensify
 import org.evoleq.axioms.definition.ReadOnly
 import org.evoleq.axioms.definition.ReadWrite
-import org.solyton.solawi.bid.module.bid.data.internal.ShareStatus
+import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 
 @Lensify
 data class ShareSubscription (

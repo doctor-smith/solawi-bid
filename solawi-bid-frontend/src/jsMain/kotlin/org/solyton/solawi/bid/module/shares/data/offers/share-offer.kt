@@ -4,7 +4,7 @@ import org.evoleq.axioms.definition.Lensify
 import org.evoleq.axioms.definition.ReadOnly
 import org.evoleq.axioms.definition.ReadWrite
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
-import org.solyton.solawi.bid.module.bid.data.api.PricingType
+import org.solyton.solawi.bid.module.shares.data.api.PricingType
 import org.solyton.solawi.bid.module.shares.data.types.ShareType
 
 @Lensify

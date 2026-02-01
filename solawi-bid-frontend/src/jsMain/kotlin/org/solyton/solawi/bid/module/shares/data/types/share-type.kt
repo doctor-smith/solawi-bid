@@ -9,5 +9,6 @@ data class ShareType (
     @ReadOnly val shareTypeId: String,
     @ReadWrite val providerId: String,
     @ReadWrite val name: String,
+    @ReadWrite val key: String,
     @ReadWrite val description: String,
 )

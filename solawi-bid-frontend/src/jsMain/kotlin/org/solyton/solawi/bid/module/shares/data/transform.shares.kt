@@ -1,7 +1,7 @@
 package org.solyton.solawi.bid.module.shares.data
 
 import org.solyton.solawi.bid.module.banking.data.toDomainType
-import org.solyton.solawi.bid.module.bid.data.internal.ShareStatus
+import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.shares.data.api.*
 import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscription
@@ -23,6 +23,7 @@ fun ApiShareType.toDomainType(): ShareType = ShareType(
     shareTypeId = id,
     providerId = providerId,
     name = name,
+    key = key,
     description = description
 )
 
