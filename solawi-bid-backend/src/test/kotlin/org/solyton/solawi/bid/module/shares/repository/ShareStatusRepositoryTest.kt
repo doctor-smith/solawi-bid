@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.solyton.solawi.bid.DbFunctional
-import org.solyton.solawi.bid.module.bid.data.internal.ShareStatus
+import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.shares.schema.ShareStatusTable
 import kotlin.test.assertEquals
 

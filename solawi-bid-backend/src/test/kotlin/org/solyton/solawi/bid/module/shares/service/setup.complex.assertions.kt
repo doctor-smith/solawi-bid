@@ -1,7 +1,7 @@
 package org.solyton.solawi.bid.module.shares.service
 
 import org.jetbrains.exposed.sql.Transaction
-import org.solyton.solawi.bid.module.bid.data.internal.ShareStatus
+import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionEntity
 import kotlin.test.assertEquals
 

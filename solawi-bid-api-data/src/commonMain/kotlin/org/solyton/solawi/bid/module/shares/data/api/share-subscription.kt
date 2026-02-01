@@ -78,7 +78,7 @@ data class ImportShareSubscriptions(
 @Serializable
 data class ImportShareSubscription(
     val shareOfferId: String,
-    val userProfileId: String,
+    val username: String,
     val distributionPointId: String?,
     val fiscalYearId: String,
     val numberOfShares: Int,

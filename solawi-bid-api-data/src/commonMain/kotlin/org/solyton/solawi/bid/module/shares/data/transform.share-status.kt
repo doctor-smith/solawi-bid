@@ -1,6 +1,6 @@
 package org.solyton.solawi.bid.module.shares.data
 
-import org.solyton.solawi.bid.module.bid.data.internal.ShareStatus as InternalShareStatus
+import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus as InternalShareStatus
 import org.solyton.solawi.bid.module.shares.data.api.ShareStatus as ApiShareStatus
 
 fun InternalShareStatus.toApiType() : ApiShareStatus = when(this) {

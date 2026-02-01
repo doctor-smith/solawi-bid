@@ -15,9 +15,9 @@ import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.module.banking.repository.UUID_ONE
 import org.solyton.solawi.bid.module.banking.repository.createFiscalYear
 import org.solyton.solawi.bid.module.banking.schema.FiscalYearsTable
-import org.solyton.solawi.bid.module.bid.data.internal.ChangeReason
-import org.solyton.solawi.bid.module.bid.data.internal.ChangedBy
-import org.solyton.solawi.bid.module.bid.data.internal.ShareStatus
+import org.solyton.solawi.bid.module.shares.data.internal.ChangeReason
+import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
+import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.bid.processes.AuctionProcesses
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.permission.schema.RightsTable

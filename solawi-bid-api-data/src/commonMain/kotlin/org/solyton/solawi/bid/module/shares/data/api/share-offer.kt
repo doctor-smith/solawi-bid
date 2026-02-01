@@ -4,7 +4,6 @@ import kotlinx.serialization.Serializable
 import org.evoleq.ktorx.client.Parameters
 import org.evoleq.ktorx.client.QueryParams
 import org.solyton.solawi.bid.module.banking.data.api.FiscalYear
-import org.solyton.solawi.bid.module.bid.data.api.PricingType
 
 typealias ApiShareOffer = ShareOffer
 typealias ApiShareOffers = ShareOffers

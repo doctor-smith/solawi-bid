@@ -11,12 +11,12 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.module.banking.repository.UUID_ONE
 import org.solyton.solawi.bid.module.banking.repository.createFiscalYear
-import org.solyton.solawi.bid.module.bid.data.internal.ChangeReason
-import org.solyton.solawi.bid.module.bid.data.internal.ChangedBy
-import org.solyton.solawi.bid.module.bid.data.internal.ShareStatus
-import org.solyton.solawi.bid.module.bid.processes.AuctionProcesses
 import org.solyton.solawi.bid.module.bid.schema.*
+import org.solyton.solawi.bid.module.shares.data.internal.ChangeReason
+import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
+import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.shares.exception.ShareStatusException
+import org.solyton.solawi.bid.module.shares.processes.ShareManagementProcesses
 import org.solyton.solawi.bid.module.shares.schema.*
 import org.solyton.solawi.bid.module.shares.schema.ShareOfferEntity
 import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionEntity
@@ -47,7 +47,7 @@ class ShareStatusRolloverTests {
     @MethodSource("testCases")
     fun test(testCase: TestCase) = with(testCase) {
         runSimpleH2Test(testCase.testId, *tables) {
-            createSystemProcess(AuctionProcesses.SHARE_MANAGEMENT, "")
+            createSystemProcess(ShareManagementProcesses.SHARE_MANAGEMENT, "")
             val user = UserEntity.new {
                 this.createdBy = UUID_ZERO
                 username = "username"

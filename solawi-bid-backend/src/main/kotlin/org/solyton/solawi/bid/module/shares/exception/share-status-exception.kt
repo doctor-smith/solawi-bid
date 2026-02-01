@@ -1,6 +1,6 @@
 package org.solyton.solawi.bid.module.shares.exception
 
-import org.solyton.solawi.bid.module.bid.data.internal.ChangeReason
+import org.solyton.solawi.bid.module.shares.data.internal.ChangeReason
 
 sealed class ShareStatusException(override val message: String): Exception(message) {
     data object NoInitialState : ShareStatusException("No initial State") {
