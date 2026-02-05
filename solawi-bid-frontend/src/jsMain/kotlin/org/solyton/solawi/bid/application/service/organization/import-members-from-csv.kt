@@ -18,6 +18,7 @@ import org.solyton.solawi.bid.module.shares.data.api.ImportShareSubscription
 import org.solyton.solawi.bid.module.shares.data.mappings.ShareManagementMappings
 import org.solyton.solawi.bid.module.shares.data.shareManagementActions
 import org.solyton.solawi.bid.module.shares.data.toApiType
+import org.solyton.solawi.bid.module.shares.service.computeShareSubscriptionDataForImport
 import org.solyton.solawi.bid.module.user.action.user.importMembersToOrganization
 import org.solyton.solawi.bid.module.user.action.user.importUserProfiles
 import org.solyton.solawi.bid.module.user.data.api.organization.ImportMembers
@@ -29,13 +30,12 @@ import org.solyton.solawi.bid.module.user.data.userActions
 
 fun Storage<Application>.importMembersFromCsv(
     organizationId: String,
-    csv: String, delimiter: Char = ',',
+    csv: String, delimiter: Char = ';',
     shareManagementMappings: ShareManagementMappings? = null
 ) {
     val typedMemberMaps: List<Map<String, Map<String, String>>> = parseCsvWithGroupedHeaders(csv, delimiter.toString())
     val membersToImport = typedMemberMaps.map { it["user_profiles"]!!["username"]!! }
     val importMembers = ImportMembers(organizationId, membersToImport)
-
     val userProfilesToImport = typedMemberMaps.map { type ->
         with(type["user_profiles"]!!) {
             UserProfileToImport(
@@ -59,49 +59,22 @@ fun Storage<Application>.importMembersFromCsv(
     }
     val importUserProfiles = ImportUserProfiles(userProfilesToImport)
 
-    val userActionStorage = this * userIso * userActions
-    CoroutineScope(Job()).launch {
-        userActionStorage.dispatch(importMembersToOrganization(importMembers))
-    }
 
-    CoroutineScope(Job()).launch {
-        userActionStorage.dispatch(importUserProfiles(importUserProfiles))
-    }
 
     if (shareManagementMappings != null) {
-        val shareSubscriptionsToImport = typedMemberMaps.map {
-            it.filter { (key, _) -> key.startsWith("share_subscriptions") }.map { (key, value) ->
-                // Get column type
-                // share_subscriptions:type.offer
-                val (_, type, keyOfShareType) = key.toColumnType()
-                requireNotNull(type)
-                requireNotNull(keyOfShareType)
+        val shareSubscriptionsToImport = computeShareSubscriptionDataForImport(
+            typedMemberMaps,
+            shareManagementMappings
+        )
 
-                val username: String = it["user_profiles"]!!["username"]!!
-                val shareOfferId: String = shareManagementMappings.shareOffers[keyOfShareType]!!
-                val distributionPoint = shareManagementMappings.distributionPoints[value["distribution_point"]!!]!!
-                val numberOfShares: Int = value["number_of_shares"]!!.toInt()
-                val pricePerShare: Double? = when {
-                    type == PricingType.FLEXIBLE.toString() -> value["price_per_share"]!!.toDouble()
-                    else -> null
-                }
-                val ahcAuthorized: Boolean = value["ahc_authorized"]!!.toBoolean()
-                val status = value["status"]!!
-                val coSubscribers = value["co_subscribers"]?.split(",")?.map { sub -> sub.trim() } ?: emptyList()
+        val userActionStorage = this * userIso * userActions
+        CoroutineScope(Job()).launch {
+            userActionStorage.dispatch(importMembersToOrganization(importMembers))
+        }
 
-                ImportShareSubscription(
-                    shareOfferId = shareOfferId,
-                    username = username,
-                    distributionPointId = distributionPoint,
-                    fiscalYearId = shareManagementMappings.fiscalYearId,
-                    numberOfShares = numberOfShares,
-                    pricePerShare = pricePerShare,
-                    ahcAuthorized = ahcAuthorized,
-                    status = ShareStatus.from(status).toApiType(),
-                    coSubscribers = coSubscribers
-                )
-            }
-        }.flatten()
+        CoroutineScope(Job()).launch {
+            userActionStorage.dispatch(importUserProfiles(importUserProfiles))
+        }
 
         val shareManagementActionStorage = this * shareManagementIso * shareManagementActions
         CoroutineScope(Job()).launch {

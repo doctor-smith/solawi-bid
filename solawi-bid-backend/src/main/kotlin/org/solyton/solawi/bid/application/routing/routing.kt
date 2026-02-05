@@ -9,10 +9,10 @@ import org.solyton.solawi.bid.module.authentication.routing.authentication
 import org.solyton.solawi.bid.module.banking.routing.banking
 import org.solyton.solawi.bid.module.bid.routing.auction
 import org.solyton.solawi.bid.module.bid.routing.bidders
-import org.solyton.solawi.bid.module.bid.routing.distributionPoints
+import org.solyton.solawi.bid.module.distribution.routing.distributionPoints
 import org.solyton.solawi.bid.module.bid.routing.round
 import org.solyton.solawi.bid.module.bid.routing.sendBid
-import org.solyton.solawi.bid.module.bid.routing.shares
+import org.solyton.solawi.bid.module.shares.routing.shares
 import org.solyton.solawi.bid.module.health.routing.health
 import org.solyton.solawi.bid.module.permission.routing.permissions
 import org.solyton.solawi.bid.module.user.routing.organization

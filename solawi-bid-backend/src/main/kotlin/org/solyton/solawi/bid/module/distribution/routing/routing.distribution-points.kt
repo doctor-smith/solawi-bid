@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.bid.routing
+package org.solyton.solawi.bid.module.distribution.routing
 
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
@@ -18,6 +18,7 @@ import org.solyton.solawi.bid.module.distribution.data.api.DistributionPoint
 import org.solyton.solawi.bid.module.distribution.data.api.DistributionPoints
 import org.solyton.solawi.bid.module.distribution.data.api.UpdateDistributionPoint
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
+import org.solyton.solawi.bid.module.permission.action.db.no
 
 @KtorDsl
 fun <DistributionPointsEnv> Routing.distributionPoints(
@@ -31,7 +32,7 @@ fun <DistributionPointsEnv> Routing.distributionPoints(
                 @Suppress("UnsafeCallOnNullableType")
                 val provider = call.parameters["provider"]!!
                 ReceiveContextual<String>(provider) *
-                IsGranted("READ_DISTRIBUTION_POINTS") *
+                IsGranted("READ_DISTRIBUTION_POINTS", no) *
                 ReadDistributionPoints() *
                 Respond<DistributionPoints> { transform() } runOn Base(call, environment)
             }

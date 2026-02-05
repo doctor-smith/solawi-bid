@@ -28,7 +28,7 @@ fun <BankingEnv> Routing.banking (
                 get("all") {
                     @Suppress("UnsafeCallOnNullableType")
                     ReceiveContextual<String>{
-                        parameters -> parameters["legal-entity"]!!
+                        parameters -> parameters["legal_entity"]!!
                     } *
                     IsGranted("READ_FISCAL_YEARS") *
                     ReadFiscalYearsByProvider() *
