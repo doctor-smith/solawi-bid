@@ -162,7 +162,7 @@ val solawiApi by lazy {
             )
             get<ReadShareTypes, ShareTypes> (
                 key = ReadShareTypes::class,
-                url = "shares/types/read"
+                url = "shares/types/all"
             )
             patch<UpdateShareType, ShareType>(
                 key = UpdateShareType::class,
@@ -175,7 +175,7 @@ val solawiApi by lazy {
             )
             get<ReadShareOffers, ShareOffers> (
                 key = ReadShareOffers::class,
-                url = "shares/offers/read"
+                url = "shares/offers/all"
             )
             patch<UpdateShareOffer, ShareOffer>(
                 key = UpdateShareOffer::class,
@@ -188,7 +188,7 @@ val solawiApi by lazy {
             )
             get<ReadShareSubscriptions, ShareSubscriptions> (
                 key = ReadShareSubscriptions::class,
-                url = "shares/subscriptions/read"
+                url = "shares/subscriptions/all"
             )
             patch<UpdateShareSubscription, ShareSubscription>(
                 key = UpdateShareSubscription::class,
