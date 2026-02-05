@@ -23,6 +23,7 @@ import org.solyton.solawi.bid.module.bid.data.bidder.BidderMails
 import org.solyton.solawi.bid.module.bid.data.bidround.BidRound
 import org.solyton.solawi.bid.module.context.data.Context
 import org.solyton.solawi.bid.module.cookie.data.CookieDisclaimer
+import org.solyton.solawi.bid.module.distribution.data.distributionpoint.DistributionPoint
 import org.solyton.solawi.bid.module.i18n.data.I18N
 import org.solyton.solawi.bid.module.permissions.data.Permissions
 import org.solyton.solawi.bid.module.permissions.data.relations.ContextRelation
@@ -52,18 +53,26 @@ import org.solyton.solawi.bid.module.user.data.user.User
     @ReadWrite val modals: Modals<Int> = mapOf(),
     @ReadWrite val i18N: I18N = I18N(),
     @ReadWrite val context: Context = Context(),
-    @ReadWrite val userData: User = User(),
+    // Cookie
     @ReadWrite val cookieDisclaimer: CookieDisclaimer = CookieDisclaimer(),
+    // Suctions
     @ReadWrite val auctions: List<Auction> = listOf(),
     @ReadWrite val bidRounds: List<BidRound> = listOf(),
     // ShareManagement
     @ReadWrite val bidderMailAddresses:  BidderMails = BidderMails(),@ReadWrite val shareSubscriptions: List<ShareSubscription> = emptyList(),
     @ReadWrite val shareOffers: List<ShareOffer> = emptyList(),
     @ReadWrite val shareTypes: List<ShareType> = emptyList(),
-    //
+    // Distribution
+    @ReadWrite val distributionPoints: List<DistributionPoint> = emptyList(),
+
+    // User
+    @ReadWrite val userData: User = User(),
     @ReadWrite val managedUsers: List<ManagedUser> = listOf(),
+    // Permissions
     @ReadWrite val availablePermissions: Permissions = Permissions(),
     @ReadWrite val availableApplications: List<org.solyton.solawi.bid.module.application.data.application.Application> = listOf(),
+
+    // Applications and Modules
     @ReadWrite val personalApplications: List<org.solyton.solawi.bid.module.application.data.application.Application> = listOf(),
     @ReadWrite val personalApplicationContextRelations: List<ContextRelation> = listOf(),
     @ReadWrite val personalModuleContextRelations: List<ContextRelation> = listOf(),

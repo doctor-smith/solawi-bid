@@ -20,7 +20,7 @@ fun readShareTypes(
     nameSuffix: String = ""
 ) : Action<ShareManagement, ReadShareTypes, ApiShareTypes> = Action(
     name = "ReadShareTypes$nameSuffix",
-    reader = { ReadShareTypes(listOf("provider_id" to providerId)) },
+    reader = { ReadShareTypes(listOf("provider" to providerId)) },
     endPoint = ReadShareTypes::class,
     writer = shareTypes.set contraMap {sT -> sT.toDomainType()}
 )

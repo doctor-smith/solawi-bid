@@ -20,7 +20,7 @@ fun readDistributionPoints(
     nameSuffix: String = ""
 ) : Action<DistributionManagement, ReadDistributionPoints, ApiDistributionPoints> = Action(
     name = "ReadDistributionPoints$nameSuffix",
-    reader = { ReadDistributionPoints(listOf("provider_id" to providerId)) },
+    reader = { ReadDistributionPoints(listOf("provider" to providerId)) },
     endPoint = ReadDistributionPoints::class,
     writer = distributionPoints.set contraMap {sT -> sT.toDomainType()}
 )

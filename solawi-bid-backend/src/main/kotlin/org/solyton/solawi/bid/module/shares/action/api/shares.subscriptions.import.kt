@@ -16,6 +16,7 @@ import org.solyton.solawi.bid.module.shares.data.toApiType
 import org.solyton.solawi.bid.module.shares.data.toInternalType
 import org.solyton.solawi.bid.module.shares.service.ShareToImport
 import org.solyton.solawi.bid.module.shares.service.importShareSubscriptions
+import org.solyton.solawi.bid.module.user.exception.UserManagementException
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfilesTable
@@ -39,7 +40,7 @@ import java.util.*
  *         successful import represented by `ShareSubscriptions` or a failure with relevant messages or exceptions.
  */
 @MathDsl
-@Suppress("FunctionName", "MapGetWithNotNullAssertionOperator", "UnsafeCallOnNullableType")
+@Suppress("FunctionName",)//"MapGetWithNotNullAssertionOperator", "UnsafeCallOnNullableType")
 fun ImportShareSubscriptions() = KlAction<Result<Contextual<ImportShareSubscriptions>>, Result<ShareSubscriptions>> { result ->
     DbAction { database -> result bindSuspend { contextual -> resultTransaction(database) {
         val userId = contextual.userId
@@ -48,14 +49,24 @@ fun ImportShareSubscriptions() = KlAction<Result<Contextual<ImportShareSubscript
         val userProfileIds = userProfilesByUsernames(data.shareSubscriptions.map { it.username }
             .toSet()).mapValues { it.value.id.value }
 
+        val providerId = UUID.fromString(data.providerId)
+            ?: throw IllegalArgumentException("Invalid provider ID format")
+        val fiscalYearId = UUID.fromString(data.fiscalYearId)
+            ?: throw IllegalArgumentException("Invalid fiscal year ID format")
+
         importShareSubscriptions(
             data.override,
-            UUID.fromString(data.providerId),
-            UUID.fromString(data.fiscalYearId),
+            providerId,
+            fiscalYearId,
             data.shareSubscriptions.map { subscription ->
+                val shareOfferId = UUID.fromString(subscription.shareOfferId)
+                    ?: throw IllegalArgumentException("Invalid share offer ID format")
+                val userProfileId = userProfileIds[subscription.username]
+                    ?: throw IllegalArgumentException("User profile not found for ${subscription.username}")
+
                 ShareToImport(
-                    UUID.fromString(subscription.shareOfferId),
-                    userProfileIds[subscription.username]!!,
+                    shareOfferId,
+                    userProfileId,
                     subscription.distributionPointId.toUuidOrNull(),
                     subscription.numberOfShares,
                     subscription.pricePerShare,
@@ -80,10 +91,16 @@ fun Transaction.userProfilesByUsernames(usernames: Set<String>): Map<String, Use
     val users = UserEntity.find {
         UsersTable.username inList usernames
     }
-    return UserProfileEntity.find {
+    val userProfiles = UserProfileEntity.find {
         UserProfilesTable.userId inList users.map { it.id }
     }.associateBy(
         { it.user.username },
         { it }
     )
+
+    if(userProfiles.size != usernames.size) {
+        val missing = usernames - userProfiles.keys
+        throw UserManagementException.UsersDoNotExist.Usernames(missing.toList())
+    }
+    return userProfiles
 }

@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.bid.routing
+package org.solyton.solawi.bid.module.shares.routing
 
 import io.ktor.server.application.*
 import io.ktor.server.routing.*

@@ -37,7 +37,7 @@ data class ShareToImport(
     val coSubscribers: List<String>
 )
 
-@Suppress("CognitiveComplexMethod", "ThrowsCount","MapGetWithNotNullAssertionOperator","UnsafeCallOnNullableType")
+@Suppress("CognitiveComplexMethod","CyclomaticComplexMethod", "ThrowsCount",)//"MapGetWithNotNullAssertionOperator","UnsafeCallOnNullableType")
 fun Transaction.importShareSubscriptions(
     // Each user has at most on share-subscription per
     // share-offer and fiscal year
@@ -90,7 +90,8 @@ fun Transaction.importShareSubscriptions(
             ahcAuthorized = shareToImport.ahcAuthorized
             fiscalYear = shareOffer.fiscalYear
             this.distributionPoint = distributionPoint
-            this.status = shareStatusEntities[shareToImport.status]!!
+            this.status = shareStatusEntities[shareToImport.status]
+                ?: throw ShareStatusException.NoSuchStatus(shareToImport.status.toString())
         }
 
         // Add co-subscribers
@@ -134,7 +135,8 @@ fun Transaction.importShareSubscriptions(
     // Eventually override existing shares
     val overriddenShareSubscriptions: List<ShareSubscriptionEntity> = if(override) {
         shareSubscriptionsToOverride.map { shareToOverride ->
-            val shareSubscriptionEntity = existingShareSubscriptionsMap[shareToOverride.userProfileId]!!
+            val shareSubscriptionEntity = existingShareSubscriptionsMap[shareToOverride.userProfileId]
+                ?: throw ShareException.MissingShareSubscriptionOfUser(shareToOverride.userProfileId.toString())
 
             // Collect data
             val shareOffer = validatedShareOffer(shareToOverride.shareOfferId)
@@ -153,7 +155,8 @@ fun Transaction.importShareSubscriptions(
             shareSubscriptionEntity.pricePerShare = shareToOverride.pricePerShare
             shareSubscriptionEntity.ahcAuthorized = shareToOverride.ahcAuthorized
             shareSubscriptionEntity.distributionPoint = distributionPoint
-            shareSubscriptionEntity.status = shareStatusEntities[shareToOverride.status]!!
+            shareSubscriptionEntity.status = shareStatusEntities[shareToOverride.status]
+                ?: throw ShareStatusException.NoSuchStatus(shareToOverride.status.toString())
             shareSubscriptionEntity.modifiedBy = importer
             shareSubscriptionEntity.modifiedAt = DateTime.now()
 

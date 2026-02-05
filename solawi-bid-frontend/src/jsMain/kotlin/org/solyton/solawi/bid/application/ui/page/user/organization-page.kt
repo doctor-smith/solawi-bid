@@ -17,6 +17,7 @@ import org.evoleq.optics.lens.FilterBy
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.transform.times
+import org.evoleq.parser.mapp
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
@@ -25,6 +26,7 @@ import org.solyton.solawi.bid.application.data.env.i18nEnvironment
 import org.solyton.solawi.bid.application.data.i18N
 import org.solyton.solawi.bid.application.data.processes
 import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
+import org.solyton.solawi.bid.application.data.transform.distribution.distributionManagementIso
 import org.solyton.solawi.bid.application.data.transform.shares.shareManagementIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.service.organization.importMembersFromCsv
@@ -45,6 +47,9 @@ import org.solyton.solawi.bid.module.control.button.ArrowUpButton
 import org.solyton.solawi.bid.module.control.button.EditButton
 import org.solyton.solawi.bid.module.control.button.UploadButton
 import org.solyton.solawi.bid.module.control.button.UsersButton
+import org.solyton.solawi.bid.module.distribution.action.readDistributionPoints
+import org.solyton.solawi.bid.module.distribution.data.distributionManagementActions
+import org.solyton.solawi.bid.module.distribution.data.management.distributionPoints
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
 import org.solyton.solawi.bid.module.list.component.*
@@ -57,6 +62,7 @@ import org.solyton.solawi.bid.module.process.data.processes.IsNotRegistered
 import org.solyton.solawi.bid.module.process.data.processes.Register
 import org.solyton.solawi.bid.module.process.data.processes.registry
 import org.solyton.solawi.bid.module.shares.action.readShareOffers
+import org.solyton.solawi.bid.module.shares.action.readShareSubscriptions
 import org.solyton.solawi.bid.module.shares.action.readShareTypes
 import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
 import org.solyton.solawi.bid.module.shares.data.mappings.ShareManagementMappings
@@ -192,6 +198,9 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
 
     val shareManagementStorage = applicationStorage * shareManagementIso
     val shareManagementActions = shareManagementStorage * shareManagementActions
+    val distributionManagementStorage = applicationStorage * distributionManagementIso
+    val distributionManagementActions = distributionManagementStorage * distributionManagementActions
+
     LaunchedEffect(Unit) {
         launch {
             shareManagementActions.dispatch(
@@ -199,6 +208,12 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
             )
             shareManagementActions.dispatch(
                 readShareOffers(organizationId)
+            )
+            shareManagementActions.dispatch(
+                readShareSubscriptions(organizationId)
+            )
+            distributionManagementActions.dispatch(
+                readDistributionPoints(organizationId)
             )
         }
     }
@@ -210,6 +225,9 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
             }
         val fiscalYearId = shareManagement.shareOffers.firstOrNull()?.fiscalYear?.fiscalYearId
 
+        val distributionPoints = (distributionManagementStorage * distributionPoints).read()
+        val distributionPointsMap = distributionPoints.associateBy ({it.name},{ it.distributionPointId })
+
         when {
             fiscalYearId == null -> null
             else -> ShareManagementMappings(
@@ -217,7 +235,7 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                 providerId = organizationId,
                 fiscalYearId = fiscalYearId,
                 shareOffers = shareOffers,
-                distributionPoints = emptyMap()
+                distributionPoints = distributionPointsMap
             )
         }
     }
@@ -289,6 +307,7 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                 setCsv = {csv = it},
                                 isOkButtonDisabled = {csv == null}
                             ) {
+                                requireNotNull(csv){ "CSV Sting is empty! "}
                                 applicationStorage.importMembersFromCsv(
                                     organizationId,
                                     csv!!, ';',
