@@ -1,8 +1,12 @@
 package org.evoleq.csv
 
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 
 class CsvParserTestGroupedHeaders {
 
@@ -259,4 +263,69 @@ class CsvParserTestGroupedHeaders {
             input.chunkBySizes(*sizes)
         }
     }
+
+    @Test fun `parseCsvWithGroupedHeaders - real world example`() {
+        val result:List<Map<String, Map<String, String>>> = parseCsvWithGroupedHeaders(realWordExample, ",")
+        val jsonResult = Json {
+            prettyPrint = true
+            encodeDefaults = true
+        }.encodeToString(result)
+        println(jsonResult)
+        assertEquals(10, result.size)
+
+
+        result.forEach {
+            val user = it["user_profiles"]!!
+            val username = user["username"]!!
+            val firstname = user["firstname"]!!
+            val lastname = user["lastname"]!!
+            val title = user["title"]!!
+            val recipientName = user["recipient_name"]!!
+            val organizationName = user["organization_name"]!!
+            val addressLine1 = user["address_line_1"]!!
+            val addressLine2 = user["address_line_2"]!!
+            val city = user["city"]!!
+            val stateOrProvince = user["state_or_province"]!!
+            val postalCode = user["postal_code"]!!
+            val countryCode = user["country_code"]!!
+            val vegiShare = it["share_subscriptions.flexible?key=vegi"]!!
+            val egsShare = it["share_subscriptions.fixed?key=eggs"]!!
+
+            assertEquals(true, username.startsWith("test-user_"))
+            assertEquals(true, username.endsWith("@solyton.org"))
+            assertNotNull( firstname)
+            assertNotNull( lastname)
+            assertNotNull( title)
+            assertNotNull( recipientName)
+            assertNotNull( organizationName)
+            assertNotNull( addressLine1)
+            assertNotNull( addressLine2)
+            assertNotNull( city)
+            assertNotNull( stateOrProvince)
+            assertNotNull( countryCode )
+            assertNotNull( postalCode )
+            assertNotNull( vegiShare["ahc_autorized"])
+            assertEquals("SUBSCRIBED", vegiShare["status"])
+            assertEquals("25", vegiShare["fiscal_year"])
+            assertEquals("SUBSCRIBED", egsShare["status"])
+            assertEquals("25", egsShare["fiscal_year"])
+        }
+
+    }
 }
+
+
+val realWordExample = """
+    user_profiles,,,,,,,,,,,,share_subscriptions.flexible?key=vegi,,,,,,,share_subscriptions.fixed?key=eggs,,,,,
+    username, firstname, lastname, title, recipient_name, organization_name, address_line_1, address_line_2, city, state_or_province, postal_code, country_code,number_of_shares,price_per_share,ahc_autorized,status,co_subscribers,distribution_point,fiscal_year,number_of_shares,ahc_autorized,status,co_subscribers,distribution_point,fiscal_year
+    test-user_01@solyton.org, Max, Mustermann, Dr., Max Mustermann, Solyton GmbH, Musterstraße 1, , Berlin, Berlin,10115, DE,1,80,true,SUBSCRIBED,,WH,25,1,ahc_autorized,SUBSCRIBED,,WH,25
+    test-user_02@solyton.org, Erika, Musterfrau, Prof., Erika Musterfrau, Solyton GmbH, Beispielweg 2, , München, Bayern,80331, DE,1,90,true,SUBSCRIBED,,WH,25,2,ahc_autorized,SUBSCRIBED,,WH,25
+    test-user_03@solyton.org, Hans, Schmidt, Mr., Hans Schmidt, Schmidt & Co, Hauptstraße 10, Apt 4, Hamburg, Hamburg,20095, DE,2,50,true,SUBSCRIBED,,DS,25,1,ahc_autorized,SUBSCRIBED,,DS,25
+    test-user_04@solyton.org, Julia, Müller, Ms., Julia Müller, Müller IT, Schulgasse 5, , Köln, NRW,50667, DE,1,80,true,SUBSCRIBED,,D1,25,0,ahc_autorized,SUBSCRIBED,,D1,25
+    test-user_05@solyton.org, Thomas, Weber, Sir, Thomas Weber, Weber Logistik, Industriepark 12, Gebäude B, Frankfurt, Hessen,60311, DE,2,80,true,SUBSCRIBED,,D2,25,0,ahc_autorized,SUBSCRIBED,,D2,25
+    test-user_06@solyton.org, Sarah, Wagner, Dr., Sarah Wagner, Wagner Consult, Ringstraße 3, , Stuttgart, BW,70173, DE,1,70,true,SUBSCRIBED,,SP,25,0,ahc_autorized,SUBSCRIBED,,SP,25
+    test-user_07@solyton.org, Andreas, Becker, Mr., Andreas Becker, Becker Bau, Waldweg 8, , Leipzig, Sachsen,4109, DE,1,80,true,SUBSCRIBED,,RB,25,0,ahc_autorized,SUBSCRIBED,,RB,25
+    test-user_08@solyton.org, Monika, Hoffmann, Mrs., Monika Hoffmann, Hoffmann Design, Kunstplatz 1, Etage 2, Düsseldorf, NRW,40213, DE,1,80,true,SUBSCRIBED,,SP,25,0,ahc_autorized,SUBSCRIBED,,SP,25
+    test-user_09@solyton.org, Stefan, Koch, Mr., Stefan Koch, Koch Solutions, Hafenstraße 22, , Bremen, Bremen,28195, DE,2,80,true,SUBSCRIBED,,WH,25,0,ahc_autorized,SUBSCRIBED,,WH,25
+    test-user_10@solyton.org, Petra, Richter, Ms., Petra Richter, Richter Recht, Markt 5, , Dresden, Sachsen,1067, DE,1,100,true,SUBSCRIBED,,SP,25,0,ahc_autorized,SUBSCRIBED,,SP,25
+""".trimIndent()
