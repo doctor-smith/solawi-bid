@@ -6,6 +6,7 @@ sealed class ShareException(override val message: String): Exception(message) {
     data class NoSuchShareType(val id: String) : ShareException("No such Share $id")
     data class NoSuchShareOffer(val id: String) : ShareException("No such ShareOffer $id")
     data class NoSuchShareSubscription(val id: String) : ShareException("No such ShareSubscription $id")
+    data class MissingShareSubscriptionOfUser(val userId: String) : ShareException("No ShareSubscription found for user $userId")
 
     data class CannotDeleteShareType(val id: String, val error: String) : ShareException(
         "Cannot delete ShareType $id; error = $error"
@@ -41,5 +42,8 @@ sealed class ShareException(override val message: String): Exception(message) {
         "Invalid number of shares: $number"
     )
 
-    data object ProviderMismatch: ShareException("Provider mismatch")
+    data object ProviderMismatch: ShareException("Provider mismatch") {
+        @Suppress("UnusedPrivateMember")
+        private fun readResolve(): Any = ProviderMismatch
+    }
 }
