@@ -8,99 +8,33 @@ import kotlin.test.assertFails
 
 
 class ColumnTypeTest {
+    
     @Test
     fun `test valid column type string 1`() {
-        val result = "name:string.id".toColumnType()
-        assertEquals(ColumnType("name", "string", "id"), result)
-
+        val result = "name.string?key=value".toColumnType()
+        assertEquals(ColumnType("name", "string", "value"), result)
     }
 
     @Test
     fun `test valid column type string 2`() {
-        val result2 = "title.key".toColumnType()
-        assertEquals(ColumnType("title", null, "key"), result2)
+        val result2 = "title?key=value".toColumnType()
+        assertEquals(ColumnType("title", null, "value"), result2)
     }
 
     @Test
-    fun `test valid column type string 2 a`() {
-        val result2 = "title:.key".toColumnType()
-        assertEquals(ColumnType("title", null, "key"), result2)
+    fun `test column type without key value parameter`() {
+        val result = "name".toColumnType()
+        assertEquals(ColumnType("name", null, null), result)
     }
 
     @Test
-    fun `test valid column type string 3`() {
-        val result2 = "title:type".toColumnType()
-        assertEquals(ColumnType("title", "type", null), result2)
+    fun `test column type with type but without key value`() {
+        val result = "name.string".toColumnType()
+        assertEquals(ColumnType("name", "string", null), result)
     }
 
     @Test
-    fun `test valid column type string 3 a`() {
-        val result2 = "title:type.".toColumnType()
-        assertEquals(ColumnType("title", "type", null), result2)
-    }
-
-    @Test
-    fun `test valid column type string 4`() {
-        val result2 = "title".toColumnType()
-        assertEquals(ColumnType("title", null, null), result2)
-    }
-
-    @Test
-    fun `test valid column type string 5`() {
-        val result2 = "title:".toColumnType()
-        assertEquals(ColumnType("title", null, null), result2)
-    }
-
-    @Test
-    fun `test valid column type string 6`() {
-        val result2 = "title.".toColumnType()
-        assertEquals(ColumnType("title", null, null), result2)
-    }
-    @Test
-    fun `test valid column type string 7`() {
-        val result2 = "title:.".toColumnType()
-        assertEquals(ColumnType("title", null, null), result2)
-    }
-
-
-    @Test
-    fun `test invalid column type string 1`() {
-        assertFails {
-            ":type.key".toColumnType()
-        }
-    }
-
-    @Test
-    fun `test invalid column type string 2`() {
-        assertFails {
-            ":type.".toColumnType()
-        }
-    }
-
-    @Test
-    fun `test invalid column type string 3`() {
-        assertFails {
-            ":.key".toColumnType()
-        }
-    }
-    @Test
-    fun `test invalid column type string 4`() {
-        assertFails {
-            ":.".toColumnType()
-        }
-    }
-
-    @Test
-    fun `test invalid column type string 5`() {
-        assertFails {
-            ".key".toColumnType()
-        }
-    }
-
-    @Test
-    fun `test invalid column type string 6`() {
-        assertFails {
-            ".".toColumnType()
-        }
+    fun `test empty column type string`() {
+        assertFails { "".toColumnType() }
     }
 }
