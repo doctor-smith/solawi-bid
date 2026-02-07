@@ -5,6 +5,7 @@ import org.evoleq.compose.Markup
 import org.evoleq.compose.storage.onInit
 import org.evoleq.math.state.runOn
 import org.evoleq.optics.storage.Action
+import org.evoleq.optics.storage.ActionEnvelope
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.onChange
 import org.evoleq.optics.transform.times
@@ -41,8 +42,8 @@ fun Storage(): Storage<Application> {
         onLocaleChanged(oldApplication, newApplication)
         onLogin(oldApplication, newApplication)
     }.onDispatch {
-        (this@onDispatch * actions).read().flow.collect { action : Action<Application, *, *> ->
-            ProcessAction( action ) runOn this
+        (this@onDispatch * actions).read().flow.collect { action : ActionEnvelope<Application> ->
+            ProcessAction<Any, Any>( action ) runOn this
         }
     }
 }
