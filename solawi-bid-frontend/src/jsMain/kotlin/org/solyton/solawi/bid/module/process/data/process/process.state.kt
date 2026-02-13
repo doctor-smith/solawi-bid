@@ -2,12 +2,14 @@ package org.solyton.solawi.bid.module.process.data.process
 
 
 sealed class ProcessState {
+    object Registered: ProcessState()
     object Active : ProcessState()
 
     object Inactive : ProcessState()
     object Finished : ProcessState()
 
     override fun toString(): String = when(this) {
+        Registered -> "Registered"
         Active -> "Active"
         Inactive -> "Inactive"
         Finished -> "Finished"

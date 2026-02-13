@@ -1,7 +1,7 @@
 package org.evoleq.compose.guard.data
 
 import androidx.compose.runtime.Composable
-import org.evoleq.math.o // function composition
+import org.evoleq.math.o
 
 /**
  * Represents a data structure that holds a condition and an associated action input.
@@ -120,6 +120,12 @@ fun <T: Any, A: Any> onFulfilled(
         else -> false
     }
 } }
+
+@Composable
+fun action(act: @Composable ()->Boolean): ExecutableAction<Unit,Unit> = ExecutableAction(
+    ConditionalActionInput(Unit, Unit),
+    { _ -> { _ -> act() } }
+)
 
 /**
  * Executes a conditional action based on the given `ConditionalActionInput` and test object.

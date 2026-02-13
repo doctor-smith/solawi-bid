@@ -1,5 +1,6 @@
 package org.solyton.solawi.bid.module.processes
 
+import kotlinx.datetime.Clock
 import org.evoleq.math.Get
 import org.evoleq.math.dispatch
 import org.evoleq.math.emit
@@ -33,15 +34,17 @@ class ProcessesTest {
     @Test
     fun registerProcessTest() = runTest {
 
+        val createdAt = Clock.System.now().toEpochMilliseconds()
+
         composition {
             val storage = TestStorage(Processes())
-            (storage * Register dispatch Process("process"))
+            (storage * Register dispatch Process("process", createdAt = createdAt))
 
             val storedProcess = (storage * registry).read()["process"]
 
             assertNotNull(storedProcess)
             assertEquals(
-                Process("process"),
+                Process("process", createdAt = createdAt),
                 storedProcess
             )
         }
@@ -133,7 +136,7 @@ class ProcessesTest {
 
             val storedProcess3 = (storage * registry * Get("process3")).emit()
             assertNotNull(storedProcess3)
-            assertEquals(ProcessState.Active, storedProcess3.state)
+            assertEquals(ProcessState.Registered, storedProcess3.state)
         }
     }
 

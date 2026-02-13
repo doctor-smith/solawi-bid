@@ -7,7 +7,7 @@ import org.evoleq.math.dispatch
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.module.process.data.processes.Processes
-import org.solyton.solawi.bid.module.process.data.processes.UnRegisterAllOf
+import org.solyton.solawi.bid.module.process.data.processes.UnRegisterIfNotActive
 import org.w3c.dom.events.Event
 
 /**
@@ -28,7 +28,7 @@ fun ClearProcessOnRouteChange(
 ) {
     DisposableEffect(Unit) {
         val handler: (Event) -> Unit = {
-            processes * UnRegisterAllOf dispatch processIds
+            processes * UnRegisterIfNotActive dispatch processIds
         }
 
         // Triggered frequently on reload/navigation away/tab closing

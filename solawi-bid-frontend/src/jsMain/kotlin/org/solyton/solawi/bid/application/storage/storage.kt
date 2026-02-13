@@ -42,8 +42,8 @@ fun Storage(): Storage<Application> {
         onLocaleChanged(oldApplication, newApplication)
         onLogin(oldApplication, newApplication)
     }.onDispatch {
-        (this@onDispatch * actions).read().flow.collect { action : ActionEnvelope<Application> ->
-            ProcessAction<Any, Any>( action ) runOn this
+        (this@onDispatch * actions).read().flow.collect { action : ActionEnvelope<Application,*,*> ->
+            ProcessAction( action ) runOn this
         }
     }
 }

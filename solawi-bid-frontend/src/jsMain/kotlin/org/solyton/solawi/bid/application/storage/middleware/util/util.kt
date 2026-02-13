@@ -30,8 +30,16 @@ import org.solyton.solawi.bid.module.error.lang.errorModalTexts
 @MathDsl
 @Suppress("FunctionName")
 fun <T> Read(reader: Reader<Application, T>): State<Storage<Application>, T> = State {
-    storage -> (storage * reader).emit() x storage
+        storage -> (storage * reader).emit() x storage
 }
+
+
+@MathDsl
+@Suppress("FunctionName")
+fun <S, T> KlRead(reader: Reader<Application, T>): KlState<Storage<Application>,S,  T> = {s: S ->  State {
+        storage -> (storage * reader).emit() x storage}
+}
+
 
 @MathDsl
 @Suppress("FunctionName")
