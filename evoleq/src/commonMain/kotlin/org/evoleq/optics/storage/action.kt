@@ -17,7 +17,7 @@ import kotlin.reflect.KClass
  * covariant in S and contravariant in T.
  * This turns Action into a Profunctor!
  */
-data class Action<Base: Any, out I : Any,  O : Any>(
+data class Action<Base: Any, out I : Any, O : Any>(
 
     val name: String,
     val reader: Reader<Base, I>,
@@ -115,4 +115,7 @@ fun Actions(vararg actions: Pair<ActionType,()->Unit>): Actions = Actions(hashMa
 
 fun Actions.dispatch(type: ActionType): Unit = get(type)!!()
 
-
+fun String.suffixed(suffix: String?): String = when{
+    suffix.isNullOrBlank() -> this
+    else -> "$this:$suffix"
+}
