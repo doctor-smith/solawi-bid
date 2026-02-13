@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import org.gradle.api.tasks.testing.Test
+import org.jetbrains.kotlin.gradle.targets.js.ir.DefaultIncrementalSyncTask
 
 plugins {
     alias(libs.plugins.android)
@@ -267,6 +268,29 @@ tasks.named<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>("detektBaselin
 }
 tasks.named<io.gitlab.arturbosch.detekt.Detekt>("detektJsTest") {
     baseline.set(file("detekt/detekt-baseline-js-test.xml"))
+}
+
+tasks.named<DefaultIncrementalSyncTask>("jsDevelopmentExecutableCompileSync") {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    doFirst {
+        if (destinationDirectory.get().exists()) {
+            destinationDirectory.get().deleteRecursively()
+        }
+    }
+}
+
+tasks.named<DefaultIncrementalSyncTask>("jsProductionExecutableCompileSync") {
+    // 1. Prevents conflicts when the same file comes from multiple sources
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
+    // 2. Deletes the target directory before syncing.
+    // This solves the file permission issues (chmod)
+    // since all files are written fresh.
+    doFirst {
+        if (destinationDirectory.get().exists()) {
+            destinationDirectory.get().deleteRecursively()
+        }
+    }
 }
 
 dependencyAnalyser {
