@@ -4,6 +4,7 @@ import org.evoleq.compose.Markup
 import org.evoleq.math.Writer
 import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
+import org.evoleq.optics.storage.suffixed
 import org.evoleq.optics.transform.liftBy
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.module.user.data.Application
@@ -25,8 +26,11 @@ const val READ_USER_PROFILES = "ReadUserProfiles"
  */
 @Markup
 fun readUserProfiles(userIds: List<String>, nameSuffix: String = "", ): Action<Application, ReadUserProfiles, ApiUserProfiles> = Action(
-    name = "$READ_USER_PROFILES$nameSuffix",
-    reader = {_: Application -> ReadUserProfiles(userIds)},
+    name = READ_USER_PROFILES.suffixed(nameSuffix),
+    reader = {userManagement: Application ->
+        val storedUserIds = userManagement.managedUsers.map{it.id}
+        ReadUserProfiles(listOf(storedUserIds,userIds).flatten().distinct())
+    },
     endPoint = ReadUserProfiles::class,
     writer = managedUsers * (Writer {
         // write userprofile to user:

@@ -2,11 +2,14 @@ package org.solyton.solawi.bid.module.distribution.action
 
 import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
+import org.evoleq.optics.storage.suffixed
 import org.solyton.solawi.bid.module.distribution.data.api.ApiDistributionPoints
 import org.solyton.solawi.bid.module.distribution.data.api.ReadDistributionPoints
 import org.solyton.solawi.bid.module.distribution.data.management.DistributionManagement
 import org.solyton.solawi.bid.module.distribution.data.management.distributionPoints
 import org.solyton.solawi.bid.module.distribution.data.toDomainType
+
+const val READ_DISTRIBUTION_POINTS = "ReadDistributionPoints"
 
 /**
  * Reads distribution points associated with a specified provider.
@@ -17,10 +20,10 @@ import org.solyton.solawi.bid.module.distribution.data.toDomainType
  */
 fun readDistributionPoints(
     providerId: String,
-    nameSuffix: String = ""
+    nameSuffix: String? = null
 ) : Action<DistributionManagement, ReadDistributionPoints, ApiDistributionPoints> = Action(
-    name = "ReadDistributionPoints$nameSuffix",
+    name = READ_DISTRIBUTION_POINTS.suffixed(nameSuffix),
     reader = { ReadDistributionPoints(listOf("provider" to providerId)) },
     endPoint = ReadDistributionPoints::class,
-    writer = distributionPoints.set contraMap {sT -> sT.toDomainType()}
+    writer = distributionPoints.set contraMap {distributionPoints -> distributionPoints.toDomainType()}
 )
