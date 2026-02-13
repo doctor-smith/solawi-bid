@@ -184,9 +184,9 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
         }
 
         val shareManagementStorage = applicationStorage * shareManagementIso
-        val shareManagementActions = shareManagementStorage * shareManagementActions
+        // val shareManagementActions = shareManagementStorage * shareManagementActions
         val distributionManagementStorage = applicationStorage * distributionManagementIso
-        val distributionManagementActions = distributionManagementStorage * distributionManagementActions
+        // val distributionManagementActions = distributionManagementStorage * distributionManagementActions
         val shareSubscriptionsMap = shareManagementStorage * shareSubscriptions * Reader {
                 shareSubscriptions: List<ShareSubscription> ->
             shareSubscriptions.groupBy { shareSubscription -> shareSubscription.userProfileId }
@@ -327,8 +327,8 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                 TextCell(member.roles.joinToString(", ") { it.roleName }) {
                                     width(20.percent);minWidth(10.percent); overflow("hidden")
                                 }
+
                                 val userProfile = (memberProfilesMap * Get(member.memberId)).emit()
-                                println("user profile = $userProfile")
                                 TextCell(userProfile.fullname()) {
                                     width(10.percent);minWidth(10.percent);overflow("hidden")
                                 }

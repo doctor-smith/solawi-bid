@@ -4,11 +4,15 @@ import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.storage.suffixed
 import org.evoleq.optics.transform.update
+import org.solyton.solawi.bid.module.banking.data.BIC
+import org.solyton.solawi.bid.module.banking.data.BankAccountId
+import org.solyton.solawi.bid.module.banking.data.IBAN
 import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccount
 import org.solyton.solawi.bid.module.banking.data.api.UpdateBankAccount
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.bankAccounts
 import org.solyton.solawi.bid.module.banking.data.toDomainType
+import org.solyton.solawi.bid.module.values.UserId
 
 const val UPDATE_BANK_ACCOUNT = "UpdateBankAccount"
 
@@ -22,10 +26,10 @@ const val UPDATE_BANK_ACCOUNT = "UpdateBankAccount"
  * @return An `Action` object that performs the update operation within the `BankingApplication` context, modifying the state with the provided bank account details.
  */
 fun updateBankAccount(
-    bankAccountId: String,
-    userId: String,
-    iban: String,
-    bic: String,
+    bankAccountId: BankAccountId,
+    userId: UserId,
+    iban: IBAN,
+    bic: BIC,
     nameSuffix: String = ""
 ): Action<BankingApplication, UpdateBankAccount, ApiBankAccount> = Action(
     name = UPDATE_BANK_ACCOUNT.suffixed(nameSuffix),

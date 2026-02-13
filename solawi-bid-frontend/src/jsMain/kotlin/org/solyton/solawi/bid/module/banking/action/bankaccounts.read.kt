@@ -8,6 +8,7 @@ import org.solyton.solawi.bid.module.banking.data.api.ReadBankAccounts
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.bankAccounts
 import org.solyton.solawi.bid.module.banking.data.toDomainType
+import org.solyton.solawi.bid.module.values.ProviderId
 
 const val READ_BANK_ACCOUNTS = "ReadBankAccounts"
 
@@ -17,9 +18,9 @@ const val READ_BANK_ACCOUNTS = "ReadBankAccounts"
  * @param providerId The identifier of the provider whose bank accounts are to be retrieved.
  * @param nameSuffix Optional suffix to append to the action name for identification purposes. Defaults to an empty string.
  */
-fun readBankAccounts(providerId: String, nameSuffix: String = "") = Action<BankingApplication, ReadBankAccounts, ApiBankAccounts>(
+fun readBankAccounts(providerId: ProviderId, nameSuffix: String = "") = Action<BankingApplication, ReadBankAccounts, ApiBankAccounts>(
     name = READ_BANK_ACCOUNTS.suffixed(nameSuffix),
-    reader = {_ -> ReadBankAccounts(listOf("legal_entity" to providerId))},
+    reader = {_ -> ReadBankAccounts(listOf("legal_entity" to providerId.id))},
     endPoint = ReadBankAccounts::class,
     writer = bankAccounts.set contraMap { bA -> bA.toDomainType() }
 )

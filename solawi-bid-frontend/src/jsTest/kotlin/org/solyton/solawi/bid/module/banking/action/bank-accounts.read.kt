@@ -6,12 +6,18 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.testutils.ComposeWebExperimentalTestsApi
 import org.jetbrains.compose.web.testutils.runTest
 import org.solyton.solawi.bid.application.serialization.installSerializers
+import org.solyton.solawi.bid.module.banking.data.BIC
+import org.solyton.solawi.bid.module.banking.data.BankAccountId
+import org.solyton.solawi.bid.module.banking.data.IBAN
 import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccount
 import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccounts
 import org.solyton.solawi.bid.module.banking.data.api.ReadBankAccounts
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.bankAccounts
 import org.solyton.solawi.bid.module.banking.data.toDomainType
+import org.solyton.solawi.bid.module.values.ProviderId
+import org.solyton.solawi.bid.module.values.UserId
+import org.solyton.solawi.bid.test.UUID_1
 import org.solyton.solawi.bid.test.base.runComposeTest
 import org.solyton.solawi.bid.test.storage.TestStorage
 import kotlin.test.Test
@@ -24,21 +30,22 @@ class BankAccountsReadTest {
     //@Test //- corrupted why???
     fun readBankAccountsTest() = runComposeTest {
         installSerializers()
-        val userId = "userId"
-        val bic = "DEUTDEFF500"
-        val iban = "DE89370400440532013000"
+        val providerId = ProviderId(UUID_1)
+        val userId = UserId(UUID_1)
+        val bic = BIC("DEUTDEFF500")
+        val iban = IBAN("DE89370400440532013000")
 
         val action = readBankAccounts(
-            userId
+            providerId
         )
         composition {
             val storage = TestStorage(BankingApplication())
 
             val args = (storage * action.reader).emit()
-            val expectedArgs = ReadBankAccounts(listOf("legal_entity" to userId))
+            val expectedArgs = ReadBankAccounts(listOf("legal_entity" to userId.id))
             assertEquals(expectedArgs, args)
 
-            val id = "id"
+            val id = BankAccountId(UUID_1)
             val response = ApiBankAccounts( listOf(ApiBankAccount(id, userId, bic, iban)))
             (storage * action.writer) dispatch response
             val storedResponse = (storage * bankAccounts).read()
