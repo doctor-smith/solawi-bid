@@ -3,12 +3,15 @@ package org.solyton.solawi.bid.module.banking.action
 import kotlinx.datetime.LocalDate
 import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
+import org.evoleq.optics.storage.suffixed
 import org.evoleq.optics.transform.add
 import org.solyton.solawi.bid.module.banking.data.api.ApiFiscalYear
 import org.solyton.solawi.bid.module.banking.data.api.CreateFiscalYear
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.fiscalYears
 import org.solyton.solawi.bid.module.banking.data.toDomainType
+
+const val CREATE_FISCAL_YEAR = "CreateFiscalYear"
 
 /**
  * Creates a fiscal year action for a legal entity with the specified start and end dates.
@@ -25,7 +28,7 @@ fun createFiscalYear(
     end: LocalDate,
     nameSuffix: String = ""
 ): Action<BankingApplication, CreateFiscalYear, ApiFiscalYear> = Action(
-    name = "CreateFiscalYear$nameSuffix",
+    name = CREATE_FISCAL_YEAR.suffixed(nameSuffix),
     reader = { _ -> CreateFiscalYear(legalEntityId, start, end) },
     endPoint = CreateFiscalYear::class,
     writer = fiscalYears.add() contraMap { fY: ApiFiscalYear -> fY.toDomainType()}
