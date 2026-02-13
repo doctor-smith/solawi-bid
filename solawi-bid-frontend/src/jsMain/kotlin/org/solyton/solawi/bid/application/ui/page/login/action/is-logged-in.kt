@@ -11,11 +11,12 @@ import org.solyton.solawi.bid.module.user.data.user.accessToken
 import org.solyton.solawi.bid.module.user.data.user.refreshToken
 import org.solyton.solawi.bid.module.user.data.user.username
 
+const val IS_LOGGED_IN = "IsLoggedIn"
 
 @Markup
-val isLoggedInAction: Action<Application, IsLoggedIn, LoggedInAs> by lazy {
+val isLoggedInAction: Action<Application, IsLoggedIn, LoggedInAs> =
     Action(
-        "login",
+        IS_LOGGED_IN,
         reader = { app: Application -> IsLoggedIn(app.userData.refreshToken) },
         endPoint = IsLoggedIn::class,
         writer = { loggedInAs: LoggedInAs -> {
@@ -35,4 +36,4 @@ val isLoggedInAction: Action<Application, IsLoggedIn, LoggedInAs> by lazy {
             }
         }}
     )
-}
+

@@ -10,6 +10,8 @@ import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
 import org.solyton.solawi.bid.module.shares.data.management.shareSubscriptions
 
 
+const val IMPORT_SHARE_SUBSCRIPTIONS = "ImportShareSubscriptions"
+
 /**
  * Imports share subscriptions into the system, optionally overriding existing data.
  *
@@ -27,7 +29,7 @@ fun importShareSubscriptions(
     shareSubscriptionsToImport: List<ImportShareSubscription>,
     nameSuffix: String = ""
 ): Action<ShareManagement, ImportShareSubscriptions, ApiShareSubscriptions> = Action(
-    name = "ImportShareSubscriptions$nameSuffix",
+    name = "$IMPORT_SHARE_SUBSCRIPTIONS$nameSuffix",
     reader = { _: ShareManagement ->
         ImportShareSubscriptions(
             override = override,

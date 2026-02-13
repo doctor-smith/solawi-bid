@@ -11,9 +11,11 @@ import org.solyton.solawi.bid.module.user.data.transform.toDomainType
 import org.solyton.solawi.bid.module.user.data.user
 import org.solyton.solawi.bid.module.user.data.user.organizations
 
+const val READ_ORGANIZATIONS = "ReadOrganizations"
+
 @Markup
 fun readOrganizations(): Action<Application, ReadOrganizations, ApiOrganizations> = Action(
-    name = "ReadOrganizations",
+    name = READ_ORGANIZATIONS,
     reader = { ReadOrganizations },
     endPoint = ReadOrganizations::class,
     writer = (user * organizations.set) contraMap {

@@ -2,11 +2,14 @@ package org.solyton.solawi.bid.module.shares.action
 
 import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
+import org.evoleq.optics.storage.suffixed
 import org.solyton.solawi.bid.module.shares.data.toDomainType
 import org.solyton.solawi.bid.module.shares.data.api.ApiShareTypes
 import org.solyton.solawi.bid.module.shares.data.api.ReadShareTypes
 import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
 import org.solyton.solawi.bid.module.shares.data.management.shareTypes
+
+const val READ_SHARE_TYPES = "ReadShareTypes"
 
 /**
  * Reads the share types associated with a specific provider.
@@ -17,10 +20,10 @@ import org.solyton.solawi.bid.module.shares.data.management.shareTypes
  */
 fun readShareTypes(
     providerId: String,
-    nameSuffix: String = ""
+    nameSuffix: String? = null
 ) : Action<ShareManagement, ReadShareTypes, ApiShareTypes> = Action(
-    name = "ReadShareTypes$nameSuffix",
+    name = READ_SHARE_TYPES.suffixed(nameSuffix),
     reader = { ReadShareTypes(listOf("provider" to providerId)) },
     endPoint = ReadShareTypes::class,
-    writer = shareTypes.set contraMap {sT -> sT.toDomainType()}
+    writer = shareTypes.set contraMap {shareType -> shareType.toDomainType()}
 )

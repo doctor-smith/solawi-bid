@@ -5,6 +5,7 @@ import org.evoleq.math.Reader
 import org.evoleq.math.Writer
 import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
+import org.evoleq.optics.storage.suffixed
 import org.evoleq.optics.transform.liftBy
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.module.user.data.Application
@@ -16,10 +17,12 @@ import org.solyton.solawi.bid.module.user.data.managed.profile
 import org.solyton.solawi.bid.module.user.data.managedUsers
 import org.solyton.solawi.bid.module.user.data.transform.toDomainType
 
+const val IMPORT_USER_PROFILES = "ImportUserProfiles"
+
 @Markup
 fun importUserProfiles(userProfiles: ImportUserProfiles, nameSuffix: String = ""): Action<Application, ImportUserProfiles, ApiUserProfiles> = Action(
     // todo:test write api test
-    name = "ImportUserProfiles$nameSuffix",
+    name = IMPORT_USER_PROFILES.suffixed(nameSuffix),
     reader = Reader { _: Application -> userProfiles },
     endPoint = ImportUserProfiles::class,
     writer = managedUsers * (Writer {

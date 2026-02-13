@@ -8,6 +8,8 @@ import org.solyton.solawi.bid.module.application.data.management.ApplicationMana
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
 import org.solyton.solawi.bid.module.application.data.toDomainType
 
+const val READ_APPLICATIONS = "ReadApplications"
+
 val readApplications: Action<ApplicationManagement, ReadApplications, ApiApplications> by lazy {
     Action<ApplicationManagement, ReadApplications, ApiApplications>(
         name = "READ_APPLICATIONS",
