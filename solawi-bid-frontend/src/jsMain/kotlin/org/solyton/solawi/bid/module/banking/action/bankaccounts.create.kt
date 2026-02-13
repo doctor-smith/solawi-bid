@@ -4,11 +4,14 @@ import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.storage.suffixed
 import org.evoleq.optics.transform.add
+import org.solyton.solawi.bid.module.banking.data.BIC
+import org.solyton.solawi.bid.module.banking.data.IBAN
 import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccount
 import org.solyton.solawi.bid.module.banking.data.api.CreateBankAccount
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.bankAccounts
 import org.solyton.solawi.bid.module.banking.data.toDomainType
+import org.solyton.solawi.bid.module.values.UserId
 
 const val CREATE_BANK_ACCOUNT = "CreateBankAccount"
 
@@ -22,9 +25,9 @@ const val CREATE_BANK_ACCOUNT = "CreateBankAccount"
  * @return An `Action` object that defines the creation process for the bank account within the `BankingApplication` context.
  */
 fun createBankAccount(
-    userId: String,
-    iban: String,
-    bic: String,
+    userId: UserId,
+    iban: IBAN,
+    bic: BIC,
     nameSuffix: String = ""
 ): Action<BankingApplication, CreateBankAccount, ApiBankAccount> = Action(
     name = CREATE_BANK_ACCOUNT.suffixed(nameSuffix),

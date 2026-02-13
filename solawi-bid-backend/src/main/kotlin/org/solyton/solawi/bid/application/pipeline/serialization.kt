@@ -22,6 +22,10 @@ import org.solyton.solawi.bid.module.shares.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.organization.*
 import org.solyton.solawi.bid.module.user.data.api.userprofile.*
+import org.solyton.solawi.bid.module.values.ProviderId
+import org.solyton.solawi.bid.module.values.UserId
+import org.solyton.solawi.bid.module.values.Username
+import org.solyton.solawi.bid.module.values.Uuid
 
 fun installSerializers() {
     serializers {
@@ -32,6 +36,11 @@ fun installSerializers() {
         add<String>(String.serializer())
         add<Double>(Double.serializer())
         add<Unit>(Unit.serializer())
+        // standard values
+        add<Uuid>(Uuid.serializer())
+        add<UserId>(UserId.serializer())
+        add<ProviderId>(ProviderId.serializer())
+        add<Username>(Username.serializer())
         // API
         add<Parameters>(Parameters.serializer())
         // Result serializers
