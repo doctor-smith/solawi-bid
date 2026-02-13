@@ -2,12 +2,15 @@ package org.solyton.solawi.bid.module.banking.action
 
 import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
+import org.evoleq.optics.storage.suffixed
 import org.evoleq.optics.transform.add
 import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccount
 import org.solyton.solawi.bid.module.banking.data.api.CreateBankAccount
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.bankAccounts
 import org.solyton.solawi.bid.module.banking.data.toDomainType
+
+const val CREATE_BANK_ACCOUNT = "CreateBankAccount"
 
 /**
  * Creates a bank account action for a specified user in the banking application.
@@ -24,7 +27,7 @@ fun createBankAccount(
     bic: String,
     nameSuffix: String = ""
 ): Action<BankingApplication, CreateBankAccount, ApiBankAccount> = Action(
-    name = "CreateBankAccount$nameSuffix",
+    name = CREATE_BANK_ACCOUNT.suffixed(nameSuffix),
     reader = {_ -> CreateBankAccount(userId, bic, iban) },
     endPoint = CreateBankAccount::class,
     writer = bankAccounts.add() contraMap {bankAccount -> bankAccount.toDomainType()}

@@ -3,12 +3,15 @@ package org.solyton.solawi.bid.module.banking.action
 import kotlinx.datetime.LocalDate
 import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
+import org.evoleq.optics.storage.suffixed
 import org.evoleq.optics.transform.update
 import org.solyton.solawi.bid.module.banking.data.api.ApiFiscalYear
 import org.solyton.solawi.bid.module.banking.data.api.UpdateFiscalYear
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.fiscalYears
 import org.solyton.solawi.bid.module.banking.data.toDomainType
+
+const val UPDATE_FISCAL_YEAR = "UpdateFiscalYear"
 
 /**
  * Updates an existing fiscal year in the banking application for a specified legal entity.
@@ -27,7 +30,7 @@ fun updateFiscalYear(
     end: LocalDate,
     nameSuffix: String = ""
 ): Action<BankingApplication, UpdateFiscalYear, ApiFiscalYear> = Action(
-    name = "CreateFiscalYear$nameSuffix",
+    name = UPDATE_FISCAL_YEAR.suffixed(nameSuffix),
     reader = { _ -> UpdateFiscalYear(
         fiscalYearId,
         legalEntityId,
