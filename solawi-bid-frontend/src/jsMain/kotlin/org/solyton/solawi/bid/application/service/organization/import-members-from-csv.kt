@@ -1,34 +1,30 @@
 package org.solyton.solawi.bid.application.service.organization
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import org.evoleq.csv.parseCsvWithGroupedHeaders
+import org.evoleq.optics.storage.ActionEnvelope
 import org.evoleq.optics.storage.Storage
-import org.evoleq.optics.storage.dispatch
-import org.evoleq.optics.transform.times
+import org.evoleq.optics.storage.times
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.transform.shares.shareManagementIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
-import org.solyton.solawi.bid.module.shares.data.api.PricingType
-import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
-import org.solyton.solawi.bid.module.shared.parser.csv.toColumnType
+import org.solyton.solawi.bid.module.process.service.process.sequenceProcesses
+import org.solyton.solawi.bid.module.shares.action.IMPORT_SHARE_SUBSCRIPTIONS
 import org.solyton.solawi.bid.module.shares.action.importShareSubscriptions
-import org.solyton.solawi.bid.module.shares.data.api.ImportShareSubscription
 import org.solyton.solawi.bid.module.shares.data.mappings.ShareManagementMappings
-import org.solyton.solawi.bid.module.shares.data.shareManagementActions
-import org.solyton.solawi.bid.module.shares.data.toApiType
 import org.solyton.solawi.bid.module.shares.service.computeShareSubscriptionDataForImport
+import org.solyton.solawi.bid.module.user.action.user.IMPORT_MEMBERS_TO_ORGANIZATION
+import org.solyton.solawi.bid.module.user.action.user.IMPORT_USER_PROFILES
 import org.solyton.solawi.bid.module.user.action.user.importMembersToOrganization
 import org.solyton.solawi.bid.module.user.action.user.importUserProfiles
 import org.solyton.solawi.bid.module.user.data.api.organization.ImportMembers
 import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfiles
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfileToImport
-import org.solyton.solawi.bid.module.user.data.userActions
 
 
 fun Storage<Application>.importMembersFromCsv(
+    scope: CoroutineScope,
     organizationId: String,
     csv: String, delimiter: Char = ';',
     shareManagementMappings: ShareManagementMappings? = null
@@ -59,31 +55,42 @@ fun Storage<Application>.importMembersFromCsv(
     }
     val importUserProfiles = ImportUserProfiles(userProfilesToImport)
 
-
-
     if (shareManagementMappings != null) {
         val shareSubscriptionsToImport = computeShareSubscriptionDataForImport(
             typedMemberMaps,
             shareManagementMappings
         )
 
-        val userActionStorage = this * userIso * userActions
-        CoroutineScope(Job()).launch {
-            userActionStorage.dispatch(importMembersToOrganization(importMembers))
-        }
-
-        CoroutineScope(Job()).launch {
-            userActionStorage.dispatch(importUserProfiles(importUserProfiles))
-        }
-
-        val shareManagementActionStorage = this * shareManagementIso * shareManagementActions
-        CoroutineScope(Job()).launch {
-            shareManagementActionStorage.dispatch(importShareSubscriptions(
-                override = shareManagementMappings.override,
-                providerId = organizationId,
-                fiscalYearId = shareManagementMappings.fiscalYearId,
-                shareSubscriptionsToImport = shareSubscriptionsToImport
-            ))
-        }
+        sequenceProcesses(
+            scope,
+            ActionEnvelope(
+                userIso * importMembersToOrganization(importMembers),
+                IMPORT_MEMBERS_TO_ORGANIZATION,)
+            ,ActionEnvelope(
+                    userIso * importUserProfiles(importUserProfiles),
+                    IMPORT_USER_PROFILES,
+            ),
+            ActionEnvelope(
+                shareManagementIso * importShareSubscriptions(
+                    override = shareManagementMappings.override,
+                    providerId = organizationId,
+                    fiscalYearId = shareManagementMappings.fiscalYearId,
+                    shareSubscriptionsToImport = shareSubscriptionsToImport
+                ),
+                IMPORT_SHARE_SUBSCRIPTIONS
+            )
+        )
+    } else {
+        sequenceProcesses(
+            scope,
+            ActionEnvelope(
+                userIso * importMembersToOrganization(importMembers),
+                IMPORT_MEMBERS_TO_ORGANIZATION
+            ),
+            ActionEnvelope(
+                userIso * importUserProfiles(importUserProfiles),
+                IMPORT_USER_PROFILES
+            )
+        )
     }
 }

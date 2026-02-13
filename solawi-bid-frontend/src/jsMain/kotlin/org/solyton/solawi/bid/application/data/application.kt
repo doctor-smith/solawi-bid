@@ -27,6 +27,7 @@ import org.solyton.solawi.bid.module.distribution.data.distributionpoint.Distrib
 import org.solyton.solawi.bid.module.i18n.data.I18N
 import org.solyton.solawi.bid.module.permissions.data.Permissions
 import org.solyton.solawi.bid.module.permissions.data.relations.ContextRelation
+import org.solyton.solawi.bid.module.process.data.processes.ProcessManager
 import org.solyton.solawi.bid.module.process.data.processes.Processes
 import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscription
@@ -47,8 +48,8 @@ import org.solyton.solawi.bid.module.user.data.user.User
 @Lensify data class Application (
     @ReadOnly val environment: Environment,
     @ReadOnly val api: Api = solawiApi,
-    @ReadOnly val actions: MutableSharedFlowActionDispatcher<Application> = MutableSharedFlowActionDispatcher(MutableSharedFlow()),
-    @ReadWrite val processes: Processes = Processes(),
+    @ReadOnly override val actions: MutableSharedFlowActionDispatcher<Application> = MutableSharedFlowActionDispatcher(MutableSharedFlow()),
+    @ReadWrite override val processes: Processes = Processes(),
     @ReadWrite val deviceData: Device = Device(),
     @ReadWrite val modals: Modals<Int> = mapOf(),
     @ReadWrite val i18N: I18N = I18N(),
@@ -59,7 +60,8 @@ import org.solyton.solawi.bid.module.user.data.user.User
     @ReadWrite val auctions: List<Auction> = listOf(),
     @ReadWrite val bidRounds: List<BidRound> = listOf(),
     // ShareManagement
-    @ReadWrite val bidderMailAddresses:  BidderMails = BidderMails(),@ReadWrite val shareSubscriptions: List<ShareSubscription> = emptyList(),
+    @ReadWrite val bidderMailAddresses:  BidderMails = BidderMails(),
+    @ReadWrite val shareSubscriptions: List<ShareSubscription> = emptyList(),
     @ReadWrite val shareOffers: List<ShareOffer> = emptyList(),
     @ReadWrite val shareTypes: List<ShareType> = emptyList(),
     // Distribution
@@ -78,4 +80,7 @@ import org.solyton.solawi.bid.module.user.data.user.User
     @ReadWrite val personalModuleContextRelations: List<ContextRelation> = listOf(),
     @ReadWrite val userApplications: List<UserApplications> = listOf(),
     @ReadWrite val applicationOrganizationRelations: List<ApplicationOrganizationRelation> = listOf(),
-)
+): ProcessManager<Application> {
+    override fun withProcesses(processes: Processes): Application
+        = copy(processes = processes)
+}
