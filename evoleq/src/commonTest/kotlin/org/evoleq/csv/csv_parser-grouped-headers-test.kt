@@ -266,11 +266,6 @@ class CsvParserTestGroupedHeaders {
 
     @Test fun `parseCsvWithGroupedHeaders - real world example`() {
         val result:List<Map<String, Map<String, String>>> = parseCsvWithGroupedHeaders(realWordExample, ",")
-        val jsonResult = Json {
-            prettyPrint = true
-            encodeDefaults = true
-        }.encodeToString(result)
-        println(jsonResult)
         assertEquals(10, result.size)
 
 

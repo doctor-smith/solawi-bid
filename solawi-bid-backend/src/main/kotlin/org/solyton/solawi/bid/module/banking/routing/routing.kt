@@ -10,12 +10,10 @@ import org.evoleq.ktorx.Respond
 import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
-import org.solyton.solawi.bid.module.banking.action.CreateFiscalYear
-import org.solyton.solawi.bid.module.banking.action.ReadFiscalYearsByProvider
-import org.solyton.solawi.bid.module.banking.action.UpdateFiscalYear
-import org.solyton.solawi.bid.module.banking.data.api.CreateFiscalYear
-import org.solyton.solawi.bid.module.banking.data.api.UpdateFiscalYear
+import org.solyton.solawi.bid.module.banking.action.*
+import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
+import org.solyton.solawi.bid.module.permission.action.db.no
 
 fun <BankingEnv> Routing.banking (
     environment: BankingEnv,
@@ -31,7 +29,7 @@ fun <BankingEnv> Routing.banking (
                         parameters -> parameters["legal_entity"]!!
                     } *
                     IsGranted("READ_FISCAL_YEARS") *
-                    ReadFiscalYearsByProvider() *
+                    ReadFiscalYearsByLegalEntity() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
                 post("create") {
@@ -47,15 +45,39 @@ fun <BankingEnv> Routing.banking (
                     Respond{ transform() } runOn Base(call, environment)
                 }
             }
-            route("accounts") {
+            route("bank-accounts") {
                 get("all"){
-                    NotImplemented() * Respond{ transform() } runOn Base(call, environment)
+                    @Suppress("UnsafeCallOnNullableType")
+                    ReceiveContextual<String>{
+                        parameters -> parameters["legal_entity"]!!
+                    } *
+                    IsGranted("READ_BANK_ACCOUNTS", no) *
+                    ReadBankAccountsByLegalEntity() *
+                    Respond{ transform() } runOn Base(call, environment)
                 }
                 post("create") {
-                    NotImplemented() * Respond{ transform() } runOn Base(call, environment)
+                    ReceiveContextual<CreateBankAccount>() *
+                    IsGranted("CREATE_BANK_ACCOUNT", no) *
+                    CreateBankAccount() *
+                    Respond{ transform() } runOn Base(call, environment)
                 }
                 patch("update") {
-                    NotImplemented() * Respond{ transform() } runOn Base(call, environment)
+                    ReceiveContextual<UpdateBankAccount>() *
+                    IsGranted("UPDATE_BANK_ACCOUNT", no) *
+                    UpdateBankAccount() *
+                    Respond{ transform() } runOn Base(call, environment)
+                }
+                post("import") {
+                    ReceiveContextual<ImportBankAccounts>() *
+                    IsGranted("IMPORT_BANK_ACCOUNTS", no) *
+                    ImportBankAccounts() *
+                    Respond{ transform() } runOn Base(call, environment)
+                }
+                delete("delete") {
+                    ReceiveContextual<DeleteBankAccount>() *
+                    IsGranted("DELETE_BANK_ACCOUNTS", no) *
+                    DeleteBankAccount() *
+                    Respond{ transform() } runOn Base(call, environment)
                 }
             }
         }

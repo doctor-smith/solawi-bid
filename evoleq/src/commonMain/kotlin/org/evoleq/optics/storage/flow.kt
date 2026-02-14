@@ -9,6 +9,7 @@ data class ActionEnvelope<Base : Any, out I : Any, O : Any>(
     val parentId: String? = null,
     val next: List<ActionEnvelope<Base, *, *>> = emptyList(),
     val meta: Map<String, Any?> = emptyMap(),
+    val run: Boolean = true
 )
 
 interface ActionDispatcher<Base : Any> {

@@ -1,0 +1,12 @@
+package org.solyton.solawi.bid.module.banking.exception
+
+sealed class BankAccountsException(override val message: String): Exception(message) {
+    data class NoSuchBankAccount(val id: String) : BankAccountsException("No such bank account: id = $id")
+    data class InvalidBic(val bic: String): BankAccountsException("Invalid BIC: $bic")
+
+    data class InvalidBicCountryCode(val bic: String): BankAccountsException("Invalid BIC country code: $bic")
+
+    data class BicNotInEU(val bic: String): BankAccountsException("BIC not in EU: $bic")
+    data class InvalidIban(val iban: String): BankAccountsException("Invalid IBAN format: $iban")
+
+}

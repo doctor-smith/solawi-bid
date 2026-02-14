@@ -22,10 +22,7 @@ import org.solyton.solawi.bid.module.shares.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.organization.*
 import org.solyton.solawi.bid.module.user.data.api.userprofile.*
-import org.solyton.solawi.bid.module.values.ProviderId
-import org.solyton.solawi.bid.module.values.UserId
-import org.solyton.solawi.bid.module.values.Username
-import org.solyton.solawi.bid.module.values.Uuid
+import org.solyton.solawi.bid.module.values.*
 
 fun installSerializers() {
     serializers {
@@ -40,6 +37,7 @@ fun installSerializers() {
         add<Uuid>(Uuid.serializer())
         add<UserId>(UserId.serializer())
         add<ProviderId>(ProviderId.serializer())
+        add<AccessorId>(AccessorId.serializer())
         add<Username>(Username.serializer())
         // API
         add<Parameters>(Parameters.serializer())
@@ -247,7 +245,7 @@ fun installSerializers() {
         add<CreateBankAccount>(CreateBankAccount.serializer())
         add<UpdateBankAccount>(UpdateBankAccount.serializer())
         add<DeleteBankAccount>(DeleteBankAccount.serializer())
-
+        add<ImportBankAccounts>(ImportBankAccounts.serializer())
         add<FiscalYear>(FiscalYear.serializer())
         add<FiscalYears>(FiscalYears.serializer())
         add<CreateFiscalYear>(CreateFiscalYear.serializer())
