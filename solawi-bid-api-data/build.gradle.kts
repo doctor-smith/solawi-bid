@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.detekt)
   //  alias(libs.plugins.kover)
     alias(libs.plugins.evoleq.architecture.dependency)
+    alias(libs.plugins.ksp)
     alias(libs.plugins.evoleq.fp.axioms)
 }
 

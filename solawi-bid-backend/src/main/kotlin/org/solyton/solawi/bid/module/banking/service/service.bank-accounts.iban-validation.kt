@@ -1,5 +1,12 @@
 package org.solyton.solawi.bid.module.banking.service
 
+import org.solyton.solawi.bid.module.banking.data.IBAN
+import org.solyton.solawi.bid.module.banking.exception.BankAccountsException
+
+fun validateIban(iban: IBAN) {
+    if(!isValidIban(iban.value)) throw BankAccountsException.InvalidIban(iban.value)
+}
+
 fun isValidIban(iban: String): Boolean {
     // Remove all spaces and make the IBAN uppercase
     val normalizedIban = iban.replace(" ", "").uppercase()

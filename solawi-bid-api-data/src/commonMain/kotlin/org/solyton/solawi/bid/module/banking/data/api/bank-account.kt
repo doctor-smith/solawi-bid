@@ -3,6 +3,11 @@ package org.solyton.solawi.bid.module.banking.data.api
 import kotlinx.serialization.Serializable
 import org.evoleq.ktorx.client.Parameters
 import org.evoleq.ktorx.client.QueryParams
+import org.solyton.solawi.bid.module.banking.data.BIC
+import org.solyton.solawi.bid.module.banking.data.BankAccountId
+import org.solyton.solawi.bid.module.banking.data.IBAN
+import org.solyton.solawi.bid.module.values.AccessorId
+import org.solyton.solawi.bid.module.values.UserId
 
 typealias ApiBankAccount = BankAccount
 typealias ApiBankAccounts = BankAccounts
@@ -14,10 +19,10 @@ data class BankAccounts(
 
 @Serializable
 data class BankAccount(
-    val id: String,
-    val userId: String,
-    val bic: String,
-    val iban: String
+    val id: BankAccountId,
+    val userId: UserId,
+    val bic: BIC,
+    val iban: IBAN
 )
 
 @Serializable
@@ -31,25 +36,32 @@ data class ReadBankAccounts(
 
 @Serializable
 data class ReadBankAccount(
-    val id: String
+    val id: BankAccountId
 )
 
 @Serializable
 data class CreateBankAccount(
-    val userId: String,
-    val bic: String,
-    val iban: String
+    val userId: UserId,
+    val bic: BIC,
+    val iban: IBAN
 )
 
 @Serializable
 data class UpdateBankAccount(
-    val id: String,
-    val userId: String,
-    val bic: String,
-    val iban: String
+    val id: BankAccountId,
+    val userId: UserId,
+    val bic: BIC,
+    val iban: IBAN
+)
+
+@Serializable
+data class ImportBankAccounts(
+    val override: Boolean = false,
+    val accessorId: AccessorId,
+    val bankAccounts: List<CreateBankAccount>
 )
 
 @Serializable
 data class DeleteBankAccount(
-    val id: String
+    val id: BankAccountId
 )

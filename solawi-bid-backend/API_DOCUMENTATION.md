@@ -24,14 +24,15 @@
 | PATCH | round/evaluate | EvaluateBidRound  | EvaluateBidRound | BidRoundEvaluation |
 | PATCH | round/export-results | ExportBidRound  | ExportBidRound | BidRoundResults |
 | PATCH | round/pre-evaluate | PreEvaluateBidRound  | PreEvaluateBidRound | BidRoundPreEvaluation |
+| GET | shares/offers/all | ReadShareOffers  | ReadShareOffers | ShareOffers |
 | POST | shares/offers/create | CreateShareOffer  | CreateShareOffer | ShareOffer |
-| GET | shares/offers/read | ReadShareOffers  | ReadShareOffers | ShareOffers |
 | PATCH | shares/offers/update | UpdateShareOffer  | UpdateShareOffer | ShareOffer |
+| GET | shares/subscriptions/all | ReadShareSubscriptions  | ReadShareSubscriptions | ShareSubscriptions |
 | POST | shares/subscriptions/create | CreateShareSubscription  | CreateShareSubscription | ShareSubscription |
-| GET | shares/subscriptions/read | ReadShareSubscriptions  | ReadShareSubscriptions | ShareSubscriptions |
+| POST | shares/subscriptions/import | ImportShareSubscriptions  | ImportShareSubscriptions | ShareSubscriptions |
 | PATCH | shares/subscriptions/update | UpdateShareSubscription  | UpdateShareSubscription | ShareSubscription |
+| GET | shares/types/all | ReadShareTypes  | ReadShareTypes | ShareTypes |
 | POST | shares/types/create | CreateShareType  | CreateShareType | ShareType |
-| GET | shares/types/read | ReadShareTypes  | ReadShareTypes | ShareTypes |
 | PATCH | shares/types/update | UpdateShareType  | UpdateShareType | ShareType |
 ## User management and organizations
 
@@ -83,6 +84,11 @@
 
 | Methode | URL | Key | Request Type | Response Type |
 | :--- | :--- | :--- | :--- | :--- |
+| GET | banking/bank-accounts/all | ReadBankAccounts  | ReadBankAccounts | BankAccounts |
+| POST | banking/bank-accounts/create | CreateBankAccount  | CreateBankAccount | BankAccount |
+| DELETE | banking/bank-accounts/delete | DeleteBankAccount  | DeleteBankAccount | Boolean |
+| POST | banking/bank-accounts/import | ImportBankAccounts  | ImportBankAccounts | BankAccounts |
+| PATCH | banking/bank-accounts/update | UpdateBankAccount  | UpdateBankAccount | BankAccount |
 | GET | banking/fiscal-years/all | ReadFiscalYears  | ReadFiscalYears | FiscalYears |
 | POST | banking/fiscal-years/create | CreateFiscalYear  | CreateFiscalYear | FiscalYear |
 | PATCH | banking/fiscal-years/update | UpdateFiscalYear  | UpdateFiscalYear | FiscalYear |

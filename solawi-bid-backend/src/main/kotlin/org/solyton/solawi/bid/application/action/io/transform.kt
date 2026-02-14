@@ -4,9 +4,9 @@ import io.ktor.http.*
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.toMessage
 import org.evoleq.math.x
-import org.solyton.solawi.bid.application.exception.ApplicationException as AppException
 import org.solyton.solawi.bid.module.application.exception.ApplicationException
 import org.solyton.solawi.bid.module.authentication.exception.AuthenticationException
+import org.solyton.solawi.bid.module.banking.exception.BankAccountsException
 import org.solyton.solawi.bid.module.banking.exception.FiscalYearException
 import org.solyton.solawi.bid.module.bid.data.api.RoundStateException
 import org.solyton.solawi.bid.module.bid.exception.BidRoundException
@@ -19,6 +19,7 @@ import org.solyton.solawi.bid.module.shares.exception.ShareStatusException
 import org.solyton.solawi.bid.module.user.exception.AddressException
 import org.solyton.solawi.bid.module.user.exception.OrganizationException
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
+import org.solyton.solawi.bid.application.exception.ApplicationException as AppException
 
 @Suppress("CognitiveComplexMethod", "CyclomaticComplexMethod")
 fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Message> =
@@ -78,6 +79,14 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
             is ShareStatusException.TransitionNotAllowedForModifier -> HttpStatusCode.Forbidden
         }
 
+        // Banking
+        is BankAccountsException -> when(value as BankAccountsException) {
+            is BankAccountsException.NoSuchBankAccount -> HttpStatusCode.NotFound
+            is BankAccountsException.InvalidBic -> HttpStatusCode.BadRequest
+            is BankAccountsException.InvalidIban -> HttpStatusCode.BadRequest
+            is BankAccountsException.InvalidBicCountryCode -> HttpStatusCode.BadRequest
+            is BankAccountsException.BicNotInEU -> HttpStatusCode.BadRequest
+        }
         is FiscalYearException -> when(value as FiscalYearException) {
             is FiscalYearException.NoSuchFiscalYear -> HttpStatusCode.NotFound
             is FiscalYearException.DurationTooLong -> HttpStatusCode.BadRequest

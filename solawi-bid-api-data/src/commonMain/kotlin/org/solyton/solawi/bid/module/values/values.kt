@@ -14,33 +14,42 @@ value class Uuid(val id: String) {
 
 @Serializable@Value
 @JvmInline
-value class UserId(val id: String) {
+value class UserId(val value: String) {
     init {
-        require(isValidUUID(id)) { "Id must be a valid UUID" }
+        require(isValidUUID(value)) { "Id must be a valid UUID" }
     }
 }
 
 
 @Serializable@Value
 @JvmInline
-value class LegalEntityId(val id: String) {
+value class LegalEntityId(val value: String) {
     init {
-        require(isValidUUID(id)) { "Id must be a valid UUID" }
+        require(isValidUUID(value)) { "Id must be a valid UUID" }
+    }
+}
+
+
+@Serializable@Value
+@JvmInline
+value class AccessorId(val value: String) {
+    init {
+        require(isValidUUID(value)) { "Id must be a valid UUID" }
     }
 }
 
 @Serializable@Value
 @JvmInline
-value class ProviderId(val id: String) {
+value class ProviderId(val value: String) {
     init {
-        require(isValidUUID(id)) { "Id must be a valid UUID" }
+        require(isValidUUID(value)) { "Id must be a valid UUID" }
     }
 }
 
 @Serializable@Value
 @JvmInline
-value class Username(val username: String) {
+value class Username(val value: String) {
     init {
-        require(isValidEmail(username)) { "Username must be a valid email" }
+        require(isValidEmail(value)) { "Username must be a valid email" }
     }
 }

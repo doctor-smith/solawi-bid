@@ -336,6 +336,27 @@ val solawiApi by lazy {
         }
 
         module("banking") {
+            get<ReadBankAccounts, BankAccounts>(
+                key = ReadBankAccounts::class,
+                url = "bank-accounts/all",
+                parameters = setOf("legal_entity")
+            )
+            post<CreateBankAccount, BankAccount>(
+                key = CreateBankAccount::class,
+                url = "bank-accounts/create"
+            )
+            post<ImportBankAccounts, BankAccounts>(
+                key = ImportBankAccounts::class,
+                url = "bank-accounts/import"
+            )
+            patch<UpdateBankAccount, BankAccount>(
+                key = UpdateBankAccount::class,
+                url = "bank-accounts/update"
+            )
+            delete<DeleteBankAccount, Boolean>(
+                key = DeleteBankAccount::class,
+                url = "bank-accounts/delete"
+            )
             // takes parameter "provider: UUID"
             get<ReadFiscalYears, FiscalYears>(
                 key = ReadFiscalYears::class,

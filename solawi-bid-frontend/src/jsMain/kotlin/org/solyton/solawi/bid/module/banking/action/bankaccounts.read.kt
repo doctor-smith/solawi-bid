@@ -20,7 +20,7 @@ const val READ_BANK_ACCOUNTS = "ReadBankAccounts"
  */
 fun readBankAccounts(providerId: ProviderId, nameSuffix: String = "") = Action<BankingApplication, ReadBankAccounts, ApiBankAccounts>(
     name = READ_BANK_ACCOUNTS.suffixed(nameSuffix),
-    reader = {_ -> ReadBankAccounts(listOf("legal_entity" to providerId.id))},
+    reader = {_ -> ReadBankAccounts(listOf("legal_entity" to providerId.value))},
     endPoint = ReadBankAccounts::class,
     writer = bankAccounts.set contraMap { bA -> bA.toDomainType() }
 )
