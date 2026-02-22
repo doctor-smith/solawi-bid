@@ -1,5 +1,8 @@
 package org.solyton.solawi.bid.module.process.service.process
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.evoleq.math.MathDsl
@@ -7,6 +10,7 @@ import org.evoleq.math.emit
 import org.evoleq.optics.storage.ActionEnvelope
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
+import org.solyton.solawi.bid.module.process.data.process.Process
 import org.solyton.solawi.bid.module.process.data.process.ProcessState
 import org.solyton.solawi.bid.module.process.data.processes.ProcessManager
 import org.solyton.solawi.bid.module.process.data.processes.actions
@@ -17,17 +21,47 @@ import org.solyton.solawi.bid.module.process.data.processes.actions
  * @return true if the process was started or is still running, false if finished
  */
 @MathDsl
-fun <A : ProcessManager<A>> Storage<A>.runProcess(scope: CoroutineScope, setup: () -> ActionEnvelope<A, *, *>): Boolean {
+fun <A : ProcessManager<A>> Storage<A>.runProcess(
+    scope: CoroutineScope,
+    setup: () -> ActionEnvelope<A, *, *>
+): Boolean {
     val registry = this.read().processes.registry
     val envelope = setup()
     val registeredProcess = registry[envelope.id]
     if (registeredProcess == null) {
+        registry.put(envelope.id, Process(
+            id = envelope.id,
+            name = envelope.action.name,
+            state = ProcessState.Registered
+        ))
         scope.launch {
             ((this@runProcess * actions()).emit() dispatchEnvelope setup())
         }
         return true
     }
     return registeredProcess.state != ProcessState.Finished
+}
+
+@MathDsl
+@Composable
+fun <A : ProcessManager<A>> Storage<A>.runProcess(
+    setup: () -> ActionEnvelope<A, *, *>
+): Boolean {
+    val state by produceState(initialValue = true) {
+        val registry = this@runProcess.read().processes.registry
+        val envelope = setup()
+        val registeredProcess = registry[envelope.id]
+        if (registeredProcess == null) {
+            registry.put(envelope.id, Process(
+                id = envelope.id,
+                name = envelope.action.name,
+                state = ProcessState.Registered
+            ))
+            (this@runProcess * actions()).emit() dispatchEnvelope setup()
+        }
+        value = false
+    }
+    return state
 }
 
 /**
@@ -37,7 +71,13 @@ fun <A : ProcessManager<A>> Storage<A>.runProcess(scope: CoroutineScope, setup: 
  */
 @MathDsl
 fun <A : ProcessManager<A>> Storage<A>.runProcesses(scope: CoroutineScope, vararg processes: ActionEnvelope<A, *, *>): BooleanArray {
-    return processes.map { envelope ->  runProcess(scope) { envelope } }.toBooleanArray()
+    return processes.filter { it.run }.map { envelope ->  runProcess(scope) { envelope } }.toBooleanArray()
+}
+
+@MathDsl
+@Composable
+fun <A: ProcessManager<A>> Storage<A>.runProcesses(vararg processes: ActionEnvelope<A, *, *>):  BooleanArray {
+    return processes.filter { it.run }.map { envelope ->  runProcess { envelope } }.toBooleanArray()
 }
 
 /**
@@ -49,10 +89,11 @@ fun <A : ProcessManager<A>> Storage<A>.runProcesses(scope: CoroutineScope, varar
 @MathDsl
 fun <A : ProcessManager<A>> Storage<A>.sequenceProcesses(
     scope: CoroutineScope,
-    first: ActionEnvelope<A, *, *>,
     vararg processes: ActionEnvelope<A, *, *>
 ): Boolean {
-    return runProcess(scope) { sequence(first, *processes) }
+    val processesToRun = processes.takeWhile { it.run }
+    if (processesToRun.isEmpty()) return false
+    return runProcess(scope) { sequence( * processesToRun.toTypedArray()) }
 }
 
 /**
@@ -80,3 +121,8 @@ fun <A : ProcessManager<A>> sequence(vararg processes: ActionEnvelope<A, *, *>):
 @MathDsl
 fun <A : ProcessManager<A>> ActionEnvelope<A, *, *>.next(vararg processes: ActionEnvelope<A, *, *>): ActionEnvelope<A, *, *> =
     copy(next = this.next + processes.toList())
+
+@MathDsl
+fun <A : ProcessManager<A>> ActionEnvelope<A, *, *>.nextLazy(vararg processes: ()->ActionEnvelope<A, *, *>): ActionEnvelope<A, *, *> =
+    copy(nextLazy = this.nextLazy + processes.toList())
+

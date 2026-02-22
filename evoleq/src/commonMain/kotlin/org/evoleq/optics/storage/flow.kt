@@ -8,8 +8,10 @@ data class ActionEnvelope<Base : Any, out I : Any, O : Any>(
     val id: String,
     val parentId: String? = null,
     val next: List<ActionEnvelope<Base, *, *>> = emptyList(),
+    val nextLazy: List<() -> ActionEnvelope<Base, *, *>> = emptyList(),
     val meta: Map<String, Any?> = emptyMap(),
-    val run: Boolean = true
+    val run: Boolean = true,
+    val clearOnFinish: Boolean = false
 )
 
 interface ActionDispatcher<Base : Any> {

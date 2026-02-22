@@ -17,10 +17,11 @@ import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.actions
 import org.solyton.solawi.bid.module.process.data.process.ProcessState
 import org.solyton.solawi.bid.module.process.data.processes.SetStateOf
+import org.solyton.solawi.bid.module.process.data.processes.UnRegister
 import org.solyton.solawi.bid.module.process.data.processes.processes
 
 @MathDsl
-@Suppress("FunctionName")
+@Suppress("FunctionName", "CognitiveComplexMethod")
 fun <S: Any, T: Any> ReactEnvelope(
     envelope: ActionEnvelope<Application,*,*>
 ): KlState<Storage<Application>, Result<T>, Result<T>> = { result ->
@@ -28,10 +29,21 @@ fun <S: Any, T: Any> ReactEnvelope(
         // Beispiel: Nachbearbeitung nur bei Success
         if (result is Result.Success) {
             val processId = envelope.id //(meta["processId"] as? String) ?: envelope.action.name
-            (storage * processes() * SetStateOf(processId)) dispatch ProcessState.Finished
+            when{
+                envelope.clearOnFinish -> (storage * processes() * UnRegister) dispatch processId
+                else -> (storage * processes() * SetStateOf(processId)) dispatch ProcessState.Finished
+            }
             val dispatcher = (storage * actions).read()
             for(env in envelope.next) {
-                CoroutineScope(Job()).launch {
+                CoroutineScope(Job()). launch {
+                    dispatcher dispatchEnvelope env
+                }
+            }
+            for(lazyEnv in envelope.nextLazy) {
+
+                val env = lazyEnv()
+                println("Dispatching lazy envelope: $env")
+                CoroutineScope(Job()). launch {
                     dispatcher dispatchEnvelope env
                 }
             }

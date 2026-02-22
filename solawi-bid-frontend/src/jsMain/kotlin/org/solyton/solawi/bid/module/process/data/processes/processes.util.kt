@@ -2,59 +2,78 @@ package org.solyton.solawi.bid.module.process.data.processes
 
 import org.evoleq.math.Reader
 import org.evoleq.math.Writer
-import org.solyton.solawi.bid.module.process.data.process.IdentifiedProcessState
+import org.jetbrains.letsPlot.core.spec.remove
 import org.solyton.solawi.bid.module.process.data.process.Process
 import org.solyton.solawi.bid.module.process.data.process.ProcessState
 
 
 val Register: Writer<Processes, Process> = Writer { process -> {processes ->
-    processes.copy(registry = processes.registry + (process.id to process))
+    processes.registry[process.id] = process//?.let { throw IllegalStateException("Process with id ${process.id} already registered") }
+
+    processes
+    // processes.copy(registry = processes.registry + (process.id to process))
+}
+}
+
+val RegisterIfNotPresent: Writer<Processes, Process> = Writer { process -> {processes ->
+    if(!processes.registry.containsKey(process.id)) {
+        processes.registry[process.id] = process
+    }
+
+    processes
+    // processes.copy(registry = processes.registry + (process.id to process))
 }
 }
 
 val UnRegister: Writer<Processes, String> = Writer { processId -> {processes ->
-    processes.copy(registry = processes.registry - processId)
+    processes.registry.remove(processId)
+    processes// .copy(registry = processes.registry - processId)
 }
 }
 
-val UnRegisterAllOf: Writer<Processes, List<String>> = Writer {
-    { processes -> processes.copy(registry = processes.registry.filterKeys { id -> id !in it })}
-}
+val UnRegisterAllOf: Writer<Processes, List<String>> = Writer {processIds -> { processes ->
+    if(processIds.isNotEmpty()) {
+        processes.registry.remove(*processIds.toTypedArray())
+    }
+    processes// .copy(registry = processes.registry.filterKeys { id -> id !in it })}
+} }
 
-val UnRegisterIfNotActive: Writer<Processes, List<String>> = Writer {
-    { processes -> processes.copy(registry = processes.registry.filter { entry -> entry.key !in it || entry.value.state == ProcessState.Active })}
+val UnRegisterIfNotActive: Writer<Processes, List<String>> = Writer { processIds ->
+
+    { processes ->
+        val processesToRemove = processes.registry.filter { entry -> entry.key in processIds && entry.value.state == ProcessState.Active }
+        if(processesToRemove.isNotEmpty()) {
+            processes.registry.remove(*processesToRemove.keys.toTypedArray())
+        }
+        processes
+        // processes.copy(registry = processes.registry.filter { entry -> entry.key !in it || entry.value.state == ProcessState.Active })
+    }
 }
 
 @Suppress("FunctionName")
 fun SetStateOf(processId: String) : Writer<Processes, ProcessState> = Writer { state -> {processes ->
-    processes.copy(registry = processes.registry.mapValues { (id, process) ->
-        when{
-            id == processId -> process.copy(state = state)
-            else -> process
-        }
-    })
+
+    val process = processes.registry[processId]//  { throw IllegalStateException("Process with id ${processId} already registered") }
+
+    if(process != null) {
+        processes.registry[processId] = process.copy(state = state)
+    } else {
+        console.warn("Process with id ${processId} not found; tried to set state to $state")
+    }
+    processes
 } }
 
 @Suppress("FunctionName")
 fun SetStatesOf(vararg processIds: String) : Writer<Processes, ProcessState> = Writer { state -> {processes ->
-    processes.copy(registry = processes.registry.mapValues { (id, process) ->
-        when{
-            id in processIds -> process.copy(state = state)
-            else -> process
+    val processMap = processes.registry.filter { entry -> entry.key in processIds }
+        .mapValues { proc ->
+            proc.value.copy(state = state)
         }
-    })
-
-    /*when(state) {
-        ProcessState.Finished -> processes.copy(registry = processes.registry.filterKeys { id -> id !in processIds })
-        else -> processes.copy(registry = processes.registry.mapValues { (id, process) ->
-            when{
-                id in processIds -> process.copy(state = state)
-                else -> process
-            }
-        })
-    }*/
+    processes.registry.putAll(processMap)
+    processes
 } }
 
+/*
 val SetStates : Writer<Processes, IdentifiedProcessState> = Writer { iState -> {processes ->
     processes.copy(registry = processes.registry.mapValues { (id, process) ->
         when{
@@ -63,6 +82,8 @@ val SetStates : Writer<Processes, IdentifiedProcessState> = Writer { iState -> {
         }
     })
 } }
+
+ */
 
 val IsActive: Reader<Process?, Boolean> = { it?.state == ProcessState.Active }
 

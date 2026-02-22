@@ -16,17 +16,8 @@ interface ProcessManager<A: Any> {
 }
 
 @Lensify data class Processes(
-    @ReadOnly val registry: Map<String, Process> = mapOf()
+    @ReadOnly val registry: MutableMap<String, Process> = mutableMapOf()
 )
-/*
-fun <A: ProcessManager<A>> A.cp(processes: Processes): A {
-    require(this.asDynamic().copy != null, { "Cannot copy processes: copy function not found" })
-    return this.asDynamic().copy(
-        processes = processes
-    ) as A
-}
-
- */
 
 fun <A: ProcessManager<A>> processes() : Lens<A, Processes> = Lens(
     get = {a -> a.processes},

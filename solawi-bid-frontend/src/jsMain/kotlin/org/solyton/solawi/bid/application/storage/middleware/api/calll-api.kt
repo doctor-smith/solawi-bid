@@ -25,7 +25,9 @@ import org.evoleq.ktorx.context.data.Contextual
 fun <S : Any,T : Any> Call(action: Action<Application, S, T>): KlState<Storage<Application>, S, Result<Contextual<T>>> = {
     s -> State{ storage ->
         val application = storage.read()
-        val call = (storage * api ).read()[action.endPoint]!!
+        val call = requireNotNull((storage * api ).read()[action.endPoint]) {
+            "${action.endPoint} must not be null!"
+        }
         val baseUrl = (storage * environment * backendUrl).read()
         val port = (storage * environment * backendPort).read()
         val user = (storage * userData).read()

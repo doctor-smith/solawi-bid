@@ -11,7 +11,8 @@ import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.module.process.data.process.Process
 import org.solyton.solawi.bid.module.process.data.process.ProcessState
 import org.solyton.solawi.bid.module.process.data.processes.ProcessManager
-import org.solyton.solawi.bid.module.process.data.processes.Register
+import org.solyton.solawi.bid.module.process.data.processes.RegisterIfNotPresent
+import org.solyton.solawi.bid.module.process.data.processes.SetStateOf
 import org.solyton.solawi.bid.module.process.data.processes.processes
 
 
@@ -21,14 +22,14 @@ fun <T:Any, A: ProcessManager<A>> RegisterProcess(actionEnvelope: ActionEnvelope
     t: T -> State{ processManager: Storage<A> ->
         val processId = actionEnvelope.id
 
-        (processManager * processes() * Register) dispatch Process(
+        (processManager * processes() * RegisterIfNotPresent) dispatch Process(
             id = processId,
             name = actionEnvelope.action.name,
             state = ProcessState.Active
         )
-    
+
         // Activate Process
-        // (processManager * processes() * SetStateOf(processId)) dispatch ProcessState.Active
+        (processManager * processes() * SetStateOf(processId)) dispatch ProcessState.Active
     
         t x processManager
     }
