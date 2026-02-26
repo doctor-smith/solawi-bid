@@ -1,0 +1,27 @@
+en {
+    solyton {
+        application {
+            shareManagement {
+                pricingType {
+                    FIXED: "Fixed Price"
+                    FLEXIBLE: "Adjustable"
+                }
+                shareStatus {
+                    EXTERNAL: "External"
+                    SUBSCRIBED: "Subscribed"
+                    PAUSED: "Paused"
+                    SUSPENDED: "Suspended"
+                    PENDING_ACTIVATION: "Pending Activation"
+                    CLEARED_FOR_AUCTION: "Cleared for Auction"
+                    ACTIVATION_REJECTED: "Activation Rejected"
+                    AWAITING_AHC_AUTHORIZATION: "Awaiting AHC Authorization"
+                    PAYMENT_FAILED: "Payment Failed"
+                    CANCELLED: "Cancelled"
+                    EXPIRED: "Expired"
+                    ROLLED_OVER: "Rolled Over"
+                    ROLLING_OVER: "Rolling Over"
+                }
+            }
+        }
+    }
+}

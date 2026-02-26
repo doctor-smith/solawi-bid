@@ -1,0 +1,19 @@
+de {
+    solyton {
+        countries {
+            stateOrProvince {
+                AT {
+                    AT-B: "Burgenland"
+                    AT-K: "Kärnten"
+                    AT-N: "Niederösterreich"
+                    AT-OÖ: "Oberösterreich"
+                    AT-S: "Salzburg"
+                    AT-ST: "Steiermark"
+                    AT-T: "Tirol"
+                    AT-V: "Vorarlberg"
+                    AT-W: "Wien"
+                }
+            }
+        }
+    }
+}
