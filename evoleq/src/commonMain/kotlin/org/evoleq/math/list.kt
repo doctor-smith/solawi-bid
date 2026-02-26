@@ -14,3 +14,8 @@ inline fun <reified T> List<T>.merge(other:List<T>, consideredEqual: (T, T)->Boo
     *filter { item -> other.none{ jtem -> consideredEqual(item, jtem) } }.toTypedArray(),
     *other.toTypedArray()
 )
+
+fun <T, W> List<T>?.wrapOrNull(wrap: (List<T>) -> W): W? = when(this) {
+    null -> null
+    else -> wrap(this)
+}
