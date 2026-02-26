@@ -9,6 +9,7 @@ import org.evoleq.math.Reader
 object Component {
     val actions: Reader<Lang.Block, Lang.Block> = subComp("actions")
     val address : Reader<Lang.Block, Lang.Block> = subComp("address")
+    val create: Reader<Lang.Block, Lang.Block> = subComp("create")
     val edit: Reader<Lang.Block, Lang.Block> = subComp("edit")
 
     val headers : Reader<Lang.Block, Lang.Block> = subComp("headers")

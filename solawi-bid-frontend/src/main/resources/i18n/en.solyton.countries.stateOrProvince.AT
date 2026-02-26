@@ -1,0 +1,19 @@
+en {
+    solyton {
+        countries {
+            stateOrProvince {
+                AT {
+                    AT-B: "Burgenland"
+                    AT-K: "Carinthia"
+                    AT-N: "Lower Austria"
+                    AT-OÖ: "Upper Austria"
+                    AT-S: "Salzburg"
+                    AT-ST: "Styria"
+                    AT-T: "Tyrol"
+                    AT-V: "Vorarlberg"
+                    AT-W: "Vienna"
+                }
+            }
+        }
+    }
+}

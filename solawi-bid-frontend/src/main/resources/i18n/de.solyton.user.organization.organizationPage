@@ -1,0 +1,188 @@
+de {
+    solyton {
+        user {
+            organization {
+                organizationPage {
+                    title: "Organization"
+                    subTitle: "trelala"
+                    actions {
+                        navToManagementPage {
+                            tooltip: "Zur Organisations Übersicht"
+                        }
+                    }
+                    listOfMembers {
+                        title: "Mitglieder"
+                        headers {
+                            standard {
+                                title: "Standard"
+                                username {
+                                    title: "Nutzername"
+                                }
+                                roles {
+                                    title: "Rollen"
+                                }
+                            }
+                            userProfile {
+                                title: "Nutzerprofil"
+                                name {
+                                    title: "Name"
+                                }
+                                address {
+                                    title: "Adresse"
+                                }
+                            }
+                        }
+                        actions {
+                            create {
+                                tooltip: "Neues Mitglied"
+                            }
+                            edit {
+                                tooltip: "Mitglied bearbeiten"
+                            }
+                            importMembersToOrganization {
+                                tooltip: "Mitglieder importieren"
+                            }
+                        }
+                    }
+                    listOfConnectedApplications {
+                        title: "Verknüpfte Applikationen"
+                        headers {
+                            application {
+                                title: "Applikation"
+                            }
+                            modules {
+                                title: "Module"
+                            }
+                        }
+                        actions {
+                            manageUserPermissions {
+                                tooltip: "Nutzer Berechtigungen managen"
+                            }
+                        }
+                    }
+                    dialogs {
+                        importMembersToOrganization {
+                            title: "Mitglieder-Import"
+                            inputs {
+                                name {
+                                    title: "Name"
+                                }
+                            }
+                            okButton {
+                                title: "Ok"
+                            }
+                            cancelButton {
+                                title: "Abbrechen"
+                            }
+                            errors {
+
+                            }
+                        }
+                        updateMemberOfOrganization {
+                             title: "Mitglied bearbeiten"
+                             inputs {
+                                 userProfile {
+                                     formTitle: "Persönliche Daten"
+                                     username {
+                                        title: "Email"
+                                     }
+                                     firstname {
+                                         title: "Vorname"
+                                     }
+                                     lastname {
+                                         title: "Nachname"
+                                     }
+                                     title {
+                                        title: "Titel"
+                                     }
+                                     address {
+                                        title: "Adresse"
+                                        recipientName {
+                                            title: "Empfänger"
+                                        }
+                                        organizationName {
+                                            title: "Firma / Organisation"
+                                        }
+                                        addressLine1 {
+                                            title: "Straße, Hausnr."
+                                        }
+                                        addressLine2 {
+                                            title: "Adress Zusatz"
+                                        }
+                                        city {
+                                            title: "Stadt"
+                                        }
+                                        stateOrProvince {
+                                            title: "Bundesland"
+                                        }
+                                        postalCode {
+                                            title: "PLZ"
+                                        }
+                                        countryCode {
+                                            title: "Land"
+                                        }
+                                     }
+                                 }
+                                 bankAccount {
+                                     title: "Bank Verbindung"
+                                     iban {
+                                         title: "IBAN"
+                                     }
+                                     bic {
+                                         title: "BIC"
+                                     }
+                                 }
+                                 listOfShareSubscriptions {
+                                    title: "Anteile"
+                                    headers {
+                                        fiscalYear {
+                                            title: "Jahr"
+                                            tooltip {
+                                                title: "Wirtschaftsjahr"
+                                            }
+                                        }
+                                        shareType {
+                                            title: "Typ"
+                                        }
+                                        pricingType {
+                                            title: "Preis Typ"
+                                        }
+                                        pricePerShare {
+                                            title: "Preis / Anteil"
+                                        }
+                                        numberOfShares {
+                                            title: "Anzahl"
+                                        }
+                                        state {
+                                            title: "Status"
+                                        }
+                                        ahcAuthorized {
+                                            title: "SEPA"
+                                            true: "☑️"
+                                            false: "❌"
+                                        }
+                                        depository {
+                                            title: "Depot"
+                                        }
+                                        coSubscribers {
+                                            title: "Mitanteilsnehmer"
+                                        }
+                                    }
+                                 }
+                             }
+                             okButton {
+                                 title: "Ok"
+                             }
+                             cancelButton {
+                                 title: "Abbrechen"
+                             }
+                             errors {
+
+                             }
+                         }
+                    }
+                }
+            }
+        }
+    }
+}
