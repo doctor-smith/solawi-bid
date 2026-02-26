@@ -23,6 +23,8 @@ fun <T> Source(emit: ()->T): Source<T> = Reader { emit() }
 @MathDsl
 operator fun <E, F, T> Reader<E, F>.times(other: Reader<F, T>): Reader<E, T> = this map other
 
+infix fun <E,S, T> Reader<E, S>.branch(other: Reader<E, T>): Reader<E, Pair<S,T>> = Reader {e: E -> this(e) to other(e) }
+
 @MathDsl
 @Suppress("FunctionName")
 fun <T> FirstOrNull(predicate: (T)->Boolean): Reader<List<T>,T?> = Reader{
