@@ -33,12 +33,13 @@ import org.solyton.solawi.bid.module.style.topLogoHeight
     ) {
         // The Cookie disclaimer pops up, whenever as user
         // visits the page for the first time or cleared the cookies
+        val currentPath = currentPath()
         CookieDisclaimer(
             texts.component("solyton.cookieDisclaimer"),
             modals = storage * modals,
             device = storage * deviceData * mediaType.get,
             cookieDisclaimer = storage * cookieDisclaimer,
-            excluded = currentPath().startsWith("/bid") || currentPath().startsWith("/manual")
+            excluded = currentPath.startsWith("/bid") || currentPath.startsWith("/manual")
         )
         // Logo at the top of the Page
         TopLogo(

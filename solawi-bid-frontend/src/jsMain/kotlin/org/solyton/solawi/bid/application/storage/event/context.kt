@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.application.storage.event
 
 import kotlinx.browser.window
+import org.evoleq.compose.routing.currentPath
 import org.evoleq.compose.routing.navigate
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
@@ -15,8 +16,13 @@ private const val CONTEXT_ID = "context_id"
 
 fun Storage<Application>.checkContext(){
     val storedContextId: String? = read(CONTEXT_ID)
+    val currentPath = currentPath()
+
     when(storedContextId) {
-        null -> navigate("/app/dashboard")
+        null -> when {
+            !currentPath.startsWith("/bid") &&
+            !currentPath.startsWith("/manual") -> navigate("/app/dashboard")
+        }
         else -> (this * context * current).write(storedContextId)
     }
     window.addEventListener(
