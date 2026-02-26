@@ -11,10 +11,9 @@ import org.solyton.solawi.bid.module.banking.data.IBAN
 import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccount
 import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccounts
 import org.solyton.solawi.bid.module.banking.data.api.ReadBankAccounts
-import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.bankAccounts
 import org.solyton.solawi.bid.module.banking.data.toDomainType
-import org.solyton.solawi.bid.module.values.ProviderId
+import org.solyton.solawi.bid.module.values.LegalEntityId
 import org.solyton.solawi.bid.module.values.UserId
 import org.solyton.solawi.bid.test.UUID_1
 import org.solyton.solawi.bid.test.base.runComposeTest
@@ -28,7 +27,7 @@ class BankAccountsReadTest {
     //@Test //- corrupted why???
     fun readBankAccountsTest() = runComposeTest {
         installSerializers()
-        val providerId = ProviderId(UUID_1)
+        val providerId = LegalEntityId(UUID_1)
         val userId = UserId(UUID_1)
         val bic = BIC("DEUTDEFF500")
         val iban = IBAN("DE89370400440532013000")
@@ -37,7 +36,7 @@ class BankAccountsReadTest {
             providerId
         )
         composition {
-            val storage = TestStorage(BankingApplication())
+            val storage = TestStorage(testBankingApplication)
 
             val args = (storage * action.reader).emit()
             val expectedArgs = ReadBankAccounts(listOf("legal_entity" to userId.value))
@@ -50,7 +49,7 @@ class BankAccountsReadTest {
 
 
             val expectedResponse = response.toDomainType()
-            assertNotNull(expectedResponse, "response.toDomainType() hat null geliefert")
+            assertNotNull(expectedResponse, "response.toDomainType() delivered null.")
 
             assertEquals(expectedResponse, storedResponse)
         }

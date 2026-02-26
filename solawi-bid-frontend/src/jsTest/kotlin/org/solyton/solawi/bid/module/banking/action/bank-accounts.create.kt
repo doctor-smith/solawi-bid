@@ -11,7 +11,6 @@ import org.solyton.solawi.bid.module.banking.data.BankAccountId
 import org.solyton.solawi.bid.module.banking.data.IBAN
 import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccount
 import org.solyton.solawi.bid.module.banking.data.api.CreateBankAccount
-import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.bankAccounts
 import org.solyton.solawi.bid.module.banking.data.toDomainType
 import org.solyton.solawi.bid.module.values.UserId
@@ -38,7 +37,7 @@ class BankAccountsCreateTest {
         )
 
         composition {
-            val storage = TestStorage(BankingApplication())
+            val storage = TestStorage(testBankingApplication)
 
             val args = (storage * action.reader).emit()
             val expectedArgs = CreateBankAccount(userId, bic, iban)

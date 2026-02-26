@@ -25,7 +25,8 @@ fun ImportBankAccounts(): KlAction<Result<Contextual<ImportBankAccounts>>, Resul
                 val accessorId = contextual.data.accessorId 
                 importBankAccounts(
                     accessorId.toUUID(), 
-                    bankAccounts
+                    bankAccounts,
+                    contextual.userId
                 ).toApiType()
             }
         } x database

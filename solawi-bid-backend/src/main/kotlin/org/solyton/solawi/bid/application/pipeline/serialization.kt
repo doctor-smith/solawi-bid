@@ -240,11 +240,13 @@ fun installSerializers() {
 
         // Banking
         add<BankAccount>(BankAccount.serializer())
+        add<BankAccounts>(BankAccounts.serializer())
         add<ReadBankAccounts>(ReadBankAccounts.serializer())
         add<ReadBankAccount>(ReadBankAccount.serializer())
         add<CreateBankAccount>(CreateBankAccount.serializer())
         add<UpdateBankAccount>(UpdateBankAccount.serializer())
         add<DeleteBankAccount>(DeleteBankAccount.serializer())
+        add<ImportBankAccount>(ImportBankAccount.serializer())
         add<ImportBankAccounts>(ImportBankAccounts.serializer())
         add<FiscalYear>(FiscalYear.serializer())
         add<FiscalYears>(FiscalYears.serializer())
