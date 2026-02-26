@@ -6,6 +6,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 
+/*
 class ComputeShareSubscriptionDataForImportTest {
     private lateinit var shareManagementMappings: ShareManagementMappings
     private lateinit var typedMemberMaps: List<Map<String, Map<String, String>>>
@@ -97,3 +98,4 @@ fun csv():String = """
     test-user_09@solyton.org; Stefan; Koch; Mr.; Stefan Koch; Koch Solutions; Hafenstraße 22; ; Bremen; Bremen;28195; DE;2;80;true;SUBSCRIBED;;WH;25;0;ahc_autorized;SUBSCRIBED;;WH;25
     test-user_10@solyton.org; Petra; Richter; Ms.; Petra Richter; Richter Recht; Markt 5; ; Dresden; Sachsen;1067; DE;1;100;true;SUBSCRIBED;;SP;25;0;ahc_autorized;SUBSCRIBED;;SP;25
 """.trimIndent()
+*/

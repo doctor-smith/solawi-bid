@@ -1,10 +1,12 @@
 package org.solyton.solawi.bid.module.shares.service
 
+import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
 import org.solyton.solawi.bid.module.shared.parser.csv.toColumnType
 import org.solyton.solawi.bid.module.shares.data.api.ImportShareSubscription
 import org.solyton.solawi.bid.module.shares.data.api.PricingType
 import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.shares.data.mappings.ShareManagementMappings
+import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
 import org.solyton.solawi.bid.module.shares.data.toApiType
 
 fun computeShareSubscriptionDataForImport(
@@ -24,7 +26,16 @@ fun computeShareSubscriptionDataForImport(
 
 
             val username: String = userProfiles["username"]!!
-            val shareOfferId: String = shareManagementMappings.shareOffers[keyOfShareType]!!
+            val fiscalYearCSV = value["fiscal_year"]!!
+            val fiscalYearId = requireNotNull(shareManagementMappings.fiscalYears.find { fiscalYear ->
+                fiscalYear.format() == fiscalYearCSV
+            }?.fiscalYearId) {"No fiscal year $$fiscalYearCSV" }
+            val shareOffer: ShareOffer = requireNotNull(shareManagementMappings.shareOffers.find {
+                (_, shareType, fiscalYear, _, _, _) ->
+                fiscalYear.fiscalYearId == fiscalYearId && shareType.key == keyOfShareType
+            }) {
+                "No share offer for fiscal year $fiscalYearCSV and share type $key with key = $keyOfShareType"
+            }
             val distributionPoint = shareManagementMappings.distributionPoints[value["distribution_point"]!!]!!
             val numberOfShares: Int = value["number_of_shares"]!!.toInt()
             val pricePerShare: Double? = when {
@@ -39,10 +50,10 @@ fun computeShareSubscriptionDataForImport(
                 ?: emptyList()
 
             ImportShareSubscription(
-                shareOfferId = shareOfferId,
+                shareOfferId = shareOffer.shareOfferId,
                 username = username,
                 distributionPointId = distributionPoint,
-                fiscalYearId = shareManagementMappings.fiscalYearId,
+                fiscalYearId = fiscalYearId,
                 numberOfShares = numberOfShares,
                 pricePerShare = pricePerShare,
                 ahcAuthorized = ahcAuthorized,

@@ -28,6 +28,7 @@ import org.solyton.solawi.bid.application.data.i18N
 import org.solyton.solawi.bid.application.data.mainActions
 import org.solyton.solawi.bid.application.data.mainModales
 import org.solyton.solawi.bid.application.data.modals
+import org.solyton.solawi.bid.application.data.shareTypes
 import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
 import org.solyton.solawi.bid.application.data.transform.banking.bankingApplicationIso
 import org.solyton.solawi.bid.application.data.transform.distribution.distributionManagementIso
@@ -270,8 +271,8 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                 else -> ShareManagementMappings(
                     override = false,
                     providerId = organizationId,
-                    fiscalYearId = fiscalYearId,
-                    shareOffers = shareOffers,
+                    fiscalYears = shareManagement.shareOffers.map { it.fiscalYear }.distinct(),
+                    shareOffers = shareManagement.shareOffers,
                     distributionPoints = distributionPointsMap.read()
                 )
             }
