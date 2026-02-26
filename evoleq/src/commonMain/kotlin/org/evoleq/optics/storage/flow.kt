@@ -11,7 +11,7 @@ data class ActionEnvelope<Base : Any, out I : Any, O : Any>(
     val nextLazy: List<() -> ActionEnvelope<Base, *, *>> = emptyList(),
     val meta: Map<String, Any?> = emptyMap(),
     val run: Boolean = true,
-    val clearOnFinish: Boolean = false
+    val clearOnFinish: Boolean = true
 )
 
 interface ActionDispatcher<Base : Any> {
