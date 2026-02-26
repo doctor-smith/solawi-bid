@@ -44,3 +44,23 @@ tasks.register("detektAll") {
         }
     )
 }
+
+tasks.register("analyseDependencies") {
+    group = "architect"
+    description = "Analyse all dependencies and generate reports"
+
+    // Sammelt alle relevanten Tasks aus allen Projekten
+    val analyserTasks = rootProject.allprojects.flatMap { project ->
+        project.tasks.matching {
+            it.name.endsWith("DependencyAnalyser") || it.name.endsWith("HasCyclicDependencies")
+        }
+    }
+
+    // Macht diese Tasks zu Abhängigkeiten für den Wrapper-Task
+    dependsOn(analyserTasks)
+
+    doLast {
+        println("✅ All dependency analysis tasks were triggered.")
+        println("Wrapper task depends on ${analyserTasks.size} tasks.")
+    }
+}
