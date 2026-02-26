@@ -5,12 +5,10 @@ import org.evoleq.math.dispatch
 import org.evoleq.math.emit
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.testutils.ComposeWebExperimentalTestsApi
-import org.jetbrains.compose.web.testutils.runTest
 import org.solyton.solawi.bid.application.serialization.installSerializers
 import org.solyton.solawi.bid.module.banking.data.api.ApiFiscalYear
 import org.solyton.solawi.bid.module.banking.data.api.ApiFiscalYears
 import org.solyton.solawi.bid.module.banking.data.api.ReadFiscalYears
-import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.fiscalYears
 import org.solyton.solawi.bid.module.banking.data.toDomainType
 import org.solyton.solawi.bid.test.base.runComposeTest
@@ -33,7 +31,7 @@ class FiscalYearsReadTest {
         )
 
         composition {
-            val storage = TestStorage(BankingApplication())
+            val storage = TestStorage(testBankingApplication)
 
             val args = (storage * action.reader).emit()
             val expectedArgs = ReadFiscalYears(listOf("legal_entity" to legalEntityId))

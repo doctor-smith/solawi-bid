@@ -12,3 +12,8 @@ data class FiscalYear(
     @ReadWrite val start: LocalDate,
     @ReadWrite val end: LocalDate
 )
+
+fun FiscalYear.format(): String = when{
+    start.year == end.year -> "${start.year}"
+    else -> "${start.year}/${end.year}"
+}

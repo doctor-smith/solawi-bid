@@ -9,7 +9,7 @@ fun validateIban(iban: IBAN) {
 
 fun isValidIban(iban: String): Boolean {
     // Remove all spaces and make the IBAN uppercase
-    val normalizedIban = iban.replace(" ", "").uppercase()
+    val normalizedIban = iban.filterNot{it.isWhitespace()}.uppercase()
 
     // Check if the IBAN length is valid for the country
     if (!isValidIbanLength(normalizedIban)) {

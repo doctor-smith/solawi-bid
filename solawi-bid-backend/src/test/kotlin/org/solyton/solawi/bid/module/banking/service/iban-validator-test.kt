@@ -11,6 +11,17 @@ class IbanValidatorTest {
     companion object {
         @JvmStatic
         fun provideIbans() = listOf(
+            // Valid IBANs (structured correctly, non-personal)
+            Arguments.of("DE89370400440532013000", true),
+            Arguments.of("GB82WEST12345698765432", true),
+            Arguments.of("FR1420041010050500013M02606", true),
+            Arguments.of("CH9300762011623852957", true),
+            Arguments.of("ES9121000418450200051332", true),
+            Arguments.of("NL91ABNA0417164300", true),
+            Arguments.of("IT60X0542811101000000123456", true),
+            Arguments.of("SE3550000000054910000003", true),
+            Arguments.of("FI2112345600000785", true),
+            Arguments.of("NO9386011117947", true),
             Arguments.of("DE89370400440532013000", true), // Valid German IBAN
             Arguments.of("GB82WEST12345698765432", true), // Valid UK IBAN
             Arguments.of("FR1420041010050500013M02606", true), // Valid French IBAN
@@ -18,7 +29,6 @@ class IbanValidatorTest {
             Arguments.of("CH9300762011623852957", true),  // Valid Swiss IBAN
             Arguments.of("DK5000400440116243", true),      // Valid Danish IBAN
             Arguments.of("DE52600501017890123456", true), // Valid german IBAN
-            // More Valid IBANs (structured correctly, non-personal)
             Arguments.of("DE89370400440532013000", true), // Germany
             Arguments.of("GB82WEST12345698765432", true), // United Kingdom
             Arguments.of("FR1420041010050500013M02606", true), // France
@@ -30,7 +40,7 @@ class IbanValidatorTest {
             Arguments.of("NO9386011117947", true), // Norway
             Arguments.of("FI2112345600000785", true), // Finland
 
-            // More Invalid IBANs
+            // Invalid IBANs
             Arguments.of("DE8937040044053201300", false), // Too short
             Arguments.of("GB82WEST1234569876543X", false), // Invalid character
             Arguments.of("FR1420041010050500013M026066", false), // Too long

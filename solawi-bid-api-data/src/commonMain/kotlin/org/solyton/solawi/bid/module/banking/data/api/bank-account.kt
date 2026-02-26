@@ -8,6 +8,7 @@ import org.solyton.solawi.bid.module.banking.data.BankAccountId
 import org.solyton.solawi.bid.module.banking.data.IBAN
 import org.solyton.solawi.bid.module.values.AccessorId
 import org.solyton.solawi.bid.module.values.UserId
+import org.solyton.solawi.bid.module.values.Username
 
 typealias ApiBankAccount = BankAccount
 typealias ApiBankAccounts = BankAccounts
@@ -58,10 +59,17 @@ data class UpdateBankAccount(
 data class ImportBankAccounts(
     val override: Boolean = false,
     val accessorId: AccessorId,
-    val bankAccounts: List<CreateBankAccount>
+    val bankAccounts: List<ImportBankAccount>
 )
 
 @Serializable
 data class DeleteBankAccount(
     val id: BankAccountId
+)
+
+@Serializable
+data class ImportBankAccount(
+    val username: Username,
+    val bic: BIC,
+    val iban: IBAN
 )

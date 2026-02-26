@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.selectAll
 import org.solyton.solawi.bid.module.banking.data.BIC
 import org.solyton.solawi.bid.module.banking.data.BankAccountId
 import org.solyton.solawi.bid.module.banking.data.IBAN
-import org.solyton.solawi.bid.module.banking.data.api.CreateBankAccount
+import org.solyton.solawi.bid.module.banking.data.api.ImportBankAccount
 import org.solyton.solawi.bid.module.banking.data.toUUID
 import org.solyton.solawi.bid.module.banking.schema.BankAccountAccessorEntity
 import org.solyton.solawi.bid.module.banking.schema.BankAccountAccessorsTable
@@ -16,9 +16,13 @@ import org.solyton.solawi.bid.module.banking.schema.BankAccountEntity
 import org.solyton.solawi.bid.module.banking.schema.BankAccountsTable
 import org.solyton.solawi.bid.module.banking.service.validateBic
 import org.solyton.solawi.bid.module.banking.service.validateIban
-import org.solyton.solawi.bid.module.banking.service.validateUserExists
 import org.solyton.solawi.bid.module.banking.service.validatedBankAccount
-import org.solyton.solawil.bid.module.bid.data.api.toUUID
+import org.solyton.solawi.bid.module.user.data.api.ApiUser
+import org.solyton.solawi.bid.module.user.data.api.CreateUser
+import org.solyton.solawi.bid.module.user.schema.UserEntity
+import org.solyton.solawi.bid.module.user.schema.UsersTable
+import org.solyton.solawi.bid.module.user.service.user.createUser
+import org.solyton.solawi.bid.module.user.service.validateUserExists
 import java.util.*
 
 /**
@@ -142,18 +146,45 @@ fun Transaction.deleteBankAccount(bankAccountId: UUID) : UUID {
  */
 fun Transaction.importBankAccounts(
     accessorId: UUID, 
-    accounts: List<CreateBankAccount>
+    accounts: List<ImportBankAccount>,
+    creatorId: UUID
 ): List<BankAccountEntity> {
     val existingAccountsMap = readBankAccountsByLegalEntity(accessorId)
         .associateBy { it.userId.toString() }
 
-    val (toUpdate, toCreate) = accounts.partition {
-        it.userId.value in existingAccountsMap
+    val (accountsToUpdate, accountsToCreate) = accounts.partition {
+        it.username.value in existingAccountsMap
     }
 
-    val created = toCreate.map { bankAccount ->
+    val usernames = accounts.map { it.username.value }
+    val existingUsersMap = UserEntity.find { UsersTable.username inList usernames }.associateBy({ user ->
+        user.username
+    }) {
+        user -> ApiUser(
+        user.id.value.toString(),
+            user.username,
+        )
+    }
+    val usersToCreate = usernames.filterNot{ existingUsersMap.keys.contains(it) }
+
+    val newUsers = usersToCreate.map{ username -> createUser(
+        CreateUser(username, ""),
+        creatorId
+    ) }.associateBy ({
+        user -> user.username
+    }){
+        user -> user
+    }
+
+    val allUsers: Map<String, ApiUser> = existingUsersMap + newUsers
+
+
+    val created = accountsToCreate.map { bankAccount ->
         with(bankAccount) {
-            val userId = userId.toUUID()
+
+            val userId = requireNotNull(allUsers[username.value]){
+                "User ${username.value} does not exist"
+            }.let { UUID.fromString(it.id) }
             val newBankAccount = createBankAccount(
                 userId,
                 iban,
@@ -165,13 +196,16 @@ fun Transaction.importBankAccounts(
         }
     }
     
-    val updated = toUpdate.map { bankAccount ->
-        val existingBankAccount = requireNotNull(existingAccountsMap[bankAccount.userId.value]) {
-            "Bank account for user ${bankAccount.userId.value} does not exist" 
+    val updated = accountsToUpdate.map { bankAccount ->
+        val existingBankAccount = requireNotNull(existingAccountsMap[bankAccount.username.value]) {
+            "Bank account for user ${bankAccount.username.value} does not exist"
         }
+        val userId = requireNotNull(allUsers[bankAccount.username.value]){
+            "User ${bankAccount.username.value} does not exist"
+        }.let { UUID.fromString(it.id) }
         updateBankAccount(
             existingBankAccount.id.value,
-            bankAccount.userId.toUUID(),
+            userId,
             bankAccount.iban,
             bankAccount.bic,
             accessorId
