@@ -15,18 +15,22 @@ val serializers: HashMap<KClass<*>, KSerializer<*>> by lazy { HashMap() }
  */
 operator fun HashMap<KClass<*>, KSerializer<*>>.get(className: String): KSerializer<*> {
     val clazz = serializers.keys.firstOrNull() { it.simpleName == className }
-        ?: Exception("Unregistered serializer")
+        ?: Exception("Unregistered serializer $className")
     return serializers[clazz]!!
 }
 
 @Suppress("FunctionName","UNCHECKED_CAST")
 inline fun <reified T> Serializer(): KSerializer<T> {
-    return serializers[T::class]!! as KSerializer<T>
+    return requireNotNull(serializers[T::class]){
+        "Serializer of ${T::class} must not be null!"
+    } as KSerializer<T>
 }
 
 @Suppress("FunctionName","UNCHECKED_CAST")
 fun <T : Any> Serializer(t: T): KSerializer<T> {
-    return serializers[t::class]!! as KSerializer<T>
+    return requireNotNull(serializers[t::class]){
+        "Serializer of ${t.toString()} must not be null!"
+    } as KSerializer<T>
 }
 
 

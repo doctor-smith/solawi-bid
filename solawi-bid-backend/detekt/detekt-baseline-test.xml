@@ -3,7 +3,6 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <ID>LargeClass:application-api-tests.kt$ApplicationApiTests</ID>
-    <ID>UnnecessaryFilter:auction-routing-tests.kt$AuctionRoutingTests$filter { it.name == "test-name" }</ID>
-    <ID>UnnecessaryFilter:auction-routing-tests.kt$AuctionRoutingTests$filter { it.name == "test-name-1" }</ID>
+    <ID>NewLineAtEndOfFile:BankAccountRepositoryTest.kt$org.solyton.solawi.bid.module.banking.repository.BankAccountRepositoryTest.kt</ID>
   </CurrentIssues>
 </SmellBaseline>
