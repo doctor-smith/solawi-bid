@@ -18,6 +18,8 @@ import org.solyton.solawi.bid.application.api.solawiApi
 import org.solyton.solawi.bid.application.data.env.Environment
 import org.solyton.solawi.bid.module.application.data.organizationrelation.ApplicationOrganizationRelation
 import org.solyton.solawi.bid.module.application.data.userapplication.UserApplications
+import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
+import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.bidder.BidderMails
 import org.solyton.solawi.bid.module.bid.data.bidround.BidRound
@@ -66,6 +68,10 @@ import org.solyton.solawi.bid.module.user.data.user.User
     @ReadWrite val shareTypes: List<ShareType> = emptyList(),
     // Distribution
     @ReadWrite val distributionPoints: List<DistributionPoint> = emptyList(),
+
+    // Banking
+    @ReadWrite val bankAccounts: List<BankAccount> = emptyList(),
+    @ReadWrite val fiscalYears: List<FiscalYear> = emptyList(),
 
     // User
     @ReadWrite val userData: User = User(),

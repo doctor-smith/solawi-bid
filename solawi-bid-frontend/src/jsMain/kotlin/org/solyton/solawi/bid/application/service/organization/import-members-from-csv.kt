@@ -6,8 +6,14 @@ import org.evoleq.optics.storage.ActionEnvelope
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.times
 import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.application.data.transform.banking.bankingApplicationIso
 import org.solyton.solawi.bid.application.data.transform.shares.shareManagementIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
+import org.solyton.solawi.bid.module.banking.action.IMPORT_BANK_ACCOUNTS
+import org.solyton.solawi.bid.module.banking.action.importBankAccounts
+import org.solyton.solawi.bid.module.banking.data.mappings.BankingMappings
+import org.solyton.solawi.bid.module.banking.service.computeBankAccountsDataForImport
+import org.solyton.solawi.bid.module.process.service.process.next
 import org.solyton.solawi.bid.module.process.service.process.sequenceProcesses
 import org.solyton.solawi.bid.module.shares.action.IMPORT_SHARE_SUBSCRIPTIONS
 import org.solyton.solawi.bid.module.shares.action.importShareSubscriptions
@@ -21,14 +27,19 @@ import org.solyton.solawi.bid.module.user.data.api.organization.ImportMembers
 import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfiles
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfileToImport
+import org.solyton.solawi.bid.module.values.AccessorId
 
 
 fun Storage<Application>.importMembersFromCsv(
     scope: CoroutineScope,
     organizationId: String,
     csv: String, delimiter: Char = ';',
-    shareManagementMappings: ShareManagementMappings? = null
+    shareManagementMappings: ShareManagementMappings? = null,
+    bankingMappings: BankingMappings? = null
 ) {
+    val hasCorrectDelimiter = csv.contains(delimiter)
+    require(hasCorrectDelimiter) { "Wrong delimiter $delimiter" }
+
     val typedMemberMaps: List<Map<String, Map<String, String>>> = parseCsvWithGroupedHeaders(csv, delimiter.toString())
     val membersToImport = typedMemberMaps.map { it["user_profiles"]!!["username"]!! }
     val importMembers = ImportMembers(organizationId, membersToImport)
@@ -55,42 +66,45 @@ fun Storage<Application>.importMembersFromCsv(
     }
     val importUserProfiles = ImportUserProfiles(userProfilesToImport)
 
-    if (shareManagementMappings != null) {
-        val shareSubscriptionsToImport = computeShareSubscriptionDataForImport(
-            typedMemberMaps,
-            shareManagementMappings
-        )
 
-        sequenceProcesses(
-            scope,
+    val shareSubscriptionsToImport = when {
+        shareManagementMappings != null  -> computeShareSubscriptionDataForImport(typedMemberMaps, shareManagementMappings!!)
+        else -> null
+    }
+
+    val bankAccountsToImport = when {
+        bankingMappings != null -> computeBankAccountsDataForImport(typedMemberMaps, bankingMappings!!)
+        else -> null
+    }
+
+    sequenceProcesses(
+        scope,
+        ActionEnvelope(
+            userIso * importMembersToOrganization(importMembers),
+            IMPORT_MEMBERS_TO_ORGANIZATION,)
+        ,ActionEnvelope(
+            userIso * importUserProfiles(importUserProfiles),
+            IMPORT_USER_PROFILES,
+        ).next(
             ActionEnvelope(
-                userIso * importMembersToOrganization(importMembers),
-                IMPORT_MEMBERS_TO_ORGANIZATION,)
-            ,ActionEnvelope(
-                    userIso * importUserProfiles(importUserProfiles),
-                    IMPORT_USER_PROFILES,
-            ),
-            ActionEnvelope(
-                shareManagementIso * importShareSubscriptions(
-                    override = shareManagementMappings.override,
+                run = shareManagementMappings != null && shareSubscriptionsToImport != null,
+                action = shareManagementIso * importShareSubscriptions(
+                    override = shareManagementMappings!!.override,
                     providerId = organizationId,
                     fiscalYearId = shareManagementMappings.fiscalYearId,
-                    shareSubscriptionsToImport = shareSubscriptionsToImport
+                    shareSubscriptionsToImport = shareSubscriptionsToImport!!
                 ),
-                IMPORT_SHARE_SUBSCRIPTIONS
-            )
-        )
-    } else {
-        sequenceProcesses(
-            scope,
-            ActionEnvelope(
-                userIso * importMembersToOrganization(importMembers),
-                IMPORT_MEMBERS_TO_ORGANIZATION
+                id = IMPORT_SHARE_SUBSCRIPTIONS
             ),
             ActionEnvelope(
-                userIso * importUserProfiles(importUserProfiles),
-                IMPORT_USER_PROFILES
+                run = bankingMappings != null && bankAccountsToImport != null,
+                action = bankingApplicationIso * importBankAccounts(
+                    override = bankingMappings!!.override,
+                    accessorId = AccessorId(bankingMappings.legalEntityId.value),
+                    bankAccountsToImport = bankAccountsToImport!!
+                ),
+                id = IMPORT_BANK_ACCOUNTS
             )
-        )
-    }
+        ),
+    )
 }

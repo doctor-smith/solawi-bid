@@ -9,7 +9,7 @@ import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Input
 import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.module.style.cursor.CssCursor
+import org.solyton.solawi.bid.module.style.cursor.Cursor
 import org.solyton.solawi.bid.module.style.cursor.cursor
 import org.solyton.solawi.bid.module.values.Price
 
@@ -35,8 +35,8 @@ fun EditableTextCell(
             textAlign("left")
             width(10.percent)
             when{
-                disabled -> cursor(CssCursor.NotAllowed)
-                else -> cursor(CssCursor.Pointer)
+                disabled -> cursor(Cursor.NotAllowed)
+                else -> cursor(Cursor.Pointer)
             }
             style()
         }
@@ -109,8 +109,8 @@ fun <T> EditableCell(
             textAlign("left")
             width(10.percent)
             when{
-                disabled -> cursor(CssCursor.NotAllowed)
-                else -> cursor(CssCursor.Pointer)
+                disabled -> cursor(Cursor.NotAllowed)
+                else -> cursor(Cursor.Pointer)
             }
             style()
         }
