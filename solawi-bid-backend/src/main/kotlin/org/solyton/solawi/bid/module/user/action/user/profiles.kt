@@ -11,10 +11,10 @@ import org.evoleq.math.x
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.selectAll
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
-import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfiles
-import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfiles
-import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfiles
+import org.solyton.solawi.bid.module.user.data.api.userprofile.*
 import org.solyton.solawi.bid.module.user.data.toApiType
+import org.solyton.solawi.bid.module.user.repository.createUserProfile
+import org.solyton.solawi.bid.module.user.repository.updateUserProfile
 import org.solyton.solawi.bid.module.user.schema.AddressEntity
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
@@ -22,6 +22,18 @@ import org.solyton.solawi.bid.module.user.schema.UserProfilesTable
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.user.service.user.createUserEntity
 import java.util.*
+
+
+@MathDsl
+@Suppress("FunctionName")
+fun CreateUserProfile(): KlAction<Result<Contextual<CreateUserProfile>>, Result<UserProfile>> = KlAction{ result ->
+    DbAction { database -> result bindSuspend {contextual -> resultTransaction(database) {
+        val userId = contextual.userId
+        val data = contextual.data
+        createUserProfile(data, userId).toApiType(this)
+    } } x database }
+}
+
 
 @MathDsl
 @Suppress("FunctionName", "MapGetWithNotNullAssertionOperator", "UnsafeCallOnNullableType")
@@ -87,5 +99,15 @@ fun ReadUserProfiles(): KlAction<Result<Contextual<ReadUserProfiles>>, Result<Us
 
         val userProfileList = UserProfileEntity.find { UserProfilesTable.userId inList userIds }.toList().map { it.toApiType(this)  }
         UserProfiles(userProfileList)
+    } } x database }
+}
+
+@MathDsl
+@Suppress("FunctionName")
+fun UpdateUserProfile(): KlAction<Result<Contextual<UpdateUserProfile>>, Result<UserProfile>> = KlAction{ result ->
+    DbAction { database -> result bindSuspend {contextual -> resultTransaction(database) {
+        val userId = contextual.userId
+        val data = contextual.data
+        updateUserProfile(data, userId).toApiType(this)
     } } x database }
 }

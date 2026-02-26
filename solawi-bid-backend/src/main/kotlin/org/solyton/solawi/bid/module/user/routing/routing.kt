@@ -14,9 +14,8 @@ import org.solyton.solawi.bid.module.user.action.organization.*
 import org.solyton.solawi.bid.module.user.action.user.*
 import org.solyton.solawi.bid.module.user.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.organization.*
-import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfiles
-import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfiles
-import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfiles
+import org.solyton.solawi.bid.module.user.data.api.userprofile.*
+import org.solyton.solawil.bid.module.bid.data.api.toUUID
 
 @KtorDsl
 fun <UserEnv> Routing.user(
@@ -54,10 +53,22 @@ fun <UserEnv> Routing.user(
                     Respond<UserProfiles> { transform() } runOn Base(call, environment)
                 }
                 post("create") {
-                    NotImplemented() * Respond { transform() } runOn Base(call, environment)
+                    ReceiveContextual<CreateUserProfile>() *
+                    IsGranted("MANAGE_USERS") {
+                        // Grant that each user can create its own user profile
+                        contextual -> contextual.userId == contextual.data.userId.toUUID()
+                    } *
+                    CreateUserProfile() *
+                    Respond<UserProfile> { transform() } runOn Base(call, environment)
                 }
                 patch("update") {
-                    NotImplemented() * Respond { transform() } runOn Base(call, environment)
+                    ReceiveContextual<UpdateUserProfile>() *
+                    IsGranted("MANAGE_USERS") {
+                        // Grant that each user can update its own user profile
+                        contextual -> contextual.userId == contextual.data.userId.toUUID()
+                    } *
+                    UpdateUserProfile() *
+                    Respond<UserProfile> { transform() } runOn Base(call, environment)
                 }
                 delete("delete") {
                     NotImplemented() * Respond { transform() } runOn Base(call, environment)

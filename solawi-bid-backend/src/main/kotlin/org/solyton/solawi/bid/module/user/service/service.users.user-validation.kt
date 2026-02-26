@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.banking.service
+package org.solyton.solawi.bid.module.user.service
 
 import org.jetbrains.exposed.sql.Transaction
 import org.solyton.solawi.bid.module.user.exception.UserManagementException

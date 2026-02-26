@@ -12,4 +12,14 @@ import org.solyton.solawi.bid.module.user.data.address.Address
     @ReadWrite val title: String? = null,
     @ReadWrite val phoneNumber: String? = null,
     @ReadWrite val addresses: List<Address> = listOf()
-)
+) {
+    companion object {
+        fun default(): UserProfile = UserProfile(
+            "",
+            "",
+            "",
+            null,
+            null,
+            listOf()
+        )}
+}

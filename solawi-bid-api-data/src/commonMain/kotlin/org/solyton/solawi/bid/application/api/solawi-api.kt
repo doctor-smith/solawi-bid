@@ -11,9 +11,7 @@ import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.shares.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.organization.*
-import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfiles
-import org.solyton.solawi.bid.module.user.data.api.userprofile.ReadUserProfiles
-import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfiles
+import org.solyton.solawi.bid.module.user.data.api.userprofile.*
 
 val solawiApi by lazy {
     // Authentication
@@ -223,11 +221,19 @@ val solawiApi by lazy {
                 key = SendMailForRegistrationConfirmation::class,
                 url = "user/send-registration-mail"
             )
-
+            post<CreateUserProfile, UserProfile> (
+                key = CreateUserProfile::class,
+                url = "users/profiles/create"
+            )
             post<ImportUserProfiles, UserProfiles> (
                 key = ImportUserProfiles::class,
                 url = "users/profiles/import"
             )
+            patch<UpdateUserProfile, UserProfile> (
+                key = UpdateUserProfile::class,
+                url = "users/profiles/update"
+            )
+            // todo:refactor use get with params
             patch<ReadUserProfiles, UserProfiles>(
                 key = ReadUserProfiles::class,
                 url = "users/profiles/read-by-ids"
