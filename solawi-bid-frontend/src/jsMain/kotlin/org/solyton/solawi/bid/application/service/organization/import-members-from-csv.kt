@@ -87,12 +87,12 @@ fun Storage<Application>.importMembersFromCsv(
             IMPORT_USER_PROFILES,
         ).next(
             ActionEnvelope(
-                run = shareManagementMappings != null && shareSubscriptionsToImport != null,
+                run = shareSubscriptionsToImport != null && shareSubscriptionsToImport.isNotEmpty(),
                 action = shareManagementIso * importShareSubscriptions(
                     override = shareManagementMappings!!.override,
                     providerId = organizationId,
-                    fiscalYearId = shareManagementMappings.fiscalYearId,
-                    shareSubscriptionsToImport = shareSubscriptionsToImport!!
+                    fiscalYearId = shareSubscriptionsToImport!!.first().fiscalYearId,
+                    shareSubscriptionsToImport = shareSubscriptionsToImport
                 ),
                 id = IMPORT_SHARE_SUBSCRIPTIONS
             ),
