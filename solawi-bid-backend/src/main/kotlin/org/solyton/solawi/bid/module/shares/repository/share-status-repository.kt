@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.shares.repository
 
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.or
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.shares.data.internal.ChangeReason
 import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
@@ -19,7 +20,9 @@ import org.solyton.solawi.bid.module.system.repository.validatedSystemProcess
 import java.util.*
 
 fun Transaction.initStatus(): ShareStatusEntity = ShareStatusEntity.find {
-    ShareStatusTable.name eq ShareStatus.PendingActivation.toString()
+    ShareStatusTable.name eq ShareStatus.PendingActivation.toString() or (
+            ShareStatusTable.name eq ShareStatus.PendingActivation.value
+    )
 }.firstOrNull()?: throw  ShareStatusException.NoInitialState
 
 fun Transaction.statusEntity(status: ShareStatus): ShareStatusEntity =

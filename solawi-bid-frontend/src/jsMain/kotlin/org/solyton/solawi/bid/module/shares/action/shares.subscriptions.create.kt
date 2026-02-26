@@ -2,12 +2,15 @@ package org.solyton.solawi.bid.module.shares.action
 
 import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
+import org.evoleq.optics.storage.suffixed
 import org.evoleq.optics.transform.add
-import org.solyton.solawi.bid.module.shares.data.toDomainType
 import org.solyton.solawi.bid.module.shares.data.api.ApiShareSubscription
 import org.solyton.solawi.bid.module.shares.data.api.CreateShareSubscription
 import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
 import org.solyton.solawi.bid.module.shares.data.management.shareSubscriptions
+import org.solyton.solawi.bid.module.shares.data.toDomainType
+
+const val CREATE_SHARE_SUBSCRIPTION = "CreateShareSubscription"
 
 /**
  * Creates a subscription for a specific share offer by a user within a fiscal year.
@@ -36,7 +39,7 @@ fun createShareSubscription(
     coSubscribers: List<String> = emptyList(),
     nameSuffix: String = ""
 ): Action<ShareManagement, CreateShareSubscription, ApiShareSubscription> = Action(
-    name = "CreateShareSubscription$nameSuffix",
+    name = CREATE_SHARE_SUBSCRIPTION.suffixed(nameSuffix),
     reader = { _ ->
         CreateShareSubscription(
             providerId = providerId,
