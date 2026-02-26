@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.module.user.data.api.userprofile
 
 import kotlinx.serialization.Serializable
+import org.solyton.solawi.bid.module.values.*
 
 
 typealias ApiUserProfile = UserProfile
@@ -29,26 +30,27 @@ data class ReadUserProfile(val userId: String)
 
 @Serializable
 data class CreateUserProfile(
-    val userId: String,
-    val firstName: String,
-    val lastName: String,
-    val title: String?,
-    val phoneNumber: String?,
-    val address: Address
+    val userId: UserId,
+    val firstname: Firstname,
+    val lastname: Lastname,
+    val title: Title?,
+    val phoneNumber: PhoneNumber?,
+    val address: CreateAddress
 )
 
 @Serializable
 data class UpdateUserProfile(
-    val userProfileId: String,
-    val firstName: String,
-    val lastName: String,
-    val title: String?,
-    val phoneNumber: String?,
-    val addresses: List<Address>
+    val userProfileId: UserProfileId,
+    val userId: UserId, // needed for access check
+    val firstname: Firstname,
+    val lastname: Lastname,
+    val title: Title?,
+    val phoneNumber: PhoneNumber?,
+    val addresses: List<UpdateAddress>
 )
 
 @Serializable
-data class DeleteUserProfile(val userProfileId: String)
+data class DeleteUserProfile(val userProfileId: UserProfileId)
 
 @Serializable
 data class UserProfileToImport(

@@ -52,8 +52,10 @@
 | GET | users/all | GetUsers  | GetUsers | Users |
 | PATCH | users/change-password | ChangePassword  | ChangePassword | User |
 | POST | users/create | CreateUser  | CreateUser | User |
+| POST | users/profiles/create | CreateUserProfile  | CreateUserProfile | UserProfile |
 | POST | users/profiles/import | ImportUserProfiles  | ImportUserProfiles | UserProfiles |
 | PATCH | users/profiles/read-by-ids | ReadUserProfiles  | ReadUserProfiles | UserProfiles |
+| PATCH | users/profiles/update | UpdateUserProfile  | UpdateUserProfile | UserProfile |
 ## applications and modules
 
 | Methode | URL | Key | Request Type | Response Type |

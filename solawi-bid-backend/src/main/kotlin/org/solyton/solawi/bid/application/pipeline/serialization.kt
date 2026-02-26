@@ -38,7 +38,15 @@ fun installSerializers() {
         add<UserId>(UserId.serializer())
         add<ProviderId>(ProviderId.serializer())
         add<AccessorId>(AccessorId.serializer())
+        add<LegalEntityId>(LegalEntityId.serializer())
+        add<UserProfileId>(UserProfileId.serializer())
+        add<ModifierId>(ModifierId.serializer())
+        add<CreatorId>(CreatorId.serializer())
         add<Username>(Username.serializer())
+        add<Firstname>(Firstname.serializer())
+        add<Lastname>(Lastname.serializer())
+        add<Title>(Title.serializer())
+        add<PhoneNumber>(PhoneNumber.serializer())
         // API
         add<Parameters>(Parameters.serializer())
         // Result serializers

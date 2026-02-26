@@ -27,7 +27,11 @@ data class CreateAddress(
     val stateOrProvince: String,
     val postalCode: String,
     val countryCode: String
-)
+) {
+    companion object {
+        val empty = CreateAddress("", null, "", "", "", "", "", "")
+    }
+}
 
 @Serializable
 data class ReadAddress(

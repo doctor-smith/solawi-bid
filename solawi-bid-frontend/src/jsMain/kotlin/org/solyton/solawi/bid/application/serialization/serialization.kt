@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.application.serialization
 
 import kotlinx.serialization.builtins.serializer
+import org.evoleq.ktorx.client.EmptyParams
 import org.evoleq.ktorx.client.Parameters
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
@@ -39,11 +40,20 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<UserId>(UserId.serializer())
         add<ProviderId>(ProviderId.serializer())
         add<AccessorId>(AccessorId.serializer())
+        add<LegalEntityId>(LegalEntityId.serializer())
+        add<UserProfileId>(UserProfileId.serializer())
+        add<ModifierId>(ModifierId.serializer())
+        add<CreatorId>(CreatorId.serializer())
         add<Username>(Username.serializer())
+        add<Firstname>(Firstname.serializer())
+        add<Lastname>(Lastname.serializer())
+        add<Title>(Title.serializer())
+        add<PhoneNumber>(PhoneNumber.serializer())
         //...
         add<Identifier>(Identifier.serializer())
         // API
         add<Parameters>(Parameters.serializer())
+        add<EmptyParams>(EmptyParams.serializer())
         // Result
         add<Result<*>>(ResultSerializer)
         add<Result.Failure>(Result.Failure.serializer())

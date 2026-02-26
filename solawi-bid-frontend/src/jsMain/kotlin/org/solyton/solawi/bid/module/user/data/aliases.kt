@@ -1,6 +1,8 @@
 package org.solyton.solawi.bid.module.user.data
 
 
+typealias UserApplication = Application
+
 /**
  * Alias for [actions]
  */
