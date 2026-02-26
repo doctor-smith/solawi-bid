@@ -8,7 +8,7 @@ typealias ApiShareStatus = ShareStatus
 sealed class ShareStatus(protected open val value: String) {
     // External
     @Serializable
-    data object External : ShareStatus("SUBSCRIBED")
+    data object External : ShareStatus("EXTERNAL")
 
     // Active
     @Serializable

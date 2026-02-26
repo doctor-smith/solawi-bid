@@ -2,13 +2,15 @@ package org.solyton.solawi.bid.module.shares.action
 
 import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
+import org.evoleq.optics.storage.suffixed
 import org.evoleq.optics.transform.update
-import org.solyton.solawi.bid.module.shares.data.toDomainType
 import org.solyton.solawi.bid.module.shares.data.api.ApiShareSubscription
 import org.solyton.solawi.bid.module.shares.data.api.UpdateShareSubscription
 import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
 import org.solyton.solawi.bid.module.shares.data.management.shareSubscriptions
+import org.solyton.solawi.bid.module.shares.data.toDomainType
 
+const val UPDATE_SHARE_SUBSCRIPTION = "UpdateShareSubscription"
 /**
  * Updates an existing share subscription with the provided details.
  *
@@ -38,7 +40,7 @@ fun updateShareSubscription(
     coSubscribers: List<String> = emptyList(),
     nameSuffix: String = ""
 ): Action<ShareManagement, UpdateShareSubscription, ApiShareSubscription> = Action(
-    name = "UpdateShareSubscription$nameSuffix",
+    name = UPDATE_SHARE_SUBSCRIPTION.suffixed(nameSuffix),
     reader = { _ ->
         UpdateShareSubscription(
             id = shareSubscriptionId,

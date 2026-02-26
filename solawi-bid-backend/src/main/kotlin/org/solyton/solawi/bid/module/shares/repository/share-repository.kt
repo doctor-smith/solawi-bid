@@ -287,6 +287,13 @@ fun Transaction.updateShareSubscription(
         val distributionPoint = validatedDistributionPoint(distributionPointId)
         shareSubscription.distributionPoint = distributionPoint
     }
+    if(numberOfSharesChanged) {
+        shareSubscription.numberOfShares = numberOfShares
+    }
+    if(ahcAuthorizedChanged) {
+        shareSubscription.ahcAuthorized = ahcAuthorized
+    }
+
 
     if(hasChanges(
         shareOfferChanged,

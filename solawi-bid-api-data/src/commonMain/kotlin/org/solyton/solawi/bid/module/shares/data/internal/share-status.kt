@@ -1,7 +1,7 @@
 package org.solyton.solawi.bid.module.shares.data.internal
 
 
-sealed class ShareStatus(protected open val value: String) {
+sealed class ShareStatus(open val value: String) {
     // External
     data object External : ShareStatus("EXTERNAL")
     // Active
