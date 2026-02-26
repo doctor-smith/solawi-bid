@@ -7,7 +7,6 @@ import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Vertical
-import org.evoleq.compose.routing.navigate
 import org.evoleq.compose.routing.openUrlInNewTab
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.Lang
@@ -21,58 +20,30 @@ import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
-import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H2
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.bid.action.changeRoundState
-import org.solyton.solawi.bid.module.bid.component.button.ChangeRoundStateButton
 import org.solyton.solawi.bid.module.bid.component.button.ExportBidRoundResultsButton
-import org.solyton.solawi.bid.module.bid.component.button.ExportBidRoundResultsButton_Dep
 import org.solyton.solawi.bid.module.bid.component.button.QRLinkToRoundPageButton
 import org.solyton.solawi.bid.module.bid.component.effect.LaunchBidRoundEvaluation
 import org.solyton.solawi.bid.module.bid.component.effect.LaunchDownloadOfBidRoundResults
 import org.solyton.solawi.bid.module.bid.component.effect.LaunchExportOfBidRoundResults
 import org.solyton.solawi.bid.module.bid.component.effect.LaunchPresentationOfBidRoundEvaluationInModal
-import org.solyton.solawi.bid.module.bid.data.*
+import org.solyton.solawi.bid.module.bid.data.BidApplication
+import org.solyton.solawi.bid.module.bid.data.actions
 import org.solyton.solawi.bid.module.bid.data.api.RoundState
 import org.solyton.solawi.bid.module.bid.data.api.nextState
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.auction.rounds
 import org.solyton.solawi.bid.module.bid.data.bidround.Round
+import org.solyton.solawi.bid.module.bid.data.deviceData
+import org.solyton.solawi.bid.module.bid.data.modals
 import org.solyton.solawi.bid.module.bid.data.reader.roundAccepted
 import org.solyton.solawi.bid.module.control.button.IconButton
-import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.error.component.showErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
-import org.solyton.solawi.bid.module.bid.data.reader.rounds as roundsKey
 
-@Deprecated("Will be replaced")
-@Markup
-@Composable
-@Suppress("FunctionName")
-fun BidRoundList(
-    storage: Storage<BidApplication>,
-    auction: Lens<BidApplication, Auction>,
-    roundTexts: Reader<Unit, Lang.Block>
-) {
-    H2 {
-        Text((roundTexts * subComp("bidRoundList") * roundsKey).emit())
-    }
-
-    val frontendBaseUrl = with((storage * environment).read()){
-        "$frontendUrl:$frontendPort"
-    }
-    (storage * auction * rounds).read().reversed().forEach { round ->
-        BidRoundListItem(
-            storage = storage,
-            auction = auction,
-            round = round,
-            frontendBaseUrl= frontendBaseUrl,
-            texts = roundTexts
-        )
-    }
-}
-
+/*
 @Deprecated("Will be replaced")
 @Markup
 @Composable
@@ -155,7 +126,7 @@ fun BidRoundListItem(
         }
     }
 }
-
+*/
 @Markup
 @Composable
 @Suppress("FunctionName")
