@@ -25,6 +25,11 @@ java {
 
 kotlin{
     jvmToolchain(17)
+    sourceSets {
+        val main by getting {
+            kotlin.srcDir("/src/main/kotlin")
+        }
+    }
 }
 
 application {

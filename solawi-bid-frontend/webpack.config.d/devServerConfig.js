@@ -13,7 +13,7 @@ config.devServer = {
    static: [
        {
          directory: devPath.resolve(__dirname, "../solawi-bid-solawi-bid-frontend/kotlin"),
-         publicPath: "/"
+         publicPath: "/kotlin"
        },
        {
          directory: devPath.resolve(__dirname, "../../../../solawi-bid-frontend/build/processedResources/js/main"),
@@ -23,6 +23,7 @@ config.devServer = {
 
    // SPA routing fallback (critical!)
    historyApiFallback: {
+
      rewrites: [
        {
          from: /^(?!\/(img|css|assets|i18n|solawi-bid-frontend\.js)).*$/,
