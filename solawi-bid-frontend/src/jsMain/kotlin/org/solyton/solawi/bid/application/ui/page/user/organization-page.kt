@@ -16,6 +16,7 @@ import org.evoleq.optics.lens.DeepSearch
 import org.evoleq.optics.lens.FilterBy
 import org.evoleq.optics.storage.ActionEnvelope
 import org.evoleq.optics.storage.Storage
+import org.evoleq.optics.storage.filter
 import org.evoleq.optics.storage.times
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
@@ -24,13 +25,22 @@ import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.env.i18nEnvironment
 import org.solyton.solawi.bid.application.data.i18N
+import org.solyton.solawi.bid.application.data.mainActions
+import org.solyton.solawi.bid.application.data.mainModales
+import org.solyton.solawi.bid.application.data.modals
 import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
+import org.solyton.solawi.bid.application.data.transform.banking.bankingApplicationIso
 import org.solyton.solawi.bid.application.data.transform.distribution.distributionManagementIso
 import org.solyton.solawi.bid.application.data.transform.shares.shareManagementIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.service.organization.importMembersFromCsv
+import org.solyton.solawi.bid.application.ui.component.organization.showUpdateMembersOfOrganizationModal
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
+import org.solyton.solawi.bid.application.ui.page.user.action.Change
+import org.solyton.solawi.bid.application.ui.page.user.action.memberCreateAction
+import org.solyton.solawi.bid.application.ui.page.user.action.memberUpdateAction
+import org.solyton.solawi.bid.application.ui.page.user.i18n.CountryLangComponent
 import org.solyton.solawi.bid.application.ui.page.user.i18n.OrganizationLangComponent
 import org.solyton.solawi.bid.application.ui.page.user.style.actionsWrapperStyle
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
@@ -43,13 +53,14 @@ import org.solyton.solawi.bid.module.application.data.management.availableApplic
 import org.solyton.solawi.bid.module.application.i18n.ApplicationComponent
 import org.solyton.solawi.bid.module.application.i18n.application
 import org.solyton.solawi.bid.module.application.i18n.module
-import org.solyton.solawi.bid.module.control.button.ArrowUpButton
-import org.solyton.solawi.bid.module.control.button.EditButton
-import org.solyton.solawi.bid.module.control.button.UploadButton
-import org.solyton.solawi.bid.module.control.button.UsersButton
+import org.solyton.solawi.bid.module.banking.action.READ_BANK_ACCOUNTS
+import org.solyton.solawi.bid.module.banking.action.readBankAccounts
+import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
+import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
+import org.solyton.solawi.bid.module.banking.data.mappings.BankingMappings
+import org.solyton.solawi.bid.module.control.button.*
 import org.solyton.solawi.bid.module.distribution.action.READ_DISTRIBUTION_POINTS
 import org.solyton.solawi.bid.module.distribution.action.readDistributionPoints
-import org.solyton.solawi.bid.module.distribution.data.distributionManagementActions
 import org.solyton.solawi.bid.module.distribution.data.distributionpoint.DistributionPoint
 import org.solyton.solawi.bid.module.distribution.data.management.distributionPoints
 import org.solyton.solawi.bid.module.i18n.data.language
@@ -61,14 +72,17 @@ import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.process.service.process.next
 import org.solyton.solawi.bid.module.process.service.process.runProcesses
 import org.solyton.solawi.bid.module.process.service.process.sequence
+import org.solyton.solawi.bid.module.search.component.SearchInput
+import org.solyton.solawi.bid.module.search.component.SearchInputStyles
 import org.solyton.solawi.bid.module.shares.action.*
 import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
 import org.solyton.solawi.bid.module.shares.data.management.shareOffers
 import org.solyton.solawi.bid.module.shares.data.management.shareSubscriptions
 import org.solyton.solawi.bid.module.shares.data.mappings.ShareManagementMappings
 import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
-import org.solyton.solawi.bid.module.shares.data.shareManagementActions
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscription
+import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscriptions
+import org.solyton.solawi.bid.module.shares.i18n.ShareManagementLangComponent
 import org.solyton.solawi.bid.module.style.page.PageTitle
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
@@ -80,12 +94,20 @@ import org.solyton.solawi.bid.module.user.action.user.getUsers
 import org.solyton.solawi.bid.module.user.action.user.readUserProfiles
 import org.solyton.solawi.bid.module.user.component.modal.showImportMembersToOrganizationModal
 import org.solyton.solawi.bid.module.user.data.*
+import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfileToImport
+import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
+import org.solyton.solawi.bid.module.user.data.member.Member
 import org.solyton.solawi.bid.module.user.data.organization.members
 import org.solyton.solawi.bid.module.user.data.organization.name
+import org.solyton.solawi.bid.module.user.data.profile.UserProfile
 import org.solyton.solawi.bid.module.user.data.user.organizations
 import org.solyton.solawi.bid.module.user.i18n.Component
 import org.solyton.solawi.bid.module.user.service.profile.firstAddress
 import org.solyton.solawi.bid.module.user.service.profile.fullname
+import org.solyton.solawi.bid.module.values.LegalEntityId
+import org.solyton.solawi.bid.module.values.ProviderId
+import org.solyton.solawi.bid.module.values.UserId
+import org.solyton.solawi.bid.module.values.Username
 import org.solyton.solawi.bid.application.data.environment as appEnv
 
 
@@ -107,6 +129,38 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                     i18n = (applicationStorage * userIso * i18n)
                 )
             },
+            onMissing(
+                CountryLangComponent.Countries,
+                applicationStorage * userIso * i18n.get
+            ) {
+                LaunchComponentLookup(
+                    langComponent = CountryLangComponent.Countries,
+                    environment = applicationStorage * userIso * environment.get,
+                    i18n = (applicationStorage * userIso * i18n)
+                )
+            },
+            onMissing(
+                ShareManagementLangComponent.Base,
+                applicationStorage * userIso * i18n.get
+            ) {
+                LaunchComponentLookup(
+                    langComponent = ShareManagementLangComponent.Base,
+                    environment = applicationStorage * userIso * environment.get,
+                    i18n = (applicationStorage * userIso * i18n)
+                )
+            },
+            *arrayOf("DE", "AT", "CH").map { countryCode ->
+                onMissing(
+                    CountryLangComponent.StateOrProvince(countryCode),
+                    applicationStorage * userIso * i18n.get
+                ) {
+                    LaunchComponentLookup(
+                        langComponent = CountryLangComponent.StateOrProvince(countryCode),
+                        environment = applicationStorage * userIso * environment.get,
+                        i18n = (applicationStorage * userIso * i18n)
+                    )
+                }
+            }.toBooleanArray(),
             *(applicationStorage * applicationManagementModule * availableApplications).read().map {
                 onMissing(
                     ApplicationLangComponent.ApplicationDetails(it.name),
@@ -121,10 +175,13 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
             }.toBooleanArray(),
             // Data
             *applicationStorage.runProcesses(
-                scope,
                 ActionEnvelope(
                     userIso * readOrganizations(),
-                    READ_ORGANIZATIONS
+                    READ_ORGANIZATIONS,
+                ),
+                ActionEnvelope(
+                    bankingApplicationIso * readBankAccounts(LegalEntityId(organizationId)),
+                    READ_BANK_ACCOUNTS,
                 ),
                 sequence(
                 ActionEnvelope(
@@ -133,7 +190,7 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                     ),
                     ActionEnvelope(
                         userIso * readUserProfiles(emptyList()),
-                        READ_USER_PROFILES
+                        READ_USER_PROFILES,
                     ).next(
                         ActionEnvelope(
                             shareManagementIso * readShareOffers(organizationId),
@@ -141,38 +198,38 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                         ),
                         ActionEnvelope(
                             shareManagementIso * readShareSubscriptions(organizationId),
-                            READ_SHARE_SUBSCRIPTIONS
+                            READ_SHARE_SUBSCRIPTIONS,
                         ),
                         ActionEnvelope(
                             shareManagementIso * readShareTypes(organizationId),
-                            READ_SHARE_TYPES
+                            READ_SHARE_TYPES,
                         ),
                         ActionEnvelope(
                             distributionManagementIso * readDistributionPoints(organizationId),
-                            READ_DISTRIBUTION_POINTS
+                            READ_DISTRIBUTION_POINTS,
                         ),
                     )
                 ),
                 ActionEnvelope(
                     applicationManagementModule * readApplications,
-                    READ_APPLICATIONS
+                    READ_APPLICATIONS,
                 ),
                 ActionEnvelope(
                     applicationManagementModule * readPersonalApplicationOrganizationContextRelations(),
-                    READ_PERSONAL_APPLICATION_ORGANIZATION_CONTEXT_RELATIONS
+                    READ_PERSONAL_APPLICATION_ORGANIZATION_CONTEXT_RELATIONS,
                 )
             ),
-
         ),
         onLoading = { Loading() }
     ) {
+
         val userModuleStorage = applicationStorage * userIso
         val device = userModuleStorage * deviceData * mediaType
 
         val organization = userModuleStorage * user * organizations * DeepSearch { it.organizationId == organizationId }
         val members = organization * members
-        val memberProfilesMap = (userModuleStorage * managedUsers.get) map { user ->
-            user.associateBy({ it.id }) { it.profile }
+        val memberProfilesMap = (userModuleStorage * managedUsers.get) map { users: List<ManagedUser> ->
+            users.associateBy({ it.id }) { it.profile }
         }
 
 
@@ -219,11 +276,21 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                 )
             }
         }
+        val bankingApplicationStorage = applicationStorage * bankingApplicationIso
+        val bankingMappings: Reader<BankingApplication, BankingMappings> = Reader {
+            bankingApplication ->
+            BankingMappings(
+                override = false,
+                LegalEntityId(organizationId),
+                bankingApplication.bankAccounts.associateBy { it.userId }
+            )
+        }
         // texts
         val base = applicationStorage * i18N * language * ApplicationComponent.base
         val texts = userModuleStorage * i18n * language * component(OrganizationLangComponent.OrganizationPage)
         val dialogs = texts * subComp("dialogs")
         val importMembersToOrganization = dialogs * subComp("importMembersToOrganization")
+        val updateMemberOfOrganization = dialogs * subComp("updateMemberOfOrganization")
         val listOfMembers = texts * subComp("listOfMembers")
         val listOfMembersHeaders = texts * subComp("listOfMembers") * subComp("headers")
 
@@ -251,6 +318,7 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                 }
             }
 
+            var memberFilter by remember { mutableStateOf<(Member) -> Boolean>({true}) }
             ListWrapper({
                 defaultListStyles.listWrapper(this)
                 overflowX("auto")
@@ -259,8 +327,6 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                 TitleWrapper {
                     Title { H3{ Text((listOfMembers * title).emit()) }}
                     SimpleUpDown(open, {open = !open})
-
-
                 }
                 if(open) {
                     HeaderWrapper {
@@ -273,6 +339,32 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                             defaultListStyles.actionsWrapper(this)
                             alignSelf(AlignSelf.FlexEnd)
                         }){
+                            // Search by names of user profiles and co-subscribers
+                            val searchMemberProfiles = memberProfilesMap.read()
+                            val searchCoSubscribers = searchMemberProfiles.map { entry ->
+                                entry.key to shareSubscriptionsMap.read()[entry.value?.userProfileId]
+                                    ?.map { it.coSubscribers }
+                                    ?.flatten()
+                                    ?.distinct()
+                                    ?.joinToString(", ") { it }
+                            }.toMap()
+                            SearchInput(
+                                "",
+                                SearchInputStyles()
+                            ) {
+                                val newSearchInputState = it.trim()
+                                memberFilter = if (newSearchInputState.isNotBlank()){
+                                    { member ->
+                                           member.username.contains(newSearchInputState)
+                                        || searchMemberProfiles[member.memberId]?.fullname()?.contains(newSearchInputState) ?: false
+                                        || searchCoSubscribers.contains(newSearchInputState)
+                                    }
+                                } else {
+                                    { true }
+                                }
+                            }
+
+                            // Import csv of members
                             var csv: String? by remember { mutableStateOf<String?>(null) }
                             UploadButton(
                                 color = Color.black,
@@ -292,7 +384,88 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                         scope,
                                         organizationId,
                                         csv!!, ';',
-                                        (shareManagementStorage * shareManagementMappings).emit()
+                                        (shareManagementStorage * shareManagementMappings).emit(),
+                                        (bankingApplicationStorage * bankingMappings).emit()
+                                    )
+                                }
+                            }
+                            val shareOffers = (shareManagementStorage * shareOffers.get)
+                            var usernameState by remember { mutableStateOf<Username?>(null) }
+                            var userProfileState by remember { mutableStateOf<UserProfile?>(null) }
+                            var importUserProfileState by remember { mutableStateOf<UserProfileToImport?>(null) }
+                            var bankAccountState by remember { mutableStateOf<BankAccount?>(null) }
+                            var shareSubscriptionsState by remember { mutableStateOf<ShareSubscriptions?>(null) }
+                            // todo:dev sync module state when new user has been stored
+                            var userId by remember { mutableStateOf<UserId?>(null) }
+                            LaunchedEffect(importUserProfileState) {
+                                importUserProfileState?.let { profile ->
+                                    val user = (userModuleStorage * managedUsers).read().firstOrNull {
+                                        it.username == profile.username
+                                    }
+                                    userId = user?.id?.let { UserId(it) }
+                                }
+                            }
+                            /*
+                            val userId by produceState<UserId?>(initialValue = null) {
+                                importUserProfileState?.let { profile ->
+                                    val user = (userModuleStorage * managedUsers).read().firstOrNull {
+                                        it.username == profile.username
+                                    }
+                                    value = user?.id?.let { UserId(it) }
+                                }
+                            }
+                             */
+
+                            PlusButton(
+                                color = Color.black,
+                                bgColor = Color.white,
+                                texts = listOfMembers * Component.actions * Component.create * tooltip,
+                                deviceType = { device.read() }
+                            ) {
+
+                                (applicationStorage * modals).showUpdateMembersOfOrganizationModal(
+                                    texts = updateMemberOfOrganization,
+                                    device = {device.read ()},
+                                    actions = (applicationStorage * mainActions).read(),
+                                    organizationId = ProviderId(organizationId),
+                                    username = importUserProfileState?.username?.let { Username(it) },
+                                    setUsername = {usernameState = it},
+                                    userProfile = userId?.let { userProfileState },
+                                    setUserProfile = {userProfileState = it},
+                                    importUserProfile = { userProfileToImport ->
+                                        usernameState = Username(userProfileToImport.username)
+                                        importUserProfileState = userProfileToImport
+
+                                        val actions = memberCreateAction(
+                                            providerId= ProviderId(organizationId),
+                                            username = usernameState!!,
+                                            userProfileChange = Change(null, userProfileState),
+                                            bankAccountChange = Change(null, null),
+                                            shareSubscriptionsChange = Change(null, null)
+                                        )
+                                        applicationStorage.runProcesses(
+                                            scope,
+                                            *actions
+                                        )
+                                    },
+                                    bankAccount = null,
+                                    setBankAccount = {bankAccountState = it},
+                                    distributionPoints = distributionPoints.read(),
+                                    shareOffers = shareOffers.emit(),
+                                    shareSubscriptions = null,
+                                    setShareSubscriptions = {shareSubscriptionsState = it},
+                                    isOkButtonDisabled = {false}
+                                ) {
+                                    val actions = memberCreateAction(
+                                        providerId= ProviderId(organizationId),
+                                        username = usernameState!!,
+                                        userProfileChange = Change(null, userProfileState),
+                                        bankAccountChange = Change(null, bankAccountState),
+                                        shareSubscriptionsChange = Change(null, shareSubscriptionsState)
+                                    )
+                                    applicationStorage.runProcesses(
+                                        scope,
+                                        *actions
                                     )
                                 }
                             }
@@ -316,7 +489,7 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
 
                         }
                     }
-                    ListItemsIndexed(members) { index, member ->
+                    ListItemsIndexed(members.filter(memberFilter)) { index, member ->
                         ListItemWrapper({
                             listItemWrapperStyle(this, index)
                         }) {
@@ -356,13 +529,55 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                             ActionsWrapper({
                                 actionsWrapperStyle(this)
                             }) {
+                                val userProfile = (memberProfilesMap * Get(member.memberId)).emit()
+                                var usernameState by remember { mutableStateOf(Username(member.username)) }
+                                var userProfileState by remember { mutableStateOf(userProfile) }
+
+                                val bankAccount = (bankingApplicationStorage * bankingMappings).read().bankAccounts[UserId(member.memberId)]
+                                var bankAccountState by remember { mutableStateOf(bankAccount) }
+
+                                val shareOffers = (shareManagementStorage * shareOffers.get).emit()
+                                val shareSubscriptions = shareSubscriptionsMap.read()[userProfile?.userProfileId].wrapOrNull {
+                                        list -> ShareSubscriptions(list)
+                                }
+                                var shareSubscriptionsState by remember { mutableStateOf(shareSubscriptions) }
+
                                 EditButton(
                                     Color.black,
                                     Color.white,
                                     listOfMembers * Component.actions * Component.edit * tooltip,
                                     { device.read() }
                                 ) {
-                                    navigate("/app/management/user/${member.username}")
+                                    (applicationStorage * mainModales).showUpdateMembersOfOrganizationModal(
+                                        texts = updateMemberOfOrganization,
+                                        device = {device.read ()},
+                                        actions = (applicationStorage * mainActions).read(),
+                                        organizationId = ProviderId(organizationId),
+                                        username = Username(member.username),
+                                        setUsername = {usernameState = it},
+                                        userProfile = userProfile,
+                                        setUserProfile = {userProfileState = it},
+                                        importUserProfile = {},
+                                        bankAccount = bankAccount,
+                                        setBankAccount = {bankAccountState = it},
+                                        distributionPoints = distributionPoints.read(),
+                                        shareOffers = shareOffers,
+                                        shareSubscriptions = shareSubscriptions,
+                                        setShareSubscriptions = {shareSubscriptionsState = it},
+                                        isOkButtonDisabled = {false}
+                                    ) {
+                                        val actions = applicationStorage.memberUpdateAction(
+                                            member = {member},
+                                            usernameChange = Change(Username(member.username), usernameState),
+                                            userProfileChange = Change(userProfile, userProfileState),
+                                            bankAccountChange = Change(bankAccount, bankAccountState),
+                                            shareSubscriptionsChange = Change(shareSubscriptions, shareSubscriptionsState)
+                                        )
+                                        applicationStorage.runProcesses(
+                                            scope,
+                                            *actions
+                                        )
+                                    }
                                 }
                             }
                         }
