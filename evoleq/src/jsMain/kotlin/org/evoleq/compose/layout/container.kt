@@ -3,7 +3,6 @@ package org.evoleq.compose.layout
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
 import org.evoleq.compose.style.data.device.DeviceType
-import org.evoleq.compose.style.data.device.compareTo
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.jetbrains.compose.web.css.marginLeft

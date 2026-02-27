@@ -1,49 +1,69 @@
 package org.evoleq.compose.style.data.device
 
-sealed class DeviceType(open val minWidth: Int,open val maxWidth: Int, open val order: Int) {
-    data object Empty: DeviceType(0,0, 0)
-    data object Mobile : DeviceType(0,600, 1)
-    data object Tablet : DeviceType(601,768, 2)
-    data object Laptop : DeviceType(769, 1280, 3)
-    data object Desktop: DeviceType(1281, 1440, 5)
+import kotlin.math.roundToInt
+import kotlin.math.roundToInt
 
-    data object Huge : DeviceType(1441, Int.MAX_VALUE, Int.MAX_VALUE)
-    // ...
+sealed class DeviceType(
+    open val minWidth: Int,
+    open val maxWidth: Int,
+    open val order: Int
+) : Comparable<DeviceType> {
+
+    data object Empty : DeviceType(0, 0, 0)
+    data object Mobile  : DeviceType(0, 600, 1)
+    data object Tablet  : DeviceType(601, 1024, 2)
+    data object Laptop  : DeviceType(1025, 1440, 3)
+    data object Desktop : DeviceType(1441, 1920, 4)
+    data object Huge    : DeviceType(1921, Int.MAX_VALUE, 5)
+
+    override operator fun compareTo(other: DeviceType) =
+        order.compareTo(other.order)
 
     companion object {
-        fun from(width: Double, pixelRatio: Double, isTouchDevice: Boolean, userAgent: String): DeviceType = getDeviceType(
-            width, pixelRatio, isTouchDevice, userAgent
-        )
+        @Suppress("ReturnCount")
+        fun detect(
+            width: Double,
+            userAgent: String,
+            hasTouch: Boolean,
+            maxTouchPoints: Int = 0
+        ): DeviceType {
+            val ua = userAgent.lowercase()
+            val w = width.roundToInt()
+
+            // ----------------------------
+            // 1️⃣ iOS Geräte (zuverlässig im UA)
+            // ----------------------------
+            if (ua.contains("iphone")) return Mobile
+            if (ua.contains("ipad")) return Tablet
+
+            // iPad mit Desktop-User-Agent (iPadOS 13+)
+            if (ua.contains("macintosh") && hasTouch && maxTouchPoints > 1) {
+                return Tablet
+            }
+
+            // ----------------------------
+            // 2️⃣ Android Geräte
+            // ----------------------------
+            if (ua.contains("android")) {
+                return if (ua.contains("mobile")) Mobile else Tablet
+            }
+
+            // ----------------------------
+            // 3️⃣ Touch-Heuristik (Fallback)
+            // ----------------------------
+            if (hasTouch) {
+                if (w <= 600) return Mobile
+                if (w <= 1024) return Tablet
+            }
+
+            // ----------------------------
+            // 4️⃣ Width-Fallback für Desktop/Laptop
+            // ----------------------------
+            return when {
+                w <= 1440 -> Laptop
+                w <= 1920 -> Desktop
+                else -> Huge
+            }
+        }
     }
 }
-
-fun getDeviceType(width: Double, pixelRatio: Double, isTouchDevice: Boolean, userAgent: String): DeviceType {
-    /*
-    val width = window.innerWidth
-    val pixelRatio = window.devicePixelRatio
-    val isTouchDevice = js("('ontouchstart' in window)") as Boolean
-    val userAgent = window.navigator.userAgent.lowercase()
-*
-
-     */
-    return when {
-        // Check for mobile devices (based on touch + pixel ratio + screen width)
-        isTouchDevice && pixelRatio > 1 && width <= DeviceType.Mobile.maxWidth -> DeviceType.Mobile
-
-        // Check for tablets (wider screens but still touch-based)
-        isTouchDevice && pixelRatio > 1 && width >= DeviceType.Tablet.minWidth && width <= 1024 -> DeviceType.Tablet
-
-        // User Agent check for tablets (iPad, PlayBook, etc.)
-        userAgent.contains("ipad") || userAgent.contains("playbook") -> DeviceType.Tablet
-
-        // User Agent check for mobile (iPhone, Android phones)
-        userAgent.contains("iphone") || userAgent.contains("android") && !userAgent.contains("tablet") -> DeviceType.Mobile
-
-        // Default: Desktop
-        width >= DeviceType.Laptop.minWidth && width < DeviceType.Laptop.maxWidth -> DeviceType.Laptop
-        width >= DeviceType.Desktop.minWidth && width < DeviceType.Desktop.maxWidth -> DeviceType.Desktop
-        else -> DeviceType.Huge
-    }
-}
-
-operator fun DeviceType.compareTo(other: DeviceType) = order compareTo other.order
