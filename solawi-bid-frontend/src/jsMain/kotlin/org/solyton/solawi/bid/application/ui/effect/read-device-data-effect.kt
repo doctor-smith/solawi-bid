@@ -21,22 +21,24 @@ fun LaunchSetDeviceData(deviceData: Storage<Device>) {
             if((deviceData * mediaType).read() is DeviceType.Empty) {
                 (deviceData * screenWidth).write(window.innerWidth.toDouble())
                 (deviceData * mediaType).write(
-                    DeviceType.from(
-                    window.innerWidth.toDouble(),
-                    window.devicePixelRatio,
-                    js("('ontouchstart' in window)") as Boolean,
-                    window.navigator.userAgent.lowercase() )
+                    DeviceType.detect(
+                        width = window.innerWidth.toDouble(),
+                        userAgent = window.navigator.userAgent,
+                        hasTouch = js("navigator.maxTouchPoints > 0") as Boolean,
+                        maxTouchPoints = js("navigator.maxTouchPoints") as Int
+                    )
                 )
             }
             window.addEventListener("resize", {
                 (deviceData * screenWidth).write(window.innerWidth.toDouble())
                 (deviceData * mediaType).write(
-                    DeviceType.from(
-                    window.innerWidth.toDouble(),
-                    window.devicePixelRatio,
-                    js("('ontouchstart' in window)") as Boolean,
-                    window.navigator.userAgent.lowercase()
-                ))
+                    DeviceType.detect(
+                        width = window.innerWidth.toDouble(),
+                        userAgent = window.navigator.userAgent,
+                        hasTouch = js("navigator.maxTouchPoints > 0") as Boolean,
+                        maxTouchPoints = js("navigator.maxTouchPoints") as Int
+                    )
+                )
             })
         }
     }

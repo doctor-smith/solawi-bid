@@ -2,7 +2,6 @@ package org.solyton.solawi.bid.module.style.form
 
 import org.evoleq.compose.Style
 import org.evoleq.compose.style.data.device.DeviceType
-import org.evoleq.compose.style.data.device.compareTo
 import org.jetbrains.compose.web.css.*
 
 @Style
