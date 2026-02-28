@@ -7,7 +7,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.guard.data.ConditionalActionInput
-import org.evoleq.compose.guard.data.ExecutableAction
 import org.evoleq.compose.guard.data.isLoading
 import org.evoleq.compose.guard.data.onFulfilled
 import org.evoleq.compose.guard.data.sequentiallyExecuted
@@ -25,28 +24,23 @@ import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
-import org.evoleq.optics.storage.read
-import org.evoleq.optics.storage.times
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.Text
-import org.jetbrains.letsPlot.core.plot.base.DataFrame
 import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.application.data.availableApplications
 import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.service.useI18nTransform
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
-import org.solyton.solawi.bid.application.data.availableApplications
-import org.solyton.solawi.bid.module.application.data.application.id as applicationId
 import org.solyton.solawi.bid.module.bid.action.readAuctions
 import org.solyton.solawi.bid.module.bid.component.AuctionList
 import org.solyton.solawi.bid.module.bid.component.button.CreateAuctionButton
 import org.solyton.solawi.bid.module.bid.component.form.DEFAULT_AUCTION_ID
 import org.solyton.solawi.bid.module.bid.data.*
 import org.solyton.solawi.bid.module.bid.data.reader.BidComponent
-import org.solyton.solawi.bid.module.user.data.actions as userActions
 import org.solyton.solawi.bid.module.error.component.showErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
 import org.solyton.solawi.bid.module.i18n.data.language
@@ -56,6 +50,8 @@ import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.action.organization.readOrganizations
 import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsAction
+import org.solyton.solawi.bid.module.application.data.application.id as applicationId
+import org.solyton.solawi.bid.module.user.data.actions as userActions
 
 @Markup
 @Composable
@@ -124,8 +120,10 @@ fun AuctionsPage(storage: Storage<Application>) = Div {
             }
         }
         Wrap{ AuctionList(
-            bidApplicationStorage * auctions,
-            bidApplicationStorage * user.get,
+            auctions= bidApplicationStorage * auctions,
+            user = bidApplicationStorage * user.get,
+            organizationApplicationContextRelations = bidApplicationStorage * applicationOrganizationRelations.get,
+            applicationId = applicationId,
             bidApplicationStorage * i18N,
             bidApplicationStorage * modals,
             bidApplicationStorage * deviceData * mediaType.get

@@ -6,10 +6,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
-import org.evoleq.compose.guard.data.isLoading
-import org.evoleq.compose.guard.data.onEmpty
-import org.evoleq.compose.guard.data.onStringEmpty
-import org.evoleq.compose.layout.*
+import org.evoleq.compose.guard.data.*
+import org.evoleq.compose.layout.Horizontal
+import org.evoleq.compose.layout.PropertiesStyles
+import org.evoleq.compose.layout.PropertyStyles
+import org.evoleq.compose.layout.VerticalAccent
 import org.evoleq.compose.routing.openUrlInNewTab
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.*
@@ -17,6 +18,7 @@ import org.evoleq.math.*
 import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Storage
+import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
@@ -24,7 +26,9 @@ import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.H2
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.application.data.availableApplications
 import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
+import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.service.useI18nTransform
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.module.bid.action.configureAuction
@@ -41,9 +45,6 @@ import org.solyton.solawi.bid.module.bid.component.effect.TriggerBidRoundEvaluat
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerCommentOnRoundDialog
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerExportOfBidRoundResults
 import org.solyton.solawi.bid.module.bid.component.form.showUpdateAuctionModal
-import org.solyton.solawi.bid.module.list.component.HeaderCell
-import org.solyton.solawi.bid.module.list.component.TextCell
-import org.solyton.solawi.bid.module.list.component.TimeCell
 import org.solyton.solawi.bid.module.bid.data.*
 import org.solyton.solawi.bid.module.bid.data.api.AddBidders
 import org.solyton.solawi.bid.module.bid.data.api.NewBidder
@@ -67,21 +68,17 @@ import org.solyton.solawi.bid.module.error.lang.errorModalTexts
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.data.locale
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
-import org.solyton.solawi.bid.module.list.component.ActionsWrapper
-import org.solyton.solawi.bid.module.list.component.DataWrapper
-import org.solyton.solawi.bid.module.list.component.Header
-import org.solyton.solawi.bid.module.list.component.HeaderWrapper
-import org.solyton.solawi.bid.module.list.component.ListItemWrapper
-import org.solyton.solawi.bid.module.list.component.ListWrapper
-import org.solyton.solawi.bid.module.list.component.Title
-import org.solyton.solawi.bid.module.list.component.TitleWrapper
+import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.ListStyles
 import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.style.forestGreenUltraLite
 import org.solyton.solawi.bid.module.style.layout.accent.vertical.verticalAccentStyles
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
+import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsAction
+import org.solyton.solawi.bid.module.user.data.userActions
 import kotlin.js.Date
+import org.solyton.solawi.bid.module.application.data.application.id as applicationId
 
 val auctionPropertiesStyles = PropertiesStyles(
     containerStyle = { width(40.percent) },
@@ -97,6 +94,21 @@ val auctionPropertiesStyles = PropertiesStyles(
 fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style { overflowY("auto" /*todo:dev - scroll only if needed*/)}}) {
     // Bid Application Storage
     val bidApplicationStorage = storage * bidApplicationIso
+
+    if(sequentiallyExecuted(
+            onFulfilled(
+                source = { ConditionalActionInput(
+                    (storage * availableApplications).read(),
+                    (storage * availableApplications).read()
+                )},
+                predicate = { it.isEmpty() },
+            ){
+                LaunchedEffect(Unit) {
+                    (storage * userIso * userActions).dispatch(readUserPermissionsAction("React"))
+                }
+            }
+        )) return@Div
+
     // Effects
     if(isLoading(
         onEmpty(
@@ -135,6 +147,7 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
             .filter{ it.state == RoundState.Frozen.toString() }
             .sortedByDescending { it.roundNumber }
     }
+    val applicationId = storage * availableApplications * FirstBy { it.name == "AUCTIONS" } * applicationId.get
     // Texts
     val texts = (bidApplicationStorage * i18N * language * component(BidComponent.AuctionPage))
     val details = texts * subComp("details")
@@ -153,6 +166,8 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
             (bidApplicationStorage * modals).showUpdateAuctionModal(
                 auction =  bidApplicationStorage * auction,
                 organizations = bidApplicationStorage * user * organizations.get,
+                organizationApplicationContextRelations = bidApplicationStorage * applicationOrganizationRelations.get,
+                applicationId = applicationId,
                 texts = ((bidApplicationStorage * i18N * language).read() as Lang.Block).component("solyton.auction.updateDialog"),
                 device = bidApplicationStorage * deviceData * mediaType.get,
                 cancel = {confirmationModalOpen = false}
@@ -201,6 +216,7 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                         UpdateAuctionButton(
                             storage = bidApplicationStorage,
                             auction = auction,
+                            applicationId = applicationId,
                             texts = buttons * subComp("updateAuction"),
                             dataId = "auction-page.button.configure-auction"
                         )
@@ -278,6 +294,7 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                     UpdateAuctionButton(
                         storage = bidApplicationStorage,
                         auction = auction,
+                        applicationId = applicationId,
                         texts = buttons * subComp("updateAuction"),
                         dataId = "auction-page.button.configure-auction.explanation",
                         showText = true,
@@ -446,7 +463,6 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                     }
                 }
             }
-            // }
         }
     }
 }

@@ -1,8 +1,7 @@
 package org.solyton.solawi.bid.module.bid.component.button
 
 import androidx.compose.runtime.Composable
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
+import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.device.data.mediaType
@@ -40,36 +39,43 @@ fun CreateAuctionButton(
     auction: Lens<BidApplication, Auction>,
     applicationId: Source<String>,
     texts: Source<Lang.Block>
-) = PlusButton(
-    color = Color.black,
-    bgColor = Color.transparent,
-    texts = texts * tooltip,
-    deviceType = storage * deviceData * mediaType.get,
-    isDisabled = (storage * user.get).emit().isNotGranted(BidRight.Auction.manage),
-    dataId = "auctions-page.create-auction-button"
-){
-    // Add auction with dummy id to the store
-    ((storage * auctions).add(Auction(auctionId = DEFAULT_AUCTION_ID, "", todayWithTime())))
+) {
+    val scope = rememberCoroutineScope()
 
-    // Show the auction modal
-    (storage * modals).showAuctionModal(
-        auction = storage * auction,
-        organizations = storage * user * organizations.get,
-        organizationApplicationContextRelations = storage * applicationOrganizationRelations.get,
-        applicationId = applicationId,
-        texts = ((storage * i18N * language).read() as Lang.Block).component("solyton.auction.createDialog"),
-        device = storage * deviceData * mediaType.get,
-        cancel = {(storage * auctions).remove { it.auctionId == DEFAULT_AUCTION_ID }}
+    PlusButton(
+        color = Color.black,
+        bgColor = Color.transparent,
+        texts = texts * tooltip,
+        deviceType = storage * deviceData * mediaType.get,
+        isDisabled = (storage * user.get).emit().isNotGranted(BidRight.Auction.manage),
+        dataId = "auctions-page.create-auction-button"
     ) {
-        CoroutineScope(Job()).launch {
-            val actions = (storage * actions).read()
-            try {
-                actions.dispatch( createAuction(auction) )
-            } catch(exception: Exception) {
-                (storage * modals).showErrorModal(
-                    texts = errorModalTexts(exception.message?:exception.cause?.message?:"Cannot Emit action 'CreateAuction'"),
-                    device = storage * deviceData * mediaType.get,
-                )
+
+        // Add auction with dummy id to the store
+        ((storage * auctions).add(Auction(auctionId = DEFAULT_AUCTION_ID, "", todayWithTime())))
+
+        // Show the auction modal
+        (storage * modals).showAuctionModal(
+            auction = storage * auction,
+            organizations = storage * user * organizations.get,
+            organizationApplicationContextRelations = storage * applicationOrganizationRelations.get,
+            applicationId = applicationId,
+            texts = ((storage * i18N * language).read() as Lang.Block).component("solyton.auction.createDialog"),
+            device = storage * deviceData * mediaType.get,
+            cancel = { (storage * auctions).remove { it.auctionId == DEFAULT_AUCTION_ID } }
+        ) {
+            scope.launch {
+                val actions = (storage * actions).read()
+                try {
+                    actions.dispatch(createAuction(auction))
+                } catch (exception: Exception) {
+                    (storage * modals).showErrorModal(
+                        texts = errorModalTexts(
+                            exception.message ?: exception.cause?.message ?: "Cannot Emit action 'CreateAuction'"
+                        ),
+                        device = storage * deviceData * mediaType.get,
+                    )
+                }
             }
         }
     }

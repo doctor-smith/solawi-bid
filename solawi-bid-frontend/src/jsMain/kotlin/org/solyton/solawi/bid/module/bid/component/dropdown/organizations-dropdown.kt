@@ -148,3 +148,17 @@ fun Organization.flat(): Map<String, Organization> = mapOf (
     name to this,
     *subOrganizations.flat().entries.map { (key, value) -> "$name >> $key" to value}.toTypedArray()
 )
+
+fun List<Organization>.flatById(): Map<String, Organization> = map {
+    it.flatById()
+}.fold(mapOf()){
+    accumulator, element -> mapOf(
+        *accumulator.entries.map { (key, value) -> key to value}.toTypedArray(),
+        *element.entries.map { (key, value) -> key to value}.toTypedArray()
+    )
+}
+
+fun Organization.flatById(): Map<String, Organization> = mapOf (
+    organizationId to this,
+    *subOrganizations.flatById().entries.map { (key, value) -> "$organizationId >> $key" to value}.toTypedArray()
+)

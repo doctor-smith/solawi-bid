@@ -20,6 +20,7 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
+import org.solyton.solawi.bid.module.application.data.organizationrelation.ApplicationOrganizationRelation
 import org.solyton.solawi.bid.module.bid.action.configureAuction
 import org.solyton.solawi.bid.module.bid.action.deleteAuctionAction
 import org.solyton.solawi.bid.module.bid.component.form.showUpdateAuctionModal
@@ -51,6 +52,8 @@ import org.solyton.solawi.bid.module.bid.data.auctions as auctionLens
 fun AuctionList(
     auctions: Storage<List<Auction>>,
     user: Source<User>,
+    organizationApplicationContextRelations: Source<List<ApplicationOrganizationRelation>>,
+    applicationId: Source<String>,
     i18n: Storage<I18N>,
     modals: Storage<Modals<Int>>,
     device: Source<DeviceType>,
@@ -66,6 +69,8 @@ fun AuctionList(
             AuctionListItem(
                 auctions * FirstBy<Auction> { it.auctionId == auction.auctionId},
                 user,
+                organizationApplicationContextRelations,
+                applicationId,
                 i18n,
                 modals,
                 device,
@@ -85,6 +90,8 @@ fun AuctionList(
 fun AuctionListItem(
     auction: Storage<Auction>,
     user: Source<User>,
+    organizationApplicationContextRelations: Source<List<ApplicationOrganizationRelation>>,
+    applicationId: Source<String>,
     i18n: Storage<I18N>,
     modals: Storage<Modals<Int>>,
     device: Source<DeviceType>,
@@ -147,7 +154,9 @@ fun AuctionListItem(
             // open edit dialog
             (modals).showUpdateAuctionModal(
                 auction =  auction,
-                organizations = user map{ user: User -> user.organizations },
+                organizations = user map { user: User -> user.organizations },
+                organizationApplicationContextRelations = organizationApplicationContextRelations,
+                applicationId = applicationId,
                 texts = ((i18n * language).read() as Lang.Block).component("solyton.auction.updateDialog"),
                 device = device,
                 cancel = {}

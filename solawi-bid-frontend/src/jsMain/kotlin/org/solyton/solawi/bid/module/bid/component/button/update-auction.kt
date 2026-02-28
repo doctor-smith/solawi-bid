@@ -11,6 +11,7 @@ import org.evoleq.language.component
 import org.evoleq.language.text
 import org.evoleq.language.tooltip
 import org.evoleq.math.Reader
+import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.times
 import org.evoleq.optics.lens.Lens
@@ -40,6 +41,7 @@ import org.solyton.solawi.bid.module.style.data.Side
 fun UpdateAuctionButton(
     storage: Storage<BidApplication>,
     auction: Lens<BidApplication, Auction>,
+    applicationId: Source<String>,
     texts: Reader<Unit, Lang.Block>,
     dataId: String,
     showText: Boolean = false
@@ -53,6 +55,8 @@ fun UpdateAuctionButton(
         (storage * modals).showUpdateAuctionModal(
             auction =  storage * auction,
             organizations = storage * user * organizations.get,
+            organizationApplicationContextRelations = storage * applicationOrganizationRelations.get,
+            applicationId = applicationId,
             texts = ((storage * i18N * language).read() as Lang.Block).component("solyton.auction.updateDialog"),
             device = storage * deviceData * mediaType.get,
             cancel = {}
