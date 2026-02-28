@@ -30,7 +30,9 @@ import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.Input
 import org.jetbrains.compose.web.dom.TextInput
+import org.solyton.solawi.bid.module.application.data.organizationrelation.ApplicationOrganizationRelation
 import org.solyton.solawi.bid.module.bid.component.dropdown.OrganizationsDropdown
+import org.solyton.solawi.bid.module.bid.component.dropdown.flatById
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
 import org.solyton.solawi.bid.module.bid.data.auction.*
 import org.solyton.solawi.bid.module.bid.service.onNullEmpty
@@ -46,6 +48,8 @@ fun UpdateAuctionModal(
     modals: Storage<Modals<Int>>,
     auction: Storage<Auction>,
     organizations: Source<List<Organization>>,
+    organizationApplicationContextRelations: Source<List<ApplicationOrganizationRelation>>,
+    applicationId: Source<String>,
     device: Source<DeviceType>,
     cancel: ()->Unit,
     update: ()->Unit
@@ -53,7 +57,6 @@ fun UpdateAuctionModal(
     id = id,
     modals = modals,
     device = device,
-
     onOk = {
         update()
     },
@@ -65,6 +68,22 @@ fun UpdateAuctionModal(
 ) {
     // input texts
     val inputs: Lang.Block = texts.component("inputs")
+
+    val organizationsMap by produceState<Map<String, Organization>>(emptyMap()) {
+        value = organizations.emit().flatById()
+    }
+
+    val applicationTimesOrganizationToContextMap by produceState(emptyMap()) {
+        value = (organizationApplicationContextRelations map { orgList -> orgList.associateBy {
+            ApplicationOrganizationKey(it.applicationId , it.organizationId)
+        } }).emit()
+    }
+
+    val applicationTimesContextToOrganizationMap by produceState(emptyMap()) {
+        value = (organizationApplicationContextRelations map { orgList -> orgList.associateBy {
+            ApplicationContextKey(it.applicationId , it.contextId)
+        } }).emit()
+    }
 
     Div(attrs = {style { formDesktopStyle() }}) {
 
@@ -94,19 +113,6 @@ fun UpdateAuctionModal(
         }
 
         Div(attrs = {style { fieldDesktopStyle() }}) {
-            Label(inputs["benchmark"], id = "benchmark" , labelStyle = formLabelDesktopStyle)
-            TextInput (onNullEmpty((auction * auctionDetails * benchmark).read()){it}) {
-                id("benchmark")
-                style { numberInputDesktopStyle() }
-                onInput {
-                    onIsDouble(it.value) {
-                        (auction * auctionDetails * benchmark).write(toDouble())
-                    }
-                }
-            }
-        }
-
-        Div(attrs = {style { fieldDesktopStyle() }}) {
             Label(inputs["targetAmount"], id = "targetAmount" , labelStyle = formLabelDesktopStyle)
             TextInput(onNullEmpty((auction * auctionDetails * targetAmount).read()){it}) {
                 id("targetAmount")
@@ -119,6 +125,20 @@ fun UpdateAuctionModal(
             }
         }
         Div(attrs = {style { fieldDesktopStyle() }}) {
+            Label(inputs["benchmark"], id = "benchmark" , labelStyle = formLabelDesktopStyle)
+            TextInput (onNullEmpty((auction * auctionDetails * benchmark).read()){it}) {
+                id("benchmark")
+                style { numberInputDesktopStyle() }
+                onInput {
+                    onIsDouble(it.value) {
+                        (auction * auctionDetails * benchmark).write(toDouble())
+                    }
+                }
+            }
+        }
+
+
+        Div(attrs = {style { fieldDesktopStyle() }}) {
             Label(inputs["solidarityContribution"], id = "solidarityContribution" , labelStyle = formLabelDesktopStyle)
             TextInput(onNullEmpty((auction * auctionDetails * solidarityContribution).read()){it}) {
                 id("solidarityContribution")
@@ -130,6 +150,7 @@ fun UpdateAuctionModal(
                 }
             }
         }
+
         /*
         Div(attrs = {style { fieldDesktopStyle() }}) {
             Label("Minimal Bid", id = "minimalBid" , labelStyle = formLabelDesktopStyle)
@@ -149,15 +170,27 @@ fun UpdateAuctionModal(
         Div(attrs = {style { fieldDesktopStyle() }}) {
             Label(inputs["hostOrganization"], id = "host-organization", labelStyle = formLabelDesktopStyle)
             OrganizationsDropdown(
-                selected = with((auction * contextId).read())  contextId@{
-                    organizations map { orgs -> orgs.firstOrNull { it.contextId == this@contextId }}},
+                selected = {
+                    with((auction * contextId).read()) contextId@{
+                        val organizationId = applicationTimesContextToOrganizationMap[
+                            ApplicationContextKey(applicationId.emit(),this@contextId)
+                        ]?.organizationId
+                        organizationsMap[organizationId]
+                    }
+                },
                 organizations = organizations,
                 // todo:dev SMA-403 POC
                 isSelectable = { organizations.emit().any { o -> o.organizationId == organizationId } },
                 scope = CoroutineScope(Job())
             ) {
+                organization ->
                 // add organization context to auction
-                organization -> (auction * contextId).write(organization.contextId)
+                val applicationContextId = requireNotNull( applicationTimesOrganizationToContextMap[ApplicationOrganizationKey(
+                    applicationId.emit(), organization.organizationId
+                )]){
+                    "No context found for application ${applicationId.emit()} and organization ${organization.organizationId}"
+                }.contextId
+                (auction * contextId).write(applicationContextId)
             }
         }
     }
@@ -167,6 +200,8 @@ fun UpdateAuctionModal(
 fun Storage<Modals<Int>>.showUpdateAuctionModal(
     auction: Storage<Auction>,
     organizations: Source<List<Organization>>,
+    organizationApplicationContextRelations: Source<List<ApplicationOrganizationRelation>>,
+    applicationId: Source<String>,
     texts: Lang.Block,
     device: Source<DeviceType>,
     cancel: ()->Unit,
@@ -180,6 +215,8 @@ fun Storage<Modals<Int>>.showUpdateAuctionModal(
                 this@showUpdateAuctionModal,
                 auction,
                 organizations,
+                organizationApplicationContextRelations,
+                applicationId,
                 device,
                 cancel,
                 update

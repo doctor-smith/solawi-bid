@@ -1,8 +1,6 @@
 package org.solyton.solawi.bid.module.bid.component.form
 
 import androidx.compose.runtime.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import org.evoleq.compose.Markup
 import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.date.format
@@ -43,6 +41,9 @@ import org.w3c.dom.HTMLElement
 
 const val DEFAULT_AUCTION_ID = "DEFAULT_AUCTION_ID"
 
+data class ApplicationContextKey( val applicationId: String, val contextId: String)
+data class ApplicationOrganizationKey( val applicationId: String, val organizationId: String)
+
 @Markup
 @Suppress("FunctionName")
 fun AuctionModal(
@@ -69,9 +70,30 @@ fun AuctionModal(
     texts = texts,
     styles = auctionModalStyles(device),
 ) {
-
+    val scope = rememberCoroutineScope()
     // input texts
     val inputs: Lang.Block = texts.component("inputs")
+
+    val organizationsMap by produceState<Map<String, Organization>>(emptyMap()) {
+        value = (organizations map { orgList -> orgList.associateBy { it.organizationId } }).emit()
+    }
+    val applicationContextToOrganizationMap by produceState(emptyMap()) {
+        value = (organizationApplicationContextRelations map { orgList -> orgList.associateBy {
+            ApplicationContextKey(it.applicationId , it.contextId)
+        } }).emit()
+    }
+    val applicationOrganizationToContextMap by produceState(emptyMap()) {
+        value = (organizationApplicationContextRelations map { orgList -> orgList.associateBy {
+            ApplicationOrganizationKey(it.applicationId , it.organizationId)
+        } }).emit()
+    }
+    fun Map<String, Organization>.findOrganization(
+        applicationContextKey: ApplicationContextKey,
+        relations: Map<ApplicationContextKey, ApplicationOrganizationRelation>
+    ): Organization? {
+        val organizationId = relations[applicationContextKey]?.organizationId ?: return null
+        return organizationsMap[organizationId]
+    }
 
     Div(attrs = {style { formDesktopStyle() }}) {
 
@@ -102,41 +124,30 @@ fun AuctionModal(
             }
         }
         Div(attrs = {style { fieldDesktopStyle() }}) {
-            fun List<Organization>.findOrganization(
-                contextId: String,
-                applicationId: String,
-                relations: List<ApplicationOrganizationRelation>
-            ): Organization? {
-                val organizationId = relations.find{
-                    it.contextId == contextId && it.applicationId == applicationId
-                }?.organizationId
-                return this.find { organization -> organization.organizationId == organizationId }
-            }
+
 
             Label(inputs["hostOrganization"], id = "host-organization", labelStyle = formLabelDesktopStyle)
             OrganizationsDropdown(
                 selected = with((auction * contextId).read()) contextId@{
-                    organizations map { orgs -> orgs.findOrganization(
-                        this@contextId,
-                        applicationId.emit(),
-                        organizationApplicationContextRelations.emit()
+                    {_ -> organizationsMap.findOrganization(
+                        ApplicationContextKey(applicationId.emit(),this@contextId),
+                        applicationContextToOrganizationMap
                 )}},
                 organizations = organizations,
                 // todo:dev SMA-403 POC
                 isSelectable = { organizations.emit().any { o -> o.organizationId == organizationId } },
-                scope = CoroutineScope(Job())
+                scope = scope // CoroutineScope(Job())
             ) {
                 // add organization context to auction
                 organization ->
-                    val applicationContextId = organizationApplicationContextRelations.emit().find {
-                        it.applicationId == applicationId.emit() && it.organizationId == organization.organizationId
-                    }?.contextId
-                    (auction * contextId).write(applicationContextId!!)
-
+                    val applicationContextId = requireNotNull( applicationOrganizationToContextMap[ApplicationOrganizationKey(
+                        applicationId.emit(),
+                        organization.organizationId
+                    )]) {
+                        "No context found for application ${applicationId.emit()} and organization ${organization.organizationId}"
+                    }.contextId
+                    (auction * contextId).write(applicationContextId)
             }
-
-
-
         }
     }
 }
