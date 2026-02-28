@@ -28,7 +28,6 @@ import org.solyton.solawi.bid.application.data.i18N
 import org.solyton.solawi.bid.application.data.mainActions
 import org.solyton.solawi.bid.application.data.mainModales
 import org.solyton.solawi.bid.application.data.modals
-import org.solyton.solawi.bid.application.data.shareTypes
 import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
 import org.solyton.solawi.bid.application.data.transform.banking.bankingApplicationIso
 import org.solyton.solawi.bid.application.data.transform.distribution.distributionManagementIso
@@ -70,6 +69,9 @@ import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.defaultListStyles
 import org.solyton.solawi.bid.module.loading.component.Loading
 import org.solyton.solawi.bid.module.page.component.Page
+import org.solyton.solawi.bid.module.pagination.component.Pagination
+import org.solyton.solawi.bid.module.pagination.data.PaginationData
+import org.solyton.solawi.bid.module.pagination.service.paginate
 import org.solyton.solawi.bid.module.process.service.process.next
 import org.solyton.solawi.bid.module.process.service.process.runProcesses
 import org.solyton.solawi.bid.module.process.service.process.sequence
@@ -320,6 +322,16 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
             }
 
             var memberFilter by remember { mutableStateOf<(Member) -> Boolean>({true}) }
+            var paginationState by remember { mutableStateOf(
+                PaginationData(
+                    members.read().size,
+                    1,
+                    20,
+                    10,
+                    10
+                )
+            ) }
+
             ListWrapper({
                 defaultListStyles.listWrapper(this)
                 overflowX("auto")
@@ -331,15 +343,24 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                 }
                 if(open) {
                     HeaderWrapper {
-                        Header {
-                            HeaderCell(listOfMembersHeaders * Component.standard * title) { width(30.percent) }
-                            HeaderCell(listOfMembersHeaders * Component.userProfile * title) { width(30.percent) }
-                            HeaderCell("Solawi Anteile | Status") { width(40.percent) }
-                        }
                         ActionsWrapper({
                             defaultListStyles.actionsWrapper(this)
+                            width(100.percent)
                             alignSelf(AlignSelf.FlexEnd)
-                        }){
+                        }) {
+                            Pagination(
+                                data = paginationState,
+                                setNumberOfItemsPerPage = {
+                                    paginationState = paginationState.copy(
+                                        itemsPerPage = it,
+                                    )
+                                }
+                            ) {
+                                newPage  ->
+                                paginationState = paginationState.copy(
+                                    page = newPage,
+                                )
+                            }
                             // Search by names of user profiles and co-subscribers
                             val searchMemberProfiles = memberProfilesMap.read()
                             val searchCoSubscribers = searchMemberProfiles.map { entry ->
@@ -349,6 +370,8 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                     ?.distinct()
                                     ?.joinToString(", ") { it }
                             }.toMap()
+
+
                             SearchInput(
                                 "",
                                 SearchInputStyles()
@@ -356,9 +379,9 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                 val newSearchInputState = it.trim()
                                 memberFilter = if (newSearchInputState.isNotBlank()){
                                     { member ->
-                                           member.username.contains(newSearchInputState)
-                                        || searchMemberProfiles[member.memberId]?.fullname()?.contains(newSearchInputState) ?: false
-                                        || searchCoSubscribers.contains(newSearchInputState)
+                                        member.username.contains(newSearchInputState)
+                                                || searchMemberProfiles[member.memberId]?.fullname()?.contains(newSearchInputState) ?: false
+                                                || searchCoSubscribers.contains(newSearchInputState)
                                     }
                                 } else {
                                     { true }
@@ -474,6 +497,22 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                     }
                     HeaderWrapper {
                         Header {
+                            HeaderCell(listOfMembersHeaders * Component.standard * title) { width(30.percent) }
+                            HeaderCell(listOfMembersHeaders * Component.userProfile * title) { width(30.percent) }
+                            HeaderCell("Solawi Anteile | Status") { width(40.percent) }
+                        }
+                        /*
+                        ActionsWrapper({
+                            defaultListStyles.actionsWrapper(this)
+                            alignSelf(AlignSelf.FlexEnd)
+                        }){
+                            // fjdlkajfkldajflda
+                        }
+
+                         */
+                    }
+                    HeaderWrapper {
+                        Header {
                             // User / Memeber
                             HeaderCell(listOfMembersHeaders * Component.standard * Component.username * title) {
                                 width(10.percent); overflow("hidden")
@@ -490,7 +529,11 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
 
                         }
                     }
-                    ListItemsIndexed(members.filter(memberFilter)) { index, member ->
+                    ListItemsIndexed(
+                        members
+                            .filter(memberFilter)
+                            .paginate(paginationState.itemsPerPage, paginationState.page)
+                    ) { index, member ->
                         ListItemWrapper({
                             listItemWrapperStyle(this, index)
                         }) {
