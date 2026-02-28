@@ -8,4 +8,8 @@ import org.w3c.dom.Element
 fun <T: Element> AttrsScope<T>.disabled(): AttrsScope<T> = attr("disabled","true")
 
 @Markup
+fun <T: Element> AttrsScope<T>.disabled(isDisabled: Boolean): AttrsScope<T> = if(isDisabled) disabled() else this
+
+
+@Markup
 fun <T: Element> AttrsScope<T>.dataId(dataId: String): AttrsScope<T> = attr("data-id",dataId)
