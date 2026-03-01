@@ -196,6 +196,10 @@ val solawiApi by lazy {
                 key = ImportShareSubscriptions::class,
                 url = "shares/subscriptions/import"
             )
+            patch<UpdateShareStatus, ShareSubscription>(
+                key = UpdateShareStatus::class,
+                url = "shares/subscriptions/update-status"
+            )
         }
         // User Management and Organizations
         group("User management and organizations") {

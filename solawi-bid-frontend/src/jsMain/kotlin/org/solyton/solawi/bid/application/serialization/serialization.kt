@@ -18,6 +18,9 @@ import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.distribution.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.shares.data.api.*
+import org.solyton.solawi.bid.module.shares.data.values.ShareOfferId
+import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
+import org.solyton.solawi.bid.module.shares.data.values.ShareTypeId
 import org.solyton.solawi.bid.module.user.data.api.*
 import org.solyton.solawi.bid.module.user.data.api.organization.*
 import org.solyton.solawi.bid.module.user.data.api.userprofile.*
@@ -140,6 +143,14 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<ImportShareSubscriptions>(ImportShareSubscriptions.serializer())
         // ShareStatus
         add<ShareStatus>(ShareStatus.serializer())
+        add<UpdateShareStatus>(UpdateShareStatus.serializer())
+        add<ChangedBy>(ChangedBy.serializer())
+        add<ChangeReason>(ChangeReason.serializer())
+
+        // Share Management Values
+        add<ShareSubscriptionId>(ShareSubscriptionId.serializer())
+        add<ShareTypeId>(ShareTypeId.serializer())
+        add<ShareOfferId>(ShareOfferId.serializer())
 
         // PricingType
         add<PricingType>(PricingType.serializer())

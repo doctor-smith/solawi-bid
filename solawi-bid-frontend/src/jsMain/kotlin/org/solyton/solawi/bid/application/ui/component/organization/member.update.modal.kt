@@ -25,7 +25,6 @@ import org.evoleq.optics.storage.ActionDispatcher
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
-import org.evoleq.optics.storage.times
 import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.ElementScope
@@ -33,9 +32,6 @@ import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.dom.TextInput
 import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.application.data.transform.user.userIso
-import org.solyton.solawi.bid.application.ui.page.user.action.Change
-import org.solyton.solawi.bid.application.ui.page.user.action.memberCreateAction
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.banking.data.BIC
 import org.solyton.solawi.bid.module.banking.data.IBAN
@@ -45,36 +41,30 @@ import org.solyton.solawi.bid.module.control.button.EditButton
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.distribution.data.distributionpoint.DistributionPoint
 import org.solyton.solawi.bid.module.list.component.*
-import org.solyton.solawi.bid.module.process.service.process.sequence
 import org.solyton.solawi.bid.module.shares.component.dropdown.ShareOffersDropdown
+import org.solyton.solawi.bid.module.shares.data.api.ApiChangedBy
+import org.solyton.solawi.bid.module.shares.data.api.ChangeReason
 import org.solyton.solawi.bid.module.shares.data.api.PricingType
+import org.solyton.solawi.bid.module.shares.data.api.UpdateShareStatus
+import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
 import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
+import org.solyton.solawi.bid.module.shares.data.internal.shareStatusTransitionsWithPermissions
 import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
-import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscription
-import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscriptions
-import org.solyton.solawi.bid.module.shares.data.subscriptions.coSubscribers
-import org.solyton.solawi.bid.module.shares.data.subscriptions.distributionPointId
-import org.solyton.solawi.bid.module.shares.data.subscriptions.numberOfShares
-import org.solyton.solawi.bid.module.shares.data.subscriptions.pricePerShare
+import org.solyton.solawi.bid.module.shares.data.subscriptions.*
+import org.solyton.solawi.bid.module.shares.data.toApiType
+import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
 import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
 import org.solyton.solawi.bid.module.style.form.textInputDesktopStyle
-import org.solyton.solawi.bid.module.user.action.user.createUser
-import org.solyton.solawi.bid.module.user.action.user.createUserProfile
-import org.solyton.solawi.bid.module.user.action.user.importMembersToOrganization
-import org.solyton.solawi.bid.module.user.action.user.updateUserProfile
 import org.solyton.solawi.bid.module.user.component.styles.modalStyles
 import org.solyton.solawi.bid.module.user.data.address.*
-import org.solyton.solawi.bid.module.user.data.api.CreateUser
-import org.solyton.solawi.bid.module.user.data.api.organization.ImportMembers
 import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateAddress
-import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateUserProfile
-import org.solyton.solawi.bid.module.user.data.api.userprofile.UpdateUserProfile
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfileToImport
+import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 import org.solyton.solawi.bid.module.user.data.profile.UserProfile
 import org.solyton.solawi.bid.module.user.data.profile.addresses
-import org.solyton.solawi.bid.module.user.data.profile.phoneNumber
+import org.solyton.solawi.bid.module.values.ModifierId
 import org.solyton.solawi.bid.module.values.Price
 import org.solyton.solawi.bid.module.values.ProviderId
 import org.solyton.solawi.bid.module.values.Username
@@ -89,6 +79,8 @@ fun UpdateMemberOfOrganizationModal(
     modals: Storage<Modals<Int>>,
     device: Source<DeviceType>,
     actions: ActionDispatcher<Application>,
+    changesDoneBy: ChangedBy,
+    currentUser: ManagedUser,
     organizationId: ProviderId,
     username: Username?,
     setUsername: (Username) -> Unit,
@@ -99,6 +91,7 @@ fun UpdateMemberOfOrganizationModal(
     shareOffers: List<ShareOffer>,
     shareSubscriptions: ShareSubscriptions?,
     setShareSubscriptions: (ShareSubscriptions) -> Unit,
+    updateShareStatus: suspend (UpdateShareStatus) -> Unit,
     bankAccount: BankAccount?,
     setBankAccount: (BankAccount) -> Unit,
     isOkButtonDisabled: ()->Boolean,
@@ -608,7 +601,38 @@ fun UpdateMemberOfOrganizationModal(
                                 }.let { list -> ShareSubscriptions(list) }
                                 setShareSubscriptions(shareSubscriptions!!)
                             }
-                            TextCell(shareSubscription.status.toString()) {}
+
+                            val allowedShareStatusTransitionTargets = requireNotNull(
+                                shareStatusTransitionsWithPermissions[shareSubscription.status]
+                            ) {
+                                "Share status transition not found for status ${shareSubscription.status}"
+                            }.filter { it.permissions[changesDoneBy] != null }.associateBy ({ it.shareStatus.value }){
+                                it.shareStatus
+                            }
+                            val changeReasons = requireNotNull(
+                                shareStatusTransitionsWithPermissions[shareSubscription.status]
+                            ) {
+                                "Share status transition not found for status ${shareSubscription.status}"
+                            }.filter { it.permissions[changesDoneBy] != null }.associateBy ({ it.shareStatus.value }){
+                                it.permissions[changesDoneBy].orEmpty()
+                            }
+
+                            EditableSelectCell(
+                                options = allowedShareStatusTransitionTargets,
+                                selected = shareSubscription.status
+                            ) { shareStatus ->
+                                scope.launch {
+                                    updateShareStatus(UpdateShareStatus(
+                                        providerId = organizationId,
+                                        shareSubscriptionId = ShareSubscriptionId(shareSubscription.shareSubscriptionId),
+                                        nextState = shareStatus.toApiType(),
+                                        reason = changeReasons[shareStatus.value]!!.first().toApiType(), // todo:dev chose in dialog?
+                                        changedBy = changesDoneBy.toApiType(), //
+                                        modifier = ModifierId(currentUser.id),
+                                        comment = "Subscription status changed by user '${currentUser.username}'" // todo:dev set in dialog?
+                                    ))
+                                }
+                            }
                             TextCell(
                                 (subscriptionHeaders * subComp("ahcAuthorized") * checkIt(
                                     shareSubscription.ahcAuthorized ?: false
@@ -672,6 +696,8 @@ fun Storage<Modals<Int>>.showUpdateMembersOfOrganizationModal(
     texts: Source<Lang.Block>,
     device: Source<DeviceType>,
     actions: ActionDispatcher<Application>,
+    changesDoneBy: ChangedBy,
+    currentUser: ManagedUser,
     organizationId: ProviderId,
     username: Username?,
     setUsername: (Username) -> Unit,
@@ -682,6 +708,7 @@ fun Storage<Modals<Int>>.showUpdateMembersOfOrganizationModal(
     shareOffers: List<ShareOffer>,
     shareSubscriptions: ShareSubscriptions? = null,
     setShareSubscriptions: (ShareSubscriptions) -> Unit,
+    updateShareStatus: suspend (UpdateShareStatus) -> Unit,
     bankAccount: BankAccount?,
     setBankAccount: (BankAccount) -> Unit,
     isOkButtonDisabled: ()->Boolean = {false},
@@ -696,6 +723,8 @@ fun Storage<Modals<Int>>.showUpdateMembersOfOrganizationModal(
             this@showUpdateMembersOfOrganizationModal,
             device,
             actions,
+            changesDoneBy,
+            currentUser,
             organizationId,
             username,
             setUsername,
@@ -706,6 +735,7 @@ fun Storage<Modals<Int>>.showUpdateMembersOfOrganizationModal(
             shareOffers,
             shareSubscriptions,
             setShareSubscriptions,
+            updateShareStatus,
             bankAccount,
             setBankAccount,
             isOkButtonDisabled,

@@ -18,6 +18,7 @@ import org.solyton.solawi.bid.module.permission.action.db.no
 import org.solyton.solawi.bid.module.permission.action.db.rights
 import org.solyton.solawi.bid.module.shares.action.api.*
 import org.solyton.solawi.bid.module.shares.data.api.*
+import org.solyton.solawil.bid.module.user.data.toUUID
 import java.util.*
 
 const val SHARE_APPLICATION = "AUCTIONS"
@@ -179,6 +180,22 @@ authenticate {
                     contextIdOf(providerId, SHARE_APPLICATION)
                 } *
                 UpdateShareSubscription() *
+                Respond<ShareSubscription> { transform() } runOn Base(call, environment)
+            }
+            patch("update-status") {
+                ReceiveContextual<UpdateShareStatus>() *
+                IsGrantedOneOf(
+                    rights(
+                        "UPDATE_SHARE_SUBSCRIPTIONS",
+                        "MANAGE_SHARE_SUBSCRIPTIONS",
+                        "MANAGE_SHARES"
+                    ),
+                    no // todo:permission enable access check
+                ) { contextual ->
+                    val providerId = contextual.data.providerId.toUUID()
+                    contextIdOf(providerId, SHARE_APPLICATION)
+                } *
+                UpdateShareStatus() *
                 Respond<ShareSubscription> { transform() } runOn Base(call, environment)
             }
             get("all") {
