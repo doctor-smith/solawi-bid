@@ -62,7 +62,18 @@ val shareStatusTransitionsWithPermissions: Map<ShareStatus, Set<ShareStatusPermi
                 ChangedBy.USER to setOf(ChangeReason.USER_CANCEL)
             )
         ),
-
+        ShareStatus.ClearedForAuction to setOf(
+            ShareStatus.Subscribed permit mapOf(
+                ChangedBy.PROVIDER to setOf(ChangeReason.SUBSCRIPTION_APPROVED)
+            ),
+            ShareStatus.PendingActivation permit mapOf(
+                ChangedBy.PROVIDER to setOf(ChangeReason.REQUIREMENTS_NOT_MET)
+            ),
+            ShareStatus.Suspended permit mapOf(
+                ChangedBy.SYSTEM to setOf(ChangeReason.AUTO_SUSPENSION),
+                ChangedBy.PROVIDER to setOf(ChangeReason.ADMIN_ACTION)
+            )
+        ),
         ShareStatus.Subscribed to setOf(
             ShareStatus.RollingOver permit mapOf(
                 ChangedBy.PROVIDER to setOf(ChangeReason.NEW_PERIOD),
@@ -116,6 +127,10 @@ val shareStatusTransitionsWithPermissions: Map<ShareStatus, Set<ShareStatusPermi
 
         ShareStatus.Suspended to setOf(
             ShareStatus.Subscribed permit mapOf(
+                ChangedBy.PROVIDER to setOf(ChangeReason.ISSUE_RESOLVED),
+                ChangedBy.SYSTEM to setOf(ChangeReason.ISSUE_RESOLVED)
+            ),
+            ShareStatus.ClearedForAuction permit mapOf(
                 ChangedBy.PROVIDER to setOf(ChangeReason.ISSUE_RESOLVED),
                 ChangedBy.SYSTEM to setOf(ChangeReason.ISSUE_RESOLVED)
             ),
