@@ -223,6 +223,10 @@ val columnPropertiesToModify by lazy {
             ColumnDef.ModifyProperties.Varchar(
                 "password",
                 nullable = true
+            ),
+            ColumnDef.ModifyProperties.Varchar(
+                "username",
+                newLength = 100,
             )
         )
     )
