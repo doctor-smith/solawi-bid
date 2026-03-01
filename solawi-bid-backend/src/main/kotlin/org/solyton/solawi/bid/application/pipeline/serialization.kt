@@ -16,6 +16,7 @@ import org.solyton.solawi.bid.module.application.data.ApiUserApplications
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
+import org.solyton.solawi.bid.module.bid.data.values.AuctionId
 import org.solyton.solawi.bid.module.distribution.data.api.*
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.shares.data.api.*
@@ -90,9 +91,10 @@ fun installSerializers() {
         add<NewBidder>(NewBidder.serializer())
         add<Bidder>(Bidder.serializer())
         add<ImportBidders>(ImportBidders.serializer())
+        add<ImportBiddersFromOrganization>(ImportBiddersFromOrganization.serializer())
         add<DeleteBidders>(DeleteBidders.serializer())
         add<BidderInfo>(BidderInfo.serializer())
-
+        add<AuctionId>(AuctionId.serializer())
         // Round
         add<Round>(Round.serializer())
         add<BidRound>(BidRound.serializer())

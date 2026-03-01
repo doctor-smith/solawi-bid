@@ -83,6 +83,10 @@ val solawiApi by lazy {
                 key = ImportBidders::class,
                 url = "auction/bidder/import"
             )
+            post<ImportBiddersFromOrganization, Auction>(
+                key = ImportBiddersFromOrganization::class,
+                url = "auction/bidder/import-bidders-from-organization"
+            )
             delete<DeleteBidders, Auction>(
                 key = DeleteBidders::class,
                 url = "auction/bidder/delete"

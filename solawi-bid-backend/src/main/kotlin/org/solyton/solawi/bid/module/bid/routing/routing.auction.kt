@@ -61,8 +61,13 @@ fun <BidEnv> Routing.auction(
             route("bidder") {
                 post("import") {
                     (ReceiveContextual<ImportBidders>() *
-                            ImportBidders *
-                            Respond<Auction>{ transform() }) runOn Base(call, environment)
+                    ImportBidders *
+                    Respond<Auction>{ transform() }) runOn Base(call, environment)
+                }
+                post("import-bidders-from-organization") {
+                    ReceiveContextual<ImportBiddersFromOrganization>() *
+                    ImportBiddersFromOrganization *
+                    Respond<Auction>{ transform() } runOn Base(call, environment)
                 }
                 delete("delete"){
                     // will delete all listed bidders

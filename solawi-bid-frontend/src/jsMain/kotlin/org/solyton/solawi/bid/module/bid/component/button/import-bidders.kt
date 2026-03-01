@@ -20,6 +20,8 @@ import org.evoleq.math.emit
 import org.evoleq.math.times
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.Storage
+import org.evoleq.optics.storage.dispatch
+import org.evoleq.optics.storage.read
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.Color
 import org.solyton.solawi.bid.module.bid.action.addBidders
@@ -29,21 +31,25 @@ import org.solyton.solawi.bid.module.bid.data.*
 import org.solyton.solawi.bid.module.bid.data.api.AddBidders
 import org.solyton.solawi.bid.module.bid.data.api.NewBidder
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
+import org.solyton.solawi.bid.module.bid.data.auction.auctionId
 import org.solyton.solawi.bid.module.bid.data.auction.rounds
 import org.solyton.solawi.bid.module.bid.data.reader.auctionAccepted
 import org.solyton.solawi.bid.module.bid.data.reader.existRounds
+import org.solyton.solawi.bid.module.bid.data.values.AuctionId
 import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.module.bid.service.isNotGranted
 import org.solyton.solawi.bid.module.control.button.UploadButton
 import org.solyton.solawi.bid.module.control.button.UploadButtonWithText
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.style.data.Side
+import org.solyton.solawi.bid.module.values.ProviderId
 
 @Markup
 @Composable
 @Suppress("FunctionName")
 fun ImportBiddersButton(
     storage: Storage<BidApplication>,
+    organizationId: ProviderId,
     newBidders: Storage<List<NewBidder>>,
     addBidders: Storage<AddBidders>,
     auction: Lens<BidApplication, Auction>,
@@ -60,6 +66,11 @@ fun ImportBiddersButton(
     val action: () -> Unit = {
         (storage * modals).showImportBiddersModal(
             texts = ((storage * i18N * language).read() as Lang.Block).component("solyton.auction.importBiddersDialog"),
+            organizationId = organizationId,
+            auctionId = AuctionId((storage * auction * auctionId.get).emit()),
+            dispatch = {
+                storage * actions dispatch it
+            },
             setBidders = {
                 newBidders.write(it.map { bidder -> bidder.copy(
                     username = bidder.username.trim().toLowerCasePreservingASCIIRules()

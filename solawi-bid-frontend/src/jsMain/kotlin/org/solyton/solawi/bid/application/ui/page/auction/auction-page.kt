@@ -44,6 +44,7 @@ import org.solyton.solawi.bid.module.bid.component.effect.LaunchDownloadOfBidRou
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerBidRoundEvaluation
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerCommentOnRoundDialog
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerExportOfBidRoundResults
+import org.solyton.solawi.bid.module.bid.component.form.ApplicationContextKey
 import org.solyton.solawi.bid.module.bid.component.form.showUpdateAuctionModal
 import org.solyton.solawi.bid.module.bid.data.*
 import org.solyton.solawi.bid.module.bid.data.api.AddBidders
@@ -77,7 +78,7 @@ import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsAction
 import org.solyton.solawi.bid.module.user.data.userActions
-import kotlin.js.Date
+import org.solyton.solawi.bid.module.values.ProviderId
 import org.solyton.solawi.bid.module.application.data.application.id as applicationId
 
 val auctionPropertiesStyles = PropertiesStyles(
@@ -148,6 +149,17 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
             .sortedByDescending { it.roundNumber }
     }
     val applicationId = storage * availableApplications * FirstBy { it.name == "AUCTIONS" } * applicationId.get
+
+    val applicationTimesContextToOrganizationMap by produceState(emptyMap()) {
+        value = (bidApplicationStorage * applicationOrganizationRelations.get map { orgList -> orgList.associateBy {
+            ApplicationContextKey(it.applicationId , it.contextId)
+        } }).emit()
+    }
+
+    val organizationId = Source{applicationTimesContextToOrganizationMap[ApplicationContextKey(
+        applicationId.emit(), (bidApplicationStorage * auction * contextId.get).emit()
+    )]!!.organizationId}
+
     // Texts
     val texts = (bidApplicationStorage * i18N * language * component(BidComponent.AuctionPage))
     val details = texts * subComp("details")
@@ -222,6 +234,7 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                         )
                         ImportBiddersButton(
                             storage = bidApplicationStorage,
+                            organizationId = ProviderId(organizationId.emit()),
                             newBidders = Storage<List<NewBidder>>(
                                 read = { newBidders },
                                 write = { newBidders = it }
@@ -309,6 +322,7 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                     )
                     ImportBiddersButton(
                         storage = bidApplicationStorage,
+                        organizationId = ProviderId(organizationId.emit()),
                         newBidders = Storage<List<NewBidder>>(
                             read = { newBidders },
                             write = { newBidders = it }

@@ -24,6 +24,16 @@ import org.solyton.solawi.bid.module.bid.schema.Bidder
 import org.solyton.solawi.bid.module.bid.schema.BidderDetailsSolawiTuebingenEntity
 import org.solyton.solawi.bid.module.bid.schema.BidderEntity
 import org.solyton.solawi.bid.module.bid.schema.SearchBidderEntity
+import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
+import org.solyton.solawi.bid.module.shares.schema.ShareOfferEntity
+import org.solyton.solawi.bid.module.shares.schema.ShareOffersTable
+import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionEntity
+import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionsTable
+import org.solyton.solawi.bid.module.shares.schema.ShareTypeEntity
+import org.solyton.solawi.bid.module.shares.schema.ShareTypesTable
+import org.solyton.solawi.bid.module.user.exception.OrganizationException
+import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
+import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import java.util.*
 import kotlin.Boolean
 import kotlin.String
@@ -56,6 +66,49 @@ val ImportBidders = KlAction{bidders: Result<Contextual<ImportBidders>> -> DbAct
             importBidders(auctionId = UUID.fromString(it.data.auctionId), it.data.bidders).toApiType().copy(
                 bidderInfo = getBidderDetails(it.data.bidders).map{det -> det.toBidderInfo()}
             )
+        }
+    } x database
+}}
+
+@MathDsl
+val ImportBiddersFromOrganization = KlAction{result: Result<Contextual<ImportBiddersFromOrganization>> -> DbAction {
+    database: Database -> result bindSuspend  { contextual ->
+        val auctionId = UUID.fromString(contextual.data.auctionId.value)
+        val organizationId = UUID.fromString(contextual.data.organizationId.value)
+        resultTransaction(database) {
+            // get all members in organization having subscriptions which are cleared for auction
+            val organization = OrganizationEntity.find {
+                OrganizationsTable.id eq organizationId
+            }.firstOrNull()?: throw OrganizationException.NoSuchOrganization(organizationId.toString())
+            val members = organization.members.toList()
+
+            val shareTypes = ShareTypeEntity.find {
+                ShareTypesTable.providerId eq organizationId
+            }.toList()
+
+            val shareOffers = ShareOfferEntity.find {
+                ShareOffersTable.shareTypeId inList shareTypes.map { it.id }
+            }
+
+            val subscriptions = ShareSubscriptionEntity.find {
+                ShareSubscriptionsTable.shareOfferId inList shareOffers.map { it.id }
+            }.filter { shareSubscription ->
+                ShareStatus.from(shareSubscription.status.name) == ShareStatus.ClearedForAuction
+            }
+
+            val bidders = subscriptions.map { shareSubscription ->
+                NewBidder(
+                    username = shareSubscription.userProfile.user.username,
+                    weblingId = 0,
+                    numberOfShares = shareSubscription.numberOfShares
+                )
+            }
+
+
+            importBidders(
+                auctionId = auctionId,
+                newBidders = bidders
+             ).toApiType()
         }
     } x database
 }}
@@ -127,7 +180,11 @@ fun Transaction.getBidderDetails(bidders: List<NewBidder>): SizedIterable<Bidder
     return details
 }
 
-internal fun Transaction.addBidders(auction: AuctionEntity, newBidders: List<NewBidder>, type: String = "SOLAWI_TUEBINGEN"): AuctionEntity {
+internal fun Transaction.addBidders(
+    auction: AuctionEntity,
+    newBidders: List<NewBidder>,
+    type: String = "SOLAWI_TUEBINGEN"
+): AuctionEntity {
     val auctionType = AuctionType.find { AuctionTypes.type eq type.toUpperCasePreservingASCIIRules() }.firstOrNull()
         ?: throw BidRoundException.NoSuchAuctionType(type)
     val typeName = auctionType.type.toLowerCasePreservingASCIIRules()
