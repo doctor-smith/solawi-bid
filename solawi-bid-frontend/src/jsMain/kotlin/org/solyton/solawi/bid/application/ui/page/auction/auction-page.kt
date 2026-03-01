@@ -376,13 +376,13 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                         // -> HCell
                         // todo:i18n
                         HeaderCell("Runde Nr")
-
+/*
                         // todo:i18n
                         HeaderCell("Start")
 
                         // todo:i18n
                         HeaderCell("Stop")
-
+*/
                         // todo:i18n
                         HeaderCell("Kommentar"){width(50.percent)}
                     }
@@ -403,10 +403,13 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                             // Check or Xmark ???
                             // todo:i18n runde
                             TextCell("Runde ${round.roundNumber}")
+                            /*
                             // todo:i18n date
                             TimeCell(Date())
                             // todo:i18n date
                             TimeCell(Date(Date.now() + 15 * 60_000))
+
+                             */
                             // todo:i18n date
                             TextCell(round.comments.firstOrNull()?.comment?:"") { width(50.percent) }
                         }
