@@ -140,7 +140,7 @@ import org.solyton.solawi.bid.application.data.environment as appEnv
 
 @Markup
 @Composable
-@Suppress("FunctionName", "CognitiveComplexMethod")
+@Suppress("FunctionName","CyclomaticComplexMethod", "CognitiveComplexMethod")
 fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: String) {
     val scope = rememberCoroutineScope()
     return withLoading(
@@ -371,9 +371,10 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                 TitleWrapper {
                     Title { H3{ Text((listOfMembers * title).emit()) }}
                     SimpleUpDown(open, {open = !open})
+                    if(open) {
                     ActionsWrapper({
                         defaultListStyles.actionsWrapper(this)
-                        width(70.percent)
+                        width(100.percent)
                         alignSelf(AlignSelf.FlexEnd)
                     }) {
                         Pagination(
@@ -526,15 +527,9 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                 )
                             }
                         }
-                    }
+                    }}
                 }
                 if(open) {
-                    /*
-                    HeaderWrapper {
-
-                    }
-
-                     */
                     HeaderWrapper {
                         Header {
                             HeaderCell(listOfMembersHeaders * Component.standard * title) { width(30.percent) }
