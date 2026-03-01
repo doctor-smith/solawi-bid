@@ -150,15 +150,16 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
     }
     val applicationId = storage * availableApplications * FirstBy { it.name == "AUCTIONS" } * applicationId.get
 
-    val applicationTimesContextToOrganizationMap by produceState(emptyMap()) {
-        value = (bidApplicationStorage * applicationOrganizationRelations.get map { orgList -> orgList.associateBy {
+    val applicationTimesContextToOrganizationMap = (bidApplicationStorage * applicationOrganizationRelations.get map { orgList -> orgList.associateBy {
             ApplicationContextKey(it.applicationId , it.contextId)
-        } }).emit()
-    }
+        } })
 
-    val organizationId = Source{applicationTimesContextToOrganizationMap[ApplicationContextKey(
-        applicationId.emit(), (bidApplicationStorage * auction * contextId.get).emit()
-    )]!!.organizationId}
+
+    val organizationId = Source{ applicationTimesContextToOrganizationMap.emit()[ApplicationContextKey(
+            applicationId.emit(),
+            (bidApplicationStorage * auction * contextId.get).emit()
+        )]!!.organizationId
+    }
 
     // Texts
     val texts = (bidApplicationStorage * i18N * language * component(BidComponent.AuctionPage))
