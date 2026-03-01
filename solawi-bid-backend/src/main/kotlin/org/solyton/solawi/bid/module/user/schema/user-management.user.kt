@@ -14,7 +14,7 @@ typealias UserEntity = User
 typealias UsersTable = Users
 
 object Users : AuditableUUIDTable("users")  {
-    val username = varchar("username", 50).uniqueIndex()
+    val username = varchar("username", 100).uniqueIndex()
     val password = varchar("password", 500).nullable()
     val status = enumerationByName<UserStatus>("status", 20)
 
