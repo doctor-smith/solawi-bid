@@ -371,166 +371,170 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                 TitleWrapper {
                     Title { H3{ Text((listOfMembers * title).emit()) }}
                     SimpleUpDown(open, {open = !open})
-                }
-                if(open) {
-                    HeaderWrapper {
-                        ActionsWrapper({
-                            defaultListStyles.actionsWrapper(this)
-                            width(100.percent)
-                            alignSelf(AlignSelf.FlexEnd)
-                        }) {
-                            Pagination(
-                                data = paginationState,
-                                setNumberOfItemsPerPage = {
-                                    paginationState = paginationState.copy(
-                                        itemsPerPage = it,
-                                    )
-                                }
-                            ) {
-                                newPage  ->
+                    ActionsWrapper({
+                        defaultListStyles.actionsWrapper(this)
+                        width(70.percent)
+                        alignSelf(AlignSelf.FlexEnd)
+                    }) {
+                        Pagination(
+                            data = paginationState,
+                            setNumberOfItemsPerPage = {
                                 paginationState = paginationState.copy(
-                                    page = newPage,
+                                    itemsPerPage = it,
                                 )
                             }
-                            // Search by names of user profiles and co-subscribers
-                            val searchMemberProfiles = memberProfilesMap.read()
-                            val searchCoSubscribers = searchMemberProfiles.map { entry ->
-                                entry.key to shareSubscriptionsMap.read()[entry.value?.userProfileId]
-                                    ?.map { it.coSubscribers }
-                                    ?.flatten()
-                                    ?.distinct()
-                                    ?.joinToString(", ") { it }
-                            }.toMap()
+                        ) {
+                                newPage  ->
+                            paginationState = paginationState.copy(
+                                page = newPage,
+                            )
+                        }
+                        // Search by names of user profiles and co-subscribers
+                        val searchMemberProfiles = memberProfilesMap.read()
+                        val searchCoSubscribers = searchMemberProfiles.map { entry ->
+                            entry.key to shareSubscriptionsMap.read()[entry.value?.userProfileId]
+                                ?.map { it.coSubscribers }
+                                ?.flatten()
+                                ?.distinct()
+                                ?.joinToString(", ") { it }
+                        }.toMap()
 
 
-                            SearchInput(
-                                "",
-                                SearchInputStyles()
+                        SearchInput(
+                            "",
+                            SearchInputStyles()
+                        ) {
+                            val newSearchInputState = it.trim()
+                            memberFilter = if (newSearchInputState.isNotBlank()){
+                                { member ->
+                                    member.username.contains(newSearchInputState)
+                                            || searchMemberProfiles[member.memberId]?.fullname()?.contains(newSearchInputState) ?: false
+                                            || searchCoSubscribers.contains(newSearchInputState)
+                                }
+                            } else {
+                                { true }
+                            }
+                        }
+
+                        // Import csv of members
+                        var csv: String? by remember { mutableStateOf<String?>(null) }
+                        UploadButton(
+                            color = Color.black,
+                            bgColor = Color.white,
+                            texts = listOfMembers * Component.actions * Component.importMembersToOrganization * tooltip,
+                            deviceType = { device.read() }
+                        ) {
+                            (userModuleStorage * userModals).showImportMembersToOrganizationModal(
+                                texts = importMembersToOrganization.emit(),
+                                device = { device.read() },
+                                csv = csv,
+                                setCsv = {csv = it},
+                                isOkButtonDisabled = {csv == null}
                             ) {
-                                val newSearchInputState = it.trim()
-                                memberFilter = if (newSearchInputState.isNotBlank()){
-                                    { member ->
-                                        member.username.contains(newSearchInputState)
-                                                || searchMemberProfiles[member.memberId]?.fullname()?.contains(newSearchInputState) ?: false
-                                                || searchCoSubscribers.contains(newSearchInputState)
-                                    }
-                                } else {
-                                    { true }
-                                }
+                                requireNotNull(csv){ "CSV Sting is empty! "}
+                                applicationStorage.importMembersFromCsv(
+                                    scope,
+                                    organizationId,
+                                    csv!!, ';',
+                                    (shareManagementStorage * shareManagementMappings).emit(),
+                                    (bankingApplicationStorage * bankingMappings).emit()
+                                )
                             }
-
-                            // Import csv of members
-                            var csv: String? by remember { mutableStateOf<String?>(null) }
-                            UploadButton(
-                                color = Color.black,
-                                bgColor = Color.white,
-                                texts = listOfMembers * Component.actions * Component.importMembersToOrganization * tooltip,
-                                deviceType = { device.read() }
-                            ) {
-                                (userModuleStorage * userModals).showImportMembersToOrganizationModal(
-                                    texts = importMembersToOrganization.emit(),
-                                    device = { device.read() },
-                                    csv = csv,
-                                    setCsv = {csv = it},
-                                    isOkButtonDisabled = {csv == null}
-                                ) {
-                                    requireNotNull(csv){ "CSV Sting is empty! "}
-                                    applicationStorage.importMembersFromCsv(
-                                        scope,
-                                        organizationId,
-                                        csv!!, ';',
-                                        (shareManagementStorage * shareManagementMappings).emit(),
-                                        (bankingApplicationStorage * bankingMappings).emit()
-                                    )
+                        }
+                        val shareOffers = (shareManagementStorage * shareOffers.get)
+                        var usernameState by remember { mutableStateOf<Username?>(null) }
+                        var userProfileState by remember { mutableStateOf<UserProfile?>(null) }
+                        var importUserProfileState by remember { mutableStateOf<UserProfileToImport?>(null) }
+                        var bankAccountState by remember { mutableStateOf<BankAccount?>(null) }
+                        var shareSubscriptionsState by remember { mutableStateOf<ShareSubscriptions?>(null) }
+                        // todo:dev sync module state when new user has been stored
+                        var userId by remember { mutableStateOf<UserId?>(null) }
+                        LaunchedEffect(importUserProfileState) {
+                            importUserProfileState?.let { profile ->
+                                val user = (userModuleStorage * managedUsers).read().firstOrNull {
+                                    it.username == profile.username
                                 }
+                                userId = user?.id?.let { UserId(it) }
                             }
-                            val shareOffers = (shareManagementStorage * shareOffers.get)
-                            var usernameState by remember { mutableStateOf<Username?>(null) }
-                            var userProfileState by remember { mutableStateOf<UserProfile?>(null) }
-                            var importUserProfileState by remember { mutableStateOf<UserProfileToImport?>(null) }
-                            var bankAccountState by remember { mutableStateOf<BankAccount?>(null) }
-                            var shareSubscriptionsState by remember { mutableStateOf<ShareSubscriptions?>(null) }
-                            // todo:dev sync module state when new user has been stored
-                            var userId by remember { mutableStateOf<UserId?>(null) }
-                            LaunchedEffect(importUserProfileState) {
-                                importUserProfileState?.let { profile ->
-                                    val user = (userModuleStorage * managedUsers).read().firstOrNull {
-                                        it.username == profile.username
-                                    }
-                                    userId = user?.id?.let { UserId(it) }
+                        }
+                        /*
+                        val userId by produceState<UserId?>(initialValue = null) {
+                            importUserProfileState?.let { profile ->
+                                val user = (userModuleStorage * managedUsers).read().firstOrNull {
+                                    it.username == profile.username
                                 }
+                                value = user?.id?.let { UserId(it) }
                             }
-                            /*
-                            val userId by produceState<UserId?>(initialValue = null) {
-                                importUserProfileState?.let { profile ->
-                                    val user = (userModuleStorage * managedUsers).read().firstOrNull {
-                                        it.username == profile.username
-                                    }
-                                    value = user?.id?.let { UserId(it) }
-                                }
-                            }
-                             */
+                        }
+                         */
 
-                            PlusButton(
-                                color = Color.black,
-                                bgColor = Color.white,
-                                texts = listOfMembers * Component.actions * Component.create * tooltip,
-                                deviceType = { device.read() }
-                            ) {
+                        PlusButton(
+                            color = Color.black,
+                            bgColor = Color.white,
+                            texts = listOfMembers * Component.actions * Component.create * tooltip,
+                            deviceType = { device.read() }
+                        ) {
 
-                                (applicationStorage * modals).showUpdateMembersOfOrganizationModal(
-                                    texts = updateMemberOfOrganization,
-                                    device = {device.read ()},
-                                    actions = (applicationStorage * mainActions).read(),
-                                    changesDoneBy = ChangedBy.PROVIDER,
-                                    currentUser = currentUser.emit(),
-                                    organizationId = ProviderId(organizationId),
-                                    username = importUserProfileState?.username?.let { Username(it) },
-                                    setUsername = {usernameState = it},
-                                    userProfile = userId?.let { userProfileState },
-                                    setUserProfile = {userProfileState = it},
-                                    importUserProfile = { userProfileToImport ->
-                                        usernameState = Username(userProfileToImport.username)
-                                        importUserProfileState = userProfileToImport
+                            (applicationStorage * modals).showUpdateMembersOfOrganizationModal(
+                                texts = updateMemberOfOrganization,
+                                device = {device.read ()},
+                                actions = (applicationStorage * mainActions).read(),
+                                changesDoneBy = ChangedBy.PROVIDER,
+                                currentUser = currentUser.emit(),
+                                organizationId = ProviderId(organizationId),
+                                username = importUserProfileState?.username?.let { Username(it) },
+                                setUsername = {usernameState = it},
+                                userProfile = userId?.let { userProfileState },
+                                setUserProfile = {userProfileState = it},
+                                importUserProfile = { userProfileToImport ->
+                                    usernameState = Username(userProfileToImport.username)
+                                    importUserProfileState = userProfileToImport
 
-                                        val actions = memberCreateAction(
-                                            providerId= ProviderId(organizationId),
-                                            username = usernameState!!,
-                                            userProfileChange = Change(null, userProfileState),
-                                            bankAccountChange = Change(null, null),
-                                            shareSubscriptionsChange = Change(null, null)
-                                        )
-                                        applicationStorage.runProcesses(
-                                            scope,
-                                            *actions
-                                        )
-                                    },
-                                    bankAccount = null,
-                                    setBankAccount = {bankAccountState = it},
-                                    distributionPoints = distributionPoints.read(),
-                                    shareOffers = shareOffers.emit(),
-                                    shareSubscriptions = null,
-                                    setShareSubscriptions = {shareSubscriptionsState = it},
-                                    updateShareStatus = {
-                                        data -> shareManagementStorage * shareManagementActions dispatch updateShareStatus(data)
-                                    },
-                                    isOkButtonDisabled = {false}
-                                ) {
                                     val actions = memberCreateAction(
                                         providerId= ProviderId(organizationId),
                                         username = usernameState!!,
                                         userProfileChange = Change(null, userProfileState),
-                                        bankAccountChange = Change(null, bankAccountState),
-                                        shareSubscriptionsChange = Change(null, shareSubscriptionsState)
+                                        bankAccountChange = Change(null, null),
+                                        shareSubscriptionsChange = Change(null, null)
                                     )
                                     applicationStorage.runProcesses(
                                         scope,
                                         *actions
                                     )
-                                }
+                                },
+                                bankAccount = null,
+                                setBankAccount = {bankAccountState = it},
+                                distributionPoints = distributionPoints.read(),
+                                shareOffers = shareOffers.emit(),
+                                shareSubscriptions = null,
+                                setShareSubscriptions = {shareSubscriptionsState = it},
+                                updateShareStatus = {
+                                        data -> shareManagementStorage * shareManagementActions dispatch updateShareStatus(data)
+                                },
+                                isOkButtonDisabled = {false}
+                            ) {
+                                val actions = memberCreateAction(
+                                    providerId= ProviderId(organizationId),
+                                    username = usernameState!!,
+                                    userProfileChange = Change(null, userProfileState),
+                                    bankAccountChange = Change(null, bankAccountState),
+                                    shareSubscriptionsChange = Change(null, shareSubscriptionsState)
+                                )
+                                applicationStorage.runProcesses(
+                                    scope,
+                                    *actions
+                                )
                             }
                         }
                     }
+                }
+                if(open) {
+                    /*
+                    HeaderWrapper {
+
+                    }
+
+                     */
                     HeaderWrapper {
                         Header {
                             HeaderCell(listOfMembersHeaders * Component.standard * title) { width(30.percent) }
