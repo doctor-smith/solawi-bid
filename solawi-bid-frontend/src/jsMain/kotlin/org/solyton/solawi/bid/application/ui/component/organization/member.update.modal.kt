@@ -608,7 +608,7 @@ fun UpdateMemberOfOrganizationModal(
                                 "Share status transition not found for status ${shareSubscription.status}"
                             }.filter { it.permissions[changesDoneBy] != null }.associateBy ({ it.shareStatus.value }){
                                 it.shareStatus
-                            }
+                            } + (shareSubscription.status.value to shareSubscription.status)
                             val changeReasons = requireNotNull(
                                 shareStatusTransitionsWithPermissions[shareSubscription.status]
                             ) {

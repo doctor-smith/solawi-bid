@@ -236,6 +236,7 @@ fun <T> EditableSelectCell(
     selected: T?,                  // Aktueller Wert
     placeholder: String = "Select...",
     closeOnSelect: Boolean = true, // optional
+    disabled: Boolean = false,
     onSelected: (T) -> Unit,       // Callback wenn Auswahl geändert
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -255,7 +256,7 @@ fun <T> EditableSelectCell(
             alignItems(AlignItems.Center)
             property("user-select", "none")
         }
-        onClick { expanded = !expanded }
+        if(!disabled) onClick { expanded = !expanded }
     }) {
         // Label
         Text(selectedLabel ?: placeholder)
@@ -284,15 +285,15 @@ fun <T> EditableSelectCell(
                     property("z-index", 100)
                 }
             }) {
-                options.forEach { (label, value) ->
+                options.filterKeys { it != selectedLabel  }.forEach { (label, value) ->
                     Div({
                         style {
                             padding(4.px)
                             cursor("pointer")
                         }
                         onClick {
-                            onSelected(value)
                             if (closeOnSelect) expanded = false
+                            onSelected(value)
                         }
                     }) {
                         Text(label)

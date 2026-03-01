@@ -536,15 +536,6 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                             HeaderCell(listOfMembersHeaders * Component.userProfile * title) { width(30.percent) }
                             HeaderCell("Solawi Anteile | Status") { width(40.percent) }
                         }
-                        /*
-                        ActionsWrapper({
-                            defaultListStyles.actionsWrapper(this)
-                            alignSelf(AlignSelf.FlexEnd)
-                        }){
-                            // fjdlkajfkldajflda
-                        }
-
-                         */
                     }
                     HeaderWrapper {
                         Header {
