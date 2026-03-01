@@ -132,12 +132,12 @@ class CompleteAuctionTest {
                 12.0 * 800.0,
                 7,
                 listOf(
-                    WeightedBid(1,100.0),
-                    WeightedBid(1,200.0),
-                    WeightedBid(1,100.0),
-                    WeightedBid(1,100.0),
-                    WeightedBid(1,100.0),
-                    WeightedBid(2,100.0),
+                    WeightedBid(1,100.0, true),
+                    WeightedBid(1,200.0, true),
+                    WeightedBid(1,100.0, false),
+                    WeightedBid(1,100.0, false),
+                    WeightedBid(1,100.0, false),
+                    WeightedBid(2,100.0, false),
                 )
             )
 
@@ -209,12 +209,12 @@ class CompleteAuctionTest {
                 12.0 * 900.0,
                 7,
                 listOf(
-                    WeightedBid(1,200.0),
-                    WeightedBid(1,200.0),
-                    WeightedBid(1,100.0),
-                    WeightedBid(1,100.0),
-                    WeightedBid(1,100.0),
-                    WeightedBid(2,100.0),
+                    WeightedBid(1,200.0, true),
+                    WeightedBid(1,200.0,true),
+                    WeightedBid(1,100.0, false),
+                    WeightedBid(1,100.0, false),
+                    WeightedBid(1,100.0, false),
+                    WeightedBid(2,100.0, false),
                 )
             )
 

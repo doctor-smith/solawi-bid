@@ -343,7 +343,7 @@ class ActionTests{
                 totalSumOfWeightedBids = 300.0,
                 totalNumberOfShares = 3,
                 weightedBids = listOf(ApiWeightedBid(
-                    3, 100.0
+                    3, 100.0, true
                 ))
             )
 
@@ -370,7 +370,7 @@ class ActionTests{
             assertEquals(300.0, storedEvaluation.totalSumOfWeightedBids)
             assertEquals(3, storedEvaluation.totalNumberOfShares)
             assertEquals<List<DomainWeightedBid>>(listOf(DomainWeightedBid(
-                3, 100.0
+                3, 100.0, true
             )), storedEvaluation.weightedBids)
 
         }

@@ -29,7 +29,8 @@ data class BidRoundEvaluation(
 @Serializable
 data class WeightedBid(
     val weight: Int,
-    val bid: Double
+    val bid: Double,
+    val hasPlacedBid: Boolean
 )
 
 @Serializable

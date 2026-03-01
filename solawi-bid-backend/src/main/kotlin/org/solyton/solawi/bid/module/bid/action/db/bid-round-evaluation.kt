@@ -152,7 +152,13 @@ fun Transaction.evaluateBidRound(auctionId: UUID, roundId: UUID): BidRoundEvalua
     val totalNumberOfShares = bidRoundResults.results.fold(0) {
         acc, next -> acc + next.numberOfShares
     }
-    val weightedBids = bidRoundResults.results.map { WeightedBid(it.numberOfShares,it.amount) }
+    val weightedBids = bidRoundResults.results.map {
+        WeightedBid(
+            weight = it.numberOfShares,
+            bid = it.amount,
+            hasPlacedBid = it.hasPlacedBid
+        )
+    }
 
     return BidRoundEvaluation(
         auctionDetails = auctionDetails,

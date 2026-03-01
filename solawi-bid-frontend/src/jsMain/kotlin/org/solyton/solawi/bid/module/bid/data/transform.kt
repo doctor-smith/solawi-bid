@@ -97,7 +97,8 @@ fun ApiBidRoundEvaluation.toDomainType(): BidRoundEvaluation = BidRoundEvaluatio
 
 fun ApiWeightedBid.toDomainType(): WeightedBid = WeightedBid(
     weight,
-    bid
+    bid,
+    hasPlacedBid
 )
 
 fun ApiBidRoundPreEvaluation.toDomainType(): BidRoundPreEvaluation = BidRoundPreEvaluation(
