@@ -1,8 +1,8 @@
 package org.solyton.solawi.bid.module.shares.repository
 
+import eq
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.or
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.shares.data.internal.ChangeReason
 import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
@@ -19,19 +19,45 @@ import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionStatusHistor
 import org.solyton.solawi.bid.module.system.repository.validatedSystemProcess
 import java.util.*
 
+/**
+ * Initializes and retrieves the initial status entity for a transaction.
+ * This method queries the `ShareStatusTable` for the initial status matching
+ * the status `PendingActivation`. If no matching status is found, an exception
+ * is thrown indicating the absence of an initial state.
+ *
+ * @return The `ShareStatusEntity` representing the initial status for the transaction.
+ * @throws ShareStatusException.NoInitialState if no initial status is found.
+ */
 fun Transaction.initStatus(): ShareStatusEntity = ShareStatusEntity.find {
-    ShareStatusTable.name eq ShareStatus.PendingActivation.toString() or (
-            ShareStatusTable.name eq ShareStatus.PendingActivation.value
-    )
+    ShareStatusTable.name eq ShareStatus.PendingActivation
 }.firstOrNull()?: throw  ShareStatusException.NoInitialState
 
-fun Transaction.statusEntity(status: ShareStatus): ShareStatusEntity =
-    ShareStatusEntity.find { ShareStatusTable.name eq status.toString() or (
-        ShareStatusTable.name eq status.value
-    )
+/**
+ * Retrieves the corresponding `ShareStatusEntity` for the given `ShareStatus`, or throws an exception if no matching status is found.
+ *
+ * @param status The `ShareStatus` object for which the corresponding entity is to be retrieved.
+ * @return The `ShareStatusEntity` matching the given `ShareStatus`.
+ * @throws ShareStatusException.NoSuchStatus if no entity is found for the provided `ShareStatus`.
+ */
+fun Transaction.statusEntity(status: ShareStatus): ShareStatusEntity = ShareStatusEntity.find {
+    ShareStatusTable.name eq status
 }.firstOrNull() ?: throw ShareStatusException.NoSuchStatus(status.toString())
 
-
+/**
+ * Transitions a share subscription to the specified next state while validating the transition and reason.
+ * Updates the share subscription status, creates a history entry, and handles potential companion rollover scenarios.
+ *
+ * @param shareSubscriptionId Identifier of the share subscription to be transitioned.
+ * @param nextState The next state to which the share subscription should be transitioned.
+ * @param reason The reason for the state transition.
+ * @param changedBy The entity that triggered the change (USER, PROVIDER, SYSTEM).
+ * @param modifier Optional UUID of an entity modifying the state.
+ * @param comment Optional comment providing additional context for the state change.
+ * @return The updated share subscription entity representing the new state.
+ * @throws ShareStatusException.ForbiddenChangeReason if the reason for the transition is forbidden.
+ * @throws ShareException.NoSuchShareSubscription if the share subscription with the given ID does not exist.
+ * @throws ShareStatusException.InvalidHistoryEntry if the history entry creation fails.
+ */
 fun Transaction.next(
     shareSubscriptionId: UUID,
     nextState: ShareStatus,
@@ -164,7 +190,18 @@ fun Transaction.rollover(
     return rolledOverShareSubscription
 }
 
-
+/**
+ * Validates a status transition in a share's lifecycle by checking permissions, reasons,
+ * and modifiers for the transition between the given statuses.
+ *
+ * @param fromStatus The current status of the share.
+ * @param toStatus The target status for the transition.
+ * @param reason The reason for the status change.
+ * @param modifier The entity (user, provider, or system) initiating the change.
+ * @throws ShareStatusException.NoSuchStatusTransition If no valid transition exists between the statuses.
+ * @throws ShareStatusException.TransitionNotAllowedForModifier If the transition is not allowed for the given modifier.
+ * @throws ShareStatusException.MissingTransitionPermission If the transition is not permitted for the provided reason.
+ */
 fun validateTransition(
     fromStatus: ShareStatus,
     toStatus: ShareStatus,
