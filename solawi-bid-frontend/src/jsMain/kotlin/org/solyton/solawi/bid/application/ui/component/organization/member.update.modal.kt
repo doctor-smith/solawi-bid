@@ -42,8 +42,6 @@ import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.distribution.data.distributionpoint.DistributionPoint
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.shares.component.dropdown.ShareOffersDropdown
-import org.solyton.solawi.bid.module.shares.data.api.ApiChangedBy
-import org.solyton.solawi.bid.module.shares.data.api.ChangeReason
 import org.solyton.solawi.bid.module.shares.data.api.PricingType
 import org.solyton.solawi.bid.module.shares.data.api.UpdateShareStatus
 import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
@@ -602,24 +600,25 @@ fun UpdateMemberOfOrganizationModal(
                                 setShareSubscriptions(shareSubscriptions!!)
                             }
 
+                            var shareStatusState by remember { mutableStateOf(shareSubscription.status) }
                             val allowedShareStatusTransitionTargets = requireNotNull(
-                                shareStatusTransitionsWithPermissions[shareSubscription.status]
+                                shareStatusTransitionsWithPermissions[shareStatusState]
                             ) {
-                                "Share status transition not found for status ${shareSubscription.status}"
+                                "Share status transition not found for status $shareStatusState"
                             }.filter { it.permissions[changesDoneBy] != null }.associateBy ({ it.shareStatus.value }){
                                 it.shareStatus
                             } + (shareSubscription.status.value to shareSubscription.status)
                             val changeReasons = requireNotNull(
-                                shareStatusTransitionsWithPermissions[shareSubscription.status]
+                                shareStatusTransitionsWithPermissions[shareStatusState]
                             ) {
-                                "Share status transition not found for status ${shareSubscription.status}"
+                                "Share status transition not found for status $shareStatusState"
                             }.filter { it.permissions[changesDoneBy] != null }.associateBy ({ it.shareStatus.value }){
                                 it.permissions[changesDoneBy].orEmpty()
                             }
 
                             EditableSelectCell(
                                 options = allowedShareStatusTransitionTargets,
-                                selected = shareSubscription.status
+                                selected = shareStatusState
                             ) { shareStatus ->
                                 scope.launch {
                                     updateShareStatus(UpdateShareStatus(
@@ -632,6 +631,7 @@ fun UpdateMemberOfOrganizationModal(
                                         comment = "Subscription status changed by user '${currentUser.username}'" // todo:dev set in dialog?
                                     ))
                                 }
+                                shareStatusState = shareStatus
                             }
                             TextCell(
                                 (subscriptionHeaders * subComp("ahcAuthorized") * checkIt(
