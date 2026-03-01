@@ -16,6 +16,7 @@ import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.ElementScope
+import org.jetbrains.compose.web.dom.H2
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.bid.component.BidRoundEvaluation
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
@@ -48,7 +49,7 @@ fun BidRoundEvaluationModal(
 
 ) {
     // todo:i18n
-    Text("Evaluation of Bid Round")
+    H2{ Text("Auswertung der Runde")}
     BidRoundEvaluation(
         storage = storage,
         round = round

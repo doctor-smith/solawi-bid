@@ -63,6 +63,9 @@ fun createHistogram(
     ) + scaleXDiscrete() + scaleYContinuous(trans = "sqrt")
 }
 
+const val BID_HISTOGRAM_CONTAINER = "bidHistogramContainer"
+const val BID_PER_SHARE_HISTOGRAM_CONTAINER = "bidPerShareHistogramContainer"
+const val SHARES_HISTOGRAM_CONTAINER = "sharesHistogramContainer"
 
 @Markup
 @Composable
@@ -89,8 +92,10 @@ fun BidRoundEvaluation(
     val bidsCount = evaluation.weightedBids.size
     val totalShares = evaluation.weightedBids.sumOf { it.weight }
     val avgBidPerShare = (totalAmount / totalShares).asDynamic().toFixed(2) as String
-    val noneStandardBidsAmount = bidAmounts.filter { it != standardBid }.size
-    val pctMadeBid = (noneStandardBidsAmount.toDouble() / evaluation.weightedBids.size.toDouble()) * 100
+
+    val numberOfBids = evaluation.weightedBids.count { it.hasPlacedBid }
+    // val numberOfBidsWeighted = evaluation.weightedBids.filter { it.hasPlacedBid }.sumOf { it.weight }
+    val pctMadeBid = (numberOfBids.toDouble() / evaluation.weightedBids.size.toDouble()) * 100
     val pctMadeBidDisplay = pctMadeBid.asDynamic().toFixed(2) as String
     val avgSharesPerBid = (evaluation.weightedBids.sumOf { it.weight }.toDouble() / evaluation.weightedBids.size.toDouble())
     val avgSharesPerBidDisplay = avgSharesPerBid.asDynamic().toFixed(3) as String
@@ -126,15 +131,30 @@ fun BidRoundEvaluation(
     }
     LaunchedEffect(evaluation, showStandardBidsTotal) {
         val totalBids = evaluation.weightedBids.map { it.weight * it.bid }
-        updateHistogram(totalBids, showStandardBidsTotal,"Höhe des Gebots (gesamt) (in €)", "bidHistogramContainer")
+        updateHistogram(
+            totalBids,
+            showStandardBidsTotal,
+            "Höhe des Gebots (gesamt) (in €)",
+            BID_HISTOGRAM_CONTAINER
+        )
     }
     LaunchedEffect(evaluation, showStandardBidsPerShare) {
         val totalBidsPerShare = evaluation.weightedBids.map { it.bid }
-        updateHistogram(totalBidsPerShare, showStandardBidsPerShare,"Höhe des Gebots pro Anteil (in €)", "bidPerShareHistogramContainer")
+        updateHistogram(
+            totalBidsPerShare,
+            showStandardBidsPerShare,
+            "Höhe des Gebots pro Anteil (in €)",
+            BID_PER_SHARE_HISTOGRAM_CONTAINER
+        )
     }
     LaunchedEffect(evaluation) {
         val totalSharesAmount = evaluation.weightedBids.map { it.weight.toDouble() }
-        updateHistogram(totalSharesAmount, true,"Anzahl Anteile pro Gebot", "sharesHistogramContainer")
+        updateHistogram(
+            totalSharesAmount,
+            true,
+            "Anzahl Anteile pro Gebot",
+            SHARES_HISTOGRAM_CONTAINER
+        )
     }
 
     val pStyle: AttrBuilderContext<HTMLParagraphElement> = {
@@ -155,7 +175,7 @@ fun BidRoundEvaluation(
             property("margin", "auto")
         }
         id("dialogContainer")
-    }) {
+    }) mainDiv@{
         Wrap {
             H4 { Text(headingText) }
             ReadOnlyProperty(Property("Zielsumme", evaluation.auctionDetails.targetAmount))
@@ -185,8 +205,13 @@ fun BidRoundEvaluation(
                     }
                 )
             )
-            P { Text("Gesamtanzahl gekaufter Anteile: ${evaluation.totalNumberOfShares}") }
+            P { Text("Gesamtanzahl Anteile: ${evaluation.totalNumberOfShares}") }
         }
+        //todo:dev inject value via auction configuration.
+        // Idea: 3 states: SHOW_ALWAYS, SHOW_NEVER, SHOW_ON_DEMAND (-> Checkbox)
+        val showEvaluation = false
+        if(!showEvaluation) return@mainDiv
+
         Wrap {
             H4 { Text("Verhältnis Max / Min")}
             val minimalBid = evaluation.weightedBids.minBy { bid -> bid.bid }
@@ -211,7 +236,7 @@ fun BidRoundEvaluation(
             }
         }
         Wrap {
-            H4 { Text("Automatische Gebote")}
+            H4 { Text("Gebote mit Solibeitrag")}
             Div(attrs = { style {
                 display(DisplayStyle.Flex)
                 flexDirection(FlexDirection.Row)
@@ -219,19 +244,47 @@ fun BidRoundEvaluation(
                 gap(20.px)
             }}) {
                 Wrap {
-                    P(attrs = pStyle) { Text("Autom. Gebotshöhe pro Anteil (Richtwert + Solibeitrag):")}
+                    P(attrs = pStyle) { Text("Gebotshöhe pro Anteil (Richtwert + Solibeitrag):")}
                     P(attrs = pStyle) { Text("% der Bieter, die aktiv ein Gebot abgegeben haben:")}
                     P(attrs = pStyle) { Text("% der Gebote, deren Höhe unter der automatischen liegt:")}
                 }
                 Wrap {
                     P(attrs = pStyle) { Text("$standardBid €")}
-                    P(attrs = pStyle) { Text("$pctMadeBidDisplay% ($noneStandardBidsAmount von ${evaluation.weightedBids.size})") }
+                    P(attrs = pStyle) { Text("$pctMadeBidDisplay% ($numberOfBids von ${evaluation.weightedBids.size})") }
                     P(attrs = pStyle) { Text("$lowBidsAmountPct% ($lowBidsAmount von $bidsCount)")}
                 }
             }
         }
         Wrap {
             H4 { Text("Graphische Darstellung")}
+
+            Div(attrs = {
+                style { width(100.percent) }
+                id(BID_PER_SHARE_HISTOGRAM_CONTAINER)
+            })
+            Label(forId = "plotCheckbox2") {
+                CheckboxInput(
+                    checked = showStandardBidsPerShare,
+                    attrs = {
+                        id("plotCheckbox2")
+                        onInput { event -> showStandardBidsPerShare = event.value }
+                    }
+                )
+                Span(attrs = {
+                    style { marginLeft(10.px) }
+                }
+                ) {
+                    Text("Standard-Gebote anzeigen ?")
+                }
+            }
+            P {
+                Span({ style { fontSize(150.percent) } }) {
+                    Text(avgSign)
+                }
+                Text(" Gebotshöhe (pro Anteil): $avgBidPerShare €")
+            }
+
+            /*
             Div(attrs = {
                 style { width(100.percent) }
                 id("bidHistogramContainer")
@@ -245,8 +298,8 @@ fun BidRoundEvaluation(
                     }
                 )
                 Span(attrs = {
-                        style { marginLeft(10.px) }
-                    }
+                    style { marginLeft(10.px) }
+                }
                 ) {
                     Text("Standard-Gebote anzeigen ?")
                 }
@@ -258,35 +311,12 @@ fun BidRoundEvaluation(
                 }
                 Text(" Gebotshöhe (gesamt): $avgBid €")
             }
+
+             */
         }
         Div(attrs = {
             style { width(100.percent) }
-            id("bidPerShareHistogramContainer")
-        })
-        Label(forId = "plotCheckbox2") {
-            CheckboxInput(
-                checked = showStandardBidsPerShare,
-                attrs = {
-                    id("plotCheckbox2")
-                    onInput { event -> showStandardBidsPerShare = event.value }
-                }
-            )
-            Span(attrs = {
-                    style { marginLeft(10.px) }
-                }
-            ) {
-                Text("Standard-Gebote anzeigen ?")
-            }
-        }
-        P {
-            Span({ style { fontSize(150.percent) } }) {
-                Text(avgSign)
-            }
-            Text(" Gebotshöhe (pro Anteil): $avgBidPerShare €")
-        }
-        Div(attrs = {
-            style { width(100.percent) }
-            id("sharesHistogramContainer")
+            id(SHARES_HISTOGRAM_CONTAINER)
         })
         P {
             Span({ style { fontSize(150.percent) } }) {
