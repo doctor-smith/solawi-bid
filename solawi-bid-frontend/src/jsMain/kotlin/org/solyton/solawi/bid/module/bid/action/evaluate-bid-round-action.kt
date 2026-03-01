@@ -30,7 +30,8 @@ fun evaluateBidRound(auctionId: String, round: Lens<BidApplication, Round>): Act
             weightedBids = apiBidRoundEvaluation.weightedBids.map {
                 WeightedBid(
                     it.weight,
-                    it.bid
+                    it.bid,
+                    it.hasPlacedBid
                 )
             }
         )
