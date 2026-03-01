@@ -26,8 +26,10 @@ fun Transaction.initStatus(): ShareStatusEntity = ShareStatusEntity.find {
 }.firstOrNull()?: throw  ShareStatusException.NoInitialState
 
 fun Transaction.statusEntity(status: ShareStatus): ShareStatusEntity =
-    ShareStatusEntity.find { ShareStatusTable.name eq status.toString() }.firstOrNull()
-        ?: throw ShareStatusException.NoSuchStatus(status.toString())
+    ShareStatusEntity.find { ShareStatusTable.name eq status.toString() or (
+        ShareStatusTable.name eq ShareStatus.PendingActivation.value
+    )
+}.firstOrNull() ?: throw ShareStatusException.NoSuchStatus(status.toString())
 
 
 fun Transaction.next(
