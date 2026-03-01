@@ -108,7 +108,7 @@ fun ShareOffersDropdown(
     }
 }
 
-private fun StyleScope.zIndex(i: Int)  {
+fun StyleScope.zIndex(i: Int)  {
     require(i >= 0) { "z-index must be non-negative" }
     property("z-index", i)
 }

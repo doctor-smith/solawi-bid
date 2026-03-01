@@ -14,8 +14,11 @@ import org.evoleq.language.tooltip
 import org.evoleq.math.*
 import org.evoleq.optics.lens.DeepSearch
 import org.evoleq.optics.lens.FilterBy
+import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.storage.ActionEnvelope
+import org.evoleq.optics.storage.Read
 import org.evoleq.optics.storage.Storage
+import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.storage.filter
 import org.evoleq.optics.storage.times
 import org.evoleq.optics.transform.times
@@ -78,11 +81,13 @@ import org.solyton.solawi.bid.module.process.service.process.sequence
 import org.solyton.solawi.bid.module.search.component.SearchInput
 import org.solyton.solawi.bid.module.search.component.SearchInputStyles
 import org.solyton.solawi.bid.module.shares.action.*
+import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
 import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
 import org.solyton.solawi.bid.module.shares.data.management.shareOffers
 import org.solyton.solawi.bid.module.shares.data.management.shareSubscriptions
 import org.solyton.solawi.bid.module.shares.data.mappings.ShareManagementMappings
 import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
+import org.solyton.solawi.bid.module.shares.data.shareManagementActions
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscription
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscriptions
 import org.solyton.solawi.bid.module.shares.i18n.ShareManagementLangComponent
@@ -104,6 +109,7 @@ import org.solyton.solawi.bid.module.user.data.organization.members
 import org.solyton.solawi.bid.module.user.data.organization.name
 import org.solyton.solawi.bid.module.user.data.profile.UserProfile
 import org.solyton.solawi.bid.module.user.data.user.organizations
+import org.solyton.solawi.bid.module.user.data.user.username
 import org.solyton.solawi.bid.module.user.i18n.Component
 import org.solyton.solawi.bid.module.user.service.profile.firstAddress
 import org.solyton.solawi.bid.module.user.service.profile.fullname
@@ -111,6 +117,24 @@ import org.solyton.solawi.bid.module.values.LegalEntityId
 import org.solyton.solawi.bid.module.values.ProviderId
 import org.solyton.solawi.bid.module.values.UserId
 import org.solyton.solawi.bid.module.values.Username
+import kotlin.collections.List
+import kotlin.collections.any
+import kotlin.collections.associate
+import kotlin.collections.associateBy
+import kotlin.collections.contains
+import kotlin.collections.distinct
+import kotlin.collections.emptyList
+import kotlin.collections.firstOrNull
+import kotlin.collections.flatten
+import kotlin.collections.get
+import kotlin.collections.groupBy
+import kotlin.collections.joinToString
+import kotlin.collections.map
+import kotlin.collections.toBooleanArray
+import kotlin.collections.toMap
+import kotlin.text.contains
+import kotlin.text.isNotBlank
+import kotlin.text.trim
 import org.solyton.solawi.bid.application.data.environment as appEnv
 
 
@@ -226,8 +250,15 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
         onLoading = { Loading() }
     ) {
 
+
+
         val userModuleStorage = applicationStorage * userIso
         val device = userModuleStorage * deviceData * mediaType
+
+        val currentUsername = userModuleStorage * user * username.get
+        val currentUser = Read(userModuleStorage * managedUsers * FirstBy {
+            it.username == currentUsername.read()
+        })
 
         val organization = userModuleStorage * user * organizations * DeepSearch { it.organizationId == organizationId }
         val members = organization * members
@@ -451,6 +482,8 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                     texts = updateMemberOfOrganization,
                                     device = {device.read ()},
                                     actions = (applicationStorage * mainActions).read(),
+                                    changesDoneBy = ChangedBy.PROVIDER,
+                                    currentUser = currentUser.emit(),
                                     organizationId = ProviderId(organizationId),
                                     username = importUserProfileState?.username?.let { Username(it) },
                                     setUsername = {usernameState = it},
@@ -478,6 +511,9 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                     shareOffers = shareOffers.emit(),
                                     shareSubscriptions = null,
                                     setShareSubscriptions = {shareSubscriptionsState = it},
+                                    updateShareStatus = {
+                                        data -> shareManagementStorage * shareManagementActions dispatch updateShareStatus(data)
+                                    },
                                     isOkButtonDisabled = {false}
                                 ) {
                                     val actions = memberCreateAction(
@@ -596,6 +632,8 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                         texts = updateMemberOfOrganization,
                                         device = {device.read ()},
                                         actions = (applicationStorage * mainActions).read(),
+                                        changesDoneBy = ChangedBy.PROVIDER,
+                                        currentUser = currentUser.emit(),
                                         organizationId = ProviderId(organizationId),
                                         username = Username(member.username),
                                         setUsername = {usernameState = it},
@@ -607,7 +645,9 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                         distributionPoints = distributionPoints.read(),
                                         shareOffers = shareOffers,
                                         shareSubscriptions = shareSubscriptions,
-                                        setShareSubscriptions = {shareSubscriptionsState = it},
+                                        setShareSubscriptions = {shareSubscriptionsState = it},updateShareStatus = {
+                                            data -> shareManagementStorage * shareManagementActions dispatch updateShareStatus(data)
+                                        },
                                         isOkButtonDisabled = {false}
                                     ) {
                                         val actions = applicationStorage.memberUpdateAction(
