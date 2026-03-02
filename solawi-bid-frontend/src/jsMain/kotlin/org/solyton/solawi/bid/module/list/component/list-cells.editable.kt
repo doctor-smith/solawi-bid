@@ -256,7 +256,10 @@ fun <T> EditableSelectCell(
             alignItems(AlignItems.Center)
             property("user-select", "none")
         }
-        if(!disabled) onClick { expanded = !expanded }
+        if(!disabled) onClick {
+            it.stopPropagation()
+            expanded = !expanded
+        }
     }) {
         // Label
         Text(selectedLabel ?: placeholder)
@@ -284,6 +287,7 @@ fun <T> EditableSelectCell(
                     border(1.px, LineStyle.Solid, Color.black)
                     property("z-index", 100)
                 }
+                onClick { it.stopPropagation() }
             }) {
                 options.filterKeys { it != selectedLabel  }.forEach { (label, value) ->
                     Div({
@@ -291,7 +295,9 @@ fun <T> EditableSelectCell(
                             padding(4.px)
                             cursor("pointer")
                         }
-                        onClick {
+                        onClick { evt ->
+                            evt.stopPropagation()
+                            onSelected(value)
                             if (closeOnSelect) expanded = false
                             onSelected(value)
                         }

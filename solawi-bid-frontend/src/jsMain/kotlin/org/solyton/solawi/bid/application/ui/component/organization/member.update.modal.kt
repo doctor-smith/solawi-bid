@@ -602,24 +602,25 @@ fun UpdateMemberOfOrganizationModal(
                                 setShareSubscriptions(shareSubscriptions!!)
                             }
 
+                            var shareStatusState by remember { mutableStateOf(shareSubscription.status) }
                             val allowedShareStatusTransitionTargets = requireNotNull(
-                                shareStatusTransitionsWithPermissions[shareSubscription.status]
+                                shareStatusTransitionsWithPermissions[shareStatusState]
                             ) {
-                                "Share status transition not found for status ${shareSubscription.status}"
+                                "Share status transition not found for status $shareStatusState"
                             }.filter { it.permissions[changesDoneBy] != null }.associateBy ({ it.shareStatus.value }){
                                 it.shareStatus
                             } + (shareSubscription.status.value to shareSubscription.status)
                             val changeReasons = requireNotNull(
-                                shareStatusTransitionsWithPermissions[shareSubscription.status]
+                                shareStatusTransitionsWithPermissions[shareStatusState]
                             ) {
-                                "Share status transition not found for status ${shareSubscription.status}"
+                                "Share status transition not found for status $shareStatusState"
                             }.filter { it.permissions[changesDoneBy] != null }.associateBy ({ it.shareStatus.value }){
                                 it.permissions[changesDoneBy].orEmpty()
                             }
 
                             EditableSelectCell(
                                 options = allowedShareStatusTransitionTargets,
-                                selected = shareSubscription.status
+                                selected = shareStatusState
                             ) { shareStatus ->
                                 scope.launch {
                                     updateShareStatus(UpdateShareStatus(
@@ -632,6 +633,7 @@ fun UpdateMemberOfOrganizationModal(
                                         comment = "Subscription status changed by user '${currentUser.username}'" // todo:dev set in dialog?
                                     ))
                                 }
+                                shareStatusState = shareStatus
                             }
                             TextCell(
                                 (subscriptionHeaders * subComp("ahcAuthorized") * checkIt(
