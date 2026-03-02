@@ -16,6 +16,7 @@ import org.jetbrains.compose.web.css.color
 import org.jetbrains.compose.web.css.fontWeight
 import org.jetbrains.compose.web.css.left
 import org.jetbrains.compose.web.css.marginLeft
+import org.jetbrains.compose.web.css.marginRight
 import org.jetbrains.compose.web.css.padding
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.position
@@ -39,6 +40,7 @@ fun ShareOffersDropdown(
     options: Map<String, ShareOffer>,
     selected: String?,
     closeOnSelect: Boolean = true,
+    styles: ShareOffersDropdownStyles = ShareOffersDropdownStyles(),
     icon: String = "+", // Default icon,
     onSelected: (Map.Entry<String, ShareOffer>) -> Unit,
 ) {
@@ -46,29 +48,19 @@ fun ShareOffersDropdown(
 
     Div({
         style {
-            position(Position.Relative)
-            width(200.px)
+            with(styles) { containerStyle() }
         }
     }) {
 
         // Trigger
         Div({
-            style {
-                padding(8.px)
-                border(1.px, LineStyle.Solid, Color.black)
-                cursor(Cursor.Pointer)
-                userSelect(UserSelect.None)
-            }
+            style { with(styles) { triggerStyle()} }
             onClick { expanded = !expanded }
         }) {
             Text(selected ?: "Select offer")
             // Icon span
             Span({
-                style {
-                    marginLeft(8.px)
-                    fontWeight("bold")
-                    color(Color.black)
-                }
+                style { with(styles) { triggerIconStyle()} }
             }) {
                 Text(icon)
             }
@@ -77,22 +69,11 @@ fun ShareOffersDropdown(
         // Dropdown content
         if (expanded) {
             Div({
-                style {
-                    position(Position.Absolute)
-                    top(100.percent)
-                    left(0.px)
-                    right(0.px)
-                    backgroundColor(Color.white)
-                    border(1.px, LineStyle.Solid, Color.black)
-                    zIndex(100)
-                }
+                style { with(styles) { dropdownContentStyle() } }
             }) {
                 options.forEach { option ->
                     Div({
-                        style {
-                            padding(8.px)
-                            cursor(Cursor.Pointer)
-                        }
+                        style { with(styles) { dropdownItemStyle() } }
                         onClick {
                             onSelected(option)
                             if (closeOnSelect) {
@@ -107,6 +88,117 @@ fun ShareOffersDropdown(
         }
     }
 }
+
+
+data class ShareOffersDropdownStyles(
+    val containerStyle: StyleScope.()->Unit = {
+        position(Position.Relative)
+        width(200.px)
+    },
+    val triggerStyle: StyleScope.()->Unit = {
+        padding(2.px)
+        border(1.px, LineStyle.Solid, Color.black)
+        cursor(Cursor.Pointer)
+        userSelect(UserSelect.None)
+    },
+
+    val triggerIconStyle: StyleScope.()->Unit = {
+        marginLeft(8.px)
+        marginRight(2.px)
+        fontWeight("bold")
+        color(Color.black)
+        right(0.px)
+    },
+
+
+    val dropdownContentStyle: StyleScope.()->Unit = {
+        position(Position.Absolute)
+        top(100.percent)
+        left(0.px)
+        right(0.px)
+        backgroundColor(Color.white)
+        border(1.px, LineStyle.Solid, Color.black)
+        zIndex(100)
+    },
+    val dropdownItemStyle: StyleScope.()->Unit = {
+        padding(8.px)
+        cursor(Cursor.Pointer)
+    },
+) {
+
+    fun modifyContainerStyle(modifier: StyleScope.()->Unit) = with(this) {
+        copy( containerStyle = {
+            containerStyle()
+            modifier()
+        } )
+    }
+
+
+    fun modifyDropdownContentStyle(modifier: StyleScope.()->Unit) = with(this) {
+        copy( dropdownContentStyle = {
+            dropdownContentStyle()
+            modifier()
+        })
+    }
+    fun modifyDropdownItemStyle(modifier: StyleScope.()->Unit) = with(this) {
+        copy( dropdownItemStyle = {
+            dropdownItemStyle()
+            modifier()
+        })
+    }
+
+    fun modifyTriggerStyle(modifier: StyleScope.()->Unit) = with(this) {
+        copy( triggerStyle = {
+            triggerStyle()
+            modifier()
+        })
+    }
+
+    fun modifyTriggerIconStyle(modifier: StyleScope.()->Unit) = with(this) {
+        copy( triggerIconStyle = {
+            triggerIconStyle()
+            modifier()
+        })
+    }
+    companion object {
+        val Default = ShareOffersDropdownStyles()
+        fun modifyContainerStyle(modifier: StyleScope.()->Unit) = with(Default) {
+            copy( containerStyle = {
+                containerStyle()
+                modifier()
+            } )
+        }
+
+
+        fun modifyDropdownContentStyle(modifier: StyleScope.()->Unit) = with(Default) {
+            copy( dropdownContentStyle = {
+                dropdownContentStyle()
+                modifier()
+            })
+        }
+        fun modifyDropdownItemStyle(modifier: StyleScope.()->Unit) = with(Default) {
+            copy( dropdownItemStyle = {
+                dropdownItemStyle()
+                modifier()
+            })
+        }
+
+        fun modifyTriggerStyle(modifier: StyleScope.()->Unit) = with(Default) {
+            copy( triggerStyle = {
+                triggerStyle()
+                modifier()
+            })
+        }
+
+        fun modifyTriggerIconStyle(modifier: StyleScope.()->Unit) = with(Default) {
+            copy( triggerIconStyle = {
+                triggerIconStyle()
+                modifier()
+            })
+        }
+    }
+}
+
 
 fun StyleScope.zIndex(i: Int)  {
     require(i >= 0) { "z-index must be non-negative" }
