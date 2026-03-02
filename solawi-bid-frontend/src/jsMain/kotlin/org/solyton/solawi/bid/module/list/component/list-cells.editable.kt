@@ -299,6 +299,7 @@ fun <T> EditableSelectCell(
                             evt.stopPropagation()
                             onSelected(value)
                             if (closeOnSelect) expanded = false
+                            onSelected(value)
                         }
                     }) {
                         Text(label)

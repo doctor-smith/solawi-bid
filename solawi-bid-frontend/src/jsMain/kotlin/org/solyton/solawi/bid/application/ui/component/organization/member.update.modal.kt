@@ -42,6 +42,8 @@ import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.distribution.data.distributionpoint.DistributionPoint
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.shares.component.dropdown.ShareOffersDropdown
+import org.solyton.solawi.bid.module.shares.data.api.ApiChangedBy
+import org.solyton.solawi.bid.module.shares.data.api.ChangeReason
 import org.solyton.solawi.bid.module.shares.data.api.PricingType
 import org.solyton.solawi.bid.module.shares.data.api.UpdateShareStatus
 import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
