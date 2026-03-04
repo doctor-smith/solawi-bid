@@ -29,7 +29,7 @@ data class ShareSubscription (
         require(isValidUUID(userProfileId)) {"User profile id is not a valid UUID: $userProfileId"}
         distributionPointId?.let { require(isValidUUID(it)) {"Distribution point id is not a valid UUID: $it"} }
         fiscalYearId.let { require(isValidUUID(it)) {"Fiscal year id is not a valid UUID: $it"} }
-        coSubscribers.forEach { require(isValidEmail(it)) {"Co subscriber id is not a valid UUID: $it"} }
+        coSubscribers.forEach { require(isValidEmail(it)) {"Co subscriber is not a valid Email: $it"} }
     }
 }
 

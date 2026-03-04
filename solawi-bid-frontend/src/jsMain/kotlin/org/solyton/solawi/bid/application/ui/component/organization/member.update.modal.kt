@@ -25,6 +25,7 @@ import org.evoleq.optics.storage.ActionDispatcher
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
+import org.evoleq.optics.storage.read
 import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.ElementScope
@@ -41,6 +42,8 @@ import org.solyton.solawi.bid.module.control.button.EditButton
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.distribution.data.distributionpoint.DistributionPoint
 import org.solyton.solawi.bid.module.list.component.*
+import org.solyton.solawi.bid.module.list.style.defaultListStyles
+import org.solyton.solawi.bid.module.navbar.component.SimpleUpDown
 import org.solyton.solawi.bid.module.shares.component.dropdown.ShareOffersDropdown
 import org.solyton.solawi.bid.module.shares.data.api.ApiChangedBy
 import org.solyton.solawi.bid.module.shares.data.api.ChangeReason
@@ -535,17 +538,47 @@ fun UpdateMemberOfOrganizationModal(
                         )).let { ShareSubscriptions(it) }
                     }
                 }
-                HeaderWrapper {
-                    Header {
-                        HeaderCell(subscriptionHeaders * subComp("fiscalYear") * title){  }
-                        HeaderCell(subscriptionHeaders * subComp("shareType") * title){  }
-                        HeaderCell(subscriptionHeaders * subComp("pricingType") * title){  }
-                        HeaderCell(subscriptionHeaders * subComp("numberOfShares") * title){  }
-                        HeaderCell(subscriptionHeaders * subComp("pricePerShare") * title){  }
-                        HeaderCell(subscriptionHeaders * subComp("state") * title){  }
-                        HeaderCell(subscriptionHeaders * subComp("ahcAuthorized") * title){  }
-                        HeaderCell(subscriptionHeaders * subComp("depository") * title){  }
-                        HeaderCell(subscriptionHeaders * subComp("coSubscribers") * title){  }
+                val tableStyles = defaultListStyles
+
+                    .modifyHeaderWrapper {
+                        width(100.percent)
+                        justifyContent(JustifyContent.SpaceBetween)
+                    }
+                /*
+                        .modifyHeader { width(90.percent) }
+                    .modifyDataWrapper { width(90.percent) }
+                    .modifyActionsWrapper { width(10.percent) }
+                */
+
+                HeaderWrapper(tableStyles.headerWrapper) {
+                    Header(tableStyles.header) {
+                        HeaderCell(subscriptionHeaders * subComp("fiscalYear") * title){
+                            width(10.percent)
+                        }
+                        HeaderCell(subscriptionHeaders * subComp("shareType") * title){
+                            width(10.percent)
+                        }
+                        HeaderCell(subscriptionHeaders * subComp("pricingType") * title){
+                            width(10.percent)
+                        }
+                        HeaderCell(subscriptionHeaders * subComp("numberOfShares") * title){
+                            width(5.percent)
+                        }
+                        HeaderCell(subscriptionHeaders * subComp("pricePerShare") * title){
+                            width(5.percent)
+                        }
+                        HeaderCell(subscriptionHeaders * subComp("state") * title){
+                            width(10.percent)
+                        }
+                        HeaderCell(subscriptionHeaders * subComp("ahcAuthorized") * title){
+                            width(5.percent)
+                        }
+                        HeaderCell(subscriptionHeaders * subComp("depository") * title){
+                            width(5.percent)
+                        }
+                        HeaderCell(subscriptionHeaders * subComp("coSubscribers") * title){
+                            width(40.percent)
+                        }
                     }
                 }
                 val checkIt: (Boolean) -> Reader<Lang.Block, String> = {bool: Boolean -> Reader{
@@ -557,9 +590,9 @@ fun UpdateMemberOfOrganizationModal(
                         "Share offer not found"
                     }
                     ListItemWrapper({
-                        listItemWrapperStyle(this, index)
 
-                        if(editShareSubscriptionState) {
+                        listItemWrapperStyle(this, index)
+                        if (editShareSubscriptionState) {
                             backgroundColor(Color.orange)
                             border {
                                 style(LineStyle.Solid)
@@ -568,13 +601,20 @@ fun UpdateMemberOfOrganizationModal(
                             }
                         }
                     }) {
-                        DataWrapper {
-                            TextCell(shareOffer.fiscalYear.format()) {}
-                            TextCell(shareOffer.shareType.name) {}
-                            TextCell(shareOffer.pricingType.name) {}
+                        DataWrapper(defaultListStyles.dataWrapper) {
+                            TextCell(shareOffer.fiscalYear.format()) {
+                                width(10.percent)
+                            }
+                            TextCell(shareOffer.shareType.name) {
+                                width(10.percent)
+                            }
+                            TextCell(shareOffer.pricingType.name) {
+                                width(10.percent)
+                            }
                             EditableIntCell(
                                 initValue = shareSubscription.numberOfShares,
-                                disabled = !editShareSubscriptionState
+                                disabled = !editShareSubscriptionState,
+                                style = { width(5.percent) }
                             ) {
                                 numberOfShares ->
                                 shareSubscriptions = requireNotNull(shareSubscriptions).all.mapIndexed { shareSubscriptionIndex, shareSubscription ->
@@ -589,7 +629,8 @@ fun UpdateMemberOfOrganizationModal(
                             }
                             EditableNullablePriceCell(
                                 initValue = (shareSubscription.pricePerShare ?: shareOffer.price)?.let { Price(it) },
-                                disabled = shareOffer.pricingType == PricingType.FIXED || !editShareSubscriptionState
+                                disabled = shareOffer.pricingType == PricingType.FIXED || !editShareSubscriptionState,
+                                style = { width(5.percent) }
                             ) { price ->
                                 shareSubscriptions = requireNotNull(shareSubscriptions).all.mapIndexed { shareSubscriptionIndex, shareSubscription ->
                                     when(shareSubscriptionIndex){
@@ -620,7 +661,14 @@ fun UpdateMemberOfOrganizationModal(
 
                             EditableSelectCell(
                                 options = allowedShareStatusTransitionTargets,
-                                selected = shareStatusState
+                                selected = shareStatusState,
+                                disabled = !editShareSubscriptionState,
+                                styles = EditableSelectCellStyles.modifyContainerStyle {
+                                    width(10.percent)
+                                },
+                                iconContent = { expanded ->
+                                    SimpleUpDown(expanded)
+                                }
                             ) { shareStatus ->
                                 scope.launch {
                                     updateShareStatus(UpdateShareStatus(
@@ -635,17 +683,47 @@ fun UpdateMemberOfOrganizationModal(
                                 }
                                 shareStatusState = shareStatus
                             }
-                            TextCell(
-                                (subscriptionHeaders * subComp("ahcAuthorized") * checkIt(
-                                    shareSubscription.ahcAuthorized ?: false
-                                )).emit()
-                            ) {}
+
+                            val check  = { checked: Boolean -> (subscriptionHeaders * subComp("ahcAuthorized") * checkIt(
+                                checked
+                            )).emit()}
+                            val ahcAuthorized = shareSubscription.ahcAuthorized ?: false
+                            EditableSelectCell(
+                                options = mapOf(check(true) to true, check(false) to false),
+                                selected = ahcAuthorized,disabled = !editShareSubscriptionState,
+                                styles = EditableSelectCellStyles.modifyContainerStyle {
+                                    width(5.percent)
+                                },
+                                iconContent = { expanded ->
+                                    SimpleUpDown(expanded)
+                                }
+                            ) {
+                                ahcAuthorized ->
+                                shareSubscriptions = requireNotNull(shareSubscriptions).all.mapIndexed { shareSubscriptionIndex, shareSubscription ->
+                                    when(shareSubscriptionIndex){
+                                        index -> shareSubscription.ahcAuthorized{
+                                            ahcAuthorized
+                                        }
+                                        else -> shareSubscription
+                                    }
+                                }.let { list -> ShareSubscriptions(list) }
+                                setShareSubscriptions(shareSubscriptions!!)
+                            }
+
+
                             val selected = distributionPoints.firstOrNull {
                                 it.distributionPointId == shareSubscription.distributionPointId
                             }
                             EditableSelectCell(
                                 options = distributionPoints.associateBy { it.name  },
-                                selected = selected
+                                selected = selected,
+                                disabled = !editShareSubscriptionState,
+                                styles = EditableSelectCellStyles.modifyContainerStyle {
+                                    width(5.percent)
+                                },
+                                iconContent = { expanded ->
+                                    SimpleUpDown(expanded)
+                                }
                             ) {
                                 distributionPoint ->
                                 shareSubscriptions = requireNotNull(shareSubscriptions).all.mapIndexed { shareSubscriptionIndex, shareSubscription ->
@@ -661,7 +739,8 @@ fun UpdateMemberOfOrganizationModal(
 
                             EditableTextCell(
                                 text = shareSubscription.coSubscribers.joinToString(", "),
-                                disabled = !editShareSubscriptionState
+                                disabled = !editShareSubscriptionState,
+                                style = { width(40.percent) }
                             ) { coSubscribers ->
                                 shareSubscriptions = requireNotNull(shareSubscriptions).all.mapIndexed { shareSubscriptionIndex, shareSubscription ->
                                     when (shareSubscriptionIndex) {
@@ -674,7 +753,7 @@ fun UpdateMemberOfOrganizationModal(
                                 setShareSubscriptions(shareSubscriptions!!)
                             }
                         }
-                        ActionsWrapper {
+                        ActionsWrapper(tableStyles.actionsWrapper) {
                             EditButton(
                                 color = Color.black,
                                 bgColor = Color.white,

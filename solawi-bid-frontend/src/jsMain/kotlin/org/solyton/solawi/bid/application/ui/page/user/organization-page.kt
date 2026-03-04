@@ -533,26 +533,27 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                     HeaderWrapper {
                         Header {
                             HeaderCell(listOfMembersHeaders * Component.standard * title) { width(30.percent) }
-                            HeaderCell(listOfMembersHeaders * Component.userProfile * title) { width(30.percent) }
-                            HeaderCell("Solawi Anteile | Status") { width(40.percent) }
+                            HeaderCell(listOfMembersHeaders * Component.userProfile * title) { width(50.percent) }
+                            HeaderCell("Solawi Anteile | Status") { width(20.percent) }
                         }
                     }
                     HeaderWrapper {
                         Header {
                             // User / Memeber
                             HeaderCell(listOfMembersHeaders * Component.standard * Component.username * title) {
-                                width(10.percent); overflow("hidden")
+                                width(20.percent); overflow("hidden")
                             }
-                            HeaderCell(listOfMembersHeaders * Component.standard * Component.roles * title) { width(20.percent) }
-                            HeaderCell(listOfMembersHeaders * Component.userProfile * Component.name * title) { width(10.percent) }
-                            HeaderCell(listOfMembersHeaders * Component.userProfile * Component.address * title) { width(20.percent) }
+                            HeaderCell(listOfMembersHeaders * Component.standard * Component.roles * title) { width(10.percent) }
+                            HeaderCell(listOfMembersHeaders * Component.userProfile * Component.name * title) { width(20.percent) }
+                            HeaderCell(listOfMembersHeaders * Component.userProfile * Component.address * title) { width(30.percent) }
                             // Vegi
                             HeaderCell("Gemüse") { width(10.percent) }
                             HeaderCell("Status") { width(10.percent) }
                             // Eggs
+                            /*
                             HeaderCell("Eier") { width(10.percent) }
                             HeaderCell("Status") { width(10.percent) }
-
+                            */
                         }
                     }
                     ListItemsIndexed(
@@ -565,19 +566,19 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                         }) {
                             DataWrapper {
                                 TextCell(member.username) {
-                                    width(10.percent); minWidth(10.percent); overflow("hidden")
+                                    width(20.percent); minWidth(10.percent); overflow("hidden")
                                 }
                                 TextCell(member.roles.joinToString(", ") { it.roleName }) {
-                                    width(20.percent);minWidth(10.percent); overflow("hidden")
+                                    width(10.percent);minWidth(10.percent); overflow("hidden")
                                 }
 
                                 val userProfile = (memberProfilesMap * Get(member.memberId)).emit()
                                 TextCell(userProfile.fullname()) {
-                                    width(10.percent);minWidth(10.percent);overflow("hidden")
+                                    width(20.percent);minWidth(10.percent);overflow("hidden")
                                 }
 
                                 TextCell(userProfile.firstAddress()) {
-                                    width(20.percent); minWidth(20.percent);overflow("hidden")
+                                    width(30.percent); minWidth(20.percent);overflow("hidden")
                                 }
                                 // Shares
                                 val userShareSubscriptions = shareSubscriptionsMap.read()[userProfile?.userProfileId] ?: emptyList()
@@ -589,12 +590,15 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                 NumberCell(vegiShare?.numberOfShares?: 0) { width(10.percent) }
                                 TextCell(vegiShare?.status?.toString()?:"---") { width(10.percent) }
                                 // Eggs
+                                /*
                                 val eggsShare = userShareSubscriptions.firstOrNull{ subscription ->
                                     val shareOffer = shareOffersMap.read()[subscription.shareOfferId]!!
                                     shareOffer.shareType.key == "eggs"
                                 }
                                 NumberCell(eggsShare?.numberOfShares?: 0) { width(10.percent) }
                                 TextCell(eggsShare?.status?.toString()?: "---") { width(10.percent) }
+
+                                 */
                             }
                             ActionsWrapper({
                                 actionsWrapperStyle(this)
