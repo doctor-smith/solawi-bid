@@ -7,8 +7,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import org.evoleq.compose.Markup
 import org.jetbrains.compose.web.css.Color
+import org.jetbrains.compose.web.css.DisplayStyle
+import org.jetbrains.compose.web.css.JustifyContent
 import org.jetbrains.compose.web.css.LineStyle
 import org.jetbrains.compose.web.css.Position
+import org.jetbrains.compose.web.css.display
+import org.jetbrains.compose.web.css.justifyContent
 import org.jetbrains.compose.web.css.StyleScope
 import org.jetbrains.compose.web.css.backgroundColor
 import org.jetbrains.compose.web.css.border
@@ -96,6 +100,8 @@ data class ShareOffersDropdownStyles(
         width(200.px)
     },
     val triggerStyle: StyleScope.()->Unit = {
+        display(DisplayStyle.Flex)
+        justifyContent(JustifyContent.SpaceBetween)
         padding(2.px)
         border(1.px, LineStyle.Solid, Color.black)
         cursor(Cursor.Pointer)

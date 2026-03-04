@@ -25,6 +25,7 @@ import org.evoleq.optics.storage.ActionDispatcher
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
+import org.evoleq.optics.storage.read
 import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.ElementScope
@@ -538,11 +539,18 @@ fun UpdateMemberOfOrganizationModal(
                     }
                 }
                 val tableStyles = defaultListStyles
-                    .modifyHeader { width(90.percent) }
+
+                    .modifyHeaderWrapper {
+                        width(100.percent)
+                        justifyContent(JustifyContent.SpaceBetween)
+                    }
+                /*
+                        .modifyHeader { width(90.percent) }
                     .modifyDataWrapper { width(90.percent) }
                     .modifyActionsWrapper { width(10.percent) }
+                */
 
-                HeaderWrapper {
+                HeaderWrapper(tableStyles.headerWrapper) {
                     Header(tableStyles.header) {
                         HeaderCell(subscriptionHeaders * subComp("fiscalYear") * title){
                             width(10.percent)
@@ -582,9 +590,9 @@ fun UpdateMemberOfOrganizationModal(
                         "Share offer not found"
                     }
                     ListItemWrapper({
-                        listItemWrapperStyle(this, index)
 
-                        if(editShareSubscriptionState) {
+                        listItemWrapperStyle(this, index)
+                        if (editShareSubscriptionState) {
                             backgroundColor(Color.orange)
                             border {
                                 style(LineStyle.Solid)
@@ -675,11 +683,34 @@ fun UpdateMemberOfOrganizationModal(
                                 }
                                 shareStatusState = shareStatus
                             }
-                            TextCell(
-                                (subscriptionHeaders * subComp("ahcAuthorized") * checkIt(
-                                    shareSubscription.ahcAuthorized ?: false
-                                )).emit()
-                            ) {  width(5.percent) }
+
+                            val check  = { checked: Boolean -> (subscriptionHeaders * subComp("ahcAuthorized") * checkIt(
+                                checked
+                            )).emit()}
+                            val ahcAuthorized = shareSubscription.ahcAuthorized ?: false
+                            EditableSelectCell(
+                                options = mapOf(check(true) to true, check(false) to false),
+                                selected = ahcAuthorized,disabled = !editShareSubscriptionState,
+                                styles = EditableSelectCellStyles.modifyContainerStyle {
+                                    width(5.percent)
+                                },
+                                iconContent = { expanded ->
+                                    SimpleUpDown(expanded)
+                                }
+                            ) {
+                                ahcAuthorized ->
+                                shareSubscriptions = requireNotNull(shareSubscriptions).all.mapIndexed { shareSubscriptionIndex, shareSubscription ->
+                                    when(shareSubscriptionIndex){
+                                        index -> shareSubscription.ahcAuthorized{
+                                            ahcAuthorized
+                                        }
+                                        else -> shareSubscription
+                                    }
+                                }.let { list -> ShareSubscriptions(list) }
+                                setShareSubscriptions(shareSubscriptions!!)
+                            }
+
+
                             val selected = distributionPoints.firstOrNull {
                                 it.distributionPointId == shareSubscription.distributionPointId
                             }
@@ -709,7 +740,7 @@ fun UpdateMemberOfOrganizationModal(
                             EditableTextCell(
                                 text = shareSubscription.coSubscribers.joinToString(", "),
                                 disabled = !editShareSubscriptionState,
-                                style = { 40.percent }
+                                style = { width(40.percent) }
                             ) { coSubscribers ->
                                 shareSubscriptions = requireNotNull(shareSubscriptions).all.mapIndexed { shareSubscriptionIndex, shareSubscription ->
                                     when (shareSubscriptionIndex) {
