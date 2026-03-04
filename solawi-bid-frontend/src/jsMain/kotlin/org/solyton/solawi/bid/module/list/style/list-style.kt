@@ -126,6 +126,17 @@ data class ListStyles (
         }
     )
 
+    fun modifyListItemWrapperIndexed(newStylesIndexed: (index: Int) -> StyleScope.()->Unit): (Int)->ListStyles = { index ->
+        val newStyles = newStylesIndexed(index)
+        copy(
+            listItemWrapper = {
+                listItemWrapper()
+                newStyles()
+            }
+        )
+    }
+
+
     fun modifyListItemWrapper(newStyles: StyleScope.()->Unit): ListStyles = copy(
         listItemWrapper = {
             listItemWrapper()
