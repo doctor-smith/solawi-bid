@@ -236,7 +236,7 @@ data class EditableSelectCellStyles(
         position(Position.Relative)
         width(100.percent)
         border(1.px, LineStyle.Solid, Color.black)
-        //padding(2.px)
+        padding(2.px)
         cursor(Cursor.Pointer)
         display(DisplayStyle.Flex)
         justifyContent(JustifyContent.SpaceBetween)
@@ -244,9 +244,22 @@ data class EditableSelectCellStyles(
         userSelect(UserSelect.None)
     },
     val selectStyle: StyleScope.()->Unit = {
-        width(100.percent)
+        position(Position.Absolute)
+        top(100.percent)
+        left(0.px)
+        right(0.px)
+        backgroundColor(Color.white)
         border(1.px, LineStyle.Solid, Color.black)
+        zIndex( 100)
+    },
+    val iconStyle: StyleScope.()->Unit = {
+        marginLeft(2.px)
+        fontWeight("bold")
+        color(Color.black)
+    },
+    val itemStyle: StyleScope.()->Unit = {
         padding(2.px)
+        cursor(Cursor.Pointer)
     }
 ) {
     fun modifySelectStyle(style: StyleScope.() -> Unit): EditableSelectCellStyles = with(this){
@@ -258,6 +271,18 @@ data class EditableSelectCellStyles(
     fun modifyContainerStyle(style: StyleScope.() -> Unit): EditableSelectCellStyles = with(this){
         copy(containerStyle = {
             containerStyle()
+            style()
+        })
+    }
+    fun modifyIconStyle(style: StyleScope.() -> Unit): EditableSelectCellStyles = with(this){
+        copy(iconStyle = {
+            iconStyle()
+            style()
+        })
+    }
+    fun modifyItemStyle(style: StyleScope.() -> Unit): EditableSelectCellStyles = with(this){
+        copy(itemStyle = {
+            itemStyle()
             style()
         })
     }
@@ -273,6 +298,18 @@ data class EditableSelectCellStyles(
         fun modifyContainerStyle(style: StyleScope.() -> Unit): EditableSelectCellStyles = with(Default){
             copy(containerStyle = {
                 containerStyle()
+                style()
+            })
+        }
+        fun modifyIconStyle(style: StyleScope.() -> Unit): EditableSelectCellStyles = with(Default){
+            copy(iconStyle = {
+                iconStyle()
+                style()
+            })
+        }
+        fun modifyItemStyle(style: StyleScope.() -> Unit): EditableSelectCellStyles = with(Default){
+            copy(itemStyle = {
+                itemStyle()
                 style()
             })
         }
@@ -299,9 +336,7 @@ fun <T> EditableSelectCell(
 
     Div({
         style {
-            with(styles) {
-                containerStyle()
-            }
+            with(styles) { containerStyle() }
         }
         if (!disabled) onClick {
             it.stopPropagation()
@@ -313,36 +348,21 @@ fun <T> EditableSelectCell(
 
         // Icon
         Span({
-            style {
-                marginLeft(4.px)
-                fontWeight("bold")
-                color(Color.black)
-            }
+            style { with(styles) {iconStyle() } }
         }) {
             // Use custom icon content if provided, otherwise default to "+"
             iconContent?.invoke(expanded) ?: Text("+")
         }
 
         // Dropdown
-        if (expanded) {
+        if (!disabled && expanded) {
             Div({
-                style {
-                    position(Position.Absolute)
-                    top(100.percent)
-                    left(0.px)
-                    right(0.px)
-                    backgroundColor(Color.white)
-                    border(1.px, LineStyle.Solid, Color.black)
-                    zIndex( 100)
-                }
+                style { with(styles) { selectStyle() } }
                 onClick { it.stopPropagation() }
             }) {
                 options.filterKeys { it != selectedLabel  }.forEach { (label, value) ->
                     Div({
-                        style {
-                            padding(2.px)
-                            cursor(Cursor.Pointer)
-                        }
+                        style { with(styles) { itemStyle() } }
                         onClick { evt ->
                             evt.stopPropagation()
                             onSelected(value)
