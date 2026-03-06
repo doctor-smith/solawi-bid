@@ -39,6 +39,7 @@ import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.user.effect.trigger
 import org.solyton.solawi.bid.application.ui.page.user.i18n.OrganizationLangComponent
+import org.solyton.solawi.bid.module.application.data.organization.members
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
 import org.solyton.solawi.bid.module.control.button.DetailsButton
 import org.solyton.solawi.bid.module.control.button.EditButton
@@ -68,6 +69,7 @@ import org.solyton.solawi.bid.module.user.data.organization.organizationId
 import org.solyton.solawi.bid.module.user.data.organization.subOrganizations
 import org.solyton.solawi.bid.module.user.data.reader.isNotGranted
 import org.solyton.solawi.bid.module.user.data.user.organizations
+import org.solyton.solawi.bid.module.user.data.user.username
 import org.solyton.solawi.bid.module.user.permission.OrganizationRight
 
 @Markup
@@ -182,6 +184,9 @@ fun OrganizationItems(listStyles: ListStyles, organizations: Lens<Application, L
     val organizationName = (organization * name).read()
     val organizationContextId = organization.read().contextId
 
+    val username = (storage * user * username.get).emit()
+    val isMember = (organization.read().members.firstOrNull{it.username == username} != null)
+
     val hasSubOrganizations = (organization * subOrganizations * Reader { list:List<Organization> -> list.isNotEmpty() })
 
     ListItemWrapper(listStyles.listItemWrapper) {
@@ -235,7 +240,9 @@ fun OrganizationItems(listStyles: ListStyles, organizations: Lens<Application, L
                 // todo:i18n
                 {"Details"},
                 storage * deviceData * mediaType.get,
-                (storage * isNotGranted(OrganizationRight.Organization.read, organizationContextId, )).emit(),
+                (storage * isNotGranted(OrganizationRight.Organization.read, organizationContextId, )).emit()
+                        && !isMember
+                ,
             ) {
                 navigate("/app/management/organizations/$organizationId")
             }
@@ -291,11 +298,11 @@ fun OrganizationItems(listStyles: ListStyles, organizations: Lens<Application, L
     (organization * subOrganizations).split().forEach {
         subOrg -> OrganizationItems(
         listStyles,
-        organizations * FirstBy { o -> o.organizationId == organizationId } * subOrganizations,
+        try{organizations * FirstBy { o -> o.organizationId == organizationId } * subOrganizations} catch (e: Exception) {println(e); throw e},
         subOrg,
         storage,
         deepth + 1
-        )
+    )
     }
 }
 

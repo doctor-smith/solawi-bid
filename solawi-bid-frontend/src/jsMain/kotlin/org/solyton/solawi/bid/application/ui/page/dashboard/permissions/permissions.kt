@@ -10,11 +10,13 @@ val canAccessApplication: (applicationName: String) -> Reader<ApplicationManagem
             application -> application.name == applicationName
         }?: return@Reader false
         // find corresponding application-context-relations
-        val contextIds = applicationManagement.personalApplicationContextRelations.filter {
+        val contextIdsFromApplications = applicationManagement.personalApplicationContextRelations.filter {
             (contextId, relatedId) -> relatedId == application.id
         }.map{ (contextId, _)-> contextId }
-
-        contextIds.isNotEmpty()
+        val contextIdsFromOrganizations = applicationManagement.applicationOrganizationRelations.filter {
+                (applicationId, _, _, _) -> applicationId == application.id
+        }
+        contextIdsFromApplications.isNotEmpty() || contextIdsFromOrganizations.isNotEmpty()
 }}
 
 val canAccessModule: (moduleName: String, applicationName: String) -> Reader<ApplicationManagement, Boolean> = {

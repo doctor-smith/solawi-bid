@@ -26,7 +26,7 @@ fun <T> FirstBy(predicate: (T) -> Boolean): Lens<List<T>, T> {
                 if (tail == null) {
                     tail = list.dropWhile { item -> !predicate(item) }.drop(1)
                 }
-                lead!! + listOf(t) + tail!!
+                lead + listOf(t) + tail
             }
         }
     )
