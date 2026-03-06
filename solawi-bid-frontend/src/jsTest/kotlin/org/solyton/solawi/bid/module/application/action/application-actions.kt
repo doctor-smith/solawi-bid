@@ -7,7 +7,6 @@ import org.evoleq.math.write
 import org.evoleq.optics.storage.ActionDispatcher
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.testutils.ComposeWebExperimentalTestsApi
-import org.jetbrains.compose.web.testutils.runTest
 import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
 import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.application.data.management.ApplicationManagement
@@ -439,7 +438,7 @@ class ApplicationActionsTest {
     @Test
     fun readApplicationContextRelationsTest() = runComposeTest {
 
-        val action = readApplicationContextRelations
+        val action = readPersonalApplicationContextRelations
 
         val apiApplicationContextRelations = ApiApplicationContextRelations(
             all = listOf(
