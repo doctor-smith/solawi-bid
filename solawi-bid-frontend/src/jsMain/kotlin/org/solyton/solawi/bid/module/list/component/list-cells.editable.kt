@@ -332,7 +332,8 @@ fun <T> EditableSelectCell(
     var expanded by remember { mutableStateOf(false) }
 
     // Find label of current selection
-    val selectedLabel = options.entries.firstOrNull { it.value == selected }?.key
+    val initialLabel = options.entries.firstOrNull { it.value == selected }?.key
+    var selectedLabel by remember { mutableStateOf(initialLabel) }
 
     Div({
         style {
@@ -366,8 +367,8 @@ fun <T> EditableSelectCell(
                         onClick { evt ->
                             evt.stopPropagation()
                             onSelected(value)
+                            selectedLabel = label
                             if (closeOnSelect) expanded = false
-                            onSelected(value)
                         }
                     }) {
                         Text(label)
