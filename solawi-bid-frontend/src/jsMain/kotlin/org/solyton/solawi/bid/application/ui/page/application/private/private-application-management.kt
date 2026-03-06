@@ -6,7 +6,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.guard.data.isLoading
-import org.evoleq.compose.guard.data.onEmpty
 import org.evoleq.compose.guard.data.onNullLaunch
 import org.evoleq.compose.guard.data.withLoading
 import org.evoleq.compose.layout.Horizontal
@@ -19,8 +18,10 @@ import org.evoleq.language.tooltip
 import org.evoleq.math.DeepRead
 import org.evoleq.math.emit
 import org.evoleq.math.times
+import org.evoleq.optics.storage.ActionEnvelope
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
+import org.evoleq.optics.storage.times
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.percent
@@ -34,17 +35,19 @@ import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
 import org.solyton.solawi.bid.application.ui.page.application.style.actionsWrapperStyle
 import org.solyton.solawi.bid.application.ui.page.application.style.listItemWrapperStyle
+import org.solyton.solawi.bid.module.application.action.READ_APPLICATIONS
+import org.solyton.solawi.bid.module.application.action.READ_PERSONAL_APPLICATION_CONTEXT_RELATIONS
+import org.solyton.solawi.bid.module.application.action.READ_PERSONAL_APPLICATION_ORGANIZATION_CONTEXT_RELATIONS
 import org.solyton.solawi.bid.module.application.action.connectApplicationToOrganization
-import org.solyton.solawi.bid.module.application.action.readApplicationContextRelations
+import org.solyton.solawi.bid.module.application.action.readPersonalApplicationContextRelations
 import org.solyton.solawi.bid.module.application.action.readApplications
+import org.solyton.solawi.bid.module.application.action.readPersonalApplicationOrganizationContextRelations
 import org.solyton.solawi.bid.module.application.component.modal.showConnectApplicationToOrganizationModule
 import org.solyton.solawi.bid.module.application.data.LifecycleStage
 import org.solyton.solawi.bid.module.application.data.management.actions
-import org.solyton.solawi.bid.module.application.data.management.applicationManagementActions
 import org.solyton.solawi.bid.module.application.data.management.applicationManagementModals
 import org.solyton.solawi.bid.module.application.data.management.applicationOrganizationRelations
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
-import org.solyton.solawi.bid.module.application.data.management.personalApplicationContextRelations
 import org.solyton.solawi.bid.module.application.i18n.Component
 import org.solyton.solawi.bid.module.application.i18n.application
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
@@ -55,13 +58,20 @@ import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.loading.component.Loading
 import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.permissions.service.contextFromPath
+import org.solyton.solawi.bid.module.process.service.process.runProcesses
+import org.solyton.solawi.bid.module.process.service.process.sequence
 import org.solyton.solawi.bid.module.style.page.PageTitle
 import org.solyton.solawi.bid.module.style.page.SubTitle
 import org.solyton.solawi.bid.module.style.page.Title
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
+import org.solyton.solawi.bid.module.user.action.organization.READ_ORGANIZATIONS
 import org.solyton.solawi.bid.module.user.action.organization.readOrganizations
 import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsAction
+import org.solyton.solawi.bid.module.user.action.user.GET_USERS
+import org.solyton.solawi.bid.module.user.action.user.READ_USER_PROFILES
+import org.solyton.solawi.bid.module.user.action.user.getUsers
+import org.solyton.solawi.bid.module.user.action.user.readUserProfiles
 import org.solyton.solawi.bid.module.user.data.user
 import org.solyton.solawi.bid.module.user.data.user.organizations
 import org.solyton.solawi.bid.module.user.data.userActions
@@ -78,13 +88,16 @@ import kotlin.with
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun PrivateApplicationManagementPage(storage: Storage<Application>) = withLoading(
+fun PrivateApplicationManagementPage(storage: Storage<Application>) {
+    val scope = rememberCoroutineScope()
+    withLoading(
     isLoading = isLoading(
         onNullLaunch(
             storage * availablePermissions * contextFromPath("APPLICATION"),
         ){
-            CoroutineScope(Job()).launch { (storage * userIso * userActions ).dispatch(readUserPermissionsAction()) }
+            scope.launch { (storage * userIso * userActions ).dispatch(readUserPermissionsAction()) }
         },
+        /*
         onEmpty(storage * applicationManagementModule * availableApplications.get) {
             CoroutineScope(Job()).launch {
                 (storage * applicationManagementModule * applicationManagementActions).dispatch(
@@ -92,6 +105,9 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) = withLoadin
                 )
             }
         },
+
+         */
+        /*
         onEmpty(storage * applicationManagementModule * personalApplicationContextRelations.get) {
             CoroutineScope(Job()).launch {
                 (storage * applicationManagementModule * applicationManagementActions).dispatch(
@@ -99,6 +115,9 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) = withLoadin
                 )
             }
         },
+
+         */
+        /*
         onEmpty(storage * userIso * user * organizations.get) {
             CoroutineScope(Job()).launch {
                 (storage * userIso * userActions).dispatch(
@@ -106,6 +125,9 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) = withLoadin
                 )
             }
         },
+
+
+         */
         onMissing(
             ApplicationLangComponent.PrivateApplicationManagementPage,
             storage * i18N.get
@@ -127,99 +149,130 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) = withLoadin
                     i18n = (storage * i18N)
                 )
             }
-        }.toBooleanArray()
+        }.toBooleanArray(),
+        *storage.runProcesses(
+            ActionEnvelope(
+                userIso * readOrganizations(),
+                READ_ORGANIZATIONS,
+            ),
+            sequence(
+                ActionEnvelope(
+                    userIso * getUsers(),
+                    GET_USERS,
+                ),
+                ActionEnvelope(
+                    userIso * readUserProfiles(emptyList()),
+                    READ_USER_PROFILES,
+                )
+            ),
+            ActionEnvelope(
+                applicationManagementModule * readApplications,
+                READ_APPLICATIONS,
+            ),
+            ActionEnvelope(
+                applicationManagementModule * readPersonalApplicationContextRelations,
+                READ_PERSONAL_APPLICATION_CONTEXT_RELATIONS,
+            ),
+            ActionEnvelope(
+                applicationManagementModule * readPersonalApplicationOrganizationContextRelations(),
+                READ_PERSONAL_APPLICATION_ORGANIZATION_CONTEXT_RELATIONS,
+            )
+        ),
     ),
     onLoading = { Loading() },
 ){
-
-    LaunchedEffect(Unit){
-        (storage * userIso * userActions).dispatch(readOrganizations())
-    }
-
-    val device = storage * deviceData * mediaType.get
-    val base = storage * i18N * language * Component.base
-    val texts = storage * i18N * language * component(ApplicationLangComponent.PrivateApplicationManagementPage)
-    val connectDialogTexts = texts * subComp("dialogs") * subComp("connectApplicationToOrganization")
-
-    val personalApplications = storage * personalApplications
-    val organizations = storage * userIso * user * organizations
-    val modals = storage * applicationManagementModule * applicationManagementModals
-
-    val organizationRelations = storage * applicationManagementModule * applicationOrganizationRelations
-
-    val mapOfLinkedOrganizations = personalApplications.read().associate { application ->
-        application.id to organizationRelations.read()
-            .filter { it.applicationId == application.id }
-            .mapNotNull { relation -> (organizations * DeepRead { org -> org.organizationId == relation.organizationId }).emit() }
-    }
-
-    // state
-    var organizationId by remember { mutableStateOf("") }
-
-    Page(verticalPageStyle) {
-        Wrap {
-            Horizontal {
-                PageTitle(texts * title)
-            }
-            SubTitle(texts * subTitle)
+/*
+        LaunchedEffect(Unit){
+            (storage * userIso * userActions).dispatch(readOrganizations())
         }
-        ListWrapper {
-            TitleWrapper { Title("") {  } }
+
+
+ */
+        val device = storage * deviceData * mediaType.get
+        val base = storage * i18N * language * Component.base
+        val texts = storage * i18N * language * component(ApplicationLangComponent.PrivateApplicationManagementPage)
+        val connectDialogTexts = texts * subComp("dialogs") * subComp("connectApplicationToOrganization")
+
+        val personalApplications = storage * personalApplications
+        val organizations = storage * userIso * user * organizations
+        val modals = storage * applicationManagementModule * applicationManagementModals
+
+        val organizationRelations = storage * applicationManagementModule * applicationOrganizationRelations
+
+        val mapOfLinkedOrganizations = personalApplications.read().associate { application ->
+            application.id to organizationRelations.read()
+                .filter { it.applicationId == application.id }
+                .mapNotNull { relation -> (organizations * DeepRead { org -> org.organizationId == relation.organizationId }).emit() }
         }
-        HeaderWrapper{
-            Header {
-                HeaderCell(
-                    texts * with(Component){listOfApplications * headers * application} * title
-                ){ width(35.percent) }
-                HeaderCell("Status") {
-                    width(10.percent)
+
+        // state
+        var organizationId by remember { mutableStateOf("") }
+
+        Page(verticalPageStyle) {
+            Wrap {
+                Horizontal {
+                    PageTitle(texts * title)
                 }
-                HeaderCell(texts * with(Component){listOfApplications * headers * linkedOrganizations} * title) {
-                    width(55.percent)
-                }
+                SubTitle(texts * subTitle)
             }
-        }
-        ListItemsIndexed(personalApplications) { index, application ->
-            ListItemWrapper({
-                listItemWrapperStyle(this , index)
-            }) {
-                DataWrapper {
-                    TextCell(
-                    base * application(application.name) * title
-                    ) { width(35.percent) }
-                    TextCell(application.state.toString()) { width(10.percent) }
-                    TextCell(mapOfLinkedOrganizations[application.id]?.joinToString(", ") { it.name }?:""){
+            ListWrapper {
+                TitleWrapper { Title("") {  } }
+            }
+            HeaderWrapper{
+                Header {
+                    HeaderCell(
+                        texts * with(Component){listOfApplications * headers * application} * title
+                    ){ width(35.percent) }
+                    HeaderCell("Status") {
+                        width(10.percent)
+                    }
+                    HeaderCell(texts * with(Component){listOfApplications * headers * linkedOrganizations} * title) {
                         width(55.percent)
                     }
                 }
-                ActionsWrapper({
-                    actionsWrapperStyle(this)
+            }
+            ListItemsIndexed(personalApplications) { index, application ->
+                ListItemWrapper({
+                    listItemWrapperStyle(this , index)
                 }) {
-                    ShareNodesButton(
-                        Color.black,
-                        Color.white,
-                        texts * Component.listOfApplications * Component.actions * subComp("connectApplication") * tooltip,
-                        device,
-                    ) {
-                        modals.showConnectApplicationToOrganizationModule(
-                            texts = connectDialogTexts,
-                            device = device,
-                            styles = {dev -> auctionModalStyles(dev) },
-                            application = application,
-                            organizations = organizations.read().import(),
-                            setOrganizationId = {id -> organizationId = id},
-                            cancel = {}
+                    DataWrapper {
+                        TextCell(
+                            base * application(application.name) * title
+                        ) { width(35.percent) }
+                        TextCell(application.state.toString()) { width(10.percent) }
+                        TextCell(mapOfLinkedOrganizations[application.id]?.joinToString(", ") { it.name }?:""){
+                            width(55.percent)
+                        }
+                    }
+                    ActionsWrapper({
+                        actionsWrapperStyle(this)
+                    }) {
+                        ShareNodesButton(
+                            Color.black,
+                            Color.white,
+                            texts * Component.listOfApplications * Component.actions * subComp("connectApplication") * tooltip,
+                            device,
                         ) {
-                            CoroutineScope(Job()).launch {
-                                (storage * applicationManagementModule * actions).dispatch(
-                                    connectApplicationToOrganization(
-                                        application.id,
-                                        organizationId,
-                                        application.modules.filter{
-                                                module -> module.state == LifecycleStage.Active
-                                        }.map { it.id }
+                            modals.showConnectApplicationToOrganizationModule(
+                                texts = connectDialogTexts,
+                                device = device,
+                                styles = {dev -> auctionModalStyles(dev) },
+                                application = application,
+                                organizations = organizations.read().import(),
+                                setOrganizationId = {id -> organizationId = id},
+                                cancel = {}
+                            ) {
+                                CoroutineScope(Job()).launch {
+                                    (storage * applicationManagementModule * actions).dispatch(
+                                        connectApplicationToOrganization(
+                                            application.id,
+                                            organizationId,
+                                            application.modules.filter{
+                                                    module -> module.state == LifecycleStage.Active
+                                            }.map { it.id }
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
                     }

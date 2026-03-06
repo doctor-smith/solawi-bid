@@ -1,6 +1,7 @@
 package org.evoleq.compose.routing
 
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.Snapshot
 import kotlinx.browser.window
 import org.w3c.dom.Location
 
@@ -25,7 +26,9 @@ fun navigate(to: String, title: String = "") {
     The history API unfortunately provides no callback to listen for
     [window.history.pushState], so we need to notify subscribers when pushing a new path.
      */
-    currentPath.value = window.location.newPath()
+    Snapshot.withMutableSnapshot {
+        currentPath.value = window.location.newPath()
+    }
 }
 
 @RoutingDsl
@@ -40,6 +43,7 @@ fun openUrlInNewTab(url: String) {
 /**
  * Handle route changes
  */
+/*
 @RoutingDsl
 @Composable
 @Suppress("FunctionName")
@@ -61,3 +65,35 @@ fun Routing(initPath: String,routes: RoutesConfiguration.()->Unit): Routes = wit
     compose(path().value)
     this
 }
+*/
+
+@RoutingDsl
+@Composable
+@Suppress("FunctionName")
+fun Routing(initPath: String, routes: RoutesConfiguration.() -> Unit): Routes =
+    with(routing(routes)) {
+
+        @Composable
+        fun path(): State<String> {
+
+            LaunchedEffect(Unit) {
+                window.onpopstate = {
+                    Snapshot.withMutableSnapshot {
+                        currentPath.value = window.location.newPath()
+                    }
+                    Unit
+                }
+            }
+
+            return remember {
+                derivedStateOf { currentPath.value.ifBlank { initPath } }
+            }
+        }
+
+        if (window.location.pathname.isBlank() || window.location.pathname == "/") {
+            navigate(initPath)
+        }
+
+        compose(path().value)
+        this
+    }

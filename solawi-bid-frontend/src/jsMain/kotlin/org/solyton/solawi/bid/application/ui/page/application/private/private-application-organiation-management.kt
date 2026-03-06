@@ -32,7 +32,7 @@ import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
 import org.solyton.solawi.bid.application.ui.page.application.style.actionsWrapperStyle
 import org.solyton.solawi.bid.application.ui.page.application.style.listItemWrapperStyle
-import org.solyton.solawi.bid.module.application.action.readApplicationContextRelations
+import org.solyton.solawi.bid.module.application.action.readPersonalApplicationContextRelations
 import org.solyton.solawi.bid.module.application.action.readApplications
 import org.solyton.solawi.bid.module.application.action.readPersonalApplicationOrganizationContextRelations
 import org.solyton.solawi.bid.module.application.component.modal.CheckedUserRole
@@ -104,7 +104,7 @@ fun PrivateApplicationOrganizationManagementPage(
         onEmpty(storage * applicationManagementModule * personalApplicationContextRelations.get) {
             CoroutineScope(Job()).launch {
                 (storage * applicationManagementModule * applicationManagementActions).dispatch(
-                    readApplicationContextRelations
+                    readPersonalApplicationContextRelations
                 )
             }
         },

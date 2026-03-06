@@ -10,7 +10,7 @@ fun Param(): Parser<Parameter> = SplitAtFirst('=') map {
 
 @Suppress("FunctionName")
 fun Params(): Parser<List<Parameter>> = Split(';') map {
-    it.map { string -> Param().run(string).result!! }
+    it.map { string -> requireNotNull(Param().run(string).result) {"Parameter requirement not satisfied: $string"} }
 }
 
 @Suppress("FunctionName")
@@ -19,7 +19,9 @@ fun Segment(): Parser<RouteSegment> =
             Parser { s ->  Result(RouteSegment.Static(s) as RouteSegment,"") }
 
 @Suppress("FunctionName")
-fun Segments(): Parser<List<RouteSegment>> = Split('/') map { list -> list.map { Segment().run(it).result!! } }
+fun Segments(): Parser<List<RouteSegment>> = Split('/') map { list -> list.map { requireNotNull(Segment().run(it).result) {
+    "Segment requirements not satisfied: $it"
+} } }
 
 @Suppress("FunctionName")
 fun RouteParser(): Parser<Route> = SplitAtFirst('?') map {
@@ -28,7 +30,7 @@ fun RouteParser(): Parser<Route> = SplitAtFirst('?') map {
     Segments().run(path) x Params().run(params)
 } map {
     Route(
-        it.first.result!!,
-        it.second.result!!
+        requireNotNull(it.first.result) {"Path requirements not satisfied: ${it.first.result}"},
+        requireNotNull(it.second.result){"Parameter requirements not satisfied: ${it.second.result}"}
     )
 }
