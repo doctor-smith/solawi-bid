@@ -7,7 +7,7 @@ import org.evoleq.language.texts
 fun dialogModalTexts(message: String):Lang.Block = texts{
     key = "dialog"
     variable {
-        key = "dialog"
+        key = "title"
         value = "Confirm"
     }
     block{
