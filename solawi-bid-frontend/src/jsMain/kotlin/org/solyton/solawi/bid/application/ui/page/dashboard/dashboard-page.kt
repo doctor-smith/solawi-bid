@@ -69,14 +69,14 @@ fun DashboardPage(storage: Storage<Application>) {
 
             // auctionsCard
             if(canAccessAuctions) {
-                Card({
-                    // navigate("/app/management")
-                }) {
-                    Wrap { H3 { Text("Application Management") } }
+                if(!canAccessApplicationManagement) {
+                    Card({
+                        // navigate("/app/management")
+                    }) {
+                        Wrap { H3 { Text("Application Management") } }
 
-                    // Link("My Apps", "/app/management/private")
-                    // Link("User Management", "/app/management/users")
-                    Link("Organization Management", "/app/management/organizations")
+                        Link("Organization Management", "/app/management/organizations")
+                    }
                 }
                 Card({
                     navigate("/app/auctions")
