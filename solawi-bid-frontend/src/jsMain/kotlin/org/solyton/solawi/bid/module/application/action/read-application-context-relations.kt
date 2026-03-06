@@ -9,9 +9,11 @@ import org.solyton.solawi.bid.module.application.data.ReadPersonalApplicationCon
 import org.solyton.solawi.bid.module.application.data.management.ApplicationManagement
 import org.solyton.solawi.bid.module.application.data.toDomainType
 
-val readApplicationContextRelations: Action<ApplicationManagement, ReadPersonalApplicationContextRelations, ApiApplicationContextRelations> by lazy {
+const val READ_PERSONAL_APPLICATION_CONTEXT_RELATIONS = "ReadPersonalApplicationContextRelations"
+
+val readPersonalApplicationContextRelations: Action<ApplicationManagement, ReadPersonalApplicationContextRelations, ApiApplicationContextRelations> by lazy {
     Action<ApplicationManagement, ReadPersonalApplicationContextRelations, ApiApplicationContextRelations>(
-        name = "READ_PERSONAL_APPLICATION_CONTEXT_RELATIONS",
+        name = READ_PERSONAL_APPLICATION_CONTEXT_RELATIONS,
         reader = { _ -> ReadPersonalApplicationContextRelations },
         endPoint = ReadPersonalApplicationContextRelations::class,
         writer = personalApplicationContextRelations.set contraMap {

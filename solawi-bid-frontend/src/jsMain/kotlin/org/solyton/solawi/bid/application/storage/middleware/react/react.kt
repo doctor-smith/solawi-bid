@@ -49,7 +49,7 @@ fun <S: Any, T: Any> React(action: Action<Application, S, T>): KlState<Storage<A
                     // Read other context-relations
                     emit(applicationManagementModule * readPersonalApplications )
                     emit(applicationManagementModule * readApplications )
-                    emit(applicationManagementModule * readApplicationContextRelations )
+                    emit(applicationManagementModule * readPersonalApplicationContextRelations )
                     emit(applicationManagementModule * readModuleContextRelations)
                     emit(applicationManagementModule * readPersonalApplicationOrganizationContextRelations())
                     // emit(userIso * readPermissionsOfUsersAction())
