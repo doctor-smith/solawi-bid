@@ -66,6 +66,17 @@ import org.solyton.solawi.bid.module.user.data.organization.members
 import org.solyton.solawi.bid.module.user.data.user
 import org.solyton.solawi.bid.module.user.data.user.organizations
 import org.solyton.solawi.bid.module.user.data.userActions
+import kotlin.collections.List
+import kotlin.collections.associate
+import kotlin.collections.filter
+import kotlin.collections.first
+import kotlin.collections.firstOrNull
+import kotlin.collections.isNotEmpty
+import kotlin.collections.joinToString
+import kotlin.collections.map
+import kotlin.collections.orEmpty
+import kotlin.collections.toBooleanArray
+import kotlin.text.orEmpty
 import org.solyton.solawi.bid.module.application.data.application.name as nameOfApplication
 import org.solyton.solawi.bid.module.user.data.organization.name as nameOfOrganization
 
@@ -188,7 +199,7 @@ fun PrivateApplicationOrganizationManagementPage(
         user -> user.username to user.permissions.contexts.firstOrNull {
             it.contextId == applicationOrganizationContextId
         }
-    }.filterValues { it != null }
+    }
 
     Page(verticalPageStyle) {
         Wrap {
@@ -226,14 +237,15 @@ fun PrivateApplicationOrganizationManagementPage(
                 ListItemWrapper(
                     {listItemWrapperStyle(this, index)}
                 ) {
+                    val memberPermissions = permissionsMap[member.username]
                     DataWrapper {
                         TextCell(member.username){width(20.percent)}
-                        TextCell(permissionsMap[member.username]!!.roles.joinToString(", "){it.roleName}){width(80.percent)}
+                        TextCell(memberPermissions?.roles?.joinToString(", "){it.roleName}.orEmpty()){width(80.percent)}
                     }
                     ActionsWrapper(
                         actionsWrapperStyle
                     ) {
-                        val userRoleIds = permissionsMap[member.username]!!.roles.map{it.roleId}
+                        val userRoleIds = memberPermissions?.roles?.map{it.roleId}.orEmpty()
                         var checkedRoles: List<CheckedUserRole> by remember {
                             mutableStateOf( context.read().roles.map {
                                 when {
