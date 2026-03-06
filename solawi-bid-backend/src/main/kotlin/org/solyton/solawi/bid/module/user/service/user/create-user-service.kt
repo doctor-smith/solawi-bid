@@ -63,7 +63,16 @@ fun Transaction.createUserEntity(data: CreateUser, creatorId: UUID): UserEntity 
             status = UserStatus.ACTIVE
             createdBy = creatorId
         }
+        // UserRoleContext.insert is called twice below to assign the roles in two contexts:
+        // First, assign the user role in the root application context.
+        UserRoleContext.insert {
+            it[userId] = userEntity.id.value
+            it[roleId] = userRole.id.value
+            it[contextId] = applicationContext.id.value
+        }
 
+        // Second, assign the user role in the application's organizational context.
+        // This ensures the user has appropriate permissions within the organization.
         UserRoleContext.insert {
             it[userId] = userEntity.id.value
             it[roleId] = userRole.id.value
