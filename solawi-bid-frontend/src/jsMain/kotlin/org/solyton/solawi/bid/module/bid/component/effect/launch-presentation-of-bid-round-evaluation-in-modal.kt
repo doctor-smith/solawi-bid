@@ -15,6 +15,7 @@ import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
+import org.solyton.solawi.bid.module.bid.component.BidRoundEvaluationConfig
 import org.solyton.solawi.bid.module.bid.component.modal.showBidRoundEvaluationModal
 import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.api.RoundState
@@ -32,14 +33,16 @@ import org.solyton.solawi.bid.module.i18n.data.language
 fun LaunchPresentationOfBidRoundEvaluationInModal(
     storage: Storage<BidApplication>,
     auction: Lens<BidApplication, Auction>,
-    round: Round
+    round: Round,
+    config: BidRoundEvaluationConfig = BidRoundEvaluationConfig()
 ) {
     LaunchedEffect(Unit) {
         launch{
             showBidRoundEvaluationModal(
                 storage = storage,
                 auction = auction,
-                round = round
+                round = round,
+                config = config
             )
         }
     }
@@ -47,15 +50,17 @@ fun LaunchPresentationOfBidRoundEvaluationInModal(
 
 @Markup
 @Suppress("FunctionName")
-fun TriggerPresentationOfBidRoundEvaluationInModal(
+fun CoroutineScope.TriggerPresentationOfBidRoundEvaluationInModal(
     storage: Storage<BidApplication>,
     auction: Lens<BidApplication, Auction>,
-    round: Round
-) = CoroutineScope(Job()) .launch{
+    round: Round,
+    config: BidRoundEvaluationConfig = BidRoundEvaluationConfig()
+) = launch{
     showBidRoundEvaluationModal(
         storage = storage,
         auction = auction,
-        round = round
+        round = round,
+        config = config
     )
 }
 
@@ -64,11 +69,13 @@ fun TriggerPresentationOfBidRoundEvaluationInModal(
 suspend fun showBidRoundEvaluationModal(
     storage: Storage<BidApplication>,
     auction: Lens<BidApplication, Auction>,
-    round: Round
+    round: Round,
+    config: BidRoundEvaluationConfig = BidRoundEvaluationConfig()
 ) = coroutineScope{
     (storage * modals).showBidRoundEvaluationModal(
         storage = storage,
         round = (auction * rounds * FirstBy { it.roundId == round.roundId }),// round.bidRoundEvaluationModal
+        config = config,
         texts = ((storage * i18N * language).read() as Lang.Block).component("solyton.auction.round.bidRoundEvaluationModal"),
         device = (storage * deviceData * mediaType.get),
         cancel = if(round.state != RoundState.Frozen.toString()) {{

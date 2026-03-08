@@ -35,15 +35,17 @@ import org.solyton.solawi.bid.module.bid.action.configureAuction
 import org.solyton.solawi.bid.module.bid.action.readAuctions
 import org.solyton.solawi.bid.module.bid.component.AuctionDetails
 import org.solyton.solawi.bid.module.bid.component.BidArrow
+import org.solyton.solawi.bid.module.bid.component.BidRoundEvaluationConfig
 import org.solyton.solawi.bid.module.bid.component.CurrentBidRound
 import org.solyton.solawi.bid.module.bid.component.button.AuctionsButton
 import org.solyton.solawi.bid.module.bid.component.button.CreateNewRoundButton
 import org.solyton.solawi.bid.module.bid.component.button.ImportBiddersButton
 import org.solyton.solawi.bid.module.bid.component.button.UpdateAuctionButton
+import org.solyton.solawi.bid.module.bid.component.effect.LaunchBidRoundEvaluation
 import org.solyton.solawi.bid.module.bid.component.effect.LaunchDownloadOfBidRoundResults
-import org.solyton.solawi.bid.module.bid.component.effect.TriggerBidRoundEvaluation
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerCommentOnRoundDialog
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerExportOfBidRoundResults
+import org.solyton.solawi.bid.module.bid.component.effect.TriggerPresentationOfBidRoundEvaluationInModal
 import org.solyton.solawi.bid.module.bid.component.form.ApplicationContextKey
 import org.solyton.solawi.bid.module.bid.component.form.showUpdateAuctionModal
 import org.solyton.solawi.bid.module.bid.data.*
@@ -413,6 +415,12 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                         texts = texts
                     )
 
+                    LaunchBidRoundEvaluation(
+                        storage = bidApplicationStorage,
+                        auction = auction,
+                        round = round,
+                    )
+
                     ListItemWrapper(styles = listStyles.listItemWrapper ) {
                         DataWrapper{
                             // Check or Xmark ???
@@ -429,6 +437,7 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                             TextCell(round.comments.firstOrNull()?.comment?:"") { width(50.percent) }
                         }
                         ActionsWrapper {
+                            val scope = rememberCoroutineScope()
                             val isExportDisabled = (bidApplicationStorage * user.get).emit()
                                 .isNotGranted(BidRight.BidRound.manage)
 
@@ -471,10 +480,13 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                                 bidApplicationStorage * deviceData * mediaType.get,
                                 isEvaluationDisabled
                             ) {
-                                TriggerBidRoundEvaluation(
+                                scope.TriggerPresentationOfBidRoundEvaluationInModal(
                                     storage = bidApplicationStorage,
                                     auction = auction,
-                                    round = round
+                                    round = round,
+                                    config =BidRoundEvaluationConfig(
+                                        showEvaluationDiagrams = true
+                                    )
                                 )
                             }
                         }

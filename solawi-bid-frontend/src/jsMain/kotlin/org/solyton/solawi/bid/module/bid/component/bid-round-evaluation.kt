@@ -23,7 +23,6 @@ import org.jetbrains.letsPlot.scale.scaleYContinuous
 import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.bidround.Round
 import org.solyton.solawi.bid.module.bid.data.bidround.bidRoundEvaluation
-import org.solyton.solawi.bid.module.bid.service.roundTo
 import org.solyton.solawi.bid.module.separator.LineSeparator
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.w3c.dom.HTMLElement
@@ -67,12 +66,17 @@ const val BID_HISTOGRAM_CONTAINER = "bidHistogramContainer"
 const val BID_PER_SHARE_HISTOGRAM_CONTAINER = "bidPerShareHistogramContainer"
 const val SHARES_HISTOGRAM_CONTAINER = "sharesHistogramContainer"
 
+data class BidRoundEvaluationConfig(
+    val showEvaluationDiagrams:Boolean = false
+)
+
 @Markup
 @Composable
 @Suppress("FunctionName")
 fun BidRoundEvaluation(
     storage: Storage<BidApplication>,
-    round: Lens<BidApplication, Round>
+    round: Lens<BidApplication, Round>,
+    config: BidRoundEvaluationConfig = BidRoundEvaluationConfig()
 ) {
     // Checkbox Variables
     var showStandardBidsTotal by remember { mutableStateOf(true) }
@@ -209,8 +213,8 @@ fun BidRoundEvaluation(
         }
         //todo:dev inject value via auction configuration.
         // Idea: 3 states: SHOW_ALWAYS, SHOW_NEVER, SHOW_ON_DEMAND (-> Checkbox)
-        val showEvaluation = false
-        if(!showEvaluation) return@mainDiv
+
+        if(!config.showEvaluationDiagrams) return@mainDiv
 
         Wrap {
             H4 { Text("Verhältnis Max / Min")}

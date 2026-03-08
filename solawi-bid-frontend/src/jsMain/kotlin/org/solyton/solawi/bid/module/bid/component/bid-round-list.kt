@@ -175,7 +175,6 @@ fun CurrentBidRound(
             round = round,
             texts = texts
         )
-
         // todo:i18n
         H2{Text( "Runde ${round.roundNumber}" )}
 
