@@ -1,6 +1,8 @@
 package org.solyton.solawi.bid.module.bid.component.button
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -9,6 +11,7 @@ import org.evoleq.device.data.mediaType
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
+import org.solyton.solawi.bid.module.bid.component.BidRoundEvaluationConfig
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerBidRoundEvaluation
 import org.solyton.solawi.bid.module.bid.component.effect.TriggerPresentationOfBidRoundEvaluationInModal
 import org.solyton.solawi.bid.module.bid.data.BidApplication
@@ -26,6 +29,7 @@ fun EvaluateBidRoundButton(
     auction: Lens<BidApplication, Auction>,
     round: Round
 ) {
+    val scope = rememberCoroutineScope()
     val isDisabled = round.state !in listOf(RoundState.Evaluated.toString(), RoundState.Closed.toString(), RoundState.Frozen.toString())
     StdButton(
         // todo:i18n
@@ -34,7 +38,7 @@ fun EvaluateBidRoundButton(
         true //isDisabled todo:dev enable button and fix loading issues
     ) {
         if(round.bidRoundEvaluation.weightedBids.isEmpty()) {
-            CoroutineScope(Job()).launch {
+            scope.launch {
                 TriggerBidRoundEvaluation(
                     storage,
                     auction,
@@ -47,12 +51,14 @@ fun EvaluateBidRoundButton(
                 )
             }
         } else {
-            TriggerPresentationOfBidRoundEvaluationInModal(
-                storage = storage,
-                auction = auction,
-                round = round
-            )
+            scope.launch {
+                TriggerPresentationOfBidRoundEvaluationInModal(
+                    storage = storage,
+                    auction = auction,
+                    round = round,
+                    config = BidRoundEvaluationConfig(true)
+                )
+            }
         }
-
     }
 }

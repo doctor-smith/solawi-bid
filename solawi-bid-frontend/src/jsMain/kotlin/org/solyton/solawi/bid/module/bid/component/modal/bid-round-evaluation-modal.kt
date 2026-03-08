@@ -19,6 +19,7 @@ import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.H2
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.bid.component.BidRoundEvaluation
+import org.solyton.solawi.bid.module.bid.component.BidRoundEvaluationConfig
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
 import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.bidround.Round
@@ -33,6 +34,7 @@ fun BidRoundEvaluationModal(
     modals: Storage<Modals<Int>>,
     storage: Storage<BidApplication>,
     round: Lens<BidApplication, Round>,
+    config: BidRoundEvaluationConfig,
     device: Source<DeviceType>,
     cancel: (()->Unit)?,
     update: ()->Unit
@@ -52,7 +54,8 @@ fun BidRoundEvaluationModal(
     H2{ Text("Auswertung der Runde")}
     BidRoundEvaluation(
         storage = storage,
-        round = round
+        round = round,
+        config = config,
     )
 }
 
@@ -60,6 +63,7 @@ fun BidRoundEvaluationModal(
 fun Storage<Modals<Int>>.showBidRoundEvaluationModal(
     storage: Storage<BidApplication>,
     round: Lens<BidApplication, Round>,
+    config: BidRoundEvaluationConfig = BidRoundEvaluationConfig(),
     texts: Lang.Block,
     device: Source<DeviceType>,
     cancel: (()->Unit)?,
@@ -73,6 +77,7 @@ fun Storage<Modals<Int>>.showBidRoundEvaluationModal(
             this@showBidRoundEvaluationModal,
             storage,
             round,
+            config,
             device,
             cancel,
             update
