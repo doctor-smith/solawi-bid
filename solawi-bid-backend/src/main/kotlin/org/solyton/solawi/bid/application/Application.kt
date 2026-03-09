@@ -7,6 +7,7 @@ import io.ktor.server.plugins.defaultheaders.*
 import io.ktor.server.plugins.forwardedheaders.*
 import org.slf4j.event.Level
 import org.solyton.solawi.bid.application.data.db.migrations.applicationMigrations
+import org.solyton.solawi.bid.application.environment.Environment
 import org.solyton.solawi.bid.application.environment.setupEnvironment
 import org.solyton.solawi.bid.application.pipeline.*
 import org.solyton.solawi.bid.application.routing.setupRouting
@@ -21,8 +22,10 @@ fun Application.solawiBid(test: Boolean = false) {
         installAuthentication(environment.jwt)
         install(DefaultHeaders) {
         }
-        install(CallLogging) {
+        if(environment.name != Environment.Name.PROD) {
+            install(CallLogging) {
                 level = Level.INFO
+            }
         }
         install(ForwardedHeaders)
         install(XForwardedHeaders)
