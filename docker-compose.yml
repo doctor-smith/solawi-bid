@@ -29,9 +29,6 @@ services:
       - solawi-bid-backend/.env
     environment:
       - SMTP_PASSWORD
-      - DATABASE_URL=jdbc:mysql://solawi-bid_database:3306/solawi-bid
-      - DATABASE_DRIVER=com.mysql.cj.jdbc.Driver
-      - DATABASE_USER=solawi-bid
     build:
       dockerfile_inline: |
         FROM gradle:8-jdk17-noble
@@ -60,7 +57,7 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./infrastructure/database/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+      - ./infrastructure/database/dump-solawi-bid-202603041501.sql:/docker-entrypoint-initdb.d/setup.sql
     environment:
       - MYSQL_DATABASE=solawi-bid
       - MYSQL_USER=solawi-bid
