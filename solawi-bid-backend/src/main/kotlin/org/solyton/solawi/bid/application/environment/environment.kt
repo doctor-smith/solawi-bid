@@ -7,7 +7,10 @@ import org.evoleq.exposedx.data.DbEnv
 import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.ktorx.result.Result
 import org.evoleq.uuid.UUID_ZERO
+import org.jetbrains.exposed.sql.DatabaseConfig
+import org.jetbrains.exposed.sql.ExperimentalKeywordApi
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.Slf4jSqlDebugLogger
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.solyton.solawi.bid.application.action.io.transform
@@ -23,9 +26,23 @@ import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.Users
+import java.sql.Connection
 import org.jetbrains.exposed.sql.Database as SqlDatabase
 
 fun Application.setupEnvironment(): Environment = with(environment.config){
+
+    val environmentName: Environment.Name = property("ktor.environment").getString().let {
+        when(it){
+            "dev", "DEV","Dev", "D", "d" -> Environment.Name.DEV
+            "test", "TEST", "Test", "t", "T" -> Environment.Name.TEST
+            "int","Int", "INT", "Q", "q" -> Environment.Name.INT
+            "prod", "PROD", "Prod", "P", "p" -> Environment.Name.PROD
+            else -> throw IllegalArgumentException("Unknown environment name: $it")
+        }
+    }
+
+    println("Running application on environment: $environmentName")
+
     val database = Database(
         url = property("database.url").getString(),
         driver = property("database.driver").getString(),
@@ -57,7 +74,10 @@ fun Application.setupEnvironment(): Environment = with(environment.config){
         property("mail.defaultResponseAddress").getString()
     )
 
+
+
     Environment(
+        environmentName,
         database,
         jwt,
         applicationOwner,
@@ -66,6 +86,7 @@ fun Application.setupEnvironment(): Environment = with(environment.config){
 }
 
 data class Environment(
+    val name: Name = Name.PROD,
     val database: Database,
     override val jwt: JWT,
     val applicationOwner: User,
@@ -74,13 +95,46 @@ data class Environment(
 ): KTorEnv, DbEnv, JwtEnv {
     lateinit var db: SqlDatabase
 
+    enum class Name {
+        DEV, TEST, INT, PROD
+    }
+
+    @OptIn(ExperimentalKeywordApi::class)
     override fun connectToDatabase(): SqlDatabase = when(::db.isInitialized){
-        false-> SqlDatabase.connect(
-            database.url,
-            database.driver,
-            database.user,
-            database.password
-        )
+        false-> with(SqlDatabase.connect(
+            url = database.url,
+            driver = database.driver,
+            user = database.user,
+            password = database.password,
+            databaseConfig = DatabaseConfig {
+                sqlLogger = when (name) {
+                    Name.PROD -> null
+                    else -> Slf4jSqlDebugLogger
+                }
+                useNestedTransactions = false
+                defaultFetchSize = null // set 100, eg, only for  Resultsets/Streaming
+                defaultIsolationLevel = Connection.TRANSACTION_READ_COMMITTED
+                defaultRepetitionAttempts = if (name == Name.PROD) 3 else 1
+                defaultMinRepetitionDelay = 100L
+                defaultMaxRepetitionDelay = 1_000L
+                defaultReadOnly = false
+                warnLongQueriesDuration = when (name) {
+                    Name.DEV, Name.TEST -> 300L
+                    Name.INT -> 500L
+                    Name.PROD -> 1_000L
+                }
+                maxEntitiesToStoreInCachePerEntity = 1_000
+                keepLoadedReferencesOutOfTransaction = false
+                explicitDialect = null
+                defaultSchema = null
+                logTooMuchResultSetsThreshold = 20
+                preserveKeywordCasing = false
+            }
+
+        )) {
+            db = this
+            this
+        }
         true -> db
     }
 

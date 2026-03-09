@@ -164,10 +164,11 @@ fun Application.setupTestEnvironment(dbNameSuffix: String): Environment = with(e
     )
 
     Environment(
-        database,
-        jwt,
-        applicationOwner,
-        mailService
+        name = Environment.Name.TEST,
+        database = database,
+        jwt = jwt,
+        applicationOwner = applicationOwner,
+        mailService = mailService
     )
 }
 
