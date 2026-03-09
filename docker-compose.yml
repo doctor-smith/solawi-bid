@@ -1,6 +1,7 @@
 services:
 
   solawi-bid_frontend:
+    image: solawi-bid/frontend:local
     profiles: ["fe"]
     build:
       dockerfile_inline: |
@@ -25,6 +26,7 @@ services:
       start_period: 60s
 
   solawi-bid_backend:
+    image: solawi-bid/backend:local
     env_file:
       - solawi-bid-backend/.env
     environment:
@@ -57,7 +59,7 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./infrastructure/database/dump-solawi-bid-202603041501.sql:/docker-entrypoint-initdb.d/setup.sql
+      - ./infrastructure/database/setup-local.sql:/docker-entrypoint-initdb.d/setup.sql
     environment:
       - MYSQL_DATABASE=solawi-bid
       - MYSQL_USER=solawi-bid

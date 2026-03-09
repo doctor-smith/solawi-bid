@@ -1,6 +1,7 @@
 .env
 .env.*
 !.env.dist
+!.env.e2e.dist
 hanoi
 local.properties
 .gradle
@@ -19,4 +20,5 @@ build-reports
 !build-reports/backend/.gitkeep
 .NOTICE.BAK
 .sql
+setup-local.sql
 !setup.sql
