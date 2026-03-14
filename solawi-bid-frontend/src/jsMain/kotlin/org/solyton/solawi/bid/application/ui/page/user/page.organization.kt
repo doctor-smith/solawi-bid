@@ -21,6 +21,8 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.storage.filter
 import org.evoleq.optics.storage.times
+import org.evoleq.optics.storage.toggle
+import org.evoleq.optics.storage.write
 import org.evoleq.optics.transform.times
 import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.compose.web.css.*
@@ -37,6 +39,8 @@ import org.solyton.solawi.bid.application.data.transform.banking.bankingApplicat
 import org.solyton.solawi.bid.application.data.transform.distribution.distributionManagementIso
 import org.solyton.solawi.bid.application.data.transform.shares.shareManagementIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
+import org.solyton.solawi.bid.application.data.ui.ofOrganizationPage
+import org.solyton.solawi.bid.application.data.uiStates
 import org.solyton.solawi.bid.application.service.organization.importMembersFromCsv
 import org.solyton.solawi.bid.application.ui.component.organization.showUpdateMembersOfOrganizationModal
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
@@ -44,6 +48,8 @@ import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLa
 import org.solyton.solawi.bid.application.ui.page.user.action.Change
 import org.solyton.solawi.bid.application.ui.page.user.action.memberCreateAction
 import org.solyton.solawi.bid.application.ui.page.user.action.memberUpdateAction
+import org.solyton.solawi.bid.application.ui.page.user.data.isApplicationListOpened
+import org.solyton.solawi.bid.application.ui.page.user.data.isMemberListOpened
 import org.solyton.solawi.bid.application.ui.page.user.i18n.CountryLangComponent
 import org.solyton.solawi.bid.application.ui.page.user.i18n.OrganizationLangComponent
 import org.solyton.solawi.bid.application.ui.page.user.style.actionsWrapperStyle
@@ -326,11 +332,12 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                 defaultListStyles.listWrapper(this)
                 overflowX("auto")
             }) {
-                var open by remember { mutableStateOf(false) }
+                // var open by remember { mutableStateOf(false) }
+                val open = applicationStorage * uiStates * ofOrganizationPage * isMemberListOpened
                 TitleWrapper {
                     Title { H3{ Text((listOfMembers * title).emit()) }}
-                    SimpleUpDown(open, {open = !open})
-                    if(open) {
+                    SimpleUpDown(open.read()) { open.toggle() }
+                    if(open.read()) {
                     ActionsWrapper({
                         defaultListStyles.actionsWrapper(this)
                         width(100.percent)
@@ -497,7 +504,7 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                         }
                     }}
                 }
-                if(open) {
+                if(open.read()) {
                     HeaderWrapper {
                         Header {
                             HeaderCell(listOfMembersHeaders * Component.standard * title) { width(30.percent) }
@@ -648,12 +655,12 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
             ListWrapper({
                 defaultListStyles.listWrapper(this)
             }) {
-                var open by remember { mutableStateOf(false) }
+                val open = applicationStorage * uiStates * ofOrganizationPage * isApplicationListOpened
                 TitleWrapper {
                     Title { H3{ Text((listOfConnectedApplications * title).emit()) }}
-                    SimpleUpDown(open, {open = !open})
+                    SimpleUpDown(open.read()) { open.toggle() }
                 }
-                if(open) {
+                if(open.read()) {
                     HeaderWrapper {
                         Header {
                             HeaderCell(listOfConnectedApplicationsHeaders * subComp("application") * title ) { width(40.percent) }
@@ -689,55 +696,6 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
         }
     }
 }
-
-/*
-fun Storage<Application>.actions(): @Composable (organizationId: String) -> BooleanArray = { organizationId ->
-    runProcesses(
-ActionEnvelope(
-userIso * readOrganizations(),
-READ_ORGANIZATIONS,
-),
-ActionEnvelope(
-bankingApplicationIso * readBankAccounts(LegalEntityId(organizationId)),
-READ_BANK_ACCOUNTS,
-),
-sequence(
-ActionEnvelope(
-userIso * getUsers(),
-GET_USERS,
-),
-ActionEnvelope(
-userIso * readUserProfiles(emptyList()),
-READ_USER_PROFILES,
-).next(
-ActionEnvelope(
-shareManagementIso * readShareOffers(organizationId),
-READ_SHARE_OFFERS,
-),
-ActionEnvelope(
-shareManagementIso * readShareSubscriptions(organizationId),
-READ_SHARE_SUBSCRIPTIONS,
-),
-ActionEnvelope(
-shareManagementIso * readShareTypes(organizationId),
-READ_SHARE_TYPES,
-),
-ActionEnvelope(
-distributionManagementIso * readDistributionPoints(organizationId),
-READ_DISTRIBUTION_POINTS,
-),
-)
-),
-ActionEnvelope(
-applicationManagementModule * readApplications,
-READ_APPLICATIONS,
-),
-ActionEnvelope(
-applicationManagementModule * readPersonalApplicationOrganizationContextRelations(),
-READ_PERSONAL_APPLICATION_ORGANIZATION_CONTEXT_RELATIONS,
-)
-)}
-*/
 
 fun  dataActions(organizationId: String) = arrayOf(
     ActionEnvelope(
