@@ -16,6 +16,7 @@ import org.evoleq.ktorx.api.Api
 import org.evoleq.optics.storage.MutableSharedFlowActionDispatcher
 import org.solyton.solawi.bid.application.api.solawiApi
 import org.solyton.solawi.bid.application.data.env.Environment
+import org.solyton.solawi.bid.application.data.ui.UiStates
 import org.solyton.solawi.bid.module.application.data.organizationrelation.ApplicationOrganizationRelation
 import org.solyton.solawi.bid.module.application.data.userapplication.UserApplications
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
@@ -56,6 +57,8 @@ import org.solyton.solawi.bid.module.user.data.user.User
     @ReadWrite val modals: Modals<Int> = mapOf(),
     @ReadWrite val i18N: I18N = I18N(),
     @ReadWrite val context: Context = Context(),
+    // UI States
+    @ReadWrite val uiStates: UiStates = UiStates(),
     // Cookie
     @ReadWrite val cookieDisclaimer: CookieDisclaimer = CookieDisclaimer(),
     // Suctions

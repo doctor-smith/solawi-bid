@@ -19,3 +19,5 @@ infix fun <P> Any?.write(p: P): (Storage<P>)->Unit = { storage -> storage.write(
 
 infix fun <P> ((Storage<P>)->Unit).to(storage: Storage<P>): Unit = this(storage)
 
+fun Storage<Boolean>.toggle(): Unit = write(!read())
+
