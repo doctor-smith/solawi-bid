@@ -52,7 +52,7 @@ fun memberCreateAction(
         bankAccountRequired = false,
         shareSubscriptionsRequired = false
     )
-): Array<ActionEnvelope<Application, *, *>> {
+): ActionEnvelope<Application, *, *> {
 
     println("""
         |providerId: $providerId
@@ -152,5 +152,5 @@ fun memberCreateAction(
         ),
     )
 
-    return arrayOf(action)
+    return action
 }
