@@ -40,7 +40,10 @@ en {
                                 tooltip: "Edit Member"
                             }
                             importMembersToOrganization {
-                                tooltip: "Mitglieder importieren"
+                                tooltip: "Import members"
+                            }
+                            exportMembersOfOrganization {
+                                tooltip: "Export members"
                             }
                         }
                     }

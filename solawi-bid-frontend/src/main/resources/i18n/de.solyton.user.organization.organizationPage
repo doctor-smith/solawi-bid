@@ -42,6 +42,9 @@ de {
                             importMembersToOrganization {
                                 tooltip: "Mitglieder importieren"
                             }
+                            exportMembersOfOrganization {
+                                tooltip: "Mitglieder exportieren"
+                            }
                         }
                     }
                     listOfConnectedApplications {

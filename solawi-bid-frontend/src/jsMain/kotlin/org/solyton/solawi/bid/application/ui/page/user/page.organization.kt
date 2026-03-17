@@ -22,7 +22,6 @@ import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.storage.filter
 import org.evoleq.optics.storage.times
 import org.evoleq.optics.storage.toggle
-import org.evoleq.optics.storage.write
 import org.evoleq.optics.transform.times
 import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.compose.web.css.*
@@ -114,7 +113,6 @@ import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 import org.solyton.solawi.bid.module.user.data.member.Member
 import org.solyton.solawi.bid.module.user.data.organization.members
 import org.solyton.solawi.bid.module.user.data.organization.name
-import org.solyton.solawi.bid.module.user.data.organization.organizationId
 import org.solyton.solawi.bid.module.user.data.profile.UserProfile
 import org.solyton.solawi.bid.module.user.data.user.organizations
 import org.solyton.solawi.bid.module.user.data.user.username
@@ -125,21 +123,7 @@ import org.solyton.solawi.bid.module.values.LegalEntityId
 import org.solyton.solawi.bid.module.values.ProviderId
 import org.solyton.solawi.bid.module.values.UserId
 import org.solyton.solawi.bid.module.values.Username
-import kotlin.collections.List
-import kotlin.collections.any
-import kotlin.collections.associate
-import kotlin.collections.associateBy
-import kotlin.collections.contains
-import kotlin.collections.distinct
-import kotlin.collections.emptyList
 import kotlin.collections.firstOrNull
-import kotlin.collections.flatten
-import kotlin.collections.get
-import kotlin.collections.groupBy
-import kotlin.collections.joinToString
-import kotlin.collections.map
-import kotlin.collections.toBooleanArray
-import kotlin.collections.toMap
 import kotlin.text.contains
 import kotlin.text.isNotBlank
 import kotlin.text.trim
@@ -318,6 +302,8 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
             }
 
             var memberFilter by remember { mutableStateOf<(Member) -> Boolean>({true}) }
+            var statusFilter by remember { mutableStateOf<(Member) -> Boolean>({true}) }
+
             var paginationState by remember { mutableStateOf(
                 PaginationData(
                     members.read().size,
@@ -383,6 +369,23 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                             }
                         }
 
+                        DownloadButton(
+                            color = Color.black,
+                            bgColor = Color.white,
+                            texts = listOfMembers * Component.actions * Component.exportMembersOfOrganization * tooltip,
+                            deviceType = { device.read() }
+                        ) {
+                            // todo:dev implement dialog where one can set some download-options
+                            //  (data to download, delimiter, etc)
+
+                            downloadMembers(
+                                members = members.read(),
+                                memberProfilesMap = memberProfilesMap.read(),
+                                shareOffers = (shareManagementStorage * shareOffers.get).emit(),
+                                shareSubscriptionsMap = shareSubscriptionsMap.read(),
+                                distributionPointsMap = distributionPointsMap.read()
+                            )
+                        }
                         // Import csv of members
                         var csv: String? by remember { mutableStateOf<String?>(null) }
                         UploadButton(
@@ -408,6 +411,7 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                 )
                             }
                         }
+
                         val shareOffers = (shareManagementStorage * shareOffers.get)
                         var usernameState by remember { mutableStateOf<Username?>(null) }
                         var userProfileState by remember { mutableStateOf<UserProfile?>(null) }
@@ -424,17 +428,6 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                 userId = user?.id?.let { UserId(it) }
                             }
                         }
-                        /*
-                        val userId by produceState<UserId?>(initialValue = null) {
-                            importUserProfileState?.let { profile ->
-                                val user = (userModuleStorage * managedUsers).read().firstOrNull {
-                                    it.username == profile.username
-                                }
-                                value = user?.id?.let { UserId(it) }
-                            }
-                        }
-                         */
-
                         PlusButton(
                             color = Color.black,
                             bgColor = Color.white,
@@ -533,7 +526,7 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                     }
                     ListItemsIndexed(
                         members
-                            .filter(memberFilter)
+                            .filter(memberFilter and statusFilter o {t -> t to t })
                             .paginate(paginationState.itemsPerPage, paginationState.page)
                     ) { index, member ->
                         key(member.memberId) {
