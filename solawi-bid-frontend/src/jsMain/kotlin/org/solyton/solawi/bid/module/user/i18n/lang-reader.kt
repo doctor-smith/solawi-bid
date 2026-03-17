@@ -15,6 +15,8 @@ object Component {
     val headers : Reader<Lang.Block, Lang.Block> = subComp("headers")
     val importMembersToOrganization: Reader<Lang.Block, Lang.Block> = subComp("importMembersToOrganization")
 
+    val exportMembersOfOrganization: Reader<Lang.Block, Lang.Block> = subComp("exportMembersOfOrganization")
+
     val listOfMembers: Reader<Lang.Block, Lang.Block> = subComp("listOfMembers")
 
     val name: Reader<Lang.Block, Lang.Block> = subComp("name")
