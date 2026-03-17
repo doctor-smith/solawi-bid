@@ -7,6 +7,7 @@ import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.context
 import org.solyton.solawi.bid.application.data.userData
 import org.solyton.solawi.bid.module.context.data.current
+import org.solyton.solawi.bid.module.permissions.data.Context
 import org.solyton.solawi.bid.module.permissions.data.contexts
 import org.solyton.solawi.bid.module.user.data.user.permissions
 import kotlin.uuid.ExperimentalUuidApi
@@ -31,6 +32,11 @@ fun Storage<Application>.setContext(contextId: Uuid) {
     val stringifiedId = contextId.toString()
     if(stringifiedId == (this * context * current).read()) return
     (this * context * current).write(stringifiedId)
+}
+
+fun Storage<Application>.getContextByName(contextName: String): Context? {
+    val contexts = (this * userData * permissions * contexts).read()
+    return contexts.firstOrNull { it.contextName == contextName }
 }
 
 fun Storage<Application>.setContextByName(contextName: String) {

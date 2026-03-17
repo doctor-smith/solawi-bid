@@ -19,7 +19,6 @@ fun Storage<Application>.onLogin(oldApplication: Application, newApplication: Ap
                 oldApplication.userData.accessToken == "" &&
                 oldApplication.userData.refreshToken == ""
             ) {
-                // TriggerReadUserPermissions(this)
                 navigate("/app/dashboard")
             }
         } else {

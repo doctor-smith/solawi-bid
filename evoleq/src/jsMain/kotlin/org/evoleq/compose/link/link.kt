@@ -12,7 +12,11 @@ import org.jetbrains.compose.web.dom.Text
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun Link(text: String, target: String, styles: StyleScope.()->Unit = defaultLinkStyles) = Span({
+fun Link(
+    text: String,
+    target: String,
+    styles: StyleScope.()->Unit = defaultLinkStyles
+) = Span({
     style{styles()}
     onClick {
         it.stopPropagation()

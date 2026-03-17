@@ -1,6 +1,8 @@
 package org.solyton.solawi.bid.application.ui.page.dashboard
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Vertical
@@ -22,7 +24,7 @@ import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.i18N
 import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
-import org.solyton.solawi.bid.application.data.transform.user.userIso
+import org.solyton.solawi.bid.application.service.getContextByName
 import org.solyton.solawi.bid.application.service.setContext
 import org.solyton.solawi.bid.application.ui.page.dashboard.data.DashboardComponent
 import org.solyton.solawi.bid.application.ui.page.dashboard.permissions.canAccessApplication
@@ -31,16 +33,21 @@ import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
-import org.solyton.solawi.bid.module.user.data.reader.hasOneOfTheRoles
 import org.w3c.dom.HTMLElement
 
 @Markup
 @Composable
 @Suppress("FunctionName")
 fun DashboardPage(storage: Storage<Application>) {
-    storage.setContext(Context.Application)
     // Effects
+    val applicationContext = storage.getContextByName(Context.Application.value)
+    if(applicationContext == null) return@DashboardPage
 
+    LaunchedEffect(Unit) {
+        launch {
+            storage.setContext(Context.Application)
+        }
+    }
     // Data
 
     // Permissions
