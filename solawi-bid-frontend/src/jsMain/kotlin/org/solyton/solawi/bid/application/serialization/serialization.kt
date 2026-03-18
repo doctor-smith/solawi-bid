@@ -17,6 +17,12 @@ import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.data.values.AuctionId
 import org.solyton.solawi.bid.module.distribution.data.api.*
+import org.solyton.solawi.bid.module.permission.data.ContextName
+import org.solyton.solawi.bid.module.permission.data.RightName
+import org.solyton.solawi.bid.module.permission.data.RoleName
+import org.solyton.solawi.bid.module.permission.data.ContextId
+import org.solyton.solawi.bid.module.permission.data.RightId
+import org.solyton.solawi.bid.module.permission.data.RoleId
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.shares.data.api.*
 import org.solyton.solawi.bid.module.shares.data.values.ShareOfferId
@@ -53,6 +59,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<Lastname>(Lastname.serializer())
         add<Title>(Title.serializer())
         add<PhoneNumber>(PhoneNumber.serializer())
+        add<Description>(Description.serializer())
         //...
         add<Identifier>(Identifier.serializer())
         // API
@@ -206,8 +213,33 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<Right>(Right.serializer())
         add<UserContext>(UserContext.serializer())
         add<UserToContextsMap>(UserToContextsMap.serializer())
+        add<PutRoleRightContext>(PutRoleRightContext.serializer())
+        add<ContextName>(ContextName.serializer())
+        add<RoleName>(RoleName.serializer())
+        add<RightName>(RightName.serializer())
+        add<ContextId>(ContextId.serializer())
+        add<RightId>(RightId.serializer())
+        add<RoleId>(RoleId.serializer())
+        add<CreateRole>(CreateRole.serializer())
+        add<CreateRight>(CreateRight.serializer())
+        add<UpdateRole>(UpdateRole.serializer())
+        add<UpdateRight>(UpdateRight.serializer())
+        add<DeleteRole>(DeleteRole.serializer())
+        add<DeleteRight>(DeleteRight.serializer())
+        add<CreateRights>(CreateRights.serializer())
+        add<CreateRoles>(CreateRoles.serializer())
 
         // Applications and Modules
+        add<CreateApplication>(CreateApplication.serializer())
+        add<UpdateApplication>(UpdateApplication.serializer())
+        add<DeleteApplication>(DeleteApplication.serializer())
+        add<AddModulesToApplication>(AddModulesToApplication.serializer())
+        add<RemoveModulesFromApplication>(RemoveModulesFromApplication.serializer())
+        add<CreateModule>(CreateModule.serializer())
+        add<CreateModuleOnTheFly>(CreateModuleOnTheFly.serializer())
+        add<UpdateModule>(UpdateModule.serializer())
+        add<DeleteModule>(DeleteModule.serializer())
+
         add<ReadApplications>(ReadApplications.serializer())
         add<ReadUserApplications>(ReadUserApplications.serializer())
         add<ReadPersonalUserApplications>(ReadPersonalUserApplications.serializer())
@@ -241,7 +273,10 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<ReadApplicationOrganizationContextRelations>(ReadApplicationOrganizationContextRelations.serializer())
         add<ApplicationOrganizationRelation>(ApplicationOrganizationRelation.serializer())
         add<ApplicationOrganizationRelations>(ApplicationOrganizationRelations.serializer())
-
+        add<ApplicationId>(ApplicationId.serializer())
+        add<ModuleId>(ModuleId.serializer())
+        add<ApplicationName>(ApplicationName.serializer())
+        add<ModuleName>(ModuleName.serializer())
         // Organizations
         add<Organizations>(Organizations.serializer())
         add<Organization>(Organization.serializer())

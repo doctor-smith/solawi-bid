@@ -135,3 +135,11 @@ value class PhoneNumber(val value: String) {
         // require(isValidUUID(value)) { "Id must be a valid UUID" }
     }
 }
+
+@Serializable@Value
+@JvmInline
+value class Description(val value: String) {
+    init {
+        // require(isValidUUID(value)) { "Id must be a valid UUID" }
+    }
+}
