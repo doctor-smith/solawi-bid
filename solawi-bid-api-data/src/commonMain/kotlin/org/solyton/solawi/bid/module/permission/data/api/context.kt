@@ -1,6 +1,8 @@
 package org.solyton.solawi.bid.module.permission.data.api
 
 import kotlinx.serialization.Serializable
+import org.solyton.solawi.bid.module.permission.data.RightId
+import org.solyton.solawi.bid.module.permission.data.RoleId
 
 typealias ApiContext = Context
 typealias ApiContexts = Contexts
@@ -95,6 +97,13 @@ data class PutUserRoleContext(
     val userId: String,
     val contextId: String,
     val roleIds: List<String>
+)
+
+@Serializable
+data class PutRoleRightContext(
+    val roleId: RoleId,
+    val contextId: ContextId,
+    val rightIds: List<RightId>
 )
 
 @Serializable
