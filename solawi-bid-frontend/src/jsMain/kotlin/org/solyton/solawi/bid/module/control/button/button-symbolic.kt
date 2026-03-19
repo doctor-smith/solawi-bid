@@ -278,6 +278,28 @@ fun PlayButton(
 @Markup
 @Composable
 @Suppress("FunctionName")
+fun ClockButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-clock"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
+@Markup
+@Composable
+@Suppress("FunctionName")
 fun HomeButton(
     color: CSSColorValue,
     bgColor: CSSColorValue = Color.transparent,

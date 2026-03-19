@@ -2,8 +2,8 @@ package org.solyton.solawi.bid.module.application.i18n
 
 import org.evoleq.language.I18N
 import org.evoleq.language.Lang
+import org.evoleq.language.get
 import org.evoleq.language.subComp
-import org.evoleq.language.title
 import org.evoleq.math.Reader
 import org.evoleq.math.Source
 import org.evoleq.math.emit
@@ -17,7 +17,11 @@ val inputs: Reader<Lang.Block, Lang.Block> = subComp("inputs")
 @I18N
 object Component {
     val application: Reader<Lang.Block, Lang.Block> = subComp("application")
+    val applicationDescription: Reader<Lang.Block, Lang.Block> = subComp("applicationDescription")
     val applications: Reader<Lang.Block, Lang.Block> = subComp("applications")
+    val titles : Reader<Lang.Block, Lang.Block> = subComp("titles")
+    val bookedApplicationsTitle: Reader<Lang.Block, String> = {b -> b["bookedApplications"] }
+    val availableApplicationsTitle: Reader<Lang.Block, String> = {b -> b["availableApplications"] }
     val base: Reader<Lang, Lang.Block> = subComp(BASE_PATH)
     val modules: Reader<Lang.Block, Lang.Block> = subComp("modules")
     val module: Reader<Lang.Block, Lang.Block> = subComp("module")
@@ -43,6 +47,7 @@ object Component {
     val editRight: Reader<Lang.Block, Lang.Block> = subComp("editRight")
     val editContext: Reader<Lang.Block, Lang.Block> = subComp("editContext")
 
+    val registerForApplication: Reader<Lang.Block, Lang.Block> = subComp("registerForApplication")
     fun applicationName(texts: Source<Lang.Block>): Reader<String, Lang.Block> =
         Reader{ key: String -> application(key)(texts.emit()) }
 }
