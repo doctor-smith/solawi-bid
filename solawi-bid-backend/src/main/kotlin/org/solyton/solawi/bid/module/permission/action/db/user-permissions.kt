@@ -9,10 +9,7 @@ import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.solyton.solawi.bid.module.permission.data.api.*
-import org.solyton.solawi.bid.module.permission.repository.getRightRoleContexts
-import org.solyton.solawi.bid.module.permission.repository.getRoleRightContexts
-import org.solyton.solawi.bid.module.permission.repository.putUserRoleContext
-import org.solyton.solawi.bid.module.permission.repository.readParentChildRelationsOfContexts
+import org.solyton.solawi.bid.module.permission.repository.*
 import java.util.*
 
 /**
@@ -153,3 +150,30 @@ val ReadParentChildRelationsOfContexts: KlAction<Result<Contextual<ReadParentChi
             } x database
         }
     }
+
+/**
+ * Represents an action used to insert or update the rights associated with a role in a specific context,
+ * and retrieve the updated context details.
+ *
+ * The `PutRoleRightContext` action is responsible for:
+ * - Removing any existing rights associated with a given role in the specified context.
+ * - Batch inserting new rights for the role in the provided context.
+ * - Returning the context's updated state, including the associated roles and their rights, after the modification.
+ *
+ * The action is implemented as a `KlAction` that operates on a `Result` of `Contextual<PutRoleRightContext>`
+ * and produces a `Result<Context>`. Internally, it utilizes database transactions to ensure consistency
+ * during the modification of rights and contexts.
+ */
+@MathDsl
+@Suppress("FunctionName")
+val PutRoleRightContext: KlAction<Result<Contextual<PutRoleRightContext>>, Result<Context>> = KlAction {
+    result ->  DbAction { database -> result bindSuspend { contextual: Contextual<PutRoleRightContext> ->
+    resultTransaction(database){
+        val roleId = contextual.data.roleId.let { UUID.fromString(it.value) }
+        val contextId = UUID.fromString(contextual.data.contextId.value)
+        val rightIds = contextual.data.rightIds.map { UUID.fromString(it.value) }
+
+        putRoleRightContext(roleId, rightIds, contextId)
+        getRightRoleContexts(listOf(contextId)).first()
+    } } x database }
+}

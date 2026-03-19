@@ -39,19 +39,19 @@ fun <ApplicationEnv> Routing.application(
                 }
                 patch("register") {
                     ReceiveContextual<RegisterForApplications>() *
-                    IsGranted("SUBSCRIBE_APPLICATION") *
+                    IsGranted("SUBSCRIBE_APPLICATIONS") *
                     RegisterForApplications() *
                     Respond<ApiApplications> { transform() } runOn Base(call, environment)
                 }
                 patch("trial") {
                     ReceiveContextual< StartTrialsOfApplications>() *
-                    IsGranted("SUBSCRIBE_APPLICATION") *
+                    IsGranted("SUBSCRIBE_APPLICATIONS") *
                     StartTrialsOfApplications() *
                     Respond<ApiApplications> { transform() } runOn Base(call, environment)
                 }
                 patch("subscribe") {
                     ReceiveContextual<SubscribeApplications>() *
-                    IsGranted("SUBSCRIBE_APPLICATION") *
+                    IsGranted("SUBSCRIBE_APPLICATIONS") *
                     SubscribeApplications() *
                     Respond<ApiApplications> { transform() } runOn Base(call, environment)
                 }
@@ -85,19 +85,19 @@ fun <ApplicationEnv> Routing.application(
                     }
                     patch("register") {
                         ReceiveContextual<RegisterForModules>() *
-                        IsGranted("SUBSCRIBE_APPLICATION") *
+                        IsGranted("SUBSCRIBE_APPLICATIONS") *
                         RegisterForModules() *
                         Respond<ApiApplications>{ transform() } runOn Base(call, environment)
                     }
                     patch("trial") {
                         ReceiveContextual<StartTrialsOfModules>() *
-                        IsGranted("SUBSCRIBE_APPLICATION") *
+                        IsGranted("SUBSCRIBE_APPLICATIONS") *
                         StartTrialsOfModules() *
                         Respond<ApiApplications>{ transform() } runOn Base(call, environment)
                     }
                     patch("subscribe") {
                         ReceiveContextual<SubscribeModules>() *
-                        IsGranted("SUBSCRIBE_APPLICATION") *
+                        IsGranted("SUBSCRIBE_APPLICATIONS") *
                         SubscribeModules() *
                         Respond<ApiApplications>{ transform() } runOn Base(call, environment)
                     }

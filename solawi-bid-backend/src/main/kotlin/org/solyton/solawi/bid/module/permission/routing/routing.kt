@@ -60,6 +60,12 @@ fun <PermissionEnv> Routing.permissions(
                     ReadAvailableRightRoleContexts *
                     Respond<Contexts>{ transform() } runOn Base(call, environment)
                 }
+                put("role-right-context") {
+                    ReceiveContextual<PutRoleRightContext>() *
+                    IsGranted("MANAGE_ROLE_RIGHT_CONTEXTS", no) *
+                    PutRoleRightContext *
+                    Respond<Context> { transform() } runOn Base(call, environment)
+                }
             }
         }
     }

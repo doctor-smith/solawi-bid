@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.module.permission.repository
 
 import org.jetbrains.exposed.sql.Transaction
+import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.exception.PermissionExceptionD
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
 import org.solyton.solawi.bid.module.permission.schema.RightsTable
@@ -29,3 +30,16 @@ fun Transaction.createRight(name: String, description:String, creator: UUID): Ri
         this.description = description
     }
 }
+
+fun Transaction.createRoleIfNotExists(name: String, description:String, creator: UUID): RoleEntity =
+    RoleEntity.find { RolesTable.name eq name }.firstOrNull() ?: createRole(name, description, creator)
+
+fun Transaction.createRightIfNotExists(name: String, description:String, creator: UUID): RightEntity =
+    RightEntity.find { RightsTable.name eq name }.firstOrNull() ?: createRight(name, description, creator)
+
+fun Transaction.readRoleByName(name: String): RoleEntity = RoleEntity.find { RolesTable.name eq name }.firstOrNull()
+    ?: throw PermissionExceptionD.NoSuchRole(name)
+
+fun Transaction.readRightByName(name: String): RightEntity = RightEntity.find { RightsTable.name eq name }.firstOrNull()
+    ?: throw PermissionException.NoSuchRight(name)
+

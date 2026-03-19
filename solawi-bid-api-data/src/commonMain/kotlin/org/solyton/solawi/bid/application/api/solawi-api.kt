@@ -56,6 +56,10 @@ val solawiApi by lazy {
                 key = PutUserRoleContext::class,
                 url = "user/user-role-context"
             )
+            put<PutRoleRightContext, Context>(
+                key = PutRoleRightContext::class,
+                url = "contexts/role-right-context"
+            )
         }
         // Auction
         group("Auctions") {
