@@ -13,6 +13,11 @@ import org.solyton.solawi.bid.module.i18n.data.componentLoaded
     storage: Source<I18N>,
     effect: @Composable ()->Unit
 ): Boolean {
-    val missing = !(storage * componentLoaded(component)).emit()
+    val missing = try{
+        !(storage * componentLoaded(component)).emit()
+    } catch (e: Exception){
+        console.log(e)
+        true
+    }
     return if(missing){ effect(); true } else { false }
 }
