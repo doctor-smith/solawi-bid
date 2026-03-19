@@ -7,12 +7,19 @@ de {
                     subTitle: "Persönliche Apps verwalten"
                     listOfApplications {
                         title: "Applikationen"
+                        titles {
+                            bookedApplications: "Gebuchte Applicationen"
+                            availableApplications: "Verfügbare Applicationen"
+                        }
                         headers {
                             application {
                                 title: "Applikation"
                             }
                             modules {
                                 title: "Module"
+                            }
+                            applicationDescription {
+                                title: "Beschreibung"
                             }
                             linkedOrganizations {
                                 title: "Verknüpfte Organisationen"
@@ -27,6 +34,18 @@ de {
                             }
                             edit {
                                 tooltip: "Applikation bearbeiten"
+                            }
+                            registerForApplication {
+                                tooltip: "Für Applikation registrieren"
+                            }
+                            startTrialOfApplication {
+                                tooltip: "Test Phase starten"
+                            }
+                            subscribeApplication{
+                                tooltip: "Applikation kaufen"
+                            }
+                            cancelApplicationSubscription {
+                                tooltip: "Applikation Kündigen"
                             }
                         }
                     }

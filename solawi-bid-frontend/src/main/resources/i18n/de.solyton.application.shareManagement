@@ -2,6 +2,14 @@ de {
     solyton {
         application {
             shareManagement {
+                title: "Anteils Verwaltung"
+                description: "Verwalte alle Belange von Anteilen"
+                modules {
+                    shareManagement {
+                        title: "Anteils Management"
+                        description: "Anteile verwalten"
+                    }
+                }
                 pricingType {
                     FIXED: "Festpreis"
                     FLEXIBLE: "Anpassbar"
