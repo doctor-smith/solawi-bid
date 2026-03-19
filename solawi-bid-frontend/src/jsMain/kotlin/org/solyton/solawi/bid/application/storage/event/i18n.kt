@@ -43,7 +43,7 @@ fun Storage<Application>.onLocaleChanged(oldApplication: Application, newApplica
                             i18N = app.i18N.copy(
                                 locale = newApplication.i18N.locale,
                                 language = this,
-                                loadedComponents = listOf()
+                                loadedComponents = emptySet()
                             )
                         ) )
                         writeLang(newApplication.i18N.locale)

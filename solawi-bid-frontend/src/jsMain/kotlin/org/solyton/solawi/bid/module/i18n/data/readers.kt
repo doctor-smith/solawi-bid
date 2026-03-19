@@ -9,5 +9,9 @@ val componentLoaded: (component: LangComponent) ->  Reader<I18N, Boolean> = {com
     i18n: I18N -> i18n.loadedComponents.contains(component)
 }}
 
+val componentLoading: (component: LangComponent) -> Reader<I18N, Boolean> = {component -> Reader{
+    i18n: I18N -> i18n.loadingComponents.contains(component)
+} }
+
 @org.evoleq.language.I18N
 val buttons: Reader<Lang.Block, Lang.Block> = subComp("buttons")
