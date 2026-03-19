@@ -93,3 +93,7 @@ inline fun <reified T> Storage<List<T>>.split(): List<Storage<T>> = with(read())
         )
     }
 }
+
+fun <T> Storage<Set<T>>.addToSet(t: T): Unit = write(read() + t)
+
+fun <T> Storage<Set<T>>.removeFromSet(t: T): Unit = write(read() - t)
