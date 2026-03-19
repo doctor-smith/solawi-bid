@@ -7,9 +7,16 @@ en {
                     subTitle: "Manage personal Application"
                     listOfApplications {
                         title: "Applications"
+                        titles {
+                            bookedApplications: "Booked Applications"
+                            availableApplications: "Available Applications"
+                        }
                         headers {
                             application {
                                 title: "Application"
+                            }
+                            applicationDescription {
+                                title: "Description"
                             }
                             modules {
                                 title: "Modules"
@@ -27,6 +34,18 @@ en {
                             }
                             edit {
                                 tooltip: "Edit Application"
+                            }
+                            registerForApplication {
+                                tooltip: "Purchase Application"
+                            }
+                            startTrialOfApplication {
+                                tooltip: "Start Trial"
+                            }
+                            subscribeApplication{
+                                tooltip: "Subscribe Application"
+                            }
+                            cancelApplicationSubscription {
+                                tooltip: "Cancel Application Subscription"
                             }
                         }
                     }

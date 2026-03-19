@@ -1,0 +1,28 @@
+en {
+    solyton {
+        application {
+            banking {
+                title: "Banking"
+                description: "Manage Banking Affairs"
+                modules {
+                    manageBankAccounts {
+                        title: "Bank Account Management"
+                        description: "Manage bank accounts"
+                    }
+                    manageLegalEntities {
+                        title: "Manage Legal Entities"
+                        description: "Manage affairs related to legal entities"
+                    }
+                    manageSepa {
+                        title: "SEPA"
+                        description: "Manage issues related to SEPA: pain.008 export, etc"
+                    }
+                    manageDatev {
+                        title: "DATEV"
+                        description: "Export to DATEV"
+                    }
+                }
+            }
+        }
+    }
+}

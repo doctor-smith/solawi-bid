@@ -2,7 +2,7 @@ en {
     solyton {
         application {
             auctions{
-                title: "Autions"
+                title: "Auctions"
                 description: "Do auctions"
                 modules {
                     auctionManagement {

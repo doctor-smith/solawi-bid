@@ -2,6 +2,14 @@ en {
     solyton {
         application {
             shareManagement {
+                title: "Share Management"
+                description: "Manage issues related to shares"
+                modules {
+                    shareManagement {
+                        title: "Share Management"
+                        description: "Manage shares"
+                    }
+                }
                 pricingType {
                     FIXED: "Fixed Price"
                     FLEXIBLE: "Adjustable"

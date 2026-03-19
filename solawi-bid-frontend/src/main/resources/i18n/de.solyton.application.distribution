@@ -1,0 +1,20 @@
+de {
+    solyton {
+        application {
+            distribution {
+                title: "Distribution"
+                description: "Manage Distribution Points"
+                modules{
+                    distributionPointManagement {
+                        title: "Distribution Points"
+                        description: "Manage distribution points"
+                    }
+                    distributionPointPlanner {
+                        title: "Distribution Point Planner"
+                        description: "Plan distribution points"
+                    }
+                }
+            }
+        }
+    }
+}
