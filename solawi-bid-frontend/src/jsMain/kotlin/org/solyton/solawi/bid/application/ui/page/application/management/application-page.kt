@@ -37,8 +37,9 @@ import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
 import org.solyton.solawi.bid.application.ui.page.application.style.actionsWrapperStyle
-import org.solyton.solawi.bid.module.application.action.readPersonalApplicationContextRelations
+import org.solyton.solawi.bid.application.ui.page.application.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.application.action.readApplications
+import org.solyton.solawi.bid.module.application.action.readPersonalApplicationContextRelations
 import org.solyton.solawi.bid.module.application.data.application.modules
 import org.solyton.solawi.bid.module.application.data.management.applicationManagementActions
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
@@ -47,7 +48,6 @@ import org.solyton.solawi.bid.module.application.i18n.Component
 import org.solyton.solawi.bid.module.application.i18n.Component.editContext
 import org.solyton.solawi.bid.module.application.i18n.application
 import org.solyton.solawi.bid.module.application.i18n.module
-import org.solyton.solawi.bid.application.ui.page.application.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.control.button.ArrowUpButton
 import org.solyton.solawi.bid.module.control.button.DetailsButton
 import org.solyton.solawi.bid.module.control.button.EditButton
@@ -116,22 +116,14 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
     ),
     onLoading = {Loading()}
 ){
-    /*
-    LaunchedEffect(Unit) {
-        launch {
-            (storage * userIso * userActions).dispatch(readOrganizations())
-        }
-    }
-
-     */
-
     // Data
     val device = storage * deviceData * mediaType.get
 
     val application = storage * applicationManagementModule * availableApplications * FirstBy { it.id == applicationId }
-
+    // todo:dev are the personalApplicationRelations the right choice here?
     val contextRelations = (storage * applicationManagementModule * personalApplicationContextRelations).read()
-    val defaultContextId = contextRelations.first{ relation -> relation.relatedId == applicationId }.contextId
+    val defaultContextId = contextRelations.firstOrNull{ relation -> relation.relatedId == applicationId }
+        ?.contextId?:"NO_DEFAULT_CONTEXT_ID"
     val defaultContextPrism = (storage * availablePermissions * contexts).firstByOrNull()
     val defaultContext = defaultContextPrism.match{ it.contextId == defaultContextId }
 
@@ -166,106 +158,107 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
             SubTitle(applicationTexts * application(application.read().name) * description)
         }
 
-        ListWrapper{
-            TitleWrapper {
-                Title { H3{ Text((listOfModules * title).emit()) }}
-            }
-            HeaderWrapper {
-                Header {
-                    HeaderCell(listOfModules * Component.headers * Component.module * title) { width(40.percent) }
+            ListWrapper{
+                TitleWrapper {
+                    Title { H3{ Text((listOfModules * title).emit()) }}
                 }
-            }
-            ListItemsIndexed(application * modules) { index, module ->
-                ListItemWrapper({
-                    listItemWrapperStyle(this, index)
-                }) {
-                    DataWrapper {
-                        TextCell(
-                            applicationTexts *
-                            module(application.read().name, module.name) *
-                            title
-                        ) { width(40.percent) }
-
+                HeaderWrapper {
+                    Header {
+                        HeaderCell(listOfModules * Component.headers * Component.module * title) { width(40.percent) }
                     }
-                    ActionsWrapper({
-                        actionsWrapperStyle(this)
+                }
+                ListItemsIndexed(application * modules) { index, module ->
+                    ListItemWrapper({
+                        listItemWrapperStyle(this, index)
                     }) {
-                        DetailsButton(
-                            Color.black,
-                            Color.white,
-                            listOfModules * Component.actions * Component.showDetails * tooltip,
-                            device,
-                        ) {
-                            CoroutineScope(Job()).launch {
-                                navigate(
-                                    "/app/management/application/${applicationId}/module/${module.id}"
-                                )
+                        DataWrapper {
+                            TextCell(
+                                applicationTexts *
+                                        module(application.read().name, module.name) *
+                                        title
+                            ) { width(40.percent) }
+
+                        }
+                        ActionsWrapper({
+                            actionsWrapperStyle(this)
+                        }) {
+                            DetailsButton(
+                                Color.black,
+                                Color.white,
+                                listOfModules * Component.actions * Component.showDetails * tooltip,
+                                device,
+                            ) {
+                                CoroutineScope(Job()).launch {
+                                    navigate(
+                                        "/app/management/application/${applicationId}/module/${module.id}"
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        ListWrapper {
-            TitleWrapper({
-                defaultListStyles.titleWrapper(this)
-                justifyContent(JustifyContent.SpaceBetween)
-            }) {
-                Title { H3{ Text((defaultContextTexts * title).emit()) } }
-                Horizontal {
-                    EditButton(
-                        Color.black,
-                        Color.white,
-                        defaultContextTexts * Component.actions * editContext * tooltip,
-                        device,
-                    ) {}
-                }
-            }
-            HeaderWrapper {
-                Header {
-                    HeaderCell(defaultContextTexts * Component.headers * Component.role * title) { width(40.percent) }
-                    HeaderCell(defaultContextTexts * Component.headers * Component.rights * title) { width(40.percent) }
-                }
-            }
-            if(defaultContext is Either.Right) {
-                ListItemsIndexed(defaultContext.value.roles) { index, role ->
-                    ListItemWrapper({
-                        listItemWrapperStyle(this, index)
-                    }) {
-                        DataWrapper {
-                            TextCell(role.roleName) { width(40.percent) }
-                            Div({style {
-                                display(DisplayStyle.Flex)
-                                flexDirection(FlexDirection.Row)
-                                flexWrap(FlexWrap.Wrap)
-                                width(60.percent)
-                                flexShrink(0)
-                            }}) { role.rights.forEach { right ->
-                                TextCell(right.rightName,right.rightName){
-                                    flexWrap(FlexWrap.Wrap)
-                                    width(31.percent)
-                                    padding(1.percent)
-                                    flexShrink(0)
-                                    overflow("hidden")
-                                }
-                            } }
-                        }
-                        ActionsWrapper({
-                            actionsWrapperStyle(this)
-                        }) {
-                            EditButton(
-                                Color.black,
-                                Color.white,
-                                defaultContextTexts * Component.actions * Component.editRole * tooltip,
-                                device,
-                            ) {}
-                        }
+            ListWrapper {
+                TitleWrapper({
+                    defaultListStyles.titleWrapper(this)
+                    justifyContent(JustifyContent.SpaceBetween)
+                }) {
+                    Title { H3{ Text((defaultContextTexts * title).emit()) } }
+                    Horizontal {
+                        EditButton(
+                            Color.black,
+                            Color.white,
+                            defaultContextTexts * Component.actions * editContext * tooltip,
+                            device,
+                        ) {}
                     }
                 }
-            } else {
-                TextCell("No default context available") { width(100.percent); color(Color.red) }
+                HeaderWrapper {
+                    Header {
+                        HeaderCell(defaultContextTexts * Component.headers * Component.role * title) { width(40.percent) }
+                        HeaderCell(defaultContextTexts * Component.headers * Component.rights * title) { width(40.percent) }
+                    }
+                }
+                if(defaultContext is Either.Right) {
+                    ListItemsIndexed(defaultContext.value.roles) { index, role ->
+                        ListItemWrapper({
+                            listItemWrapperStyle(this, index)
+                        }) {
+                            DataWrapper {
+                                TextCell(role.roleName) { width(40.percent) }
+                                Div({style {
+                                    display(DisplayStyle.Flex)
+                                    flexDirection(FlexDirection.Row)
+                                    flexWrap(FlexWrap.Wrap)
+                                    width(60.percent)
+                                    flexShrink(0)
+                                }}) { role.rights.forEach { right ->
+                                    TextCell(right.rightName,right.rightName){
+                                        flexWrap(FlexWrap.Wrap)
+                                        width(31.percent)
+                                        padding(1.percent)
+                                        flexShrink(0)
+                                        overflow("hidden")
+                                    }
+                                } }
+                            }
+                            ActionsWrapper({
+                                actionsWrapperStyle(this)
+                            }) {
+                                EditButton(
+                                    Color.black,
+                                    Color.white,
+                                    defaultContextTexts * Component.actions * Component.editRole * tooltip,
+                                    device,
+                                ) {}
+                            }
+                        }
+                    }
+                } else {
+                    TextCell("No default context available") { width(100.percent); color(Color.red) }
+                }
             }
         }
     }
-}
+
