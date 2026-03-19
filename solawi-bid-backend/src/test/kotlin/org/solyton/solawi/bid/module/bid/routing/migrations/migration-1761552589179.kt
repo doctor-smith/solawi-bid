@@ -124,7 +124,7 @@ class Migration1761552589179(
         }
 
         val subscribeApplications = RightEntity.new {
-            name = "SUBSCRIBE_APPLICATION"
+            name = "SUBSCRIBE_APPLICATIONS"
             description = "DESCRIPTION"
             createdBy = UUID_ZERO
         }
