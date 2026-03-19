@@ -4,7 +4,6 @@ import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import org.evoleq.exposedx.data.DbEnv
 import org.evoleq.ktorx.Base
-import org.evoleq.ktorx.NotImplemented
 import org.evoleq.ktorx.ReceiveContextual
 import org.evoleq.ktorx.Respond
 import org.evoleq.ktorx.data.KTorEnv
@@ -57,13 +56,13 @@ fun <BankingEnv> Routing.banking (
                 }
                 post("create") {
                     ReceiveContextual<CreateBankAccount>() *
-                    IsGranted("CREATE_BANK_ACCOUNT", no) *
+                    IsGranted("CREATE_BANK_ACCOUNTS", no) *
                     CreateBankAccount() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
                 patch("update") {
                     ReceiveContextual<UpdateBankAccount>() *
-                    IsGranted("UPDATE_BANK_ACCOUNT", no) *
+                    IsGranted("UPDATE_BANK_ACCOUNTS", no) *
                     UpdateBankAccount() *
                     Respond{ transform() } runOn Base(call, environment)
                 }

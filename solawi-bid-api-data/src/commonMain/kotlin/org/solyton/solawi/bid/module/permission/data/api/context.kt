@@ -8,7 +8,7 @@ typealias ApiContext = Context
 typealias ApiContexts = Contexts
 typealias ApiRole = Role
 typealias ApiRight = Right
-
+typealias ContextIdValue = org.solyton.solawi.bid.module.permission.data.ContextId
 
 interface ContextId {
     val contextId: String
@@ -102,7 +102,7 @@ data class PutUserRoleContext(
 @Serializable
 data class PutRoleRightContext(
     val roleId: RoleId,
-    val contextId: ContextId,
+    val contextId: ContextIdValue,
     val rightIds: List<RightId>
 )
 
