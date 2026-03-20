@@ -14,6 +14,9 @@ import org.solyton.solawi.bid.module.style.cursor.Cursor
 import org.solyton.solawi.bid.module.style.cursor.cursor
 import org.solyton.solawi.bid.module.style.dropdown.UserSelect
 import org.solyton.solawi.bid.module.style.dropdown.userSelect
+import org.solyton.solawi.bid.module.style.overflow.Overflow
+import org.solyton.solawi.bid.module.style.overflow.overflow
+import org.solyton.solawi.bid.module.style.overflow.overflowY
 import org.solyton.solawi.bid.module.style.text.TextOverflow
 import org.solyton.solawi.bid.module.style.text.textOverflow
 import org.solyton.solawi.bid.module.values.Price
@@ -242,13 +245,20 @@ data class EditableSelectCellStyles(
     val containerStyle: StyleScope.()->Unit = {
         position(Position.Relative)
         width(100.percent)
-        border(1.px, LineStyle.Solid, Color.black)
-        padding(2.px)
+        border(1.px, LineStyle.Solid, Color.gray)
+        borderRadius(5.px)
+        padding(1.px)
         cursor(Cursor.Pointer)
         display(DisplayStyle.Flex)
         justifyContent(JustifyContent.SpaceBetween)
         alignItems(AlignItems.Center)
         userSelect(UserSelect.None)
+        maxHeight(300.px)
+    },
+    val labelStyle: StyleScope.()->Unit = {
+        paddingLeft(5.px)
+        overflow(Overflow.Hidden)
+        textOverflow(TextOverflow.Ellipsis)
     },
     val selectStyle: StyleScope.()->Unit = {
         position(Position.Absolute)
@@ -256,7 +266,10 @@ data class EditableSelectCellStyles(
         left(0.px)
         right(0.px)
         backgroundColor(Color.white)
-        border(1.px, LineStyle.Solid, Color.black)
+        border(1.px, LineStyle.Solid, Color.gray)
+        borderRadius(5.px)
+        maxHeight(300.px)
+        overflowY(Overflow.Auto)
         zIndex( 100)
     },
     val iconStyle: StyleScope.()->Unit = {
@@ -266,8 +279,10 @@ data class EditableSelectCellStyles(
     },
     val itemStyle: StyleScope.()->Unit = {
         width(100.percent)
-        padding(2.px)
-        overflow("hidden")
+        paddingTop(2.px)
+        paddingBottom(2.px)
+        paddingLeft(5.px)
+        overflow(Overflow.Hidden)
         textOverflow(TextOverflow.Ellipsis)
         cursor(Cursor.Pointer)
     }
@@ -275,6 +290,12 @@ data class EditableSelectCellStyles(
     fun modifySelectStyle(style: StyleScope.() -> Unit): EditableSelectCellStyles = with(this){
         copy(selectStyle = {
             selectStyle()
+            style()
+        })
+    }
+    fun modifyLabelStyle(style: StyleScope.() -> Unit): EditableSelectCellStyles = with(this){
+        copy(labelStyle = {
+            labelStyle()
             style()
         })
     }
@@ -302,6 +323,12 @@ data class EditableSelectCellStyles(
         fun modifySelectStyle(style: StyleScope.() -> Unit): EditableSelectCellStyles = with(Default){
             copy(selectStyle = {
                 selectStyle()
+                style()
+            })
+        }
+        fun modifyLabelStyle(style: StyleScope.() -> Unit): EditableSelectCellStyles = with(Default){
+            copy(labelStyle = {
+                labelStyle()
                 style()
             })
         }
@@ -358,8 +385,7 @@ fun <T> EditableSelectCell(
         Span(attrs = {
             title(selectedLabel ?: placeholder)
             style {
-                overflow("hidden")
-                textOverflow(TextOverflow.Ellipsis)
+                with(styles) { labelStyle() }
             }
         }) { Text(selectedLabel ?: placeholder) }
 

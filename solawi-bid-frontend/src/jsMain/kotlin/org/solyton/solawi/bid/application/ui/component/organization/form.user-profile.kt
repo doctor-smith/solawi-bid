@@ -23,16 +23,21 @@ import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.times
 import org.jetbrains.compose.web.attributes.required
+import org.jetbrains.compose.web.css.marginLeft
+import org.jetbrains.compose.web.css.marginTop
 import org.jetbrains.compose.web.css.percent
+import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.dom.TextInput
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
+import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
 import org.solyton.solawi.bid.module.country.i18n.CountryLangComponent
 import org.solyton.solawi.bid.module.country.i18n.CountryLangComponent.Companion.names
 import org.solyton.solawi.bid.module.i18n.data.variables
+import org.solyton.solawi.bid.module.navbar.component.SimpleUpDown
 import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
@@ -341,6 +346,12 @@ fun UserProfileForm(
                         it.value
                     }) {it.key}
 
+                    val dropdownStyles = DropdownStyles()
+                        .modifyContainerStyle {
+                            marginTop(5.px)
+                            width(100.percent)
+                        }
+
                     Field(fieldDesktopStyle) {
                         Label(
                             (addressInputs * subComp("countryCode") * title).emit(),
@@ -348,29 +359,11 @@ fun UserProfileForm(
                             labelStyle = formLabelDesktopStyle,
                             isRequired = true
                         )
-                        /*
-                        TextInput(address?.countryCode ?: "DE") {
-                            required()
-                            id("countryCode")
-                            style { textInputDesktopStyle() }
-                            onInput {
-                                val newUserProfile = userProfileState?.addresses {
-                                    val address = userProfileState?.addresses?.firstOrNull()
-                                    listOf(
-                                        address?.countryCode { it.value } ?: Address.default().countryCode { it.value }
-                                    )
-                                } ?: UserProfile.default()
-                                    .addresses { listOf(Address.default().countryCode { it.value }) }
-                                userProfileState = newUserProfile
-                                setUserProfile(newUserProfile)
-                            }
-                        }
-
-                         */
-
                         Dropdown(
-                            countriesMap,
-                            countries.firstOrNull{it.key == (address?.countryCode?:"DE")}?.value,
+                            options = countriesMap,
+                            selected = countries.firstOrNull{it.key == (address?.countryCode?:"DE")}?.value,
+                            styles = dropdownStyles,
+                            iconContent = {expanded -> SimpleUpDown(expanded) }
                         ) { (_, value) ->
                             val newUserProfile = userProfileState?.addresses {
                                 val address = userProfileState?.addresses?.firstOrNull()
@@ -392,28 +385,11 @@ fun UserProfileForm(
                             labelStyle = formLabelDesktopStyle,
                             isRequired = true
                         )
-                        /*
-                        TextInput(address?.stateOrProvince ?: "DE-BW") {
-                            required()
-                            id("stateOrProvince")
-                            style { textInputDesktopStyle() }
-                            onInput {
-                                val newUserProfile = userProfileState?.addresses {
-                                    val address = userProfileState?.addresses?.firstOrNull()
-                                    listOf(
-                                        address?.stateOrProvince { it.value } ?: Address.default()
-                                            .stateOrProvince { it.value }
-                                    )
-                                } ?: UserProfile.default()
-                                    .addresses { listOf(Address.default().stateOrProvince { it.value }) }
-                                userProfileState = newUserProfile
-                                setUserProfile(newUserProfile)
-                            }
-                        }
-                        */
                         Dropdown(
-                            countryStatesMap,
-                            countryStates.firstOrNull{it.key == (address?.stateOrProvince?:"DE-BW")}?.value,
+                            options = countryStatesMap,
+                            selected = countryStates.firstOrNull{it.key == (address?.stateOrProvince?:"DE-BW")}?.value,
+                            styles = dropdownStyles,
+                            iconContent = {expanded -> SimpleUpDown(expanded) }
                         ) { (_, value) ->
                             val newUserProfile = userProfileState?.addresses {
                                 val address = userProfileState?.addresses?.firstOrNull()

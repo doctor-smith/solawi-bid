@@ -17,12 +17,17 @@ import org.jetbrains.compose.web.css.justifyContent
 import org.jetbrains.compose.web.css.StyleScope
 import org.jetbrains.compose.web.css.backgroundColor
 import org.jetbrains.compose.web.css.border
+import org.jetbrains.compose.web.css.borderRadius
 import org.jetbrains.compose.web.css.color
 import org.jetbrains.compose.web.css.fontWeight
 import org.jetbrains.compose.web.css.left
 import org.jetbrains.compose.web.css.marginLeft
 import org.jetbrains.compose.web.css.marginRight
+import org.jetbrains.compose.web.css.maxHeight
 import org.jetbrains.compose.web.css.padding
+import org.jetbrains.compose.web.css.paddingBottom
+import org.jetbrains.compose.web.css.paddingLeft
+import org.jetbrains.compose.web.css.paddingTop
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.position
 import org.jetbrains.compose.web.css.px
@@ -36,6 +41,8 @@ import org.solyton.solawi.bid.module.style.cursor.Cursor
 import org.solyton.solawi.bid.module.style.cursor.cursor
 import org.solyton.solawi.bid.module.style.dropdown.UserSelect
 import org.solyton.solawi.bid.module.style.dropdown.userSelect
+import org.solyton.solawi.bid.module.style.overflow.Overflow
+import org.solyton.solawi.bid.module.style.overflow.overflowY
 
 @Markup
 @Suppress("FunctionName")
@@ -45,7 +52,7 @@ fun <T> Dropdown(
     selected: String?,
     closeOnSelect: Boolean = true,
     styles: DropdownStyles = DropdownStyles(),
-    icon: String = "", // Default icon,
+    iconContent: @Composable ((expanded: Boolean) -> Unit)? = null, // Optional custom icon
     onSelected: (Map.Entry<String, T>) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -61,12 +68,13 @@ fun <T> Dropdown(
             style { with(styles) { triggerStyle()} }
             onClick { expanded = !expanded }
         }) {
-            Text(selected ?: "Select ")
+            Text(selected ?: "Select ...")
             // Icon span
             Span({
                 style { with(styles) { triggerIconStyle()} }
             }) {
-                Text(icon)
+                // Use custom icon content if provided, otherwise default to "+"
+                iconContent?.invoke(expanded) ?: Text("+")
             }
         }
 
@@ -102,8 +110,11 @@ data class DropdownStyles(
     val triggerStyle: StyleScope.()->Unit = {
         display(DisplayStyle.Flex)
         justifyContent(JustifyContent.SpaceBetween)
-        padding(2.px)
-        border(1.px, LineStyle.Solid, Color.black)
+        paddingTop(2.px)
+        paddingBottom(2.px)
+        paddingLeft(5.px)
+        border(2.px, LineStyle.Solid, Color.gray)
+        borderRadius(5.px)
         cursor(Cursor.Pointer)
         userSelect(UserSelect.None)
     },
@@ -123,7 +134,10 @@ data class DropdownStyles(
         left(0.px)
         right(0.px)
         backgroundColor(Color.white)
-        border(1.px, LineStyle.Solid, Color.black)
+        border(2.px, LineStyle.Solid, Color.gray)
+        borderRadius(5.px)
+        maxHeight(300.px)
+        overflowY(Overflow.Auto)
         zIndex(100)
     },
     val dropdownItemStyle: StyleScope.()->Unit = {
