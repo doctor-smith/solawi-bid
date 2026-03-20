@@ -22,16 +22,3 @@ sealed class OrganizationLangComponent(
         "$ORGANIZATION_BASE_PATH.organizationPage"
     )
 }
-
-const val COUNTRY_BASE_PATH = "solyton.countries"
-
-
-sealed class CountryLangComponent(
-    override val path: String,
-    override val value: String = COUNTRY_BASE_PATH
-) : LangComponent{
-    data object Countries : CountryLangComponent(COUNTRY_BASE_PATH)
-    data class StateOrProvince(val countryCode: String) : CountryLangComponent(
-        "$COUNTRY_BASE_PATH.stateOrProvince.$countryCode",
-        "$COUNTRY_BASE_PATH.stateOrProvince.$countryCode")
-}

@@ -10,13 +10,13 @@ import org.jetbrains.compose.web.dom.Text
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun Label(text: String, id: String = "", labelStyle: StyleScope.()->Unit) {
+fun Label(text: String, id: String = "", isRequired: Boolean = false, labelStyle: StyleScope.() -> Unit) {
     Label(attrs = {
         forId(id)
         style {
             labelStyle()
         }
     }) {
-        Text(text)
+        Text(text + if (isRequired) " *" else "")
     }
 }

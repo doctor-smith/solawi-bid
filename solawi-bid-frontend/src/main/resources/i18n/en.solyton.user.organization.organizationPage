@@ -86,9 +86,9 @@ en {
                             inputs {
                                 userProfile {
                                     formTitle: "User Data"
-                                     username {
-                                        title: "Email"
-                                     }
+                                    username {
+                                       title: "Email"
+                                    }
                                     firstname {
                                         title: "Firstname"
                                     }
@@ -98,7 +98,10 @@ en {
                                     title {
                                         title: "Title"
                                     }
-                                     address {
+                                    phoneNumber {
+                                        title: "Phone"
+                                    }
+                                    address {
                                         title: "Address"
                                         recipientName {
                                             title: "Recipient Name"

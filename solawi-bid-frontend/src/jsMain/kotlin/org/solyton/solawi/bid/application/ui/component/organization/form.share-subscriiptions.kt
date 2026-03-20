@@ -53,6 +53,7 @@ import org.solyton.solawi.bid.module.list.component.TextCell
 import org.solyton.solawi.bid.module.list.component.Title
 import org.solyton.solawi.bid.module.list.component.TitleWrapper
 import org.solyton.solawi.bid.module.list.style.defaultListStyles
+import org.solyton.solawi.bid.module.modal.constants.MODAL_LAYER_INDEX
 import org.solyton.solawi.bid.module.navbar.component.SimpleUpDown
 import org.solyton.solawi.bid.module.shares.component.dropdown.ShareOffersDropdown
 import org.solyton.solawi.bid.module.shares.data.api.PricingType
@@ -71,6 +72,7 @@ import org.solyton.solawi.bid.module.shares.data.subscriptions.pricePerShare
 import org.solyton.solawi.bid.module.shares.data.toApiType
 import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
 import org.solyton.solawi.bid.module.style.form.formDesktopStyle
+import org.solyton.solawi.bid.module.style.zindex.zIndex
 import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 import org.solyton.solawi.bid.module.user.data.profile.UserProfile
 import org.solyton.solawi.bid.module.values.ModifierId
@@ -167,7 +169,7 @@ fun ShareSubscriptionsForm(
                         width(5.percent)
                     }
                     HeaderCell(subscriptionHeaders * subComp("state") * title) {
-                        width(10.percent)
+                        width(15.percent)
                     }
                     HeaderCell(subscriptionHeaders * subComp("ahcAuthorized") * title) {
                         width(5.percent)
@@ -176,7 +178,7 @@ fun ShareSubscriptionsForm(
                         width(5.percent)
                     }
                     HeaderCell(subscriptionHeaders * subComp("coSubscribers") * title) {
-                        width(40.percent)
+                        width(35.percent)
                     }
                 }
             }
@@ -191,7 +193,6 @@ fun ShareSubscriptionsForm(
                     "Share offer not found"
                 }
                 ListItemWrapper({
-
                     listItemWrapperStyle(this, index)
                     if (editShareSubscriptionState) {
                         backgroundColor(Color.orange)
@@ -268,7 +269,9 @@ fun ShareSubscriptionsForm(
                             selected = shareStatusState,
                             disabled = !editShareSubscriptionState,
                             styles = EditableSelectCellStyles.modifyContainerStyle {
-                                width(10.percent)
+                                width(15.percent)
+                            }.modifySelectStyle {
+                                zIndex(MODAL_LAYER_INDEX + 10)
                             },
                             iconContent = { expanded ->
                                 SimpleUpDown(expanded)
@@ -302,6 +305,8 @@ fun ShareSubscriptionsForm(
                             selected = ahcAuthorized, disabled = !editShareSubscriptionState,
                             styles = EditableSelectCellStyles.modifyContainerStyle {
                                 width(5.percent)
+                            }.modifySelectStyle {
+                                zIndex(MODAL_LAYER_INDEX + 10)
                             },
                             iconContent = { expanded ->
                                 SimpleUpDown(expanded)
@@ -330,6 +335,8 @@ fun ShareSubscriptionsForm(
                             disabled = !editShareSubscriptionState,
                             styles = EditableSelectCellStyles.modifyContainerStyle {
                                 width(5.percent)
+                            }.modifySelectStyle {
+                                zIndex(MODAL_LAYER_INDEX + 10)
                             },
                             iconContent = { expanded ->
                                 SimpleUpDown(expanded)
@@ -351,7 +358,7 @@ fun ShareSubscriptionsForm(
                         EditableTextCell(
                             text = shareSubscription.coSubscribers.joinToString(", "),
                             disabled = !editShareSubscriptionState,
-                            style = { width(40.percent) }
+                            style = { width(35.percent) }
                         ) { coSubscribers ->
                             shareSubscriptions =
                                 requireNotNull(shareSubscriptions).all.mapIndexed { shareSubscriptionIndex, shareSubscription ->

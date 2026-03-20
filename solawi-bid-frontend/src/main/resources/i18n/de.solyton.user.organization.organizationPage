@@ -98,6 +98,9 @@ de {
                                      title {
                                         title: "Titel"
                                      }
+                                     phoneNumber {
+                                        title: "Telefon"
+                                     }
                                      address {
                                         title: "Adresse"
                                         recipientName {

@@ -22,12 +22,17 @@ import org.evoleq.math.Reader
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.times
+import org.jetbrains.compose.web.attributes.required
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.dom.TextInput
 import org.solyton.solawi.bid.module.control.button.StdButton
+import org.solyton.solawi.bid.module.control.dropdown.Dropdown
+import org.solyton.solawi.bid.module.country.i18n.CountryLangComponent
+import org.solyton.solawi.bid.module.country.i18n.CountryLangComponent.Companion.names
+import org.solyton.solawi.bid.module.i18n.data.variables
 import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
@@ -53,6 +58,7 @@ import org.solyton.solawi.bid.module.values.Username
 fun UserProfileForm(
     device: Source<DeviceType>,
     inputs: Source<Lang.Block>,
+    countryTexts: Source<Lang.Block>,
     username: Username?,
     setUsername: (Username) -> Unit,
     userProfile: UserProfile?,
@@ -77,9 +83,11 @@ fun UserProfileForm(
                     Label(
                         (userProfileInputs * subComp("username") * title).emit(),
                         id = "username",
-                        labelStyle = formLabelDesktopStyle
+                        labelStyle = formLabelDesktopStyle,
+                        isRequired = true
                     )
                     TextInput(usernameState ?: "") {
+                        required()
                         id("username")
                         style { textInputDesktopStyle() }
                         onInput {
@@ -115,9 +123,11 @@ fun UserProfileForm(
                     Label(
                         (userProfileInputs * subComp("firstname") * title).emit(),
                         id = "firstname",
-                        labelStyle = formLabelDesktopStyle
+                        labelStyle = formLabelDesktopStyle,
+                        isRequired = true
                     )
                     TextInput(userProfileState?.firstname ?: "") {
+                        required()
                         id("firstname")
                         style { textInputDesktopStyle() }
                         onInput {
@@ -133,14 +143,33 @@ fun UserProfileForm(
                     Label(
                         (userProfileInputs * subComp("lastname") * title).emit(),
                         id = "lastname",
-                        labelStyle = formLabelDesktopStyle
+                        labelStyle = formLabelDesktopStyle,
+                        isRequired = true
                     )
                     TextInput(userProfileState?.lastname ?: "") {
+                        required()
                         id("lastname")
                         style { textInputDesktopStyle() }
                         onInput {
                             val newUserProfile =
                                 userProfileState?.copy(lastname = it.value) ?: UserProfile("", "", it.value)
+                            userProfileState = newUserProfile
+                            setUserProfile(newUserProfile)
+                        }
+                    }
+                }
+                Field(fieldDesktopStyle) {
+                    Label(
+                        (userProfileInputs * subComp("phoneNumber") * title).emit(),
+                        id = "phoneNumber",
+                        labelStyle = formLabelDesktopStyle
+                    )
+                    TextInput(userProfileState?.phoneNumber ?: "") {
+                        id("phoneNumber")
+                        style { textInputDesktopStyle() }
+                        onInput {
+                            val newUserProfile =
+                                userProfileState?.copy(phoneNumber = it.value) ?: UserProfile("", "","", "", it.value)
                             userProfileState = newUserProfile
                             setUserProfile(newUserProfile)
                         }
@@ -153,48 +182,54 @@ fun UserProfileForm(
                 val addressInputs = userProfileInputs * subComp("address")
                 val address = userProfileState?.addresses?.firstOrNull()
 
-                H3{Text((addressInputs * title).emit())}
-                Field(fieldDesktopStyle) {
-
-                    Label(
-                        (addressInputs * subComp("recipientName") * title).emit(),
-                        id = "recipientName",
-                        labelStyle = formLabelDesktopStyle
-                    )
-                    TextInput(address?.recipientName ?: "") {
-                        id("recipientName")
-                        style { textInputDesktopStyle() }
-                        onInput {
-                            val newUserProfile = userProfileState?.addresses{
-                                val address = userProfileState?.addresses?.firstOrNull()
-                                listOf(
-                                    address?.recipientName { it.value }?: Address.default().recipientName{it.value}
-                                )
-                            } ?: UserProfile.default().addresses { listOf(Address.default().recipientName{it.value}) }
-                            userProfileState = newUserProfile
-                            setUserProfile(newUserProfile)
+                H3 { Text((addressInputs * title).emit()) }
+                Horizontal {
+                    Field(fieldDesktopStyle) {
+                        Label(
+                            (addressInputs * subComp("recipientName") * title).emit(),
+                            id = "recipientName",
+                            labelStyle = formLabelDesktopStyle,
+                            isRequired = true
+                        )
+                        TextInput(address?.recipientName ?: "") {
+                            required()
+                            id("recipientName")
+                            style { textInputDesktopStyle() }
+                            onInput {
+                                val newUserProfile = userProfileState?.addresses {
+                                    val address = userProfileState?.addresses?.firstOrNull()
+                                    listOf(
+                                        address?.recipientName { it.value } ?: Address.default().recipientName { it.value }
+                                    )
+                                } ?: UserProfile.default()
+                                    .addresses { listOf(Address.default().recipientName { it.value }) }
+                                userProfileState = newUserProfile
+                                setUserProfile(newUserProfile)
+                            }
                         }
                     }
-                }
 
-                Field(fieldDesktopStyle) {
-                    Label(
-                        (addressInputs * subComp("organizationName") * title).emit(),
-                        id = "organizationName",
-                        labelStyle = formLabelDesktopStyle
-                    )
-                    TextInput(address?.organizationName?: "") {
-                        id("organizationName")
-                        style { textInputDesktopStyle() }
-                        onInput {
-                            val newUserProfile = userProfileState?.addresses{
-                                val address = userProfileState?.addresses?.firstOrNull()
-                                listOf(
-                                    address?.organizationName { it.value }?: Address.default().organizationName{it.value}
-                                )
-                            } ?: UserProfile.default().addresses { listOf(Address.default().organizationName{it.value}) }
-                            userProfileState = newUserProfile
-                            setUserProfile(newUserProfile)
+                    Field(fieldDesktopStyle) {
+                        Label(
+                            (addressInputs * subComp("organizationName") * title).emit(),
+                            id = "organizationName",
+                            labelStyle = formLabelDesktopStyle
+                        )
+                        TextInput(address?.organizationName ?: "") {
+                            id("organizationName")
+                            style { textInputDesktopStyle() }
+                            onInput {
+                                val newUserProfile = userProfileState?.addresses {
+                                    val address = userProfileState?.addresses?.firstOrNull()
+                                    listOf(
+                                        address?.organizationName { it.value } ?: Address.default()
+                                            .organizationName { it.value }
+                                    )
+                                } ?: UserProfile.default()
+                                    .addresses { listOf(Address.default().organizationName { it.value }) }
+                                userProfileState = newUserProfile
+                                setUserProfile(newUserProfile)
+                            }
                         }
                     }
                 }
@@ -203,9 +238,11 @@ fun UserProfileForm(
                     Label(
                         (addressInputs * subComp("addressLine1") * title).emit(),
                         id = "addressLine1",
-                        labelStyle = formLabelDesktopStyle
+                        labelStyle = formLabelDesktopStyle,
+                        isRequired = true
                     )
                     TextInput(address?.addressLine1 ?: "") {
+                        required()
                         id("addressLine1")
                         style { textInputDesktopStyle() }
                         onInput {
@@ -242,89 +279,149 @@ fun UserProfileForm(
                         }
                     }
                 }
-
-                Field(fieldDesktopStyle) {
-                    Label(
-                        (addressInputs * subComp("city") * title).emit(),
-                        id = "city",
-                        labelStyle = formLabelDesktopStyle
-                    )
-                    TextInput(address?.city ?: "") {
-                        id("city")
-                        style { textInputDesktopStyle() }
-                        onInput {
-                            val newUserProfile = userProfileState?.addresses{
-                                val address = userProfileState?.addresses?.firstOrNull()
-                                listOf(
-                                    address?.city { it.value }?: Address.default().city{it.value}
-                                )
-                            } ?: UserProfile.default().addresses { listOf(Address.default().city{it.value}) }
-                            userProfileState = newUserProfile
-                            setUserProfile(newUserProfile)
+                Horizontal {
+                    Field(fieldDesktopStyle) {
+                        Label(
+                            (addressInputs * subComp("postalCode") * title).emit(),
+                            id = "postalCode",
+                            labelStyle = formLabelDesktopStyle,
+                            isRequired = true
+                        )
+                        TextInput(address?.postalCode ?: "") {
+                            required()
+                            id("postalCode")
+                            style { textInputDesktopStyle() }
+                            onInput {
+                                val newUserProfile = userProfileState?.addresses {
+                                    val address = userProfileState?.addresses?.firstOrNull()
+                                    listOf(
+                                        address?.postalCode { it.value } ?: Address.default().postalCode { it.value }
+                                    )
+                                } ?: UserProfile.default()
+                                    .addresses { listOf(Address.default().postalCode { it.value }) }
+                                userProfileState = newUserProfile
+                                setUserProfile(newUserProfile)
+                            }
+                        }
+                    }
+                    Field(fieldDesktopStyle) {
+                        Label(
+                            (addressInputs * subComp("city") * title).emit(),
+                            id = "city",
+                            labelStyle = formLabelDesktopStyle,
+                            isRequired = true
+                        )
+                        TextInput(address?.city ?: "") {
+                            required()
+                            id("city")
+                            style { textInputDesktopStyle() }
+                            onInput {
+                                val newUserProfile = userProfileState?.addresses {
+                                    val address = userProfileState?.addresses?.firstOrNull()
+                                    listOf(
+                                        address?.city { it.value } ?: Address.default().city { it.value }
+                                    )
+                                } ?: UserProfile.default().addresses { listOf(Address.default().city { it.value }) }
+                                userProfileState = newUserProfile
+                                setUserProfile(newUserProfile)
+                            }
                         }
                     }
                 }
+                Horizontal {
 
-                Field(fieldDesktopStyle) {
-                    Label(
-                        (addressInputs * subComp("stateOrProvince") * title).emit(),
-                        id = "stateOrProvince",
-                        labelStyle = formLabelDesktopStyle
-                    )
-                    TextInput(address?.stateOrProvince ?: "") {
-                        id("stateOrProvince")
-                        style { textInputDesktopStyle() }
-                        onInput {
-                            val newUserProfile = userProfileState?.addresses{
+                    val countries = (countryTexts * names * variables).emit().filter { it.key in listOf("DE", "AT", "CH") }
+                    val countriesMap = countries.associateBy ({
+                        it.value
+                    }){it.key}
+                    val countryStates = (countryTexts * with(CountryLangComponent){
+                        statesOrProvinces(address?.countryCode ?: "DE")
+                    } * variables).emit()
+                    val countryStatesMap = countryStates.associateBy ({
+                        it.value
+                    }) {it.key}
+
+                    Field(fieldDesktopStyle) {
+                        Label(
+                            (addressInputs * subComp("countryCode") * title).emit(),
+                            id = "countryCode",
+                            labelStyle = formLabelDesktopStyle,
+                            isRequired = true
+                        )
+                        /*
+                        TextInput(address?.countryCode ?: "DE") {
+                            required()
+                            id("countryCode")
+                            style { textInputDesktopStyle() }
+                            onInput {
+                                val newUserProfile = userProfileState?.addresses {
+                                    val address = userProfileState?.addresses?.firstOrNull()
+                                    listOf(
+                                        address?.countryCode { it.value } ?: Address.default().countryCode { it.value }
+                                    )
+                                } ?: UserProfile.default()
+                                    .addresses { listOf(Address.default().countryCode { it.value }) }
+                                userProfileState = newUserProfile
+                                setUserProfile(newUserProfile)
+                            }
+                        }
+
+                         */
+
+                        Dropdown(
+                            countriesMap,
+                            countries.firstOrNull{it.key == (address?.countryCode?:"DE")}?.value,
+                        ) { (_, value) ->
+                            val newUserProfile = userProfileState?.addresses {
                                 val address = userProfileState?.addresses?.firstOrNull()
                                 listOf(
-                                    address?.stateOrProvince { it.value }?: Address.default().stateOrProvince{it.value}
+                                    address?.countryCode { value } ?: Address.default().countryCode { value }
                                 )
-                            } ?: UserProfile.default().addresses { listOf(Address.default().stateOrProvince{it.value}) }
+                            } ?: UserProfile.default()
+                                .addresses { listOf(Address.default().countryCode { value }) }
                             userProfileState = newUserProfile
                             setUserProfile(newUserProfile)
                         }
-                    }
-                }
 
-                Field(fieldDesktopStyle) {
-                    Label(
-                        (addressInputs * subComp("postalCode") * title).emit(),
-                        id = "postalCode",
-                        labelStyle = formLabelDesktopStyle
-                    )
-                    TextInput(address?.postalCode ?: "") {
-                        id("postalCode")
-                        style { textInputDesktopStyle() }
-                        onInput {
-                            val newUserProfile = userProfileState?.addresses{
-                                val address = userProfileState?.addresses?.firstOrNull()
-                                listOf(
-                                    address?.postalCode { it.value }?: Address.default().postalCode{it.value}
-                                )
-                            } ?: UserProfile.default().addresses { listOf(Address.default().postalCode{it.value}) }
-                            userProfileState = newUserProfile
-                            setUserProfile(newUserProfile)
+
+                    }
+                    Field(fieldDesktopStyle) {
+                        Label(
+                            (addressInputs * subComp("stateOrProvince") * title).emit(),
+                            id = "stateOrProvince",
+                            labelStyle = formLabelDesktopStyle,
+                            isRequired = true
+                        )
+                        /*
+                        TextInput(address?.stateOrProvince ?: "DE-BW") {
+                            required()
+                            id("stateOrProvince")
+                            style { textInputDesktopStyle() }
+                            onInput {
+                                val newUserProfile = userProfileState?.addresses {
+                                    val address = userProfileState?.addresses?.firstOrNull()
+                                    listOf(
+                                        address?.stateOrProvince { it.value } ?: Address.default()
+                                            .stateOrProvince { it.value }
+                                    )
+                                } ?: UserProfile.default()
+                                    .addresses { listOf(Address.default().stateOrProvince { it.value }) }
+                                userProfileState = newUserProfile
+                                setUserProfile(newUserProfile)
+                            }
                         }
-                    }
-                }
-
-                Field(fieldDesktopStyle) {
-                    Label(
-                        (addressInputs * subComp("countryCode") * title).emit(),
-                        id = "countryCode",
-                        labelStyle = formLabelDesktopStyle
-                    )
-                    TextInput(address?.countryCode ?: "") {
-                        id("countryCode")
-                        style { textInputDesktopStyle() }
-                        onInput {
-                            val newUserProfile = userProfileState?.addresses{
+                        */
+                        Dropdown(
+                            countryStatesMap,
+                            countryStates.firstOrNull{it.key == (address?.stateOrProvince?:"DE-BW")}?.value,
+                        ) { (_, value) ->
+                            val newUserProfile = userProfileState?.addresses {
                                 val address = userProfileState?.addresses?.firstOrNull()
                                 listOf(
-                                    address?.countryCode { it.value }?: Address.default().countryCode{it.value}
+                                    address?.stateOrProvince { value } ?: Address.default().stateOrProvince { value }
                                 )
-                            } ?: UserProfile.default().addresses { listOf(Address.default().countryCode{it.value}) }
+                            } ?: UserProfile.default()
+                                .addresses { listOf(Address.default().stateOrProvince { value }) }
                             userProfileState = newUserProfile
                             setUserProfile(newUserProfile)
                         }
