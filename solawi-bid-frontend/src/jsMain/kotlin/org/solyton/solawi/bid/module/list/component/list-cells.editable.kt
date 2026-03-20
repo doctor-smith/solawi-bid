@@ -14,6 +14,8 @@ import org.solyton.solawi.bid.module.style.cursor.Cursor
 import org.solyton.solawi.bid.module.style.cursor.cursor
 import org.solyton.solawi.bid.module.style.dropdown.UserSelect
 import org.solyton.solawi.bid.module.style.dropdown.userSelect
+import org.solyton.solawi.bid.module.style.text.TextOverflow
+import org.solyton.solawi.bid.module.style.text.textOverflow
 import org.solyton.solawi.bid.module.values.Price
 
 
@@ -83,7 +85,12 @@ fun EditableTextCell(
                 }
             }
         } else {
-            Text(text)
+            Span({
+                style {
+                    minWidth(0.px)
+                    whiteSpace("normal")
+                }
+            }) { Text(text) }
         }
     }
 }
@@ -258,7 +265,10 @@ data class EditableSelectCellStyles(
         color(Color.black)
     },
     val itemStyle: StyleScope.()->Unit = {
+        width(100.percent)
         padding(2.px)
+        overflow("hidden")
+        textOverflow(TextOverflow.Ellipsis)
         cursor(Cursor.Pointer)
     }
 ) {
@@ -345,7 +355,13 @@ fun <T> EditableSelectCell(
         }
     }) {
         // Label
-        Text(selectedLabel ?: placeholder)
+        Span(attrs = {
+            title(selectedLabel ?: placeholder)
+            style {
+                overflow("hidden")
+                textOverflow(TextOverflow.Ellipsis)
+            }
+        }) { Text(selectedLabel ?: placeholder) }
 
         // Icon
         Span({
@@ -363,6 +379,7 @@ fun <T> EditableSelectCell(
             }) {
                 options.filterKeys { it != selectedLabel  }.forEach { (label, value) ->
                     Div({
+                        title(label)
                         style { with(styles) { itemStyle() } }
                         onClick { evt ->
                             evt.stopPropagation()

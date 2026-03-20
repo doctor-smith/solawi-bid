@@ -58,3 +58,5 @@ tailrec fun Block.component(path: String): Block {
         }
     }
 }
+
+fun Lang.Block.variables(): List<Lang.Variable> = value.filterIsInstance<Lang.Variable>()

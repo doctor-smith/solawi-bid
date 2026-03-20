@@ -49,7 +49,6 @@ import org.solyton.solawi.bid.application.ui.page.user.action.memberCreateAction
 import org.solyton.solawi.bid.application.ui.page.user.action.memberUpdateAction
 import org.solyton.solawi.bid.application.ui.page.user.data.isApplicationListOpened
 import org.solyton.solawi.bid.application.ui.page.user.data.isMemberListOpened
-import org.solyton.solawi.bid.application.ui.page.user.i18n.CountryLangComponent
 import org.solyton.solawi.bid.application.ui.page.user.i18n.OrganizationLangComponent
 import org.solyton.solawi.bid.application.ui.page.user.style.actionsWrapperStyle
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
@@ -68,6 +67,7 @@ import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.mappings.BankingMappings
 import org.solyton.solawi.bid.module.control.button.*
+import org.solyton.solawi.bid.module.country.i18n.CountryLangComponent
 import org.solyton.solawi.bid.module.distribution.action.READ_DISTRIBUTION_POINTS
 import org.solyton.solawi.bid.module.distribution.action.readDistributionPoints
 import org.solyton.solawi.bid.module.distribution.data.distributionpoint.DistributionPoint
@@ -149,16 +149,6 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                 )
             },
             onMissing(
-                CountryLangComponent.Countries,
-                applicationStorage * userIso * i18n.get
-            ) {
-                LaunchComponentLookup(
-                    langComponent = CountryLangComponent.Countries,
-                    environment = applicationStorage * userIso * environment.get,
-                    i18n = (applicationStorage * userIso * i18n)
-                )
-            },
-            onMissing(
                 ShareManagementLangComponent.Base,
                 applicationStorage * userIso * i18n.get
             ) {
@@ -180,6 +170,16 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                     )
                 }
             }.toBooleanArray(),
+            onMissing(
+                CountryLangComponent.Countries,
+                applicationStorage * userIso * i18n.get
+            ) {
+                LaunchComponentLookup(
+                    langComponent = CountryLangComponent.Countries,
+                    environment = applicationStorage * userIso * environment.get,
+                    i18n = (applicationStorage * userIso * i18n)
+                )
+            },
             *(applicationStorage * applicationManagementModule * availableApplications).read().map {
                 onMissing(
                     ApplicationLangComponent.ApplicationDetails(it.name),
@@ -197,9 +197,6 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
         ),
         onLoading = { Loading() }
     ) {
-
-
-
 
         val userModuleStorage = applicationStorage * userIso
         val device = userModuleStorage * deviceData * mediaType
@@ -280,6 +277,8 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
         val listOfConnectedApplications = texts * subComp("listOfConnectedApplications")
         val listOfConnectedApplicationsHeaders = listOfConnectedApplications * subComp("headers")
         val listOfConnectedApplicationsActions = listOfConnectedApplications * subComp("actions")
+
+        val countryTexts = applicationStorage * i18N * language * CountryLangComponent.Base.component
 
         Page(verticalPageStyle) {
             Wrap {
@@ -436,6 +435,7 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                         ) {
                             (applicationStorage * modals).showUpdateMembersOfOrganizationModal(
                                 texts = updateMemberOfOrganization,
+                                countryTexts = countryTexts,
                                 device = {device.read ()},
                                 actions = (applicationStorage * mainActions).read(),
                                 changesDoneBy = ChangedBy.PROVIDER,
@@ -594,6 +594,7 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                     ) {
                                         (applicationStorage * mainModales).showUpdateMembersOfOrganizationModal(
                                             texts = updateMemberOfOrganization,
+                                            countryTexts = countryTexts,
                                             device = { device.read() },
                                             actions = (applicationStorage * mainActions).read(),
                                             changesDoneBy = ChangedBy.PROVIDER,

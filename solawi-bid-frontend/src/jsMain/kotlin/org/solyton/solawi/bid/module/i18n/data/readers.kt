@@ -3,6 +3,7 @@ package org.solyton.solawi.bid.module.i18n.data
 import org.evoleq.language.Lang
 import org.evoleq.language.LangComponent
 import org.evoleq.language.subComp
+import org.evoleq.language.variables
 import org.evoleq.math.Reader
 
 val componentLoaded: (component: LangComponent) ->  Reader<I18N, Boolean> = {component -> Reader{
@@ -15,3 +16,5 @@ val componentLoading: (component: LangComponent) -> Reader<I18N, Boolean> = {com
 
 @org.evoleq.language.I18N
 val buttons: Reader<Lang.Block, Lang.Block> = subComp("buttons")
+
+val variables: Reader<Lang.Block, List<Lang.Variable>> = Reader { block -> block.variables() }

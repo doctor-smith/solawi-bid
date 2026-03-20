@@ -1,9 +1,7 @@
 package org.solyton.solawi.bid.application.ui.component.organization
 
 import androidx.compose.runtime.*
-import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
-import org.evoleq.compose.form.Form
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.compose.modal.Modal
 import org.evoleq.compose.modal.ModalData
@@ -11,10 +9,7 @@ import org.evoleq.compose.modal.ModalType
 import org.evoleq.compose.modal.Modals
 import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.language.Lang
-import org.evoleq.language.get
 import org.evoleq.language.subComp
-import org.evoleq.language.title
-import org.evoleq.math.Reader
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.times
@@ -22,38 +17,21 @@ import org.evoleq.optics.storage.ActionDispatcher
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
-import org.evoleq.uuid.NIL_UUID
-import org.jetbrains.compose.web.css.*
+import org.jetbrains.compose.web.css.height
+import org.jetbrains.compose.web.css.overflowY
+import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.dom.ElementScope
-import org.jetbrains.compose.web.dom.H3
-import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
-import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
-import org.solyton.solawi.bid.module.control.button.EditButton
 import org.solyton.solawi.bid.module.distribution.data.distributionpoint.DistributionPoint
-import org.solyton.solawi.bid.module.list.component.*
-import org.solyton.solawi.bid.module.list.style.defaultListStyles
-import org.solyton.solawi.bid.module.navbar.component.SimpleUpDown
-import org.solyton.solawi.bid.module.shares.action.CREATE_SHARE_SUBSCRIPTION
-import org.solyton.solawi.bid.module.shares.component.dropdown.ShareOffersDropdown
-import org.solyton.solawi.bid.module.shares.data.api.PricingType
 import org.solyton.solawi.bid.module.shares.data.api.UpdateShareStatus
 import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
-import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
-import org.solyton.solawi.bid.module.shares.data.internal.shareStatusTransitionsWithPermissions
 import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
-import org.solyton.solawi.bid.module.shares.data.subscriptions.*
-import org.solyton.solawi.bid.module.shares.data.toApiType
-import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
-import org.solyton.solawi.bid.module.style.form.formDesktopStyle
+import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscriptions
 import org.solyton.solawi.bid.module.user.component.styles.modalStyles
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfileToImport
 import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 import org.solyton.solawi.bid.module.user.data.profile.UserProfile
-import org.solyton.solawi.bid.module.values.ModifierId
-import org.solyton.solawi.bid.module.values.Price
 import org.solyton.solawi.bid.module.values.ProviderId
 import org.solyton.solawi.bid.module.values.Username
 import org.w3c.dom.HTMLElement
@@ -82,6 +60,7 @@ enum class CanCreate {
 fun UpdateMemberOfOrganizationModal(
     id: Int,
     texts: Source<Lang.Block>,
+    countryTexts: Source<Lang.Block>,
     modals: Storage<Modals<Int>>,
     device: Source<DeviceType>,
     actions: ActionDispatcher<Application>,
@@ -171,6 +150,7 @@ fun UpdateMemberOfOrganizationModal(
         UserProfileForm(
             device,
             inputs,
+            countryTexts,
             username, setUsername,
             userProfileState,
             {uP ->
@@ -210,6 +190,7 @@ fun UpdateMemberOfOrganizationModal(
 @Markup
 fun Storage<Modals<Int>>.showUpdateMembersOfOrganizationModal(
     texts: Source<Lang.Block>,
+    countryTexts: Source<Lang.Block>,
     device: Source<DeviceType>,
     actions: ActionDispatcher<Application>,
     changesDoneBy: ChangedBy,
@@ -236,6 +217,7 @@ fun Storage<Modals<Int>>.showUpdateMembersOfOrganizationModal(
         UpdateMemberOfOrganizationModal(
             this,
             texts,
+            countryTexts,
             this@showUpdateMembersOfOrganizationModal,
             device,
             actions,
