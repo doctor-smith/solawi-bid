@@ -117,7 +117,7 @@ fun ShareSubscriptionsForm(
                 if (unsubscribedShareOffers.isEmpty()) return@TitleWrapper
                 ShareOffersDropdown(
                     options = unsubscribedShareOffers.associateBy {
-                        it.fiscalYear.format() + "/" + it.shareType.name
+                        it.fiscalYear.format() + " - " + it.shareType.name
                     },
                     selected = null,
                     closeOnSelect = true

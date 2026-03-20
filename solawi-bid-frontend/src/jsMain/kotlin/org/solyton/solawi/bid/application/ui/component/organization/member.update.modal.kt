@@ -18,7 +18,6 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.jetbrains.compose.web.css.height
-import org.jetbrains.compose.web.css.overflowY
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.dom.ElementScope
 import org.solyton.solawi.bid.application.data.Application
@@ -28,6 +27,8 @@ import org.solyton.solawi.bid.module.shares.data.api.UpdateShareStatus
 import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
 import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscriptions
+import org.solyton.solawi.bid.module.style.overflow.Overflow
+import org.solyton.solawi.bid.module.style.overflow.overflowY
 import org.solyton.solawi.bid.module.user.component.styles.modalStyles
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfileToImport
 import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
@@ -144,7 +145,7 @@ fun UpdateMemberOfOrganizationModal(
 
     Vertical({
         height(100.percent)
-        overflowY("auto")}) {
+        overflowY(Overflow.Auto)}) {
         var userProfileState by remember { mutableStateOf(userProfile) }
         var usernameState by remember { mutableStateOf(username) }
         UserProfileForm(
