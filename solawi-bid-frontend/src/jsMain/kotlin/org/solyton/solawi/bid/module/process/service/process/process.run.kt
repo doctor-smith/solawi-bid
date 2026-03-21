@@ -7,6 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.evoleq.math.MathDsl
 import org.evoleq.math.emit
+import org.evoleq.optics.storage.Action
 import org.evoleq.optics.storage.ActionEnvelope
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
@@ -120,9 +121,11 @@ fun <A : ProcessManager<A>> sequence(vararg processes: ActionEnvelope<A, *, *>):
  */
 @MathDsl
 fun <A : ProcessManager<A>> ActionEnvelope<A, *, *>.next(vararg processes: ActionEnvelope<A, *, *>): ActionEnvelope<A, *, *> =
-    copy(next = this.next + processes.toList())
+    copy(next = this.next + processes.toList().filter { it.run })
 
 @MathDsl
 fun <A : ProcessManager<A>> ActionEnvelope<A, *, *>.nextLazy(vararg processes: ()->ActionEnvelope<A, *, *>): ActionEnvelope<A, *, *> =
     copy(nextLazy = this.nextLazy + processes.toList())
+
+
 
