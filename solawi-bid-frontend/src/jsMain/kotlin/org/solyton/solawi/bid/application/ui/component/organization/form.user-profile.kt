@@ -23,7 +23,9 @@ import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.times
 import org.jetbrains.compose.web.attributes.required
+import org.jetbrains.compose.web.css.StyleScope
 import org.jetbrains.compose.web.css.marginLeft
+import org.jetbrains.compose.web.css.marginRight
 import org.jetbrains.compose.web.css.marginTop
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.px
@@ -55,6 +57,7 @@ import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfileToImport
 import org.solyton.solawi.bid.module.user.data.profile.UserProfile
 import org.solyton.solawi.bid.module.user.data.profile.addresses
+import org.solyton.solawi.bid.module.user.data.profile.phoneNumber1
 import org.solyton.solawi.bid.module.values.Username
 
 @Markup
@@ -74,6 +77,9 @@ fun UserProfileForm(
 
     var userProfileState by remember { mutableStateOf(userProfile) }
     Form(formDesktopStyle) {
+        val horizontalFieldsStyle: StyleScope.() -> Unit = {
+            width(98.percent)
+        }
 
         // User Profile is used everywhere
         val userProfileInputs = inputs * subComp("userProfile")
@@ -163,20 +169,53 @@ fun UserProfileForm(
                         }
                     }
                 }
-                Field(fieldDesktopStyle) {
-                    Label(
-                        (userProfileInputs * subComp("phoneNumber") * title).emit(),
-                        id = "phoneNumber",
-                        labelStyle = formLabelDesktopStyle
-                    )
-                    TextInput(userProfileState?.phoneNumber ?: "") {
-                        id("phoneNumber")
-                        style { textInputDesktopStyle() }
-                        onInput {
-                            val newUserProfile =
-                                userProfileState?.copy(phoneNumber = it.value) ?: UserProfile("", "","", "", it.value)
-                            userProfileState = newUserProfile
-                            setUserProfile(newUserProfile)
+                Horizontal(horizontalFieldsStyle) {
+                    Field({fieldDesktopStyle()}) {
+                        Label(
+                            (userProfileInputs * subComp("phoneNumber") * title).emit(),
+                            id = "phoneNumber",
+                            labelStyle = formLabelDesktopStyle
+                        )
+                        TextInput(userProfileState?.phoneNumber ?: "") {
+                            id("phoneNumber")
+                            style { textInputDesktopStyle() }
+                            onInput {
+                                val newUserProfile =
+                                    userProfileState?.copy(phoneNumber = it.value) ?: UserProfile(
+                                        "",
+                                        "",
+                                        "",
+                                        "",
+                                        it.value
+                                    )
+                                userProfileState = newUserProfile
+                                setUserProfile(newUserProfile)
+                            }
+                        }
+                    }
+
+                    Field(fieldDesktopStyle) {
+                        Label(
+                            (userProfileInputs * subComp("cellPhoneNumber") * title).emit(),
+                            id = "phoneNumber1",
+                            labelStyle = formLabelDesktopStyle
+                        )
+                        TextInput(userProfileState?.phoneNumber1 ?: "") {
+                            id("phoneNumber1")
+                            style { textInputDesktopStyle() }
+                            onInput {
+                                val newUserProfile =
+                                    userProfileState?.copy(phoneNumber1 = it.value) ?: UserProfile(
+                                        "",
+                                        "",
+                                        "",
+                                        "",
+                                        null,
+                                        it.value
+                                    )
+                                userProfileState = newUserProfile
+                                setUserProfile(newUserProfile)
+                            }
                         }
                     }
                 }
@@ -188,7 +227,7 @@ fun UserProfileForm(
                 val address = userProfileState?.addresses?.firstOrNull()
 
                 H3 { Text((addressInputs * title).emit()) }
-                Horizontal {
+                Horizontal(horizontalFieldsStyle) {
                     Field(fieldDesktopStyle) {
                         Label(
                             (addressInputs * subComp("recipientName") * title).emit(),
@@ -284,7 +323,7 @@ fun UserProfileForm(
                         }
                     }
                 }
-                Horizontal {
+                Horizontal(horizontalFieldsStyle) {
                     Field(fieldDesktopStyle) {
                         Label(
                             (addressInputs * subComp("postalCode") * title).emit(),
@@ -333,7 +372,7 @@ fun UserProfileForm(
                         }
                     }
                 }
-                Horizontal {
+                Horizontal(horizontalFieldsStyle) {
 
                     val countries = (countryTexts * names * variables).emit().filter { it.key in listOf("DE", "AT", "CH") }
                     val countriesMap = countries.associateBy ({
@@ -424,6 +463,7 @@ fun UserProfileForm(
                         lastName = up.lastname,
                         title = up.title,
                         phoneNumber = up.phoneNumber,
+                        phoneNumber1 = up.phoneNumber1,
                         address = with(up.addresses.first()) {
                             CreateAddress(
                                 recipientName = recipientName,

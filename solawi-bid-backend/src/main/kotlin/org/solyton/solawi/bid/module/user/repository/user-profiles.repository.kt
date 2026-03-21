@@ -23,6 +23,7 @@ fun Transaction.createUserProfile(
         lastName = data.lastname.value
         title = data.title?.value
         phoneNumber = data.phoneNumber?.value
+        phoneNumber1 = data.phoneNumber1?.value ?: phoneNumber1
     }
 
     val address = createAddress(
@@ -49,6 +50,7 @@ fun Transaction.updateUserProfile(
     val changes = booleanArrayOf(
         data.title?.value != userProfile.title,
         data.phoneNumber?.value != userProfile.phoneNumber,
+        data.phoneNumber1?.value != userProfile.phoneNumber1,
         data.firstname.value != userProfile.firstName,
         data.lastname.value != userProfile.lastName
     )
@@ -69,6 +71,7 @@ fun Transaction.updateUserProfile(
     return userProfile.apply {
         title = data.title?.value ?: title
         phoneNumber = data.phoneNumber?.value ?: phoneNumber
+        phoneNumber1 = data.phoneNumber1?.value ?: phoneNumber1
         firstName = data.firstname.value
         lastName = data.lastname.value
         if(changes.any { it }) {

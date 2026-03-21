@@ -110,6 +110,7 @@ import org.solyton.solawi.bid.module.user.action.user.getUsers
 import org.solyton.solawi.bid.module.user.action.user.readUserProfiles
 import org.solyton.solawi.bid.module.user.component.modal.showImportMembersToOrganizationModal
 import org.solyton.solawi.bid.module.user.data.*
+import org.solyton.solawi.bid.module.user.data.address.isValid
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfileToImport
 import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 import org.solyton.solawi.bid.module.user.data.member.Member
@@ -492,7 +493,20 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                 updateShareStatus = { data ->
                                     shareManagementStorage * shareManagementActions dispatch updateShareStatus(data)
                                 },
-                                isOkButtonDisabled = { false }
+                                isOkButtonDisabled = {
+                                    val un = usernameState
+                                    val up = userProfileState
+                                    val addresses = up?.addresses ?: emptyList()
+                                    val addressesAreValid = addresses.all { it.isValid() }
+                                    when {
+                                        un == null -> true
+                                        up == null -> false
+                                        up.lastname.isBlank() -> true
+                                        up.firstname.isBlank() -> true
+                                        addresses.isEmpty() -> true
+                                        !addressesAreValid -> true
+                                        else -> false
+                                    } }
                             ) {
                                 val actions = memberCreateAction(
                                     providerId = ProviderId(organizationId),
@@ -645,7 +659,19 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                                     data
                                                 )
                                             },
-                                            isOkButtonDisabled = { false }
+                                            isOkButtonDisabled = {
+                                                val up = userProfileState
+                                                val addresses = up?.addresses ?: emptyList()
+                                                val addressesAreValid = addresses.all { it.isValid() }
+                                                when {
+                                                    up == null -> false
+                                                    up.lastname.isBlank() -> true
+                                                    up.firstname.isBlank() -> true
+                                                    addresses.isEmpty() -> true
+                                                    !addressesAreValid -> true
+                                                    else -> false
+                                                }
+                                            }
                                         ) {
                                             val actions = applicationStorage.memberUpdateAction(
                                                 member = { member },

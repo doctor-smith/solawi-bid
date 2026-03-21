@@ -19,6 +19,7 @@ data class UserProfile(
     val lastName: String,
     val title: String?,
     val phoneNumber: String?,
+    val phoneNumber1: String?,
     val addresses: List<Address>
 )
 
@@ -35,6 +36,7 @@ data class CreateUserProfile(
     val lastname: Lastname,
     val title: Title?,
     val phoneNumber: PhoneNumber?,
+    val phoneNumber1: PhoneNumber?,
     val address: CreateAddress
 )
 
@@ -46,6 +48,7 @@ data class UpdateUserProfile(
     val lastname: Lastname,
     val title: Title?,
     val phoneNumber: PhoneNumber?,
+    val phoneNumber1: PhoneNumber?,
     val addresses: List<UpdateAddress>
 )
 
@@ -59,6 +62,7 @@ data class UserProfileToImport(
     val lastName: String,
     val title: String?,
     val phoneNumber: String?,
+    val phoneNumber1: String?,
     val address: CreateAddress
 )
 

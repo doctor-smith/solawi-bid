@@ -29,6 +29,7 @@ import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfiles
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfileToImport
 import org.solyton.solawi.bid.module.user.data.profile.UserProfile
+import org.solyton.solawi.bid.module.user.data.profile.phoneNumber1
 import org.solyton.solawi.bid.module.values.AccessorId
 import org.solyton.solawi.bid.module.values.ProviderId
 import org.solyton.solawi.bid.module.values.Username
@@ -92,6 +93,7 @@ fun memberCreateAction(
             lastName = userProfile.lastname,
             title = userProfile.title,
             phoneNumber = userProfile.phoneNumber,
+            phoneNumber1 = userProfile.phoneNumber1,
             address = address,
         )
     ))

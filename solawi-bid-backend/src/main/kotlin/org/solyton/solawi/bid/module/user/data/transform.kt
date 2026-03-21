@@ -51,6 +51,7 @@ fun UserProfileEntity.toApiType(transaction: Transaction): ApiUserProfile =
         lastName = lastName,
         title = title,
         phoneNumber = phoneNumber,
+        phoneNumber1 = phoneNumber1,
         addresses = with(transaction) { addresses.toList().map{ it.toApiType() }},
     )
 

@@ -37,7 +37,7 @@ data class Change<T>(
     val new: T?
 )
 
-@Suppress("CognitiveComplexMethod", "UnusedParameter")
+@Suppress("CognitiveComplexMethod","CyclomaticComplexMethod", "UnusedParameter")
 fun Storage<Application>.memberUpdateAction(
     member: Reader<Application, Member>,
     usernameChange: Change<Username>,
@@ -66,6 +66,10 @@ fun Storage<Application>.memberUpdateAction(
                             else -> Title(title)
                         },
                         phoneNumber = when(val number = userProfileState.phoneNumber) {
+                            null -> null
+                            else -> PhoneNumber(number)
+                        },
+                        phoneNumber1 = when(val number = userProfileState.phoneNumber1) {
                             null -> null
                             else -> PhoneNumber(number)
                         },
@@ -101,6 +105,10 @@ fun Storage<Application>.memberUpdateAction(
                             else -> Title(title)
                         },
                         phoneNumber = when(val number = userProfileState.phoneNumber) {
+                            null -> null
+                            else -> PhoneNumber(number)
+                        },
+                        phoneNumber1 = when(val number = userProfileState.phoneNumber1) {
                             null -> null
                             else -> PhoneNumber(number)
                         },

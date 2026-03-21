@@ -40,6 +40,7 @@ class ImportUserProfilesTest {
                 lastName = entry["lastname"]!!,
                 title = entry["title"]!!,
                 phoneNumber = entry["phone_number"],
+                phoneNumber1 = entry["phone_number_1"],
                 address = CreateAddress(
                     recipientName = entry["recipient_name"]!!,
                     organizationName = entry["organization_name"],
@@ -61,6 +62,7 @@ class ImportUserProfilesTest {
             lastName = "Mustermann",
             title = "Dr.",
             phoneNumber = "017522299944",
+            phoneNumber1 = null,
             CreateAddress(
                 recipientName = "Max Mustermann",
                 organizationName = "Solyton GmbH" ,
