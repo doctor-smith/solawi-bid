@@ -3,6 +3,7 @@
   become: true
   vars:
     backup_system_db: true
+    deployment_id: "{{ lookup('pipe', 'date +%s') }}"
   tasks:
 
     # ---------------------------
@@ -194,6 +195,9 @@
           - "letsencrypt"
         dynamic_dict: "{{ dict(keys | zip(values)) }}"
       loop: "{{ range(1, (backend_replicas | int) + 1) | list }}"
+      loop_control:
+        pause: 5
+
       community.docker.docker_container:
         name: "solawi-bid_backend_{{ environment_letter }}_{{ item ~ '' }}"
         image: "{{ backend_image_name }}"
@@ -222,7 +226,7 @@
           interval: 15s
           timeout: 3s
           retries: 5
-          start_period: 2m
+          start_period: 30s
         networks:
           - name: "solawi-bid-{{ environment_letter }}"
           - name: reverse-proxy
