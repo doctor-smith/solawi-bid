@@ -23,13 +23,18 @@
       community.docker.docker_network:
         name: "solawi-bid-{{ environment_letter }}"
     - name: Ensure solawi-bid-{{ environment_letter }} database container is running
+      vars:
+        database_cpu: >
+          {% if environment_letter == 'P' %}2{% elif environment_letter == 'Q' %}1{% else %}0.5{% endif %}
+        database_mem: >
+          {% if environment_letter == 'P' %}4096M{% elif environment_letter == 'Q' %}1024M{% else %}512M{% endif %}
       community.docker.docker_container:
         name: "solawi-bid_database_{{ environment_letter }}"
         image: "mysql:9"
         state: started
         restart_policy: always
-        cpus: 0.5
-        memory: 512M
+        cpus: "{{ database_cpu | float}}"
+        memory: "{{ database_mem }}"
         ports:
           - "3306"
         volumes:
@@ -50,6 +55,10 @@
           - name: "solawi-bid-{{ environment_letter }}"
     - name: Deploy Frontend container for {{ environment_letter }}
       vars:
+        frontend_cpu: >
+          {% if environment_letter == 'P' %}1{% elif environment_letter == 'Q' %}0.5{% else %}0.25{% endif %}
+        frontend_mem: >
+          {% if environment_letter == 'P' %}2048M{% elif environment_letter == 'Q' %}768M{% else %}512M{% endif %}
         keys:
           - "traefik.enable"
           - "traefik.http.routers.solawi-bid_frontend_{{ environment_letter }}.rule"
@@ -71,8 +80,8 @@
         state: "started"
         restart_policy: "always"
         pull: "always"
-        cpus: 0.25
-        memory: 345M
+        cpus: "{{ frontend_cpu | float }}"
+        memory: "{{ frontend_mem }}"
         env:
           ENVIRONMENT: "{{ environment_letter }}"
           FRONTEND_URL: "https://{{ frontend_domain }}"
@@ -110,6 +119,14 @@
 
     - name: Deploy Backend container for {{ environment_letter }}
       vars:
+        # Replicas per environment
+        backend_replicas: >
+          {% if environment_letter == 'P' %}2{% else %}1{% endif %}
+        # CPU & RAM Limits per environment
+        backend_cpu: >
+          {% if environment_letter == 'P' %}0.75{% elif environment_letter == 'Q' %}0.5{% else %}0.25{% endif %}
+        backend_mem: >
+          {% if environment_letter == 'P' %}1024M{% elif environment_letter == 'Q' %}768M{% else %}512M{% endif %}
         keys:
           - "traefik.enable"
           - "traefik.http.routers.solawi-bid_backend_{{ environment_letter }}.rule"
@@ -125,14 +142,15 @@
           - "true"
           - "letsencrypt"
         dynamic_dict: "{{ dict(keys | zip(values)) }}"
+      loop: "{{ range(1, (backend_replicas | int) + 1) | list }}"
       community.docker.docker_container:
-        name: "solawi-bid_backend_{{ environment_letter }}"
+        name: "solawi-bid_backend_{{ environment_letter }}_{{ item ~ '' }}"
         image: "{{ backend_image_name }}"
         state: "started"
         restart_policy: "always"
         pull: "always"
-        cpus: 0.5
-        memory: 768M
+        cpus: "{{ backend_cpu | float }}"
+        memory: "{{ backend_mem }}"
         env:
           KTOR_ENV: "{{ environment_letter }}"
           BACKEND_PORT: "8080"
@@ -150,7 +168,7 @@
         labels: "{{ dynamic_dict }}"
         healthcheck:
           test: "curl 'http://localhost:8080/login' -f -X OPTIONS -H 'Access-Control-Request-Method: POST' -H 'Origin: http://localhost'"
-          interval: 2s
+          interval: 10s
           timeout: 3s
           retries: 3
           start_period: 2m
