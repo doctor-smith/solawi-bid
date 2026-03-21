@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.application.ui.page.user
 
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.conditional.When
 import org.evoleq.compose.guard.data.isLoading
 import org.evoleq.compose.guard.data.withLoading
 import org.evoleq.compose.layout.Horizontal
@@ -71,6 +72,7 @@ import org.solyton.solawi.bid.module.country.i18n.CountryLangComponent
 import org.solyton.solawi.bid.module.distribution.action.READ_DISTRIBUTION_POINTS
 import org.solyton.solawi.bid.module.distribution.action.readDistributionPoints
 import org.solyton.solawi.bid.module.distribution.data.distributionpoint.DistributionPoint
+import org.solyton.solawi.bid.module.distribution.data.management.DistributionManagement
 import org.solyton.solawi.bid.module.distribution.data.management.distributionPoints
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
@@ -193,7 +195,7 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                 }
             }.toBooleanArray(),
             // Data
-            *applicationStorage.runProcesses(*dataActions(organizationId)),
+            *applicationStorage.runProcesses(*basicDataActions()),
         ),
         onLoading = { Loading() }
     ) {
@@ -218,6 +220,26 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
         val applicationOrganizationRelations = applicationManagementStorage * applicationOrganizationRelations
         val connectedApplications = availableApplications * FilterBy { app ->
             applicationOrganizationRelations.read().any { it.applicationId == app.id && it.organizationId == organizationId }
+        }
+
+
+        // Determine which applications are available to the organization
+        val usesShareManagement = connectedApplications.read().any { it.name in setOf("SHARE_MANAGEMENT", "AUCTIONS", ) }
+        val usesBankingApplication = connectedApplications.read().any { it.name in setOf("BANKING","AUCTIONS", "SHARE_MANAGEMENT") }
+        val usesDistributionManagement = connectedApplications.read().any { it.name in setOf("DISTRIBUTION","AUCTIONS", "SHARE_MANAGEMENT") }
+        // val usesAuctions = connectedApplications.read().any { it.name == "AUCTIONS" }
+
+        // Now load special data based on which applications are used
+        LaunchedEffect(connectedApplications.read()) {
+            applicationStorage.runProcesses(
+                scope,
+                *conditionalActions(
+                    organizationId,
+                    usesShareManagement,
+                    usesBankingApplication,
+                    usesDistributionManagement
+                )
+            )
         }
 
         val shareManagementStorage = applicationStorage * shareManagementIso
@@ -502,7 +524,9 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                         Header {
                             HeaderCell(listOfMembersHeaders * Component.standard * title) { width(30.percent) }
                             HeaderCell(listOfMembersHeaders * Component.userProfile * title) { width(50.percent) }
-                            HeaderCell("Solawi Anteile | Status") { width(20.percent) }
+                            When(usesShareManagement) {
+                                HeaderCell("Solawi Anteile | Status") { width(20.percent) }
+                            }
                         }
                     }
                     HeaderWrapper {
@@ -514,14 +538,16 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                             HeaderCell(listOfMembersHeaders * Component.standard * Component.roles * title) { width(10.percent) }
                             HeaderCell(listOfMembersHeaders * Component.userProfile * Component.name * title) { width(20.percent) }
                             HeaderCell(listOfMembersHeaders * Component.userProfile * Component.address * title) { width(30.percent) }
-                            // Vegi
-                            HeaderCell("Gemüse") { width(10.percent) }
-                            HeaderCell("Status") { width(10.percent) }
-                            // Eggs
-                            /*
+                            When(usesShareManagement) {
+                                // Vegi
+                                HeaderCell("Gemüse") { width(10.percent) }
+                                HeaderCell("Status") { width(10.percent) }
+                                // Eggs
+                                /*
                             HeaderCell("Eier") { width(10.percent) }
                             HeaderCell("Status") { width(10.percent) }
                             */
+                            }
                         }
                     }
                     ListItemsIndexed(
@@ -549,17 +575,19 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                     TextCell(userProfile.firstAddress()) {
                                         width(30.percent); minWidth(20.percent);overflow("hidden")
                                     }
-                                    // Shares
-                                    val userShareSubscriptions = shareSubscriptionsMap.read()[userProfile?.userProfileId] ?: emptyList()
-                                    // Vegi
-                                    val vegiShare = userShareSubscriptions.firstOrNull { subscription ->
-                                        val shareOffer = shareOffersMap.read()[subscription.shareOfferId]!!
-                                        shareOffer.shareType.key == "vegi"
-                                    }
-                                    NumberCell(vegiShare?.numberOfShares ?: 0) { width(10.percent) }
-                                    TextCell(vegiShare?.status?.toString() ?: "---") { width(10.percent) }
-                                    // Eggs
-                                    /*
+                                    When(usesShareManagement) {
+                                        // Shares
+                                        val userShareSubscriptions =
+                                            shareSubscriptionsMap.read()[userProfile?.userProfileId] ?: emptyList()
+                                        // Vegi
+                                        val vegiShare = userShareSubscriptions.firstOrNull { subscription ->
+                                            val shareOffer = shareOffersMap.read()[subscription.shareOfferId]!!
+                                            shareOffer.shareType.key == "vegi"
+                                        }
+                                        NumberCell(vegiShare?.numberOfShares ?: 0) { width(10.percent) }
+                                        TextCell(vegiShare?.status?.toString() ?: "---") { width(10.percent) }
+                                        // Eggs
+                                        /*
                                     val eggsShare = userShareSubscriptions.firstOrNull{ subscription ->
                                         val shareOffer = shareOffersMap.read()[subscription.shareOfferId]!!
                                         shareOffer.shareType.key == "eggs"
@@ -568,6 +596,7 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                     TextCell(eggsShare?.status?.toString()?: "---") { width(10.percent) }
 
                                      */
+                                    }
                                 }
                                 ActionsWrapper({
                                     actionsWrapperStyle(this)
@@ -645,42 +674,47 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                     }
                 }
             }
-
-            ListWrapper({
-                defaultListStyles.listWrapper(this)
-            }) {
-                val open = applicationStorage * uiStates * ofOrganizationPage * isApplicationListOpened
-                TitleWrapper {
-                    Title { H3{ Text((listOfConnectedApplications * title).emit()) }}
-                    SimpleUpDown(open.read()) { open.toggle() }
-                }
-                if(open.read()) {
-                    HeaderWrapper {
-                        Header {
-                            HeaderCell(listOfConnectedApplicationsHeaders * subComp("application") * title ) { width(40.percent) }
-                            HeaderCell(listOfConnectedApplicationsHeaders * subComp("modules") * title) { width(40.percent) }
-                        }
+            When(connectedApplications.read().isNotEmpty()) {
+                ListWrapper({
+                    defaultListStyles.listWrapper(this)
+                }) {
+                    val open = applicationStorage * uiStates * ofOrganizationPage * isApplicationListOpened
+                    TitleWrapper {
+                        Title { H3 { Text((listOfConnectedApplications * title).emit()) } }
+                        SimpleUpDown(open.read()) { open.toggle() }
                     }
-                    ListItemsIndexed(connectedApplications) { index, application ->
-                        ListItemWrapper({
-                            listItemWrapperStyle(this, index)
-                        }) {
-                            DataWrapper {
-                                TextCell(base * application(application.name) * title) { width(40.percent) }
-                                TextCell(application.modules.joinToString(", ") {
-                                    (base * module(application.name, it.name) * title).emit()
-                                }) { width(40.percent) }
+                    if (open.read()) {
+                        HeaderWrapper {
+                            Header {
+                                HeaderCell(listOfConnectedApplicationsHeaders * subComp("application") * title) {
+                                    width(
+                                        40.percent
+                                    )
+                                }
+                                HeaderCell(listOfConnectedApplicationsHeaders * subComp("modules") * title) { width(40.percent) }
                             }
-                            ActionsWrapper({
-                                actionsWrapperStyle(this)
+                        }
+                        ListItemsIndexed(connectedApplications) { index, application ->
+                            ListItemWrapper({
+                                listItemWrapperStyle(this, index)
                             }) {
-                                UsersButton(
-                                    Color.black,
-                                    Color.white,
-                                    listOfConnectedApplicationsActions * subComp("manageUserPermissions") * tooltip,
-                                    { device.read() }
-                                ) {
-                                    navigate("/app/management/private/application/${application.id}/organization/$organizationId")
+                                DataWrapper {
+                                    TextCell(base * application(application.name) * title) { width(40.percent) }
+                                    TextCell(application.modules.joinToString(", ") {
+                                        (base * module(application.name, it.name) * title).emit()
+                                    }) { width(40.percent) }
+                                }
+                                ActionsWrapper({
+                                    actionsWrapperStyle(this)
+                                }) {
+                                    UsersButton(
+                                        Color.black,
+                                        Color.white,
+                                        listOfConnectedApplicationsActions * subComp("manageUserPermissions") * tooltip,
+                                        { device.read() }
+                                    ) {
+                                        navigate("/app/management/private/application/${application.id}/organization/$organizationId")
+                                    }
                                 }
                             }
                         }
@@ -691,14 +725,96 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
     }
 }
 
-fun  dataActions(organizationId: String) = arrayOf(
+/**
+ * Wrap actions to load basic data.
+ * The data is needed to load special data in later steps
+ */
+fun basicDataActions(
+) = arrayOf(
     ActionEnvelope(
         userIso * readOrganizations(),
         READ_ORGANIZATIONS,
     ),
     ActionEnvelope(
+        applicationManagementModule * readApplications,
+        READ_APPLICATIONS,
+    ),
+    ActionEnvelope(
+        applicationManagementModule * readPersonalApplicationOrganizationContextRelations(),
+        READ_PERSONAL_APPLICATION_ORGANIZATION_CONTEXT_RELATIONS,
+    ),
+    ActionEnvelope(
+        userIso * getUsers(),
+        GET_USERS,
+    ),
+    ActionEnvelope(
+        userIso * readUserProfiles(emptyList()),
+        READ_USER_PROFILES,
+    )
+)
+
+/**
+ * Wrap actions to load specific data based on which applications are used
+ */
+fun conditionalActions(
+    organizationId: String,
+    usesShareManagement: Boolean = false,
+    usesDistributionManagement: Boolean = false,
+    usesBankingApplication: Boolean = false
+) = arrayOf(
+    ActionEnvelope(
         bankingApplicationIso * readBankAccounts(LegalEntityId(organizationId)),
         READ_BANK_ACCOUNTS,
+        run = usesBankingApplication || usesShareManagement
+    ),
+    ActionEnvelope(
+        shareManagementIso * readShareOffers(organizationId),
+        READ_SHARE_OFFERS,
+        run = usesShareManagement
+    ),
+    ActionEnvelope(
+        shareManagementIso * readShareSubscriptions(organizationId),
+        READ_SHARE_SUBSCRIPTIONS,
+        run = usesShareManagement
+    ),
+    ActionEnvelope(
+        shareManagementIso * readShareTypes(organizationId),
+        READ_SHARE_TYPES,
+        run = usesShareManagement
+    ),
+    ActionEnvelope(
+        distributionManagementIso * readDistributionPoints(organizationId),
+        READ_DISTRIBUTION_POINTS,
+        run = usesDistributionManagement
+    ),
+)
+
+/**
+ * Keep for now
+ */
+fun dataActions(
+    organizationId: String,
+    usesShareManagement: Boolean = false,
+    usesDistributionManagement: Boolean = false,
+    usesBankingApplication: Boolean = false
+) = arrayOf(
+
+    ActionEnvelope(
+        userIso * readOrganizations(),
+        READ_ORGANIZATIONS,
+    ),
+    ActionEnvelope(
+        applicationManagementModule * readApplications,
+        READ_APPLICATIONS,
+    ),
+    ActionEnvelope(
+        applicationManagementModule * readPersonalApplicationOrganizationContextRelations(),
+        READ_PERSONAL_APPLICATION_ORGANIZATION_CONTEXT_RELATIONS,
+    ),
+    ActionEnvelope(
+        bankingApplicationIso * readBankAccounts(LegalEntityId(organizationId)),
+        READ_BANK_ACCOUNTS,
+        run = usesBankingApplication || usesShareManagement
     ),
     sequence(
         ActionEnvelope(
@@ -712,27 +828,23 @@ fun  dataActions(organizationId: String) = arrayOf(
             ActionEnvelope(
                 shareManagementIso * readShareOffers(organizationId),
                 READ_SHARE_OFFERS,
+                run = usesShareManagement
             ),
             ActionEnvelope(
                 shareManagementIso * readShareSubscriptions(organizationId),
                 READ_SHARE_SUBSCRIPTIONS,
+                run = usesShareManagement
             ),
             ActionEnvelope(
                 shareManagementIso * readShareTypes(organizationId),
                 READ_SHARE_TYPES,
+                run = usesShareManagement
             ),
             ActionEnvelope(
                 distributionManagementIso * readDistributionPoints(organizationId),
                 READ_DISTRIBUTION_POINTS,
+                run = usesDistributionManagement
             ),
         )
-    ),
-    ActionEnvelope(
-        applicationManagementModule * readApplications,
-        READ_APPLICATIONS,
-    ),
-    ActionEnvelope(
-        applicationManagementModule * readPersonalApplicationOrganizationContextRelations(),
-        READ_PERSONAL_APPLICATION_ORGANIZATION_CONTEXT_RELATIONS,
     )
 )
