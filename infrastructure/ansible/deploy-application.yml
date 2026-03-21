@@ -1,17 +1,60 @@
 - name: Deploy Application to {{ environment_letter }}
   hosts: all
   become: true
+  vars:
+    backup_system_db: true
   tasks:
+
+    # ---------------------------
+    # GitHub Login
+    # ---------------------------
     - name: Log in to GitHub Container Registry
       community.docker.docker_login:
         registry_url: ghcr.io
         username: "{{ ghcr_user }}"
         password: "{{ ghcr_pat }}"
       when: ghcr_pat is defined and ghcr_user is defined
+
+    # ---------------------------
+    # Pre-deployment Backup
+    # ---------------------------
+    - name: Ensure backups directory exists
+      file:
+        path: "/var/solawi-bid/{{ environment_letter }}/database/backups"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Pre-deployment backup of solawi-bid database only
+      community.docker.docker_container_exec:
+        container: "solawi-bid_database_{{ environment_letter }}"
+        command: >
+          sh -c 'mysqldump -u root solawi-bid > /backups/solawi-bid-{{ lookup("pipe", "date +%Y%m%d%H%M%S") }}.sql'
+      register: app_backup
+      until: app_backup.rc == 0
+      retries: 5
+      delay: 10
+
+    - name: backup system mysql DB for emergencies
+      community.docker.docker_container_exec:
+        container: "solawi-bid_database_{{ environment_letter }}"
+        command: >
+          sh -c 'mysqldump -u root mysql > /backups/mysql-system-{{ lookup("pipe", "date +%Y%m%d%H%M%S") }}.sql'
+      register: system_backup
+      until: system_backup.rc == 0
+      retries: 5
+      delay: 10
+      when: backup_system_db | default(false)
+
+    # ---------------------------
+    # DB Setup
+    # ---------------------------
     - name: Ensure /var/solawi-bid/{{ environment_letter }}/database directory exists
       file:
         path: "/var/solawi-bid/{{ environment_letter }}/database"
         state: directory
+
     - name: Ensure database initialization script for {{ environment_letter }} exists
       copy:
         src: "{{ playbook_dir }}/../database/setup.sql"
@@ -19,9 +62,19 @@
         owner: root
         group: root
         mode: '0644'
+
+    - name: Ensure database data directory exists
+      file:
+        path: "/var/solawi-bid/{{ environment_letter }}/database/data"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
     - name: Ensure solawi-bid-{{ environment_letter }} network exists
       community.docker.docker_network:
         name: "solawi-bid-{{ environment_letter }}"
+
     - name: Ensure solawi-bid-{{ environment_letter }} database container is running
       vars:
         database_cpu: >
@@ -33,11 +86,12 @@
         image: "mysql:9"
         state: started
         restart_policy: always
-        cpus: "{{ database_cpu | float}}"
+        cpus: "{{ database_cpu | float }}"
         memory: "{{ database_mem }}"
         ports:
           - "3306"
         volumes:
+          - "/var/solawi-bid/{{ environment_letter }}/database/data:/var/lib/mysql"
           - "/var/solawi-bid/{{ environment_letter }}/database/setup.sql:/docker-entrypoint-initdb.d/setup.sql"
           - "/var/solawi-bid/{{ environment_letter }}/database/backups:/backups"
         env:
@@ -47,12 +101,16 @@
           MYSQL_ALLOW_EMPTY_PASSWORD: "true"
         healthcheck:
           test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent" ]
-          interval: 2s
+          interval: 5s
           timeout: 3s
-          retries: 3
+          retries: 5
           start_period: 2m
         networks:
           - name: "solawi-bid-{{ environment_letter }}"
+
+    # ---------------------------
+    # Frontend Deployment
+    # ---------------------------
     - name: Deploy Frontend container for {{ environment_letter }}
       vars:
         frontend_cpu: >
@@ -88,17 +146,19 @@
           FRONTEND_PORT: "443"
           BACKEND_URL: "https://{{ backend_domain }}"
           BACKEND_PORT: "443"
-
         labels: "{{ dynamic_dict }}"
         healthcheck:
           test: "curl -f http://localhost:80/ || exit 1"
-          interval: 2s
+          interval: 15s
           timeout: 3s
-          retries: 3
+          retries: 5
           start_period: 2m
         networks:
           - name: reverse-proxy
 
+    # ---------------------------
+    # Wait for MySQL healthy
+    # ---------------------------
     - name: Wait for MySQL to be healthy
       community.docker.docker_container_info:
         name: "solawi-bid_database_{{ environment_letter }}"
@@ -107,22 +167,13 @@
       retries: 30
       delay: 4
 
-
-    - name: Create database backup
-      community.docker.docker_container_exec:
-        container: "solawi-bid_database_{{ environment_letter }}"
-        command: "sh -c 'mysqldump -u root --all-databases > /backups/{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}.sql'"
-      register: backup_result
-      until: backup_result.rc == 0
-      retries: 5
-      delay: 10
-
+    # ---------------------------
+    # Backend Deployment
+    # ---------------------------
     - name: Deploy Backend container for {{ environment_letter }}
       vars:
-        # Replicas per environment
         backend_replicas: >
           {% if environment_letter == 'P' %}2{% else %}1{% endif %}
-        # CPU & RAM Limits per environment
         backend_cpu: >
           {% if environment_letter == 'P' %}0.75{% elif environment_letter == 'Q' %}0.5{% else %}0.25{% endif %}
         backend_mem: >
@@ -168,9 +219,9 @@
         labels: "{{ dynamic_dict }}"
         healthcheck:
           test: "curl 'http://localhost:8080/login' -f -X OPTIONS -H 'Access-Control-Request-Method: POST' -H 'Origin: http://localhost'"
-          interval: 10s
+          interval: 15s
           timeout: 3s
-          retries: 3
+          retries: 5
           start_period: 2m
         networks:
           - name: "solawi-bid-{{ environment_letter }}"
