@@ -101,6 +101,9 @@ de {
                                      phoneNumber {
                                         title: "Telefon"
                                      }
+                                     cellPhoneNumber {
+                                        title: "Mobil"
+                                     }
                                      address {
                                         title: "Adresse"
                                         recipientName {

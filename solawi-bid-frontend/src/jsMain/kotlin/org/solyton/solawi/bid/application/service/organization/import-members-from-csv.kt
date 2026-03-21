@@ -27,6 +27,7 @@ import org.solyton.solawi.bid.module.user.data.api.organization.ImportMembers
 import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfiles
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfileToImport
+import org.solyton.solawi.bid.module.user.data.profile.phoneNumber1
 import org.solyton.solawi.bid.module.values.AccessorId
 
 
@@ -51,6 +52,7 @@ fun Storage<Application>.importMembersFromCsv(
                 lastName = this["lastname"]!!,
                 title = this["title"]!!,
                 phoneNumber = this["phone_number"],
+                phoneNumber1 = this["phone_number_1"],
                 address = CreateAddress(
                     recipientName = this["recipient_name"]!!,
                     organizationName = this["organization_name"],

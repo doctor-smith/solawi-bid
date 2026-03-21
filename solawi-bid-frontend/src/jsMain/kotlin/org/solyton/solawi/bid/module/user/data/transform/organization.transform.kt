@@ -39,6 +39,7 @@ fun ApiUserProfile.toDomainType(): UserProfile = UserProfile(
     lastname = lastName,
     title = title,
     phoneNumber = phoneNumber,
+    phoneNumber1 = phoneNumber1,
     addresses = addresses.map{it.toDomainType()}
 )
 

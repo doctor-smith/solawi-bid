@@ -75,7 +75,8 @@ val columnsToAdd: List<AddMissingColumns> by lazy {
             ColumnDef.Missing<DateTime?>("modified_at", null),
             ColumnDef.Missing<String>("first_name", ""),
             ColumnDef.Missing<String>("last_name", ""),
-            ColumnDef.Missing<String?>("title", null)
+            ColumnDef.Missing<String?>("title", null),
+            ColumnDef.Missing<String?>("phone_number_1", null)
         ),
         AuctionsTable.addColumnsIfMissing(
             ColumnDef.Missing<UUID>("created_by", UUID_ZERO),

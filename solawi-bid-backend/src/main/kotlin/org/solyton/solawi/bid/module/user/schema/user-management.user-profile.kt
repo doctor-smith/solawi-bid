@@ -20,6 +20,7 @@ object UserProfiles : AuditableUUIDTable("user_profiles") {
     val title = varchar("title", 50).nullable()
 
     val phoneNumber = varchar("phone_number", 15).nullable()
+    val phoneNumber1 = varchar("phone_number_1", 15).nullable()
 }
 
 class UserProfile(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
@@ -32,6 +33,7 @@ class UserProfile(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     var title by UserProfiles.title
 
     var phoneNumber by UserProfiles.phoneNumber
+    var phoneNumber1 by UserProfiles.phoneNumber1
     val addresses by Address referrersOn Addresses.userProfile
 
     // val shares by Share referrersOn Shares.userProfileId

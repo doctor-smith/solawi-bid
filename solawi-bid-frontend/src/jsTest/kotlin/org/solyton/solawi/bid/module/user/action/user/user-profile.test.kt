@@ -25,7 +25,7 @@ class UserProfileTest {
             ManagedUser("user-id-1", "", "", Permissions(), null)
         )
         val apiUserProfiles = ApiUserProfiles(listOf(
-            ApiUserProfile("1", "user-id-1" , "", "", null, "123", listOf())
+            ApiUserProfile("1", "user-id-1" , "", "", null, "123","123", listOf())
         ))
 
         val action = readUserProfiles(listOf("1","2","3"))
@@ -33,7 +33,7 @@ class UserProfileTest {
         val expected = listOf<ManagedUser>(
             ManagedUser("user-id-1", "", "", Permissions(),
                 UserProfile(
-                    "1", "", "", null, "123", listOf()
+                    "1", "", "", null, "123","123", listOf()
                 ))
         )
         composition {
@@ -58,7 +58,7 @@ class UserProfileTest {
             ManagedUser("user-id-1", "", "", Permissions(), null)
         )
         val apiUserProfiles = ApiUserProfiles(listOf(
-            ApiUserProfile("1", "user-id-1" , "", "", null, "123", listOf())
+            ApiUserProfile("1", "user-id-1" , "", "", null, "123", "123",listOf())
         ))
         val userProfilesToImport = ImportUserProfiles(listOf(
             UserProfileToImport(
@@ -66,7 +66,7 @@ class UserProfileTest {
                 "fname",
                 "lname",
                 "dr",
-                "123",
+                "123","123",
                 CreateAddress(
                     "rname",
                     "oname",
@@ -84,7 +84,7 @@ class UserProfileTest {
         val expected = listOf<ManagedUser>(
             ManagedUser("user-id-1", "", "", Permissions(),
                 UserProfile(
-                    "1", "", "", null, "123", listOf()
+                    "1", "", "", null, "123", "123",listOf()
                 ))
         )
         composition {

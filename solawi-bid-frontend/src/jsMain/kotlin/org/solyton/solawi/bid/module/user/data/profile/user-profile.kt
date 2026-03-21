@@ -11,10 +11,12 @@ import org.solyton.solawi.bid.module.user.data.address.Address
     @ReadWrite val lastname: String = "",
     @ReadWrite val title: String? = null,
     @ReadWrite val phoneNumber: String? = null,
-    @ReadWrite val addresses: List<Address> = listOf()
+    @ReadWrite val phoneNumber1: String? = null,
+    @ReadWrite val addresses: List<Address> = emptyList(),
 ) {
     init {
-        require(isValidPhoneNumber(phoneNumber ?: "", false)) { "Invalid phone number" }
+        require(isValidPhoneNumber(phoneNumber ?: "", false)) { "Invalid phone number: $phoneNumber" }
+        require(isValidPhoneNumber(phoneNumber1 ?: "", false)) { "Invalid phone number: $phoneNumber1" }
     }
 
     companion object {
@@ -24,7 +26,8 @@ import org.solyton.solawi.bid.module.user.data.address.Address
             "",
             null,
             null,
-            listOf()
+            null,
+            emptyList()
         )}
 }
 
