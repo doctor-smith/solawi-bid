@@ -9,6 +9,6 @@ class GenHash {
     @Test
     fun genHashTest() {
 
-        println(hashPassword("wr#x0G^cL3&|jF"))
+        println(hashPassword(""))
     }
 }

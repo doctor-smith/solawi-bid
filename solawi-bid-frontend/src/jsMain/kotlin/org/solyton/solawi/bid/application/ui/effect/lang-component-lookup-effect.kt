@@ -48,39 +48,19 @@ fun LaunchComponentLookup(
     val loaded = (i18n * componentLoaded(langComponent)).emit()
     if (loaded) return
 
-    // dedup-flag (must! see text above)
-    val loading = (i18n * componentLoading(langComponent)).emit()
-    if (loading) return
-
     LaunchedEffect(langComponent) {
-        // Check again in  Coroutine-context (Extra-Safety)
-        if ((i18n * componentLoaded(langComponent)).emit()) return@LaunchedEffect
-        if ((i18n * componentLoading(langComponent)).emit()) return@LaunchedEffect
-
-        // 1) Set as loading immediately (dedup gate)
-        (i18n * loadingComponents).addToSet(langComponent)
-
-        try {
-            val delta = environment.emit().componentOnDemand(
-                langComponent,
-                (i18n * language.get).emit(),
-                (i18n * locale.get).emit()
-            )
-           snapshotFlow { delta }.collect { delta ->
-                // 2) merge delta
-                if (delta.mergeNeeded) {
-                    (i18n * language).merge(delta.language)
-                }
-
-                // 3) Mark as loaded
-                (i18n * loadedComponents).addToSet(langComponent)
-            }
-        } finally {
-            // 4) Remove loading flag
-            (i18n * loadingComponents).removeFromSet(langComponent)
+        val delta = environment.emit().componentOnDemand(
+            langComponent,
+            (i18n * language.get).emit(),
+            (i18n * locale.get).emit()
+        )
+        // 2) merge delta
+        if (delta.mergeNeeded) {
+            (i18n * language).merge(delta.language)
         }
+        // 3) Mark as loaded
+        (i18n * loadedComponents).addToSet(langComponent)
     }
-
 }
 
 /**
