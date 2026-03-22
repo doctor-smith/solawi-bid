@@ -38,13 +38,13 @@ fun <DistributionPointsEnv> Routing.distributionPoints(
             }
             post("create") {
                 ReceiveContextual<CreateDistributionPoint>() *
-                IsGranted("CREATE_DISTRIBUTION_POINT") *
+                IsGranted("CREATE_DISTRIBUTION_POINTS", no) *
                 CreateDistributionPoint() *
                 Respond<DistributionPoint> { transform() } runOn Base(call, environment)
             }
             patch("update") {
                 ReceiveContextual<UpdateDistributionPoint>() *
-                IsGranted("UPDATE_DISTRIBUTION_POINT") *
+                IsGranted("UPDATE_DISTRIBUTION_POINTS", no) *
                 UpdateDistributionPoint()   *
                 Respond<DistributionPoint> { transform() } runOn Base(call, environment)
             }

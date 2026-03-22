@@ -18,10 +18,13 @@ import org.solyton.solawi.bid.application.service.seemsToBeLoggerIn
 import org.solyton.solawi.bid.application.ui.page.application.management.ApplicationManagementPage
 import org.solyton.solawi.bid.application.ui.page.application.management.ApplicationPage
 import org.solyton.solawi.bid.application.ui.page.application.management.ModulePage
+import org.solyton.solawi.bid.application.ui.page.application.placeholder.ApplicationPlaceholderPage
 import org.solyton.solawi.bid.application.ui.page.application.private.PrivateApplicationManagementPage
 import org.solyton.solawi.bid.application.ui.page.application.private.PrivateApplicationOrganizationManagementPage
 import org.solyton.solawi.bid.application.ui.page.auction.*
+import org.solyton.solawi.bid.application.ui.page.banking.BankingApplicationForOrganizationsPage
 import org.solyton.solawi.bid.application.ui.page.dashboard.DashboardPage
+import org.solyton.solawi.bid.application.ui.page.distribution.DistributionManagementForOrganizationsPage
 import org.solyton.solawi.bid.application.ui.page.login.LoginPage
 import org.solyton.solawi.bid.application.ui.page.login.effect.LaunchLogoutEffect
 import org.solyton.solawi.bid.application.ui.page.manual.HowToBidPage
@@ -29,6 +32,7 @@ import org.solyton.solawi.bid.application.ui.page.manual.HowToCarryOutAnAuctionP
 import org.solyton.solawi.bid.application.ui.page.manual.ManualPage
 import org.solyton.solawi.bid.application.ui.page.sendbid.SendBidPage
 import org.solyton.solawi.bid.application.ui.page.sendbid.ShowQRCodePage
+import org.solyton.solawi.bid.application.ui.page.shares.ShareManagementForOrganizationsPage
 import org.solyton.solawi.bid.application.ui.page.test.FontsPage
 import org.solyton.solawi.bid.application.ui.page.test.MobileTestPage
 import org.solyton.solawi.bid.application.ui.page.test.TestButtonsPage
@@ -37,15 +41,20 @@ import org.solyton.solawi.bid.application.ui.page.user.OrganizationManagementPag
 import org.solyton.solawi.bid.application.ui.page.user.OrganizationPage
 import org.solyton.solawi.bid.application.ui.page.user.PrivateUserPage
 import org.solyton.solawi.bid.application.ui.page.user.UserManagementPage
+import org.solyton.solawi.bid.module.banking.application.BANKING_APPLICATION_NAME
+import org.solyton.solawi.bid.module.bid.application.AUCTION_APPLICATION_NAME
+import org.solyton.solawi.bid.module.distribution.application.DISTRIBUTION_APPLICATION_NAME
 import org.solyton.solawi.bid.module.navbar.action.logoutAction
 import org.solyton.solawi.bid.module.navbar.component.NavBar
 import org.solyton.solawi.bid.module.process.component.ClearProcessOnRouteChange
+import org.solyton.solawi.bid.module.shares.application.SHARE_MANAGEMENT_APPLICATION_NAME
 import org.solyton.solawi.bid.module.user.action.user.GET_USERS
 import org.solyton.solawi.bid.module.user.action.user.READ_USER_PROFILES
+import org.solyton.solawi.bid.module.values.ProviderId
 
 @RoutingDsl
 @Composable
-@Suppress("FunctionName")
+@Suppress("FunctionName", "CognitiveComplexMethod")
 fun Routing(storage: Storage<Application>): Routes = Routing("/") {
     route("bid") {
         route("send/:cryptoId") {
@@ -171,6 +180,38 @@ fun Routing(storage: Storage<Application>): Routes = Routing("/") {
                                     storage,
                                     parameter("organizationId")!!
                                 )
+                            }
+                        }
+                        route(":application") {
+                            component {
+                                val organizationId = parameter("organizationId")!!
+                                val application = parameter("application")!!
+                                val up = "/app/management/organizations/$organizationId"
+                                with(application.uppercase()) {
+                                    when(this) {
+                                        DISTRIBUTION_APPLICATION_NAME -> DistributionManagementForOrganizationsPage(
+                                            storage,
+                                            ProviderId(organizationId),
+                                            up
+                                        )
+                                        SHARE_MANAGEMENT_APPLICATION_NAME -> ShareManagementForOrganizationsPage(
+                                            storage,
+                                            ProviderId(organizationId),
+                                            up
+                                        )
+                                        BANKING_APPLICATION_NAME -> BankingApplicationForOrganizationsPage(
+                                            storage,
+                                            ProviderId(organizationId),
+                                            up
+                                        )
+                                        AUCTION_APPLICATION_NAME -> AuctionsForOrganizationsPage(
+                                            storage,
+                                            ProviderId(organizationId),
+                                            up
+                                        )
+                                        else -> ApplicationPlaceholderPage(storage, up)
+                                    }
+                                }
                             }
                         }
                     }

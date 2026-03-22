@@ -60,6 +60,7 @@ import org.solyton.solawi.bid.module.application.action.readPersonalApplicationO
 import org.solyton.solawi.bid.module.application.data.management.applicationOrganizationRelations
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
 import org.solyton.solawi.bid.module.application.i18n.ApplicationComponent
+import org.solyton.solawi.bid.module.application.i18n.Component.applicationName
 import org.solyton.solawi.bid.module.application.i18n.application
 import org.solyton.solawi.bid.module.application.i18n.module
 import org.solyton.solawi.bid.module.banking.action.READ_BANK_ACCOUNTS
@@ -733,6 +734,14 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                 ActionsWrapper({
                                     actionsWrapperStyle(this)
                                 }) {
+                                    PlayButton(
+                                        color = Color.black,
+                                        bgColor = Color.white,
+                                        texts = {"Apply features of ${application.name} to this organization"},
+                                        deviceType = { device.read() }
+                                    ) {
+                                        navigate("/app/management/organizations/${organizationId}/${application.name.lowercase()}")
+                                    }
                                     UsersButton(
                                         Color.black,
                                         Color.white,
