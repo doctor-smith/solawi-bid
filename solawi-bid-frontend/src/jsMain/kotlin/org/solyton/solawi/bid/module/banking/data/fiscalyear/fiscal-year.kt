@@ -11,7 +11,11 @@ data class FiscalYear(
     @ReadWrite val legalEntityId: String,
     @ReadWrite val start: LocalDate,
     @ReadWrite val end: LocalDate
-)
+) {
+    companion object {
+        val default = FiscalYear("", "", LocalDate(0, 1, 1), LocalDate(0, 12, 31))
+    }
+}
 
 fun FiscalYear.format(): String = when{
     start.year == end.year -> "${start.year}"

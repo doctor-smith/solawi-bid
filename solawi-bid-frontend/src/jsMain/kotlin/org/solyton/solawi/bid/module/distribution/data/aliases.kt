@@ -11,8 +11,8 @@ import org.solyton.solawi.bid.module.distribution.data.management.modals
 val distributionManagementActions by lazy { actions }
 
 /**
- * Lazy-initialized variable representing a collection of modals related to share management.
+ * Lazy-initialized variable representing a collection of modals related to distribution management.
  *
  * Retrieves and provides the modals that are defined in the `modals` object from the distribution data management module.
  */
-val shareManagementModals by lazy { modals }
+val distributionManagementModals by lazy { modals }

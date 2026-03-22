@@ -11,4 +11,8 @@ data class ShareType (
     @ReadWrite val name: String,
     @ReadWrite val key: String,
     @ReadWrite val description: String,
-)
+) {
+    companion object {
+        val default = ShareType("", "", "", "", "")
+    }
+}

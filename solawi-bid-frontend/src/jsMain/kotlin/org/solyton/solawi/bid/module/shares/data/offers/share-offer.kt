@@ -15,4 +15,15 @@ data class ShareOffer (
     @ReadWrite val price: Double?,
     @ReadWrite val pricingType: PricingType,
     @ReadWrite val ahcAuthorizationRequired: Boolean
-)
+) {
+    companion object {
+        val default = ShareOffer(
+            "",
+            ShareType.default,
+            FiscalYear.default,
+            null,
+            PricingType.FIXED,
+            false
+        )
+    }
+}
