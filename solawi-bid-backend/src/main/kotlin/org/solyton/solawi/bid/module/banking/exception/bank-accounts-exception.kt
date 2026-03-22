@@ -9,4 +9,7 @@ sealed class BankAccountsException(override val message: String): Exception(mess
     data class BicNotInEU(val bic: String): BankAccountsException("BIC not in EU: $bic")
     data class InvalidIban(val iban: String): BankAccountsException("Invalid IBAN format: $iban")
 
+    data class NoSuchCreditorId(val creditorId: String): BankAccountsException("No such creditor id: $creditorId")
+
+    data class CannotCreateMandateReference(val reason: String): BankAccountsException("Cannot create mandate reference: $reason")
 }

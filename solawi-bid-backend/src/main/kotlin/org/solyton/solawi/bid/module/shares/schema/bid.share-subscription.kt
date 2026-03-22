@@ -9,6 +9,7 @@ import org.solyton.solawi.bid.module.auditable.AuditableEntity
 import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
 import org.solyton.solawi.bid.module.banking.schema.FiscalYear
 import org.solyton.solawi.bid.module.banking.schema.FiscalYears
+import org.solyton.solawi.bid.module.banking.schema.SepaMandates
 import org.solyton.solawi.bid.module.distribution.schema.DistributionPoint
 import org.solyton.solawi.bid.module.distribution.schema.DistributionPoints
 import org.solyton.solawi.bid.module.user.schema.UserProfile
@@ -25,6 +26,7 @@ object ShareSubscriptions : AuditableUUIDTable("share_subscriptions") {
     val numberOfShares = integer("number_of_shares").default(1)
     val pricePerShare = double("price_per_share").nullable()
     val ahcAuthorized = bool("ahc_authorized").nullable()
+    val sepaMandateId = optReference("sepa_mandate_id", SepaMandates)
     val fiscalYearId = reference("fiscal_year_id", FiscalYears)
 
     val statusId = reference("status_id", ShareStatusTable)

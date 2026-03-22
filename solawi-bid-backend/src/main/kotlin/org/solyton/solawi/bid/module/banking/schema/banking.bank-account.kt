@@ -15,6 +15,9 @@ object BankAccounts : AuditableUUIDTable("bank_accounts") {
     val iban = varchar("iban", 30)
     val bic = varchar("bic", 20)
     val userId = uuid("user_id")
+    val accountHolder = varchar("account_holder", 255).default("")
+    val isActive = bool("is_active").default(true)
+    val accountType = enumerationByName("account_type", 20, AccountType::class).default(AccountType.DEBTOR)
 }
 
 class BankAccount(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
@@ -23,9 +26,18 @@ class BankAccount(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     var iban by BankAccounts.iban
     var bic by BankAccounts.bic
     var userId by BankAccounts.userId
+    var accountHolder by BankAccounts.accountHolder
+    var isActive by BankAccounts.isActive
+    var accountType by BankAccounts.accountType
 
     override var createdAt: DateTime by BankAccounts.createdAt
     override var createdBy: UUID by BankAccounts.createdBy
     override var modifiedAt: DateTime? by BankAccounts.modifiedAt
     override var modifiedBy: UUID? by BankAccounts.modifiedBy
+}
+
+// Account type enum
+enum class AccountType {
+    CREDITOR,  // your company's account
+    DEBTOR     // customer account
 }
