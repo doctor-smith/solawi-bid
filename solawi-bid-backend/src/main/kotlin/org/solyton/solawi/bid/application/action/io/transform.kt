@@ -86,6 +86,8 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
             is BankAccountsException.InvalidIban -> HttpStatusCode.BadRequest
             is BankAccountsException.InvalidBicCountryCode -> HttpStatusCode.BadRequest
             is BankAccountsException.BicNotInEU -> HttpStatusCode.BadRequest
+            is BankAccountsException.NoSuchCreditorId -> HttpStatusCode.NotFound
+            is BankAccountsException.CannotCreateMandateReference -> HttpStatusCode.BadRequest
         }
         is FiscalYearException -> when(value as FiscalYearException) {
             is FiscalYearException.NoSuchFiscalYear -> HttpStatusCode.NotFound

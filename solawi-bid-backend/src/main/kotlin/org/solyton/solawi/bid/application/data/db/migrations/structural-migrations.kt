@@ -7,6 +7,7 @@ import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
 import org.solyton.solawi.bid.module.application.schema.ModulesTable
 import org.solyton.solawi.bid.module.application.schema.UserApplicationsTable
 import org.solyton.solawi.bid.module.application.schema.UserModulesTable
+import org.solyton.solawi.bid.module.banking.schema.AccountType
 import org.solyton.solawi.bid.module.banking.schema.BankAccountsTable
 import org.solyton.solawi.bid.module.banking.schema.FiscalYears
 import org.solyton.solawi.bid.module.bid.schema.*
@@ -114,6 +115,7 @@ val columnsToAdd: List<AddMissingColumns> by lazy {
             ColumnDef.Missing<DateTime>("created_at", DateTime.now()),
             ColumnDef.Missing<UUID?>("modified_by",null),
             ColumnDef.Missing<DateTime?>("modified_at", null),
+            ColumnDef.Missing<UUID?>("sepa_mandate_id", null),
         ),
         ShareTypesTable.addColumnsIfMissing(
             ColumnDef.Missing<UUID>("created_by", UUID_ZERO),
@@ -128,6 +130,9 @@ val columnsToAdd: List<AddMissingColumns> by lazy {
             ColumnDef.Missing<DateTime>("created_at", DateTime.now()),
             ColumnDef.Missing<UUID?>("modified_by",null),
             ColumnDef.Missing<DateTime?>("modified_at", null),
+            ColumnDef.Missing<String>("account_holder", ""),
+            ColumnDef.Missing<Boolean>("is_active", true),
+            ColumnDef.Missing<String>("account_type", AccountType.DEBTOR.name ),
         ),
         FiscalYears.addColumnsIfMissing(
             ColumnDef.Missing<UUID>("created_by", UUID_ZERO),
