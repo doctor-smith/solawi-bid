@@ -108,10 +108,10 @@ fun UpsertShareOffersModal(
                 labelStyle = formLabelDesktopStyle,
                 isRequired = true
             )
-            val shareTypesMap: Map<String, ShareType> = shareTypes.associateBy{it.key}
+            val shareTypesMap: Map<String, ShareType> = shareTypes.associateBy{it.name}
             Dropdown(
                 options = shareTypesMap,
-                selected = shareOffer?.shareType?.key ?: "Select share type",
+                selected = shareOffer?.shareType?.name ?: "Select share type",
                 styles = dropdownStyles,
                 iconContent = {expanded -> SimpleUpDown(expanded) }
             ) { (_, value) ->
@@ -124,7 +124,7 @@ fun UpsertShareOffersModal(
 
         Field(fieldDesktopStyle) {
             Label(
-                "Key",
+                "Pricing Type",
                 id = "key-of-share-type",
                 labelStyle = formLabelDesktopStyle,
                 isRequired = true
@@ -165,6 +165,30 @@ fun UpsertShareOffersModal(
                         setShareOffer(shareOffer!!)
                     }
                 }
+            }
+        }
+        Field(fieldDesktopStyle) {
+            Label(
+                "SEPA required",
+                id = "sepa-of-share-offer",
+                labelStyle = formLabelDesktopStyle,
+                isRequired = true
+            )
+            val booleansMap: Map<String, Boolean> = mapOf(
+                "☑\uFE0F" to true,
+                "❌" to false
+            )
+            fun getKeyOf(value: Boolean): String = booleansMap.filter { it.value == value }.keys.first()
+            Dropdown(
+                options = booleansMap,
+                selected = getKeyOf(shareOffer?.ahcAuthorizationRequired?:false),
+                styles = dropdownStyles,
+                iconContent = {expanded -> SimpleUpDown(expanded) }
+            ) { (_, value) ->
+                shareOffer = (shareOffer?:ShareOffer.default).copy(
+                    ahcAuthorizationRequired = value
+                )
+                setShareOffer(shareOffer!!)
             }
         }
     }
