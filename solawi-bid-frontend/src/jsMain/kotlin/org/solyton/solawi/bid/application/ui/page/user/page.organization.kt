@@ -21,6 +21,7 @@ import org.evoleq.optics.storage.Read
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.storage.filter
+import org.evoleq.optics.storage.read
 import org.evoleq.optics.storage.times
 import org.evoleq.optics.storage.toggle
 import org.evoleq.optics.transform.times
@@ -42,9 +43,12 @@ import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.data.ui.ofOrganizationPage
 import org.solyton.solawi.bid.application.data.uiStates
 import org.solyton.solawi.bid.application.service.organization.importMembersFromCsv
+import org.solyton.solawi.bid.application.service.organizationApplicationContextId
+import org.solyton.solawi.bid.application.service.setContext
 import org.solyton.solawi.bid.application.ui.component.organization.showUpdateMembersOfOrganizationModal
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
+import org.solyton.solawi.bid.application.ui.page.dashboard.permissions.canAccessApplication
 import org.solyton.solawi.bid.application.ui.page.user.action.Change
 import org.solyton.solawi.bid.application.ui.page.user.action.memberCreateAction
 import org.solyton.solawi.bid.application.ui.page.user.action.memberUpdateAction
@@ -734,12 +738,19 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                 ActionsWrapper({
                                     actionsWrapperStyle(this)
                                 }) {
+                                    val disabled = not( applicationStorage * applicationManagementModule * canAccessApplication(application.name))
+                                    val contextId = (applicationStorage * applicationManagementModule * organizationApplicationContextId(
+                                         application.name,
+                                        organizationId
+                                        )).emit()
                                     PlayButton(
                                         color = Color.black,
                                         bgColor = Color.white,
                                         texts = {"Apply features of ${application.name} to this organization"},
-                                        deviceType = { device.read() }
+                                        deviceType = { device.read() },
+                                        isDisabled = disabled.emit()
                                     ) {
+                                        applicationStorage.setContext(contextId?:"")
                                         navigate("/app/management/organizations/${organizationId}/${application.name.lowercase()}")
                                     }
                                     UsersButton(

@@ -38,6 +38,9 @@ fun <T> assureValue(): Reader<T?, T> = Reader{value -> require(value != null); v
 fun <T> not(reader: Reader<T, Boolean>): Reader<T, Boolean> = {t: T -> !reader(t)}
 
 @MathDsl
+val negate: Reader<Boolean, Boolean> = Reader{!it}
+
+@MathDsl
 infix fun <S, T> Reader<S, Boolean>.or(other: Reader<T, Boolean>): Reader<Pair<S, T>, Boolean> = Reader{
     pair ->  this(pair.first) || other(pair.second)
 }

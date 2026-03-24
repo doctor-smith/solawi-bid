@@ -27,19 +27,19 @@ fun <BankingEnv> Routing.banking (
                     ReceiveContextual<String>{
                         parameters -> parameters["legal_entity"]!!
                     } *
-                    IsGranted("READ_FISCAL_YEARS") *
+                    IsGranted("READ_FISCAL_YEARS", no) *
                     ReadFiscalYearsByLegalEntity() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
                 post("create") {
                     ReceiveContextual<CreateFiscalYear>() *
-                    IsGranted("CREATE_FISCAL_YEAR") *
+                    IsGranted("CREATE_FISCAL_YEAR", no) *
                     CreateFiscalYear() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
                 patch("update") {
                     ReceiveContextual<UpdateFiscalYear>() *
-                    IsGranted("UPDATE_FISCAL_YEAR") *
+                    IsGranted("UPDATE_FISCAL_YEAR", no) *
                     UpdateFiscalYear() *
                     Respond{ transform() } runOn Base(call, environment)
                 }

@@ -58,6 +58,7 @@ import org.solyton.solawi.bid.module.shares.action.createShareOffer
 import org.solyton.solawi.bid.module.shares.action.createShareType
 import org.solyton.solawi.bid.module.shares.action.readShareOffers
 import org.solyton.solawi.bid.module.shares.action.readShareTypes
+import org.solyton.solawi.bid.module.shares.action.updateShareOffer
 import org.solyton.solawi.bid.module.shares.action.updateShareType
 import org.solyton.solawi.bid.module.shares.component.modal.showUpsertShareOffersModal
 import org.solyton.solawi.bid.module.shares.component.modal.showUpsertShareTypeModal
@@ -269,16 +270,23 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                         HeaderCell("SEPA required") { width(10.percent) }
                     }
                 }
-                ListItemsIndexed(shareOffers.read()) { index, shareOffer ->
+                ListItemsIndexed(shareOffers.read().let{
+                    it.sortedByDescending { s -> s.fiscalYear.format() }
+                }) { index, shareOffer ->
                     ListItemWrapper({
                         listItemWrapperStyle(this, index)
                     }) {
+                        val booleansMap: Map<String, Boolean> = mapOf(
+                            "☑\uFE0F" to true,
+                            "❌" to false
+                        )
+                        fun getKeyOf(value: Boolean): String = booleansMap.filter { it.value == value }.keys.first()
                         DataWrapper() {
                             TextCell(shareOffer.fiscalYear.format()) { width(10.percent) }
                             TextCell(shareOffer.shareType.name) { width(10.percent) }
                             TextCell("${shareOffer.price ?: "--"}") { width(10.percent) }
                             TextCell(shareOffer.pricingType.name) { width(10.percent) }
-                            TextCell(shareOffer.ahcAuthorizationRequired.toString()) { width(10.percent) }
+                            TextCell(getKeyOf(shareOffer.ahcAuthorizationRequired)) { width(10.percent) }
                         }
                         ActionsWrapper {
                             var shareOfferState by remember { mutableStateOf<ShareOffer>(shareOffer) }
@@ -300,7 +308,8 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                     val state = shareOfferState
                                     requireNotNull(state)
                                     scope.launch {
-                                        shareManagementActions dispatch createShareOffer(
+                                        shareManagementActions dispatch updateShareOffer(
+                                            state.shareOfferId,
                                             providerId.value,
                                             state.shareType.shareTypeId,
                                             state.fiscalYear.fiscalYearId,
