@@ -5,12 +5,15 @@ import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.selectAll
 import org.solyton.solawi.bid.module.permission.data.api.Context
 import org.solyton.solawi.bid.module.permission.data.api.Right
 import org.solyton.solawi.bid.module.permission.data.api.Role
 import org.solyton.solawi.bid.module.permission.data.api.UserContext
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
+import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
+import org.solyton.solawi.bid.module.permission.schema.rightsInContext
 import java.util.*
 
 /**
@@ -30,24 +33,27 @@ fun Transaction.putUserRoleContext(userId: UUID, contextId: UUID, roleIds: List<
     roleIds.forEach { roleId -> UserRoleContext.insert { it[this.userId] = userId; it[this.contextId] = contextId; it[this.roleId] = roleId } }
 
     val context = ContextEntity.findById(contextId) ?: throw NoSuchElementException("Context with id $contextId not found")
+    
+    val roles = getRolesByUserAndContext(userId, contextId).map{ role ->
+        Role(
+            id = role.id.value.toString(),
+            name =role.name,
+            description = role.description,
+            rights = role.rightsInContext(contextId).map { right -> Right(
+                right.id.value.toString(),
+                right.name,
+                right.description
+            ) }
+        )
+    }
+
 
     return UserContext(
         userId.toString(),
-        Context(contextId.toString(),
+        Context(
+            contextId.toString(),
             context.name,
-            getRolesByUserAndContext(userId, contextId).map {
-                    role -> Role(
-                role.id.value.toString(),
-                role.name,
-                role.description,
-                role.rights.map {
-                        right -> Right(
-                    right.id.value.toString(),
-                    right.name,
-                    right.description
-                )
-                } )
-            }
+            roles
         )
     )
 }
