@@ -3,6 +3,8 @@ package org.solyton.solawi.bid.module.permission.schema
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.selectAll
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.auditable.AuditableEntity
 import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
@@ -30,3 +32,7 @@ class Role(id: EntityID<UUID>): UUIDEntity(id), AuditableEntity<UUID>{
     override var modifiedAt: DateTime? by Roles.modifiedAt
     override var modifiedBy: UUID? by Roles.modifiedBy
 }
+
+fun Role.rightsInContext(contextId: UUID) = RoleRightContexts.selectAll().where {
+    RoleRightContexts.contextId eq contextId and (RoleRightContexts.roleId eq id)
+}.mapNotNull { Right.findById(it[RoleRightContexts.rightId]) }.distinctBy { it.id }
