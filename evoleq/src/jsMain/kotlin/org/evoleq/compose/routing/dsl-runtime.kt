@@ -70,7 +70,10 @@ fun Routing(initPath: String,routes: RoutesConfiguration.()->Unit): Routes = wit
 @RoutingDsl
 @Composable
 @Suppress("FunctionName")
-fun Routing(initPath: String, routes: RoutesConfiguration.() -> Unit): Routes =
+fun Routing(
+    initPath: String,
+    redirect: () -> String = {initPath},
+    routes: RoutesConfiguration.() -> Unit): Routes =
     with(routing(routes)) {
 
         @Composable
@@ -91,7 +94,8 @@ fun Routing(initPath: String, routes: RoutesConfiguration.() -> Unit): Routes =
         }
 
         if (window.location.pathname.isBlank() || window.location.pathname == "/") {
-            navigate(initPath)
+
+            navigate(redirect())
         }
 
         compose(path().value)
