@@ -162,7 +162,8 @@ fun UpdateMemberOfOrganizationModal(
         )
 
         if(canCreate.contains(CanCreate.BANK_ACCOUNT) || canUpdate.contains(CanUpdate.BANK_ACCOUNT)) {
-            BankAccountForm(inputs, bankAccount, setBankAccount)
+            requireNotNull(userProfile) { "User profile not found - but mode is CREATE_BANK_ACCOUNT" }
+            BankAccountForm(inputs, userProfile.userId, bankAccount, setBankAccount)
         }
 
         val cannotCreateOrUpdateShareSubscriptions = !(canCreate.contains(CanCreate.SHARE_SUBSCRIPTIONS) || canUpdate.contains(CanUpdate.SHARE_SUBSCRIPTIONS))
