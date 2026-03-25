@@ -21,7 +21,6 @@ import org.evoleq.optics.storage.Read
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.storage.filter
-import org.evoleq.optics.storage.read
 import org.evoleq.optics.storage.times
 import org.evoleq.optics.storage.toggle
 import org.evoleq.optics.transform.times
@@ -64,7 +63,6 @@ import org.solyton.solawi.bid.module.application.action.readPersonalApplicationO
 import org.solyton.solawi.bid.module.application.data.management.applicationOrganizationRelations
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
 import org.solyton.solawi.bid.module.application.i18n.ApplicationComponent
-import org.solyton.solawi.bid.module.application.i18n.Component.applicationName
 import org.solyton.solawi.bid.module.application.i18n.application
 import org.solyton.solawi.bid.module.application.i18n.module
 import org.solyton.solawi.bid.module.banking.action.READ_BANK_ACCOUNTS
@@ -77,7 +75,6 @@ import org.solyton.solawi.bid.module.country.i18n.CountryLangComponent
 import org.solyton.solawi.bid.module.distribution.action.READ_DISTRIBUTION_POINTS
 import org.solyton.solawi.bid.module.distribution.action.readDistributionPoints
 import org.solyton.solawi.bid.module.distribution.data.distributionpoint.DistributionPoint
-import org.solyton.solawi.bid.module.distribution.data.management.DistributionManagement
 import org.solyton.solawi.bid.module.distribution.data.management.distributionPoints
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
@@ -133,7 +130,9 @@ import org.solyton.solawi.bid.module.values.UserId
 import org.solyton.solawi.bid.module.values.Username
 import kotlin.collections.firstOrNull
 import kotlin.text.contains
+import kotlin.text.isBlank
 import kotlin.text.isNotBlank
+import kotlin.text.lowercase
 import kotlin.text.trim
 import org.solyton.solawi.bid.application.data.environment as appEnv
 
@@ -679,6 +678,7 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                             }
                                         ) {
                                             val actions = applicationStorage.memberUpdateAction(
+                                                providerId = ProviderId(organizationId),
                                                 member = { member },
                                                 usernameChange = Change(Username(member.username), usernameState),
                                                 userProfileChange = Change(userProfile, userProfileState),

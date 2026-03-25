@@ -10,10 +10,11 @@ import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.transform.banking.bankingApplicationIso
 import org.solyton.solawi.bid.application.data.transform.shares.shareManagementIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
-import org.solyton.solawi.bid.module.banking.action.CREATE_BANK_ACCOUNT
+import org.solyton.solawi.bid.module.banking.action.IMPORT_BANK_ACCOUNTS
 import org.solyton.solawi.bid.module.banking.action.UPDATE_BANK_ACCOUNT
-import org.solyton.solawi.bid.module.banking.action.createBankAccount
+import org.solyton.solawi.bid.module.banking.action.importBankAccounts
 import org.solyton.solawi.bid.module.banking.action.updateBankAccount
+import org.solyton.solawi.bid.module.banking.data.api.ImportBankAccount
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.shares.action.CREATE_SHARE_SUBSCRIPTION
 import org.solyton.solawi.bid.module.shares.action.UPDATE_SHARE_SUBSCRIPTION
@@ -39,6 +40,7 @@ data class Change<T>(
 
 @Suppress("CognitiveComplexMethod","CyclomaticComplexMethod", "UnusedParameter")
 fun Storage<Application>.memberUpdateAction(
+    providerId: ProviderId,
     member: Reader<Application, Member>,
     usernameChange: Change<Username>,
     userProfileChange: Change<UserProfile>,
@@ -47,7 +49,7 @@ fun Storage<Application>.memberUpdateAction(
     ): Array<ActionEnvelope<Application, *, *>> {
 
     val userId = (this * member).emit().memberId
-
+    val username = (this * member).emit().username
     // Update UserProfile (todo:dev endpoints and actions for user profiles)
     val (userProfile, userProfileState) = userProfileChange
     val userProfileAction = if(userProfileState != null) {
@@ -142,6 +144,7 @@ fun Storage<Application>.memberUpdateAction(
             "Bank Account State is null!"
         }
         if(bankAccount == null) {
+            /*
             ActionEnvelope(
                 action = bankingApplicationIso * createBankAccount(
                     UserId(userId),
@@ -151,7 +154,24 @@ fun Storage<Application>.memberUpdateAction(
                 id = CREATE_BANK_ACCOUNT,
                 run = true,
                 clearOnFinish = true
+            ),
+            */
+            ActionEnvelope(
+                action = bankingApplicationIso * importBankAccounts(
+                    override = true,
+                    accessorId = AccessorId(providerId.value),
+                    bankAccountsToImport = listOf(
+                        ImportBankAccount(
+                            username = Username(username),
+                            bankAccountState.bic,
+                            bankAccountState.iban
+                        )
+                    )
+                ),
+                id = IMPORT_BANK_ACCOUNTS,
+                clearOnFinish = true
             )
+
         } else {
             ActionEnvelope(
                 action = bankingApplicationIso * updateBankAccount(

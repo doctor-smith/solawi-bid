@@ -9,6 +9,7 @@ import org.solyton.solawi.bid.module.auditable.AuditableEntity
 import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
 import org.solyton.solawi.bid.module.banking.schema.FiscalYear
 import org.solyton.solawi.bid.module.banking.schema.FiscalYears
+import org.solyton.solawi.bid.module.banking.schema.SepaMandate
 import org.solyton.solawi.bid.module.banking.schema.SepaMandates
 import org.solyton.solawi.bid.module.distribution.schema.DistributionPoint
 import org.solyton.solawi.bid.module.distribution.schema.DistributionPoints
@@ -44,6 +45,7 @@ class ShareSubscription(id: EntityID<UUID>): UUIDEntity(id), AuditableEntity<UUI
     var numberOfShares by ShareSubscriptions.numberOfShares
     var pricePerShare by ShareSubscriptions.pricePerShare
     var ahcAuthorized by ShareSubscriptions.ahcAuthorized
+    var sepaMandate by SepaMandate optionalReferencedOn ShareSubscriptions.sepaMandateId
 
     var fiscalYear by FiscalYear referencedOn ShareSubscriptions.fiscalYearId
 
