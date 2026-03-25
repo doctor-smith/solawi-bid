@@ -55,7 +55,13 @@ import org.solyton.solawi.bid.module.values.ProviderId
 @RoutingDsl
 @Composable
 @Suppress("FunctionName", "CognitiveComplexMethod")
-fun Routing(storage: Storage<Application>): Routes = Routing("/") {
+fun Routing(storage: Storage<Application>): Routes = Routing(
+    initPath =  "/",
+    redirect = { when{
+        (storage * userData).read().seemsToBeLoggerIn() -> "/app/dashboard"
+        else -> "/login"
+    } }
+) {
     route("bid") {
         route("send/:cryptoId") {
             component {
