@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import org.evoleq.compose.Markup
 import org.evoleq.compose.routing.navigate
+import org.evoleq.compose.routing.openUrlInNewTab
 import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.math.Source
 import org.evoleq.optics.storage.Action
@@ -15,6 +16,7 @@ import org.solyton.solawi.bid.module.authentication.data.api.Logout
 import org.solyton.solawi.bid.module.control.button.AppsButton
 import org.solyton.solawi.bid.module.control.button.HelpButton
 import org.solyton.solawi.bid.module.control.button.HomeButton
+import org.solyton.solawi.bid.module.control.button.SupportButton
 import org.solyton.solawi.bid.module.navbar.data.navbar.NavBar
 import org.solyton.solawi.bid.module.navbar.data.navbar.i18n
 
@@ -62,6 +64,16 @@ fun NavBar(
         device
     ) {
         navigate("/manual")
+    }
+
+    SupportButton(
+        Color.black,
+        Color.transparent,
+        {"Support"},
+        device
+    ) {
+        // todo:dev move to env
+        openUrlInNewTab("https://solawi-management.atlassian.net/servicedesk/customer/portal/1")
     }
 
     Div({style { width(50.px) }}) {  }
