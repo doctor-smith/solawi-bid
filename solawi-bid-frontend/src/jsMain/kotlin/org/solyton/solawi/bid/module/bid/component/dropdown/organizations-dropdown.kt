@@ -12,8 +12,13 @@ import org.evoleq.math.x
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
+import org.solyton.solawi.bid.application.data.transform.application.import
+import org.solyton.solawi.bid.module.control.dropdown.Dropdown
 import org.solyton.solawi.bid.module.modal.constants.DIALOG_LAYER_INDEX
 import org.solyton.solawi.bid.module.navbar.component.SimpleUpDown
+import org.solyton.solawi.bid.module.user.component.dropdown.dropdownStyles
+import org.solyton.solawi.bid.module.user.component.dropdown.generateOrganizationOptions
+import org.solyton.solawi.bid.module.user.component.dropdown.nameOfSelectedOrganization
 import org.solyton.solawi.bid.module.user.data.organization.Organization
 
 
@@ -21,116 +26,29 @@ import org.solyton.solawi.bid.module.user.data.organization.Organization
 @Composable
 @Suppress("FunctionName")
 fun OrganizationsDropdown(
-    layerIndex: Int = DIALOG_LAYER_INDEX + 1,
     selected: Source<Organization?>,
     organizations: Source<List<Organization>>,
     isSelectable: Organization.() -> Boolean,
-    scope: CoroutineScope,
     select: (Organization) -> Unit
 ) {
-    var open by remember { mutableStateOf(false) }
-
-    val organizationsMap = organizations map { it.flat() }
-
-    val nameOfSelected: (Organization?) -> String? ={ organization ->
-        when(organization) {
-            null -> null
-            else ->
-                organizationsMap.emit().entries.first { it.value.organizationId == organization.organizationId }.key
-        }
+    var selectedOrganization by remember(selected.emit()) { mutableStateOf<Organization?>(null) }
+    LaunchedEffect(selected.emit()) {
+        selectedOrganization = selected.emit()
     }
+    val organizationsMap = generateOrganizationOptions(organizations.emit() )
+        .filter { (_, org) -> org.isSelectable() }
 
-    val selectedText: Source<String> = selected x organizations map { (selected, organizations) ->
-        when {
-            organizations.isEmpty() -> "You need to connect the auction app to at least one organization"
-            else -> nameOfSelected(selected)?: "Click to choose an organizations"
-        }
-    }
-    // Dropdown Container
-    Div(attrs = {
-        style {
-            alignSelf(AlignSelf.Stretch)
-            position(Position.Relative)
-            cursor("pointer")
-        }
-        onClick { open = !open }
-    }) {
-        // Display current value
-        Div(attrs = {
-            style {
-                display(DisplayStyle.Flex)
-                alignItems(AlignItems.FlexStart)
-                gap(4.px)
-                backgroundColor(Color.white)
-                border(1.px, LineStyle.Solid, Color.black)
-                padding(4.px)
-            }
-        }) {
+    Dropdown(
+        options = organizationsMap,
+        selected = organizationsMap.nameOfSelectedOrganization(selectedOrganization?.organizationId?:"")?: "Select",
+        closeOnSelect = true,
+        styles = dropdownStyles,
+        iconContent =  { open ->
             SimpleUpDown(open)
-            // organization name
-            Text(selectedText.emit())
-        }
-
-        // Dropdown-List
-        if (open && organizations.emit().isNotEmpty()) {
-            addDropdownCloseHandler {
-                open = false
-            }
-
-            Div(attrs = {
-                style {
-                    display(DisplayStyle.Flex)
-                    flexDirection(FlexDirection.Column)
-                    position(Position.Absolute)
-                    top(100.percent)
-                    left(0.px)
-                    width(100.percent)
-                    paddingLeft(20.px)
-                    backgroundColor(Color.white)
-                    border(1.px, LineStyle.Solid, Color.black)
-                    borderRadius(4.px)
-                    property("z-index", layerIndex)
-                }
-            }) {/*
-                organizations.emit().forEach { org ->
-                    Div(attrs = {
-                        style {
-                            display(DisplayStyle.Flex)
-                            minHeight(20.px)
-                            alignItems(AlignItems.FlexStart)
-                            padding(4.px)
-                        }
-                        onClick { event ->
-                            scope.launch{
-                                select(org)
-                            }
-                        }
-                    }) {
-                        Text(org.name)
-                    }
-                }
-                */
-                organizationsMap.emit()
-                    .filter { (_, org) -> org.isSelectable() }
-                    .forEach { (key, org) -> Div(attrs = {
-                        style {
-                            display(DisplayStyle.Flex)
-                            // flexGrow(1)
-                            minHeight(20.px)
-                            alignItems(AlignItems.FlexStart)
-                            padding(4.px)
-                        }
-                        onClick { event ->
-                            scope.launch{
-                                select(org)
-                            }
-                        }
-                    }) {
-                        Text(key)
-                    }
-                }
-            }
-        }
+        },
+    ) { (_, organization) ->
+        selectedOrganization = organization
+        select(organization)
     }
 }
 
@@ -160,5 +78,5 @@ fun List<Organization>.flatById(): Map<String, Organization> = map {
 
 fun Organization.flatById(): Map<String, Organization> = mapOf (
     organizationId to this,
-    *subOrganizations.flatById().entries.map { (key, value) -> "$organizationId >> $key" to value}.toTypedArray()
+    *subOrganizations.flatById().entries.map { (key, value) -> organizationId to value}.toTypedArray()
 )

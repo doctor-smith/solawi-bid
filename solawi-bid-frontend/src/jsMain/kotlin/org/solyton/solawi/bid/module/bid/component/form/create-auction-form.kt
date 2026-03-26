@@ -70,7 +70,6 @@ fun AuctionModal(
     texts = texts,
     styles = auctionModalStyles(device),
 ) {
-    val scope = rememberCoroutineScope()
     // input texts
     val inputs: Lang.Block = texts.component("inputs")
 
@@ -134,9 +133,10 @@ fun AuctionModal(
                         applicationContextToOrganizationMap
                 )}},
                 organizations = organizations,
-                // todo:dev SMA-403 POC
-                isSelectable = { organizations.emit().any { o -> o.organizationId == organizationId } },
-                scope = scope // CoroutineScope(Job())
+                isSelectable = {
+                    val appsToOrgs = applicationOrganizationToContextMap.keys
+                    ApplicationOrganizationKey(applicationId.emit(), organizationId) in appsToOrgs
+                },
             ) {
                 // add organization context to auction
                 organization ->

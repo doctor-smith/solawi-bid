@@ -21,19 +21,23 @@ import org.evoleq.math.times
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
+import org.jetbrains.compose.web.css.percent
+import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.ElementScope
-import org.jetbrains.compose.web.dom.Li
 import org.jetbrains.compose.web.dom.Text
-import org.jetbrains.compose.web.dom.TextInput
-import org.jetbrains.compose.web.dom.Ul
 import org.solyton.solawi.bid.module.application.data.application.Application
 import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
-import org.solyton.solawi.bid.module.style.form.textInputDesktopStyle
-import org.solyton.solawi.bid.module.application.data.organization.Organization
+import org.solyton.solawi.bid.module.user.data.organization.Organization
 import org.solyton.solawi.bid.module.application.i18n.inputs
+import org.solyton.solawi.bid.module.control.dropdown.Dropdown
+import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
+import org.solyton.solawi.bid.module.navbar.component.SimpleUpDown
+import org.solyton.solawi.bid.module.user.component.dropdown.dropdownStyles
+import org.solyton.solawi.bid.module.user.component.dropdown.generateOrganizationOptions
+import org.solyton.solawi.bid.module.user.component.dropdown.nameOfSelectedOrganization
 import org.w3c.dom.HTMLElement
 
 @Markup
@@ -73,19 +77,19 @@ fun ConnectApplicationToOrganizationModal(
                 Text (application.name )
                 Label("organization-id"/*(inputs * name * title).emit()*/, id = "organization-id", labelStyle = formLabelDesktopStyle)
 
-                Ul { organizations.forEach {
-                    organization ->
-                    Li { Text("${organization.name}: ${organization.organizationId}") }
-                } }
-
-                // Dropdown
-                TextInput(organizationId) {
-                    id("organization-id")
-                    style { textInputDesktopStyle() }
-                    onInput {
-                        organizationId = it.value
-                        setOrganizationId(it.value)
-                    }
+                val organizationsMap = generateOrganizationOptions(organizations)
+                    .mapValues { it.value.organizationId }
+                Dropdown(
+                    options = organizationsMap,
+                    selected = organizationsMap.nameOfSelectedOrganization(organizationId)?: "Select",
+                    closeOnSelect = true,
+                    styles = dropdownStyles,
+                    iconContent =  { open ->
+                        SimpleUpDown(open)
+                    },
+                ) {
+                    organizationId = it.value
+                    setOrganizationId(it.value)
                 }
             }
         }
