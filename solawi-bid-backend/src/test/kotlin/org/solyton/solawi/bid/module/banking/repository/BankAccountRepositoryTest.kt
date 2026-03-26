@@ -9,6 +9,7 @@ import org.junit.jupiter.api.assertThrows
 import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.module.banking.data.BIC
 import org.solyton.solawi.bid.module.banking.data.IBAN
+import org.solyton.solawi.bid.module.banking.schema.AccountType
 import org.solyton.solawi.bid.module.banking.exception.BankAccountsException
 import org.solyton.solawi.bid.module.banking.schema.BankAccountAccessorsTable
 import org.solyton.solawi.bid.module.banking.schema.BankAccountsTable
@@ -45,7 +46,7 @@ class BankAccountRepositoryTest {
         val iban = IBAN("DE89370400440532013000")
         val bic = BIC("DEUTDEBBXXX")
 
-        val bankAccount = createBankAccount(userId, iban, bic, creatorId)
+        val bankAccount = createBankAccount(userId, iban, bic, "", true, AccountType.DEBTOR, creatorId)
 
         assertNotNull(bankAccount)
         assertEquals(userId, bankAccount.userId)
@@ -68,7 +69,7 @@ class BankAccountRepositoryTest {
         val bic = BIC("DEUTDEBBXXX")
 
         val exception = assertThrows<BankAccountsException.InvalidIban> {
-            createBankAccount(userId, invalidIban, bic, creatorId)
+            createBankAccount(userId, invalidIban, bic, "", true, AccountType.DEBTOR, creatorId)
         }
 
         assertEquals("Invalid IBAN format: ${invalidIban.value}", exception.message)
@@ -89,7 +90,7 @@ class BankAccountRepositoryTest {
         val invalidBic = BIC("INVALDEDB60")
 
         val exception = assertThrows<BankAccountsException.InvalidBicCountryCode> {
-            createBankAccount(userId, iban, invalidBic, creatorId)
+            createBankAccount(userId, iban, invalidBic,  "", true, AccountType.DEBTOR,creatorId)
         }
 
         assertEquals("Invalid BIC country code: ${invalidBic.value}", exception.message)
@@ -103,7 +104,7 @@ class BankAccountRepositoryTest {
         val bic = BIC("DEUTDEBBXXX")
 
         assertThrows<UserManagementException.UserDoesNotExist> {
-            createBankAccount(nonExistentUserId, iban, bic, creatorId)
+            createBankAccount(nonExistentUserId, iban, bic,  "", true, AccountType.DEBTOR,creatorId)
         }
     }
 
@@ -120,7 +121,7 @@ class BankAccountRepositoryTest {
         val iban = IBAN("DE89370400440532013000")
         val bic = BIC("DEUTDEBBXXX")
 
-        val bankAccount = createBankAccount(userId, iban, bic, creatorId)
+        val bankAccount = createBankAccount(userId, iban, bic,  "", true, AccountType.DEBTOR,creatorId)
         val accessorId = UUID.randomUUID()
         val accessor = createBankAccountAccessor(accessorId, bankAccount)
 
@@ -142,7 +143,7 @@ class BankAccountRepositoryTest {
         val iban = IBAN("DE89370400440532013000")
         val bic = BIC("DEUTDEBBXXX")
 
-        val createdAccount = createBankAccount(userId, iban, bic, creatorId)
+        val createdAccount = createBankAccount(userId, iban, bic,  "", true, AccountType.DEBTOR,creatorId)
         val retrievedAccount = readBankAccount(createdAccount.id.value)
 
         assertNotNull(retrievedAccount)
@@ -175,12 +176,12 @@ class BankAccountRepositoryTest {
         val newIban = IBAN("ES9121000418450200051332")
         val newBic = BIC("DEUTDEFFXXX")
 
-        val account = createBankAccount(userId, originalIban, originalBic, creatorId)
+        val account = createBankAccount(userId, originalIban, originalBic,  "", true, AccountType.DEBTOR,creatorId)
         val updatedAccount = updateBankAccount(
             account.id.value,
             userId,
             newIban,
-            newBic,
+            newBic, "", true, AccountType.DEBTOR,
             creatorId
         )
 
@@ -197,7 +198,7 @@ class BankAccountRepositoryTest {
         val bic = BIC("DEUTDEBBXXX")
 
         assertThrows<BankAccountsException.NoSuchBankAccount> {
-            updateBankAccount(nonExistentId, userId, iban, bic, UUID.randomUUID())
+            updateBankAccount(nonExistentId, userId, iban, bic,  "", true, AccountType.DEBTOR,UUID.randomUUID())
         }
     }
 
@@ -215,7 +216,7 @@ class BankAccountRepositoryTest {
         val iban = IBAN("DE89370400440532013000")
         val bic = BIC("DEUTDEBBXXX")
 
-        val account = createBankAccount(userId, iban, bic, creatorId)
+        val account = createBankAccount(userId, iban, bic,  "", true, AccountType.DEBTOR,creatorId)
         deleteBankAccount(account.id.value)
 
         assertThrows<BankAccountsException.NoSuchBankAccount> {

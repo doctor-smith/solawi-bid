@@ -12,6 +12,12 @@ import org.solyton.solawi.bid.module.values.Username
 
 typealias ApiBankAccount = BankAccount
 typealias ApiBankAccounts = BankAccounts
+typealias ApiAccountType = AccountType
+
+@Serializable
+enum class AccountType {
+    CREDITOR, DEBTOR
+}
 
 @Serializable
 data class BankAccounts(
@@ -44,7 +50,10 @@ data class ReadBankAccount(
 data class CreateBankAccount(
     val userId: UserId,
     val bic: BIC,
-    val iban: IBAN
+    val iban: IBAN,
+    val accountHolder: String? = null,
+    val isActive: Boolean = true,
+    val accessType: AccountType = AccountType.DEBTOR,
 )
 
 @Serializable
