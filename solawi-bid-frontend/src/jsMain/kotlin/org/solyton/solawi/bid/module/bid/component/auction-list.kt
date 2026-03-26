@@ -65,7 +65,8 @@ fun AuctionList(
     AuctionListHeader(styles)
     // LineSeparator(headerSeparatorStyles)
     with(auctions.read()) {
-        forEachIndexed{ index, auction ->
+        sortedByDescending { it.date }
+        .forEachIndexed{ index, auction ->
             AuctionListItem(
                 auctions * FirstBy<Auction> { it.auctionId == auction.auctionId},
                 user,
