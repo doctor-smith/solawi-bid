@@ -8,6 +8,7 @@ import org.solyton.solawi.bid.module.application.exception.ApplicationException
 import org.solyton.solawi.bid.module.authentication.exception.AuthenticationException
 import org.solyton.solawi.bid.module.banking.exception.BankAccountsException
 import org.solyton.solawi.bid.module.banking.exception.FiscalYearException
+import org.solyton.solawi.bid.module.banking.exception.LegalEntityException
 import org.solyton.solawi.bid.module.bid.data.api.RoundStateException
 import org.solyton.solawi.bid.module.bid.exception.BidRoundException
 import org.solyton.solawi.bid.module.distribution.exception.DistributionPointException
@@ -88,6 +89,8 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
             is BankAccountsException.BicNotInEU -> HttpStatusCode.BadRequest
             is BankAccountsException.NoSuchCreditorId -> HttpStatusCode.NotFound
             is BankAccountsException.CannotCreateMandateReference -> HttpStatusCode.BadRequest
+            is BankAccountsException.NoSuchCreditorBankAccountAccess -> HttpStatusCode.NotFound
+            is BankAccountsException.NoSuchDebtorBankAccountAccess -> HttpStatusCode.NotFound
         }
         is FiscalYearException -> when(value as FiscalYearException) {
             is FiscalYearException.NoSuchFiscalYear -> HttpStatusCode.NotFound
@@ -97,6 +100,9 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
             is FiscalYearException.StartAfterEnd -> HttpStatusCode.BadRequest
             is FiscalYearException.TooManyPerYear -> HttpStatusCode.BadRequest
         }
+        is LegalEntityException -> when(value as LegalEntityException) {
+            is LegalEntityException.NoSuchLegalEntity-> HttpStatusCode.BadRequest
+        }
 
         //User
         is UserManagementException -> when(value as UserManagementException) {
@@ -105,6 +111,7 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
             is UserManagementException.NoSuchUserProfile -> HttpStatusCode.NotFound
             is UserManagementException.UsersDoNotExist -> HttpStatusCode.NotFound
         }
+
         // Organization
         is OrganizationException -> when(value as OrganizationException) {
             is OrganizationException.NoSuchOrganization -> HttpStatusCode.NotFound

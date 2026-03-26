@@ -10,6 +10,7 @@ import org.solyton.solawi.bid.module.banking.data.BankAccountId
 import org.solyton.solawi.bid.module.banking.data.IBAN
 import org.solyton.solawi.bid.module.banking.data.api.ImportBankAccount
 import org.solyton.solawi.bid.module.banking.data.toUUID
+import org.solyton.solawi.bid.module.banking.schema.AccountType
 import org.solyton.solawi.bid.module.banking.schema.BankAccountAccessorEntity
 import org.solyton.solawi.bid.module.banking.schema.BankAccountAccessorsTable
 import org.solyton.solawi.bid.module.banking.schema.BankAccountEntity
@@ -32,6 +33,9 @@ import java.util.*
  * @param userId The unique identifier of the user to associate with this bank account.
  * @param iban The International Bank Account Number (IBAN) for the bank account.
  * @param bic The Bank Identifier Code (BIC) for the bank account.
+ * @param accountHolder The name of the bank account holder. Defaults to an empty string if not provided.
+ * @param isActive A flag indicating whether the bank account is active. Defaults to true.
+ * @param accountType The type of the bank account (e.g., DEBTOR). Defaults to `DEBTOR` if not provided.
  * @param creatorId The unique identifier of the user or process creating this bank account.
  * @return The newly created bank account entity.
  * @throws org.solyton.solawi.bid.module.banking.exception.BankAccountsException.InvalidIban If the provided IBAN is invalid.
@@ -42,6 +46,9 @@ fun Transaction.createBankAccount(
     userId: UUID,
     iban: IBAN,
     bic: BIC,
+    accountHolder: String = "",
+    isActive: Boolean = true,
+    accountType: AccountType = AccountType.DEBTOR,
     creatorId: UUID
 ) : BankAccountEntity {
     validateBic(bic.value)
@@ -53,14 +60,17 @@ fun Transaction.createBankAccount(
         this.userId = userId
         this.iban = iban.value
         this.bic = bic.value
+        this.accountHolder = accountHolder
+        this.isActive = isActive
+        this.accountType = accountType
     }
     return bankAccount
 }
 
 /**
- * Retrieves a bank account associated with the specified account ID, ensuring it exists.
+ * Retrieves a bank account associated with the specified unique account ID, ensuring it exists.
  *
- * @param bankAccountId The unique identifier of the bank account to be retrieved.
+ * @param bankAccountId The unique identifier (UUID) of the bank account to be retrieved.
  * @return The bank account entity corresponding to the provided bank account ID.
  * @throws BankAccountsException.NoSuchBankAccount If no bank account exists with the specified ID.
  */
@@ -88,11 +98,16 @@ fun Transaction.readBankAccountsByLegalEntity(legalEntityId: UUID) : List<BankAc
 
 /**
  * Updates the details of an existing bank account with new information.
+ * Optional parameters such as accountHolder, isActive, and accountType can be set to modify respective values.
+ * Automatically updates the `modifiedBy` and `modifiedAt` attributes if any information changes.
  *
  * @param bankAccountId The unique identifier of the bank account to be updated.
  * @param userId The unique identifier of the user associated with the bank account.
  * @param iban The International Bank Account Number (IBAN) of the bank account.
  * @param bic The Bank Identifier Code (BIC) of the bank account.
+ * @param accountHolder The name of the bank account holder. Defaults to an empty string.
+ * @param isActive A flag indicating active status. Defaults to true.
+ * @param accountType The type of the bank account. Defaults to `DEBTOR`.
  * @param modifierId The unique identifier of the entity making the modification.
  * @return The updated bank account entity.
  */
@@ -101,6 +116,9 @@ fun Transaction.updateBankAccount(
     userId: UUID,
     iban: IBAN,
     bic: BIC,
+    accountHolder: String = "",
+    isActive: Boolean = true,
+    accountType: AccountType = AccountType.DEBTOR,
     modifierId: UUID
 ) : BankAccountEntity {
     val bankAccount = validatedBankAccount(bankAccountId)
@@ -111,10 +129,16 @@ fun Transaction.updateBankAccount(
     val changed = bankAccount.userId != userId
         || bankAccount.iban != iban.value
         || bankAccount.bic != bic.value
+        || bankAccount.accountHolder != accountHolder
+        || bankAccount.isActive != isActive
+        || bankAccount.accountType != accountType
 
     bankAccount.userId = userId
     bankAccount.iban = iban.value
     bankAccount.bic = bic.value
+    bankAccount.accountHolder = accountHolder
+    bankAccount.isActive = isActive
+    bankAccount.accountType = accountType
 
     if(changed) {
         bankAccount.modifiedBy = modifierId
@@ -138,8 +162,8 @@ fun Transaction.deleteBankAccount(bankAccountId: UUID) : UUID {
 }
 
 /**
- * Imports a list of bank accounts by either creating new accounts or updating existing ones
- * based on the provided data. Associates the accounts with a specified accessor.
+ * Imports a list of bank accounts by either updating existing ones or creating new accounts
+ * based on the provided data. Associates the accounts with a specified accessor, prioritizing updates when applicable.
  *
  * @param accessorId The unique identifier of the accessor for which the bank accounts are being imported.
  * @param accounts A list of bank accounts to be imported consisting of user ID, IBAN, and BIC details.
@@ -189,6 +213,9 @@ fun Transaction.importBankAccounts(
                 userId,
                 iban,
                 bic,
+                "",
+                true,
+                AccountType.DEBTOR,
                 accessorId
             )
             createBankAccountAccessor(accessorId, newBankAccount)
@@ -208,6 +235,9 @@ fun Transaction.importBankAccounts(
             userId,
             bankAccount.iban,
             bankAccount.bic,
+            "",
+            true,
+            AccountType.DEBTOR,
             accessorId
         )
     }
@@ -231,7 +261,7 @@ fun Transaction.createBankAccountAccessor(
 }
 
 /**
- * Deletes a bank account by its unique identifier.
+ * Deletes a bank account by its unique identifier and removes corresponding entries from accessors and account tables.
  *
  * @param bankAccountId The identifier of the bank account to be deleted.
  * @return A boolean value indicating whether the deletion was successful. Returns `true` if the bank account
