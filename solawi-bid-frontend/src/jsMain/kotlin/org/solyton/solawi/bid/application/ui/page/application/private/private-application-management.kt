@@ -260,7 +260,7 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) {
                                         device = device,
                                         styles = { dev -> auctionModalStyles(dev) },
                                         application = application,
-                                        organizations = organizations.read().import(),
+                                        organizations = organizations.read(),
                                         setOrganizationId = { id -> organizationId = id },
                                         cancel = {}
                                     ) {

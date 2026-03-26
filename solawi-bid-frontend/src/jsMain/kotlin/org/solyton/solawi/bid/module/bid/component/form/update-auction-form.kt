@@ -21,6 +21,7 @@ import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.map
 import org.evoleq.math.onIsDouble
+import org.evoleq.optics.lens.DeepSearch
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
@@ -37,6 +38,7 @@ import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
 import org.solyton.solawi.bid.module.bid.data.auction.*
 import org.solyton.solawi.bid.module.bid.service.onNullEmpty
 import org.solyton.solawi.bid.module.style.form.*
+import org.solyton.solawi.bid.module.user.component.dropdown.flatMap
 import org.solyton.solawi.bid.module.user.data.organization.Organization
 import org.w3c.dom.HTMLElement
 
@@ -70,7 +72,7 @@ fun UpdateAuctionModal(
     val inputs: Lang.Block = texts.component("inputs")
 
     val organizationsMap by produceState<Map<String, Organization>>(emptyMap()) {
-        value = organizations.emit().flatById()
+        value = flatMap(organizations.emit())
     }
 
     val applicationTimesOrganizationToContextMap by produceState(emptyMap()) {
@@ -175,13 +177,16 @@ fun UpdateAuctionModal(
                         val organizationId = applicationTimesContextToOrganizationMap[
                             ApplicationContextKey(applicationId.emit(),this@contextId)
                         ]?.organizationId
+                        println("organizationId: $organizationId")
                         organizationsMap[organizationId]
                     }
                 },
                 organizations = organizations,
                 // todo:dev SMA-403 POC
-                isSelectable = { organizations.emit().any { o -> o.organizationId == organizationId } },
-                scope = CoroutineScope(Job())
+                isSelectable = {
+                    val appsToOrgs = applicationTimesOrganizationToContextMap.keys
+                    ApplicationOrganizationKey(applicationId.emit(), organizationId) in appsToOrgs
+                },
             ) {
                 organization ->
                 // add organization context to auction
