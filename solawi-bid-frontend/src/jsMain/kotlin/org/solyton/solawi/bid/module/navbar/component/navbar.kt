@@ -43,6 +43,7 @@ fun NavBar(
         Color.transparent,
         {"Home"},
         device,
+        isDisabled = true
     ){
         navigate("/home")
     }
