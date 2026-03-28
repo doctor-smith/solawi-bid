@@ -11,6 +11,7 @@ import org.evoleq.math.x
 import org.solyton.solawi.bid.module.banking.data.api.BankAccount
 import org.solyton.solawi.bid.module.banking.data.api.UpdateBankAccount
 import org.solyton.solawi.bid.module.banking.data.toApiType
+import org.solyton.solawi.bid.module.banking.data.toDomainType
 import org.solyton.solawi.bid.module.banking.data.toUUID
 import org.solyton.solawi.bid.module.banking.repository.updateBankAccount
 import org.solyton.solawil.bid.module.bid.data.api.toUUID
@@ -22,13 +23,16 @@ fun UpdateBankAccount(): KlAction<Result<Contextual<UpdateBankAccount>>, Result<
     DbAction { database ->
         result bindSuspend { (creator, _ , data) ->
             resultTransaction(database) {
-                val (bankAccountId, userId, bic, iban) = data
+                val (bankAccountId, userId, bic, iban, accountHolder, isActive, accountType) = data
 
                 updateBankAccount(
                     bankAccountId = bankAccountId.toUUID(),
                     userId = userId.toUUID(),
                     iban = iban,
                     bic = bic,
+                    accountHolder = accountHolder.orEmpty(),
+                    isActive = isActive,
+                    accountType = accountType.toDomainType(),
                     modifierId = creator
                 ).toApiType()
             }

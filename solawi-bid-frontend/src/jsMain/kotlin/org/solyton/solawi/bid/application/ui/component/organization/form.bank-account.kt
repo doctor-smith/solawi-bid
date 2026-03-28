@@ -24,6 +24,7 @@ import org.solyton.solawi.bid.module.banking.data.BIC
 import org.solyton.solawi.bid.module.banking.data.BankAccountId
 import org.solyton.solawi.bid.module.banking.data.IBAN
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
+import org.solyton.solawi.bid.module.banking.data.bankaccount.bankAccountHolder
 import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
@@ -45,8 +46,37 @@ fun BankAccountForm(
         val bankAccountInputs = inputs * subComp("bankAccount")
         var ibanState by remember { mutableStateOf(bankAccount?.iban?.value) }
         var bicState by remember { mutableStateOf(bankAccount?.bic?.value) }
+        var bankAccountHolderState by remember { mutableStateOf(bankAccount?.bankAccountHolder?: "") }
 
         H3{Text((bankAccountInputs * title).emit())}
+        Field(fieldDesktopStyle) {
+
+            Label(
+                (bankAccountInputs * subComp("bankAccountHolder") * title).emit(),
+                id = "bank-account-holder",
+                labelStyle = formLabelDesktopStyle
+            )
+            TextInput(bankAccountHolderState ) {
+                id("bank-account-holder")
+                style { textInputDesktopStyle() }
+                onInput {
+                    try {
+                        val newBankAccount = bankAccount?.copy(bankAccountHolder = it.value)?: BankAccount(
+                            userId = userId,
+                            bankAccountId = BankAccountId(NIL_UUID),
+                            bankAccountHolder = it.value,
+                            iban = IBAN(ibanState?:""),
+                            bic = BIC(bicState?:""),
+                        )
+                        setBankAccount(newBankAccount)
+                    } catch (exception: Exception) {
+                        // validation stuff
+                    } finally {
+                        bankAccountHolderState = it.value
+                    }
+                }
+            }
+        }
         Field(fieldDesktopStyle) {
 
             Label(
@@ -62,6 +92,7 @@ fun BankAccountForm(
                         val newBankAccount = bankAccount?.copy(iban = IBAN(it.value))?: BankAccount(
                             userId = userId,
                             bankAccountId = BankAccountId(NIL_UUID),
+                            bankAccountHolder = bankAccountHolderState,
                             iban = IBAN(it.value),
                             bic = BIC(bicState?:""),
                         )
@@ -89,6 +120,7 @@ fun BankAccountForm(
                         val newBankAccount = bankAccount?.copy(bic = BIC(it.value))?: BankAccount(
                             userId = userId,
                             bankAccountId = BankAccountId(NIL_UUID),
+                            bankAccountHolder = bankAccountHolderState,
                             iban = IBAN(ibanState?:""),
                             bic = BIC(it.value),
                         )

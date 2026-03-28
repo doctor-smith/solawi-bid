@@ -29,6 +29,8 @@ class BlockConfiguration : Configuration<Block> {
         val item = configure()
         this@BlockConfiguration.value += item
     }
+
+    fun add(vararg values: Lang) = value.addAll(values)
 }
 
 class VariableConfiguration : Configuration<Lang.Variable> {
@@ -48,4 +50,10 @@ fun Any?.language(configuration: BlockConfiguration.()->Unit): Lang = with(Block
 fun texts(configuration: BlockConfiguration.()->Unit): Block = with(BlockConfiguration()) {
     configuration()
     return configure()
+}
+
+fun Lang.Block.extend(configuration: BlockConfiguration.()->Unit): Block = texts{
+    key = this@extend.key
+    add(*this@extend.value.toTypedArray())
+    configuration()
 }

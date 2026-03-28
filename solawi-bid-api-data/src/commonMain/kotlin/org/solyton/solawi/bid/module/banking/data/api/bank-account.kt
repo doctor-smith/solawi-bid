@@ -29,7 +29,10 @@ data class BankAccount(
     val id: BankAccountId,
     val userId: UserId,
     val bic: BIC,
-    val iban: IBAN
+    val iban: IBAN,
+    val accountHolder: String? = null,
+    val isActive: Boolean = true,
+    val accountType: AccountType = AccountType.DEBTOR,
 )
 
 @Serializable
@@ -61,7 +64,10 @@ data class UpdateBankAccount(
     val id: BankAccountId,
     val userId: UserId,
     val bic: BIC,
-    val iban: IBAN
+    val iban: IBAN,
+    val accountHolder: String? = null,
+    val isActive: Boolean = true,
+    val accountType: AccountType = AccountType.DEBTOR,
 )
 
 @Serializable
@@ -79,6 +85,9 @@ data class DeleteBankAccount(
 @Serializable
 data class ImportBankAccount(
     val username: Username,
+    val bankAccountHolder: String,
     val bic: BIC,
-    val iban: IBAN
+    val iban: IBAN,
+    val isActive: Boolean,
+    val accountType: AccountType = AccountType.DEBTOR,
 )

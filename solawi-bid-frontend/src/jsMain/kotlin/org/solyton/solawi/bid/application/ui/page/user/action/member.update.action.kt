@@ -16,6 +16,8 @@ import org.solyton.solawi.bid.module.banking.action.importBankAccounts
 import org.solyton.solawi.bid.module.banking.action.updateBankAccount
 import org.solyton.solawi.bid.module.banking.data.api.ImportBankAccount
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
+import org.solyton.solawi.bid.module.banking.data.bankaccount.bankAccountHolder
+import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.shares.action.CREATE_SHARE_SUBSCRIPTION
 import org.solyton.solawi.bid.module.shares.action.UPDATE_SHARE_SUBSCRIPTION
 import org.solyton.solawi.bid.module.shares.action.createShareSubscription
@@ -163,8 +165,11 @@ fun Storage<Application>.memberUpdateAction(
                     bankAccountsToImport = listOf(
                         ImportBankAccount(
                             username = Username(username),
-                            bankAccountState.bic,
-                            bankAccountState.iban
+                            bic = bankAccountState.bic,
+                            iban = bankAccountState.iban,
+                            bankAccountHolder = bankAccountState.bankAccountHolder,
+                            isActive = bankAccountState.isActive,
+                            accountType = bankAccountState.bankAccountType.toApiType()
                         )
                     )
                 ),
@@ -178,7 +183,8 @@ fun Storage<Application>.memberUpdateAction(
                     bankAccountId = bankAccount.bankAccountId,
                     userId = UserId(userId),
                     iban = bankAccountState.iban,
-                    bic = bankAccountState.bic
+                    bic = bankAccountState.bic,
+                    bankAccountHolder = bankAccountState.bankAccountHolder
                 ),
                 id = UPDATE_BANK_ACCOUNT,
                 clearOnFinish = true

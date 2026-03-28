@@ -12,6 +12,7 @@ import org.solyton.solawi.bid.module.banking.action.IMPORT_BANK_ACCOUNTS
 import org.solyton.solawi.bid.module.banking.action.importBankAccounts
 import org.solyton.solawi.bid.module.banking.data.api.ImportBankAccount
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
+import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.process.service.process.next
 import org.solyton.solawi.bid.module.process.service.process.sequence
 import org.solyton.solawi.bid.module.shares.action.IMPORT_SHARE_SUBSCRIPTIONS
@@ -29,7 +30,6 @@ import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfiles
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfileToImport
 import org.solyton.solawi.bid.module.user.data.profile.UserProfile
-import org.solyton.solawi.bid.module.user.data.profile.phoneNumber1
 import org.solyton.solawi.bid.module.values.AccessorId
 import org.solyton.solawi.bid.module.values.ProviderId
 import org.solyton.solawi.bid.module.values.Username
@@ -54,15 +54,6 @@ fun memberCreateAction(
         shareSubscriptionsRequired = false
     )
 ): ActionEnvelope<Application, *, *> {
-
-    println("""
-        |providerId: $providerId
-        |username: $username
-        |userProfileChange: $userProfileChange
-        |bankAccountChange: $bankAccountChange
-        |shareSubscriptionsChange: $shareSubscriptionsChange
-        |requirements: $requirements
-    """.trimMargin())
 
     val importMembers = ImportMembers(providerId.value, listOf(username.value))
 
@@ -114,8 +105,11 @@ fun memberCreateAction(
     val bankAccountsToImport: List<ImportBankAccount>? = bankAccountChange.new?.let { listOf(
         ImportBankAccount(
             username = username,
+            bankAccountHolder = it.bankAccountHolder,
             bic = it.bic,
-            iban = it.iban
+            iban = it.iban,
+            isActive = it.isActive,
+            accountType = it.bankAccountType.toApiType(),
         )
     ) }
 

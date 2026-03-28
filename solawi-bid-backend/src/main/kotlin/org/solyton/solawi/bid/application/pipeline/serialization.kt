@@ -297,6 +297,7 @@ fun installSerializers() {
 
         // Banking
         add<BankAccount>(BankAccount.serializer())
+        add<AccountType>(AccountType.serializer())
         add<BankAccounts>(BankAccounts.serializer())
         add<ReadBankAccounts>(ReadBankAccounts.serializer())
         add<ReadBankAccount>(ReadBankAccount.serializer())
@@ -312,214 +313,15 @@ fun installSerializers() {
         add<ReadFiscalYear>(ReadFiscalYear.serializer())
         add<UpdateFiscalYear>(UpdateFiscalYear.serializer())
         add<DeleteFiscalYear>(DeleteFiscalYear.serializer())
+
+        // Legal Entities
+        add<LegalEntity>(LegalEntity.serializer())
+        add<LegalEntityType>(LegalEntityType.serializer())
+        add<LegalEntities>(LegalEntities.serializer())
+        add<CreateLegalEntity>(CreateLegalEntity.serializer())
+        add<ReadLegalEntity>(ReadLegalEntity.serializer())
+        add<ReadLegalEntitiesOfProvider>(ReadLegalEntitiesOfProvider.serializer())
+        add<UpdateLegalEntity>(UpdateLegalEntity.serializer())
+        add<DeleteLegalEntity>(DeleteLegalEntity.serializer())
     }
-
-    /*
-    // primitive serializers
-    serializers[Int::class] = Int.serializer()
-    serializers[Boolean::class] = Boolean.serializer()
-    serializers[String::class] = String.serializer()
-    serializers[Double::class] = Double.serializer()
-    serializers[Unit::class] = Unit.serializer()
-    // Result serializers
-    serializers[Result::class] = ResultSerializer
-    serializers[Result.Success::class] = ResultSerializer
-    serializers[Result.Failure::class] = ResultSerializer
-    serializers[Result.Failure.Message::class] = ResultSerializer
-
-    // General
-    serializers[Identifier::class] = Identifier.serializer()
-    // Login serializers
-    serializers[Login::class] = Login.serializer()
-    serializers[LoggedIn::class] = LoggedIn.serializer()
-    serializers[RefreshToken::class] = RefreshToken.serializer()
-    serializers[AccessToken::class] = AccessToken.serializer()
-    serializers[IsLoggedIn::class] = IsLoggedIn.serializer()
-    serializers[LoggedInAs::class] = LoggedInAs.serializer()
-    serializers[Logout::class] = Logout.serializer()
-    // Bid serializers
-    serializers[Bid::class] = Bid.serializer()
-    serializers[BidRound::class] = BidRound.serializer()
-    serializers[GetRound::class] = GetRound.serializer()
-    // Auction
-    serializers[Auction::class] = Auction.serializer()
-    serializers[CreateAuction::class] = CreateAuction.serializer()
-    serializers[GetAuctions::class] = GetAuctions.serializer()
-    serializers[Auctions::class] = Auctions.serializer()
-    serializers[DeleteAuctions::class] = DeleteAuctions.serializer()
-    serializers[UpdateAuctions::class] = UpdateAuctions.serializer()
-    serializers[ConfigureAuction::class] = ConfigureAuction.serializer()
-    serializers[AuctionDetails::class] = AuctionDetails.serializer()
-    serializers[AuctionDetails.SolawiTuebingen::class] = AuctionDetails.SolawiTuebingen.serializer()
-    // Auction/Bidders
-    serializers[NewBidder::class] = NewBidder.serializer()
-    serializers[Bidder::class] = Bidder.serializer()
-    serializers[ImportBidders::class] = ImportBidders.serializer()
-    serializers[DeleteBidders::class] = DeleteBidders.serializer()
-    serializers[BidderInfo::class] = BidderInfo.serializer()
-    // Round
-    serializers[Round::class] = Round.serializer()
-    serializers[BidRound::class] = BidRound.serializer()
-    serializers[GetRound::class] = GetRound.serializer()
-    serializers[CreateRound::class] = CreateRound.serializer()
-    serializers[ChangeRoundState::class] = ChangeRoundState.serializer()
-    serializers[BidInfo::class] = BidInfo.serializer()
-    serializers[ExportBidRound::class] = ExportBidRound.serializer()
-    serializers[BidRoundResults::class] = BidRoundResults.serializer()
-    serializers[BidResult::class] = BidResult.serializer()
-    serializers[EvaluateBidRound::class] = EvaluateBidRound.serializer()
-    serializers[BidRoundEvaluation::class] = BidRoundEvaluation.serializer()
-    serializers[PreEvaluateBidRound::class] = PreEvaluateBidRound.serializer()
-    serializers[BidRoundPreEvaluation::class] = BidRoundPreEvaluation.serializer()
-    serializers[WeightedBid::class] = WeightedBid.serializer()
-    serializers[AcceptRound::class] = AcceptRound.serializer()
-    serializers[AcceptedRound::class] = AcceptedRound.serializer()
-    serializers[RoundComments::class] = RoundComments.serializer()
-    serializers[RoundComment::class] = RoundComment.serializer()
-    serializers[CommentOnRound::class] = CommentOnRound.serializer()
-    // Search Bidders
-    serializers[BidderMails::class] = BidderMails.serializer()
-    serializers[BidderData::class] = BidderData.serializer()
-    serializers[SearchBidderData::class] = SearchBidderData.serializer()
-    serializers[AddBidders::class] = AddBidders.serializer()
-    // Shares
-    serializers[Share::class] = Share.serializer()
-    serializers[Shares::class] = Shares.serializer()
-    serializers[ShareType::class] = ShareType.serializer()
-    serializers[ShareTypes::class] = ShareTypes.serializer()
-    serializers[CreateShareType::class] = CreateShareType.serializer()
-    serializers[UpdateShareType::class] = UpdateShareType.serializer()
-    // ShareOffer
-    serializers[ShareOffer::class] = ShareOffer.serializer()
-    serializers[ShareOffers::class] = ShareOffers.serializer()
-    serializers[CreateShareOffer::class] = CreateShareOffer.serializer()
-    serializers[UpdateShareOffer::class] = UpdateShareOffer.serializer()
-    // ShareSubscription
-    serializers[ShareSubscription::class] = ShareSubscription.serializer()
-    serializers[ShareSubscriptions::class] = ShareSubscriptions.serializer()
-    serializers[CreateShareSubscription::class] = CreateShareSubscription.serializer()
-    serializers[UpdateShareSubscription::class] = UpdateShareSubscription.serializer()
-    // ShareStatus
-    serializers[ShareStatus::class] = ShareStatus.serializer()
-    // PricingType
-    serializers[PricingType::class] = PricingType.serializer()
-
-
-    // Distribution Points
-    serializers[DistributionPoint::class] = DistributionPoint.serializer()
-    serializers[DistributionPoints::class] = DistributionPoints.serializer()
-    serializers[CreateDistributionPoint::class] = CreateDistributionPoint.serializer()
-    serializers[UpdateDistributionPoint::class] = UpdateDistributionPoint.serializer()
-    serializers[DeleteDistributionPoint::class] = DeleteDistributionPoint.serializer()
-    serializers[ReadDistributionPoints::class] = ReadDistributionPoints.serializer()
-    serializers[ReadDistributionPoint::class] = ReadDistributionPoint.serializer()
-    serializers[CreateOrUseAddress::class] = CreateOrUseAddress.serializer()
-    serializers[CreateOrUseAddress.Create::class] = CreateOrUseAddress.Create.serializer()
-    serializers[CreateOrUseAddress.Use::class] = CreateOrUseAddress.Use.serializer()
-
-    // UserManagement
-    serializers[CreateUser::class] = CreateUser.serializer()
-    serializers[User::class] = User.serializer()
-    serializers[Users::class] = Users.serializer()
-    serializers[GetUsers::class] = GetUsers.serializer()
-    serializers[ChangePassword::class] = ChangePassword.serializer()
-    serializers[UserProfile::class] = UserProfile.serializer()
-    serializers[UserProfiles::class] = UserProfiles.serializer()
-    serializers[ReadUserProfiles::class] = ReadUserProfiles.serializer()
-    serializers[ReadUserProfile::class] = ReadUserProfile.serializer()
-    serializers[UpdateUserProfile::class] = UpdateUserProfile.serializer()
-    serializers[CreateUserProfile::class] = CreateUserProfile.serializer()
-    serializers[DeleteUserProfile::class] = DeleteUserProfile.serializer()
-    serializers[UserProfileToImport::class] = UserProfileToImport.serializer()
-    serializers[ImportUserProfiles::class] = ImportUserProfiles.serializer()
-    serializers[Address::class] = Address.serializer()
-    serializers[CreateAddress::class] = CreateAddress.serializer()
-    serializers[UpdateAddress::class] = UpdateAddress.serializer()
-    serializers[DeleteAddress::class] = DeleteAddress.serializer()
-    serializers[ReadAddresses::class] = ReadAddresses.serializer()
-    serializers[ReadAddress::class] = ReadAddress.serializer()
-    // Permissions
-    serializers[ReadRightRoleContexts::class] = ReadRightRoleContexts.serializer()
-    serializers[ReadRightRoleContextsOfUser::class] = ReadRightRoleContextsOfUser.serializer()
-    serializers[ReadRightRoleContextsOfUsers::class] = ReadRightRoleContextsOfUsers.serializer()
-    serializers[ReadParentChildRelationsOfContexts::class] = ReadParentChildRelationsOfContexts.serializer()
-    serializers[PutUserRoleContext::class] = PutUserRoleContext.serializer()
-    serializers[ParentChildRelationsOfContext::class] = ParentChildRelationsOfContext.serializer()
-    serializers[ParentChildRelationsOfContexts::class] = ParentChildRelationsOfContexts.serializer()
-    serializers[Contexts::class] = Contexts.serializer()
-    serializers[Context::class] = Context.serializer()
-    serializers[Role::class] = Role.serializer()
-    serializers[Right::class] = Right.serializer()
-    serializers[UserContext::class] = UserContext.serializer()
-    serializers[UserToContextsMap::class] = UserToContextsMap.serializer()
-
-    // Application / Modules
-    serializers[ReadApplications::class] = ReadApplications.serializer()
-    serializers[ReadUserApplications::class] = ReadUserApplications.serializer()
-    serializers[ReadPersonalUserApplications::class] = ReadPersonalUserApplications.serializer()
-    serializers[ReadPersonalApplicationContextRelations::class] = ReadPersonalApplicationContextRelations.serializer()
-    serializers[ReadPersonalModuleContextRelations::class] = ReadPersonalModuleContextRelations.serializer()
-    serializers[RegisterForApplications::class] = RegisterForApplications.serializer()
-    serializers[StartTrialsOfApplications::class] = StartTrialsOfApplications.serializer()
-    serializers[SubscribeApplications::class] = SubscribeApplications.serializer()
-    serializers[RegisterForModules::class] = RegisterForModules.serializer()
-    serializers[StartTrialsOfModules::class] = StartTrialsOfModules.serializer()
-    serializers[SubscribeModules::class] = SubscribeModules.serializer()
-    serializers[ReadApplicationOrganizationContextRelations::class] = ReadApplicationOrganizationContextRelations.serializer()
-    serializers[ConnectApplicationToOrganization::class] = ConnectApplicationToOrganization.serializer()
-    serializers[UpdateOrganizationModuleRelations::class] = UpdateOrganizationModuleRelations.serializer()
-
-    serializers[ApiApplications::class] = ApiApplications.serializer()
-    serializers[ApiApplication::class] = ApiApplication.serializer()
-    serializers[ApiUserApplications::class] = ApiUserApplications.serializer()
-    serializers[ApiModule::class] = ApiModule.serializer()
-    serializers[ApiLifecycleStage::class] = ApiLifecycleStage.serializer()
-    serializers[LifecycleStage.Empty::class] = LifecycleStage.Empty.serializer()
-    serializers[LifecycleStage.Registered::class] = LifecycleStage.Registered.serializer()
-    serializers[LifecycleStage.Trialing::class] = LifecycleStage.Trialing.serializer()
-    serializers[LifecycleStage.Active::class] = LifecycleStage.Active.serializer()
-    serializers[LifecycleStage.Paused::class] = LifecycleStage.Paused.serializer()
-    serializers[LifecycleStage.PaymentFailedGracePeriod::class] = LifecycleStage.PaymentFailedGracePeriod.serializer()
-    serializers[LifecycleStage.Cancelled::class] = LifecycleStage.Cancelled.serializer()
-    serializers[LifecycleStage.Churned::class] = LifecycleStage.Churned.serializer()
-    serializers[ApplicationContextRelations::class] = ApplicationContextRelations.serializer()
-    serializers[ApplicationContextRelation::class] = ApplicationContextRelation.serializer()
-    serializers[ModuleContextRelations::class] = ModuleContextRelations.serializer()
-    serializers[ModuleContextRelation::class] = ModuleContextRelation.serializer()
-    serializers[ApplicationOrganizationRelation::class] = ApplicationOrganizationRelation.serializer()
-    serializers[ApplicationOrganizationRelations::class] = ApplicationOrganizationRelations.serializer()
-
-    // Organizations
-    serializers[Organizations::class] = Organizations.serializer()
-    serializers[Organization::class] = Organization.serializer()
-    serializers[Member::class] = Member.serializer()
-
-    serializers[CreateOrganization::class] = CreateOrganization.serializer()
-    serializers[CreateChildOrganization::class] = CreateChildOrganization.serializer()
-    serializers[ReadOrganizations::class] = ReadOrganizations.serializer()
-    serializers[UpdateOrganization::class] = UpdateOrganization.serializer()
-    serializers[DeleteOrganization::class] = DeleteOrganization.serializer()
-    serializers[AddMember::class] = AddMember.serializer()
-    serializers[RemoveMember::class] = RemoveMember.serializer()
-    serializers[UpdateMember::class] = UpdateMember.serializer()
-    serializers[ImportMembers::class] = ImportMembers.serializer()
-
-    // Banking
-    serializers[BankAccount::class] = BankAccount.serializer()
-    serializers[ReadBankAccounts::class] = ReadBankAccounts.serializer()
-    serializers[ReadBankAccount::class] = ReadBankAccount.serializer()
-    serializers[CreateBankAccount::class] = CreateBankAccount.serializer()
-    serializers[UpdateBankAccount::class] = UpdateBankAccount.serializer()
-    serializers[DeleteBankAccount::class] = DeleteBankAccount.serializer()
-
-    serializers[FiscalYear::class] = FiscalYear.serializer()
-    serializers[FiscalYears::class] = FiscalYears.serializer()
-    serializers[CreateFiscalYear::class] = CreateFiscalYear.serializer()
-    serializers[ReadFiscalYears::class] = ReadFiscalYears.serializer()
-    serializers[ReadFiscalYear::class] = ReadFiscalYear.serializer()
-    serializers[UpdateFiscalYear::class] = UpdateFiscalYear.serializer()
-    serializers[DeleteFiscalYear::class] = FiscalYear.serializer()
-
-
-     */
 }

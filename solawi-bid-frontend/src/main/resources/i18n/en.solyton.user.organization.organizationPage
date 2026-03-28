@@ -134,6 +134,9 @@ en {
                                 }
                                 bankAccount {
                                     title: "Bank Account"
+                                    bankAccountHolder {
+                                        title: "Holder"
+                                    }
                                     iban {
                                         title: "IBAN"
                                     }

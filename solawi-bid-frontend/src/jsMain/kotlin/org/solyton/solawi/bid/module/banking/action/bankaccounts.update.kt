@@ -11,6 +11,8 @@ import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccount
 import org.solyton.solawi.bid.module.banking.data.api.UpdateBankAccount
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.bankAccounts
+import org.solyton.solawi.bid.module.banking.data.bankaccount.AccountType
+import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.banking.data.toDomainType
 import org.solyton.solawi.bid.module.values.UserId
 
@@ -30,14 +32,20 @@ fun updateBankAccount(
     userId: UserId,
     iban: IBAN,
     bic: BIC,
+    bankAccountHolder: String = "",
+    isActive: Boolean = true,
+    accountType: AccountType = AccountType.DEBTOR,
     nameSuffix: String = ""
 ): Action<BankingApplication, UpdateBankAccount, ApiBankAccount> = Action(
     name = UPDATE_BANK_ACCOUNT.suffixed(nameSuffix),
     reader = { _ -> UpdateBankAccount(
-        bankAccountId,
-        userId,
-        bic,
-        iban,
+        id = bankAccountId,
+        userId = userId,
+        bic = bic,
+        iban = iban,
+        accountHolder = bankAccountHolder,
+        isActive = isActive,
+        accountType = accountType.toApiType()
     ) },
     endPoint = UpdateBankAccount::class,
     writer = bankAccounts.update{

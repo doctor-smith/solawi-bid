@@ -169,6 +169,23 @@ fun <W, P> Lens<W, List<P>>.add(): Writer<W, P> = Writer{
     p -> { w -> set(get(w) + listOf(p) )(w)}
 }
 
+/**
+ * Removes elements from a list within a structure using the provided `removeWhen` predicate.
+ * This method operates through the lens, transforming the original structure by removing
+ * elements that match the specified condition while maintaining immutability.
+ *
+ * @param removeWhen A predicate function that determines whether an element should be removed.
+ *                   It takes elements of type `P` as input and returns `true` for elements to be removed.
+ * @return A `Writer` that, when executed, updates the structure by removing elements matching the predicate.
+ */
+fun <W, P> Lens<W, List<P>>.removeWhen(removeWhen: (P)->Boolean): Writer<W, Boolean> = Writer{
+    bool -> { w -> when(bool){
+        true -> set(get(w).filterNot { removeWhen(it) } )(w)
+        else -> w
+    } }
+}
+
+
 
 /**
  * Updates the element in the list-like structure within a `Lens`, replacing the first element

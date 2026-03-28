@@ -1,31 +1,11 @@
 package org.solyton.solawi.bid.module.banking.component.modal
 
-import org.evoleq.compose.date.format
-import org.evoleq.compose.date.parse
-import org.evoleq.kotlinx.date.toDateTime
-import org.evoleq.language.Locale
-import org.jetbrains.compose.web.attributes.InputType
-import org.jetbrains.compose.web.dom.Input
-import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
-import org.solyton.solawi.bid.module.banking.data.application.deviceData
-import org.solyton.solawi.bid.module.style.form.dateInputDesktopStyle
-import org.jetbrains.compose.web.css.marginTop
-import org.jetbrains.compose.web.css.percent
-import org.jetbrains.compose.web.css.px
-import org.jetbrains.compose.web.css.width
-import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
-import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import kotlinx.datetime.DatePeriod
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 import org.evoleq.compose.Markup
 import org.evoleq.compose.attribute.dataId
+import org.evoleq.compose.date.parse
 import org.evoleq.compose.form.field.Field
 import org.evoleq.compose.form.label.Label
 import org.evoleq.compose.modal.Modal
@@ -36,26 +16,25 @@ import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.device.data.mediaType
 import org.evoleq.kotlinx.date.data.DateInterval
 import org.evoleq.kotlinx.date.data.cutOff
-import org.evoleq.kotlinx.date.today
+import org.evoleq.kotlinx.date.toDateTime
 import org.evoleq.language.Lang
+import org.evoleq.language.Locale
 import org.evoleq.math.Source
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
-import org.jetbrains.compose.web.dom.ElementScope
-import org.jetbrains.compose.web.dom.Form
-import org.jetbrains.compose.web.dom.H4
-import org.jetbrains.compose.web.dom.P
-import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.module.banking.data.fiscalyear.start
-import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
-import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
+import org.jetbrains.compose.web.attributes.InputType
+import org.jetbrains.compose.web.dom.*
+import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
+import org.solyton.solawi.bid.module.banking.data.application.deviceData
+import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
+import org.solyton.solawi.bid.module.style.form.dateInputDesktopStyle
 import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
+import org.solyton.solawi.bid.module.style.modal.commonModalStyles
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.w3c.dom.HTMLElement
-import kotlin.time.Duration.Companion.days
 
 
 @Markup
@@ -79,7 +58,7 @@ fun UpsertFiscalYearsModal(
     },
     onCancel = {},
     texts = texts,
-    styles = auctionModalStyles(device),
+    styles = commonModalStyles(device),
 ) {
     var fiscalYear by remember { mutableStateOf< FiscalYear?>(fiscalYear) }
     val forbiddenTimeIntervals = when(val fY = fiscalYear) {
