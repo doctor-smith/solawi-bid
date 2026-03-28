@@ -53,7 +53,7 @@ fun Transaction.createBankAccount(
     accountType: AccountType = AccountType.DEBTOR,
     creatorId: UUID
 ) : BankAccountEntity {
-    validateBic(bic.value)
+    if(bic.value.isNotBlank()) validateBic(bic.value)
     validateIban(iban)
     validateIsUserOrOrganization(userId)
 
@@ -61,7 +61,7 @@ fun Transaction.createBankAccount(
         this.createdBy = creatorId
         this.userId = userId
         this.iban = iban.value
-        this.bic = bic.value
+        this.bic = bic.value.trim()
         this.accountHolder = accountHolder
         this.isActive = isActive
         this.accountType = accountType
@@ -130,7 +130,7 @@ fun Transaction.updateBankAccount(
     modifierId: UUID
 ) : BankAccountEntity {
     val bankAccount = validatedBankAccount(bankAccountId)
-    validateBic(bic.value)
+    if(bic.value.isNotBlank()) validateBic(bic.value)
     validateIban(iban)
     validateIsUserOrOrganization(userId)
     
@@ -143,7 +143,7 @@ fun Transaction.updateBankAccount(
 
     bankAccount.userId = userId
     bankAccount.iban = iban.value
-    bankAccount.bic = bic.value
+    bankAccount.bic = bic.value.trim()
     bankAccount.accountHolder = accountHolder
     bankAccount.isActive = isActive
     bankAccount.accountType = accountType
