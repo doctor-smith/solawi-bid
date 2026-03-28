@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.application.data.db.migrations
 
 import org.evoleq.exposedx.migrations.structural.*
+import org.evoleq.uuid.NIL_UUID
 import org.evoleq.uuid.UUID_ZERO
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
@@ -10,6 +11,8 @@ import org.solyton.solawi.bid.module.application.schema.UserModulesTable
 import org.solyton.solawi.bid.module.banking.schema.AccountType
 import org.solyton.solawi.bid.module.banking.schema.BankAccountsTable
 import org.solyton.solawi.bid.module.banking.schema.FiscalYears
+import org.solyton.solawi.bid.module.banking.schema.LegalEntitiesTable
+import org.solyton.solawi.bid.module.banking.schema.LegalEntityType
 import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.distribution.schema.DistributionPointsTable
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
@@ -202,6 +205,10 @@ val columnsToAdd: List<AddMissingColumns> by lazy {
         ),
         RoundsTable.addColumnsIfMissing(
             ColumnDef.Missing("number", 0)
+        ),
+        LegalEntitiesTable.addColumnsIfMissing(
+            ColumnDef.Missing<UUID>("party_id", UUID_ZERO),
+            ColumnDef.Missing<String>("legal_entity_type", LegalEntityType.HUMAN.name),
         )
     )
 }

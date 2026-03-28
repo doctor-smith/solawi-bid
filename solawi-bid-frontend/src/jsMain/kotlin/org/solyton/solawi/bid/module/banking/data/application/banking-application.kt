@@ -9,6 +9,7 @@ import org.evoleq.optics.storage.ActionDispatcher
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.environment.Environment
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
+import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntity
 import org.solyton.solawi.bid.module.banking.data.user.User
 import org.solyton.solawi.bid.module.i18n.data.I18N
 
@@ -20,6 +21,7 @@ data class BankingApplication(
     @ReadOnly val deviceData: Device = Device(),
     @ReadWrite val i18N: I18N = I18N(),
     @ReadWrite val user: User = User(),
+    @ReadOnly val legalEntity: LegalEntity = LegalEntity.default,
     @ReadWrite val bankAccounts: List<BankAccount> = emptyList(),
     @ReadWrite val fiscalYears: List<FiscalYear> = emptyList()
 )

@@ -294,6 +294,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
 
         // Banking
         add<BankAccount>(BankAccount.serializer())
+        add<AccountType>(AccountType.serializer())
         add<BankAccounts>(BankAccounts.serializer())
         add<ReadBankAccounts>(ReadBankAccounts.serializer())
         add<ReadBankAccount>(ReadBankAccount.serializer())
@@ -302,6 +303,16 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<DeleteBankAccount>(DeleteBankAccount.serializer())
         add<ImportBankAccount>(ImportBankAccount.serializer())
         add<ImportBankAccounts>(ImportBankAccounts.serializer())
+
+        // Legal Entities
+        add<LegalEntity>(LegalEntity.serializer())
+        add<LegalEntityType>(LegalEntityType.serializer())
+        add<LegalEntities>(LegalEntities.serializer())
+        add<CreateLegalEntity>(CreateLegalEntity.serializer())
+        add<ReadLegalEntity>(ReadLegalEntity.serializer())
+        add<ReadLegalEntitiesOfProvider>(ReadLegalEntitiesOfProvider.serializer())
+        add<UpdateLegalEntity>(UpdateLegalEntity.serializer())
+        add<DeleteLegalEntity>(DeleteLegalEntity.serializer())
 
         add<FiscalYear>(FiscalYear.serializer())
         add<FiscalYears>(FiscalYears.serializer())

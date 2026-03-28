@@ -134,6 +134,9 @@ de {
                                  }
                                  bankAccount {
                                      title: "Bank Verbindung"
+                                     bankAccountHolder {
+                                         title: "Konto Inhaber"
+                                     }
                                      iban {
                                          title: "IBAN"
                                      }

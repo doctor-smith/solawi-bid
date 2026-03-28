@@ -1,12 +1,20 @@
 package org.solyton.solawi.bid.module.banking.data
 
 import org.evoleq.exposedx.joda.toKotlinxWithZone
+import org.solyton.solawi.bid.module.banking.data.api.ApiAccountType
 import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccount
 import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccounts
 import org.solyton.solawi.bid.module.banking.data.api.ApiFiscalYear
 import org.solyton.solawi.bid.module.banking.data.api.ApiFiscalYears
+import org.solyton.solawi.bid.module.banking.data.api.ApiLegalEntity
+import org.solyton.solawi.bid.module.banking.data.api.ApiLegalEntityType
+import org.solyton.solawi.bid.module.banking.schema.AccountType
+import org.solyton.solawi.bid.module.banking.schema.LegalEntity
 import org.solyton.solawi.bid.module.banking.schema.BankAccountEntity
 import org.solyton.solawi.bid.module.banking.schema.FiscalYearEntity
+import org.solyton.solawi.bid.module.banking.schema.LegalEntityType
+import org.solyton.solawi.bid.module.user.data.toApiType
+import org.solyton.solawi.bid.module.values.LegalEntityId
 import org.solyton.solawil.bid.module.bid.data.api.toUserId
 
 /**
@@ -44,5 +52,32 @@ fun BankAccountEntity.toApiType() = ApiBankAccount(
     id = BankAccountId(id.value.toString()),
     userId = userId.toUserId(),
     bic = BIC(bic),
-    iban = IBAN(iban)
+    iban = IBAN(iban),
+    accountHolder = accountHolder,
+    isActive = isActive,
+    accountType = accountType.toApiType(),
 )
+
+fun AccountType.toApiType(): ApiAccountType = when (this) {
+    AccountType.DEBTOR -> ApiAccountType.DEBTOR
+    AccountType.CREDITOR -> ApiAccountType.CREDITOR
+}
+
+fun ApiAccountType.toDomainType(): AccountType = when (this) {
+    ApiAccountType.DEBTOR -> AccountType.DEBTOR
+    ApiAccountType.CREDITOR -> AccountType.CREDITOR
+}
+
+fun LegalEntity.toApiType(): ApiLegalEntity = ApiLegalEntity(
+    LegalEntityId(id.value.toString()),
+    LegalEntityId(partyId.toString()),
+    name,
+    legalForm,
+    legalEntityType.toApiType(),
+    address.toApiType()
+)
+
+fun LegalEntityType.toApiType(): ApiLegalEntityType = when (this) {
+    LegalEntityType.HUMAN -> ApiLegalEntityType.HUMAN
+    LegalEntityType.ORGANIZATION -> ApiLegalEntityType.ORGANIZATION
+}

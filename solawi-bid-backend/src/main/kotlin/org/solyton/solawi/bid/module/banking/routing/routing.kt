@@ -21,6 +21,17 @@ fun <BankingEnv> Routing.banking (
     val transform = environment.transformException
     authenticate {
         route("banking") {
+            route("legal-entities") {
+                @Suppress("UnsafeCallOnNullableType")
+                get("personal") {
+                    ReceiveContextual<String>{
+                        parameters -> parameters["party"]!!
+                    } *
+                    IsGranted("READ_LEGAL_ENTITIES", no) *
+                    ReadLegalEntity() *
+                    Respond{ transform() } runOn Base(call, environment)
+                }
+            }
             route("fiscal-years") {
                 get("all") {
                     @Suppress("UnsafeCallOnNullableType")

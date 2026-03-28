@@ -12,7 +12,9 @@ import org.solyton.solawi.bid.module.banking.data.IBAN
 import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccount
 import org.solyton.solawi.bid.module.banking.data.api.UpdateBankAccount
 import org.solyton.solawi.bid.module.banking.data.application.bankAccounts
+import org.solyton.solawi.bid.module.banking.data.bankaccount.AccountType
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
+import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.banking.data.toDomainType
 import org.solyton.solawi.bid.module.values.UserId
 import org.solyton.solawi.bid.test.UUID_1
@@ -31,12 +33,17 @@ class BankAccountsUpdateTest {
         val userId = UserId(UUID_1)
         val bic = BIC("DEUTDEFF500")
         val iban = IBAN("DE89370400440532013000")
-
+        val accountHolder = "accountHolder"
+        val isActive = true
+        val accountType = AccountType.CREDITOR
         val action = updateBankAccount(
             id,
             userId,
             iban,
             bic,
+            accountHolder,
+            isActive,
+            accountType
         )
 
 
@@ -49,11 +56,11 @@ class BankAccountsUpdateTest {
             ))
 
             val args = (storage * action.reader).emit()
-            val expectedArgs = UpdateBankAccount(id, userId, bic, iban)
+            val expectedArgs = UpdateBankAccount(id, userId, bic, iban, accountHolder, isActive, accountType.toApiType())
             assertEquals(expectedArgs, args)
 
 
-            val response = ApiBankAccount(id, userId, bic, iban )
+            val response = ApiBankAccount(id, userId, bic, iban, accountHolder, isActive, accountType.toApiType() )
             (storage *action.writer) dispatch response
             val storedResponse = (storage * bankAccounts * FirstBy { it.bankAccountId == id }).read()
             val expectedResponse = response.toDomainType()

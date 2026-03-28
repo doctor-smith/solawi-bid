@@ -101,7 +101,8 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
             is FiscalYearException.TooManyPerYear -> HttpStatusCode.BadRequest
         }
         is LegalEntityException -> when(value as LegalEntityException) {
-            is LegalEntityException.NoSuchLegalEntity-> HttpStatusCode.BadRequest
+            is LegalEntityException.NoSuchLegalEntity-> HttpStatusCode.NotFound
+            is LegalEntityException.NoSuchLegalEntityParty -> HttpStatusCode.NotFound
         }
 
         //User

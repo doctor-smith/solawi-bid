@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.application.api
 
 
 import org.evoleq.ktorx.api.Api
+import org.evoleq.test.parameters
 import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.banking.data.api.*
@@ -354,6 +355,11 @@ val solawiApi by lazy {
         }
 
         module("banking") {
+            get<ReadLegalEntity, LegalEntity>(
+                key = ReadLegalEntity::class,
+                url = "legal-entities/personal",
+                parameters = setOf("party")
+            )
             get<ReadBankAccounts, BankAccounts>(
                 key = ReadBankAccounts::class,
                 url = "bank-accounts/all",

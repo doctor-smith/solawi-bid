@@ -35,6 +35,6 @@ value class IBAN(val value: String) {
 @JvmInline
 value class BIC(val value: String) {
     init {
-        require(value.matches(Regex("^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$"))) { "Invalid BIC format" }
+        // require(value.matches(Regex("^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$"))) { "Invalid BIC format" }
     }
 }

@@ -10,6 +10,8 @@ import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccount
 import org.solyton.solawi.bid.module.banking.data.api.CreateBankAccount
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.bankAccounts
+import org.solyton.solawi.bid.module.banking.data.bankaccount.AccountType
+import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.banking.data.toDomainType
 import org.solyton.solawi.bid.module.values.UserId
 
@@ -28,10 +30,13 @@ fun createBankAccount(
     userId: UserId,
     iban: IBAN,
     bic: BIC,
+    accountHolder: String = "",
+    isActive: Boolean = true,
+    accountType: AccountType = AccountType.DEBTOR,
     nameSuffix: String = ""
 ): Action<BankingApplication, CreateBankAccount, ApiBankAccount> = Action(
     name = CREATE_BANK_ACCOUNT.suffixed(nameSuffix),
-    reader = {_ -> CreateBankAccount(userId, bic, iban) },
+    reader = {_ -> CreateBankAccount(userId, bic, iban, accountHolder, isActive, accountType.toApiType()) },
     endPoint = CreateBankAccount::class,
     writer = bankAccounts.add() contraMap {bankAccount -> bankAccount.toDomainType()}
 )

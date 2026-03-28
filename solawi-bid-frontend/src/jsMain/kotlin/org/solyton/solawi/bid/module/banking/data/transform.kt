@@ -1,11 +1,18 @@
 package org.solyton.solawi.bid.module.banking.data
 
+import org.solyton.solawi.bid.module.banking.data.api.ApiAccountType
 import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccount
 import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccounts
 import org.solyton.solawi.bid.module.banking.data.api.ApiFiscalYear
 import org.solyton.solawi.bid.module.banking.data.api.ApiFiscalYears
+import org.solyton.solawi.bid.module.banking.data.api.ApiLegalEntity
+import org.solyton.solawi.bid.module.banking.data.api.ApiLegalEntityType
+import org.solyton.solawi.bid.module.banking.data.bankaccount.AccountType
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
+import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntity
+import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntityType
+import org.solyton.solawi.bid.module.user.data.transform.toDomainType
 
 
 /**
@@ -48,4 +55,41 @@ fun ApiBankAccounts.toDomainType() = all.map { it.toDomainType() }
  * @receiver The ApiBankAccount instance containing the data to be transformed.
  * @return A BankAccount object derived from the ApiBankAccount instance.
  */
-fun ApiBankAccount.toDomainType() = BankAccount(id,userId,iban, bic )
+fun ApiBankAccount.toDomainType() = BankAccount(
+    id,
+    userId,
+    iban,
+    bic,
+    accountHolder?:"",
+    isActive,
+    accountType.toDomainType()
+)
+
+fun ApiAccountType.toDomainType(): AccountType = when(this) {
+    ApiAccountType.DEBTOR -> AccountType.DEBTOR
+    ApiAccountType.CREDITOR -> AccountType.CREDITOR
+}
+
+fun AccountType.toApiType(): ApiAccountType = when(this) {
+    AccountType.DEBTOR -> ApiAccountType.DEBTOR
+    AccountType.CREDITOR -> ApiAccountType.CREDITOR
+}
+
+fun ApiLegalEntity.toDomainType(): LegalEntity = LegalEntity(
+    legalEntityId,
+    partyId,
+    name,
+    legalForm,
+    legalEntityType.toDomainType(),
+    address.toDomainType()
+)
+
+fun ApiLegalEntityType.toDomainType(): LegalEntityType = when(this) {
+    ApiLegalEntityType.HUMAN -> LegalEntityType.HUMAN
+    ApiLegalEntityType.ORGANIZATION -> LegalEntityType.ORGANIZATION
+}
+
+fun LegalEntityType.toApiType(): ApiLegalEntityType = when(this) {
+    LegalEntityType.HUMAN -> ApiLegalEntityType.HUMAN
+    LegalEntityType.ORGANIZATION -> ApiLegalEntityType.ORGANIZATION
+}

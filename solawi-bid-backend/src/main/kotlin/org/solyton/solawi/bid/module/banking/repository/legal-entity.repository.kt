@@ -4,7 +4,10 @@ import org.evoleq.exposedx.joda.now
 import org.jetbrains.exposed.sql.Transaction
 import org.solyton.solawi.bid.module.banking.exception.LegalEntityException
 import org.solyton.solawi.bid.module.banking.schema.LegalEntity
+import org.solyton.solawi.bid.module.banking.schema.LegalEntityType
 import org.solyton.solawi.bid.module.user.repository.validatedAddress
+import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
+import org.solyton.solawi.bid.module.user.schema.UserEntity
 import java.util.UUID
 
 /**
@@ -17,17 +20,22 @@ import java.util.UUID
  * @throws AddressException.NoSuchAddress If the specified addressId does not exist in the database.
  */
 fun Transaction.createLegalEntity(
+    partyId: UUID,
     name: String,
     legalForm: String,
+    legalEntityType: LegalEntityType,
     addressId: UUID,
     creatorId: UUID
 ) {
+    validateIsUserOrOrganization(partyId)
     val address = validatedAddress(addressId)
 
     LegalEntity.new {
         createdBy = creatorId
+        this.partyId = partyId
         this.name = name
         this.legalForm = legalForm
+        this.legalEntityType = legalEntityType
         this.address = address
     }
 }
@@ -53,19 +61,27 @@ fun Transaction.readLegalEntity(id: UUID) = LegalEntity.findById(id)
  */
 fun Transaction.updateLegalEntity(
     id: UUID,
+    partyId: UUID,
     name: String,
     legalForm: String,
+    legalEntityType: LegalEntityType,
     addressId: UUID,
     modifierId: UUID
 ): LegalEntity {
     val address = validatedAddress(addressId)
 
     val legalEntity = validatedLegalEntity(id)
-
-    val changed = legalEntity.name != name || legalEntity.legalForm != legalForm || legalEntity.address != address
+    validateIsUserOrOrganization(partyId)
+    val changed = legalEntity.name != name
+            || partyId != legalEntity.partyId
+            || legalEntity.legalForm != legalForm
+            || legalEntity.legalEntityType != legalEntityType
+            || legalEntity.address != address
 
     legalEntity.name = name
+    legalEntity.partyId = partyId
     legalEntity.legalForm = legalForm
+    legalEntity.legalEntityType = legalEntityType
     legalEntity.address = address
 
     if(changed) {
@@ -95,3 +111,8 @@ fun Transaction.deleteLegalEntity(id: UUID) = LegalEntity.findById(id)?.delete()
  * @throws LegalEntityException.NoSuchLegalEntity If no legal entity exists with the provided ID.
  */
 fun Transaction.validatedLegalEntity(id: UUID) = LegalEntity.findById(id) ?: throw LegalEntityException.NoSuchLegalEntity(id.toString())
+
+fun Transaction.validateIsUserOrOrganization(id: UUID): Boolean {
+    UserEntity.findById(id) ?: OrganizationEntity.findById(id) ?: throw LegalEntityException.NoSuchLegalEntity(id.toString())
+    return true
+}

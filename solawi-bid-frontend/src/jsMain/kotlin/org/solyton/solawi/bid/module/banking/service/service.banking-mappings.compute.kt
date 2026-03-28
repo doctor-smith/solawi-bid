@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.banking.service
 
 import org.solyton.solawi.bid.module.banking.data.BIC
 import org.solyton.solawi.bid.module.banking.data.IBAN
+import org.solyton.solawi.bid.module.banking.data.api.AccountType
 import org.solyton.solawi.bid.module.banking.data.api.ImportBankAccount
 import org.solyton.solawi.bid.module.banking.data.mappings.BankingMappings
 import org.solyton.solawi.bid.module.shared.parser.csv.toColumnType
@@ -22,15 +23,26 @@ fun computeBankAccountsDataForImport(
             val usernameRaw = requireNotNull( userProfiles["username"] ) { "No username provided" }
             val ibanRaw = requireNotNull(value["iban"]) { "No iban provided" }
             val bicRaw = requireNotNull(value["bic"]) { "No bic provided" }
+            val isActiveRaw = value["is_active"]?:"true"
+            val bankAccountHolderRaw = value["bank_account_holder"]?:""
+            val bankAccountTypeRaw = value["bank_account_type"]?:"DEBTOR"
 
             val username = Username(usernameRaw)
             val iban = IBAN(ibanRaw)
             val bic = BIC(bicRaw)
+            val accountType = when(bankAccountTypeRaw) {
+                "CREDITOR" -> AccountType.CREDITOR
+                "DEBTOR" -> AccountType.DEBTOR
+                else -> AccountType.DEBTOR
+            }
 
             ImportBankAccount(
                 username,
+                bankAccountHolderRaw,
                 bic,
-                iban
+                iban,
+                isActiveRaw.toBoolean(),
+                accountType
             )
         }
     }.flatten()

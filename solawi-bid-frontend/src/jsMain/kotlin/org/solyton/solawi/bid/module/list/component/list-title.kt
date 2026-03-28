@@ -23,7 +23,11 @@ fun TitleWrapper(
 @Suppress("FunctionName")
 fun Title(
     styles: StyleScope.()->Unit = defaultListStyles.title,
+    onClick: ()->Unit = {},
     content: @Composable ElementScope<HTMLElement>.()->Unit
-) = Div({style{styles()}}) {
+) = Div({
+    style{styles()}
+    onClick { onClick() }
+}) {
     content()
 }

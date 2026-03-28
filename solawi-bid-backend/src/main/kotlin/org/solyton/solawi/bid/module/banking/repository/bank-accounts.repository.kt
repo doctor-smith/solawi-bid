@@ -9,11 +9,13 @@ import org.solyton.solawi.bid.module.banking.data.BIC
 import org.solyton.solawi.bid.module.banking.data.BankAccountId
 import org.solyton.solawi.bid.module.banking.data.IBAN
 import org.solyton.solawi.bid.module.banking.data.api.ImportBankAccount
+import org.solyton.solawi.bid.module.banking.data.toDomainType
 import org.solyton.solawi.bid.module.banking.data.toUUID
 import org.solyton.solawi.bid.module.banking.schema.AccountType
 import org.solyton.solawi.bid.module.banking.schema.BankAccountAccessorEntity
 import org.solyton.solawi.bid.module.banking.schema.BankAccountAccessorsTable
 import org.solyton.solawi.bid.module.banking.schema.BankAccountEntity
+import org.solyton.solawi.bid.module.banking.schema.BankAccounts.accountHolder
 import org.solyton.solawi.bid.module.banking.schema.BankAccountsTable
 import org.solyton.solawi.bid.module.banking.service.validateBic
 import org.solyton.solawi.bid.module.banking.service.validateIban
@@ -53,7 +55,7 @@ fun Transaction.createBankAccount(
 ) : BankAccountEntity {
     validateBic(bic.value)
     validateIban(iban)
-    validateUserExists(userId)
+    validateIsUserOrOrganization(userId)
 
     val bankAccount = BankAccountEntity.new {
         this.createdBy = creatorId
@@ -64,6 +66,12 @@ fun Transaction.createBankAccount(
         this.isActive = isActive
         this.accountType = accountType
     }
+
+    BankAccountAccessorEntity.new {
+        this.bankAccount = bankAccount
+        this.accessorId = userId
+    }
+
     return bankAccount
 }
 
@@ -124,7 +132,7 @@ fun Transaction.updateBankAccount(
     val bankAccount = validatedBankAccount(bankAccountId)
     validateBic(bic.value)
     validateIban(iban)
-    validateUserExists(userId)
+    validateIsUserOrOrganization(userId)
     
     val changed = bankAccount.userId != userId
         || bankAccount.iban != iban.value
@@ -157,6 +165,7 @@ fun Transaction.updateBankAccount(
  */
 fun Transaction.deleteBankAccount(bankAccountId: UUID) : UUID {
     val bankAccount = validatedBankAccount(bankAccountId)
+    BankAccountAccessorsTable.deleteWhere { BankAccountAccessorsTable.bankAccountId eq bankAccountId }
     bankAccount.delete()
     return bankAccountId
 }
@@ -210,13 +219,13 @@ fun Transaction.importBankAccounts(
                 "User ${username.value} does not exist"
             }.let { UUID.fromString(it.id) }
             val newBankAccount = createBankAccount(
-                userId,
-                iban,
-                bic,
-                "",
-                true,
-                AccountType.DEBTOR,
-                accessorId
+                userId = userId,
+                iban = iban,
+                bic = bic,
+                accountHolder = bankAccountHolder,
+                isActive = isActive,
+                accountType = accountType.toDomainType(),
+                creatorId = accessorId
             )
             createBankAccountAccessor(accessorId, newBankAccount)
             newBankAccount
@@ -231,14 +240,14 @@ fun Transaction.importBankAccounts(
             "User ${bankAccount.username.value} does not exist"
         }.let { UUID.fromString(it.id) }
         updateBankAccount(
-            existingBankAccount.id.value,
-            userId,
-            bankAccount.iban,
-            bankAccount.bic,
-            "",
-            true,
-            AccountType.DEBTOR,
-            accessorId
+            bankAccountId = existingBankAccount.id.value,
+            userId = userId,
+            iban = bankAccount.iban,
+            bic = bankAccount.bic,
+            accountHolder = bankAccount.bankAccountHolder,
+            isActive = bankAccount.isActive,
+            accountType = bankAccount.accountType.toDomainType(),
+            modifierId = accessorId
         )
     }
     
