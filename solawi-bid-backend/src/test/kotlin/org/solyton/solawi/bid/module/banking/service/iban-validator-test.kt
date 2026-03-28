@@ -14,7 +14,6 @@ class IbanValidatorTest {
             // Valid IBANs (structured correctly, non-personal)
             Arguments.of("DE23600908000000795014", true),
             Arguments.of("DE87500105175435695105", true),
-
             Arguments.of("DE89370400440532013000", true),
             Arguments.of("GB82WEST12345698765432", true),
             Arguments.of("FR1420041010050500013M02606", true),

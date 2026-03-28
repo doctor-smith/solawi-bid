@@ -240,6 +240,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                             color = Color.black,
                             bgColor = Color.white,
                             deviceType = deviceType,
+                            isDisabled = true
                         ) {
                             val bankAccountTexts = dialogModalTexts("BankAccounts").extend {
                                 add(defaultBankAccountInputs())
@@ -306,7 +307,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                                         bankingApplicationStorage,
                                         bankAccountTexts,
                                         deviceType,
-                                        LegalEntityId(providerId.value),
+                                        LegalEntityId(bankAccount.userId.value),
                                         bankAccount,
                                         { bA -> bankAccountState = bA }
                                     ) {
