@@ -57,6 +57,7 @@ data class CreateBankAccount(
     val accountHolder: String? = null,
     val isActive: Boolean = true,
     val accessType: AccountType = AccountType.DEBTOR,
+    val accessors: List<AccessorId> = emptyList()
 )
 
 @Serializable
