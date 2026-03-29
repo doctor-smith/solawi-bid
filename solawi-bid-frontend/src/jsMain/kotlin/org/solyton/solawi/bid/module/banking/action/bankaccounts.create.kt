@@ -34,6 +34,7 @@ fun createBankAccount(
     accountHolder: String = "",
     isActive: Boolean = true,
     accountType: AccountType = AccountType.DEBTOR,
+    description: String? = null,
     accessors: List<AccessorId> = emptyList(),
     nameSuffix: String = ""
 ): Action<BankingApplication, CreateBankAccount, ApiBankAccount> = Action(
@@ -45,7 +46,8 @@ fun createBankAccount(
         accountHolder,
         isActive,
         accountType.toApiType(),
-        accessors
+        accessors,
+        description,
     ) },
     endPoint = CreateBankAccount::class,
     writer = bankAccounts.add() contraMap {bankAccount -> bankAccount.toDomainType()}

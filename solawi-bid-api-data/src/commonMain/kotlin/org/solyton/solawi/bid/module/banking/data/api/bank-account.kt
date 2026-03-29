@@ -33,6 +33,7 @@ data class BankAccount(
     val accountHolder: String? = null,
     val isActive: Boolean = true,
     val accountType: AccountType = AccountType.DEBTOR,
+    val description: String? = null,
 )
 
 @Serializable
@@ -57,7 +58,8 @@ data class CreateBankAccount(
     val accountHolder: String? = null,
     val isActive: Boolean = true,
     val accessType: AccountType = AccountType.DEBTOR,
-    val accessors: List<AccessorId> = emptyList()
+    val accessors: List<AccessorId> = emptyList(),
+    val description: String? = null,
 )
 
 @Serializable
@@ -69,6 +71,7 @@ data class UpdateBankAccount(
     val accountHolder: String? = null,
     val isActive: Boolean = true,
     val accountType: AccountType = AccountType.DEBTOR,
+    val description: String? = null,
 )
 
 @Serializable
@@ -91,4 +94,5 @@ data class ImportBankAccount(
     val iban: IBAN,
     val isActive: Boolean,
     val accountType: AccountType = AccountType.DEBTOR,
+    val description: String? = null,
 )

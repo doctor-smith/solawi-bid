@@ -15,6 +15,7 @@ import org.evoleq.compose.layout.Horizontal
 import org.evoleq.language.Lang
 import org.evoleq.language.subComp
 import org.evoleq.language.texts
+import org.evoleq.compose.conditional.When
 import org.evoleq.language.title
 import org.evoleq.math.Source
 import org.evoleq.math.emit
@@ -51,6 +52,7 @@ fun BankAccountForm(
     legalEntityId: LegalEntityId,
     bankAccount: BankAccount?,
     setBankAccount: (BankAccount) -> Unit,
+    hasDescription: Boolean = false,
 ) {
 
     Form(formDesktopStyle) {
@@ -63,7 +65,7 @@ fun BankAccountForm(
         var accountHolderState by remember { mutableStateOf(bankAccount?.bankAccountHolder) }
         var isActiveState by remember { mutableStateOf(bankAccount?.isActive) }
         var accountTypeState by remember { mutableStateOf(bankAccount?.bankAccountType?: AccountType.DEBTOR) }
-
+        var descriptionState by remember { mutableStateOf(bankAccount?.description) }
         H3{Text((bankAccountInputs * title).emit())}
 
         Horizontal {
@@ -95,7 +97,8 @@ fun BankAccountForm(
                         Keep(isActiveState),
                         Change(accountTypeState, value) {
                             accountTypeState = value
-                        }
+                        },
+                        Keep(descriptionState)
                     )) {
                         bankAccount -> setBankAccount(bankAccount)
                     }
@@ -129,7 +132,8 @@ fun BankAccountForm(
                         Change(isActiveState, value) {
                             isActiveState = value
                         },
-                        Keep(accountTypeState)
+                        Keep(accountTypeState),
+                        Keep(descriptionState)
                     )) {
                         bankAccount -> setBankAccount(bankAccount)
                     }
@@ -158,13 +162,45 @@ fun BankAccountForm(
                             accountHolderState = it.value
                         },
                         Keep(isActiveState),
-                        Keep( accountTypeState)
+                        Keep( accountTypeState),
+                        Keep(descriptionState)
                     )) {
                         bankAccount -> setBankAccount(bankAccount)
                     }
                 }
             }
         }
+        When(hasDescription) {
+            Field(fieldDesktopStyle) {
+
+                Label(
+                    (bankAccountInputs * subComp("description") * title).emit(),
+                    id = "description",
+                    labelStyle = formLabelDesktopStyle
+                )
+                TextInput(descriptionState ?: "") {
+                    id("description")
+                    style { textInputDesktopStyle() }
+                    onInput {
+                        update(BankAccountChange(
+                            bankAccountIdState,
+                            Keep(legalEntityId),
+                            Keep(ibanState),
+                            Keep(bicState),
+                            Keep(accountHolderState),
+                            Keep(isActiveState),
+                            Keep(accountTypeState),
+                            Change(descriptionState,it.value){
+                                descriptionState = it.value
+                            }
+                        )) {
+                                bankAccount -> setBankAccount(bankAccount)
+                        }
+                    }
+                }
+            }
+        }
+
         Field(fieldDesktopStyle) {
 
             Label(
@@ -185,7 +221,8 @@ fun BankAccountForm(
                        Keep(bicState),
                         Keep(accountHolderState),
                         Keep(isActiveState),
-                        Keep(accountTypeState)
+                        Keep(accountTypeState),
+                        Keep(descriptionState)
                     )) {
                             bankAccount -> setBankAccount(bankAccount)
                     }
@@ -212,7 +249,8 @@ fun BankAccountForm(
                         },
                         Keep(accountHolderState),
                         Keep(isActiveState),
-                        Keep(accountTypeState)
+                        Keep(accountTypeState),
+                        Keep(descriptionState)
                     )) {
                             bankAccount -> setBankAccount(bankAccount)
                     }
@@ -264,6 +302,13 @@ fun defaultBankAccountInputs() = texts {
             value = "Is Active"
         }
     }
+    block {
+        key = "description"
+        variable {
+            key = "title"
+            value = "Description"
+        }
+    }
 }
 
 
@@ -273,13 +318,14 @@ val defaultInputs by lazy {   Source{ defaultBankAccountInputs() }}
 fun update(change: BankAccountChange, onChange: (BankAccount) -> Unit ) {
     try{
         val bankAccount = BankAccount(
-            change.bankAccountId,
-            UserId(change.legalEntityId.new!!.value),
-            IBAN(change.iban.new!!),
-            BIC(change.bic.new!!),
-            change.bankAccountHolder.new!!,
-            change.isActive.new!!,
-            change.bankAccountType.new!!
+            bankAccountId = change.bankAccountId,
+            userId = UserId(change.legalEntityId.new!!.value),
+            iban = IBAN(change.iban.new!!),
+            bic = BIC(change.bic.new!!),
+            bankAccountHolder = change.bankAccountHolder.new!!,
+            isActive = change.isActive.new!!,
+            bankAccountType = change.bankAccountType.new!!,
+            description = change.description.new!!
         )
         onChange(bankAccount)
     }catch(exception: Exception){
@@ -290,5 +336,6 @@ fun update(change: BankAccountChange, onChange: (BankAccount) -> Unit ) {
         change.bankAccountHolder.onChange()
         change.isActive.onChange()
         change.bankAccountType.onChange()
+        change.description.onChange()
     }
 }

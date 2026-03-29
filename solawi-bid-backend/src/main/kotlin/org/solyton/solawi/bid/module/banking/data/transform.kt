@@ -56,6 +56,7 @@ fun BankAccountEntity.toApiType() = ApiBankAccount(
     accountHolder = accountHolder,
     isActive = isActive,
     accountType = accountType.toApiType(),
+    description = description,
 )
 
 fun AccountType.toApiType(): ApiAccountType = when (this) {

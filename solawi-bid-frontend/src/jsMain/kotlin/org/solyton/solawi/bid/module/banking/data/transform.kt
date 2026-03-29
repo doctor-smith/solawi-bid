@@ -62,7 +62,8 @@ fun ApiBankAccount.toDomainType() = BankAccount(
     bic,
     accountHolder?:"",
     isActive,
-    accountType.toDomainType()
+    accountType.toDomainType(),
+    description,
 )
 
 fun ApiAccountType.toDomainType(): AccountType = when(this) {

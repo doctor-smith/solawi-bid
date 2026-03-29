@@ -67,6 +67,7 @@ fun BankAccountFormWithUserSearch(
     legalEntityId: LegalEntityId?,
     bankAccount: BankAccount?,
     setBankAccount: (BankAccount) -> Unit,
+    hasDescription: Boolean = false,
 ) {
     /*
     val listStyles = ListStyles().modifyDataWrapper {
@@ -154,5 +155,5 @@ fun BankAccountFormWithUserSearch(
             }
         }
     }
-    BankAccountForm(inputs, legalEntityIdState, bankAccount, setBankAccount)
+    BankAccountForm(inputs, legalEntityIdState, bankAccount, setBankAccount,hasDescription = hasDescription)
 }

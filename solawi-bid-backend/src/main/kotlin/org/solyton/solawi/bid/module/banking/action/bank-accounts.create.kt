@@ -35,6 +35,7 @@ fun CreateBankAccount(): KlAction<Result<Contextual<CreateBankAccount>>, Result<
                     org.solyton.solawi.bid.module.banking.data.api.AccountType.DEBTOR -> AccountType.DEBTOR
                 }
                 val accessors = contextual.data.accessors.map { it.toUUID() }
+                val description = contextual.data.description
                 createBankAccount(
                     userId = userId.toUUID(),
                     iban = iban,
@@ -43,6 +44,7 @@ fun CreateBankAccount(): KlAction<Result<Contextual<CreateBankAccount>>, Result<
                     isActive = isActive,
                     accountType = accountType,
                     accessors = accessors,
+                    description = description,
                     creatorId = creator
                 ).toApiType()
             }

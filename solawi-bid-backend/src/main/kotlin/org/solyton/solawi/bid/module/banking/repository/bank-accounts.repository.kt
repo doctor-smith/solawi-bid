@@ -52,6 +52,7 @@ fun Transaction.createBankAccount(
     isActive: Boolean = true,
     accountType: AccountType = AccountType.DEBTOR,
     accessors: List<UUID> = emptyList(),
+    description: String? = null,
     creatorId: UUID
 ) : BankAccountEntity {
     if(bic.value.isNotBlank()) validateBic(bic.value)
@@ -66,6 +67,7 @@ fun Transaction.createBankAccount(
         this.accountHolder = accountHolder
         this.isActive = isActive
         this.accountType = accountType
+        if(description != null) this.description = description
     }
 
     BankAccountAccessorEntity.new {
@@ -135,6 +137,7 @@ fun Transaction.updateBankAccount(
     accountHolder: String = "",
     isActive: Boolean = true,
     accountType: AccountType = AccountType.DEBTOR,
+    description: String? = null,
     modifierId: UUID
 ) : BankAccountEntity {
     val bankAccount = validatedBankAccount(bankAccountId)
@@ -148,6 +151,7 @@ fun Transaction.updateBankAccount(
         || bankAccount.accountHolder != accountHolder
         || bankAccount.isActive != isActive
         || bankAccount.accountType != accountType
+        || bankAccount.description != description
 
     bankAccount.userId = userId
     bankAccount.iban = iban.value
@@ -155,6 +159,7 @@ fun Transaction.updateBankAccount(
     bankAccount.accountHolder = accountHolder
     bankAccount.isActive = isActive
     bankAccount.accountType = accountType
+    bankAccount.description = description
 
     if(changed) {
         bankAccount.modifiedBy = modifierId
@@ -233,7 +238,8 @@ fun Transaction.importBankAccounts(
                 accountHolder = bankAccountHolder,
                 isActive = isActive,
                 accountType = accountType.toDomainType(),
-                creatorId = accessorId
+                creatorId = accessorId,
+                description = description
             )
             createBankAccountAccessor(accessorId, newBankAccount)
             newBankAccount
@@ -255,6 +261,7 @@ fun Transaction.importBankAccounts(
             accountHolder = bankAccount.bankAccountHolder,
             isActive = bankAccount.isActive,
             accountType = bankAccount.accountType.toDomainType(),
+            description = bankAccount.description,
             modifierId = accessorId
         )
     }
