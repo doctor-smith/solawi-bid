@@ -1,7 +1,7 @@
 package org.evoleq.compose.dropdown
 
 import androidx.compose.runtime.Composable
-import io.ktor.client.fetch.AddEventListenerOptions
+import io.ktor.client.fetch.*
 import kotlinx.browser.window
 import org.evoleq.compose.Markup
 import org.w3c.dom.events.Event
