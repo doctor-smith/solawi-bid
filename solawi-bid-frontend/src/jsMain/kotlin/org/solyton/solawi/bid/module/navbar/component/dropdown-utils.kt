@@ -8,6 +8,8 @@ import org.jetbrains.compose.web.css.em
 import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.I
 import org.jetbrains.compose.web.dom.Span
+import org.solyton.solawi.bid.module.style.cursor.Cursor
+import org.solyton.solawi.bid.module.style.cursor.cursor
 
 @Markup
 @Composable
@@ -37,6 +39,7 @@ fun SimpleRightDown(open: Boolean, onClick: () -> Unit = {}) = Span({
     style {
         width(1.em)
         display(DisplayStyle.InlineBlock)
+        cursor(Cursor.Pointer)
     }
     onClick { onClick() }
 }) {

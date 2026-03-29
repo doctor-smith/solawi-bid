@@ -14,7 +14,11 @@ import org.w3c.dom.HTMLElement
 @Suppress("FunctionName")
 fun DataWrapper(
     styles: StyleScope.()->Unit = defaultListStyles.dataWrapper,
+    onClick: ()->Unit = {},
     content: @Composable ElementScope<HTMLElement>.()->Unit
-) = Div({style{styles()}}) {
+) = Div({
+        onClick { onClick() }
+        style{styles()
+    }}) {
     content()
 }

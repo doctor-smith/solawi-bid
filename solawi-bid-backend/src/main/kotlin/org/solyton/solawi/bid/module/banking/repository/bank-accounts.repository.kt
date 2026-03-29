@@ -51,6 +51,7 @@ fun Transaction.createBankAccount(
     accountHolder: String = "",
     isActive: Boolean = true,
     accountType: AccountType = AccountType.DEBTOR,
+    accessors: List<UUID> = emptyList(),
     creatorId: UUID
 ) : BankAccountEntity {
     if(bic.value.isNotBlank()) validateBic(bic.value)
@@ -70,6 +71,13 @@ fun Transaction.createBankAccount(
     BankAccountAccessorEntity.new {
         this.bankAccount = bankAccount
         this.accessorId = userId
+    }
+
+    accessors.filter { it != userId }.forEach { accessorId ->
+        BankAccountAccessorEntity.new {
+            this.bankAccount = bankAccount
+            this.accessorId = accessorId
+        }
     }
 
     return bankAccount

@@ -56,9 +56,10 @@ fun BankAccountForm(
     Form(formDesktopStyle) {
         // Bank account
         val bankAccountInputs = inputs * subComp("bankAccount")
+       // var legalEntityIdState by remember { mutableStateOf(legalEntityId) }
         var bankAccountIdState by remember { mutableStateOf(bankAccount?.bankAccountId?: BankAccountId(NIL_UUID)) }
         var ibanState by remember { mutableStateOf(bankAccount?.iban?.value) }
-        var bicState by remember { mutableStateOf(bankAccount?.bic?.value) }
+        var bicState by remember { mutableStateOf(bankAccount?.bic?.value?:"") }
         var accountHolderState by remember { mutableStateOf(bankAccount?.bankAccountHolder) }
         var isActiveState by remember { mutableStateOf(bankAccount?.isActive) }
         var accountTypeState by remember { mutableStateOf(bankAccount?.bankAccountType?: AccountType.DEBTOR) }
@@ -96,7 +97,7 @@ fun BankAccountForm(
                             accountTypeState = value
                         }
                     )) {
-                            bankAccount -> setBankAccount(bankAccount)
+                        bankAccount -> setBankAccount(bankAccount)
                     }
                 }
             }
@@ -130,7 +131,7 @@ fun BankAccountForm(
                         },
                         Keep(accountTypeState)
                     )) {
-                            bankAccount -> setBankAccount(bankAccount)
+                        bankAccount -> setBankAccount(bankAccount)
                     }
                 }
             }
@@ -284,14 +285,6 @@ fun update(change: BankAccountChange, onChange: (BankAccount) -> Unit ) {
     }catch(exception: Exception){
         println(exception)
     } finally {
-        println("""change: 
-            |bankAccountHolder.new: ${change.bankAccountHolder.new}
-            |iban.new: ${change.iban.new}
-            |bic.new: ${change.bic.new}
-            |isActive.new: ${change.isActive.new}
-            |bankAccountType.new: ${change.bankAccountType.new}
-            |""".trimMargin())
-
         change.iban.onChange()
         change.bic.onChange()
         change.bankAccountHolder.onChange()

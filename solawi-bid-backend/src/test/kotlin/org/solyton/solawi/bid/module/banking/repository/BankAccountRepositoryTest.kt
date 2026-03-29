@@ -49,7 +49,7 @@ class BankAccountRepositoryTest {
         val iban = IBAN("DE89370400440532013000")
         val bic = BIC("DEUTDEBBXXX")
 
-        val bankAccount = createBankAccount(userId, iban, bic, "", true, AccountType.DEBTOR, creatorId)
+        val bankAccount = createBankAccount(userId, iban, bic, "", true, AccountType.DEBTOR, listOf(), creatorId)
 
         assertNotNull(bankAccount)
         assertEquals(userId, bankAccount.userId)
@@ -72,7 +72,7 @@ class BankAccountRepositoryTest {
         val bic = BIC("DEUTDEBBXXX")
 
         val exception = assertThrows<BankAccountsException.InvalidIban> {
-            createBankAccount(userId, invalidIban, bic, "", true, AccountType.DEBTOR, creatorId)
+            createBankAccount(userId, invalidIban, bic, "", true, AccountType.DEBTOR, listOf(), creatorId)
         }
 
         assertEquals("Invalid IBAN format: ${invalidIban.value}", exception.message)
@@ -93,7 +93,7 @@ class BankAccountRepositoryTest {
         val invalidBic = BIC("INVALDEDB60")
 
         val exception = assertThrows<BankAccountsException.InvalidBicCountryCode> {
-            createBankAccount(userId, iban, invalidBic,  "", true, AccountType.DEBTOR,creatorId)
+            createBankAccount(userId, iban, invalidBic,  "", true, AccountType.DEBTOR,listOf(), creatorId)
         }
 
         assertEquals("Invalid BIC country code: ${invalidBic.value}", exception.message)
@@ -107,7 +107,7 @@ class BankAccountRepositoryTest {
         val bic = BIC("DEUTDEBBXXX")
 
         assertThrows<LegalEntityException.NoSuchLegalEntity> {
-            createBankAccount(nonExistentUserId, iban, bic,  "", true, AccountType.DEBTOR,creatorId)
+            createBankAccount(nonExistentUserId, iban, bic,  "", true, AccountType.DEBTOR,listOf(), creatorId)
         }
     }
 
@@ -124,7 +124,7 @@ class BankAccountRepositoryTest {
         val iban = IBAN("DE89370400440532013000")
         val bic = BIC("DEUTDEBBXXX")
 
-        val bankAccount = createBankAccount(userId, iban, bic,  "", true, AccountType.DEBTOR,creatorId)
+        val bankAccount = createBankAccount(userId, iban, bic,  "", true, AccountType.DEBTOR,listOf(), creatorId)
         val accessorId = UUID.randomUUID()
         val accessor = createBankAccountAccessor(accessorId, bankAccount)
 
@@ -146,7 +146,7 @@ class BankAccountRepositoryTest {
         val iban = IBAN("DE89370400440532013000")
         val bic = BIC("DEUTDEBBXXX")
 
-        val createdAccount = createBankAccount(userId, iban, bic,  "", true, AccountType.DEBTOR,creatorId)
+        val createdAccount = createBankAccount(userId, iban, bic,  "", true, AccountType.DEBTOR,listOf(), creatorId)
         val retrievedAccount = readBankAccount(createdAccount.id.value)
 
         assertNotNull(retrievedAccount)
@@ -179,7 +179,7 @@ class BankAccountRepositoryTest {
         val newIban = IBAN("ES9121000418450200051332")
         val newBic = BIC("DEUTDEFFXXX")
 
-        val account = createBankAccount(userId, originalIban, originalBic,  "", true, AccountType.DEBTOR,creatorId)
+        val account = createBankAccount(userId, originalIban, originalBic,  "", true, AccountType.DEBTOR,listOf(), creatorId)
         val updatedAccount = updateBankAccount(
             account.id.value,
             userId,
@@ -219,7 +219,7 @@ class BankAccountRepositoryTest {
         val iban = IBAN("DE89370400440532013000")
         val bic = BIC("DEUTDEBBXXX")
 
-        val account = createBankAccount(userId, iban, bic,  "", true, AccountType.DEBTOR,creatorId)
+        val account = createBankAccount(userId, iban, bic,  "", true, AccountType.DEBTOR,listOf(), creatorId)
         deleteBankAccount(account.id.value)
 
         assertThrows<BankAccountsException.NoSuchBankAccount> {

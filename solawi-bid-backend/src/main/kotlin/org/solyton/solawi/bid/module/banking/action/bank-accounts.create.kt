@@ -12,6 +12,7 @@ import org.evoleq.math.x
 import org.solyton.solawi.bid.module.banking.data.api.BankAccount
 import org.solyton.solawi.bid.module.banking.data.api.CreateBankAccount
 import org.solyton.solawi.bid.module.banking.data.toApiType
+import org.solyton.solawi.bid.module.banking.data.toUUID
 import org.solyton.solawi.bid.module.banking.repository.createBankAccount
 import org.solyton.solawi.bid.module.banking.schema.AccountType
 import org.solyton.solawil.bid.module.bid.data.api.toUUID
@@ -33,16 +34,16 @@ fun CreateBankAccount(): KlAction<Result<Contextual<CreateBankAccount>>, Result<
                     org.solyton.solawi.bid.module.banking.data.api.AccountType.CREDITOR -> AccountType.CREDITOR
                     org.solyton.solawi.bid.module.banking.data.api.AccountType.DEBTOR -> AccountType.DEBTOR
                 }
-
+                val accessors = contextual.data.accessors.map { it.toUUID() }
                 createBankAccount(
-                    userId.toUUID(),
-                    iban,
-                    bic,
-                    accountHolder.orEmpty(),
-                    isActive,
-                    accountType,
-                    creator
-
+                    userId = userId.toUUID(),
+                    iban = iban,
+                    bic = bic,
+                    accountHolder = accountHolder.orEmpty(),
+                    isActive = isActive,
+                    accountType = accountType,
+                    accessors = accessors,
+                    creatorId = creator
                 ).toApiType()
             }
         } x database
