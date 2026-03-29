@@ -325,7 +325,7 @@ fun update(change: BankAccountChange, onChange: (BankAccount) -> Unit ) {
             bankAccountHolder = change.bankAccountHolder.new!!,
             isActive = change.isActive.new!!,
             bankAccountType = change.bankAccountType.new!!,
-            description = change.description.new!!
+            description = change.description.new
         )
         onChange(bankAccount)
     }catch(exception: Exception){
