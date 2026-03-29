@@ -6,6 +6,7 @@ import org.evoleq.ktorx.DbAction
 import org.evoleq.ktorx.KlAction
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
+import org.evoleq.language.description
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.solyton.solawi.bid.module.banking.data.api.BankAccount
@@ -23,7 +24,7 @@ fun UpdateBankAccount(): KlAction<Result<Contextual<UpdateBankAccount>>, Result<
     DbAction { database ->
         result bindSuspend { (creator, _ , data) ->
             resultTransaction(database) {
-                val (bankAccountId, userId, bic, iban, accountHolder, isActive, accountType) = data
+                val (bankAccountId, userId, bic, iban, accountHolder, isActive, accountType, description) = data
 
                 updateBankAccount(
                     bankAccountId = bankAccountId.toUUID(),
@@ -33,6 +34,7 @@ fun UpdateBankAccount(): KlAction<Result<Contextual<UpdateBankAccount>>, Result<
                     accountHolder = accountHolder.orEmpty(),
                     isActive = isActive,
                     accountType = accountType.toDomainType(),
+                    description = description,
                     modifierId = creator
                 ).toApiType()
             }

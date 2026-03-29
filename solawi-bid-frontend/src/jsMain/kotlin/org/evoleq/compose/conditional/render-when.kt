@@ -11,3 +11,10 @@ import org.w3c.dom.HTMLElement
 fun ElementScope<HTMLElement>.When(condition: Boolean, content: @Composable ElementScope<HTMLElement>.()->Unit) {
     if (condition) content()
 }
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun When(condition: Boolean, content: @Composable ()->Unit) {
+    if (condition) content()
+}

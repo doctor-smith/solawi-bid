@@ -55,6 +55,7 @@ fun UpsertBankAccountWithUserSearchModal(
     bankAccount: BankAccount?,
     setBankAccount: (BankAccount)->Unit,
     isOkButtonDisabled: () -> Boolean = {false},
+    hasDescription: Boolean = false,
     update: ()->Unit
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
     id = id,
@@ -74,7 +75,8 @@ fun UpsertBankAccountWithUserSearchModal(
             legalEntities,
             legalEntityId,
             bankAccount,
-            setBankAccount
+            setBankAccount,
+            hasDescription
         )
     }
 }
@@ -101,6 +103,7 @@ fun Storage<Modals<Int>>.showUpsertBankAccountWithUserSearchModal(
     bankAccount: BankAccount?,
     setBankAccount: (BankAccount)->Unit = {},
     isOkButtonDisabled: () -> Boolean = {false},
+    hasDescription: Boolean = false,
     update: ()->Unit
 ) = with(nextId()) {
     put(this to ModalData(
@@ -116,6 +119,7 @@ fun Storage<Modals<Int>>.showUpsertBankAccountWithUserSearchModal(
             bankAccount,
             setBankAccount,
             isOkButtonDisabled,
+            hasDescription,
             update = update
         )
     ) )

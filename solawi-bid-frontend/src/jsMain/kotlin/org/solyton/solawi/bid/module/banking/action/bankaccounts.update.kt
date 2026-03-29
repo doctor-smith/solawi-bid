@@ -35,6 +35,7 @@ fun updateBankAccount(
     bankAccountHolder: String = "",
     isActive: Boolean = true,
     accountType: AccountType = AccountType.DEBTOR,
+    description: String? = null,
     nameSuffix: String = ""
 ): Action<BankingApplication, UpdateBankAccount, ApiBankAccount> = Action(
     name = UPDATE_BANK_ACCOUNT.suffixed(nameSuffix),
@@ -45,7 +46,8 @@ fun updateBankAccount(
         iban = iban,
         accountHolder = bankAccountHolder,
         isActive = isActive,
-        accountType = accountType.toApiType()
+        accountType = accountType.toApiType(),
+        description = description
     ) },
     endPoint = UpdateBankAccount::class,
     writer = bankAccounts.update{

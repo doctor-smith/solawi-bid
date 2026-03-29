@@ -136,6 +136,7 @@ val columnsToAdd: List<AddMissingColumns> by lazy {
             ColumnDef.Missing<String>("account_holder", ""),
             ColumnDef.Missing<Boolean>("is_active", true),
             ColumnDef.Missing<String>("account_type", AccountType.DEBTOR.name ),
+            ColumnDef.Missing<String?>("description", null),
         ),
         FiscalYears.addColumnsIfMissing(
             ColumnDef.Missing<UUID>("created_by", UUID_ZERO),

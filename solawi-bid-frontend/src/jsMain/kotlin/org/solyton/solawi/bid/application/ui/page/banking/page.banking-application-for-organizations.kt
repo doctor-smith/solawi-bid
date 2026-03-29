@@ -161,7 +161,8 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                             legalEntityId = LegalEntityId(providerId.value),
                             bankAccount = null,
                             setBankAccount = {bA -> bankAccountState = bA},
-                            isOkButtonDisabled = {bankAccountState == null}
+                            isOkButtonDisabled = {bankAccountState == null},
+                            hasDescription = true
                         ) {
                             if(bankAccountState != null ) {
                                 val newBankAccount = requireNotNull(bankAccountState)
@@ -172,7 +173,8 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                                         newBankAccount.bic,
                                         newBankAccount.bankAccountHolder,
                                         newBankAccount.isActive,
-                                        newBankAccount.bankAccountType
+                                        newBankAccount.bankAccountType,
+                                        newBankAccount.description
                                     )
                                     bankAccountState = null
                                 }
@@ -183,9 +185,10 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                 HeaderWrapper {
                     Header{
                         HeaderCell("Account Holder") { width(30.percent) }
+                        HeaderCell("Description") {  width(15.percent)}
                         HeaderCell("IBAN") { width(30.percent) }
                         HeaderCell("BIC") { width(20.percent) }
-                        HeaderCell("Active"){ width(10.percent) }
+                        HeaderCell("Active"){ width(5.percent) }
                     }
                 }
                 ListItemsIndexed(creditorBankAccounts.read().let{
@@ -194,9 +197,10 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                     ListItemWrapper({ listItemWrapperStyle(index) }) {
                         DataWrapper {
                             TextCell(bankAccount.bankAccountHolder) {width(30.percent)}
+                            TextCell(bankAccount.description?:"") {width(15.percent)}
                             TextCell(bankAccount.iban.value) {width(30.percent)}
                             TextCell(bankAccount.bic.value) {width(20.percent)}
-                            TextCell(bankAccount.isActive.toString()) {width(10.percent)}
+                            TextCell(bankAccount.isActive.toString()) {width(5.percent)}
                         }
                         ActionsWrapper {
                             var bankAccountState by remember { mutableStateOf<BankAccount?>(null) }
@@ -217,7 +221,8 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                                     legalEntityId = LegalEntityId(providerId.value),
                                     bankAccount = bankAccount,
                                     setBankAccount = {bA -> bankAccountState = bA},
-                                    isOkButtonDisabled = {bankAccountState == null}
+                                    isOkButtonDisabled = {bankAccountState == null},
+                                    hasDescription = true
                                 ) {
                                     if(bankAccountState != null ) {
                                         val newBankAccount = requireNotNull(bankAccountState)
@@ -229,7 +234,8 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                                                 newBankAccount.bic,
                                                 newBankAccount.bankAccountHolder,
                                                 newBankAccount.isActive,
-                                                newBankAccount.bankAccountType
+                                                newBankAccount.bankAccountType,
+                                                newBankAccount.description
                                             )
                                             bankAccountState = null
                                         }
@@ -292,6 +298,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                                             newBankAccount.bankAccountHolder,
                                             newBankAccount.isActive,
                                             newBankAccount.bankAccountType,
+                                            null,
                                             listOf(AccessorId(providerId.value))
                                         )
                                         bankAccountState = null

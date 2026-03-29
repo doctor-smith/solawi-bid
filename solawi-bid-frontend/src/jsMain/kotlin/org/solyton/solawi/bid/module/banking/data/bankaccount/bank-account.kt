@@ -18,7 +18,8 @@ data class BankAccount(
     @ReadWrite val bic: BIC,
     @ReadWrite val bankAccountHolder: String = "",
     @ReadWrite val isActive: Boolean = true,
-    @ReadWrite val bankAccountType: AccountType = AccountType.DEBTOR
+    @ReadWrite val bankAccountType: AccountType = AccountType.DEBTOR,
+    @ReadWrite val description: String? = null
 )
 
 data class BankAccountChange(
@@ -28,5 +29,6 @@ data class BankAccountChange(
     val bic: Change<String>,
     val bankAccountHolder: Change<String>,
     val isActive: Change<Boolean>,
-    val bankAccountType: Change<AccountType>
+    val bankAccountType: Change<AccountType>,
+    val description: Change<String?>
 )

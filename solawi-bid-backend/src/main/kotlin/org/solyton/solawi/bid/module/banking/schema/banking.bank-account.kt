@@ -18,6 +18,7 @@ object BankAccounts : AuditableUUIDTable("bank_accounts") {
     val accountHolder = varchar("account_holder", 255).default("")
     val isActive = bool("is_active").default(true)
     val accountType = enumerationByName("account_type", 20, AccountType::class).default(AccountType.DEBTOR)
+    val description = text("description").nullable()
 }
 
 class BankAccount(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
@@ -29,6 +30,8 @@ class BankAccount(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     var accountHolder by BankAccounts.accountHolder
     var isActive by BankAccounts.isActive
     var accountType by BankAccounts.accountType
+
+    var description by BankAccounts.description
 
     override var createdAt: DateTime by BankAccounts.createdAt
     override var createdBy: UUID by BankAccounts.createdBy
