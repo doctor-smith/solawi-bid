@@ -1,7 +1,6 @@
 package org.evoleq.compose.style.data.device
 
 import kotlin.math.roundToInt
-import kotlin.math.roundToInt
 
 sealed class DeviceType(
     open val minWidth: Int,
