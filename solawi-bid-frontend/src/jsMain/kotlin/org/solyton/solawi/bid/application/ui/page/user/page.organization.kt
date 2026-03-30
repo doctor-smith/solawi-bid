@@ -66,8 +66,11 @@ import org.solyton.solawi.bid.module.application.i18n.ApplicationComponent
 import org.solyton.solawi.bid.module.application.i18n.application
 import org.solyton.solawi.bid.module.application.i18n.module
 import org.solyton.solawi.bid.module.banking.action.READ_BANK_ACCOUNTS
+import org.solyton.solawi.bid.module.banking.action.READ_FISCAL_YEARS
 import org.solyton.solawi.bid.module.banking.action.readBankAccounts
+import org.solyton.solawi.bid.module.banking.action.readFiscalYears
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
+import org.solyton.solawi.bid.module.banking.data.application.fiscalYears
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.mappings.BankingMappings
 import org.solyton.solawi.bid.module.control.button.*
@@ -272,12 +275,14 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
             }
             val fiscalYearId = shareManagement.shareOffers.firstOrNull()?.fiscalYear?.fiscalYearId
 
+            val fiscalYears = (applicationStorage * bankingApplicationIso * fiscalYears).read()
+
             when {
                 fiscalYearId == null -> null
                 else -> ShareManagementMappings(
                     override = false,
                     providerId = organizationId,
-                    fiscalYears = shareManagement.shareOffers.map { it.fiscalYear }.distinct(),
+                    fiscalYears = fiscalYears,
                     shareOffers = shareManagement.shareOffers,
                     distributionPoints = distributionPointsMap.read()
                 )
@@ -796,7 +801,7 @@ fun basicDataActions(
     ActionEnvelope(
         userIso * readUserProfiles(emptyList()),
         READ_USER_PROFILES,
-    )
+    ),
 )
 
 /**
@@ -811,6 +816,11 @@ fun conditionalActions(
     ActionEnvelope(
         bankingApplicationIso * readBankAccounts(LegalEntityId(organizationId)),
         READ_BANK_ACCOUNTS,
+        run = usesBankingApplication || usesShareManagement
+    ),
+    ActionEnvelope(
+        bankingApplicationIso * readFiscalYears(organizationId),
+        READ_FISCAL_YEARS,
         run = usesBankingApplication || usesShareManagement
     ),
     ActionEnvelope(
