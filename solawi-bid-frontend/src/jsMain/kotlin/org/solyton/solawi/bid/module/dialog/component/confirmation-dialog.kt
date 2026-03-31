@@ -27,13 +27,14 @@ fun DialogModal(
     modals: Storage<Modals<Int>>,
     device: Source<DeviceType>,
     dataId: String? = null,
+    onCancel: (()->Unit)? = null,
     onOk: () -> Unit
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
     id = id,
     modals = modals,
     device = device,
     onOk = onOk,
-    onCancel = null,
+    onCancel = onCancel,
     texts = texts,
     dataId = dataId,
 ) {
@@ -48,10 +49,11 @@ fun Storage<Modals<Int>>.showDialogModal(
     texts: Lang.Block,
     device: Source<DeviceType>,
     dataId: String? = null,
+    onCancel: (()->Unit)? = null,
     onOk: () -> Unit
 ) = with(nextId()){
     put(this to ModalData(
         ModalType.Dialog,
-        DialogModal(this, texts, this@showDialogModal, device, dataId, onOk)
+        DialogModal(this, texts, this@showDialogModal, device, dataId, onCancel, onOk)
     ))
 }

@@ -63,6 +63,7 @@ import org.solyton.solawi.bid.module.control.button.EditButton
 import org.solyton.solawi.bid.module.control.button.PlusButton
 import org.solyton.solawi.bid.module.control.button.TrashCanButton
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
+import org.solyton.solawi.bid.module.dialog.component.showDialogModal
 import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
 import org.solyton.solawi.bid.module.distribution.action.readDistributionPoints
 import org.solyton.solawi.bid.module.distribution.data.distributionManagementActions
@@ -679,6 +680,12 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                 shareSubscriptions = shareSubscriptionsState,
                                 setChanges = {changes -> bulksEditShareSubscriptionChanges = changes}
                             ) {
+
+                                shareManagementModals.showDialogModal(
+                                    texts = dialogModalTexts("Are you sure you want to bulk edit share subscriptions?"),
+                                    device = deviceType,
+                                    onCancel = {},
+                                ) {
                                 scope.launch {
                                     when(val changes = bulksEditShareSubscriptionChanges) {
                                         is BulkEditShareSubscriptionChanges.None -> Unit
@@ -727,6 +734,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                                     )
 
                                                 }
+
                                             is BulkEditShareSubscriptionChanges.Trivial.NumberOfShares ->
                                                 shareSubscriptionsState.forEach { shareSubscription ->
                                                     shareManagementActions dispatch updateShareSubscription(
@@ -742,6 +750,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                                         shareSubscription.coSubscribers,
                                                     )
                                                 }
+
                                             is BulkEditShareSubscriptionChanges.Trivial.DistributionPoint ->
                                                 shareSubscriptionsState.forEach { shareSubscription ->
                                                     shareManagementActions dispatch updateShareSubscription(
@@ -757,6 +766,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                                         shareSubscription.coSubscribers,
                                                     )
                                                 }
+
                                             is BulkEditShareSubscriptionChanges.Trivial.AhcAuthorization ->
                                                 shareSubscriptionsState.forEach { shareSubscription ->
                                                     shareManagementActions dispatch updateShareSubscription(
@@ -772,6 +782,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                                         shareSubscription.coSubscribers,
                                                     )
                                                 }
+                                        }
                                         }
                                     }
                                 }
