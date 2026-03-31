@@ -77,6 +77,7 @@ import org.solyton.solawi.bid.module.list.component.HeaderWrapper
 import org.solyton.solawi.bid.module.list.component.ListItemWrapper
 import org.solyton.solawi.bid.module.list.component.ListItemsIndexed
 import org.solyton.solawi.bid.module.list.component.ListWrapper
+import org.solyton.solawi.bid.module.list.component.NumberCell
 import org.solyton.solawi.bid.module.list.component.TextCell
 import org.solyton.solawi.bid.module.list.component.Title
 import org.solyton.solawi.bid.module.list.component.TitleWrapper
@@ -789,8 +790,10 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                             allChecked = newCheckedState
                         }
                         HeaderCell("Fiscal Year") { width(10.percent) }
-                        HeaderCell("Share Type") { width(10.percent) }
+                        HeaderCell("Share Type") { width(15.percent) }
                         HeaderCell("Status") { width(20.percent) }
+                        HeaderCell("No") { width(5.percent) }
+                        HeaderCell("Price") { width(5.percent) }
                         HeaderCell("SEPA") { width(5.percent) }
                         HeaderCell("Depot") { width(10.percent) }
                         HeaderCell("User") { width(20.percent) }
@@ -825,8 +828,10 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                     ) { width(10.percent) }
                                     TextCell(
                                         shareOffersMap[subscription.shareOfferId]?.shareType?.name ?: ""
-                                    ) { width(10.percent) }
+                                    ) { width(15.percent) }
                                     TextCell(subscription.status.value) { width(20.percent) }
+                                    NumberCell(subscription.numberOfShares) { width(5.percent) }
+                                    NumberCell(subscription.pricePerShare?:0) { width(5.percent) }
                                     TextCell(subscription.ahcAuthorized.checkIcon("--")) { width(5.percent) }
                                     TextCell(
                                         distributionPointsMap[subscription.distributionPointId]?.name ?: ""
