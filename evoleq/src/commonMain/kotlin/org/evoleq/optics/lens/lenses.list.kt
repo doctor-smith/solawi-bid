@@ -49,3 +49,10 @@ fun <T> FilterBy(predicate: (T)-> Boolean): Lens<List<T>,  List<T>> = Lens(
     set = {ts -> {list -> list.filterNot(predicate) + ts}}
 )
 
+@MathDsl
+@Suppress("FunctionName")
+fun <S, T> BiMap(forth: (S) -> T, back: (T)->S): Lens<List<S>, List<T>> = Lens(
+    get = {list -> list.map(forth)},
+    set = {ts -> {_ -> ts.map(back)}}
+)
+

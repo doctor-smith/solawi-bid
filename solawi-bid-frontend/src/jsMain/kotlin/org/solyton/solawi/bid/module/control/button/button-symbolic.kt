@@ -318,6 +318,34 @@ fun ClockButton(
     onClick
 )
 
+
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun BulkEditButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    // fa-list-check
+    //"fa-check-square"),
+    arrayOf("fa-solid", "fa-list-check"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
+
+
 @Markup
 @Composable
 @Suppress("FunctionName")
