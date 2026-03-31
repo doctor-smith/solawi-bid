@@ -17,6 +17,7 @@ import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.routing.navigate
 import org.evoleq.device.data.mediaType
 import org.evoleq.math.Source
+import org.evoleq.math.emit
 import org.evoleq.math.invert
 import org.evoleq.optics.lens.BiMap
 import org.evoleq.optics.lens.DeepSearch
@@ -63,6 +64,7 @@ import org.solyton.solawi.bid.module.control.button.EditButton
 import org.solyton.solawi.bid.module.control.button.PlusButton
 import org.solyton.solawi.bid.module.control.button.TrashCanButton
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
+import org.solyton.solawi.bid.module.dialog.component.WarningSymbol
 import org.solyton.solawi.bid.module.dialog.component.showDialogModal
 import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
 import org.solyton.solawi.bid.module.distribution.action.readDistributionPoints
@@ -684,6 +686,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                 shareManagementModals.showDialogModal(
                                     texts = dialogModalTexts("Are you sure you want to bulk edit share subscriptions?"),
                                     device = deviceType,
+                                    symbol = { WarningSymbol(deviceType = deviceType.emit()) },
                                     onCancel = {},
                                 ) {
                                 scope.launch {
