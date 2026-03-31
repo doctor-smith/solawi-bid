@@ -32,6 +32,12 @@ fun <T > Storage<List<T>>.onEmpty(action: ()->Unit) {
 
 fun <T > Storage<List<T>>.isEmpty() = read().isEmpty()
 
+fun <T > Storage<List<T>>.none(predicate: (T)-> Boolean) = read().none(predicate)
+
+fun <T > Storage<List<T>>.any(predicate: (T)-> Boolean) = read().any(predicate)
+
+
+
 inline fun <reified T, R:Comparable<R>> Storage<List<T>>.sortBy(crossinline f: (T)->R ) {
     write(
         with(arrayListOf(*read().toTypedArray()) ){

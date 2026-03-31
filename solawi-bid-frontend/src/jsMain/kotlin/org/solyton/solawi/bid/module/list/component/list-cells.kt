@@ -1,10 +1,15 @@
 package org.solyton.solawi.bid.module.list.component
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import org.evoleq.compose.Markup
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.jetbrains.compose.web.css.*
+import org.jetbrains.compose.web.dom.CheckboxInput
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
 import kotlin.js.Date
@@ -162,4 +167,19 @@ fun ActionCellItem(
         }
         action()
     }
+}
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun CheckBoxCell(
+    checked: Source<Boolean>,
+    style: StyleScope.()->Unit = {},
+    onClick: () -> Unit = {}
+){
+    var checkedState by remember { mutableStateOf(checked.emit()) }
+    CheckboxInput(checkedState,{
+        style { style() }
+        onClick { checkedState = !checkedState; onClick() }
+    })
 }

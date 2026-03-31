@@ -16,6 +16,7 @@ import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.Div
 import org.solyton.solawi.bid.module.style.overflow.Overflow
+import org.solyton.solawi.bid.module.style.overflow.overflowX
 import org.solyton.solawi.bid.module.style.overflow.overflowY
 
 data class ScrollableStyles(
@@ -31,6 +32,7 @@ data class ScrollableStyles(
         display( DisplayStyle.Flex )
         flexDirection(FlexDirection.Column)
         overflowY(Overflow.Auto)
+        overflowX(Overflow.Hidden)
     }
 ) {
     fun modifyContainerStyle(style: StyleScope.()->Unit) = copy(
