@@ -63,6 +63,7 @@ import org.solyton.solawi.bid.module.control.button.BulkEditButton
 import org.solyton.solawi.bid.module.control.button.EditButton
 import org.solyton.solawi.bid.module.control.button.PlusButton
 import org.solyton.solawi.bid.module.control.button.TrashCanButton
+import org.solyton.solawi.bid.module.control.button.UploadButton
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
 import org.solyton.solawi.bid.module.dialog.component.WarningSymbol
 import org.solyton.solawi.bid.module.dialog.component.showDialogModal
@@ -105,6 +106,7 @@ import org.solyton.solawi.bid.module.shares.component.modal.BulkEditShareShareSu
 import org.solyton.solawi.bid.module.shares.component.modal.BulkEditShareSubscriptionChanges
 import org.solyton.solawi.bid.module.shares.component.modal.defaultBulkEditTexts
 import org.solyton.solawi.bid.module.shares.component.modal.showBulkEditShareShareSubscriptionsModal
+import org.solyton.solawi.bid.module.shares.component.modal.showBulkUpdateShareDataByFileImportModal
 import org.solyton.solawi.bid.module.shares.component.modal.showUpsertShareOffersModal
 import org.solyton.solawi.bid.module.shares.component.modal.showUpsertShareTypeModal
 import org.solyton.solawi.bid.module.shares.data.api.ChangeReason
@@ -146,6 +148,7 @@ import org.solyton.solawi.bid.module.user.service.profile.fullname
 import org.solyton.solawi.bid.module.values.ModifierId
 import org.solyton.solawi.bid.module.values.ProviderId
 import org.solyton.solawi.bid.module.values.UserId
+import org.solyton.solawi.bid.module.values.Username
 import kotlin.collections.emptyMap
 import kotlin.collections.toMutableMap
 
@@ -472,6 +475,9 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
             val userProfilesMap = memberStorage.read().map{ member ->
                 usersStorage.read().firstOrNull{ user -> user.id == member.memberId }?.profile
             }.mapNotNull { it }.associateBy { it.userProfileId }
+            val userProfileToUserMap = memberStorage.read().mapNotNull { member ->
+                usersStorage.read().firstOrNull { user -> user.id == member.memberId }
+            }.associateBy { it.profile?.userProfileId }
 
 
             var allChecked by remember { mutableStateOf(false) }
@@ -527,7 +533,10 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                         ) {
 
                         }
+
                     }
+                }
+                HeaderWrapper {
                     Horizontal({
                         width(80.percent)
                         alignSelf(AlignSelf.End)
@@ -787,6 +796,58 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                                 }
                                         }
                                         }
+                                    }
+                                }
+                            }
+                        }
+                        var bulkUpdateShareSubscriptionsState by remember{ mutableStateOf<ShareSubscriptions?> (null) }
+                        val initialShareSubscriptions = {
+                            filteredCheckedSubscriptions.filter{
+                                it.checked
+                            }.map{ s ->
+                                val username =
+                                    userProfileToUserMap[s.shareSubscription.userProfileId]!!.username
+                                Username(username) to s.shareSubscription
+                            }.associateBy ({
+                                it.first
+                            }){it.second}
+                        }
+                        UploadButton(
+                            color = Color.black,
+                            bgColor = Color.white,
+                            deviceType = deviceType,
+                            isDisabled = false
+                        ) {
+                            shareManagementModals.showBulkUpdateShareDataByFileImportModal(
+                                texts = dialogModalTexts("BulkEdit by import"),
+                                device = deviceType,
+                                shareSubscriptions = initialShareSubscriptions(),
+                                setShareSubscriptions = {
+                                    bulkUpdateShareSubscriptionsState = it
+                                }
+                            ) {
+                                shareManagementModals.showDialogModal(
+                                    texts = dialogModalTexts("Are you sure you want to bulk edit share subscriptions?"),
+                                    device = deviceType,
+                                    symbol = { WarningSymbol(deviceType = deviceType.emit()) },
+                                    onCancel = {},
+                                ) {
+                                    scope.launch {
+                                        bulkUpdateShareSubscriptionsState?.all?.forEach { shareSubscription ->
+                                            shareManagementActions dispatch updateShareSubscription(
+                                                shareSubscription.shareSubscriptionId,
+                                                providerId.value,
+                                                shareSubscription.shareOfferId,
+                                                shareSubscription.userProfileId,
+                                                shareSubscription.distributionPointId,
+                                                shareSubscription.fiscalYearId,
+                                                shareSubscription.numberOfShares,
+                                                shareSubscription.pricePerShare,
+                                                shareSubscription.ahcAuthorized,
+                                                shareSubscription.coSubscribers,
+                                            )
+                                        }
+                                        bulkUpdateShareSubscriptionsState = null
                                     }
                                 }
                             }
