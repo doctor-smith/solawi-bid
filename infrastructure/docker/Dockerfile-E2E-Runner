@@ -1,5 +1,20 @@
 FROM mcr.microsoft.com/playwright:v1.40.0-focal
 
+# System-Level Performance
+ENV GRADLE_OPTS="-Xmx2g -XX:+UseG1GC -XX:+UseStringDeduplication"
+ENV JAVA_OPTS="-Xmx2g"
+
+# Gradle Config (nicht Dependencies!)
+RUN mkdir -p /root/.gradle && \
+    echo "org.gradle.caching=true" >> /root/.gradle/gradle.properties && \
+    echo "org.gradle.parallel=true" >> /root/.gradle/gradle.properties && \
+    echo "org.gradle.daemon=false" >> /root/.gradle/gradle.properties && \
+    echo "org.gradle.configureondemand=true" >> /root/.gradle/gradle.properties
+
+# Playwright CI Optimierungen
+ENV PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+ENV CI=true
+
 # Build-Argumente für Labels
 ARG GITHUB_REPOSITORY
 ARG BUILD_DATE
@@ -76,3 +91,5 @@ LABEL org.opencontainers.image.title="E2E Test Runner" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.vendor="Solyton" \
       org.opencontainers.image.licenses="MIT"
+
+# Nur Java, Gradle, Docker - KEINE Dependencies!

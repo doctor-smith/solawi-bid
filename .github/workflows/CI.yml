@@ -136,6 +136,17 @@ jobs:
           docker compose -f docker-compose.e2e.yml up -d --wait --quiet-pull
 
       # E2E Tests im E2E Runner Container ausführen
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.gradle/build-cache
+          key: ${{ runner.os }}-gradle-e2e-${{ hashFiles('e2e/**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-e2e-
+            ${{ runner.os }}-gradle-
       - name: Run Playwright E2E tests
         run: |
           docker run --rm \
