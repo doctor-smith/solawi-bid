@@ -5,10 +5,10 @@ on:
   push:
 
 permissions:
-  contents: read
-  packages: write
-  id-token: write
-  checks: write
+  contents: read  # Grants workflow permission to read repository contents
+  packages: write  # Allows workflow to create and modify container registry packages
+  id-token: write  # Enables OIDC token generation for secure communication purposes
+  checks: write  # Allows workflow to create, update, and finalize GitHub checks
 
 concurrency:
   group: ci-${{ startsWith(github.ref, 'refs/tags/') && 'P' || (github.ref == 'refs/heads/main' && 'Q' || 'D') }}
