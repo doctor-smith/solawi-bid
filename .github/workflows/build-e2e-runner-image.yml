@@ -6,7 +6,6 @@ on:
       - './infrastructure/docker/Dockerfile-E2e-Runner'
       - '.github/workflows/build-e2e-runner-image.yml'
     branches:
-      - main
       - devops/*
   workflow_dispatch:  # Manual trigger
   workflow_call:
