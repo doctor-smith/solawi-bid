@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       full_image_name: ${{ steps.build-frontend.outputs.full_image_name }}
-      full_image_reference: ${{ steps.build-frontend.outputs.full_image_refrence }}
+      full_image_reference: ${{ steps.build-frontend.outputs.full_image_reference }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       full_image_name: ${{ steps.build-backend.outputs.full_image_name }}
-      full_image_reference: ${{ steps.build-backend.outputs.full_image_refrence }}
+      full_image_reference: ${{ steps.build-backend.outputs.full_image_reference }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -60,13 +60,52 @@ jobs:
           image_name: backend
           dockerfile_path: infrastructure/docker/Dockerfile-Backend
 
+  check-e2e-runner-changes:
+    name: Check E2E Runner Changes
+    runs-on: ubuntu-latest
+    outputs:
+      needs-rebuild: ${{ steps.check.outputs.needs-rebuild }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check if E2E Runner needs rebuild
+        id: check
+        run: |
+          # Check if the E2E Runner image exists first
+          if ! docker manifest inspect ghcr.io/${{ github.repository }}/e2e-runner:latest > /dev/null 2>&1; then
+            echo "needs-rebuild=true" >> $GITHUB_OUTPUT
+            echo "E2E Runner image doesn't exist, rebuild needed"
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]] && git diff --name-only HEAD~1 HEAD 2>/dev/null | grep -q "infrastructure/docker/Dockerfile-E2E-Runner"; then
+            echo "needs-rebuild=true" >> $GITHUB_OUTPUT
+            echo "E2E Runner Dockerfile changed on main, rebuild needed"
+          else
+            echo "needs-rebuild=false" >> $GITHUB_OUTPUT
+            echo "Using existing latest E2E Runner image"
+          fi
+
+  build-e2e-runner:
+    name: Build E2E Runner Image
+    if: needs.check-e2e-runner-changes.outputs.needs-rebuild == 'true'
+    uses: ./.github/workflows/build-e2e-runner-image.yml
+    needs: check-e2e-runner-changes
+    secrets: inherit
+
   e2e:
     env:
-      TEST_USER: ${{ vars.test_user }}
-      TEST_USER_PASSWORD: ${{ secrets.test_user_password }}
+      TEST_USER: ${{ vars.TEST_USER }}
+      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
     name: Run E2E Tests
     runs-on: ubuntu-latest
-    needs: [ build-Frontend, build-Backend ]
+    container:
+      image: ghcr.io/${{ github.repository }}/e2e-runner:latest
+      options: >-
+        --privileged
+        -v /var/run/docker.sock:/var/run/docker.sock
+    needs: [build-Frontend, build-Backend, check-e2e-runner-changes, build-e2e-runner]
+    if: always() && !cancelled() && !failure()
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -76,25 +115,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Cache Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            gradle-${{ runner.os }}-
 
-      - name: Cache Playwright Browsers
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/ms-playwright
-            .playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('**/gradle.lockfile') }}
-          restore-keys: |
-            playwright-${{ runner.os }}-
 
       - name: Download Frontend Docker Image Artifact
         uses: actions/download-artifact@v4
@@ -116,9 +137,6 @@ jobs:
 
       - name: Give gradlew permissions
         run: chmod +x ./gradlew
-
-      - name: Install Playwright Browsers
-        run: ./gradlew :e2e:installPlaywright
 
       - name: Run Playwright E2E tests
         run: ./gradlew :e2e:test --info

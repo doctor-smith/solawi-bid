@@ -1,0 +1,78 @@
+FROM mcr.microsoft.com/playwright:v1.40.0-focal
+
+# Build-Argumente für Labels
+ARG GITHUB_REPOSITORY
+ARG BUILD_DATE
+ARG VERSION
+
+# Umgebungsvariablen
+ENV GRADLE_VERSION=8.5
+ENV GRADLE_HOME=/opt/gradle-${GRADLE_VERSION}
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV PATH=${GRADLE_HOME}/bin:${PATH}
+
+# System-Updates und grundlegende Abhängigkeiten
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release \
+    wget \
+    unzip \
+    git \
+    sudo \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Java 17 installieren (falls nicht bereits vorhanden im Playwright-Image)
+RUN apt-get update && apt-get install -y \
+    openjdk-17-jdk \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Docker sicher installieren (offizielle Methode)
+RUN mkdir -p /etc/apt/keyrings \
+    && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
+    && apt-get update \
+    && apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Gradle mit Checksummen-Verifikation installieren
+RUN wget -q https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip \
+    && echo "9d926787066a081739e8200858338b4a69e837c3a821a33aca9db09dd4a41026 *gradle-${GRADLE_VERSION}-bin.zip" | sha256sum -c - \
+    && unzip gradle-${GRADLE_VERSION}-bin.zip -d /opt \
+    && rm gradle-${GRADLE_VERSION}-bin.zip \
+    && chmod +x ${GRADLE_HOME}/bin/gradle
+
+# Non-root User erstellen für bessere Sicherheit
+RUN groupadd -r testuser && useradd -r -g testuser -m -d /home/testuser -s /bin/bash testuser \
+    && usermod -aG docker testuser \
+    && usermod -aG sudo testuser \
+    && echo 'testuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# Working directory setzen
+WORKDIR /workspace
+
+# Workspace-Berechtigung für testuser
+RUN chown -R testuser:testuser /workspace
+
+# User wechseln
+USER testuser
+
+# Healthcheck hinzufügen
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD gradle --version && docker --version || exit 1
+
+# Labels für bessere Verwaltung (korrigierte GitHub Actions Syntax)
+LABEL org.opencontainers.image.title="E2E Test Runner" \
+      org.opencontainers.image.description="E2E Test Runner with Playwright, Docker, Java 17 and Gradle" \
+      org.opencontainers.image.source="https://github.com/${GITHUB_REPOSITORY}" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.vendor="Solyton" \
+      org.opencontainers.image.licenses="MIT"
+
+# Default command
+CMD ["/bin/bash"]
