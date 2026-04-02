@@ -114,6 +114,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # GRADLE CACHE SETUP
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       - name: Download Docker Images
         uses: actions/download-artifact@v4
         with:
@@ -129,31 +140,30 @@ jobs:
           docker load --input docker_image_frontend.tar
           docker load --input docker_image_backend.tar
 
-      # Services auf Runner starten (ohne E2E Container!)
       - name: Start E2E Test Environment
         run: |
           chmod 644 ./infrastructure/database/setup.sql
           docker compose -f docker-compose.e2e.yml up -d --wait --quiet-pull
 
-      # E2E Tests im E2E Runner Container ausführen
+      # GRADLE CACHE IM CONTAINER NUTZEN
       - name: Run Playwright E2E tests
         run: |
           docker run --rm \
             --network host \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v ${{ github.workspace }}:/workspace \
+            -v $HOME/.gradle:/root/.gradle \
             -w /workspace \
+            -e GRADLE_USER_HOME=/root/.gradle \
             -e TEST_USER="${{ vars.TEST_USER }}" \
             -e TEST_USER_PASSWORD="${{ secrets.TEST_USER_PASSWORD }}" \
             ghcr.io/${{ github.repository }}/e2e-runner:latest \
-            bash -c "chmod +x ./gradlew && ./gradlew :e2e:test --info"
+            bash -c "chmod +x ./gradlew && ./gradlew :e2e:test --info --build-cache"
 
-      # Cleanup
       - name: Stop E2E Environment
         if: always()
         run: docker compose -f docker-compose.e2e.yml down -v
 
-      # Reports
       - name: Upload JUnit XML Reports
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
