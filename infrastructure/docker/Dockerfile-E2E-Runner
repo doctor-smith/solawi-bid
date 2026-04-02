@@ -58,14 +58,17 @@ WORKDIR /workspace
 # Workspace-Berechtigung für testuser
 RUN chown -R testuser:testuser /workspace
 
-# User wechseln
-USER testuser
+# FIX: Root User für GitHub Actions Services
+USER root
 
-# Healthcheck hinzufügen
+# FIX: Healthcheck der funktioniert (ohne Docker Socket)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD gradle --version && docker --version || exit 1
+    CMD gradle --version && echo "Health check passed" || exit 1
 
-# Labels für bessere Verwaltung (korrigierte GitHub Actions Syntax)
+# FIX: Keep alive für Services
+CMD ["sleep", "infinity"]
+
+# Labels für bessere Verwaltung
 LABEL org.opencontainers.image.title="E2E Test Runner" \
       org.opencontainers.image.description="E2E Test Runner with Playwright, Docker, Java 17 and Gradle" \
       org.opencontainers.image.source="https://github.com/${GITHUB_REPOSITORY}" \
@@ -73,6 +76,3 @@ LABEL org.opencontainers.image.title="E2E Test Runner" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.vendor="Solyton" \
       org.opencontainers.image.licenses="MIT"
-
-# Default command
-CMD ["/bin/bash"]
