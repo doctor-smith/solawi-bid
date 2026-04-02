@@ -134,7 +134,11 @@ jobs:
           docker load --input docker_image_backend.tar
 
       - name: Start E2E Test Environment
-        run: docker compose -f docker-compose.e2e.yml up -d --wait --quiet-pull
+        run: |
+          # MySQL 9 File-Permission Fix
+          chmod 644 ./infrastructure/database/setup.sql
+          
+          docker compose -f docker-compose.e2e.yml up -d --wait --quiet-pull
 
       - name: Give gradlew permissions
         run: chmod +x ./gradlew
