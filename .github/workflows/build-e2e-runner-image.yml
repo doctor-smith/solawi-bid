@@ -4,13 +4,13 @@ on:
   push:
     paths:
       - './infrastructure/docker/Dockerfile-E2e-Runner'
-      - '.github/workflows/build-e2e-runner.yml'
+      - '.github/workflows/build-e2e-runner-image.yml'
     branches:
-      - main
       - devops/*
-  workflow_dispatch:  # Manueller Trigger
+  workflow_dispatch:  # Manual trigger
+  workflow_call:
   schedule:
-    - cron: '0 2 * * 1'  # Wöchentlich montags um 2 Uhr für Updates
+    - cron: '0 2 * * 1'  # Weekly on Mondays at 2 AM for updates
 
 permissions:
   contents: read
@@ -53,7 +53,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile.e2e-runner
+          file: ./infrastructure/docker/Dockerfile-E2E-Runner
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -68,19 +68,28 @@ jobs:
       - name: Test Docker image
         run: |
           echo "Testing the built E2E runner image..."
+          # Use the first tag from the list (the first is always available)
+          IMAGE_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+          echo "Using image tag: $IMAGE_TAG"
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            ghcr.io/${{ github.repository }}/e2e-runner:latest \
+            "$IMAGE_TAG" \
             bash -c "gradle --version && docker --version && echo 'E2E Runner ready! ✅'"
 
       - name: Generate image summary
         run: |
           echo "## E2E Runner Image Built Successfully! 🎉" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Image:** \`ghcr.io/${{ github.repository }}/e2e-runner:latest\`" >> $GITHUB_STEP_SUMMARY
+          IMAGE_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+          echo "**Image:** \`$IMAGE_TAG\`" >> $GITHUB_STEP_SUMMARY
           echo "**Digest:** \`${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Repository:** \`${{ github.repository }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Build Date:** \`${{ fromJSON(steps.meta.outputs.json).created }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### All Tags:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Usage:" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
@@ -88,5 +97,5 @@ jobs:
           echo "docker run -it \\" >> $GITHUB_STEP_SUMMARY
           echo "  -v /var/run/docker.sock:/var/run/docker.sock \\" >> $GITHUB_STEP_SUMMARY
           echo "  -v \$(pwd):/workspace \\" >> $GITHUB_STEP_SUMMARY
-          echo "  ghcr.io/${{ github.repository }}/e2e-runner:latest" >> $GITHUB_STEP_SUMMARY
+          echo "  $IMAGE_TAG" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
