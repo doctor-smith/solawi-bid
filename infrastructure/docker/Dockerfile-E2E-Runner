@@ -4,29 +4,29 @@ FROM mcr.microsoft.com/playwright:v1.40.0-focal
 ENV GRADLE_OPTS="-Xmx2g -XX:+UseG1GC -XX:+UseStringDeduplication"
 ENV JAVA_OPTS="-Xmx2g"
 
-# Gradle Config (nicht Dependencies!)
+# Gradle Configuration (not dependencies!)
 RUN mkdir -p /root/.gradle && \
     echo "org.gradle.caching=true" >> /root/.gradle/gradle.properties && \
     echo "org.gradle.parallel=true" >> /root/.gradle/gradle.properties && \
     echo "org.gradle.daemon=false" >> /root/.gradle/gradle.properties && \
     echo "org.gradle.configureondemand=true" >> /root/.gradle/gradle.properties
 
-# Playwright CI Optimierungen
+# Playwright CI optimizations
 ENV PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
 ENV CI=true
 
-# Build-Argumente für Labels
+# Build arguments for labels
 ARG GITHUB_REPOSITORY
 ARG BUILD_DATE
 ARG VERSION
 
-# Umgebungsvariablen
+# Environment variables
 ENV GRADLE_VERSION=8.5
 ENV GRADLE_HOME=/opt/gradle-${GRADLE_VERSION}
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 ENV PATH=${GRADLE_HOME}/bin:${PATH}
 
-# System-Updates und grundlegende Abhängigkeiten
+# System updates and basic dependencies
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     curl \
@@ -39,13 +39,13 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Java 17 installieren (falls nicht bereits vorhanden im Playwright-Image)
+# Install Java 17 (if not already available in the Playwright image)
 RUN apt-get update && apt-get install -y \
     openjdk-17-jdk \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Docker sicher installieren (offizielle Methode)
+# Securely install Docker (official method)
 RUN mkdir -p /etc/apt/keyrings \
     && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
@@ -54,36 +54,36 @@ RUN mkdir -p /etc/apt/keyrings \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Gradle mit Checksummen-Verifikation installieren
+# Install Gradle with checksum verification
 RUN wget -q https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip \
     && echo "9d926787066a081739e8200858338b4a69e837c3a821a33aca9db09dd4a41026 *gradle-${GRADLE_VERSION}-bin.zip" | sha256sum -c - \
     && unzip gradle-${GRADLE_VERSION}-bin.zip -d /opt \
     && rm gradle-${GRADLE_VERSION}-bin.zip \
     && chmod +x ${GRADLE_HOME}/bin/gradle
 
-# Non-root User erstellen für bessere Sicherheit
+# Create a non-root user for improved security
 RUN groupadd -r testuser && useradd -r -g testuser -m -d /home/testuser -s /bin/bash testuser \
     && usermod -aG docker testuser \
     && usermod -aG sudo testuser \
     && echo 'testuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-# Working directory setzen
+# Set working directory
 WORKDIR /workspace
 
-# Workspace-Berechtigung für testuser
+# Set workspace permissions for testuser
 RUN chown -R testuser:testuser /workspace
 
-# FIX: Root User für GitHub Actions Services
+# FIX: Root user for GitHub Actions services
 USER root
 
-# FIX: Healthcheck der funktioniert (ohne Docker Socket)
+# FIX: Health check that works (without Docker socket)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD gradle --version && echo "Health check passed" || exit 1
 
-# FIX: Keep alive für Services
+# FIX: Keep alive for services
 CMD ["sleep", "infinity"]
 
-# Labels für bessere Verwaltung
+# Labels for better management
 LABEL org.opencontainers.image.title="E2E Test Runner" \
       org.opencontainers.image.description="E2E Test Runner with Playwright, Docker, Java 17 and Gradle" \
       org.opencontainers.image.source="https://github.com/${GITHUB_REPOSITORY}" \
@@ -92,4 +92,4 @@ LABEL org.opencontainers.image.title="E2E Test Runner" \
       org.opencontainers.image.vendor="Solyton" \
       org.opencontainers.image.licenses="MIT"
 
-# Nur Java, Gradle, Docker - KEINE Dependencies!
+# Only Java, Gradle, Docker - NO dependencies!
