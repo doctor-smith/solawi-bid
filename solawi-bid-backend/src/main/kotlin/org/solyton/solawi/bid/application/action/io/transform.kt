@@ -9,6 +9,7 @@ import org.solyton.solawi.bid.module.authentication.exception.AuthenticationExce
 import org.solyton.solawi.bid.module.banking.exception.BankAccountsException
 import org.solyton.solawi.bid.module.banking.exception.FiscalYearException
 import org.solyton.solawi.bid.module.banking.exception.LegalEntityException
+import org.solyton.solawi.bid.module.banking.exception.SepaException
 import org.solyton.solawi.bid.module.bid.data.api.RoundStateException
 import org.solyton.solawi.bid.module.bid.exception.BidRoundException
 import org.solyton.solawi.bid.module.distribution.exception.DistributionPointException
@@ -103,6 +104,13 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
         is LegalEntityException -> when(value as LegalEntityException) {
             is LegalEntityException.NoSuchLegalEntity-> HttpStatusCode.NotFound
             is LegalEntityException.NoSuchLegalEntityParty -> HttpStatusCode.NotFound
+        }
+        is SepaException -> when(value as SepaException) {
+            is SepaException.Transaction.MissingMandateReference -> HttpStatusCode.BadRequest
+            is SepaException.Transaction.MissingEndToEndId -> HttpStatusCode.BadRequest
+            is SepaException.Transaction.InvalidAmount -> HttpStatusCode.BadRequest
+            is SepaException.Transaction.InvalidCreditorId -> HttpStatusCode.BadRequest
+            is SepaException.MissingXmlSchema -> HttpStatusCode.BadRequest
         }
 
         //User

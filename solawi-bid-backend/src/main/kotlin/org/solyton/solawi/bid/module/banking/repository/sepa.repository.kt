@@ -32,13 +32,15 @@ fun Transaction.createSepaMandateWithRetry(
     debtorBankAccountId: UUID,
     debtorName: String,
     signedAt: DateTime,
+    validFrom: DateTime,
+    validUntil: DateTime?,
+    mandateReference: String,
     maxRetries: Int = 5
 ): SepaMandateEntity {
     val creditor = validatedCreditor(creditorId)
     val debtorBankAccount = validatedBankAccount(debtorBankAccountId)
 
     repeat(maxRetries) {
-        val mandateReference = generateMandateReference(creditorId)
 
         try {
             return SepaMandateEntity.new {
@@ -48,7 +50,8 @@ fun Transaction.createSepaMandateWithRetry(
                 this.mandateReference = mandateReference
                 this.signedAt = signedAt
                 this.status = MandateStatus.ACTIVE
-                this.validFrom = DateTime.now()
+                this.validFrom = validFrom
+                this.validUntil = validUntil
                 this.isActive = true
             }
         } catch (e: ExposedSQLException) {
