@@ -26,11 +26,11 @@ fun Transaction.createLegalEntity(
     legalEntityType: LegalEntityType,
     addressId: UUID,
     creatorId: UUID
-) {
+): LegalEntity {
     validateIsUserOrOrganization(partyId)
     val address = validatedAddress(addressId)
 
-    LegalEntity.new {
+    return  LegalEntity.new {
         createdBy = creatorId
         this.partyId = partyId
         this.name = name
