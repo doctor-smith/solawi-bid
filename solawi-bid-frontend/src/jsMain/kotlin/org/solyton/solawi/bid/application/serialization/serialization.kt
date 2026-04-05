@@ -13,6 +13,8 @@ import org.solyton.solawi.bid.module.application.data.ApiApplications
 import org.solyton.solawi.bid.module.application.data.ApiModule
 import org.solyton.solawi.bid.module.application.data.ApiUserApplications
 import org.solyton.solawi.bid.module.authentication.data.api.*
+import org.solyton.solawi.bid.module.banking.data.CreditorId
+import org.solyton.solawi.bid.module.banking.data.CreditorIdentifierId
 import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.data.values.AuctionId
@@ -314,6 +316,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<UpdateLegalEntity>(UpdateLegalEntity.serializer())
         add<DeleteLegalEntity>(DeleteLegalEntity.serializer())
 
+        // Fiscal years
         add<FiscalYear>(FiscalYear.serializer())
         add<FiscalYears>(FiscalYears.serializer())
         add<CreateFiscalYear>(CreateFiscalYear.serializer())
@@ -321,5 +324,13 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<ReadFiscalYear>(ReadFiscalYear.serializer())
         add<UpdateFiscalYear>(UpdateFiscalYear.serializer())
         add<DeleteFiscalYear>(DeleteFiscalYear.serializer())
+
+        // Creditor
+        add<CreditorIdentifiers>(CreditorIdentifiers.serializer())
+        add<CreditorIdentifier>(CreditorIdentifier.serializer())
+        add<ReadCreditorIdentifierByLegalEntity>(ReadCreditorIdentifierByLegalEntity.serializer())
+
+        add<CreditorIdentifierId>(CreditorIdentifierId.serializer())
+        add<CreditorId>(CreditorId.serializer())
     }
 } }

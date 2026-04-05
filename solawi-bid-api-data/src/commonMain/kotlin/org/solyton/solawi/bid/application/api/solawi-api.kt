@@ -395,6 +395,12 @@ val solawiApi by lazy {
                 key = UpdateFiscalYear::class,
                 url = "fiscal-years/update"
             )
+
+            get<ReadCreditorIdentifierByLegalEntity, CreditorIdentifier>(
+                key = ReadCreditorIdentifierByLegalEntity::class,
+                url = "creditors/identifiers/by-legal-entity",
+                parameters = setOf("legal_entity")
+            )
         }
     }
 }

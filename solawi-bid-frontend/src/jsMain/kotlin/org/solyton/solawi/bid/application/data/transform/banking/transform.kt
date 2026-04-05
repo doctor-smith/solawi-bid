@@ -5,6 +5,7 @@ import org.evoleq.optics.storage.ActionDispatcher
 import org.evoleq.optics.storage.times
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
+import org.solyton.solawi.bid.module.banking.data.application.creditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.environment.Environment
 import org.solyton.solawi.bid.module.banking.data.user.User
 
@@ -40,6 +41,8 @@ val bankingApplicationPreIso: Lens<Application, BankingApplication> by lazy {
                 ),
                 bankAccounts = whole.bankAccounts,
                 fiscalYears = whole.fiscalYears,
+                legalEntity = whole.legalEntity,
+                creditorIdentifier = whole.creditorIdentifier
             )
         },
         set = { part -> { whole ->
@@ -48,6 +51,8 @@ val bankingApplicationPreIso: Lens<Application, BankingApplication> by lazy {
                 i18N = part.i18N,
                 bankAccounts = part.bankAccounts,
                 fiscalYears = part.fiscalYears,
+                legalEntity = part.legalEntity,
+                creditorIdentifier = part.creditorIdentifier
             )
         } }
     )
