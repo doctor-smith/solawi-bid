@@ -14,6 +14,8 @@ import org.solyton.solawi.bid.module.application.data.ApiLifecycleStage
 import org.solyton.solawi.bid.module.application.data.ApiModule
 import org.solyton.solawi.bid.module.application.data.ApiUserApplications
 import org.solyton.solawi.bid.module.authentication.data.api.*
+import org.solyton.solawi.bid.module.banking.data.CreditorId
+import org.solyton.solawi.bid.module.banking.data.CreditorIdentifierId
 import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.data.values.AuctionId
@@ -323,5 +325,13 @@ fun installSerializers() {
         add<ReadLegalEntitiesOfProvider>(ReadLegalEntitiesOfProvider.serializer())
         add<UpdateLegalEntity>(UpdateLegalEntity.serializer())
         add<DeleteLegalEntity>(DeleteLegalEntity.serializer())
+
+        // Creditor
+        add<CreditorIdentifiers>(CreditorIdentifiers.serializer())
+        add<CreditorIdentifier>(CreditorIdentifier.serializer())
+        add<ReadCreditorIdentifierByLegalEntity>(ReadCreditorIdentifierByLegalEntity.serializer())
+
+        add<CreditorIdentifierId>(CreditorIdentifierId.serializer())
+        add<CreditorId>(CreditorId.serializer())
     }
 }

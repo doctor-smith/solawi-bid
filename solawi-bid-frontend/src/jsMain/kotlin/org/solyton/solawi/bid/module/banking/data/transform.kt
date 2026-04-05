@@ -3,12 +3,14 @@ package org.solyton.solawi.bid.module.banking.data
 import org.solyton.solawi.bid.module.banking.data.api.ApiAccountType
 import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccount
 import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccounts
+import org.solyton.solawi.bid.module.banking.data.api.ApiCreditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.api.ApiFiscalYear
 import org.solyton.solawi.bid.module.banking.data.api.ApiFiscalYears
 import org.solyton.solawi.bid.module.banking.data.api.ApiLegalEntity
 import org.solyton.solawi.bid.module.banking.data.api.ApiLegalEntityType
 import org.solyton.solawi.bid.module.banking.data.bankaccount.AccountType
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
+import org.solyton.solawi.bid.module.banking.data.creditor.identifier.CreditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
 import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntity
 import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntityType
@@ -94,3 +96,12 @@ fun LegalEntityType.toApiType(): ApiLegalEntityType = when(this) {
     LegalEntityType.HUMAN -> ApiLegalEntityType.HUMAN
     LegalEntityType.ORGANIZATION -> ApiLegalEntityType.ORGANIZATION
 }
+
+fun ApiCreditorIdentifier.toDomainType(): CreditorIdentifier = CreditorIdentifier(
+    creditorIdentifierId,
+    legalEntityId,
+    creditorId,
+    validFrom,
+    validUntil,
+    isActive
+)

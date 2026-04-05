@@ -11,6 +11,8 @@ import org.solyton.solawi.bid.module.banking.data.api.ApiLegalEntityType
 import org.solyton.solawi.bid.module.banking.schema.AccountType
 import org.solyton.solawi.bid.module.banking.schema.LegalEntity
 import org.solyton.solawi.bid.module.banking.schema.BankAccountEntity
+import org.solyton.solawi.bid.module.banking.data.api.CreditorIdentifier
+import org.solyton.solawi.bid.module.banking.schema.CreditorIdentifierEntity
 import org.solyton.solawi.bid.module.banking.schema.FiscalYearEntity
 import org.solyton.solawi.bid.module.banking.schema.LegalEntityType
 import org.solyton.solawi.bid.module.user.data.toApiType
@@ -82,3 +84,12 @@ fun LegalEntityType.toApiType(): ApiLegalEntityType = when (this) {
     LegalEntityType.HUMAN -> ApiLegalEntityType.HUMAN
     LegalEntityType.ORGANIZATION -> ApiLegalEntityType.ORGANIZATION
 }
+
+fun CreditorIdentifierEntity.toApiType(): CreditorIdentifier = CreditorIdentifier(
+    creditorIdentifierId = CreditorIdentifierId(id.value.toString()),
+    legalEntityId = LegalEntityId(legalEntity.id.value.toString()),
+    creditorId = CreditorId(creditorId),
+    validFrom = validFrom.toKotlinxWithZone().date,
+    validUntil= validUntil ?.toKotlinxWithZone()?.date,
+    isActive = isActive
+)

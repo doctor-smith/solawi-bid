@@ -90,6 +90,20 @@ fun <BankingEnv> Routing.banking (
                     Respond{ transform() } runOn Base(call, environment)
                 }
             }
+            route("creditors") {
+                route("identifiers") {
+                    get("by-legal-entity"){
+                        ReceiveContextual<String>{
+                            parameters -> requireNotNull(parameters["legal_entity"]) {
+                                "Parameter 'legal_entity' is empty"
+                            }
+                        } *
+                        IsGranted("READ_CREDITOR_IDENTIFIERS", no) *
+                        ReadCreditorIdentifierByLegalEntity() *
+                        Respond{ transform() } runOn Base(call, environment)
+                    }
+                }
+            }
         }
     }
 }

@@ -38,3 +38,20 @@ value class BIC(val value: String) {
         // require(value.matches(Regex("^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$"))) { "Invalid BIC format" }
     }
 }
+
+
+@Serializable@Value
+@JvmInline
+value class CreditorId(val value: String) {
+    init {
+        // require(value.matches(Regex("^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$"))) { "Invalid BIC format" }
+    }
+}
+
+@Serializable@Value
+@JvmInline
+value class CreditorIdentifierId(val value: String) {
+    init {
+        require(isValidUUID(value)) { "Id must be a valid UUID" }
+    }
+}

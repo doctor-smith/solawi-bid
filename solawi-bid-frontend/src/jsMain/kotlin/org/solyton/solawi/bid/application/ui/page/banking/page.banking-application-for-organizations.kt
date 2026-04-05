@@ -31,12 +31,14 @@ import org.solyton.solawi.bid.module.banking.component.modal.showUpsertBankAccou
 import org.solyton.solawi.bid.module.banking.component.modal.showUpsertBankAccountWithUserSearchModal
 import org.solyton.solawi.bid.module.banking.component.modal.showUpsertFiscalYearsModal
 import org.solyton.solawi.bid.module.banking.data.application.bankAccounts
+import org.solyton.solawi.bid.module.banking.data.application.creditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.application.deviceData
 import org.solyton.solawi.bid.module.banking.data.application.fiscalYears
 import org.solyton.solawi.bid.module.banking.data.application.legalEntity
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.bankingApplicationActions
 import org.solyton.solawi.bid.module.banking.data.bankingApplicationModals
+import org.solyton.solawi.bid.module.banking.data.creditor.identifier.creditorId
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
 import org.solyton.solawi.bid.module.control.button.ArrowUpButton
@@ -84,6 +86,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
     val customerBankAccountCandidates = managedUsers * FilterBy { customerBankAccounts.read().none { customer -> customer.userId.value == it.id } }
 
     val legalEntity = bankingApplicationStorage * legalEntity
+    val creditorIdentifier = bankingApplicationStorage * creditorIdentifier
 
     LaunchedEffect(providerId) {
         launch {
@@ -101,6 +104,12 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
     }
     LaunchedEffect(managedUsers.read()) {
         storage * userIso * userActions dispatch readUserProfiles(managedUsers.read().map { it.id })
+    }
+    LaunchedEffect(legalEntity.read()) {
+        val legalEntityId = legalEntity.read().legalEntityId
+        if(legalEntityId.value != NIL_UUID) {
+            bankingApplicationActions dispatch readPersonalCreditorIdentifier(legalEntityId)
+        }
     }
 
     Page(verticalPageStyle) {
@@ -126,15 +135,29 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
             SubTitle("Manage your banking for Organizations")
         }
 
-        Wrap{
-            H3{ Text("Your data as Legal Entity:") }
+        Wrap{key(legalEntity.read()){
+            println(legalEntity.read())
+            Horizontal({
+                width(100.percent)
+                justifyContent(JustifyContent.SpaceBetween)
+            }) {
+                H3 { Text("Your data as Legal Entity:") }
+                EditButton(
+                    color = Color.black,
+                    bgColor = Color.white,
+                    texts = {"Edit "},
+                    deviceType = deviceType
+                ) {
+
+                }
+            }
             ReadOnlyProperties(listOf(
-                Property("Name", legalEntity.read().name){it.toString()},
+                Property("Name", legalEntity.read().name){ it.toString() },
                 Property("Legal Form", legalEntity.read().legalForm){it?.toString()?:""},
                 Property("Type", legalEntity.read().legalEntityType.name){it.toString()},
-                Property("Creditor Id", "---"){it.toString()},
+                Property("Creditor Id", creditorIdentifier.read()?.creditorId?.value ?: "---"){it.toString()},
             ))
-        }
+        }}
 
 
 
