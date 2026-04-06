@@ -1,5 +1,6 @@
 package org.solyton.solawi.bid.module.banking.schema
 
+import org.evoleq.exposedx.migrations.MigrationTable.optReference
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -86,6 +87,8 @@ object SepaMandates : AuditableUUIDTable("sepa_mandates") {
         SepaMandates
     ) // Optional: points to previous mandate if amended (e.g., IBAN change)
 
+    val collectionId = optReference("collection_id", SepaCollections)
+
     init {
         // unique constraint on (creditorIdentifierId + mandateReference)
         uniqueIndex("uq_creditor_mandate", creditorIdentifierId, mandateReference)
@@ -104,7 +107,7 @@ class SepaMandate(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     var lastUsedAt by SepaMandates.lastUsedAt
     var isActive by SepaMandates.isActive
     var amendmentOf by SepaMandate optionalReferencedOn SepaMandates.amendmentOf
-
+    var collection by SepaCollection optionalReferencedOn SepaMandates.collectionId
 
 
     override var createdAt: DateTime by SepaMandates.createdAt
