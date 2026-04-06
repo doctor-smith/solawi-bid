@@ -104,6 +104,7 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
         is LegalEntityException -> when(value as LegalEntityException) {
             is LegalEntityException.NoSuchLegalEntity-> HttpStatusCode.NotFound
             is LegalEntityException.NoSuchLegalEntityParty -> HttpStatusCode.NotFound
+            is LegalEntityException.NoAssociatedCreditorIdentifier -> HttpStatusCode.NotFound
         }
         is SepaException -> when(value as SepaException) {
             is SepaException.Transaction.MissingMandateReference -> HttpStatusCode.BadRequest

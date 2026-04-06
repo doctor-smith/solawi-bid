@@ -11,16 +11,12 @@ import org.evoleq.compose.modal.ModalData
 import org.evoleq.compose.modal.ModalType
 import org.evoleq.compose.modal.Modals
 import org.evoleq.compose.style.data.device.DeviceType
-import org.evoleq.device.data.mediaType
 import org.evoleq.language.Lang
 import org.evoleq.language.texts
 import org.evoleq.math.Source
-import org.evoleq.math.emit
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
-import org.evoleq.optics.transform.times
-import org.jetbrains.compose.web.attributes.required
 import org.jetbrains.compose.web.css.gap
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.px
@@ -31,21 +27,17 @@ import org.jetbrains.compose.web.dom.TextInput
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
-import org.solyton.solawi.bid.module.bid.data.deviceData
 import org.solyton.solawi.bid.module.control.checkbox.CheckBox
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
 import org.solyton.solawi.bid.module.distribution.data.distributionpoint.DistributionPoint
 import org.solyton.solawi.bid.module.navbar.component.SimpleUpDown
 import org.solyton.solawi.bid.module.shares.data.internal.ChangeReason
-import org.solyton.solawi.bid.module.shares.data.api.PricingType
 import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
 import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.shares.data.internal.shareStatusTransitionsWithPermissions
 import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
-import org.solyton.solawi.bid.module.shares.data.management.deviceData
 import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscription
-import org.solyton.solawi.bid.module.shares.data.types.ShareType
 import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
 import org.solyton.solawi.bid.module.style.form.textInputDesktopStyle
@@ -77,9 +69,18 @@ sealed class BulkEditShareSubscriptionChanges {
     }
 }
 
+enum class Checked {
+    NONE,
+    CHANGE_DISTRIBUTION_POINT,
+    CHANGE_NUMBER_OF_SHARES,
+    CHANGE_PRICE_PER_SHARE,
+    CHANGE_SHARE_STATUS,
+    ADD_SHARE_SUBSCRIPTION,
+    ADD_SEPA_MANDATE
+}
 
 @Markup
-@Suppress("FunctionName", "UnusedParameter")
+@Suppress("FunctionName", "UnusedParameter", "CyclomaticComplexMethod")
 fun BulkEditShareShareSubscriptionsModal(
     id: Int,
     texts: Lang.Block,
@@ -107,30 +108,22 @@ fun BulkEditShareShareSubscriptionsModal(
     texts = texts,
     styles = auctionModalStyles(device),
 ) {
-    var changeDistributionPoint by remember { mutableStateOf<Boolean>(false) }
 
-    var changeStatus by remember { mutableStateOf<Boolean>(false) }
-
-    var addShareOffer by remember { mutableStateOf<Boolean>(false) }
-
-    var changePricePerShareStatus by remember { mutableStateOf<Boolean>(false) }
+    var checked by remember { mutableStateOf<Checked>(Checked.NONE)}
 
     Text("Edit share subscriptions: ${shareSubscriptions.size}")
-
+    key(checked){
     Wrap {
         Horizontal({
             width(100.percent)
             gap(2.px)
         }) {
-            CheckBox(changeDistributionPoint) {
-                changeDistributionPoint = it
-                changeStatus = false
-                addShareOffer = false
-                changePricePerShareStatus = false
+            CheckBox(checked == Checked.CHANGE_DISTRIBUTION_POINT) { state ->
+                if(state) checked = Checked.CHANGE_DISTRIBUTION_POINT
             }
             Text("Edit distribution point")
         }
-        When(changeDistributionPoint) {
+        When(checked == Checked.CHANGE_DISTRIBUTION_POINT) {
             var selectedDistributionPoint by remember { mutableStateOf<String>("Select") }
             val distributionPointsMap: Map<String, DistributionPoint?> = distributionPoints.associateBy{it.name}.let{
                 it.toMutableMap<String, DistributionPoint?>().apply{
@@ -155,17 +148,13 @@ fun BulkEditShareShareSubscriptionsModal(
             gap(2.px)
             width(100.percent)
         }) {
-            CheckBox(changeStatus) { status ->
-                changeStatus = status
-                changeDistributionPoint = false
-                addShareOffer = false
-                changePricePerShareStatus = false
-
+            CheckBox(checked == Checked.CHANGE_SHARE_STATUS) { status ->
+                if(status)  checked = Checked.CHANGE_SHARE_STATUS
             }
             Text("Edit status")
         }
         val sourceStatuses = shareSubscriptions.map { it.status }.distinct()
-        When(changeStatus && sourceStatuses.size == 1) {
+        When((checked == Checked.CHANGE_SHARE_STATUS) && sourceStatuses.size == 1) {
             val sourceStatus = sourceStatuses.first()
             val targetStatusPermissions = shareStatusTransitionsWithPermissions[sourceStatus]
             var comment by remember { mutableStateOf<String?>(null) }
@@ -204,62 +193,14 @@ fun BulkEditShareShareSubscriptionsModal(
         }
     }
 
+
     Wrap {
         Horizontal({
             gap(2.px)
             width(100.percent)
         }) {
-            CheckBox(addShareOffer) { status ->
-                addShareOffer = status
-                changeStatus = false
-                changeDistributionPoint = false
-                changePricePerShareStatus = false
-            }
-            Text("Add subscription next to each checked share")
-
-        }
-
-        When(addShareOffer) {
-            var numberOfShares by remember { mutableStateOf<Int>(1) }
-
-            val shareOffersOptions = shareOffers.associateBy{"${it.fiscalYear.format()} - ${it.shareType.name}"}.let {
-                it.toMutableMap<String, ShareOffer?>().apply {
-                    this["Select Share Offer"] = null
-                }
-            }
-            var selectedShareOffer by remember { mutableStateOf<String>("Select Share Offer") }
-
-
-            Dropdown(
-                shareOffersOptions,
-                selected = selectedShareOffer,
-                iconContent = { opened -> SimpleUpDown(opened) },
-            ) { (key, value) ->
-                selectedShareOffer = key
-                when(value){
-                    null -> setChanges(BulkEditShareSubscriptionChanges.None)
-                    else -> setChanges(BulkEditShareSubscriptionChanges.AddShareOffer(
-                        value.shareOfferId,
-                        value.fiscalYear.fiscalYearId,
-                        value.price,
-                        numberOfShares,
-                        null,
-                    ))
-                }
-            }
-        }
-    }
-    Wrap {
-        Horizontal({
-            gap(2.px)
-            width(100.percent)
-        }) {
-            CheckBox(changePricePerShareStatus) { status ->
-                changePricePerShareStatus = status
-                changeStatus = false
-                changeDistributionPoint = false
-                addShareOffer = false
-            }
+            CheckBox(checked == Checked.CHANGE_PRICE_PER_SHARE) { status ->
+                if(status) checked = Checked.CHANGE_PRICE_PER_SHARE
         }
         Field(fieldDesktopStyle) {
             var price by remember { mutableStateOf<Double?>(null) }
@@ -280,6 +221,96 @@ fun BulkEditShareShareSubscriptionsModal(
         }
 
     }
+
+
+
+
+    Wrap {
+        Horizontal({
+            gap(2.px)
+            width(100.percent)
+        }) {
+            CheckBox(checked == Checked.ADD_SHARE_SUBSCRIPTION) { status ->
+                if(status) checked = Checked.ADD_SHARE_SUBSCRIPTION
+            }
+            Text("Add subscription next to each checked share")
+
+        }
+
+        When(checked == Checked.ADD_SHARE_SUBSCRIPTION) {
+            var numberOfShares by remember { mutableStateOf<Int>(1) }
+
+            val shareOffersOptions =
+                shareOffers.associateBy { "${it.fiscalYear.format()} - ${it.shareType.name}" }.let {
+                    it.toMutableMap<String, ShareOffer?>().apply {
+                        this["Select Share Offer"] = null
+                    }
+                }
+            var selectedShareOffer by remember { mutableStateOf<String>("Select Share Offer") }
+
+
+            Dropdown(
+                shareOffersOptions,
+                selected = selectedShareOffer,
+                iconContent = { opened -> SimpleUpDown(opened) },
+            ) { (key, value) ->
+                selectedShareOffer = key
+                when (value) {
+                    null -> setChanges(BulkEditShareSubscriptionChanges.None)
+                    else -> setChanges(
+                        BulkEditShareSubscriptionChanges.AddShareOffer(
+                            value.shareOfferId,
+                            value.fiscalYear.fiscalYearId,
+                            value.price,
+                            numberOfShares,
+                            null,
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    Wrap {
+        Horizontal({
+            gap(2.px)
+            width(100.percent)
+        }) {
+            CheckBox(checked == Checked.ADD_SEPA_MANDATE) { status ->
+                if (status) checked = Checked.ADD_SEPA_MANDATE
+            }
+            Text("Add sepa mandate to each checked share")
+
+        }
+
+        When(checked == Checked.ADD_SEPA_MANDATE) {
+            var numberOfShares by remember { mutableStateOf<Int>(1) }
+
+            /*
+        Dropdown(
+            shareOffersOptions,
+            selected = selectedShareOffer,
+            iconContent = { opened -> SimpleUpDown(opened) },
+        ) { (key, value) ->
+            selectedShareOffer = key
+            when(value){
+                null -> setChanges(BulkEditShareSubscriptionChanges.None)
+                else -> setChanges(BulkEditShareSubscriptionChanges.AddShareOffer(
+                    value.shareOfferId,
+                    value.fiscalYear.fiscalYearId,
+                    value.price,
+                    numberOfShares,
+                    null,
+                ))
+            }
+        }
+
+*/
+        }
+    }
+        }
+    }
+
 }
 
 @Markup
@@ -350,4 +381,3 @@ fun defaultBulkEditTexts(): Lang.Block = texts {
          */
     }
 }
-

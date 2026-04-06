@@ -60,6 +60,7 @@ import org.solyton.solawi.bid.module.banking.data.bankingApplicationActions
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
 import org.solyton.solawi.bid.module.control.button.ArrowUpButton
 import org.solyton.solawi.bid.module.control.button.BulkEditButton
+import org.solyton.solawi.bid.module.control.button.CreditCardButton
 import org.solyton.solawi.bid.module.control.button.EditButton
 import org.solyton.solawi.bid.module.control.button.PlusButton
 import org.solyton.solawi.bid.module.control.button.TrashCanButton
@@ -414,6 +415,13 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                         }
                         ActionsWrapper {
                             var shareOfferState by remember { mutableStateOf<ShareOffer>(shareOffer) }
+                            CreditCardButton(
+                                color = Color.black,
+                                bgColor = Color.white,
+                                deviceType = deviceType,
+                            ) {
+
+                            }
                             EditButton(
                                 color = Color.black,
                                 bgColor = Color.white,
@@ -916,6 +924,12 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                     ) { width(20.percent) }
                                 }
                                 ActionsWrapper {
+                                    CreditCardButton(
+                                        color = Color.black,
+                                        bgColor = Color.white,
+                                        deviceType = deviceType,
+                                        isDisabled = true
+                                    ) {}
                                     EditButton(
                                         color = Color.black,
                                         bgColor = Color.white,
