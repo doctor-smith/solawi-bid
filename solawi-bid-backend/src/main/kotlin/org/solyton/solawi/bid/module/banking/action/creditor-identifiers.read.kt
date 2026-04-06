@@ -10,6 +10,7 @@ import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.solyton.solawi.bid.module.banking.data.api.CreditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.toApiType
+import org.solyton.solawi.bid.module.banking.exception.LegalEntityException
 import org.solyton.solawi.bid.module.banking.schema.CreditorIdentifierEntity
 import org.solyton.solawi.bid.module.banking.schema.CreditorIdentifiersTable
 import java.util.*
@@ -24,7 +25,8 @@ fun ReadCreditorIdentifierByLegalEntity(): KlAction<Result<Contextual<String>>, 
                 val legalEntityId = UUID.fromString(contextual.data)
                 CreditorIdentifierEntity.find {
                     CreditorIdentifiersTable.legalEntityId eq legalEntityId
-                }.toList().first().toApiType()
+                }.toList().firstOrNull()?.toApiType()
+                    ?: throw LegalEntityException.NoAssociatedCreditorIdentifier(legalEntityId.toString())
             }
         } x database
     }
