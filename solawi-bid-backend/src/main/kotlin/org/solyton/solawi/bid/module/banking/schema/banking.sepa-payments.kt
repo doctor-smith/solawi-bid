@@ -31,7 +31,7 @@ class SepaPayment(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     var amount by SepaPayments.amount
     var executionDate by SepaPayments.executionDate
     var sequenceType by SepaPayments.sequenceType
-    var states by SepaPayments.status
+    var status by SepaPayments.status
     var failureReason by SepaPayments.failureReason
 
     override var createdAt: DateTime by SepaPayments.createdAt

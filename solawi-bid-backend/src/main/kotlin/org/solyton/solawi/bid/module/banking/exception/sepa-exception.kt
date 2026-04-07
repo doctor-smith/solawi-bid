@@ -17,4 +17,10 @@ sealed class SepaException(override val message: String): Exception(message) {
         }
 
     }
+
+    data class NoSuchSepaMandate(val id:String) : SepaException("No such sepa mandate; id = $id")
+
+    data class CannotUpdateSepaMandate(val id: String, val reason: String) : SepaException("Cannot update sepa mandate; id = $id; reason = $reason")
+
+    data class NoSuchSepaCollection(val id:String) : SepaException("No such sepa collection; id = $id")
 }

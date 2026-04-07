@@ -13,18 +13,13 @@ import org.solyton.solawi.bid.module.application.data.ApiApplications
 import org.solyton.solawi.bid.module.application.data.ApiModule
 import org.solyton.solawi.bid.module.application.data.ApiUserApplications
 import org.solyton.solawi.bid.module.authentication.data.api.*
-import org.solyton.solawi.bid.module.banking.data.CreditorId
-import org.solyton.solawi.bid.module.banking.data.CreditorIdentifierId
+import org.solyton.solawi.bid.module.banking.data.*
 import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.data.values.AuctionId
 import org.solyton.solawi.bid.module.distribution.data.api.*
-import org.solyton.solawi.bid.module.permission.data.ContextName
-import org.solyton.solawi.bid.module.permission.data.RightName
-import org.solyton.solawi.bid.module.permission.data.RoleName
+import org.solyton.solawi.bid.module.permission.data.*
 import org.solyton.solawi.bid.module.permission.data.ContextId
-import org.solyton.solawi.bid.module.permission.data.RightId
-import org.solyton.solawi.bid.module.permission.data.RoleId
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.shares.data.api.*
 import org.solyton.solawi.bid.module.shares.data.values.ShareOfferId
@@ -332,5 +327,51 @@ fun installSerializers() { if(serializers.isEmpty()) {
 
         add<CreditorIdentifierId>(CreditorIdentifierId.serializer())
         add<CreditorId>(CreditorId.serializer())
+
+        // Sepa Stuff
+        add<SepaMandateId>(SepaMandateId.serializer())
+        add<SepaPaymentId>(SepaPaymentId.serializer())
+        add<SepaCollectionId>(SepaCollectionId.serializer())
+        add<SepaCollectionReferenceId>(SepaCollectionReferenceId.serializer())
+        add<MandateReference>(MandateReference.serializer())
+        add<MandateReferencePrefix>(MandateReferencePrefix.serializer())
+        add<RemittanceInformation>(RemittanceInformation.serializer())
+        add<LocalInstrument>(LocalInstrument.serializer())
+        add<ChargeBearer>(ChargeBearer.serializer())
+        add<PurposeCode>(PurposeCode.serializer())
+
+        // Sepa Collections
+        add<SepaCollections>(SepaCollections.serializer())
+        add<SepaCollection>(SepaCollection.serializer())
+        add<CreateSepaCollection>(CreateSepaCollection.serializer())
+        add<ReadSepaCollectionsByLegalEntity>(ReadSepaCollectionsByLegalEntity.serializer())
+        add<UpdateSepaCollection>(UpdateSepaCollection.serializer())
+        add<SepaSequenceType>(SepaSequenceType.serializer())
+
+        // Sepa Mandates
+        add<SepaMandates>(SepaMandates.serializer())
+        add<SepaMandate>(SepaMandate.serializer())
+        add<CreateSepaMandate>(CreateSepaMandate.serializer())
+        add<ReadSepaMandatesByCreditorsLegalEntity>(ReadSepaMandatesByCreditorsLegalEntity.serializer())
+        add<UpdateSepaMandate>(UpdateSepaMandate.serializer())
+        add<AddSepaMandateToCollection>(AddSepaMandateToCollection.serializer())
+        add<RemoveSepaMandateFromCollection>(RemoveSepaMandateFromCollection.serializer())
+        add<MandateStatus>(MandateStatus.serializer())
+
+        // Sepa Payments
+        add<SepaPayment>(SepaPayment.serializer())
+        add<SepaPayments>(SepaPayments.serializer())
+        add<CreateSepaPayment>(CreateSepaPayment.serializer())
+        add<ReadSepaPaymentsByLegalEntity>(ReadSepaPaymentsByLegalEntity.serializer())
+        add<UpdateSepaPayment>(UpdateSepaPayment.serializer())
+        add<AddSepaPaymentToCollection>(AddSepaPaymentToCollection.serializer())
+        add<RemoveSepaPaymentFromCollection>(RemoveSepaPaymentFromCollection.serializer())
+        add<PaymentExecutionStatus>(PaymentExecutionStatus.serializer())
+
+        // Sepa Payment History
+
+        // Sepa Messages
+
+        // Sepa response from bank
     }
 } }

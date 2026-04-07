@@ -1,0 +1,20 @@
+package org.solyton.solawi.bid.module.banking.permissions
+
+object Sepa {
+    object Rights {
+        const val CREATE_SEPA_MANDATES = "CREATE_SEPA_MANDATES"
+        const val READ_SEPA_MANDATES = "READ_SEPA_MANDATES"
+        const val UPDATE_SEPA_MANDATES = "UPDATE_SEPA_MANDATES"
+        const val DELETE_SEPA_MANDATES = "DELETE_SEPA_MANDATES"
+
+        const val CREATE_SEPA_PAYMENTS = "CREATE_SEPA_PAYMENTS"
+        const val READ_SEPA_PAYMENTS = "READ_SEPA_PAYMENTS"
+        const val UPDATE_SEPA_PAYMENTS = "UPDATE_SEPA_PAYMENTS"
+        const val DELETE_SEPA_PAYMENTS = "DELETE_SEPA_PAYMENTS"
+
+        const val CREATE_SEPA_COLLECTIONS = "CREATE_SEPA_COLLECTIONS"
+        const val READ_SEPA_COLLECTIONS = "READ_SEPA_COLLECTIONS"
+        const val UPDATE_SEPA_COLLECTIONS = "UPDATE_SEPA_COLLECTIONS"
+        const val DELETE_SEPA_COLLECTIONS = "DELETE_SEPA_COLLECTIONS"
+    }
+}

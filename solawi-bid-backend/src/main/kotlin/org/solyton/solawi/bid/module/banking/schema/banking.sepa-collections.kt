@@ -73,8 +73,12 @@ class SepaCollection(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID>
     var retryOnFailure by SepaCollections.retryOnFailure
     var maxRetries by SepaCollections.maxRetries
 
+    var isActive by SepaCollections.isActive
+
     val sepaMandates by SepaMandate optionalReferrersOn SepaMandates.collectionId
     val sepaPayments by SepaPayment referrersOn SepaPayments.collectionId
+
+    val referenceIds by SepaCollectionMapping referrersOn SepaCollectionMappings.sepaCollectionId
 
     override var createdAt: DateTime by SepaCollections.createdAt
     override var createdBy: UUID by SepaCollections.createdBy

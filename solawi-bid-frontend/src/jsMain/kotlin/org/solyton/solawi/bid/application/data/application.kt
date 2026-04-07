@@ -23,6 +23,7 @@ import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.creditor.identifier.CreditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
 import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntity
+import org.solyton.solawi.bid.module.banking.data.sepa.SepaModule
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.bidder.BidderMails
 import org.solyton.solawi.bid.module.bid.data.bidround.BidRound
@@ -79,6 +80,7 @@ import org.solyton.solawi.bid.module.user.data.user.User
     @ReadWrite val fiscalYears: List<FiscalYear> = emptyList(),
     @ReadWrite val legalEntity: LegalEntity = LegalEntity.default,
     @ReadWrite val creditorIdentifier: CreditorIdentifier? = null,
+    @ReadWrite val sepaModule: SepaModule = SepaModule(),
     // User
     @ReadWrite val userData: User = User(),
     @ReadWrite val managedUsers: List<ManagedUser> = listOf(),

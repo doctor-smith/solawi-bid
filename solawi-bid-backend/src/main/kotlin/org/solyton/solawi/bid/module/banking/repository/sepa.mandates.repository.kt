@@ -4,12 +4,20 @@ import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.Transaction
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
+import org.solyton.solawi.bid.module.banking.data.MandateReference
+import org.solyton.solawi.bid.module.banking.data.MandateReferencePrefix
+import org.solyton.solawi.bid.module.banking.data.api.ApiSepaMandates
+import org.solyton.solawi.bid.module.banking.data.api.SepaMandate
+import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.banking.exception.BankAccountsException
+import org.solyton.solawi.bid.module.banking.exception.SepaException
 import org.solyton.solawi.bid.module.banking.schema.CreditorIdentifierEntity
 import org.solyton.solawi.bid.module.banking.schema.CreditorIdentifiers
+import org.solyton.solawi.bid.module.banking.schema.CreditorIdentifiersTable
 import org.solyton.solawi.bid.module.banking.schema.MandateStatus
 import org.solyton.solawi.bid.module.banking.schema.SepaMandateEntity
 import org.solyton.solawi.bid.module.banking.schema.SepaMandates
+import org.solyton.solawi.bid.module.banking.schema.SepaMandatesTable
 import org.solyton.solawi.bid.module.banking.service.validatedBankAccount
 import java.util.*
 
@@ -27,23 +35,36 @@ import java.util.*
  * @throws ExposedSQLException If a database error occurs that is not a unique constraint violation.
  * @throws IllegalStateException If unable to generate a unique mandate reference after the specified number of retries.
  */
+@Suppress("NoNameShadowing")
 fun Transaction.createSepaMandateWithRetry(
+    creatorId: UUID,
     creditorId: UUID,
     debtorBankAccountId: UUID,
     debtorName: String,
     signedAt: DateTime,
     validFrom: DateTime,
     validUntil: DateTime?,
-    mandateReference: String,
+    mandateReference: MandateReference? = null,
+    mandateReferencePrefix: String? = null,
+    status: MandateStatus = MandateStatus.ACTIVE,
+    collectionId: UUID? = null,
     maxRetries: Int = 5
 ): SepaMandateEntity {
     val creditor = validatedCreditor(creditorId)
     val debtorBankAccount = validatedBankAccount(debtorBankAccountId)
 
     repeat(maxRetries) {
+        val mandateReference = mandateReference?.value?: when(mandateReferencePrefix) {
+            null -> generateMandateReference(creditorId)
+            else -> generateMandateReference(creditorId, 3, mandateReferencePrefix)
+        }
+        val collection  = if(collectionId != null) {
+            validatedSepaCollection(collectionId)
+        } else null
 
         try {
             return SepaMandateEntity.new {
+                this.createdBy = creatorId
                 this.creditorIdentifier = creditor
                 this.debtorBankAccount = debtorBankAccount
                 this.debtorName = debtorName
@@ -52,7 +73,9 @@ fun Transaction.createSepaMandateWithRetry(
                 this.status = MandateStatus.ACTIVE
                 this.validFrom = validFrom
                 this.validUntil = validUntil
+                this.status = status
                 this.isActive = true
+                this.collection = collection
             }
         } catch (e: ExposedSQLException) {
             // Check for MySQL unique constraint violation
@@ -91,7 +114,11 @@ fun Transaction.validatedCreditor(creditorId: UUID): CreditorIdentifierEntity =
  *                 Defaults to 3, with zeros padded at the beginning if necessary.
  * @return A string representing the new unique mandate reference in the format "MANDAT-<year>-<counter>".
  */
-fun Transaction.generateMandateReference(creditorId: UUID, padStart: Int = 3): String {
+fun Transaction.generateMandateReference(
+    creditorId: UUID,
+    padStart: Int = 3,
+    mandateReferencePrefix: String = "MANDAT"
+): String {
     val year = LocalDate.now().year
 
     // Find the last mandate for this creditor in the current year
@@ -104,5 +131,86 @@ fun Transaction.generateMandateReference(creditorId: UUID, padStart: Int = 3): S
         .maxOrNull() ?: 0
 
     val nextCounter = lastCounter + 1
-    return "MANDAT-$year-${nextCounter.toString().padStart(padStart, '0')}"
+    return "$mandateReferencePrefix-$year-${nextCounter.toString().padStart(padStart, '0')}"
 }
+
+fun Transaction.readSepaMandatesByCreditorsLegalEntity(legalEntityId: UUID): ApiSepaMandates {
+
+    val creditorIdentifiers = CreditorIdentifierEntity.find{
+        CreditorIdentifiersTable.legalEntityId eq legalEntityId
+    }.toList()
+    val creditorIdentifierIds = creditorIdentifiers.map{it.id.value}
+    val mandates = SepaMandateEntity.find {
+        SepaMandatesTable.creditorIdentifierId inList creditorIdentifierIds
+    }
+
+    return ApiSepaMandates(mandates.map { mandate ->
+        mandate.toApiType()
+    })
+}
+
+@Suppress("CyclomaticComplexMethod", "NoNameShadowing")
+fun Transaction.updateSepaMandate(
+    modifierId: UUID,
+    sepaMandateId: UUID,
+    creditorId: UUID,
+    debtorBankAccountId: UUID,
+    debtorName: String,
+    signedAt: DateTime,
+    validFrom: DateTime,
+    validUntil: DateTime?,
+    lastUsedAt: DateTime?,
+    mandateReference: MandateReference? = null,
+    status: MandateStatus = MandateStatus.ACTIVE,
+): SepaMandateEntity {
+    val sepaMandate = validatedSepaMandate(sepaMandateId)
+    val hasPayments = !sepaMandate.payments.empty()
+    if(hasPayments) throw SepaException.CannotUpdateSepaMandate(
+        id = sepaMandateId.toString(),
+        reason = "Sepa Mandate has associated payments; Needs to be amended"
+    )
+
+    val creditor = validatedCreditor(creditorId)
+    val debtorBankAccount = validatedBankAccount(debtorBankAccountId)
+    val mandateReference = mandateReference?.value
+    // val mandateReferencePrefix = mandateReferencePrefix?.value
+
+    val creditorChanged = creditor != sepaMandate.creditorIdentifier
+    val debtorBackAccountChanged = debtorBankAccount != sepaMandate.debtorBankAccount
+    val mandateReferenceChanged = mandateReference != sepaMandate.mandateReference
+    val debtorNameChanged = debtorName != sepaMandate.debtorName
+    val signedAtChanged = signedAt != sepaMandate.signedAt
+    val validFromChanged = validFrom != sepaMandate.validFrom
+    val validUntilChanged = validUntil != sepaMandate.validUntil
+    val lastUsedAtChanged = lastUsedAt != sepaMandate.lastUsedAt
+    val statusChanged = status != sepaMandate.status
+
+    if(creditorChanged) sepaMandate.creditorIdentifier = creditor
+    if(debtorBackAccountChanged) sepaMandate.debtorBankAccount = debtorBankAccount
+    if(mandateReferenceChanged) sepaMandate.mandateReference = mandateReference.orEmpty()
+    if(debtorNameChanged) sepaMandate.debtorName = debtorName
+    if(signedAtChanged) sepaMandate.signedAt = signedAt
+    if(validFromChanged) sepaMandate.validFrom = validFrom
+    if(validUntilChanged) sepaMandate.validUntil = validUntil
+    if(lastUsedAtChanged) sepaMandate.lastUsedAt = lastUsedAt
+    if(statusChanged) sepaMandate.status = status
+
+    val changed = creditorChanged
+            || debtorBackAccountChanged
+            || mandateReferenceChanged
+            || debtorNameChanged
+            || signedAtChanged
+            || validFromChanged
+            || statusChanged
+            || lastUsedAtChanged
+
+    if(changed) {
+        sepaMandate.modifiedBy = modifierId
+        sepaMandate.modifiedAt = DateTime.now()
+    }
+
+    return sepaMandate
+}
+
+fun Transaction.validatedSepaMandate(id: UUID): SepaMandateEntity = SepaMandateEntity.findById(id)
+    ?: throw SepaException.NoSuchSepaMandate(id.toString())

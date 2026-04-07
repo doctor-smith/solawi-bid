@@ -4,13 +4,21 @@ import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import org.evoleq.exposedx.data.DbEnv
 import org.evoleq.ktorx.Base
+import org.evoleq.ktorx.NotImplemented
 import org.evoleq.ktorx.ReceiveContextual
 import org.evoleq.ktorx.Respond
 import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
+import org.solyton.solawi.bid.application.action.io.transform
 import org.solyton.solawi.bid.module.banking.action.*
 import org.solyton.solawi.bid.module.banking.data.api.*
+import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.CREATE_SEPA_COLLECTIONS
+import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.CREATE_SEPA_MANDATES
+import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.READ_SEPA_COLLECTIONS
+import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.READ_SEPA_MANDATES
+import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_COLLECTIONS
+import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_MANDATES
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
 import org.solyton.solawi.bid.module.permission.action.db.no
 
@@ -101,6 +109,66 @@ fun <BankingEnv> Routing.banking (
                         IsGranted("READ_CREDITOR_IDENTIFIERS", no) *
                         ReadCreditorIdentifierByLegalEntity() *
                         Respond{ transform() } runOn Base(call, environment)
+                    }
+                }
+            }
+
+            route("sepa") {
+                route("mandates") {
+                    post("create") {
+                        ReceiveContextual<CreateSepaMandate>() *
+                        IsGranted(CREATE_SEPA_MANDATES, no) *
+                        CreateSepaMandate() *
+                        Respond{ transform() } runOn Base(call, environment)
+                    }
+                    get("by-creditors-legal-entity") {
+                        ReceiveContextual<String>{
+                            parameters -> requireNotNull(parameters["legal_entity"]) {
+                                "Parameter 'legal_entity' is empty"
+                            }
+                        } *
+                        IsGranted(READ_SEPA_MANDATES, no) *
+                        ReadSepaMandatesByCreditorsLegalEntity() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
+                    patch("update") {
+                        ReceiveContextual<UpdateSepaMandate>() *
+                        IsGranted(UPDATE_SEPA_MANDATES, no) *
+                        UpdateSepaMandate() *
+                        Respond{ transform() } runOn Base(call, environment)
+
+                    }
+                }
+                route("collections"){
+                    get("by-legal-entity") {
+                        ReceiveContextual<String>{
+                            parameters -> requireNotNull(parameters["legal_entity"]) {
+                                "Parameter 'legal_entity' is empty"
+                            }
+                        } *
+                        IsGranted(READ_SEPA_COLLECTIONS, no) *
+                        ReadSepaCollectionsByLegalEntity() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
+                    post("create") {
+                        ReceiveContextual<CreateSepaCollection>() *
+                        IsGranted(CREATE_SEPA_COLLECTIONS, no) *
+                        CreateSepaCollection() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
+                    patch("update") {
+                        ReceiveContextual<UpdateSepaCollection>() *
+                        IsGranted(UPDATE_SEPA_COLLECTIONS, no) *
+                        UpdateSepaCollection() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
+                    delete("delete") {
+                        NotImplemented("Sepa collection deletion is not implemented yet")
+                    }
+                }
+                route("payments"){
+                    post("create") {
+
                     }
                 }
             }

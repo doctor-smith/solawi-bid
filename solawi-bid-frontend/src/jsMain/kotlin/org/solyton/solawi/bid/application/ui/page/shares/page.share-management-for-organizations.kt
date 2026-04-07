@@ -9,29 +9,31 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
+import org.evoleq.compose.conditional.When
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.routing.navigate
 import org.evoleq.device.data.mediaType
+import org.evoleq.language.Lang
+import org.evoleq.language.texts
+import org.evoleq.math.FirstOrNull
 import org.evoleq.math.Source
 import org.evoleq.math.emit
-import org.evoleq.math.invert
 import org.evoleq.optics.lens.BiMap
 import org.evoleq.optics.lens.DeepSearch
+import org.evoleq.optics.lens.FilterBy
 import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.storage.filter
 import org.evoleq.optics.storage.none
 import org.evoleq.optics.transform.times
+import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.compose.web.css.AlignItems
 import org.jetbrains.compose.web.css.AlignSelf
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.FlexDirection
-import org.jetbrains.compose.web.css.FlexWrap.Companion.Wrap
 import org.jetbrains.compose.web.css.JustifyContent
 import org.jetbrains.compose.web.css.alignItems
 import org.jetbrains.compose.web.css.alignSelf
@@ -39,25 +41,44 @@ import org.jetbrains.compose.web.css.flexDirection
 import org.jetbrains.compose.web.css.flexGrow
 import org.jetbrains.compose.web.css.height
 import org.jetbrains.compose.web.css.justifyContent
-import org.jetbrains.compose.web.css.marginRight
 import org.jetbrains.compose.web.css.percent
-import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.vh
 import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.application.data.personalModuleContextRelations
 import org.solyton.solawi.bid.application.data.transform.banking.bankingApplicationIso
 import org.solyton.solawi.bid.application.data.transform.distribution.distributionManagementIso
 import org.solyton.solawi.bid.application.data.transform.shares.shareManagementIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
+import org.solyton.solawi.bid.module.banking.action.createSepaCollection
+import org.solyton.solawi.bid.module.banking.action.readBankAccounts
 import org.solyton.solawi.bid.module.banking.action.readFiscalYears
+import org.solyton.solawi.bid.module.banking.action.readPersonalCreditorIdentifier
+import org.solyton.solawi.bid.module.banking.action.readPersonalSepaCollections
+import org.solyton.solawi.bid.module.banking.component.form.PartialSepaCollection
+import org.solyton.solawi.bid.module.banking.data.BankAccountId
+import org.solyton.solawi.bid.module.banking.data.ChargeBearer
 import org.solyton.solawi.bid.module.banking.data.FiscalYearId
+import org.solyton.solawi.bid.module.banking.data.MandateReferencePrefix
+import org.solyton.solawi.bid.module.banking.data.RemittanceInformation
+import org.solyton.solawi.bid.module.banking.data.SepaCollectionId
+import org.solyton.solawi.bid.module.banking.data.SepaCollectionReferenceId
+import org.solyton.solawi.bid.module.banking.data.api.CreateSepaCollection
+import org.solyton.solawi.bid.module.banking.data.application.bankAccounts
+import org.solyton.solawi.bid.module.banking.data.application.creditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.application.fiscalYears
+import org.solyton.solawi.bid.module.banking.data.application.sepaModule
+import org.solyton.solawi.bid.module.banking.data.bankaccount.AccountType
 import org.solyton.solawi.bid.module.banking.data.bankingApplicationActions
+import org.solyton.solawi.bid.module.banking.data.creditor.identifier.CreditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
+import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
+import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
+import org.solyton.solawi.bid.module.banking.data.sepa.collection.chargeBearer
+import org.solyton.solawi.bid.module.banking.data.sepa.sepaCollections
+import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.control.button.ArrowUpButton
 import org.solyton.solawi.bid.module.control.button.BulkEditButton
 import org.solyton.solawi.bid.module.control.button.CreditCardButton
@@ -103,30 +124,24 @@ import org.solyton.solawi.bid.module.shares.action.updateShareOffer
 import org.solyton.solawi.bid.module.shares.action.updateShareStatus
 import org.solyton.solawi.bid.module.shares.action.updateShareSubscription
 import org.solyton.solawi.bid.module.shares.action.updateShareType
-import org.solyton.solawi.bid.module.shares.component.modal.BulkEditShareShareSubscriptionsModal
 import org.solyton.solawi.bid.module.shares.component.modal.BulkEditShareSubscriptionChanges
 import org.solyton.solawi.bid.module.shares.component.modal.defaultBulkEditTexts
+import org.solyton.solawi.bid.module.shares.component.modal.showAttachSepaCollectionModal
 import org.solyton.solawi.bid.module.shares.component.modal.showBulkEditShareShareSubscriptionsModal
 import org.solyton.solawi.bid.module.shares.component.modal.showBulkUpdateShareDataByFileImportModal
 import org.solyton.solawi.bid.module.shares.component.modal.showUpsertShareOffersModal
 import org.solyton.solawi.bid.module.shares.component.modal.showUpsertShareTypeModal
-import org.solyton.solawi.bid.module.shares.data.api.ChangeReason
-import org.solyton.solawi.bid.module.shares.data.api.Share
 import org.solyton.solawi.bid.module.shares.data.api.UpdateShareStatus
-import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
 import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
-import org.solyton.solawi.bid.module.shares.data.internal.shareStatusTransitionsWithPermissions
 import org.solyton.solawi.bid.module.shares.data.management.deviceData
 import org.solyton.solawi.bid.module.shares.data.management.shareTypes
 import org.solyton.solawi.bid.module.shares.data.management.shareOffers
 import org.solyton.solawi.bid.module.shares.data.management.shareSubscriptions
 import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
-import org.solyton.solawi.bid.module.shares.data.offers.shareType
 import org.solyton.solawi.bid.module.shares.data.shareManagementActions
 import org.solyton.solawi.bid.module.shares.data.shareManagementModals
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscription
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscriptions
-import org.solyton.solawi.bid.module.shares.data.subscriptions.userProfileId
 import org.solyton.solawi.bid.module.shares.data.toApiType
 import org.solyton.solawi.bid.module.shares.data.types.ShareType
 import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
@@ -146,11 +161,10 @@ import org.solyton.solawi.bid.module.user.data.user.organizations
 import org.solyton.solawi.bid.module.user.data.user.username
 import org.solyton.solawi.bid.module.user.data.userActions
 import org.solyton.solawi.bid.module.user.service.profile.fullname
+import org.solyton.solawi.bid.module.values.LegalEntityId
 import org.solyton.solawi.bid.module.values.ModifierId
 import org.solyton.solawi.bid.module.values.ProviderId
-import org.solyton.solawi.bid.module.values.UserId
 import org.solyton.solawi.bid.module.values.Username
-import kotlin.collections.emptyMap
 import kotlin.collections.toMutableMap
 
 data class CheckedShareSubscription(val checked: Boolean, val shareSubscription: ShareSubscription)
@@ -190,6 +204,11 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
     val bankingApplicationStorage = storage * bankingApplicationIso
     val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
     val fiscalYears = bankingApplicationStorage * fiscalYears
+    val creditorIdentifier = bankingApplicationStorage * creditorIdentifier
+    val creditorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.bankAccountType == AccountType.CREDITOR }
+    val sepaModule = bankingApplicationStorage * sepaModule
+    val sepaCollections = sepaModule * sepaCollections
+
 
     val userActions = storage * userIso * userActions
     val organizationsStorage = storage * userIso * user * organizations
@@ -213,6 +232,15 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
         }
         launch {
            bankingApplicationActions dispatch readFiscalYears(providerId.value)
+        }
+        launch {
+            bankingApplicationActions dispatch readBankAccounts(LegalEntityId(providerId.value))
+        }
+        launch{
+            bankingApplicationActions dispatch readPersonalCreditorIdentifier(LegalEntityId(providerId.value))
+        }
+        launch {
+            bankingApplicationActions dispatch readPersonalSepaCollections(LegalEntityId(providerId.value))
         }
         launch {
             userActions dispatch readOrganizations()
@@ -389,7 +417,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                 HeaderWrapper {
                     Header {
                         HeaderCell("Fiscal Year") { width(10.percent) }
-                        HeaderCell("Share Type") { width(10.percent) }
+                        HeaderCell("Share Type") { width(20.percent) }
                         HeaderCell("Price") { width(10.percent) }
                         HeaderCell("PricingType") { width(10.percent) }
                         HeaderCell("SEPA required") { width(10.percent) }
@@ -408,19 +436,91 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                         fun getKeyOf(value: Boolean): String = booleansMap.filter { it.value == value }.keys.first()
                         DataWrapper() {
                             TextCell(shareOffer.fiscalYear.format()) { width(10.percent) }
-                            TextCell(shareOffer.shareType.name) { width(10.percent) }
+                            TextCell(shareOffer.shareType.name) { width(20.percent) }
                             TextCell("${shareOffer.price ?: "--"}") { width(10.percent) }
                             TextCell(shareOffer.pricingType.name) { width(10.percent) }
                             TextCell(getKeyOf(shareOffer.ahcAuthorizationRequired)) { width(10.percent) }
                         }
                         ActionsWrapper {
                             var shareOfferState by remember { mutableStateOf<ShareOffer>(shareOffer) }
-                            CreditCardButton(
-                                color = Color.black,
-                                bgColor = Color.white,
-                                deviceType = deviceType,
-                            ) {
+                            var creditorIdentifierState by remember { mutableStateOf<CreditorIdentifier?>(creditorIdentifier.read()) }
 
+                            When(creditorIdentifierState != null ) {
+                                val finalCreditorIdentifier = requireNotNull(creditorIdentifierState) {"Cannot be null "}
+                                val sepaCollectionReader = sepaCollections * FirstOrNull { shareOffer.shareOfferId in it.referenceIds.map { id -> id.value } }
+                                var sepaCollectionState by remember {
+                                    mutableStateOf(PartialSepaCollection(
+                                        sepaCollectionId = sepaCollectionReader.emit()?.sepaCollectionId,
+                                        creditorIdentifierId = finalCreditorIdentifier.creditorIdentifierId,
+                                        creditorBankAccountId = sepaCollectionReader.emit()?.creditorBankAccountId,
+                                        mandateReferencePrefix = sepaCollectionReader.emit()?.mandateReferencePrefix,
+                                        remittanceInformation = sepaCollectionReader.emit()?.remittanceInformation,
+                                        sepaSequenceType = sepaCollectionReader.emit()?.sepaSequenceType?: SepaSequenceType.FRST,
+                                        localInstrument = sepaCollectionReader.emit()?.localInstrument,
+                                        isActive = sepaCollectionReader.emit()?.isActive?:true,
+                                        leadTimesDays = sepaCollectionReader.emit()?.leadTimesDays?:5,
+                                        requestedCollectionDay = sepaCollectionReader.emit()?.requestedCollectionDay?:2,
+                                        chargeBearer = sepaCollectionReader.emit()?.chargeBearer?: ChargeBearer("SLEV")
+                                    ))
+                                }
+                                CreditCardButton(
+                                    color = Color.black,
+                                    bgColor = Color.white,
+                                    deviceType = deviceType,
+                                ) {
+
+                                    shareManagementModals.showAttachSepaCollectionModal(
+                                        bankingApplicationStorage,
+                                        texts = dialogModalTexts("Attach Sepa Collection"),
+                                        device = deviceType,
+                                        bankAccounts = creditorBankAccounts.read(),
+                                        sepaCollection = sepaCollectionState,
+                                        isOkButtonDisabled = {with(sepaCollectionState){
+                                            creditorBankAccountId == null
+                                            || creditorIdentifierId == null
+                                            || mandateReferencePrefix == null
+                                            || remittanceInformation == null
+                                            || sepaSequenceType == null
+                                            || leadTimesDays == null
+                                            || chargeBearer == null
+                                            || isActive == null
+                                        } },
+                                        setSepaCollection = {collection -> sepaCollectionState = collection}
+                                    ) {
+                                        val data = with(sepaCollectionState){ CreateSepaCollection(
+                                            creditorIdentifierId = creditorIdentifierId!!,
+                                            creditorBankAccountId = creditorBankAccountId!!,
+                                            mandateReferencePrefix = mandateReferencePrefix!!,
+                                            remittanceInformation = remittanceInformation!!,
+                                            sepaSequenceType = sepaSequenceType!!.toApiType(),
+                                            localInstrument = localInstrument,
+                                            chargeBearer = chargeBearer!!,
+                                            requestedCollectionDay = requestedCollectionDay,
+                                            leadTimeDays = leadTimesDays!!,
+                                            purposeCode = purposeCode,
+                                            isActive = isActive!!,
+                                            sepaMandates = null,
+                                            sepaPayments = null,
+                                            referenceIds = listOf(SepaCollectionReferenceId(shareOffer.shareOfferId)),
+                                        )}
+                                        scope.launch {
+                                            bankingApplicationActions dispatch createSepaCollection(
+                                                data
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            When(creditorIdentifierState == null){
+                                CreditCardButton(
+                                    color = Color.black,
+                                    bgColor = Color.white,
+                                    deviceType = deviceType,
+                                    isDisabled = true,
+                                    texts = {"No creditor identifiers defined"}
+                                ) {
+
+                                }
                             }
                             EditButton(
                                 color = Color.black,
@@ -948,6 +1048,31 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                     }
                 
                 }
+            }
+        }
+    }
+}
+
+fun shareManagementForOrganizationsTexts(): Source<Lang.Block> = {
+    texts{
+        "shareOffersList" block {
+            "item" block {
+                "actions" block {
+                    "attachSepaCollection" block {
+                        "hints" block {
+                            "noCreditorsDefined" colon "No Creditors defined"
+                        }
+                        "tooltip" block {
+                            "title" colon "Attach or update Sepa Collection"
+                        }
+                    }
+                }
+            }
+        }
+
+        "dialogs" block {
+            "attachSepaCollectionModal" block {
+                "x" colon "Y"
             }
         }
     }

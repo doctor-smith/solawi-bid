@@ -4,6 +4,7 @@ import org.evoleq.exposedx.migrations.Migration
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Transaction
+import org.solyton.solawi.bid.module.banking.schema.SepaCollectionMappings
 import org.solyton.solawi.bid.module.banking.schema.SepaCollections
 import org.solyton.solawi.bid.module.banking.schema.SepaCollectionsTable
 import org.solyton.solawi.bid.module.banking.schema.SepaPaymentStatusHistory
@@ -21,6 +22,7 @@ import org.solyton.solawi.bid.module.banking.schema.SepaPaymentsTable
  * - SepaCollectionsTable,
  * - SepaPaymentsTable,
  * - SepaPaymentStatusHistory
+ * - SepaCollectionMappings
  */
 class Migration1775461611681(
     override val database: Database
@@ -39,7 +41,8 @@ class Migration1775461611681(
         SchemaUtils.create(
             SepaCollectionsTable,
             SepaPaymentsTable,
-            SepaPaymentStatusHistory
+            SepaPaymentStatusHistory,
+            SepaCollectionMappings
         )
     }
 
