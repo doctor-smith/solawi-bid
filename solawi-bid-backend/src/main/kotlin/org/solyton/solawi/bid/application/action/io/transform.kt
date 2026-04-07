@@ -92,6 +92,7 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
             is BankAccountsException.CannotCreateMandateReference -> HttpStatusCode.BadRequest
             is BankAccountsException.NoSuchCreditorBankAccountAccess -> HttpStatusCode.NotFound
             is BankAccountsException.NoSuchDebtorBankAccountAccess -> HttpStatusCode.NotFound
+            is BankAccountsException.NoSuchCreditorIdentifier -> HttpStatusCode.NotFound
         }
         is FiscalYearException -> when(value as FiscalYearException) {
             is FiscalYearException.NoSuchFiscalYear -> HttpStatusCode.NotFound
@@ -112,6 +113,9 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
             is SepaException.Transaction.InvalidAmount -> HttpStatusCode.BadRequest
             is SepaException.Transaction.InvalidCreditorId -> HttpStatusCode.BadRequest
             is SepaException.MissingXmlSchema -> HttpStatusCode.BadRequest
+            is SepaException.CannotUpdateSepaMandate -> HttpStatusCode.BadRequest
+            is SepaException.NoSuchSepaCollection -> HttpStatusCode.NotFound
+            is SepaException.NoSuchSepaMandate -> HttpStatusCode.NotFound
         }
 
         //User

@@ -2,7 +2,6 @@ package org.solyton.solawi.bid.application.api
 
 
 import org.evoleq.ktorx.api.Api
-import org.evoleq.test.parameters
 import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.banking.data.api.*
@@ -400,6 +399,36 @@ val solawiApi by lazy {
                 key = ReadCreditorIdentifierByLegalEntity::class,
                 url = "creditors/identifiers/by-legal-entity",
                 parameters = setOf("legal_entity")
+            )
+
+
+            // Banking /SEPA
+            get<ReadSepaCollectionsByLegalEntity, SepaCollections> (
+                key = ReadSepaCollectionsByLegalEntity::class,
+                url = "sepa/collections/by-legal-entity",
+                parameters = setOf("legal_entity")
+            )
+            post<CreateSepaCollection, SepaCollection>(
+                key = CreateSepaCollection::class,
+                url = "sepa/collections/create"
+            )
+            patch<UpdateSepaCollection, SepaCollection>(
+                key = UpdateSepaCollection::class,
+                url = "sepa/collections/update"
+            )
+
+            post<CreateSepaMandate, SepaMandate>(
+                key = CreateSepaMandate::class,
+                url = "sepa/mandates/create"
+            )
+            get<ReadSepaMandatesByCreditorsLegalEntity, SepaMandates>(
+                key = ReadSepaMandatesByCreditorsLegalEntity::class,
+                url = "sepa/mandates/by-creditors-legal-entity",
+                parameters = setOf("legal_entity")
+            )
+            patch<UpdateSepaMandate, SepaMandate>(
+                key = UpdateSepaMandate::class,
+                url = "sepa/mandates/update"
             )
         }
     }

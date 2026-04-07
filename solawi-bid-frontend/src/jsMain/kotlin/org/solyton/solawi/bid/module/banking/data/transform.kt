@@ -8,12 +8,27 @@ import org.solyton.solawi.bid.module.banking.data.api.ApiFiscalYear
 import org.solyton.solawi.bid.module.banking.data.api.ApiFiscalYears
 import org.solyton.solawi.bid.module.banking.data.api.ApiLegalEntity
 import org.solyton.solawi.bid.module.banking.data.api.ApiLegalEntityType
+import org.solyton.solawi.bid.module.banking.data.api.ApiMandateStatus
+import org.solyton.solawi.bid.module.banking.data.api.ApiPaymentExecutionStatus
+import org.solyton.solawi.bid.module.banking.data.api.ApiSepaCollection
+import org.solyton.solawi.bid.module.banking.data.api.ApiSepaMandate
+import org.solyton.solawi.bid.module.banking.data.api.ApiSepaPayment
+import org.solyton.solawi.bid.module.banking.data.api.ApiSepaSequenceType
+import org.solyton.solawi.bid.module.banking.data.api.MandateStatus.*
+import org.solyton.solawi.bid.module.banking.data.api.PaymentExecutionStatus.*
+import org.solyton.solawi.bid.module.banking.data.api.SepaSequenceType.*
 import org.solyton.solawi.bid.module.banking.data.bankaccount.AccountType
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.creditor.identifier.CreditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
 import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntity
 import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntityType
+import org.solyton.solawi.bid.module.banking.data.sepa.MandateStatus
+import org.solyton.solawi.bid.module.banking.data.sepa.PaymentExecutionStatus
+import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
+import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
+import org.solyton.solawi.bid.module.banking.data.sepa.mandate.SepaMandate
+import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
 import org.solyton.solawi.bid.module.user.data.transform.toDomainType
 
 
@@ -105,3 +120,91 @@ fun ApiCreditorIdentifier.toDomainType(): CreditorIdentifier = CreditorIdentifie
     validUntil,
     isActive
 )
+
+fun ApiSepaMandate.toDomainType(): SepaMandate = SepaMandate(
+    sepaMandateId = sepaMandateId,
+    debtorBankAccountId = debtorBankAccountId,
+    debtorName = debtorName,
+    mandateReference = mandateReference,
+    signedAt = signedAt,
+    validFrom = validFrom,
+    validUntil = validUntil,
+    lastUsedAt = lastUsedAt,
+    status = status.toDomainType(),
+    isActive = isActive,
+    amendmentOf = amendmentOf,
+    collectionId = collectionId
+)
+
+fun ApiSepaPayment.toDomainType(): SepaPayment = SepaPayment(
+    sepaPaymentId = sepaPaymentId,
+    sepaMandateId = sepaMandateId,
+    sepaCollectionId = sepaCollectionId,
+    amount = amount,
+    executionDate = executionDate,
+    sequenceType = sequenceType.toDomainType(),
+    status = status.toDomainType(),
+    failureReason = failureReason
+)
+
+fun ApiSepaCollection.toDomainType(): SepaCollection = SepaCollection(
+    sepaCollectionId = sepaCollectionId,
+    creditorIdentifierId = creditorIdentifierId,
+    creditorBankAccountId = creditorBankAccountId,
+    mandateReferencePrefix = mandateReferencePrefix,
+    remittanceInformation = remittanceInformation,
+    sepaSequenceType = sepaSequenceType.toDomainType(),
+    localInstrument = localInstrument,
+    chargeBearer = chargeBearer,
+    requestedCollectionDay = requestedCollectionDay,
+    leadTimesDays = leadTimeDays,
+    purposeCode = purposeCode,
+    isActive = isActive,
+    sepaMandates = sepaMandates?.all?.map{it.toDomainType()}.orEmpty(),
+    sepaPayments = sepaPayments?.all?.map{it.toDomainType()}.orEmpty(),
+    referenceIds = referenceIds
+)
+
+fun ApiMandateStatus.toDomainType(): MandateStatus = when(this) {
+    ACTIVE -> MandateStatus.ACTIVE
+    REVOKED -> MandateStatus.REVOKED
+    EXPIRED -> MandateStatus.EXPIRED
+    SUSPENDED -> MandateStatus.SUSPENDED
+}
+
+fun MandateStatus.toApyType(): ApiMandateStatus = when(this) {
+    MandateStatus.ACTIVE -> ACTIVE
+    MandateStatus.REVOKED -> REVOKED
+    MandateStatus.EXPIRED -> EXPIRED
+    MandateStatus.SUSPENDED -> SUSPENDED
+}
+
+fun ApiSepaSequenceType.toDomainType(): SepaSequenceType = when(this) {
+    FRST -> SepaSequenceType.FRST
+    RCUR -> SepaSequenceType.RCUR
+    OOFF -> SepaSequenceType.OOFF
+    FNAL -> SepaSequenceType.FNAL
+}
+
+fun SepaSequenceType.toApiType(): ApiSepaSequenceType = when(this) {
+    SepaSequenceType.FRST -> FRST
+    SepaSequenceType.RCUR -> RCUR
+    SepaSequenceType.OOFF -> OOFF
+    SepaSequenceType.FNAL -> FNAL
+}
+
+fun ApiPaymentExecutionStatus.toDomainType(): PaymentExecutionStatus = when(this) {
+    CREATED -> PaymentExecutionStatus.CREATED
+    SENT -> PaymentExecutionStatus.SENT
+    CONFIRMED -> PaymentExecutionStatus.CONFIRMED
+    FAILED -> PaymentExecutionStatus.FAILED
+    PENDING -> PaymentExecutionStatus.PENDING
+}
+
+fun PaymentExecutionStatus.toApiType(): ApiPaymentExecutionStatus = when(this) {
+    PaymentExecutionStatus.CREATED -> CREATED
+    PaymentExecutionStatus.SENT -> SENT
+    PaymentExecutionStatus.CONFIRMED -> CONFIRMED
+    PaymentExecutionStatus.FAILED -> FAILED
+    PaymentExecutionStatus.PENDING -> PENDING
+}

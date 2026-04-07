@@ -3,10 +3,12 @@ package org.solyton.solawi.bid.module.banking.service
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
+import org.solyton.solawi.bid.module.banking.data.MandateReference
 import org.solyton.solawi.bid.module.banking.data.internal.SepaMandateCreationRequest
 import org.solyton.solawi.bid.module.banking.data.internal.SepaMandateResponse
 import org.solyton.solawi.bid.module.banking.repository.createSepaMandateWithRetry
 import org.solyton.solawi.bid.module.banking.schema.SepaMandateEntity
+import org.solyton.solawi.bid.module.values.CreatorId
 import java.util.*
 import kotlin.random.Random
 
@@ -23,15 +25,15 @@ class SepaMandateGeneratorService {
      * @return The created SEPA mandate
     */
      */
-    fun Transaction.createSepaMandate(request: SepaMandateCreationRequest): SepaMandateResponse {
+    fun Transaction.createSepaMandate(request: SepaMandateCreationRequest, creatorId: UUID): SepaMandateResponse {
         val mandate = createSepaMandateWithRetry(
+            creatorId = creatorId,
             creditorId = request.creditorId,
             debtorBankAccountId = request.debtorBankAccountId,
             debtorName = request.debtorName,
             signedAt = request.signedAt ?: DateTime.now(),
             validFrom = request.validFrom?: DateTime.now(),
-            validUntil = request.validUntil,
-            mandateReference = request.customMandateReference
+            validUntil = request.validUntil
         )
 
         return mapToResponse(mandate)
@@ -58,27 +60,28 @@ class SepaMandateGeneratorService {
     */
      */
     fun Transaction.createSepaMandateWithCustomReference(
+        creatorId: UUID,
         creditorId: UUID,
         debtorBankAccountId: UUID,
         debtorName: String,
-        mandateReference: String? = null,
+        //  mandateReference: String? = null,
         signedAt: DateTime? = null,
         validFrom: DateTime? = null,
         validUntil: DateTime? = null
     ): SepaMandateResponse {
 
-        val finalMandateReference = mandateReference ?: generateMandateReference(creditorId)
+        // val finalMandateReference = mandateReference ?: generateMandateReference(creditorId)
         val finalSignedAt = signedAt ?: DateTime.now()
         val finalValidFrom = validFrom ?: DateTime.now()
 
         val mandate = createSepaMandateWithRetry(
+            creatorId = creatorId,
             creditorId = creditorId,
             debtorBankAccountId = debtorBankAccountId,
             debtorName = debtorName,
             signedAt = finalSignedAt,
             validFrom = finalValidFrom,
-            validUntil = validUntil?: DateTime.now(),
-            mandateReference = finalMandateReference
+            validUntil = validUntil,
         )
 
         // Update additional fields if necessary
@@ -95,6 +98,7 @@ class SepaMandateGeneratorService {
     */
      */
     fun Transaction.createAmendmentMandate(
+        creatorId: UUID,
         originalMandateId: UUID,
         newDebtorBankAccountId: UUID,
         newDebtorName: String? = null,
@@ -106,13 +110,14 @@ class SepaMandateGeneratorService {
             ?: throw IllegalArgumentException("Original mandate not found")
 
         val amendmentMandate = createSepaMandateWithRetry(
+            creatorId = creatorId,
             creditorId = originalMandate.creditorIdentifier.id.value,
             debtorBankAccountId = newDebtorBankAccountId,
             debtorName = newDebtorName ?: originalMandate.debtorName,
             signedAt = signedAt ?: DateTime.now(),
             validFrom = originalMandate.validFrom,
             validUntil = originalMandate.validUntil,
-            mandateReference = mandateReference ?: generateMandateReference(originalMandate.creditorIdentifier.id.value)
+            mandateReference = mandateReference?.let { MandateReference(it) }
         )
 
         // Set the amendment reference
@@ -179,17 +184,18 @@ class SepaMandateGeneratorService {
      * Creates a batch of mandates
     */
      */
-    fun createBatchMandates(requests: List<SepaMandateCreationRequest>): List<SepaMandateResponse> {
+    fun createBatchMandates(requests: List<SepaMandateCreationRequest>, creatorId: UUID): List<SepaMandateResponse> {
         return transaction {
             requests.map { request ->
                 val mandate = createSepaMandateWithRetry(
+                    creatorId = creatorId,
                     creditorId = request.creditorId,
                     debtorBankAccountId = request.debtorBankAccountId,
                     debtorName = request.debtorName,
                     signedAt = request.signedAt ?: DateTime.now(),
-                    validFrom = request.validFrom?: DateTime.now(),
-                    validUntil = request.validUntil?: DateTime.now(),
-                    mandateReference = request.customMandateReference
+                    validFrom = request.validFrom ?: DateTime.now(),
+                    validUntil = request.validUntil,
+
                 )
                 mapToResponse(mandate)
             }

@@ -42,7 +42,8 @@ val bankingApplicationPreIso: Lens<Application, BankingApplication> by lazy {
                 bankAccounts = whole.bankAccounts,
                 fiscalYears = whole.fiscalYears,
                 legalEntity = whole.legalEntity,
-                creditorIdentifier = whole.creditorIdentifier
+                creditorIdentifier = whole.creditorIdentifier,
+                sepaModule = whole.sepaModule,
             )
         },
         set = { part -> { whole ->
@@ -52,7 +53,8 @@ val bankingApplicationPreIso: Lens<Application, BankingApplication> by lazy {
                 bankAccounts = part.bankAccounts,
                 fiscalYears = part.fiscalYears,
                 legalEntity = part.legalEntity,
-                creditorIdentifier = part.creditorIdentifier
+                creditorIdentifier = part.creditorIdentifier,
+                sepaModule = part.sepaModule
             )
         } }
     )

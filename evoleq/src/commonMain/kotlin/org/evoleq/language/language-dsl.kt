@@ -24,8 +24,22 @@ class BlockConfiguration : Configuration<Block> {
         this@BlockConfiguration.value+=item
     }
 
+    infix fun String.colon(value: String) = with(VariableConfiguration()) {
+        this.key = this@colon
+        this.value = value
+        val item = configure()
+        this@BlockConfiguration.value+=item
+    }
+
     fun block(configuration: BlockConfiguration.()->Unit) = with(BlockConfiguration()){
         this.configuration()
+        val item = configure()
+        this@BlockConfiguration.value += item
+    }
+
+    infix fun String.block(configuration: BlockConfiguration.()->Unit) = with(BlockConfiguration()) {
+        this.configuration()
+        this.key = this@block
         val item = configure()
         this@BlockConfiguration.value += item
     }

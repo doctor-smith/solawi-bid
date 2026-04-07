@@ -11,6 +11,7 @@ import org.solyton.solawi.bid.module.banking.data.creditor.identifier.CreditorId
 import org.solyton.solawi.bid.module.banking.data.environment.Environment
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
 import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntity
+import org.solyton.solawi.bid.module.banking.data.sepa.SepaModule
 import org.solyton.solawi.bid.module.banking.data.user.User
 import org.solyton.solawi.bid.module.i18n.data.I18N
 
@@ -25,5 +26,6 @@ data class BankingApplication(
     @ReadWrite val legalEntity: LegalEntity = LegalEntity.default,
     @ReadWrite val creditorIdentifier: CreditorIdentifier? = null,
     @ReadWrite val bankAccounts: List<BankAccount> = emptyList(),
-    @ReadWrite val fiscalYears: List<FiscalYear> = emptyList()
+    @ReadWrite val fiscalYears: List<FiscalYear> = emptyList(),
+    @ReadWrite val sepaModule: SepaModule = SepaModule()
 )

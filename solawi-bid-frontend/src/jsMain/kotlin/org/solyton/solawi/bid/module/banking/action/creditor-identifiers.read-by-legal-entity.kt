@@ -6,7 +6,6 @@ import org.evoleq.optics.storage.Action
 import org.evoleq.optics.storage.suffixed
 import org.solyton.solawi.bid.module.banking.data.api.ApiCreditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.api.ReadCreditorIdentifierByLegalEntity
-import org.solyton.solawi.bid.module.banking.data.api.ReadLegalEntity
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.creditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.toDomainType

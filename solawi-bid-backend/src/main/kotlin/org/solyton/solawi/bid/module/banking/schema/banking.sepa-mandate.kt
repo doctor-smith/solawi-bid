@@ -109,6 +109,7 @@ class SepaMandate(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     var amendmentOf by SepaMandate optionalReferencedOn SepaMandates.amendmentOf
     var collection by SepaCollection optionalReferencedOn SepaMandates.collectionId
 
+    val payments by SepaPayment referrersOn  SepaPaymentsTable.mandateId
 
     override var createdAt: DateTime by SepaMandates.createdAt
     override var createdBy: UUID by SepaMandates.createdBy
