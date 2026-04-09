@@ -1,0 +1,59 @@
+package org.solyton.solawi.bid.module.banking.permissions
+
+object Sepa {
+    object Rights {
+        const val CREATE_SEPA_MANDATES = "CREATE_SEPA_MANDATES"
+        const val READ_SEPA_MANDATES = "READ_SEPA_MANDATES"
+        const val UPDATE_SEPA_MANDATES = "UPDATE_SEPA_MANDATES"
+        const val DELETE_SEPA_MANDATES = "DELETE_SEPA_MANDATES"
+
+        const val CREATE_SEPA_PAYMENTS = "CREATE_SEPA_PAYMENTS"
+        const val READ_SEPA_PAYMENTS = "READ_SEPA_PAYMENTS"
+        const val UPDATE_SEPA_PAYMENTS = "UPDATE_SEPA_PAYMENTS"
+        const val DELETE_SEPA_PAYMENTS = "DELETE_SEPA_PAYMENTS"
+
+        const val CREATE_SEPA_COLLECTIONS = "CREATE_SEPA_COLLECTIONS"
+        const val READ_SEPA_COLLECTIONS = "READ_SEPA_COLLECTIONS"
+        const val UPDATE_SEPA_COLLECTIONS = "UPDATE_SEPA_COLLECTIONS"
+        const val DELETE_SEPA_COLLECTIONS = "DELETE_SEPA_COLLECTIONS"
+    }
+}
+
+object LegalEntities {
+    object Rights {
+        const val CREATE_LEGAL_ENTITIES = "CREATE_LEGAL_ENTITIES"
+        const val READ_LEGAL_ENTITIES = "READ_LEGAL_ENTITIES"
+        const val UPDATE_LEGAL_ENTITIES = "UPDATE_LEGAL_ENTITIES"
+        const val DELETE_LEGAL_ENTITIES = "DELETE_LEGAL_ENTITIES"
+    }
+}
+
+object CreditorIdentifiers {
+    object Rights {
+        const val CREATE_CREDITOR_IDENTIFIERS = "CREATE_CREDITOR_IDENTIFIERS"
+        const val READ_CREDITOR_IDENTIFIERS = "READ_CREDITOR_IDENTIFIERS"
+        const val UPDATE_CREDITOR_IDENTIFIERS = "UPDATE_CREDITOR_IDENTIFIERS"
+        const val DELETE_CREDITOR_IDENTIFIERS = "DELETE_CREDITOR_IDENTIFIERS"
+    }
+}
+
+object BankAccounts {
+    object Rights {
+        const val CREATE_BANK_ACCOUNTS = "CREATE_BANK_ACCOUNTS"
+        const val READ_BANK_ACCOUNTS = "READ_BANK_ACCOUNTS"
+        const val UPDATE_BANK_ACCOUNTS = "UPDATE_BANK_ACCOUNTS"
+        const val DELETE_BANK_ACCOUNTS = "DELETE_BANK_ACCOUNTS"
+        const val IMPORT_BANK_ACCOUNTS = "IMPORT_BANK_ACCOUNTS"
+    }
+}
+
+object FiscalYears {
+    object Rights {
+        const val CREATE_FISCAL_YEARS = "CREATE_FISCAL_YEARS"
+        const val READ_FISCAL_YEARS = "READ_FISCAL_YEARS"
+        const val UPDATE_FISCAL_YEARS = "UPDATE_FISCAL_YEARS"
+        const val DELETE_FISCAL_YEARS = "DELETE_FISCAL_YEARS"
+    }
+}
+
+
