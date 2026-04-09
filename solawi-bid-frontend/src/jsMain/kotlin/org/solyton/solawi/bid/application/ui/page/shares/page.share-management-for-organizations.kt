@@ -43,9 +43,11 @@ import org.solyton.solawi.bid.module.banking.data.application.creditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.application.fiscalYears
 import org.solyton.solawi.bid.module.banking.data.application.sepaModule
 import org.solyton.solawi.bid.module.banking.data.bankaccount.AccountType
+import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.creditor.identifier.CreditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
 import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
+import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaCollections
 import org.solyton.solawi.bid.module.banking.service.generateReference
 import org.solyton.solawi.bid.module.constants.CHECK_FALSE
@@ -353,7 +355,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                         HeaderCell("Price") { width(10.percent) }
                         HeaderCell("PricingType") { width(10.percent) }
                         HeaderCell("SEPA required") { width(10.percent) }
-                        HeaderCell("SEPA - Assoc Collections") { width(30.percent) }
+                        HeaderCell("SEPA - Assoc Collections") { width(40.percent) }
                     }
                 }
                 ListItemsIndexed(shareOffers.read().let{
@@ -996,7 +998,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                     }
                 ) {
                     val checksChanged = checkedMap.filter { it.value }.keys
-                
+
                     ListItemsIndexed(filteredCheckedSubscriptions) { index, checkedSubscription ->
                         val checked = checkedSubscription.checked
                         val subscription = checkedSubscription.shareSubscription
@@ -1028,12 +1030,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                     ) { width(20.percent) }
                                     TextCell(subscription.ahcAuthorized.checkIcon("--")) { width(5.percent) }
                                     TextCell(sepaCollections.read().filter{
-                                        coll ->
-                                            // todo:dev test on dev. locally, there is a shareOfferId-mismatch
-                                            subscription.shareOfferId in coll.referenceIds.map { ref -> ref.value } &&
-                                            coll.sepaMandates.any { mandate ->
-                                                mandate.debtorBankAccountId == userProfileToBankAccountMap[subscription.userProfileId]?.bankAccountId
-                                            }
+                                        coll -> isCollectionRelatedToSubscription(coll, subscription, userProfileToBankAccountMap, shareOffersMap)
                                     }.joinToString(", ") { sC -> sC.mandateReferencePrefix.value }) {
                                         width(20.percent)
                                         overflow(Overflow.Hidden)
@@ -1092,4 +1089,17 @@ fun shareManagementForOrganizationsTexts(): Source<Lang.Block> = {
             }
         }
     }
+}
+
+fun isCollectionRelatedToSubscription(collection: SepaCollection, sub: ShareSubscription, map: Map<String?, BankAccount>, shareOffersMap: Map<String, ShareOffer>): Boolean {
+    val mandates = collection.sepaMandates
+    val existsRelatedBankAccount = mandates.any{ mandate ->
+        mandate.debtorBankAccountId == map[sub.userProfileId]?.bankAccountId
+    }
+    val shareOffer = shareOffersMap[sub.shareOfferId]!!
+
+    val referenceIds = collection.referenceIds.map { it.value }
+    val collectionRefersToShareOffer = referenceIds.contains(shareOffer.shareOfferId)
+
+    return existsRelatedBankAccount && collectionRefersToShareOffer
 }

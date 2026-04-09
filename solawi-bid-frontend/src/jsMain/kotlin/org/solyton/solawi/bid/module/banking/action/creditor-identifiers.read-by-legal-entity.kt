@@ -22,7 +22,7 @@ const val READ_PERSONAL_CREDITOR_IDENTIFIER = "ReadPersonalCreditorIdentifier"
  */
 @Markup
 fun readPersonalCreditorIdentifier(legalEntityId: LegalEntityId, nameSuffix: String? = null) = Action<BankingApplication, ReadCreditorIdentifierByLegalEntity, ApiCreditorIdentifier>(
-    name = READ_PERSONAL_LEGAL_ENTITY.suffixed(nameSuffix),
+    name = READ_PERSONAL_CREDITOR_IDENTIFIER.suffixed(nameSuffix),
     reader = {_ -> ReadCreditorIdentifierByLegalEntity(listOf("legal_entity" to legalEntityId.value))},
     endPoint = ReadCreditorIdentifierByLegalEntity::class,
     writer = creditorIdentifier.set contraMap { creditorIdentifier -> creditorIdentifier.toDomainType() }

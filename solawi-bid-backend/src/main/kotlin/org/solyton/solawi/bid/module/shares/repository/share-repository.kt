@@ -186,8 +186,11 @@ fun Transaction.readShareOffersByProvider(
         providerId: UUID,
         fiscalYearIds: Set<UUID> = emptySet()
 ): List<ShareOfferEntity> {
-    val shareTypes = readShareTypesByProvider(providerId)
-    val allShareOffers = shareTypes.flatMap {type -> type.shareOffers }
+    val shareTypeIds = readShareTypesByProvider(providerId).map{it.id.value}
+
+    val allShareOffers = ShareOfferEntity.find {
+        ShareOffersTable.shareTypeId inList shareTypeIds
+    }.toList()
     return when{
         fiscalYearIds.isEmpty() -> allShareOffers
         else -> allShareOffers.filterNot{ offer -> offer.fiscalYear.id.value in fiscalYearIds }

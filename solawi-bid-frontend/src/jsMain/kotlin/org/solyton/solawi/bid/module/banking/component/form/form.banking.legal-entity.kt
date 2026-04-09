@@ -5,12 +5,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.datetime.internal.JSJoda.LocalDate
 import org.evoleq.change.data.Change
 import org.evoleq.change.data.Keep
 import org.evoleq.compose.Markup
 import org.evoleq.compose.form.Form
 import org.evoleq.compose.form.field.Field
 import org.evoleq.compose.form.label.Label
+import org.evoleq.kotlinx.date.now
 import org.evoleq.language.Lang
 import org.evoleq.language.subComp
 import org.evoleq.language.title
@@ -22,6 +24,9 @@ import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.TextInput
+import org.solyton.solawi.bid.module.banking.data.CreditorId
+import org.solyton.solawi.bid.module.banking.data.CreditorIdentifierId
+import org.solyton.solawi.bid.module.banking.data.creditor.identifier.CreditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntity
 import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntityType
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
@@ -38,10 +43,11 @@ import org.solyton.solawi.bid.module.values.LegalEntityId
 @Composable
 @Suppress("FunctionName")
 fun LegalEntityForm(
-    inputs: Source<Lang.Block> = defaultInputs,
+    inputs: Source<Lang.Block>,
     partyId: LegalEntityId,
     legalEntity: LegalEntity?,
-    setLegalEntity: (LegalEntity) -> Unit,
+    creditorIdentifier: CreditorIdentifier?,
+    setLegalEntity: (LegalEntity, CreditorIdentifier?)->Unit,
 ) {
 
     val dropdownStyles = DropdownStyles.modifyContainerStyle { width(100.percent) }
@@ -51,6 +57,8 @@ fun LegalEntityForm(
         var legalFormState by remember { mutableStateOf(legalEntity?.legalForm ?: "") }
         var legalEntityTypeState by remember { mutableStateOf(legalEntity?.legalEntityType ) }
         var addressState by remember { mutableStateOf(legalEntity?.address ?: Address.default()) }
+
+        var creditorIdState by remember { mutableStateOf(creditorIdentifier?.creditorId) }
 
         Field(fieldDesktopStyle) {
             Label(
@@ -71,10 +79,11 @@ fun LegalEntityForm(
                             },
                             legalForm = Keep(legalFormState),
                             legalEntityType = Keep(legalEntityTypeState),
-                            address = Keep(addressState)
-                        )
-                    ) { legalEntity ->
-                        setLegalEntity(legalEntity)
+                            address = Keep(addressState),
+                            creditorIdentifierId = creditorIdentifier?.creditorIdentifierId ?: CreditorIdentifierId(NIL_UUID),
+                            creditorId = Keep(creditorIdState)
+                        )) {
+                       legalEntity, creditorIdentifier -> setLegalEntity(legalEntity, creditorIdentifier)
                     }
                 }
             }
@@ -97,10 +106,9 @@ fun LegalEntityForm(
                             legalFormState = it.value
                         },
                         legalEntityType = Keep(legalEntityTypeState),
-                        address = Keep(addressState)
-                    )){
-                            legalEntity -> setLegalEntity(legalEntity)
-                    }
+                        address = Keep(addressState),creditorIdentifierId = creditorIdentifier?.creditorIdentifierId ?: CreditorIdentifierId(NIL_UUID),
+                        creditorId = Keep(creditorIdState)
+                    )) { legalEntity, creditorIdentifier -> setLegalEntity(legalEntity, creditorIdentifier) }
                 }
             }
         }
@@ -129,14 +137,42 @@ fun LegalEntityForm(
                     legalEntityType = Change(legalEntityTypeState, value) {
                         legalEntityTypeState = value
                     },
-                    address = Keep(addressState)
-                )) { legalEntity -> setLegalEntity(legalEntity) }
+                    address = Keep(addressState),
+                    creditorIdentifierId = creditorIdentifier?.creditorIdentifierId ?: CreditorIdentifierId(NIL_UUID),
+                    creditorId = Keep(creditorIdState)
+                )) { legalEntity, creditorIdentifier -> setLegalEntity(legalEntity, creditorIdentifier) }
             }
         }
+
+        Field(fieldDesktopStyle) {
+            Label(
+                (inputs * subComp("creditorId") * title).emit(),
+                id = "creditor-id",
+                labelStyle = formLabelDesktopStyle
+            )
+            TextInput(legalFormState) {
+                id("creditor-id")
+                style { textInputDesktopStyle() }
+                onInput {
+                    update(LegalEntityChange(
+                        legalEntityId = legalEntity?.legalEntityId ?: LegalEntityId(NIL_UUID),
+                        partyId = partyId,
+                        name = Keep(nameState),
+                        legalForm = Keep(legalFormState),
+                        legalEntityType = Keep(legalEntityTypeState),
+                        address = Keep(addressState),creditorIdentifierId = creditorIdentifier?.creditorIdentifierId ?: CreditorIdentifierId(NIL_UUID),
+                        creditorId = Change(creditorIdState, CreditorId(it.value)) {
+                            creditorIdState = CreditorId(it.value)
+                        }
+                    )) { legalEntity, creditorIdentifier -> setLegalEntity(legalEntity, creditorIdentifier) }
+                }
+            }
+        }
+
     }
 }
 
-fun update(change: LegalEntityChange, onChange: (LegalEntity) -> Unit) {
+fun update(change: LegalEntityChange, onChange: (LegalEntity, CreditorIdentifier?) -> Unit) {
     try{
         val newLegalEntity = LegalEntity(
             legalEntityId = change.legalEntityId,
@@ -146,7 +182,17 @@ fun update(change: LegalEntityChange, onChange: (LegalEntity) -> Unit) {
             legalEntityType = change.legalEntityType.new!!,
             address = change.address.new!!
         )
-        onChange(newLegalEntity)
+        val creditorIdentifier = change.creditorId.new?.let{
+            CreditorIdentifier(
+                change.creditorIdentifierId,
+                change.legalEntityId,
+                it,
+                now().date,
+                validUntil = null,
+                isActive = true
+            )
+        }
+        onChange(newLegalEntity, creditorIdentifier)
 
     } catch (exception: Exception) {
         println(exception)
@@ -155,6 +201,7 @@ fun update(change: LegalEntityChange, onChange: (LegalEntity) -> Unit) {
         change.legalForm.onChange()
         change.legalEntityType.onChange()
         change.address.onChange()
+        change.creditorId.onChange()
     }
 }
 
@@ -164,5 +211,7 @@ data class LegalEntityChange(
     val name: Change<String>,
     val legalForm: Change<String>,
     val legalEntityType: Change<LegalEntityType>,
-    val address: Change<Address>
+    val address: Change<Address>,
+    val creditorIdentifierId: CreditorIdentifierId,
+    val creditorId: Change<CreditorId?>,
 )

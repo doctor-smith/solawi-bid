@@ -71,7 +71,7 @@ infix fun String.texts(configuration: BlockConfiguration.()->Unit): Block = with
     return configure()
 }
 
-fun Lang.Block.extend(configuration: BlockConfiguration.()->Unit): Block = texts{
+infix fun Lang.Block.extend(configuration: BlockConfiguration.()->Unit): Block = texts {
     key = this@extend.key
     add(*this@extend.value.toTypedArray())
     configuration()
