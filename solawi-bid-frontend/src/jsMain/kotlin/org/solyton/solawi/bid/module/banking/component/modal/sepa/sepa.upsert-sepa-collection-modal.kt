@@ -17,10 +17,8 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.ElementScope
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.deviceData
-import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntity
 import org.solyton.solawi.bid.module.style.modal.commonModalStyles
 import org.solyton.solawi.bid.module.style.wrap.Wrap
-import org.solyton.solawi.bid.module.values.LegalEntityId
 import org.w3c.dom.HTMLElement
 
 
