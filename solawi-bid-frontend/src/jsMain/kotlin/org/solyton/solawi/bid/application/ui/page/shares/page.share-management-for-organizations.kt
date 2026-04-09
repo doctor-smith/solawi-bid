@@ -2,16 +2,19 @@ package org.solyton.solawi.bid.application.ui.page.shares
 
 import androidx.compose.runtime.*
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDateTime
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.routing.navigate
 import org.evoleq.device.data.mediaType
+import org.evoleq.kotlinx.date.now
 import org.evoleq.language.Lang
 import org.evoleq.language.texts
 import org.evoleq.math.FirstOrNull
 import org.evoleq.math.Source
 import org.evoleq.math.emit
+import org.evoleq.math.second
 import org.evoleq.optics.lens.BiMap
 import org.evoleq.optics.lens.DeepSearch
 import org.evoleq.optics.lens.FilterBy
@@ -20,10 +23,12 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.storage.filter
 import org.evoleq.optics.storage.none
+import org.evoleq.optics.storage.read
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
+import org.jetbrains.letsPlot.commons.intern.filterNotNullValues
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.transform.banking.bankingApplicationIso
 import org.solyton.solawi.bid.application.data.transform.distribution.distributionManagementIso
@@ -34,6 +39,8 @@ import org.solyton.solawi.bid.module.banking.action.*
 import org.solyton.solawi.bid.module.banking.component.form.PartialSepaCollection
 import org.solyton.solawi.bid.module.banking.data.*
 import org.solyton.solawi.bid.module.banking.data.api.CreateSepaCollection
+import org.solyton.solawi.bid.module.banking.data.api.CreateSepaMandate
+import org.solyton.solawi.bid.module.banking.data.api.UpdateSepaCollection
 import org.solyton.solawi.bid.module.banking.data.application.bankAccounts
 import org.solyton.solawi.bid.module.banking.data.application.creditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.application.fiscalYears
@@ -42,7 +49,9 @@ import org.solyton.solawi.bid.module.banking.data.bankaccount.AccountType
 import org.solyton.solawi.bid.module.banking.data.creditor.identifier.CreditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
 import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
+import org.solyton.solawi.bid.module.banking.data.sepa.mandate.debtorBankAccountId
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaCollections
+import org.solyton.solawi.bid.module.banking.service.generateReference
 import org.solyton.solawi.bid.module.constants.CHECK_FALSE
 import org.solyton.solawi.bid.module.constants.CHECK_TRUE
 import org.solyton.solawi.bid.module.constants.checkIcon
@@ -76,10 +85,14 @@ import org.solyton.solawi.bid.module.shares.data.shareManagementActions
 import org.solyton.solawi.bid.module.shares.data.shareManagementModals
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscription
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscriptions
+import org.solyton.solawi.bid.module.shares.data.subscriptions.shareOfferId
+import org.solyton.solawi.bid.module.shares.data.subscriptions.userProfileId
 import org.solyton.solawi.bid.module.shares.data.toApiType
 import org.solyton.solawi.bid.module.shares.data.types.ShareType
 import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
 import org.solyton.solawi.bid.module.shares.data.values.ShareTypeId
+import org.solyton.solawi.bid.module.style.overflow.Overflow
+import org.solyton.solawi.bid.module.style.overflow.overflow
 import org.solyton.solawi.bid.module.style.page.PageTitle
 import org.solyton.solawi.bid.module.style.page.SubTitle
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
@@ -127,6 +140,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
 
     val bankingApplicationStorage = storage * bankingApplicationIso
     val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
+    val debtorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.bankAccountType == AccountType.DEBTOR }
     val fiscalYears = bankingApplicationStorage * fiscalYears
     val creditorIdentifier = bankingApplicationStorage * creditorIdentifier
     val creditorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.bankAccountType == AccountType.CREDITOR }
@@ -345,6 +359,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                         HeaderCell("Price") { width(10.percent) }
                         HeaderCell("PricingType") { width(10.percent) }
                         HeaderCell("SEPA required") { width(10.percent) }
+                        HeaderCell("SEPA - Assoc Collections") { width(30.percent) }
                     }
                 }
                 ListItemsIndexed(shareOffers.read().let{
@@ -358,12 +373,18 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                             CHECK_FALSE to false
                         )
                         fun getKeyOf(value: Boolean): String = booleansMap.filter { it.value == value }.keys.first()
+                        val sepaCollections = sepaCollections * FilterBy { shareOffer.shareOfferId in it.referenceIds.map{ ref -> ref.value} }
+
                         DataWrapper() {
                             TextCell(shareOffer.fiscalYear.format()) { width(10.percent) }
                             TextCell(shareOffer.shareType.name) { width(20.percent) }
                             TextCell("${shareOffer.price ?: "--"}") { width(10.percent) }
                             TextCell(shareOffer.pricingType.name) { width(10.percent) }
                             TextCell(getKeyOf(shareOffer.ahcAuthorizationRequired)) { width(10.percent) }
+                            TextCell(sepaCollections.read().joinToString(", ") { sC -> sC.mandateReferencePrefix.value }) {
+                                width(40.percent)
+                                overflow(Overflow.Hidden)
+                            }
                         }
                         ActionsWrapper {
                             var shareOfferState by remember { mutableStateOf<ShareOffer>(shareOffer) }
@@ -411,26 +432,58 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                         } },
                                         setSepaCollection = {collection -> sepaCollectionState = collection}
                                     ) {
-                                        val data = with(sepaCollectionState){ CreateSepaCollection(
-                                            creditorIdentifierId = creditorIdentifierId!!,
-                                            creditorBankAccountId = creditorBankAccountId!!,
-                                            mandateReferencePrefix = mandateReferencePrefix!!,
-                                            remittanceInformation = remittanceInformation!!,
-                                            sepaSequenceType = sepaSequenceType!!.toApiType(),
-                                            localInstrument = localInstrument,
-                                            chargeBearer = chargeBearer!!,
-                                            requestedCollectionDay = requestedCollectionDay,
-                                            leadTimeDays = leadTimesDays!!,
-                                            purposeCode = purposeCode,
-                                            isActive = isActive!!,
-                                            sepaMandates = null,
-                                            sepaPayments = null,
-                                            referenceIds = listOf(SepaCollectionReferenceId(shareOffer.shareOfferId)),
-                                        )}
-                                        scope.launch {
-                                            bankingApplicationActions dispatch createSepaCollection(
-                                                data
-                                            )
+                                        when(val sepaCollectionId = sepaCollectionState.sepaCollectionId) {
+                                            null -> {
+                                                val data = with(sepaCollectionState) {
+                                                    CreateSepaCollection(
+                                                        creditorIdentifierId = creditorIdentifierId!!,
+                                                        creditorBankAccountId = creditorBankAccountId!!,
+                                                        mandateReferencePrefix = mandateReferencePrefix!!,
+                                                        remittanceInformation = remittanceInformation!!,
+                                                        sepaSequenceType = sepaSequenceType!!.toApiType(),
+                                                        localInstrument = localInstrument,
+                                                        chargeBearer = chargeBearer!!,
+                                                        requestedCollectionDay = requestedCollectionDay,
+                                                        leadTimeDays = leadTimesDays!!,
+                                                        purposeCode = purposeCode,
+                                                        isActive = isActive!!,
+                                                        sepaMandates = null,
+                                                        sepaPayments = null,
+                                                        referenceIds = listOf(SepaCollectionReferenceId(shareOffer.shareOfferId)),
+                                                    )
+                                                }
+
+                                                scope.launch {
+                                                    bankingApplicationActions dispatch createSepaCollection(
+                                                        data
+                                                    )
+                                                }
+                                            }
+                                            else -> {
+                                                val data = with(sepaCollectionState) {
+                                                    UpdateSepaCollection(
+                                                        sepaCollectionId,
+                                                        creditorIdentifierId = creditorIdentifierId!!,
+                                                        creditorAccountId = creditorBankAccountId!!,
+                                                        mandateReferencePrefix = mandateReferencePrefix!!,
+                                                        remittanceInformation = remittanceInformation!!,
+                                                        sepaSequenceType = sepaSequenceType!!.toApiType(),
+                                                        localInstrument = localInstrument,
+                                                        chargeBearer = chargeBearer!!,
+                                                        requestedCollectionDay = requestedCollectionDay,
+                                                        leadTimeDays = leadTimesDays!!,
+                                                        purposeCode = purposeCode,
+                                                        isActive = isActive!!,
+                                                        referenceIds = listOf(SepaCollectionReferenceId(shareOffer.shareOfferId)),
+                                                    )
+                                                }
+
+                                                scope.launch {
+                                                    bankingApplicationActions dispatch updateSepaCollection(
+                                                        data
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -510,6 +563,10 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
             val userProfileToUserMap = memberStorage.read().mapNotNull { member ->
                 usersStorage.read().firstOrNull { user -> user.id == member.memberId }
             }.associateBy { it.profile?.userProfileId }
+            val userProfileToBankAccountMap = usersStorage.read().map { user ->
+                val bankAccount = debtorBankAccounts * FirstOrNull { it.userId.value == user.id }
+                user to bankAccount.emit()
+            }.associateBy({it.first.profile?.userProfileId}) { it.second  }.filterNotNullValues()
 
 
             var allChecked by remember { mutableStateOf(false) }
@@ -721,6 +778,8 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                 shareOffers = shareOffers.read(),
                                 distributionPoints = distributionPoints.read(),
                                 shareSubscriptions = shareSubscriptionsState,
+                                sepaCollections = sepaCollections.read(),
+                                creditorIdentifier = creditorIdentifier.read(),
                                 setChanges = {changes -> bulksEditShareSubscriptionChanges = changes}
                             ) {
 
@@ -761,6 +820,32 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                                     emptyList(),
                                                 )
                                             }
+                                        is BulkEditShareSubscriptionChanges.AddSepaMandate -> {
+                                            shareSubscriptionsState.forEachIndexed {index,  shareSubscription ->
+                                                val debtorBankAccount = userProfileToBankAccountMap[shareSubscription.userProfileId]
+                                                // Leave out subscriptions of users without bank account
+                                                if(debtorBankAccount == null) return@forEachIndexed
+                                                bankingApplicationActions dispatch createSepaMandate(
+                                                    CreateSepaMandate(
+                                                        creditorId = changes.creditorIdentifier.creditorId,
+                                                        debtorBankAccountId = debtorBankAccount.bankAccountId,
+                                                        debtorName = debtorBankAccount.bankAccountHolder,
+                                                        mandateReference = changes.sepaCollection.mandateReferencePrefix.generateReference(
+                                                            changes.mandateReferencePadStart, 8, index
+                                                        ),
+                                                        mandateReferencePrefix = null,
+                                                        signedAt = now(),
+                                                        validFrom = now(),
+                                                        validUntil = null,
+                                                        status = changes.status.toApyType(),
+                                                        isActive = changes.isActive,
+                                                        amendmentOf = null,
+                                                        collectionId = changes.sepaCollection.sepaCollectionId,
+                                                    ),
+                                                    targetCollectionId = changes.sepaCollection.sepaCollectionId,
+                                                )
+                                            }
+                                        }
                                         is BulkEditShareSubscriptionChanges.Trivial -> when(val trChanges: BulkEditShareSubscriptionChanges.Trivial = changes) {
                                             is BulkEditShareSubscriptionChanges.Trivial.PricePerShare ->
                                                 shareSubscriptionsState.forEach { shareSubscription ->
@@ -826,7 +911,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                                         shareSubscription.coSubscribers,
                                                     )
                                                 }
-                                        }
+                                            }
                                         }
                                     }
                                 }
@@ -901,9 +986,10 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                         HeaderCell("Status") { width(20.percent) }
                         HeaderCell("No") { width(5.percent) }
                         HeaderCell("Price") { width(5.percent) }
-                        HeaderCell("SEPA") { width(5.percent) }
                         HeaderCell("Depot") { width(10.percent) }
                         HeaderCell("User") { width(20.percent) }
+                        HeaderCell("SEPA") { width(5.percent) }
+                        HeaderCell("SEPA - Assoc Collection") { width(20.percent) }
                     }
                 }
                 Scrollable(ScrollableStyles()
@@ -939,13 +1025,25 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                     TextCell(subscription.status.value) { width(20.percent) }
                                     NumberCell(subscription.numberOfShares) { width(5.percent) }
                                     NumberCell(subscription.pricePerShare?:0) { width(5.percent) }
-                                    TextCell(subscription.ahcAuthorized.checkIcon("--")) { width(5.percent) }
+
                                     TextCell(
                                         distributionPointsMap[subscription.distributionPointId]?.name ?: ""
                                     ) { width(10.percent) }
                                     TextCell(
                                         userProfilesMap[subscription.userProfileId]?.fullname() ?: ""
                                     ) { width(20.percent) }
+                                    TextCell(subscription.ahcAuthorized.checkIcon("--")) { width(5.percent) }
+                                    TextCell(sepaCollections.read().filter{
+                                        coll ->
+                                            // todo:dev test on dev. locally, there is a shareOfferId-mismatch
+                                            subscription.shareOfferId in coll.referenceIds.map { ref -> ref.value } &&
+                                            coll.sepaMandates.any { mandate ->
+                                                mandate.debtorBankAccountId == userProfileToBankAccountMap[subscription.userProfileId]?.bankAccountId
+                                            }
+                                    }.joinToString(", ") { sC -> sC.mandateReferencePrefix.value }) {
+                                        width(20.percent)
+                                        overflow(Overflow.Hidden)
+                                    }
                                 }
                                 ActionsWrapper {
                                     CreditCardButton(
@@ -978,7 +1076,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
 }
 
 fun shareManagementForOrganizationsTexts(): Source<Lang.Block> = {
-    texts{
+    "shareManagementForOrganizations" texts{
         "shareOffersList" block {
             "item" block {
                 "actions" block {

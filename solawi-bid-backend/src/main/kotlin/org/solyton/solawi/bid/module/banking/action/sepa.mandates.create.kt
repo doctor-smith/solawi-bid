@@ -14,6 +14,7 @@ import org.solyton.solawi.bid.module.banking.data.api.SepaMandate
 import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.banking.data.toDomainType
 import org.solyton.solawi.bid.module.banking.repository.createSepaMandateWithRetry
+import org.solyton.solawi.bid.module.banking.repository.validatedCreditorIdentifier
 import java.util.*
 
 @MathDsl
@@ -25,13 +26,14 @@ fun CreateSepaMandate(): KlAction<Result<Contextual<CreateSepaMandate>>, Result<
                 val data = contextual.data
                 val userId = contextual.userId
 
-                val creditorId = UUID.fromString(data.creditorId.value)
+                val creditor = validatedCreditorIdentifier(data.creditorId)
+                val creditorIdentifierId = creditor.id.value
                 val debtorBankAccountId = UUID.fromString(data.debtorBankAccountId.value)
                 val collectionId = data.collectionId?.let { UUID.fromString(it.value) }
 
                 createSepaMandateWithRetry(
                     creatorId = userId,
-                    creditorId = creditorId,
+                    creditorIdentifierId = creditorIdentifierId,
                     debtorBankAccountId = debtorBankAccountId,
                     debtorName = data.debtorName,
                     signedAt = data.signedAt.toJoda(),

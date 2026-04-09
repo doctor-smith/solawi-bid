@@ -33,7 +33,7 @@ fun UpdateSepaMandate(): KlAction<Result<Contextual<UpdateSepaMandate>>, Result<
                 updateSepaMandate(
                     modifierId = userId,
                     sepaMandateId = sepaMandateId,
-                    creditorId = creditorId,
+                    creditorIdentifierId = creditorId,
                     debtorBankAccountId = debtorBankAccountId,
                     debtorName = data.debtorName,
                     signedAt = data.signedAt.toJoda(),

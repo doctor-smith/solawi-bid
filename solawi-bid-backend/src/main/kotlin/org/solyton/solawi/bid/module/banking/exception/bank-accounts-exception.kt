@@ -13,6 +13,8 @@ sealed class BankAccountsException(override val message: String): Exception(mess
 
     data class NoSuchCreditorIdentifier(val creditorIdentifierId: String): BankAccountsException("No such creditor identifier, id: $creditorIdentifierId")
 
+    data class NoSuchCreditor(val creditorId: String): BankAccountsException("No such creditor, id: $creditorId")
+
     data class CannotCreateMandateReference(val reason: String): BankAccountsException("Cannot create mandate reference: $reason")
 
     data class NoSuchCreditorBankAccountAccess(val id: String): BankAccountsException("No such creditor bank account accessor: id = $id")

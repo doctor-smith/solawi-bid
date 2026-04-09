@@ -8,7 +8,6 @@ import org.solyton.solawi.bid.module.banking.data.internal.SepaMandateCreationRe
 import org.solyton.solawi.bid.module.banking.data.internal.SepaMandateResponse
 import org.solyton.solawi.bid.module.banking.repository.createSepaMandateWithRetry
 import org.solyton.solawi.bid.module.banking.schema.SepaMandateEntity
-import org.solyton.solawi.bid.module.values.CreatorId
 import java.util.*
 import kotlin.random.Random
 
@@ -28,7 +27,7 @@ class SepaMandateGeneratorService {
     fun Transaction.createSepaMandate(request: SepaMandateCreationRequest, creatorId: UUID): SepaMandateResponse {
         val mandate = createSepaMandateWithRetry(
             creatorId = creatorId,
-            creditorId = request.creditorId,
+            creditorIdentifierId = request.creditorId,
             debtorBankAccountId = request.debtorBankAccountId,
             debtorName = request.debtorName,
             signedAt = request.signedAt ?: DateTime.now(),
@@ -76,7 +75,7 @@ class SepaMandateGeneratorService {
 
         val mandate = createSepaMandateWithRetry(
             creatorId = creatorId,
-            creditorId = creditorId,
+            creditorIdentifierId = creditorId,
             debtorBankAccountId = debtorBankAccountId,
             debtorName = debtorName,
             signedAt = finalSignedAt,
@@ -111,7 +110,7 @@ class SepaMandateGeneratorService {
 
         val amendmentMandate = createSepaMandateWithRetry(
             creatorId = creatorId,
-            creditorId = originalMandate.creditorIdentifier.id.value,
+            creditorIdentifierId = originalMandate.creditorIdentifier.id.value,
             debtorBankAccountId = newDebtorBankAccountId,
             debtorName = newDebtorName ?: originalMandate.debtorName,
             signedAt = signedAt ?: DateTime.now(),
@@ -189,7 +188,7 @@ class SepaMandateGeneratorService {
             requests.map { request ->
                 val mandate = createSepaMandateWithRetry(
                     creatorId = creatorId,
-                    creditorId = request.creditorId,
+                    creditorIdentifierId = request.creditorId,
                     debtorBankAccountId = request.debtorBankAccountId,
                     debtorName = request.debtorName,
                     signedAt = request.signedAt ?: DateTime.now(),

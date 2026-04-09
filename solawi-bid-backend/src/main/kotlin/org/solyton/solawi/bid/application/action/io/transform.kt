@@ -93,6 +93,7 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
             is BankAccountsException.NoSuchCreditorBankAccountAccess -> HttpStatusCode.NotFound
             is BankAccountsException.NoSuchDebtorBankAccountAccess -> HttpStatusCode.NotFound
             is BankAccountsException.NoSuchCreditorIdentifier -> HttpStatusCode.NotFound
+            is BankAccountsException.NoSuchCreditor -> HttpStatusCode.NotFound
         }
         is FiscalYearException -> when(value as FiscalYearException) {
             is FiscalYearException.NoSuchFiscalYear -> HttpStatusCode.NotFound
