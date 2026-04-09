@@ -34,6 +34,7 @@ import org.solyton.solawi.bid.module.banking.component.modal.showImportBankAccou
 import org.solyton.solawi.bid.module.banking.component.modal.showUpsertBankAccountModal
 import org.solyton.solawi.bid.module.banking.component.modal.showUpsertBankAccountWithUserSearchModal
 import org.solyton.solawi.bid.module.banking.component.modal.showUpsertFiscalYearsModal
+import org.solyton.solawi.bid.module.banking.component.modal.showUpsertLegalEntityModal
 import org.solyton.solawi.bid.module.banking.data.SepaCollectionId
 import org.solyton.solawi.bid.module.banking.data.api.ImportBankAccounts
 import org.solyton.solawi.bid.module.banking.data.application.*
@@ -148,19 +149,49 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
         }
 
         Wrap{key(legalEntity.read()){
-            println(legalEntity.read())
             Horizontal({
                 width(100.percent)
                 justifyContent(JustifyContent.SpaceBetween)
             }) {
                 H3 { Text("Your data as Legal Entity:") }
+
+                var legalEntityState by remember{ mutableStateOf(legalEntity.read()) }
+                var creditorIdentifierState by remember { mutableStateOf(creditorIdentifier.read())}
                 EditButton(
                     color = Color.black,
                     bgColor = Color.white,
                     texts = {"Edit "},
                     deviceType = deviceType
                 ) {
+                    bankingApplicationModals.showUpsertLegalEntityModal(
+                        bankingApplicationStorage,
+                        dialogModalTexts("Upsert Legal Entity") extend {
+                            "inputs" block {
+                                "name" block {
+                                    "title" colon "Name"
+                                }
+                                "legalForm" block {
+                                    "title" colon "Legal From"
+                                }
+                                "legalEntityType" block {
+                                    "title" colon "Type"
+                                }
+                                "creditorId" block {
+                                    "title" colon "Creditor ID"
+                                }
+                            }
+                        },
+                        deviceType,
+                        LegalEntityId(providerId.value),
+                        creditorIdentifierState,
+                        legalEntityState,
+                        {l, c ->
+                            legalEntityState = l
+                            creditorIdentifierState = c
+                        }
+                    ) {
 
+                    }
                 }
             }
             ReadOnlyProperties(listOf(

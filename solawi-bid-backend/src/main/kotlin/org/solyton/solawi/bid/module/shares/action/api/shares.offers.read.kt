@@ -23,11 +23,11 @@ data class ReadShareOffersByProvider(
 @Suppress("FunctionName")
 fun ReadShareOffersByProvider() = KlAction<Result<Contextual<ReadShareOffersByProvider>>, Result<ShareOffers>> { result -> DbAction {
     database -> result bindSuspend  { contextual -> resultTransaction(database) {
-        val userId = contextual.userId
+        // val userId = contextual.userId
         val data = contextual.data
         readShareOffersByProvider(
             data.providerId,
             data.fiscalYearIds
         ).toApiType()
-    } }  x database
+    } } x database
 } }

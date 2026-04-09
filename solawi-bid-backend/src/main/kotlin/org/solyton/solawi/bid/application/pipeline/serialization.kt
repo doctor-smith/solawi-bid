@@ -325,7 +325,8 @@ fun installSerializers() {
         add<CreditorIdentifiers>(CreditorIdentifiers.serializer())
         add<CreditorIdentifier>(CreditorIdentifier.serializer())
         add<ReadCreditorIdentifierByLegalEntity>(ReadCreditorIdentifierByLegalEntity.serializer())
-
+        add<CreateCreditorIdentifier>(CreateCreditorIdentifier.serializer())
+        add<UpdateCreditorIdentifier>(UpdateCreditorIdentifier.serializer())
         add<CreditorIdentifierId>(CreditorIdentifierId.serializer())
         add<CreditorId>(CreditorId.serializer())
 

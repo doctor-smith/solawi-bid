@@ -4,16 +4,12 @@ import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.storage.suffixed
 import org.evoleq.optics.transform.update
-import org.solyton.solawi.bid.module.banking.data.BIC
-import org.solyton.solawi.bid.module.banking.data.BankAccountId
-import org.solyton.solawi.bid.module.banking.data.IBAN
+import org.solyton.solawi.bid.module.banking.data.*
 import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccount
 import org.solyton.solawi.bid.module.banking.data.api.UpdateBankAccount
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.bankAccounts
 import org.solyton.solawi.bid.module.banking.data.bankaccount.AccountType
-import org.solyton.solawi.bid.module.banking.data.toApiType
-import org.solyton.solawi.bid.module.banking.data.toDomainType
 import org.solyton.solawi.bid.module.values.UserId
 
 const val UPDATE_BANK_ACCOUNT = "UpdateBankAccount"

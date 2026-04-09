@@ -9,6 +9,8 @@ import org.evoleq.compose.modal.Modals
 import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.Lang
+import org.evoleq.language.component
+import org.evoleq.language.subComp
 import org.evoleq.math.Source
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
@@ -20,6 +22,7 @@ import org.solyton.solawi.bid.module.banking.component.form.LegalEntityForm
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.deviceData
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
+import org.solyton.solawi.bid.module.banking.data.creditor.identifier.CreditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntity
 import org.solyton.solawi.bid.module.style.modal.commonModalStyles
 import org.solyton.solawi.bid.module.style.wrap.Wrap
@@ -37,7 +40,8 @@ fun UpsertLegalEntityModal(
     device: Source<DeviceType>,
     partyId: LegalEntityId,
     legalEntity: LegalEntity?,
-    setLegalEntity: (LegalEntity)->Unit,
+    creditorIdentifier: CreditorIdentifier?,
+    setLegalEntity: (LegalEntity, CreditorIdentifier?)->Unit,
     update: ()->Unit
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
     id,
@@ -50,11 +54,13 @@ fun UpsertLegalEntityModal(
     texts = texts,
     styles = commonModalStyles(device),
 ) {
+    val inputs = texts.component("inputs")
     Wrap {
         LegalEntityForm(
-            {texts},
+            {inputs} ,
             partyId,
             legalEntity,
+            creditorIdentifier,
             setLegalEntity
         )
     }
@@ -66,8 +72,9 @@ fun Storage<Modals<Int>>.showUpsertLegalEntityModal(
     texts: Lang.Block,
     device: Source<DeviceType>,
     partyId: LegalEntityId,
+    creditorIdentifier: CreditorIdentifier?,
     legalEntity: LegalEntity?,
-    setLegalEntity: (LegalEntity)->Unit,
+    setLegalEntity: (LegalEntity, CreditorIdentifier?)->Unit,
     update: ()->Unit
 ) = with(nextId()) {
     put(this to ModalData(
@@ -80,6 +87,7 @@ fun Storage<Modals<Int>>.showUpsertLegalEntityModal(
             device,
             partyId,
             legalEntity,
+            creditorIdentifier,
             setLegalEntity,
             update = update
         )

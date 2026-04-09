@@ -25,7 +25,24 @@ data class CreditorIdentifier(
     val isActive: Boolean = true
 )
 
+@Serializable
+data class CreateCreditorIdentifier(
+    val legalEntityId: LegalEntityId,
+    val creditorId: CreditorId,
+    val validFrom: LocalDate,
+    val validUntil: LocalDate?,
+    val isActive: Boolean = true
+)
 
+@Serializable
+data class UpdateCreditorIdentifier(
+    val creditorIdentifierId: CreditorIdentifierId,
+    val legalEntityId: LegalEntityId,
+    val creditorId: CreditorId,
+    val validFrom: LocalDate,
+    val validUntil: LocalDate?,
+    val isActive: Boolean = true
+)
 
 
 @Serializable
