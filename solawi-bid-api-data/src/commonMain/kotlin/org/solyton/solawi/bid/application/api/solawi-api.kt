@@ -359,6 +359,14 @@ val solawiApi by lazy {
                 url = "legal-entities/personal",
                 parameters = setOf("party")
             )
+            post<CreateLegalEntity, LegalEntity>(
+                key = CreateLegalEntity::class,
+                url = "legal-entities/personal/create"
+            )
+            patch<UpdateLegalEntity, LegalEntity>(
+                key = UpdateLegalEntity::class,
+                url = "legal-entities/personal/update"
+            )
             get<ReadBankAccounts, BankAccounts>(
                 key = ReadBankAccounts::class,
                 url = "bank-accounts/all",

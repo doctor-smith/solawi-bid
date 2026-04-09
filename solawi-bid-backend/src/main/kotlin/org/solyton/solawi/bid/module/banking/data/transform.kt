@@ -90,6 +90,11 @@ fun LegalEntityType.toApiType(): ApiLegalEntityType = when (this) {
     LegalEntityType.ORGANIZATION -> ApiLegalEntityType.ORGANIZATION
 }
 
+fun ApiLegalEntityType.toDomainType(): LegalEntityType = when(this) {
+    ApiLegalEntityType.ORGANIZATION -> LegalEntityType.ORGANIZATION
+    ApiLegalEntityType.HUMAN -> LegalEntityType.HUMAN
+}
+
 fun CreditorIdentifierEntity.toApiType(): CreditorIdentifier = CreditorIdentifier(
     creditorIdentifierId = CreditorIdentifierId(id.value.toString()),
     legalEntityId = LegalEntityId(legalEntity.id.value.toString()),

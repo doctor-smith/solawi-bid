@@ -12,6 +12,17 @@ import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
 import org.solyton.solawi.bid.module.banking.action.*
 import org.solyton.solawi.bid.module.banking.data.api.*
+import org.solyton.solawi.bid.module.banking.permissions.BankAccounts.Rights.CREATE_BANK_ACCOUNTS
+import org.solyton.solawi.bid.module.banking.permissions.BankAccounts.Rights.DELETE_BANK_ACCOUNTS
+import org.solyton.solawi.bid.module.banking.permissions.BankAccounts.Rights.IMPORT_BANK_ACCOUNTS
+import org.solyton.solawi.bid.module.banking.permissions.BankAccounts.Rights.READ_BANK_ACCOUNTS
+import org.solyton.solawi.bid.module.banking.permissions.BankAccounts.Rights.UPDATE_BANK_ACCOUNTS
+import org.solyton.solawi.bid.module.banking.permissions.CreditorIdentifiers.Rights.READ_CREDITOR_IDENTIFIERS
+import org.solyton.solawi.bid.module.banking.permissions.FiscalYears.Rights.CREATE_FISCAL_YEARS
+import org.solyton.solawi.bid.module.banking.permissions.FiscalYears.Rights.READ_FISCAL_YEARS
+import org.solyton.solawi.bid.module.banking.permissions.FiscalYears.Rights.UPDATE_FISCAL_YEARS
+import org.solyton.solawi.bid.module.banking.permissions.LegalEntities.Rights.CREATE_LEGAL_ENTITIES
+import org.solyton.solawi.bid.module.banking.permissions.LegalEntities.Rights.READ_LEGAL_ENTITIES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.CREATE_SEPA_COLLECTIONS
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.CREATE_SEPA_MANDATES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.READ_SEPA_COLLECTIONS
@@ -29,14 +40,31 @@ fun <BankingEnv> Routing.banking (
     authenticate {
         route("banking") {
             route("legal-entities") {
-                @Suppress("UnsafeCallOnNullableType")
-                get("personal") {
-                    ReceiveContextual<String>{
-                        parameters -> parameters["party"]!!
-                    } *
-                    IsGranted("READ_LEGAL_ENTITIES", no) *
-                    ReadLegalEntity() *
-                    Respond{ transform() } runOn Base(call, environment)
+                route("personal") {
+                    @Suppress("UnsafeCallOnNullableType")
+                    get("") {
+                        ReceiveContextual<String> { parameters ->
+                            parameters["party"]!!
+                        } *
+                        IsGranted(READ_LEGAL_ENTITIES, no) *
+                        ReadLegalEntity() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
+                    post("create") {
+                        ReceiveContextual<CreateLegalEntity>() *
+                        IsGranted(CREATE_LEGAL_ENTITIES, no) *
+                        CreateLegalEntity() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
+                    patch("update") {
+                        ReceiveContextual<UpdateLegalEntity>() *
+                        IsGranted(CREATE_LEGAL_ENTITIES, no) *
+                        UpdateLegalEntity() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
+                    delete("delete") {
+                        NotImplemented("") * Respond {transform()} runOn Base(call, environment)
+                    }
                 }
             }
             route("fiscal-years") {
@@ -45,19 +73,19 @@ fun <BankingEnv> Routing.banking (
                     ReceiveContextual<String>{
                         parameters -> parameters["legal_entity"]!!
                     } *
-                    IsGranted("READ_FISCAL_YEARS", no) *
+                    IsGranted(READ_FISCAL_YEARS, no) *
                     ReadFiscalYearsByLegalEntity() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
                 post("create") {
                     ReceiveContextual<CreateFiscalYear>() *
-                    IsGranted("CREATE_FISCAL_YEAR", no) *
+                    IsGranted(CREATE_FISCAL_YEARS, no) *
                     CreateFiscalYear() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
                 patch("update") {
                     ReceiveContextual<UpdateFiscalYear>() *
-                    IsGranted("UPDATE_FISCAL_YEAR", no) *
+                    IsGranted(UPDATE_FISCAL_YEARS, no) *
                     UpdateFiscalYear() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
@@ -68,31 +96,31 @@ fun <BankingEnv> Routing.banking (
                     ReceiveContextual<String>{
                         parameters -> parameters["legal_entity"]!!
                     } *
-                    IsGranted("READ_BANK_ACCOUNTS", no) *
+                    IsGranted(READ_BANK_ACCOUNTS, no) *
                     ReadBankAccountsByLegalEntity() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
                 post("create") {
                     ReceiveContextual<CreateBankAccount>() *
-                    IsGranted("CREATE_BANK_ACCOUNTS", no) *
+                    IsGranted(CREATE_BANK_ACCOUNTS, no) *
                     CreateBankAccount() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
                 patch("update") {
                     ReceiveContextual<UpdateBankAccount>() *
-                    IsGranted("UPDATE_BANK_ACCOUNTS", no) *
+                    IsGranted(UPDATE_BANK_ACCOUNTS, no) *
                     UpdateBankAccount() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
                 post("import") {
                     ReceiveContextual<ImportBankAccounts>() *
-                    IsGranted("IMPORT_BANK_ACCOUNTS", no) *
+                    IsGranted(IMPORT_BANK_ACCOUNTS, no) *
                     ImportBankAccounts() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
                 delete("delete") {
                     ReceiveContextual<DeleteBankAccount>() *
-                    IsGranted("DELETE_BANK_ACCOUNTS", no) *
+                    IsGranted(DELETE_BANK_ACCOUNTS, no) *
                     DeleteBankAccount() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
@@ -105,7 +133,7 @@ fun <BankingEnv> Routing.banking (
                                 "Parameter 'legal_entity' is empty"
                             }
                         } *
-                        IsGranted("READ_CREDITOR_IDENTIFIERS", no) *
+                        IsGranted(READ_CREDITOR_IDENTIFIERS, no) *
                         ReadCreditorIdentifierByLegalEntity() *
                         Respond{ transform() } runOn Base(call, environment)
                     }
