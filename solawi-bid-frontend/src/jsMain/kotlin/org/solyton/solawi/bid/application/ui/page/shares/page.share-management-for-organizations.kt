@@ -2,7 +2,6 @@ package org.solyton.solawi.bid.application.ui.page.shares
 
 import androidx.compose.runtime.*
 import kotlinx.coroutines.launch
-import kotlinx.datetime.LocalDateTime
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
 import org.evoleq.compose.layout.Horizontal
@@ -14,7 +13,6 @@ import org.evoleq.language.texts
 import org.evoleq.math.FirstOrNull
 import org.evoleq.math.Source
 import org.evoleq.math.emit
-import org.evoleq.math.second
 import org.evoleq.optics.lens.BiMap
 import org.evoleq.optics.lens.DeepSearch
 import org.evoleq.optics.lens.FilterBy
@@ -23,7 +21,6 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.storage.filter
 import org.evoleq.optics.storage.none
-import org.evoleq.optics.storage.read
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.H3
@@ -49,7 +46,6 @@ import org.solyton.solawi.bid.module.banking.data.bankaccount.AccountType
 import org.solyton.solawi.bid.module.banking.data.creditor.identifier.CreditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
 import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
-import org.solyton.solawi.bid.module.banking.data.sepa.mandate.debtorBankAccountId
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaCollections
 import org.solyton.solawi.bid.module.banking.service.generateReference
 import org.solyton.solawi.bid.module.constants.CHECK_FALSE
@@ -85,8 +81,6 @@ import org.solyton.solawi.bid.module.shares.data.shareManagementActions
 import org.solyton.solawi.bid.module.shares.data.shareManagementModals
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscription
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscriptions
-import org.solyton.solawi.bid.module.shares.data.subscriptions.shareOfferId
-import org.solyton.solawi.bid.module.shares.data.subscriptions.userProfileId
 import org.solyton.solawi.bid.module.shares.data.toApiType
 import org.solyton.solawi.bid.module.shares.data.types.ShareType
 import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
