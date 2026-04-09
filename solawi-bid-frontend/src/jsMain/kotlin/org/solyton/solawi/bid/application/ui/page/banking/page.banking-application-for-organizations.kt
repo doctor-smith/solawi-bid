@@ -30,10 +30,12 @@ import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.banking.action.*
 import org.solyton.solawi.bid.module.banking.component.form.defaultBankAccountInputs
+import org.solyton.solawi.bid.module.banking.component.modal.showImportBankAccountsModal
 import org.solyton.solawi.bid.module.banking.component.modal.showUpsertBankAccountModal
 import org.solyton.solawi.bid.module.banking.component.modal.showUpsertBankAccountWithUserSearchModal
 import org.solyton.solawi.bid.module.banking.component.modal.showUpsertFiscalYearsModal
 import org.solyton.solawi.bid.module.banking.data.SepaCollectionId
+import org.solyton.solawi.bid.module.banking.data.api.ImportBankAccounts
 import org.solyton.solawi.bid.module.banking.data.application.*
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.bankingApplicationActions
@@ -336,6 +338,33 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                                         )
                                         bankAccountState = null
                                     }
+                                }
+                            }
+                        }
+                        var importBankAccountsState by remember { mutableStateOf<ImportBankAccounts?>(null)}
+                        UploadButton(
+                            color = Color.black,
+                            bgColor = Color.white,
+                            deviceType = deviceType,
+                        ) {
+                            bankingApplicationModals.showImportBankAccountsModal(
+                                texts = dialogModalTexts("Import Bank Accounts"),
+                                device = deviceType,
+                                accessorId = AccessorId(providerId.value),
+                                bankAccounts= customerBankAccounts.read(),
+                                users = managedUsers.read(),
+                                setImportBankAccounts = {
+                                    importBankAccountsState = it
+                                }
+                            ) {
+                                if(importBankAccountsState == null) return@showImportBankAccountsModal
+                                val state = requireNotNull(importBankAccountsState)
+                                scope.launch {
+                                    bankingApplicationActions dispatch importBankAccounts(
+                                        state.override,
+                                        state.accessorId,
+                                        state.bankAccounts
+                                    )
                                 }
                             }
                         }
