@@ -8,7 +8,6 @@ import org.evoleq.optics.storage.suffixed
 import org.evoleq.optics.transform.add
 import org.solyton.solawi.bid.module.banking.data.SepaCollectionId
 import org.solyton.solawi.bid.module.banking.data.api.ApiSepaMandate
-import org.solyton.solawi.bid.module.banking.data.api.CreateSepaCollection
 import org.solyton.solawi.bid.module.banking.data.api.CreateSepaMandate
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.sepaModule
@@ -25,7 +24,7 @@ fun createSepaMandate(
 ): Action<BankingApplication, CreateSepaMandate, ApiSepaMandate> = Action(
     name = CREATE_SEPA_MANDATE.suffixed(nameSuffix),
     reader = { _ -> data },
-    endPoint = CreateSepaCollection::class,
+    endPoint = CreateSepaMandate::class,
     writer = (sepaModule * sepaCollections * FirstBy{
         it.sepaCollectionId == targetCollectionId
     } * sepaMandates).add() contraMap { mandate: ApiSepaMandate -> mandate.toDomainType()}

@@ -5,9 +5,7 @@ import org.jetbrains.exposed.sql.Transaction
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import org.solyton.solawi.bid.module.banking.data.MandateReference
-import org.solyton.solawi.bid.module.banking.data.MandateReferencePrefix
 import org.solyton.solawi.bid.module.banking.data.api.ApiSepaMandates
-import org.solyton.solawi.bid.module.banking.data.api.SepaMandate
 import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.banking.exception.BankAccountsException
 import org.solyton.solawi.bid.module.banking.exception.SepaException
@@ -26,7 +24,7 @@ import java.util.*
  * during the generation of the mandate reference. The method attempts to insert a new
  * SEPA mandate into the database up to the specified maximum number of retries.
  *
- * @param creditorId The unique identifier of the creditor for whom the mandate is created.
+ * @param creditorIdentifierId The unique identifier of the creditor for whom the mandate is created.
  * @param debtorBankAccountId The unique identifier of the debtor's bank account associated with the mandate.
  * @param debtorName The name of the debtor associated with the bank account.
  * @param signedAt The date and time when the SEPA mandate was signed.
@@ -38,7 +36,7 @@ import java.util.*
 @Suppress("NoNameShadowing")
 fun Transaction.createSepaMandateWithRetry(
     creatorId: UUID,
-    creditorId: UUID,
+    creditorIdentifierId: UUID,
     debtorBankAccountId: UUID,
     debtorName: String,
     signedAt: DateTime,
@@ -50,13 +48,13 @@ fun Transaction.createSepaMandateWithRetry(
     collectionId: UUID? = null,
     maxRetries: Int = 5
 ): SepaMandateEntity {
-    val creditor = validatedCreditor(creditorId)
+    val creditor = validatedCreditor(creditorIdentifierId)
     val debtorBankAccount = validatedBankAccount(debtorBankAccountId)
 
     repeat(maxRetries) {
         val mandateReference = mandateReference?.value?: when(mandateReferencePrefix) {
-            null -> generateMandateReference(creditorId)
-            else -> generateMandateReference(creditorId, 3, mandateReferencePrefix)
+            null -> generateMandateReference(creditorIdentifierId)
+            else -> generateMandateReference(creditorIdentifierId, 3, mandateReferencePrefix)
         }
         val collection  = if(collectionId != null) {
             validatedSepaCollection(collectionId)
@@ -94,13 +92,13 @@ fun Transaction.createSepaMandateWithRetry(
  * Validates a given creditor ID by attempting to find a corresponding `CreditorIdentifierEntity` in the database.
  * If no matching entity is found, a `BankAccountsException.NoSuchCreditorId` exception is thrown.
  *
- * @param creditorId The unique identifier of the creditor to be validated.
+ * @param creditorIdentifierId The unique identifier of the creditor to be validated.
  * @return The `CreditorIdentifierEntity` instance corresponding to the provided creditor ID.
  * @throws BankAccountsException.NoSuchCreditorId If the provided creditor ID does not exist in the database.
  */
-fun Transaction.validatedCreditor(creditorId: UUID): CreditorIdentifierEntity =
-    CreditorIdentifierEntity.find { CreditorIdentifiers.id eq creditorId }.firstOrNull()
-        ?:throw BankAccountsException.NoSuchCreditorId(creditorId.toString())
+fun Transaction.validatedCreditor(creditorIdentifierId: UUID): CreditorIdentifierEntity =
+    CreditorIdentifierEntity.find { CreditorIdentifiers.id eq creditorIdentifierId }.firstOrNull()
+        ?:throw BankAccountsException.NoSuchCreditorId(creditorIdentifierId.toString())
 
 /**
  * Generates a unique mandate reference for a given creditor identifier.
@@ -153,7 +151,7 @@ fun Transaction.readSepaMandatesByCreditorsLegalEntity(legalEntityId: UUID): Api
 fun Transaction.updateSepaMandate(
     modifierId: UUID,
     sepaMandateId: UUID,
-    creditorId: UUID,
+    creditorIdentifierId: UUID,
     debtorBankAccountId: UUID,
     debtorName: String,
     signedAt: DateTime,
@@ -170,7 +168,7 @@ fun Transaction.updateSepaMandate(
         reason = "Sepa Mandate has associated payments; Needs to be amended"
     )
 
-    val creditor = validatedCreditor(creditorId)
+    val creditor = validatedCreditor(creditorIdentifierId)
     val debtorBankAccount = validatedBankAccount(debtorBankAccountId)
     val mandateReference = mandateReference?.value
     // val mandateReferencePrefix = mandateReferencePrefix?.value

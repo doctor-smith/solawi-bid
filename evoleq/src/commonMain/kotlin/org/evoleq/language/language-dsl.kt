@@ -65,6 +65,11 @@ fun texts(configuration: BlockConfiguration.()->Unit): Block = with(BlockConfigu
     configuration()
     return configure()
 }
+infix fun String.texts(configuration: BlockConfiguration.()->Unit): Block = with(BlockConfiguration()) {
+    configuration()
+    key = this@texts
+    return configure()
+}
 
 fun Lang.Block.extend(configuration: BlockConfiguration.()->Unit): Block = texts{
     key = this@extend.key
