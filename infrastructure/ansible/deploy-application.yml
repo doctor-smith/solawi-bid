@@ -138,10 +138,10 @@
         image: "{{ frontend_image_name }}"
         state: "started"
         restart_policy: "always"
-        pull: "always"
-        recreate: "true"
+        pull: always
+        recreate: true
         comparisons:
-          image: "strict"
+          image: strict
         cpus: "{{ frontend_cpu | float }}"
         memory: "{{ frontend_mem }}"
         env:
@@ -206,8 +206,8 @@
         image: "{{ backend_image_name }}"
         state: "started"
         restart_policy: "always"
-        pull: "always"
-        recreate: "true"
+        pull: always
+        recreate: true
         comparisons:
           image: strict
         cpus: "{{ backend_cpu | float }}"
