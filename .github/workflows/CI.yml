@@ -88,7 +88,6 @@ jobs:
 
   build-e2e-runner:
     name: Build E2E Runner Image
-    if: needs.check-e2e-runner-changes.outputs.needs-rebuild == 'true'
     uses: ./.github/workflows/build-e2e-runner-image.yml
     with:
       runNecessary: ${{ needs.check-e2e-runner-changes.outputs.needs-rebuild == 'true' }}
