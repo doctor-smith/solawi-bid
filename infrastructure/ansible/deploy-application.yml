@@ -109,6 +109,16 @@
         networks:
           - name: "solawi-bid-{{ environment_letter }}"
 
+
+
+    # ---------------------------
+    # Frontend Image Pull (once)
+    # ---------------------------
+    - name: Pull frontend image explicitly
+      community.docker.docker_image:
+        name: "{{ frontend_image_name }}"
+        source: pull
+        force_source: true
     # ---------------------------
     # Frontend Deployment
     # ---------------------------
@@ -136,11 +146,10 @@
       community.docker.docker_container:
         name: "solawi-bid_frontend_{{ environment_letter }}"
         image: "{{ frontend_image_name }}"
-        state: "started"
-        restart_policy: "always"
-        pull: true
+        state: started
+        restart_policy: always
+        pull: false
         recreate: true
-        comparisons: {}
         cpus: "{{ frontend_cpu | float }}"
         memory: "{{ frontend_mem }}"
         env:
@@ -169,6 +178,15 @@
       until: db_info.container.State.Health.Status == "healthy"
       retries: 30
       delay: 4
+
+    # ---------------------------
+    # Backend Image Pull (once)
+    # ---------------------------
+    - name: Pull backend image explicitly
+      community.docker.docker_image:
+        name: "{{ backend_image_name }}"
+        source: pull
+        force_source: true
 
     # ---------------------------
     # Backend Deployment
@@ -203,11 +221,10 @@
       community.docker.docker_container:
         name: "solawi-bid_backend_{{ environment_letter }}_{{ item ~ '' }}"
         image: "{{ backend_image_name }}"
-        state: "started"
-        restart_policy: "always"
-        pull: true
+        state: started
+        restart_policy: always
+        pull: false
         recreate: true
-        comparisons: {}
         cpus: "{{ backend_cpu | float }}"
         memory: "{{ backend_mem }}"
         env:
