@@ -79,6 +79,7 @@ import org.solyton.solawi.bid.module.shares.data.management.shareOffers
 import org.solyton.solawi.bid.module.shares.data.management.shareSubscriptions
 import org.solyton.solawi.bid.module.shares.data.management.shareTypes
 import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
+import org.solyton.solawi.bid.module.shares.data.offers.fiscalYear
 import org.solyton.solawi.bid.module.shares.data.shareManagementActions
 import org.solyton.solawi.bid.module.shares.data.shareManagementModals
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscription
@@ -87,6 +88,8 @@ import org.solyton.solawi.bid.module.shares.data.toApiType
 import org.solyton.solawi.bid.module.shares.data.types.ShareType
 import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
 import org.solyton.solawi.bid.module.shares.data.values.ShareTypeId
+import org.solyton.solawi.bid.module.shares.service.refersTo
+import org.solyton.solawi.bid.module.shares.service.relatedBankAccountExists
 import org.solyton.solawi.bid.module.style.overflow.Overflow
 import org.solyton.solawi.bid.module.style.overflow.overflow
 import org.solyton.solawi.bid.module.style.page.PageTitle
@@ -563,7 +566,10 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                 val bankAccount = debtorBankAccounts * FirstOrNull { it.userId.value == user.id }
                 user to bankAccount.emit()
             }.associateBy({it.first.profile?.userProfileId}) { it.second  }.filterNotNullValues()
-
+            // val sepaCollectionsMap = sepaCollections.read().associateBy { it.sepaCollectionId }
+            // val sepaCollectionIdsByReference = sepaCollections.read().map{
+            //     collection -> collection.referenceIds.map{ it to collection.sepaCollectionId }
+            // }.flatten().distinct().groupBy ({ it.first }){it.second}
 
             var allChecked by remember { mutableStateOf(false) }
             var filter by  remember { mutableStateOf(ShareSubscriptionFilter()) }
@@ -1030,7 +1036,10 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                     ) { width(20.percent) }
                                     TextCell(subscription.ahcAuthorized.checkIcon("--")) { width(5.percent) }
                                     TextCell(sepaCollections.read().filter{
-                                        coll -> isCollectionRelatedToSubscription(coll, subscription, userProfileToBankAccountMap, shareOffersMap)
+                                        coll -> coll.refersTo(subscription) && subscription.relatedBankAccountExists(
+                                            coll,
+                                            userProfileToBankAccountMap
+                                        )
                                     }.joinToString(", ") { sC -> sC.mandateReferencePrefix.value }) {
                                         width(20.percent)
                                         overflow(Overflow.Hidden)
@@ -1089,17 +1098,4 @@ fun shareManagementForOrganizationsTexts(): Source<Lang.Block> = {
             }
         }
     }
-}
-
-fun isCollectionRelatedToSubscription(collection: SepaCollection, sub: ShareSubscription, map: Map<String?, BankAccount>, shareOffersMap: Map<String, ShareOffer>): Boolean {
-    val mandates = collection.sepaMandates
-    val existsRelatedBankAccount = mandates.any{ mandate ->
-        mandate.debtorBankAccountId == map[sub.userProfileId]?.bankAccountId
-    }
-    val shareOffer = shareOffersMap[sub.shareOfferId]!!
-
-    val referenceIds = collection.referenceIds.map { it.value }
-    val collectionRefersToShareOffer = referenceIds.contains(shareOffer.shareOfferId)
-
-    return existsRelatedBankAccount && collectionRefersToShareOffer
 }

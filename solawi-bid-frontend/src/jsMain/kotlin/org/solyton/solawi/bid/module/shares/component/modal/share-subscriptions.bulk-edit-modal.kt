@@ -17,6 +17,7 @@ import org.evoleq.math.Source
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
+import org.jetbrains.compose.web.css.CSSUnit
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.color
 import org.jetbrains.compose.web.css.gap
@@ -33,6 +34,8 @@ import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
 import org.solyton.solawi.bid.module.banking.data.sepa.MandateStatus
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
+import org.solyton.solawi.bid.module.constants.CHECK_FALSE
+import org.solyton.solawi.bid.module.constants.CHECK_TRUE
 import org.solyton.solawi.bid.module.constants.checkIcon
 import org.solyton.solawi.bid.module.control.checkbox.CheckBox
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
@@ -257,16 +260,23 @@ fun BulkEditShareShareSubscriptionsModal(
                         labelStyle = formLabelDesktopStyle,
                         isRequired = true
                     )
-                    TextInput(ahcAuthorized.checkIcon("--")) {
-                        id("sepa-authorized")
-                        style { textInputDesktopStyle() }
-                        onInput {
-                            ahcAuthorized = it.value.toBooleanStrictOrNull()
-                            setChanges(BulkEditShareSubscriptionChanges.Trivial.AhcAuthorization(ahcAuthorized))
-                        }
+                    val booleanOptions = mapOf(
+                        "--" to null,
+                        CHECK_TRUE to true,
+                        CHECK_FALSE to false
+                    )
+                    Dropdown(
+                        options = booleanOptions,
+                        selected = ahcAuthorized.checkIcon("--"),
+                        iconContent = {opened -> SimpleUpDown(opened)}
+                    ) {
+                        (_, value) ->
+                        ahcAuthorized = value
+                        setChanges(BulkEditShareSubscriptionChanges.Trivial.AhcAuthorization(
+                            isAhcAuthorized = value
+                        ))
                     }
                 }
-
             }
         }
 
