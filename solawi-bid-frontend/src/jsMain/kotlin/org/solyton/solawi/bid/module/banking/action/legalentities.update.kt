@@ -5,8 +5,6 @@ import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.storage.suffixed
 import org.solyton.solawi.bid.module.banking.data.api.ApiLegalEntity
-import org.solyton.solawi.bid.module.banking.data.api.CreateFiscalYear
-import org.solyton.solawi.bid.module.banking.data.api.CreateLegalEntity
 import org.solyton.solawi.bid.module.banking.data.api.UpdateLegalEntity
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.legalEntity
