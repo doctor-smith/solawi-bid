@@ -139,6 +139,9 @@
         state: "started"
         restart_policy: "always"
         pull: "always"
+        recreate: "true"
+        comparisons:
+          image: "strict"
         cpus: "{{ frontend_cpu | float }}"
         memory: "{{ frontend_mem }}"
         env:
@@ -204,6 +207,9 @@
         state: "started"
         restart_policy: "always"
         pull: "always"
+        recreate: "true"
+        comparisons:
+          image: strict
         cpus: "{{ backend_cpu | float }}"
         memory: "{{ backend_mem }}"
         env:
