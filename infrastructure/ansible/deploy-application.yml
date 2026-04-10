@@ -112,14 +112,6 @@
 
 
     # ---------------------------
-    # Frontend Image Pull (once)
-    # ---------------------------
-    - name: Pull frontend image explicitly
-      community.docker.docker_image:
-        name: "{{ frontend_image_name }}"
-        source: pull
-        force_source: true
-    # ---------------------------
     # Frontend Deployment
     # ---------------------------
     - name: Deploy Frontend container for {{ environment_letter }}
@@ -148,7 +140,7 @@
         image: "{{ frontend_image_name }}"
         state: started
         restart_policy: always
-        pull: false
+        pull: true
         recreate: true
         cpus: "{{ frontend_cpu | float }}"
         memory: "{{ frontend_mem }}"
@@ -179,14 +171,6 @@
       retries: 30
       delay: 4
 
-    # ---------------------------
-    # Backend Image Pull (once)
-    # ---------------------------
-    - name: Pull backend image explicitly
-      community.docker.docker_image:
-        name: "{{ backend_image_name }}"
-        source: pull
-        force_source: true
 
     # ---------------------------
     # Backend Deployment
@@ -223,7 +207,7 @@
         image: "{{ backend_image_name }}"
         state: started
         restart_policy: always
-        pull: false
+        pull: true
         recreate: true
         cpus: "{{ backend_cpu | float }}"
         memory: "{{ backend_mem }}"
