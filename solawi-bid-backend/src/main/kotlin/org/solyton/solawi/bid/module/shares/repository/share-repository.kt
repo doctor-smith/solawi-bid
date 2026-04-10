@@ -123,6 +123,11 @@ fun Transaction.createShareOffer(
     val fiscalYear = validatedFiscalYear(fiscalYearId)
     validatePriceAndPricingType(price, pricingType)
 
+    val conflictingShareTypes = ShareOfferEntity.find {
+        ShareOffersTable.fiscalYearId eq fiscalYearId and (ShareOffersTable.shareTypeId eq shareTypeId)
+    }
+    if (!conflictingShareTypes.empty()) throw ShareException.ConflictingShareOffers
+
     return ShareOfferEntity.new {
         createdBy = creator
         this.shareType = shareType

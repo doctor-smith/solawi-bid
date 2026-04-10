@@ -69,6 +69,7 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
             is ShareException.CannotDeleteShareType -> HttpStatusCode.Conflict
             is ShareException.CannotDeleteShareTypesOfProvider -> HttpStatusCode.Conflict
             is ShareException.MissingShareSubscriptionOfUser -> HttpStatusCode.NotFound
+            is ShareException.ConflictingShareOffers -> HttpStatusCode.Conflict
         }
 
         is ShareStatusException -> when(value as ShareStatusException) {

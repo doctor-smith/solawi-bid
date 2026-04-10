@@ -4,6 +4,10 @@ import org.solyton.solawi.bid.module.shares.schema.PricingType
 
 sealed class ShareException(override val message: String): Exception(message) {
     data class NoSuchShareType(val id: String) : ShareException("No such Share $id")
+    data object ConflictingShareOffers : ShareException("Conflicting share offers") {
+        @Suppress("UnusedPrivateMember")
+        private fun readResolve(): Any = ConflictingShareOffers
+    }
     data class NoSuchShareOffer(val id: String) : ShareException("No such ShareOffer $id")
     data class NoSuchShareSubscription(val id: String) : ShareException("No such ShareSubscription $id")
     data class MissingShareSubscriptionOfUser(val userId: String) : ShareException("No ShareSubscription found for user $userId")
