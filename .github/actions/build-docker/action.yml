@@ -44,8 +44,10 @@ runs:
       id: full_image_name
       shell: bash
       run: |
-        echo "full_image_name=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1 | cut -d ':' -f 1)" >> $GITHUB_OUTPUT
-        echo "full_image_refrence=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)" >> $GITHUB_OUTPUT
+        SHA_TAG=$(echo "${{ steps.meta.outputs.tags }}" | grep 'sha-' | head -n 1)
+
+        echo "full_image_name=$(echo "$SHA_TAG" | cut -d ':' -f 1)" >> $GITHUB_OUTPUT
+        echo "full_image_refrence=$SHA_TAG" >> $GITHUB_OUTPUT
 
     # 🧪 Build the builder stage with BuildKit + cache
     - name: Build builder image (with cache)
