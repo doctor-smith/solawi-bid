@@ -17,9 +17,9 @@ outputs:
   full_image_name:
     description: "Full name of the Docker image"
     value: ${{ steps.full_image_name.outputs.full_image_name }}
-  full_image_refrence:
+  full_image_reference:
     description: "Full reference of the Docker image including tags"
-    value: ${{ steps.full_image_name.outputs.full_image_refrence }}
+    value: ${{ steps.full_image_name.outputs.full_image_reference }}
 
 runs:
   using: "composite"
