@@ -249,6 +249,10 @@ jobs:
             echo 'jwt_secret=${{ secrets.JWT_SECRET_D }}' >> $GITHUB_OUTPUT
             echo 'application_owner_password=${{ secrets.APPLICATION_OWNER_PASSWORD_D }}' >> $GITHUB_OUTPUT
           fi
+      - name: Debug image reference
+        run: |
+          echo "Backend: ${{ needs.build-Backend.outputs.full_image_reference }}"
+          echo "Frontend: ${{ needs.build-Frontend.outputs.full_image_reference }}"
       - name: Deploy Application
         uses: ./.github/actions/deploy-application
         with:
