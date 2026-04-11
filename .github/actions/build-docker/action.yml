@@ -46,8 +46,17 @@ runs:
       run: |
         SHA_TAG=$(echo "${{ steps.meta.outputs.tags }}" | grep 'sha-' | head -n 1)
 
-        echo "full_image_name=$(echo "$SHA_TAG" | cut -d ':' -f 1)" >> $GITHUB_OUTPUT
-        echo "full_image_refrence=$SHA_TAG" >> $GITHUB_OUTPUT
+        if [ -z "$SHA_TAG" ]; then
+        echo "❌ No sha tag found in metadata-action output"
+        echo "Available tags:"
+        echo "${{ steps.meta.outputs.tags }}"
+        exit 1
+        fi
+    
+        IMAGE_NAME=$(echo "$SHA_TAG" | cut -d ':' -f 1)
+    
+        echo "full_image_name=$IMAGE_NAME" >> $GITHUB_OUTPUT
+        echo "full_image_reference=$SHA_TAG" >> $GITHUB_OUTPUT
 
     # 🧪 Build the builder stage with BuildKit + cache
     - name: Build builder image (with cache)
