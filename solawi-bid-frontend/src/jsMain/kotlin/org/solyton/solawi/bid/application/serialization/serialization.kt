@@ -358,11 +358,16 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<AddSepaMandateToCollection>(AddSepaMandateToCollection.serializer())
         add<RemoveSepaMandateFromCollection>(RemoveSepaMandateFromCollection.serializer())
         add<MandateStatus>(MandateStatus.serializer())
+        add<SepaMandateReferenceData>(SepaMandateReferenceData.serializer())
+        add<AttachSepaMandateReferenceData>(AttachSepaMandateReferenceData.serializer())
+        add<CreateSepaMandateReferenceData>(CreateSepaMandateReferenceData.serializer())
+        add<SepaMandateReferenceId>(SepaMandateReferenceId.serializer())
 
         // Sepa Payments
         add<SepaPayment>(SepaPayment.serializer())
         add<SepaPayments>(SepaPayments.serializer())
         add<CreateSepaPayment>(CreateSepaPayment.serializer())
+        add<CreateSepaPaymentsForCollection>(CreateSepaPaymentsForCollection.serializer())
         add<ReadSepaPaymentsByLegalEntity>(ReadSepaPaymentsByLegalEntity.serializer())
         add<UpdateSepaPayment>(UpdateSepaPayment.serializer())
         add<AddSepaPaymentToCollection>(AddSepaPaymentToCollection.serializer())
@@ -372,7 +377,9 @@ fun installSerializers() { if(serializers.isEmpty()) {
         // Sepa Payment History
 
         // Sepa Messages
-
+        add<GenerateSepaMessageForCollection>(GenerateSepaMessageForCollection.serializer())
+        add<SepaMessageString>(SepaMessageString.serializer())
+        add<SepaMessageVersion>(SepaMessageVersion.serializer())
         // Sepa response from bank
     }
 } }

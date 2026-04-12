@@ -123,6 +123,7 @@ fun SepaCollectionEntity.toApiType(): ApiSepaCollection = ApiSepaCollection(
 )
 
 fun SepaSequenceType.toApiType(): ApiSepaSequenceType = when(this) {
+    SepaSequenceType.UNCLEAR -> ApiSepaSequenceType.UNCLEAR
     SepaSequenceType.FRST -> ApiSepaSequenceType.FRST
     SepaSequenceType.RCUR -> ApiSepaSequenceType.RCUR
     SepaSequenceType.OOFF -> ApiSepaSequenceType.OOFF
@@ -130,6 +131,7 @@ fun SepaSequenceType.toApiType(): ApiSepaSequenceType = when(this) {
 }
 
 fun ApiSepaSequenceType.toDomainType(): SepaSequenceType = when(this) {
+    ApiSepaSequenceType.UNCLEAR -> SepaSequenceType.UNCLEAR
     ApiSepaSequenceType.FRST -> SepaSequenceType.FRST
     ApiSepaSequenceType.RCUR -> SepaSequenceType.RCUR
     ApiSepaSequenceType.OOFF -> SepaSequenceType.OOFF
@@ -188,6 +190,7 @@ fun SepaPaymentEntity.toApiType(): ApiSepaPayment = ApiSepaPayment(
 )
 
 fun PaymentExecutionStatus.toApiType(): ApiPaymentExecutionStatus = when(this){
+    PaymentExecutionStatus.MESSAGE_CREATED -> ApiPaymentExecutionStatus.MESSAGE_CREATED
     PaymentExecutionStatus.CREATED -> ApiPaymentExecutionStatus.CREATED
     PaymentExecutionStatus.SENT -> ApiPaymentExecutionStatus.SENT
     PaymentExecutionStatus.CONFIRMED -> ApiPaymentExecutionStatus.CONFIRMED
@@ -196,6 +199,7 @@ fun PaymentExecutionStatus.toApiType(): ApiPaymentExecutionStatus = when(this){
 }
 
 fun ApiPaymentExecutionStatus.toDomainType(): PaymentExecutionStatus = when(this) {
+    ApiPaymentExecutionStatus.MESSAGE_CREATED -> PaymentExecutionStatus.MESSAGE_CREATED
     ApiPaymentExecutionStatus.CREATED -> PaymentExecutionStatus.CREATED
     ApiPaymentExecutionStatus.SENT -> PaymentExecutionStatus.SENT
     ApiPaymentExecutionStatus.CONFIRMED -> PaymentExecutionStatus.CONFIRMED

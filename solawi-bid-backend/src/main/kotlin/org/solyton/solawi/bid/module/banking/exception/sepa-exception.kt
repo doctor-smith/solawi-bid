@@ -23,4 +23,21 @@ sealed class SepaException(override val message: String): Exception(message) {
     data class CannotUpdateSepaMandate(val id: String, val reason: String) : SepaException("Cannot update sepa mandate; id = $id; reason = $reason")
 
     data class NoSuchSepaCollection(val id:String) : SepaException("No such sepa collection; id = $id")
+
+    sealed class Payment(override val message: String) : SepaException(message) {
+        data class CannotCreate(override val message: String): Payment(message)
+
+        data class NoSuchPayment(val id: String): Payment("No such payment; id = $id")
+
+        data class ChangesNotAllowed(val reason: String): Payment("Changes not allowed: $reason")
+
+        data class StateTransitionForbidden(val from: String, val to: String): Payment(
+            "Forbidden Payment State Transition: $from -> $to"
+        )
+
+        data object ChangeRequiresDateOfReport : Payment("Change requires date of report") {
+            @Suppress("UnusedPrivateMember")
+            private fun readResolve(): Any = ChangeRequiresDateOfReport
+        }
+    }
 }

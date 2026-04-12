@@ -25,6 +25,8 @@ import org.solyton.solawi.bid.module.banking.permissions.LegalEntities.Rights.CR
 import org.solyton.solawi.bid.module.banking.permissions.LegalEntities.Rights.READ_LEGAL_ENTITIES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.CREATE_SEPA_COLLECTIONS
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.CREATE_SEPA_MANDATES
+import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.CREATE_SEPA_MESSAGES
+import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.CREATE_SEPA_PAYMENTS
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.READ_SEPA_COLLECTIONS
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.READ_SEPA_MANDATES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_COLLECTIONS
@@ -183,6 +185,18 @@ fun <BankingEnv> Routing.banking (
                         CreateSepaCollection() *
                         Respond { transform() } runOn Base(call, environment)
                     }
+                    post("create-payments"){
+                        ReceiveContextual<CreateSepaPaymentsForCollection>() *
+                        IsGranted(CREATE_SEPA_PAYMENTS, no) *
+                        CreateSepaPaymentsForCollection() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
+                    post("generate-sepa-message") {
+                        ReceiveContextual<GenerateSepaMessageForCollection>() *
+                        IsGranted(CREATE_SEPA_MESSAGES, no) *
+                        GenerateSepaMessageForCollection() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
                     patch("update") {
                         ReceiveContextual<UpdateSepaCollection>() *
                         IsGranted(UPDATE_SEPA_COLLECTIONS, no) *
@@ -192,6 +206,7 @@ fun <BankingEnv> Routing.banking (
                     delete("delete") {
                         NotImplemented("Sepa collection deletion is not implemented yet")
                     }
+
                 }
                 route("payments"){
                     post("create") {

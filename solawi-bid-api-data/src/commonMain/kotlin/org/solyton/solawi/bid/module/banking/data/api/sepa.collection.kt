@@ -107,5 +107,9 @@ enum class SepaSequenceType {
      * Used when a mandate ends or the last payment of a series is collected.
      */
 
-    FNAL
+    FNAL,
+    /**
+     *
+     */
+    UNCLEAR
 }

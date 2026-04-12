@@ -46,7 +46,10 @@ enum class PaymentExecutionStatus {
      * CREATED: Payment has been created in the system but not yet sent to the bank.
      */
     CREATED,
-
+    /**
+     * MESSAGE_CREATED: Sepa Message has been created and PAIN.008 has been delivered to the client
+      */
+    MESSAGE_CREATED,
     /**
      * SENT: Payment has been submitted to the bank for processing.
      */

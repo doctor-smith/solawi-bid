@@ -10,7 +10,10 @@ import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
 import java.util.UUID
 
 enum class BankStatusCode {
-    SUCCESS, FAILED, PENDING
+    NOT_SUBMITTED,
+    SUCCESS,
+    FAILED,
+    PENDING
 }
 
 object SepaPaymentStatusHistory : AuditableUUIDTable("sepa_payment_status_history") {
