@@ -180,6 +180,7 @@ fun MandateStatus.toApyType(): ApiMandateStatus = when(this) {
 }
 
 fun ApiSepaSequenceType.toDomainType(): SepaSequenceType = when(this) {
+    UNCLEAR -> SepaSequenceType.UNCLEAR
     FRST -> SepaSequenceType.FRST
     RCUR -> SepaSequenceType.RCUR
     OOFF -> SepaSequenceType.OOFF
@@ -187,6 +188,7 @@ fun ApiSepaSequenceType.toDomainType(): SepaSequenceType = when(this) {
 }
 
 fun SepaSequenceType.toApiType(): ApiSepaSequenceType = when(this) {
+    SepaSequenceType.UNCLEAR -> UNCLEAR
     SepaSequenceType.FRST -> FRST
     SepaSequenceType.RCUR -> RCUR
     SepaSequenceType.OOFF -> OOFF
@@ -194,6 +196,7 @@ fun SepaSequenceType.toApiType(): ApiSepaSequenceType = when(this) {
 }
 
 fun ApiPaymentExecutionStatus.toDomainType(): PaymentExecutionStatus = when(this) {
+    MESSAGE_CREATED -> PaymentExecutionStatus.MESSAGE_CREATED
     CREATED -> PaymentExecutionStatus.CREATED
     SENT -> PaymentExecutionStatus.SENT
     CONFIRMED -> PaymentExecutionStatus.CONFIRMED
@@ -202,6 +205,7 @@ fun ApiPaymentExecutionStatus.toDomainType(): PaymentExecutionStatus = when(this
 }
 
 fun PaymentExecutionStatus.toApiType(): ApiPaymentExecutionStatus = when(this) {
+    PaymentExecutionStatus.MESSAGE_CREATED -> MESSAGE_CREATED
     PaymentExecutionStatus.CREATED -> CREATED
     PaymentExecutionStatus.SENT -> SENT
     PaymentExecutionStatus.CONFIRMED -> CONFIRMED

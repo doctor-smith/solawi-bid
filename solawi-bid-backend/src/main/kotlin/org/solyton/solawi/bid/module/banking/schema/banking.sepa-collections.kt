@@ -111,5 +111,10 @@ enum class SepaSequenceType {
      * FNAL (Final): The final direct debit in a mandate cycle.
      * Used when a mandate ends or the last payment of a series is collected.
      */
-    FNAL
+    FNAL,
+
+    /**
+     *
+     */
+    UNCLEAR
 }

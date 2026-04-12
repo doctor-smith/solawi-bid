@@ -37,6 +37,7 @@ import org.solyton.solawi.bid.module.banking.component.form.PartialSepaCollectio
 import org.solyton.solawi.bid.module.banking.data.*
 import org.solyton.solawi.bid.module.banking.data.api.CreateSepaCollection
 import org.solyton.solawi.bid.module.banking.data.api.CreateSepaMandate
+import org.solyton.solawi.bid.module.banking.data.api.CreateSepaMandateReferenceData
 import org.solyton.solawi.bid.module.banking.data.api.UpdateSepaCollection
 import org.solyton.solawi.bid.module.banking.data.application.bankAccounts
 import org.solyton.solawi.bid.module.banking.data.application.creditorIdentifier
@@ -825,6 +826,9 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                         is BulkEditShareSubscriptionChanges.AddSepaMandate -> {
                                             shareSubscriptionsState.forEachIndexed {index,  shareSubscription ->
                                                 val debtorBankAccount = userProfileToBankAccountMap[shareSubscription.userProfileId]
+                                                requireNotNull(shareSubscription.pricePerShare) {
+                                                    "Price per share needs to be set!!"
+                                                }
                                                 // Leave out subscriptions of users without bank account
                                                 if(debtorBankAccount == null) return@forEachIndexed
                                                 bankingApplicationActions dispatch createSepaMandate(
@@ -843,6 +847,10 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                                         isActive = changes.isActive,
                                                         amendmentOf = null,
                                                         collectionId = changes.sepaCollection.sepaCollectionId,
+                                                        sepaMandateReferenceData = CreateSepaMandateReferenceData(
+                                                            referenceId = SepaMandateReferenceId(shareSubscription.shareSubscriptionId),
+                                                            amount = shareSubscription.numberOfShares.toDouble() * shareSubscription.pricePerShare
+                                                        )
                                                     ),
                                                     targetCollectionId = changes.sepaCollection.sepaCollectionId,
                                                 )

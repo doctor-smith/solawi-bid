@@ -293,8 +293,14 @@ private fun appendTransactionInformation(
 
 fun generateMessageId(): String {
     val timestamp = DateTime.now().toString("yyyyMMddHHmmss")
-    val random = (1000..9999).random()
+    val random = (1_000..9_999).random()
     return "MSG-$timestamp-$random"
+}
+
+fun generateE2ETransactionId(): String {
+    val timestamp = DateTime.now().toString("yyyyMMddHHmmss")
+    val random = (1_000_000..9_999_999).random()
+    return "TSX-$timestamp-$random"
 }
 
 fun escapeXml(text: String): String {

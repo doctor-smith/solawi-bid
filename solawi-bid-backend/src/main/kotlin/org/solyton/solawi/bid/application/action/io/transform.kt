@@ -118,6 +118,11 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
             is SepaException.CannotUpdateSepaMandate -> HttpStatusCode.BadRequest
             is SepaException.NoSuchSepaCollection -> HttpStatusCode.NotFound
             is SepaException.NoSuchSepaMandate -> HttpStatusCode.NotFound
+            is SepaException.Payment.CannotCreate -> HttpStatusCode.BadRequest
+            is SepaException.Payment.ChangeRequiresDateOfReport ->HttpStatusCode.BadRequest
+            is SepaException.Payment.ChangesNotAllowed -> HttpStatusCode.BadRequest
+            is SepaException.Payment.NoSuchPayment -> HttpStatusCode.NotFound
+            is SepaException.Payment.StateTransitionForbidden -> HttpStatusCode.BadRequest
         }
 
         //User

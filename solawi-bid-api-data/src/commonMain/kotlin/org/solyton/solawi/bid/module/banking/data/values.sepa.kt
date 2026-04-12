@@ -40,6 +40,14 @@ value class SepaCollectionReferenceId(val value: String) {
 
 @Serializable@Value
 @JvmInline
+value class SepaMandateReferenceId(val value: String) {
+    init {
+        require(isValidUUID(value)) { "Id must be a valid UUID" }
+    }
+}
+
+@Serializable@Value
+@JvmInline
 value class MandateReference(val value: String) {
     init {
         require(value.length in (1..35)) { "length must lie in [1,35]" }

@@ -424,6 +424,15 @@ val solawiApi by lazy {
                 key = UpdateSepaCollection::class,
                 url = "sepa/collections/update"
             )
+            post<CreateSepaPaymentsForCollection, SepaPayments>(
+                key = CreateSepaPaymentsForCollection::class,
+                url = "sepa/collections/create-payments"
+            )
+
+            post<GenerateSepaMessageForCollection, SepaMessageString>(
+                key = GenerateSepaMessageForCollection::class,
+                url = "sepa/collections/generate-sepa-message"
+            )
 
             post<CreateSepaMandate, SepaMandate>(
                 key = CreateSepaMandate::class,
@@ -438,6 +447,8 @@ val solawiApi by lazy {
                 key = UpdateSepaMandate::class,
                 url = "sepa/mandates/update"
             )
+
+
         }
     }
 }

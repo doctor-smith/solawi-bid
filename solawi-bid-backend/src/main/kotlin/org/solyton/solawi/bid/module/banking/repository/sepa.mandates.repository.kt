@@ -6,6 +6,8 @@ import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import org.solyton.solawi.bid.module.banking.data.MandateReference
 import org.solyton.solawi.bid.module.banking.data.api.ApiSepaMandates
+import org.solyton.solawi.bid.module.banking.data.api.CreateSepaMandateReferenceData
+import org.solyton.solawi.bid.module.banking.data.api.SepaMandateReferenceData
 import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.banking.exception.BankAccountsException
 import org.solyton.solawi.bid.module.banking.exception.SepaException
@@ -13,6 +15,7 @@ import org.solyton.solawi.bid.module.banking.schema.CreditorIdentifierEntity
 import org.solyton.solawi.bid.module.banking.schema.CreditorIdentifiers
 import org.solyton.solawi.bid.module.banking.schema.CreditorIdentifiersTable
 import org.solyton.solawi.bid.module.banking.schema.MandateStatus
+import org.solyton.solawi.bid.module.banking.schema.SepaMandateDataMapping
 import org.solyton.solawi.bid.module.banking.schema.SepaMandateEntity
 import org.solyton.solawi.bid.module.banking.schema.SepaMandates
 import org.solyton.solawi.bid.module.banking.schema.SepaMandatesTable
@@ -46,6 +49,7 @@ fun Transaction.createSepaMandateWithRetry(
     mandateReferencePrefix: String? = null,
     status: MandateStatus = MandateStatus.ACTIVE,
     collectionId: UUID? = null,
+    referenceData: CreateSepaMandateReferenceData? = null,
     maxRetries: Int = 5
 ): SepaMandateEntity {
     val creditor = validatedCreditor(creditorIdentifierId)
@@ -61,7 +65,7 @@ fun Transaction.createSepaMandateWithRetry(
         } else null
 
         try {
-            return SepaMandateEntity.new {
+            val sepaMandate =  SepaMandateEntity.new {
                 this.createdBy = creatorId
                 this.creditorIdentifier = creditor
                 this.debtorBankAccount = debtorBankAccount
@@ -75,6 +79,15 @@ fun Transaction.createSepaMandateWithRetry(
                 this.isActive = true
                 this.collection = collection
             }
+            if(referenceData != null) {
+                SepaMandateDataMapping.new  {
+                    this.mandate = sepaMandate
+                    this.referenceId = UUID.fromString(referenceData.referenceId.value)
+                    this.amount = referenceData.amount
+                }
+            }
+
+            return sepaMandate
         } catch (e: ExposedSQLException) {
             // Check for MySQL unique constraint violation
             if (e.message?.contains("Duplicate entry") == true) {

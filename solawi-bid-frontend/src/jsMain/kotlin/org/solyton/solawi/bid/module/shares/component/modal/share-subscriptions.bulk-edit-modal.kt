@@ -25,9 +25,11 @@ import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.ElementScope
+import org.jetbrains.compose.web.dom.Li
 import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.dom.TextInput
+import org.jetbrains.compose.web.dom.Ul
 import org.solyton.solawi.bid.module.banking.data.creditor.identifier.CreditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
@@ -344,22 +346,23 @@ fun BulkEditShareShareSubscriptionsModal(
             val collectionsDefined = sepaCollections.isNotEmpty()
             val offersDefined = shareOffers.isNotEmpty()
             val ahcAuthorizationsProvided = shareSubscriptions.none { it.ahcAuthorized != true }
+            val pricesPerShareProvided = shareSubscriptions.none{it.pricePerShare == null}
 
-
-            val active = creditorDefined && collectionsDefined && offersDefined && ahcAuthorizationsProvided
+            val active = creditorDefined && collectionsDefined && offersDefined && ahcAuthorizationsProvided && pricesPerShareProvided
             When(!active) {
                 val texts = listOf(
                     !creditorDefined to "No creditor defined",
                     !collectionsDefined to "No sepa collections defined",
                     !offersDefined to "No offers defined",
-                    !ahcAuthorizationsProvided to "Missing Sepa Authorizations"
+                    !ahcAuthorizationsProvided to "Missing Sepa Authorizations",
+                    !pricesPerShareProvided to "Missing prices pre share"
                 ).filter{it.first}.map { it.second }
 
-                texts.forEach {
-                    Span({ style { color(Color.red) } }) {
-                        Text(it)
-                    }
-                }
+                Ul { texts.forEach {
+                   Li { Span({ style { color(Color.red) } }) {
+                       Text(it)
+                   } }
+                } }
             }
             When(checked == Checked.ADD_SEPA_MANDATE && active) {
                 requireNotNull(creditorIdentifier)
@@ -487,7 +490,6 @@ fun BulkEditShareShareSubscriptionsModal(
             }
         } }
     }
-
 }
 
 @Markup

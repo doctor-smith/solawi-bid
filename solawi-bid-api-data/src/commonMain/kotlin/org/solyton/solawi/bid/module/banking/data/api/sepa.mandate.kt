@@ -32,6 +32,26 @@ data class SepaMandate(
 )
 
 @Serializable
+data class CreateSepaMandateReferenceData(
+    val referenceId: SepaMandateReferenceId,
+    val amount: Double
+)
+
+@Serializable
+data class SepaMandateReferenceData(
+    val sepaMandateId: SepaMandateId,
+    val referenceId: SepaMandateReferenceId,
+    val amount: Double
+)
+
+@Serializable
+data class AttachSepaMandateReferenceData(
+    val sepaMandateId: SepaMandateId,
+    val referenceId: SepaMandateReferenceId,
+    val amount: Double
+)
+
+@Serializable
 data class CreateSepaMandate(
     val creditorId: CreditorId,
     val debtorBankAccountId: BankAccountId,
@@ -45,6 +65,7 @@ data class CreateSepaMandate(
     val isActive: Boolean = true,
     val amendmentOf: SepaMandateId? = null,
     val collectionId: SepaCollectionId? = null,
+    val sepaMandateReferenceData: CreateSepaMandateReferenceData? = null
 )
 
 @Serializable
