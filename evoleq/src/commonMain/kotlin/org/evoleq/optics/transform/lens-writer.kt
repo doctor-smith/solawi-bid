@@ -169,6 +169,10 @@ fun <W, P> Lens<W, List<P>>.add(): Writer<W, P> = Writer{
     p -> { w -> set(get(w) + listOf(p) )(w)}
 }
 
+fun <W, P> Lens<W, List<P>>.addList(): Writer<W, List<P>> = Writer{
+        ps -> { w -> set(get(w) + ps )(w)}
+}
+
 /**
  * Removes elements from a list within a structure using the provided `removeWhen` predicate.
  * This method operates through the lens, transforming the original structure by removing

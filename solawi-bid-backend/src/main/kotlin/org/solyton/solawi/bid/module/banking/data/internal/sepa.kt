@@ -6,6 +6,7 @@ import org.joda.time.LocalDate
 import java.util.*
 
 import org.solyton.solawi.bid.module.banking.schema.MandateStatus
+import org.solyton.solawi.bid.module.banking.schema.SepaSequenceType
 import java.math.BigDecimal
 
 data class SepaMandateCreationRequest(
@@ -54,6 +55,7 @@ data class Pain008Transaction(
     val debtorBic: String = "",                // BIC des Schuldners (optional)
     val mandateReference: String,              // Mandatsreferenz
     val mandateSignDate: LocalDate,            // Datum der Mandatsunterzeichnung
-    val remittanceInfo: String = ""            // Verwendungszweck (optional)
+    val remittanceInfo: String = "",            // Verwendungszweck (optional)
+    val sequenceType: SepaSequenceType
 )
 

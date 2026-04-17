@@ -1,5 +1,6 @@
 package org.solyton.solawi.bid.module.banking.action
 
+import org.evoleq.exposedx.joda.toJoda
 import org.evoleq.exposedx.transaction.resultTransaction
 import org.evoleq.ktorx.Contextual
 import org.evoleq.ktorx.DbAction
@@ -24,7 +25,8 @@ fun GenerateSepaMessageForCollection(): KlAction<Result<Contextual<GenerateSepaM
                 val userId = contextual.userId
                 val message = generateSepaMessageForCollection(
                     userId,
-                    UUID.fromString(data.sepaCollectionId.value)
+                    UUID.fromString(data.sepaCollectionId.value),
+                    data.executionDate.toJoda()
                 )
                 SepaMessageString(
                     SepaMessageVersion.PAIN008,

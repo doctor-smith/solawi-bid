@@ -81,6 +81,7 @@ fun Transaction.createSepaMandateWithRetry(
             }
             if(referenceData != null) {
                 SepaMandateDataMapping.new  {
+                    this.createdBy = creatorId
                     this.mandate = sepaMandate
                     this.referenceId = UUID.fromString(referenceData.referenceId.value)
                     this.amount = referenceData.amount

@@ -137,11 +137,34 @@ private fun buildPain008Xml(
         appendGroupHeader(this, sepaMessage, numberOfTransactions, totalAmount, creditorIdentifier)
         
         // Payment Information
-        appendPaymentInformation(this, sepaMessage, numberOfTransactions, totalAmount, executionDate, creditorIdentifier, creditorAccount, transactions)
-        
+        val ooffPayments = transactions.filter {transaction -> transaction.sequenceType == SepaSequenceType.OOFF }
+        val frstPayments = transactions.filter {transaction -> transaction.sequenceType == SepaSequenceType.FRST }
+        val rcurPayments = transactions.filter {transaction -> transaction.sequenceType == SepaSequenceType.RCUR }
+        val fnalPayments = transactions.filter {transaction -> transaction.sequenceType == SepaSequenceType.FNAL }
+
+        mapOf(
+            SepaSequenceType.OOFF to ooffPayments,
+            SepaSequenceType.FRST to frstPayments,
+            SepaSequenceType.RCUR to rcurPayments,
+            SepaSequenceType.FNAL to fnalPayments
+        ).filterValues { it.isNotEmpty() }.forEach { (sequenceType, transactions) ->
+            val partialAmount = transactions.sumOf { it.amount }
+            val partialNumberOfTransactions = transactions.size
+            appendPaymentInformation(
+                this,
+                sepaMessage,
+                partialNumberOfTransactions,
+                partialAmount,
+                executionDate,
+                creditorIdentifier,
+                creditorAccount,
+                transactions,
+                sequenceType
+            )
+        }
         appendLine("  </CstmrDrctDbtInitn>")
         appendLine("</Document>")
-    }
+    }.toSepaAscii()
 }
 
 private fun appendGroupHeader(
@@ -182,11 +205,13 @@ private fun appendPaymentInformation(
     executionDate: DateTime,
     creditorIdentifier: CreditorIdentifierEntity,
     creditorAccount: BankAccountEntity,
-    transactions: List<Pain008Transaction>
+    transactions: List<Pain008Transaction>,
+    sequenceType: SepaSequenceType
 ) {
+    if(transactions.isEmpty()) return
     with(builder) {
         appendLine("    <PmtInf>")
-        appendLine("      <PmtInfId>${sepaMessage.messageId}-1</PmtInfId>")
+        appendLine("      <PmtInfId>${sepaMessage.messageId}-${sequenceType.name}</PmtInfId>")
         appendLine("      <PmtMtd>DD</PmtMtd>")
         appendLine("      <NbOfTxs>$numberOfTransactions</NbOfTxs>")
         appendLine("      <CtrlSum>${formatAmount(totalAmount)}</CtrlSum>")
@@ -197,7 +222,7 @@ private fun appendPaymentInformation(
         appendLine("        <LclInstrm>")
         appendLine("          <Cd>CORE</Cd>")
         appendLine("        </LclInstrm>")
-        appendLine("        <SeqTp>OOFF</SeqTp>")
+        appendLine("        <SeqTp>${sequenceType.name}</SeqTp>")
         appendLine("      </PmtTpInf>")
         appendLine("      <ReqdColltnDt>${dateFormatter.print(executionDate)}</ReqdColltnDt>")
         
@@ -310,4 +335,16 @@ fun escapeXml(text: String): String {
         .replace(">", "&gt;")
         .replace("\"", "&quot;")
         .replace("'", "&apos;")
+}
+
+fun String.toSepaAscii(): String {
+    return this
+        .replace("ä", "ae")
+        .replace("ö", "oe")
+        .replace("ü", "ue")
+        .replace("Ä", "Ae")
+        .replace("Ö", "Oe")
+        .replace("Ü", "Ue")
+        .replace("ß", "ss")
+        .replace(Regex("[^\\x20-\\x7E]"), "")
 }

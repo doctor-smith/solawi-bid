@@ -3,13 +3,18 @@ package org.solyton.solawi.bid.application.ui.page.banking
 import androidx.compose.runtime.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.format
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
+import org.evoleq.compose.date.format
+import org.evoleq.compose.download.downloadCsv
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Property
 import org.evoleq.compose.layout.ReadOnlyProperties
 import org.evoleq.compose.routing.navigate
 import org.evoleq.device.data.mediaType
+import org.evoleq.kotlinx.date.now
+import org.evoleq.language.Locale
 import org.evoleq.language.extend
 import org.evoleq.math.FirstOrNull
 import org.evoleq.math.Reader
@@ -17,11 +22,13 @@ import org.evoleq.math.emit
 import org.evoleq.optics.lens.FilterBy
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
+import org.evoleq.optics.storage.write
 import org.evoleq.optics.transform.times
 import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
+import org.jetbrains.letsPlot.commons.formatting.datetime.DateTimeFormat
 import org.jetbrains.letsPlot.commons.intern.filterNotNullValues
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.managedUsers
@@ -30,23 +37,34 @@ import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.banking.action.*
 import org.solyton.solawi.bid.module.banking.component.form.defaultBankAccountInputs
+import org.solyton.solawi.bid.module.banking.component.modal.sepa.ManageCollectionPayments
+import org.solyton.solawi.bid.module.banking.component.modal.sepa.showManagePaymentsOfSepaCollectionModal
 import org.solyton.solawi.bid.module.banking.component.modal.showImportBankAccountsModal
 import org.solyton.solawi.bid.module.banking.component.modal.showUpsertBankAccountModal
 import org.solyton.solawi.bid.module.banking.component.modal.showUpsertBankAccountWithUserSearchModal
 import org.solyton.solawi.bid.module.banking.component.modal.showUpsertFiscalYearsModal
 import org.solyton.solawi.bid.module.banking.component.modal.showUpsertLegalEntityModal
 import org.solyton.solawi.bid.module.banking.data.SepaCollectionId
+import org.solyton.solawi.bid.module.banking.data.api.CreateSepaPaymentsForCollection
+import org.solyton.solawi.bid.module.banking.data.api.GenerateSepaMessageForCollection
 import org.solyton.solawi.bid.module.banking.data.api.ImportBankAccounts
 import org.solyton.solawi.bid.module.banking.data.application.*
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.bankingApplicationActions
 import org.solyton.solawi.bid.module.banking.data.bankingApplicationModals
+import org.solyton.solawi.bid.module.banking.data.download.Download
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
+import org.solyton.solawi.bid.module.banking.data.sepa.message.message
+import org.solyton.solawi.bid.module.banking.data.sepa.payment.executionDate
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaCollections
+import org.solyton.solawi.bid.module.banking.data.sepa.sepaMessageString
+import org.solyton.solawi.bid.module.banking.service.download
 import org.solyton.solawi.bid.module.constants.checkIcon
 import org.solyton.solawi.bid.module.control.button.*
+import org.solyton.solawi.bid.module.dialog.component.WarningSymbol
+import org.solyton.solawi.bid.module.dialog.component.showDialogModal
 import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.navbar.component.SimpleRightDown
@@ -70,7 +88,7 @@ import org.solyton.solawi.bid.module.values.UserId
 
 @Markup
 @Composable
-@Suppress("FunctionName","CognitiveComplexMethod")
+@Suppress("FunctionName","CognitiveComplexMethod", "CyclomaticComplexMethod")
 fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, providerId: ProviderId, up: String) {
     val scope = rememberCoroutineScope()
 
@@ -597,6 +615,19 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
     }
 
     s("SEPA") {
+
+        LaunchedEffect((sepaModule * sepaMessageString).read()) {
+            val sepaMessageString = sepaModule * sepaMessageString
+            val downloadStatus = sepaMessageString.read().download
+            if(downloadStatus == Download.Start) {
+                download((sepaMessageString * message).read(), "PAIN_${now().format(Locale.Iso)}.xml")
+                scope.launch {
+                    downloadStatus.write(Download.Done)
+                }
+            }
+        }
+
+
         Wrap {
             ListWrapper {
                 var opened by remember { mutableStateOf(false) }
@@ -622,7 +653,6 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                     ListItemsIndexed(sepaCollections.read()) { index , collection ->
 
                         val bankAccount = collectionToBankAccountMap.emit()[collection.sepaCollectionId]
-                        // todo:dev find way to show cumulated amount w.r.t. one payment - day
                         val latestExecutionDate = collection.sepaPayments.maxOfOrNull{payment -> payment.executionDate}
                         val cumulatedAmount = collection.sepaPayments.filter { it.executionDate == latestExecutionDate }.sumOf { mandate -> mandate.amount }
                         ListItemWrapper({listItemWrapperStyle(index)}) {
@@ -638,14 +668,51 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                                 // TextCell(collection.){}
                             }
                             ActionsWrapper {
+
+                                var manageCollectionPaymentsState by remember() { mutableStateOf<ManageCollectionPayments?>(null)}
+
                                 CreditCardButton(
                                     color = Color.black,
                                     bgColor = Color.white,
                                     deviceType = deviceType,
-                                    texts = {"Assoc Mandates and Payments"},
-                                    isDisabled = true
+                                    texts = {"Assoc Payments (to Mandates)"},
+                                    isDisabled = collection.sepaMandates.isEmpty()
                                 ) {
+                                    bankingApplicationModals.showManagePaymentsOfSepaCollectionModal(
+                                        bankingApplicationStorage,
+                                        dialogModalTexts("hahaha"),
+                                        deviceType,
+                                        collection,
+                                        null,
+                                        {data -> manageCollectionPaymentsState = data}
+                                    ) {
+                                        bankingApplicationModals.showDialogModal(
+                                            texts = dialogModalTexts("Are you sure you want to bulk edit share subscriptions?"),
+                                            device = deviceType,
+                                            symbol = { WarningSymbol(deviceType = deviceType.emit()) },
+                                            onCancel = {}
+                                        ) {
+                                            scope.launch {
+                                                when (val state = manageCollectionPaymentsState) {
+                                                    null -> Unit
+                                                    is ManageCollectionPayments.AttachPayments -> bankingApplicationActions dispatch createSepaPaymentsForCollection(
+                                                        CreateSepaPaymentsForCollection(
+                                                            collection.sepaCollectionId,
+                                                            state.executionDate,
 
+                                                            ),
+                                                        collection.sepaCollectionId
+                                                    )
+                                                    is ManageCollectionPayments.CreateMessage -> bankingApplicationActions dispatch generateSepaMessageForCollection(
+                                                        GenerateSepaMessageForCollection(
+                                                            collection.sepaCollectionId,
+                                                            state.executionDate
+                                                        )
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                                 EditButton(
                                     color = Color.black,
