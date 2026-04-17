@@ -12,6 +12,8 @@ import org.solyton.solawi.bid.module.banking.data.api.ApiMandateStatus
 import org.solyton.solawi.bid.module.banking.data.api.ApiPaymentExecutionStatus
 import org.solyton.solawi.bid.module.banking.data.api.ApiSepaCollection
 import org.solyton.solawi.bid.module.banking.data.api.ApiSepaMandate
+import org.solyton.solawi.bid.module.banking.data.api.ApiSepaMessageString
+import org.solyton.solawi.bid.module.banking.data.api.SepaMessageVersion as ApiSepaMessageVersion
 import org.solyton.solawi.bid.module.banking.data.api.ApiSepaPayment
 import org.solyton.solawi.bid.module.banking.data.api.ApiSepaSequenceType
 import org.solyton.solawi.bid.module.banking.data.api.MandateStatus.*
@@ -20,6 +22,7 @@ import org.solyton.solawi.bid.module.banking.data.api.SepaSequenceType.*
 import org.solyton.solawi.bid.module.banking.data.bankaccount.AccountType
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.creditor.identifier.CreditorIdentifier
+import org.solyton.solawi.bid.module.banking.data.download.Download
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
 import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntity
 import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntityType
@@ -28,6 +31,8 @@ import org.solyton.solawi.bid.module.banking.data.sepa.PaymentExecutionStatus
 import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.mandate.SepaMandate
+import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessageString
+import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessageVersion
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
 import org.solyton.solawi.bid.module.user.data.transform.toDomainType
 
@@ -211,4 +216,24 @@ fun PaymentExecutionStatus.toApiType(): ApiPaymentExecutionStatus = when(this) {
     PaymentExecutionStatus.CONFIRMED -> CONFIRMED
     PaymentExecutionStatus.FAILED -> FAILED
     PaymentExecutionStatus.PENDING -> PENDING
+}
+
+fun ApiSepaMessageString.toDomainType(): SepaMessageString = SepaMessageString(
+    version = version.toDomainType(),
+    message = message,
+    download = Download.Start
+)
+
+fun SepaMessageString.toApiType(): ApiSepaMessageString = ApiSepaMessageString(
+    version = version.toApiType(),
+    message = message
+)
+
+fun ApiSepaMessageVersion.toDomainType(): SepaMessageVersion = when(this) {
+    is ApiSepaMessageVersion.PAIN008 -> SepaMessageVersion.PAIN008
+
+}
+
+fun SepaMessageVersion.toApiType(): ApiSepaMessageVersion = when(this) {
+    SepaMessageVersion.PAIN008 -> ApiSepaMessageVersion.PAIN008
 }

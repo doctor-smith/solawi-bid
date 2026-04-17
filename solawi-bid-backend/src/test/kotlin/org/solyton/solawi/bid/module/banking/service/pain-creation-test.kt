@@ -2,6 +2,8 @@ package org.solyton.solawi.bid.module.banking.service
 
 import junit.framework.TestCase.assertFalse
 import org.evoleq.exposedx.test.runSimpleH2Test
+import org.evoleq.kotlinx.date.now
+import org.evoleq.kotlinx.date.today
 import org.evoleq.uuid.UUID_ZERO
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
@@ -9,16 +11,29 @@ import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.Unit
 import org.solyton.solawi.bid.module.banking.data.BIC
+import org.solyton.solawi.bid.module.banking.data.BankAccountId
+import org.solyton.solawi.bid.module.banking.data.CreditorIdentifierId
 import org.solyton.solawi.bid.module.banking.data.IBAN
+import org.solyton.solawi.bid.module.banking.data.MandateReferencePrefix
+import org.solyton.solawi.bid.module.banking.data.RemittanceInformation
+import org.solyton.solawi.bid.module.banking.data.SepaMandateReferenceId
+import org.solyton.solawi.bid.module.banking.data.api.CreateSepaMandateReferenceData
+import org.solyton.solawi.bid.module.banking.data.api.SepaPayments
 import org.solyton.solawi.bid.module.banking.data.internal.Pain008GenerationRequest
 import org.solyton.solawi.bid.module.banking.data.internal.Pain008Transaction
 import org.solyton.solawi.bid.module.banking.repository.createBankAccount
 import org.solyton.solawi.bid.module.banking.repository.createLegalEntity
+import org.solyton.solawi.bid.module.banking.repository.createPayment
+import org.solyton.solawi.bid.module.banking.repository.createPaymentsForCollection
+import org.solyton.solawi.bid.module.banking.repository.createSepaCollection
+import org.solyton.solawi.bid.module.banking.repository.createSepaMandateWithRetry
+import org.solyton.solawi.bid.module.banking.repository.generateSepaMessageForCollection
 import org.solyton.solawi.bid.module.banking.schema.*
 import org.solyton.solawi.bid.module.permission.repository.createChild
 import org.solyton.solawi.bid.module.permission.repository.createRole
 import org.solyton.solawi.bid.module.permission.repository.createRootContext
 import org.solyton.solawi.bid.module.permission.schema.*
+import org.solyton.solawi.bid.module.shares.service.UUID_1
 import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateUserProfile
 import org.solyton.solawi.bid.module.user.repository.createUserProfile
@@ -36,6 +51,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
+import kotlin.time.Duration.Companion.days
 
 class Pain008FunctionsTest {
 
@@ -53,6 +69,11 @@ class Pain008FunctionsTest {
         UsersTable,
         OrganizationsTable,
         AddressesTable,
+        SepaPaymentsTable,
+        SepaCollectionsTable,
+        SepaCollectionMappings,
+        SepaMandateDataMappingsTable,
+        SepaPaymentStatusHistory
     )
 
     @DbFunctional
@@ -127,7 +148,8 @@ class Pain008FunctionsTest {
                 debtorBic = "COBADEFFXXX",
                 mandateReference = "MAND-CRED-20240402-ABC123",
                 mandateSignDate = LocalDate.parse("2024-03-15"),
-                remittanceInfo = "Mitgliedsbeitrag März 2024"
+                remittanceInfo = "Mitgliedsbeitrag März 2024",
+                sequenceType = SepaSequenceType.OOFF
             ),
             Pain008Transaction(
                 endToEndId = "TXN-002-20240402",
@@ -136,7 +158,8 @@ class Pain008FunctionsTest {
                 debtorIban = "DE12500105170648489890",
                 mandateReference = "MAND-CRED-20240315-XYZ789",
                 mandateSignDate = LocalDate.parse("2024-02-20"),
-                remittanceInfo = "Jahresbeitrag 2024"
+                remittanceInfo = "Jahresbeitrag 2024",
+                sequenceType = SepaSequenceType.OOFF
             )
         )
 
@@ -194,6 +217,139 @@ class Pain008FunctionsTest {
             assertTrue(xmlContent.contains(transaction.endToEndId))
             assertTrue(xmlContent.contains(transaction.debtorIban))
             assertTrue(xmlContent.contains(transaction.mandateReference))
+        }
+    }
+
+
+    @DbFunctional@Test
+    fun generateSepaMessageFileFromCollection() = runSimpleH2Test(*tables) {
+        val context = createRootContext("APPLICATION")
+        // val childContext =
+        context.createChild("ORGANIZATION")
+
+        val creditorId = "DE98ZZZ12345678901"
+        val creditorName = "Kreditinstitut Mustermann"
+        val creditorBic = BIC("COBADEFFXXX")
+        val creditorIban = IBAN("DE89370400440532013000")
+        val user = UserEntity.new {
+            username = "jfdka"
+            password = "fjdkal"
+            status = UserStatus.ACTIVE
+            createdBy = UUID_ZERO
+        }
+
+        val userProfile = createUserProfile(
+            CreateUserProfile(
+                UserId(user.id.value.toString()),
+                Firstname("fs"),
+                Lastname("ls"),
+                null,
+                phoneNumber = null,
+                phoneNumber1 = PhoneNumber("123456"),
+                CreateAddress.empty,
+            ),
+            creatorId = UUID_ZERO,
+        )
+        val address = userProfile.addresses.first()
+
+        val legalEntity = createLegalEntity(
+            user.id.value,
+            creditorName,
+            "LF",
+            LegalEntityType.HUMAN,
+            address.id.value,
+            UUID_ZERO
+        )
+
+        val bankAccount = createBankAccount(
+            user.id.value,
+            creditorIban,
+            creditorBic,
+            creditorName,
+            true,
+            AccountType.CREDITOR,
+            emptyList(),
+            "Nice bank account",
+            UUID_ZERO
+        )
+
+        val creditorIdentifier = CreditorIdentifier.new {
+            createdBy = UUID_ZERO
+            this.creditorId = creditorId
+            this.legalEntity = legalEntity
+            isActive = true
+            validUntil = DateTime.now().plusYears(1)
+            validFrom = DateTime.now().minusYears(1)
+        }
+
+        val collection = createSepaCollection(
+            UUID_ZERO,
+            CreditorIdentifierId(creditorIdentifier.id.value.toString()),
+            BankAccountId(bankAccount.id.value.toString()),
+            MandateReferencePrefix("MANDATE"),
+            RemittanceInformation("REMITTANCE INFO"),
+            SepaSequenceType.FRST,
+            null,
+        )
+
+        val productReferenceId = UUID_1
+
+        val sepaMandate = createSepaMandateWithRetry(
+            UUID_ZERO,
+            creditorIdentifier.id.value,
+            bankAccount.id.value,
+            "DEBTOR NAME",
+            DateTime.now(),
+            DateTime.now(),
+            null,
+            collectionId = collection.id.value,
+            referenceData = CreateSepaMandateReferenceData(
+                SepaMandateReferenceId(productReferenceId.toString()),
+                100.0
+            )
+        )
+
+        assertTrue {
+            SepaCollectionEntity.findById(collection.id.value)?.sepaMandates?.contains(sepaMandate)?:false
+        }
+
+        val executionDate = LocalDate.now().plusDays(5)
+
+        val payments = createPaymentsForCollection(
+            UUID_ZERO,
+            collection.id.value,
+            executionDate
+        )
+        assertTrue {
+            payments.isNotEmpty()
+            SepaCollectionEntity.findById(collection.id.value)?.sepaPayments?.contains(payments.first())?:false
+        }
+        val painString = generateSepaMessageForCollection(
+            UUID_ZERO,
+            collection.id.value,
+            executionDate
+        )
+
+        println(painString)
+
+        val validationResult = validatePain008XmlWithDetails(painString)
+
+        when (validationResult) {
+            is DetailedValidationResult.Valid -> {
+                println("✅ XML ist schema-konform")
+            }
+
+            is DetailedValidationResult.Invalid -> {
+                println("❌ XML-Schema-Validierung fehlgeschlagen:")
+                validationResult.errors.forEach { error ->
+                    println("  ${error.severity} - Zeile ${error.line}, Spalte ${error.column}: ${error.message}")
+                }
+                fail("XML entspricht nicht dem pain.008 Schema. Fehler: ${validationResult.errors.size}")
+            }
+
+            is DetailedValidationResult.Error -> {
+                fail("Validierungsfehler: ${validationResult.message}")
+            }
         }
     }
 }

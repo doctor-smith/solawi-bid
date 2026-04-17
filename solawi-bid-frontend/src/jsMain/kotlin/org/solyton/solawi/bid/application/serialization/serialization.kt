@@ -380,6 +380,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<GenerateSepaMessageForCollection>(GenerateSepaMessageForCollection.serializer())
         add<SepaMessageString>(SepaMessageString.serializer())
         add<SepaMessageVersion>(SepaMessageVersion.serializer())
+        add<SepaMessageVersion.PAIN008>(SepaMessageVersion.PAIN008.serializer())
         // Sepa response from bank
     }
 } }

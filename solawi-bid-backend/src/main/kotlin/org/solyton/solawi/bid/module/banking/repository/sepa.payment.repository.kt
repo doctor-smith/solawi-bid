@@ -11,6 +11,7 @@ import org.solyton.solawi.bid.module.banking.schema.*
 import org.solyton.solawi.bid.module.banking.schema.SepaPaymentEntity
 import org.solyton.solawi.bid.module.banking.service.generateE2ETransactionId
 import org.solyton.solawi.bid.module.banking.service.generatePain008Xml
+import org.solyton.solawi.bid.module.permission.action.db.no
 import java.util.*
 
 fun Transaction.createPaymentsForCollection(
@@ -30,7 +31,7 @@ fun Transaction.createPaymentsForCollection(
     return sepaCollection.sepaMandates.map { mandate ->
         val mandateId = mandate.id.value
         val amount = requireNotNull(map[mandateId]) {
-            "Entry must not be null"
+            "Entry must not be null! You need to add a product reference to the mandate-data-mappings!"
         }
         createPayment(
             creator,
@@ -83,6 +84,7 @@ fun Transaction.createPayment(
     // create history entry
     SepaPaymentStatusHistoryEntity.new {
         createdBy = creator
+        reportedAt = now()
         this.payment = payment
         status = BankStatusCode.NOT_SUBMITTED
     }
@@ -175,10 +177,15 @@ fun Transaction.updatePayment(
     return payment
 }
 
+
 fun Transaction.generateSepaMessageForCollection(
     creator: UUID,
     collectionId: UUID,
+    executionDate: LocalDate?
 ): String {
+
+    val reportedAt = now()
+
     val collection = validatedSepaCollection(collectionId)
 
     val creditorIdentifier = collection.creditorIdentifier
@@ -188,32 +195,41 @@ fun Transaction.generateSepaMessageForCollection(
     }
 
     require(createdPayments.isNotEmpty())
-    require(createdPayments.map { it.executionDate }.distinct().size == 1)
-    val executionDate = createdPayments.first().executionDate
+    if(executionDate == null) require(createdPayments.map { it.executionDate }.distinct().size == 1)
+    val finalExecutionDate = when(executionDate){
+        null -> createdPayments.first().executionDate.toLocalDate()
+        else -> executionDate.toDateTimeAtCurrentTime().toLocalDate()
+    }
 
-    val transactions: List<Pain008Transaction> = createdPayments.map { payment ->
+    val finalPayments = createdPayments.filter { it.executionDate.toLocalDate() == finalExecutionDate }
+
+    val transactions: List<Pain008Transaction> = finalPayments.map { payment ->
         val mandate = payment.mandate
         val e2eId = generateE2ETransactionId()
+        val sequenceType = payment.sequenceType
         Pain008Transaction(
             e2eId,
             payment.amount.toBigDecimal(),
-            mandate.debtorName,
+            mandate.debtorName.let{ when{
+                it.isBlank() -> mandate.debtorBankAccount.accountHolder
+                else -> it
+            } },
             mandate.debtorBankAccount.iban,
             mandate.debtorBankAccount.bic,
             mandate.mandateReference,
             mandate.signedAt.toLocalDate(),
             collection.remittanceInformation,
+            sequenceType
         )
     }
 
     val pain008XmlString = generatePain008Xml(Pain008GenerationRequest(
         creditorIdentifier.id.value,
         collection.creditorAccount.id.value,
-        executionDate.toLocalDate(),
+        finalExecutionDate,
         transactions,
         creator
     ))
-
     // update payments
     createdPayments.forEach { payment ->
         updatePayment(
@@ -223,7 +239,7 @@ fun Transaction.generateSepaMessageForCollection(
             payment.executionDate.toLocalDate(),
             payment.sequenceType,
             PaymentExecutionStatus.MESSAGE_CREATED,
-            null,
+            reportedAt,
             null
         )
     }

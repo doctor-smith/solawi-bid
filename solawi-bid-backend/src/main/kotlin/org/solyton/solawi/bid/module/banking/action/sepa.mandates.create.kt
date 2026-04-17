@@ -41,6 +41,7 @@ fun CreateSepaMandate(): KlAction<Result<Contextual<CreateSepaMandate>>, Result<
                     validUntil = data.validUntil?.toJoda(),
                     mandateReference = data.mandateReference,
                     mandateReferencePrefix = data.mandateReferencePrefix?.value,
+                    referenceData = data.sepaMandateReferenceData,
                     status = data.status.toDomainType(),
                     collectionId = collectionId,
                     maxRetries = 5,
