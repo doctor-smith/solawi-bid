@@ -11,6 +11,8 @@ import org.jetbrains.compose.web.css.flexDirection
 import org.jetbrains.compose.web.css.height
 import org.jetbrains.compose.web.css.maxHeight
 import org.jetbrains.compose.web.css.minHeight
+import org.jetbrains.compose.web.css.minHeight
+import org.jetbrains.compose.web.css.flexGrow
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.width
@@ -23,27 +25,28 @@ data class ScrollableStyles(
     val containerStyle: StyleScope.()->Unit = {
         display( DisplayStyle.Flex )
         width(100.percent)
-        maxHeight(200.px)
-        height(200.px)
+        minHeight(0.px)
+        flexGrow(1)
     },
     val contentStyle: StyleScope.()->Unit = {
-        minHeight(180.px)
+        flexDirection(FlexDirection.Column)
+        minHeight(0.px)
+        flexGrow(1)
         width(100.percent)
         display( DisplayStyle.Flex )
-        flexDirection(FlexDirection.Column)
         overflowY(Overflow.Auto)
         overflowX(Overflow.Hidden)
     }
 ) {
     fun modifyContainerStyle(style: StyleScope.()->Unit) = copy(
         containerStyle = {
-            contentStyle()
+            containerStyle()
             style()
         }
     )
     fun modifyContentStyle(style: StyleScope.()->Unit) = copy(
         contentStyle = {
-            containerStyle()
+            contentStyle()
             style()
         }
     )

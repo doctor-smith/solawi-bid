@@ -16,7 +16,19 @@ data class Property<T>(
 data class PropertiesStyles(
     val containerStyle: StyleScope.()->Unit = {},
     val propertyStyles: PropertyStyles = PropertyStyles()
-)
+) {
+
+    fun modifyContainerStyle(styles: StyleScope. ()->Unit): PropertiesStyles = copy(
+        containerStyle = {
+            containerStyle()
+            styles()
+        }
+    )
+
+    fun modifyPropertyStyles(styles: PropertyStyles. ()-> PropertyStyles): PropertiesStyles = copy(
+        propertyStyles = propertyStyles.styles()
+    )
+}
 
 data class PropertyStyles(
     val propertyStyle: StyleScope.()->Unit = {
@@ -29,7 +41,29 @@ data class PropertyStyles(
     val valueStyle: StyleScope.()->Unit = {
         alignContent(AlignContent.Start)
     }
-)
+) {
+    fun modifyPropertyStyle(styles: StyleScope. ()->Unit): PropertyStyles = copy(
+        propertyStyle = {
+            propertyStyle()
+            styles()
+        }
+    )
+
+    fun modifyValueStyle(styles: StyleScope. ()->Unit): PropertyStyles = copy(
+        valueStyle = {
+            valueStyle()
+            styles()
+        }
+    )
+
+
+    fun modifyKeyStyle(styles: StyleScope. ()->Unit): PropertyStyles = copy(
+        keyStyle = {
+            keyStyle()
+            styles()
+        }
+    )
+}
 
 @Markup
 @Composable

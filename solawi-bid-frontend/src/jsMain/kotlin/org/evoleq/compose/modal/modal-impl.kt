@@ -50,7 +50,7 @@ fun <Id> Modal(
             content()
         }
         // Vertical space
-        Div({style { flexGrow(1) }}){}
+        // Div({style { flexGrow(1) }}){}
         ModalFooter(
             id,
             device,
@@ -151,6 +151,9 @@ fun ModalContentWrapper(
         marginBottom(10.px)
         minHeight(1.px)
         maxHeight(80.vh)
+        display(DisplayStyle.Flex)
+        flexDirection(FlexDirection.Column)
+        flexGrow(1)
         styles()
     }
 }) {
@@ -176,6 +179,7 @@ fun <Id> ModalFooter(
         marginBottom(0.px)
         display(DisplayStyle.Flex)
         justifyContent(JustifyContent.FlexEnd)
+        alignSelf(AlignSelf.FlexEnd)
         with(styles) {
             footerWrapperStyle()
         }

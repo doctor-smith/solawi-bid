@@ -5,6 +5,8 @@ import org.evoleq.compose.Markup
 import org.jetbrains.compose.web.css.DisplayStyle
 import org.jetbrains.compose.web.css.StyleScope
 import org.jetbrains.compose.web.css.display
+import org.jetbrains.compose.web.css.minHeight
+import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.ElementScope
 import org.w3c.dom.HTMLElement
@@ -18,7 +20,8 @@ fun Horizontal(
 ) {
     Div({
         style {
-            display(DisplayStyle("flex"))
+            display(DisplayStyle.Flex)
+            minHeight(0.px)
             styles()
         }
     }) {

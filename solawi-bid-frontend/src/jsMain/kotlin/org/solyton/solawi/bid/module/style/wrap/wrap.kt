@@ -2,7 +2,9 @@ package org.solyton.solawi.bid.module.style.wrap
 
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
+import org.jetbrains.compose.web.css.DisplayStyle
 import org.jetbrains.compose.web.css.StyleScope
+import org.jetbrains.compose.web.css.display
 import org.jetbrains.compose.web.css.marginBottom
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Div

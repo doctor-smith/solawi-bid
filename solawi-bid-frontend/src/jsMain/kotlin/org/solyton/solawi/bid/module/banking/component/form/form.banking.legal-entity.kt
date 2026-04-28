@@ -150,7 +150,7 @@ fun LegalEntityForm(
                 id = "creditor-id",
                 labelStyle = formLabelDesktopStyle
             )
-            TextInput(legalFormState) {
+            TextInput(creditorIdState?.value?:"") {
                 id("creditor-id")
                 style { textInputDesktopStyle() }
                 onInput {
