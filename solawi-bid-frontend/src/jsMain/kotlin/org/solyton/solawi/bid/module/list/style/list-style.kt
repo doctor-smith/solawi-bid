@@ -23,6 +23,8 @@ data class ListStyles (
         gap(listItemGap)
         width(100.percent)
         height(100.percent)
+        minHeight(0.px)
+        flexGrow(1)
     },
     val titleWrapper: StyleScope.()->Unit = {
         display(DisplayStyle.Flex)

@@ -16,6 +16,8 @@ fun Vertical(style: StyleScope.()->Unit = {}, content: @Composable ElementScope<
             style()
             display(DisplayStyle.Flex)
             flexDirection(FlexDirection.Column)
+            minHeight(0.px)
+            flexGrow(1)
         }
     }) {
         content()
