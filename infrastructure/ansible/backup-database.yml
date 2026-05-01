@@ -1,0 +1,35 @@
+- name: Backup Database {{ environment_letter }}
+  hosts: all
+  become: true
+  vars:
+    backup_system_db: true
+    deployment_id: "{{ lookup('pipe', 'date +%s') }}"
+  tasks:
+    - name: Ensure backups directory exists
+      file:
+        path: "/var/solawi-bid/{{ environment_letter }}/database/backups"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Pre-deployment backup of solawi-bid database only
+      community.docker.docker_container_exec:
+        container: "solawi-bid_database_{{ environment_letter }}"
+        command: >
+          sh -c 'mysqldump -u root solawi-bid > /backups/solawi-bid-{{ lookup("pipe", "date +%Y%m%d%H%M%S") }}.sql'
+      register: app_backup
+      until: app_backup.rc == 0
+      retries: 5
+      delay: 10
+
+    - name: backup system mysql DB for emergencies
+      community.docker.docker_container_exec:
+        container: "solawi-bid_database_{{ environment_letter }}"
+        command: >
+          sh -c 'mysqldump -u root mysql > /backups/mysql-system-{{ lookup("pipe", "date +%Y%m%d%H%M%S") }}.sql'
+      register: system_backup
+      until: system_backup.rc == 0
+      retries: 5
+      delay: 10
+      when: backup_system_db | default(false)
