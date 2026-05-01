@@ -1,0 +1,63 @@
+name: Backup Database
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Select an environment"
+        required: true
+        type: choice
+        options:
+          - P
+          - Q
+          - D
+      
+  
+  schedule:
+    - cron: "0 3 * * * "
+      
+jobs:
+  backup: 
+    name: "Run Database Backup"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: collect environment config
+        id: collect-env-config
+        run: |
+          if [[ "${{inputs.environment}}" == "P" ]]; then
+            echo 'environment=P' >> $GITHUB_OUTPUT
+            echo 'mysql_password=${{ secrets.MYSQL_PASSWORD_P }}' >> $GITHUB_OUTPUT
+          elif [[  "${{inputs.environment}}" == "Q" ]]; then
+            echo 'environment=Q' >> $GITHUB_OUTPUT
+            echo 'mysql_password=${{ secrets.MYSQL_PASSWORD_Q }}' >> $GITHUB_OUTPUT
+          elif [[  "${{inputs.environment}}" == "D" ]]; then
+            echo 'environment=Q' >> $GITHUB_OUTPUT
+            echo 'mysql_password=${{ secrets.MYSQL_PASSWORD_D }}' >> $GITHUB_OUTPUT
+          else
+            echo 'environment=P' >> $GITHUB_OUTPUT
+            echo 'mysql_password=${{ secrets.MYSQL_PASSWORD_P }}' >> $GITHUB_OUTPUT
+          fi  
+
+      - name: Setup SSH
+        shell: bash
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SERVER_KEY }}" > server_key.pem
+          chmod 600 server_key.pem
+      - name: Run Ansible playbook to deploy application
+        shell: bash
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "false"
+        run: |
+          ansible-galaxy install -r ./infrastructure/ansible/backup-database.requirements.yml
+          ansible-playbook \
+          -i ${{ vars.SERVER_ADDRESS }}, \
+          -u ${{ vars.SERVER_USER }} \
+          --private-key server_key.pem \
+          -e 'environment_letter=${{ steps.collect-env-config.outputs.environment }}' \
+          -e 'mysql_password=${{ steps.collect-env-config.outputs.mysql_password }}' \
+          ./infrastructure/ansible/backup-database.yml
+      
+        
