@@ -11,6 +11,17 @@ class BicValidatorTest {
     companion object {
         @JvmStatic
         fun provideBics() = listOf(
+            Arguments.of("WELADE8LXXX", true),
+            Arguments.of("SOLADEST601", true),
+            Arguments.of("COBADEFFXXX", true),
+            Arguments.of("BFSWDE33BER", true),
+            Arguments.of("SOLADEST200", true),
+            Arguments.of("CMCIDEDDXXX", true),
+            Arguments.of("GENODEM1DKM", true),
+            Arguments.of("HYVEDEMMXXX", true),
+            Arguments.of("INGDDEFFXXX", true),
+            Arguments.of("COBADEHHXXX", true),
+            Arguments.of("NOLADE2HXXX", true),
             Arguments.of("DEUTDEFF", true),   // Valid BIC for Deutsche Bank, Germany
             Arguments.of("NWBKGB2L", true),  // Valid BIC for NatWest Bank, UK
             Arguments.of("BNPAFRPP", true),  // Valid BIC for BNP Paribas, France

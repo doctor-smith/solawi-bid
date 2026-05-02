@@ -11,6 +11,8 @@ import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
+import org.solyton.solawi.bid.module.banking.data.SepaPaymentId
+import org.solyton.solawi.bid.module.banking.data.sepa.mandate.SepaMandate
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
 import org.solyton.solawi.bid.module.list.component.ActionsWrapper
 import org.solyton.solawi.bid.module.list.component.DataWrapper
@@ -25,18 +27,28 @@ import org.solyton.solawi.bid.module.list.component.Title
 import org.solyton.solawi.bid.module.list.component.TitleWrapper
 import org.solyton.solawi.bid.module.list.style.ListStyles
 import org.solyton.solawi.bid.module.scrollable.Scrollable
+import org.solyton.solawi.bid.module.user.data.profile.UserProfile
+import org.solyton.solawi.bid.module.user.service.profile.fullname
+
+data class SepaPaymentListData(
+    val userProfile: UserProfile
+)
 
 @Markup
 @Composable
 @Suppress("FunctionName")
 fun ListOfPayments(
     title: String? = null,
+    mandates: List<SepaMandate>,
     payments: List<SepaPayment>,
     styles: ListStyles = ListStyles(),
     // overallActions: @Composable () -> Unit = {},
     actions: @Composable () -> Unit = {}
 ){
     val sortedPayments = payments.sortedByDescending { it.executionDate }
+    val mandatesMap = payments.associateBy({it.sepaPaymentId}) { payment ->
+        mandates.firstOrNull { it.sepaMandateId == payment.sepaMandateId }
+    }
 
     ListWrapper(styles.listWrapper) {
         When(title != null) {
@@ -46,10 +58,11 @@ fun ListOfPayments(
         }
         HeaderWrapper(styles.headerWrapper) {
             Header(styles.header) {
-                HeaderCell("Execution Date"){ width(20.percent) }
+                HeaderCell("Debtor"){ width(25.percent) }
+                HeaderCell("Exec. Date"){ width(15.percent) }
                 HeaderCell("Amount") { width(10.percent) }
-                HeaderCell("Sequence Type") {width(20.percent)}
-                HeaderCell("Failure Reason") {width(50.percent)}
+                HeaderCell("Seq Type") {width(10.percent)}
+                HeaderCell("Failure Reason") {width(40.percent)}
             }
         }
         Scrollable {
@@ -57,11 +70,13 @@ fun ListOfPayments(
                 ListItemWrapper({
                     listItemWrapperStyle(index)
                 }) {
+                    val name = mandatesMap[payment.sepaPaymentId]?.debtorName?: "--"
                     DataWrapper(styles.dataWrapper) {
-                        TextCell(payment.executionDate.format(Locale.Iso)) { width(20.percent) }
+                        TextCell(name) { width(25.percent) }
+                        TextCell(payment.executionDate.format(Locale.Iso)) { width(15.percent) }
                         TextCell("${payment.amount}") { width(10.percent) }
-                        TextCell(payment.sequenceType.name) { width(20.percent) }
-                        TextCell(payment.failureReason ?: "--") { width(50.percent) }
+                        TextCell(payment.sequenceType.name) { width(10.percent) }
+                        TextCell(payment.failureReason ?: "--") { width(40.percent) }
                     }
                     ActionsWrapper(styles.actionsWrapper) {
                         actions()

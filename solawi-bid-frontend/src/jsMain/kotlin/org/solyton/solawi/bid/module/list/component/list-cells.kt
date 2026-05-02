@@ -12,6 +12,9 @@ import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.CheckboxInput
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
+import org.solyton.solawi.bid.module.banking.data.internal.Currency
+import org.solyton.solawi.bid.module.banking.data.internal.format
+import org.solyton.solawi.bid.module.banking.data.internal.toMoney
 import kotlin.js.Date
 
 @Markup
@@ -32,6 +35,8 @@ fun HeaderCell(
     Div({style {
         fontWeight("bold")
         textAlign("left")
+        paddingLeft(5.px)
+        paddingRight(5.px)
         width(10.percent)
         style()
     }}){Text(text)}
@@ -60,6 +65,8 @@ fun TextCell(
         if(tooltip != null) title(tooltip)
         style {
             textAlign("left")
+            paddingLeft(5.px)
+            paddingRight(5.px)
             width(10.percent)
             style()
         }
@@ -82,10 +89,30 @@ fun NumberCell(
     style: StyleScope.()->Unit = { }
 ){
     Div({style {
-        textAlign("left")
+        textAlign("right")
+        paddingLeft(5.px)
+        paddingRight(5.px)
         width(10.percent)
         style()
     }}){Text("$number")}
+}
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun PriceCell(
+    number: Double,
+    currency: Currency = Currency.EUR,
+    style: StyleScope.()->Unit = { }
+) = Div({style {
+    textAlign("right")
+    paddingLeft(5.px)
+    paddingRight(5.px)
+    width(10.percent)
+    style()
+}}){
+    val price = number.toMoney(currency).format()
+    Text(price)
 }
 
 @Markup
@@ -108,6 +135,8 @@ fun TimeCell(
     Div({style {
         textAlign("left")
         width(10.percent)
+        paddingLeft(5.px)
+        paddingRight(5.px)
         style()
     }}){
         when{

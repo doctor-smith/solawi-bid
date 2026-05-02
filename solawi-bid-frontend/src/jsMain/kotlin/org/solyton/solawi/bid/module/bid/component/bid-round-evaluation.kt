@@ -7,6 +7,7 @@ import org.evoleq.compose.Markup
 import org.evoleq.compose.layout.Property
 import org.evoleq.compose.layout.PropertyStyles
 import org.evoleq.compose.layout.ReadOnlyProperty
+import org.evoleq.math.round
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
@@ -92,7 +93,7 @@ fun BidRoundEvaluation(
         "Ziel nicht erreicht"
     }
     val bidAmounts = evaluation.weightedBids.map { it.weight * it.bid }
-    val totalAmount = bidAmounts.sum()
+    val totalAmount = bidAmounts.sum().round(2)
     val bidsCount = evaluation.weightedBids.size
     val totalShares = evaluation.weightedBids.sumOf { it.weight }
     val avgBidPerShare = (totalAmount / totalShares).asDynamic().toFixed(2) as String
@@ -101,7 +102,7 @@ fun BidRoundEvaluation(
     // val numberOfBidsWeighted = evaluation.weightedBids.filter { it.hasPlacedBid }.sumOf { it.weight }
     val pctMadeBid = (numberOfBids.toDouble() / evaluation.weightedBids.size.toDouble()) * 100
     val pctMadeBidDisplay = pctMadeBid.asDynamic().toFixed(2) as String
-    val avgSharesPerBid = (evaluation.weightedBids.sumOf { it.weight }.toDouble() / evaluation.weightedBids.size.toDouble())
+    val avgSharesPerBid = (evaluation.weightedBids.sumOf { it.weight }.toDouble() / evaluation.weightedBids.size.toDouble()).round(2)
     val avgSharesPerBidDisplay = avgSharesPerBid.asDynamic().toFixed(3) as String
     val lowBidsAmount = evaluation.weightedBids.map { it.bid }.filter { it < standardBid }.size
     val lowBidsAmountPct = ((lowBidsAmount.toDouble() / bidsCount.toDouble()) * 100).asDynamic().toFixed(2) as String
@@ -134,7 +135,7 @@ fun BidRoundEvaluation(
         }
     }
     LaunchedEffect(evaluation, showStandardBidsTotal) {
-        val totalBids = evaluation.weightedBids.map { it.weight * it.bid }
+        val totalBids = evaluation.weightedBids.map { (it.weight * it.bid).round(2) }
         updateHistogram(
             totalBids,
             showStandardBidsTotal,
@@ -188,9 +189,9 @@ fun BidRoundEvaluation(
                 width(50.percent)
                 padding(0.px)
                 margin(0.px) } }) { LineSeparator() }
-            val difference = evaluation.totalSumOfWeightedBids - evaluation.auctionDetails.targetAmount
+            val difference = (evaluation.totalSumOfWeightedBids - evaluation.auctionDetails.targetAmount).round(2)
             val formattedDifference = if (difference >= 0) "+${difference}" else "$difference" // difference is already negative when < 0
-            val percentChange = (difference / evaluation.auctionDetails.targetAmount.toDouble()) * 100
+            val percentChange = (difference / evaluation.auctionDetails.targetAmount) * 100
             val formattedPercentage = if (percentChange >= 0)
                 "+${percentChange.roundToInt()}%"
             else

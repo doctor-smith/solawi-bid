@@ -121,6 +121,8 @@ fun <T> EditableCell(
         style {
             textAlign("left")
             width(10.percent)
+            paddingLeft(5.px)
+            paddingRight(5.px)
             when{
                 disabled -> cursor(Cursor.NotAllowed)
                 else -> cursor(Cursor.Pointer)
@@ -238,6 +240,7 @@ fun EditableIntCell(
 val editableNumberStyle: StyleScope.() -> Unit = {
     textAlign("right")
     paddingRight(5.px)
+    paddingLeft(5.px)
 
 }
 

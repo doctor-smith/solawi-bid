@@ -8,6 +8,9 @@ import org.evoleq.compose.layout.ReadOnlyProperties
 import org.jetbrains.compose.web.css.flexGrow
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.width
+import org.solyton.solawi.bid.module.banking.data.internal.Currency
+import org.solyton.solawi.bid.module.banking.data.internal.format
+import org.solyton.solawi.bid.module.banking.data.internal.toMoney
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
 
 @Markup
@@ -16,7 +19,7 @@ import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
 fun PaymentsProperties(payments: List<SepaPayment>) =
     ReadOnlyProperties(listOf(
         Property("Number", payments.size),
-        Property("Total Amount", payments.sumOf { it.amount })
+        Property("Total Amount", (payments.sumOf { it.amount }).toMoney(Currency.EUR).format()),
     ),
         PropertiesStyles().modifyContainerStyle {
             flexGrow(1)
