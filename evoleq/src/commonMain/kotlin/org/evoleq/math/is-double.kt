@@ -1,5 +1,8 @@
 package org.evoleq.math
 
+import kotlin.math.floor
+import kotlin.math.pow
+
 
 fun onIsDouble(value: String, dispatch: String.()->Unit) {
     if(value.isDouble()) {
@@ -39,4 +42,8 @@ fun String.isDouble(precision: Int = 2, dotHit: Boolean = false): Boolean {
             false
         }
     }
+}
+
+fun Double.round(precision: Int = 2): Double {
+    return kotlin.math.round(this * 10.0.pow(precision)) / 10.0.pow(precision)
 }

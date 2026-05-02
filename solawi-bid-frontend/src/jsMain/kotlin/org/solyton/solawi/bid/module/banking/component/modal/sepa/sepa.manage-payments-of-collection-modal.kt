@@ -84,6 +84,7 @@ import org.solyton.solawi.bid.module.tabs.component.TabTrigger
 import org.solyton.solawi.bid.module.tabs.component.TabsWrapper
 import org.solyton.solawi.bid.module.tabs.style.TabStyles
 import org.solyton.solawi.bid.module.user.component.dropdown.dropdownStyles
+import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 import org.w3c.dom.HTMLElement
 import kotlin.time.Duration.Companion.days
 
@@ -173,6 +174,9 @@ fun ManagePaymentsOfSepaCollectionModal(
                     0,
                     selectedTab
                 ) {
+
+
+
                     val openPayments =
                         sepaCollection.sepaPayments.filter { payment -> payment.status == PaymentExecutionStatus.CREATED }
 
@@ -303,14 +307,15 @@ fun ManagePaymentsOfSepaCollectionModal(
                                 TabTitle("Recently created Payments")
                                 ListOfPayments(
                                     null,
+                                    sepaCollection.sepaMandates,
                                     openPayments,
                                 )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_MESSAGE_CREATED) {
                                 TabTitle("Ready to be sent to the bank")
-                                val messageCreatedPayments = (1..100).map { messageCreatedPayments }.flatten()
                                 ListOfPayments(
                                     null,
+                                    sepaCollection.sepaMandates,
                                     messageCreatedPayments,
                                 )
 
@@ -319,6 +324,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                                 TabTitle("Payments sent to to the bank")
                                 ListOfPayments(
                                     null,
+                                    sepaCollection.sepaMandates,
                                     sentPayments,
                                 )
                             }
@@ -326,6 +332,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                                 TabTitle("Pending Payments")
                                 ListOfPayments(
                                     null,
+                                    sepaCollection.sepaMandates,
                                     pendingPayments,
                                 )
                             }
@@ -333,6 +340,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                                 TabTitle("Confirmed Payments")
                                 ListOfPayments(
                                     null,
+                                    sepaCollection.sepaMandates,
                                     confirmedPayments,
                                 )
                             }
@@ -340,6 +348,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                                 TabTitle("Failed Payments")
                                 ListOfPayments(
                                     null,
+                                    sepaCollection.sepaMandates,
                                     failedPayments,
                                 )
                             }
@@ -412,7 +421,8 @@ fun Storage<Modals<Int>>.showManagePaymentsOfSepaCollectionModal(
             texts,
             this@showManagePaymentsOfSepaCollectionModal,
             storage,
-            device,sepaCollection,
+            device,
+            sepaCollection,
             executionDate,
             setManageCollectionPayments,
             update = update

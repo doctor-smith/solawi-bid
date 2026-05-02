@@ -19,6 +19,7 @@ import org.evoleq.language.extend
 import org.evoleq.math.FirstOrNull
 import org.evoleq.math.Reader
 import org.evoleq.math.emit
+import org.evoleq.math.round
 import org.evoleq.optics.lens.FilterBy
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
@@ -55,6 +56,7 @@ import org.solyton.solawi.bid.module.banking.data.bankingApplicationModals
 import org.solyton.solawi.bid.module.banking.data.download.Download
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
+import org.solyton.solawi.bid.module.banking.data.internal.Currency
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.message.message
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.executionDate
@@ -646,7 +648,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                             HeaderCell("L-Time"){ width(5.percent) }
                             HeaderCell("C-Day"){ width(5.percent) }
                             // HeaderCell("Next Payment"){width(10.percent)}
-                            HeaderCell("Amount"){width(5.percent)}
+                            HeaderCell("Amount"){width(10.percent)}
                         }
                     }
 
@@ -654,7 +656,11 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
 
                         val bankAccount = collectionToBankAccountMap.emit()[collection.sepaCollectionId]
                         val latestExecutionDate = collection.sepaPayments.maxOfOrNull{payment -> payment.executionDate}
-                        val cumulatedAmount = collection.sepaPayments.filter { it.executionDate == latestExecutionDate }.sumOf { mandate -> mandate.amount }
+                        val cumulatedAmount = collection.sepaPayments
+                            .filter { it.executionDate == latestExecutionDate }
+                            .sumOf { payment -> payment.amount }
+                            .round(2)
+
                         ListItemWrapper({listItemWrapperStyle(index)}) {
                             DataWrapper {
                                 TextCell(bankAccount?.iban?.value?: ""){ width(20.percent) }
@@ -664,7 +670,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                                 TextCell(collection.sepaSequenceType.name){  width(10.percent)}
                                 NumberCell(collection.leadTimesDays){  width(5.percent)}
                                 NumberCell(collection.requestedCollectionDay?:-1){  width(5.percent)}
-                                NumberCell(cumulatedAmount) { width(5.percent) }
+                                PriceCell(cumulatedAmount, Currency.EUR) { width(10.percent) }
                                 // TextCell(collection.){}
                             }
                             ActionsWrapper {
