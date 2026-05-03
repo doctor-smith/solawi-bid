@@ -368,7 +368,7 @@ fun PrivateUserPage(storage: Storage<Application>) = withLoading(
                         (storage * userIso * userModals).showUpsertUserProfileModal(
                             styles = { dev -> commonModalStyles(dev) },
                             device = deviceData,
-                            texts = texts,
+                            texts = texts * subComp("dialogs.updateUserProfile"),
                             countryTexts = countryTexts,
                             userProfile = null,
                             setUserProfile = { userProfile -> userProfileState = userProfile },
@@ -431,7 +431,7 @@ fun PrivateUserPage(storage: Storage<Application>) = withLoading(
                                 (storage * userIso * userModals).showUpsertUserProfileModal(
                                     styles = { dev -> commonModalStyles(dev) },
                                     device = deviceData,
-                                    texts = texts,
+                                    texts = texts * subComp("dialogs.updateUserProfile"),
                                     countryTexts = countryTexts,
                                     userProfile = userProfileStorage.read(),
                                     setUserProfile = { userProfile -> userProfileState = userProfile },
@@ -483,7 +483,7 @@ fun PrivateUserPage(storage: Storage<Application>) = withLoading(
                         (storage * userIso * userModals).showUpsertUserProfileModal(
                             styles = { dev -> commonModalStyles(dev) },
                             device = deviceData,
-                            texts = texts,
+                            texts = texts * subComp("dialogs.updateUserProfile"),
                             countryTexts = countryTexts,
                             userProfile = userProfileStorage.read(),
                             setUserProfile = { userProfile -> userProfileState = userProfile },
