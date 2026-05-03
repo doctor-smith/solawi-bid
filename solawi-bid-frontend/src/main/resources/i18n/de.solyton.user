@@ -134,6 +134,65 @@ de {
                         }
 
                     }
+                    updateUserProfile {
+                        title: "Nutzer Profil bearbeiten"
+                        inputs {
+                         userProfile {
+                             formTitle: "Persönliche Daten"
+                             username {
+                                title: "Email"
+                             }
+                             firstname {
+                                 title: "Vorname"
+                             }
+                             lastname {
+                                 title: "Nachname"
+                             }
+                             title {
+                                title: "Titel"
+                             }
+                             phoneNumber {
+                                title: "Telefon"
+                             }
+                             cellPhoneNumber {
+                                title: "Mobil"
+                             }
+                             address {
+                                title: "Adresse"
+                                recipientName {
+                                    title: "Empfänger"
+                                }
+                                organizationName {
+                                    title: "Firma / Organisation"
+                                }
+                                addressLine1 {
+                                    title: "Straße, Hausnr."
+                                }
+                                addressLine2 {
+                                    title: "Adress Zusatz"
+                                }
+                                city {
+                                    title: "Stadt"
+                                }
+                                stateOrProvince {
+                                    title: "Bundesland"
+                                }
+                                postalCode {
+                                    title: "PLZ"
+                                }
+                                countryCode {
+                                    title: "Land"
+                                }
+                             }
+                         }
+                        }
+                        okButton {
+                            title: "Ok"
+                        }
+                        cancelButton {
+                            title: "Abbrechen"
+                        }
+                    }
                 }
             }
         }

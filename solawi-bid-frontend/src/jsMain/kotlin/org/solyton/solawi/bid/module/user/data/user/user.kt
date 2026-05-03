@@ -9,9 +9,12 @@ package org.solyton.solawi.bid.module.user.data.user
 import org.evoleq.axioms.definition.ReadWrite
 import org.evoleq.axioms.definition.Lensify
 import org.evoleq.axioms.definition.ReadOnly
+import org.evoleq.optics.prism.Either
+import org.evoleq.optics.prism.Prism
 import org.solyton.solawi.bid.module.permissions.data.Permissions
 import org.solyton.solawi.bid.module.user.data.organization.Organization
 import org.solyton.solawi.bid.module.user.data.profile.UserProfile
+import kotlin.getValue
 
 /**
  * Generator class.

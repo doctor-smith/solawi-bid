@@ -65,6 +65,7 @@ operator fun <L,K,R,S> ((L)->R).plus(other: (K)->S): (Either<L, K>)-> Either<R, 
     e -> e.mapLeft(this).mapRight(other)
 }
 
+
 data class Prism<S, T, A, B>(
     val match: (S)-> Either<A, T>,
     val build: (B)->T

@@ -126,6 +126,20 @@ fun <BankingEnv> Routing.banking (
                     DeleteBankAccount() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
+                route("personal") {
+                    get("/") {
+                        NotImplemented("") * Respond { transform() } runOn Base(call, environment)
+                    }
+                    post("create") {
+                        NotImplemented("") * Respond { transform() } runOn Base(call, environment)
+                    }
+                    patch("update") {
+                        NotImplemented("") * Respond { transform() } runOn Base(call, environment)
+                    }
+                    delete("delete") {
+                        NotImplemented("") * Respond { transform() } runOn Base(call, environment)
+                    }
+                }
             }
             route("creditors") {
                 route("identifiers") {

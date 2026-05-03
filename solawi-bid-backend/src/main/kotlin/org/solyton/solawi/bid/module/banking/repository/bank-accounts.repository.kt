@@ -26,6 +26,7 @@ import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.user.service.user.createUser
 import org.solyton.solawi.bid.module.user.service.validateUserExists
+import org.solyton.solawi.bid.module.values.UserId
 import java.util.*
 
 /**
@@ -93,6 +94,10 @@ fun Transaction.createBankAccount(
  * @throws BankAccountsException.NoSuchBankAccount If no bank account exists with the specified ID.
  */
 fun Transaction.readBankAccount(bankAccountId: UUID) : BankAccountEntity = validatedBankAccount(bankAccountId)
+
+fun Transaction.readBankAccounts(userId: UserId) : List<BankAccountEntity> = BankAccountEntity.find{
+    BankAccountsTable.userId eq UUID.fromString(userId.value)
+}.toList()
 
 /**
  * Reads the list of bank accounts associated with a specified legal entity.
