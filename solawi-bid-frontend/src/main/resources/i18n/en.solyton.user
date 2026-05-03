@@ -133,6 +133,65 @@ en {
                             title: "Cancel"
                         }
                     }
+                    updateUserProfile {
+                        title: "Nutzer Profil bearbeiten"
+                        inputs {
+                         userProfile {
+                             formTitle: "Personal Data"
+                             username {
+                                title: "Email"
+                             }
+                             firstname {
+                                 title: "Firstname"
+                             }
+                             lastname {
+                                 title: "Lastname"
+                             }
+                             title {
+                                title: "Title"
+                             }
+                             phoneNumber {
+                                title: "Phone"
+                             }
+                             cellPhoneNumber {
+                                title: "Cell Phone"
+                             }
+                             address {
+                                title: "Adress"
+                                recipientName {
+                                    title: "Recipient"
+                                }
+                                organizationName {
+                                    title: "Company / Organization"
+                                }
+                                addressLine1 {
+                                    title: "Street, Nr."
+                                }
+                                addressLine2 {
+                                    title: "Adress Line 2"
+                                }
+                                city {
+                                    title: "City"
+                                }
+                                stateOrProvince {
+                                    title: "State / Province"
+                                }
+                                postalCode {
+                                    title: "Postal Code"
+                                }
+                                countryCode {
+                                    title: "Country"
+                                }
+                             }
+                         }
+                        }
+                        okButton {
+                            title: "Ok"
+                        }
+                        cancelButton {
+                            title: "Cancel"
+                        }
+                    }
                 }
             }
         }
