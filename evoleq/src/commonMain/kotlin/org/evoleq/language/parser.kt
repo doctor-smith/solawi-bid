@@ -41,8 +41,8 @@ fun Block(): Parser<Lang> = sequenceA(
 @Suppress("FunctionName")
 fun Content(): Parser<List<Lang>> =
     sequenceA(DropAllWhitespace(), DropAllNewline()) dL
-    LanguageP() * {x -> Content() map { list -> listOf(x, *list.toTypedArray())}} OR Succeed(listOf()) dR
-    sequenceA(DropAllWhitespace(), DropAllNewline())
+        LanguageP().many() dR
+        sequenceA(DropAllWhitespace(), DropAllNewline())
 
 @Suppress("FunctionName")
 fun Comment(): Parser<String> = seqA(DropAllWhitespace(), StartsWith("/*")) dL
@@ -60,7 +60,25 @@ fun LanguageP(): Parser<Lang> = (Variable() OR Block())
 fun Segment(): Parser<String> = CollectWhile{ it != '.' } dR DropWhile { it == '.' }
 
 @Suppress("FunctionName")
-fun Path(): Parser<List<String>> = Segment() * { seg -> when(seg.isEmpty()){
-   true -> Succeed(listOf())
-   false -> Path() map{ list -> listOf(seg, *list.toTypedArray()) }
-} }
+fun Path(): Parser<List<String>> =
+    Segment().many() map { segments ->
+        segments.filter { it.isNotEmpty() }
+    }
+
+fun <T> Parser<T>.many(): Parser<List<T>> = Parser { input ->
+    val result = mutableListOf<T>()
+    var rest = input
+
+    @Suppress("LoopWithTooManyJumpStatements")
+    while (true) {
+        val parsed = this.run(rest)
+
+        if (parsed.hasFailed()) break
+        if (parsed.rest == rest) break
+
+        result.add(parsed.result!!)
+        rest = parsed.rest
+    }
+
+    Result(result, rest)
+}
