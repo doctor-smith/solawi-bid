@@ -15,7 +15,10 @@ sealed class SepaException(override val message: String): Exception(message) {
         data object MissingEndToEndId: Transaction("Missing end to end id") {
             private fun readResolve(): Any = MissingEndToEndId
         }
-
+        @Suppress("UnusedPrivateMember")
+        data object MissingDebtorName: Transaction("Missing debtor name") {
+            private fun readResolve(): Any = MissingDebtorName
+        }
     }
 
     data class NoSuchSepaMandate(val id:String) : SepaException("No such sepa mandate; id = $id")

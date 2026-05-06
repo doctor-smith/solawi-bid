@@ -91,7 +91,7 @@ private fun validateTransactions(transactions: List<Pain008Transaction>) {
 
         // Validate Amount
         if (transaction.amount <= BigDecimal.ZERO) {
-            throw SepaException.Transaction.InvalidAmount( transaction.amount.toString())
+            throw SepaException.Transaction.InvalidAmount(transaction.amount.toString())
         }
 
         // Validate Mandate reference
@@ -102,6 +102,10 @@ private fun validateTransactions(transactions: List<Pain008Transaction>) {
         // Validate End-to-End ID
         if (transaction.endToEndId.isBlank()) {
             throw SepaException.Transaction.MissingEndToEndId
+        }
+
+        if (transaction.debtorName.isBlank()) {
+            throw SepaException.Transaction.MissingDebtorName
         }
     }
 }
@@ -127,7 +131,9 @@ private fun buildPain008Xml(
     val totalAmount = transactions.sumOf { it.amount }
     val numberOfTransactions = transactions.size
     val executionDate = sepaMessage.executionDate
-    
+
+
+
     return buildString {
         appendLine("""<?xml version="1.0" encoding="UTF-8"?>""")
         appendLine("""<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.001.02" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">""")
@@ -254,7 +260,10 @@ private fun appendCreditorInformation(
         appendLine("      </CdtrAcct>")
         appendLine("      <CdtrAgt>")
         appendLine("        <FinInstnId>")
-        appendLine("          <BIC>${creditorAccount.bic}</BIC>")
+        when(creditorAccount.bic.isNotBlank()) {
+            true ->  appendLine("          <BIC>${creditorAccount.bic}</BIC>")
+            false -> appendLine("          <Othr>          <Id>NOTPROVIDED</Id>          </Othr>")
+        }
         appendLine("        </FinInstnId>")
         appendLine("      </CdtrAgt>")
         appendLine("      <CdtrSchmeId>")
@@ -290,9 +299,15 @@ private fun appendTransactionInformation(
         appendLine("        </DrctDbtTx>")
         appendLine("        <DbtrAgt>")
         appendLine("          <FinInstnId>")
-        if (transaction.debtorBic.isNotBlank()) {
-            appendLine("            <BIC>${transaction.debtorBic}</BIC>")
+        // for the moment we drop the BIC, as it is not required by the SEPA standard
+        appendLine("            <Othr>          <Id>NOTPROVIDED</Id>          </Othr>")
+        /*
+        when (transaction.debtorBic.isNotBlank()) {
+            true -> appendLine("            <BIC>${transaction.debtorBic}</BIC>")
+            false -> appendLine("            <Othr>          <Id>NOTPROVIDED</Id>          </Othr>")
         }
+
+         */
         appendLine("          </FinInstnId>")
         appendLine("        </DbtrAgt>")
         appendLine("        <Dbtr>")

@@ -112,6 +112,7 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
         is SepaException -> when(value as SepaException) {
             is SepaException.Transaction.MissingMandateReference -> HttpStatusCode.BadRequest
             is SepaException.Transaction.MissingEndToEndId -> HttpStatusCode.BadRequest
+            is SepaException.Transaction.MissingDebtorName -> HttpStatusCode.BadRequest
             is SepaException.Transaction.InvalidAmount -> HttpStatusCode.BadRequest
             is SepaException.Transaction.InvalidCreditorId -> HttpStatusCode.BadRequest
             is SepaException.MissingXmlSchema -> HttpStatusCode.BadRequest
