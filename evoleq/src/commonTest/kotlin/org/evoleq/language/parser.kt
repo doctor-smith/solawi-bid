@@ -93,4 +93,107 @@ class ParserTest {
         println(result)
         assertEquals(c, result)
     }
+
+    @Test
+    fun deeplyNestedStructure() {
+        val lang = Lang.Block(
+            "root",
+            listOf(
+                Var("rootKey", "rootValue"),
+                Block(
+                    "level1", listOf(
+                        Var("key1", "value1"),
+                        Block(
+                            "level2", listOf(
+                                Var("key2", "value2"),
+                                Block(
+                                    "level3", listOf(
+                                        Var("key3", "value3"),
+                                        Block(
+                                            "level4", listOf(
+                                                Var("key4", "value4"),
+                                                Block(
+                                                    "level5", listOf(
+                                                        Var("key5", "value5"),
+                                                        Block(
+                                                            "level6", listOf(
+                                                                Var("deepKey", "deepValue")
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ),
+                Block(
+                    "alternate", listOf(
+                        Var("altKey", "altValue")
+                    )
+                )
+            )
+        )
+
+        // Test root level
+        assertEquals("rootValue", lang["rootKey"])
+
+        // Test level 1
+        assertEquals("value1", lang["level1.key1"])
+
+        // Test level 2
+        assertEquals("value2", lang["level1.level2.key2"])
+
+        // Test level 3
+        assertEquals("value3", lang["level1.level2.level3.key3"])
+
+        // Test level 4
+        assertEquals("value4", lang["level1.level2.level3.level4.key4"])
+
+        // Test level 5
+        assertEquals("value5", lang["level1.level2.level3.level4.level5.key5"])
+
+        // Test level 6 (deepest)
+        assertEquals("deepValue", lang["level1.level2.level3.level4.level5.level6.deepKey"])
+
+        // Test alternate branch
+        assertEquals("altValue", lang["alternate.altKey"])
+
+        // Test component retrieval at various depths
+        val level3Component = lang.component("level1.level2.level3")
+        assertTrue { level3Component is Lang.Block }
+        assertEquals("level3", (level3Component as Lang.Block).key)
+
+        val level6Component = lang.component("level1.level2.level3.level4.level5.level6")
+        assertTrue { level6Component is Lang.Block }
+        assertEquals("level6", (level6Component as Lang.Block).key)
+    }
+
+    @Test
+    fun tooMuchRecursion() {
+        // Build an extremely deep nested structure programmatically
+        fun buildDeepStructure(depth: Int): Lang.Block {
+            var innerBlock: Lang.Block = Block("level$depth", listOf(Var("deepKey", "deepValue")))
+
+            for (i in depth - 1 downTo 1) {
+                innerBlock = Block("level$i", listOf(innerBlock))
+            }
+
+            return Block("root", listOf(innerBlock))
+        }
+
+        // Create a structure with 10000 levels to provoke stack overflow
+        val veryDeepLang = buildDeepStructure(10000)
+
+        // Build the path string
+        val pathParts = (1..10000).map { "level$it" }
+        val deepPath = pathParts.joinToString(".") + ".deepKey"
+
+        // This would have caused stack overflow due to deep recursion earlier
+        val result = veryDeepLang[deepPath]
+        assertEquals("deepValue", result)
+    }
 }

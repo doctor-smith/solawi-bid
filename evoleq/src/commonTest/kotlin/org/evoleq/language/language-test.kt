@@ -151,7 +151,7 @@ class LanguageTest {
     }
 
 
-    // @Test
+    @Test
     fun realExample() {
         val c1 = "de{\n" +
             "    solyton{\n" +
@@ -398,6 +398,36 @@ class LanguageTest {
 
         val r = lang.merge(l)
         println(r)
-        // todo finish test
+
+        // Verify merge result is not null and is a Block
+        assertTrue { r is Block }
+        val merged = r as Block
+
+        // Verify "solyton" component exists
+        val solyton = merged.component("solyton")
+        assertTrue { solyton is Block }
+
+        // Verify both original and new components exist
+        val authentication = solyton.component("authentication")
+        val user = solyton.component("user")
+        assertTrue { authentication is Block }
+        assertTrue { user is Block }
+
+        // Verify original content is preserved
+        val loginFields = authentication.component("login").component("fields")
+        assertEquals("Nutzername", loginFields["username"])
+        assertEquals("Passwort", loginFields["password"])
+
+        // Verify new content is added
+        val privatePageButtons = user.component("privatePage").component("buttons")
+        assertEquals("Passwort ändern", privatePageButtons.component("changePassword")["title"])
+
+        // Verify locales still exist from original
+        val locales = solyton.component("locales")
+        assertEquals("Deutsch", locales["de"])
+        assertEquals("Englisch", locales["en"])
+
+        // Verify expected number of top-level components under solyton (original + new)
+        assertTrue { solyton.value.size >= 2 }
     }
 }
