@@ -16,6 +16,7 @@ val defaultListStyles: ListStyles by lazy { ListStyles() }
  *    |- dataWrapper
  *    |- actionsWrapper
  */
+@Suppress("TooManyFunctions")
 data class ListStyles (
     val listWrapper: StyleScope.()->Unit = {
         display(DisplayStyle.Flex)
@@ -34,6 +35,17 @@ data class ListStyles (
         gap(listItemGap)
     },
     val title: StyleScope.()-> Unit = {},
+    val filterWrapper: StyleScope.()->Unit = {
+        width(100.percent)
+        display(DisplayStyle.Flex)
+        flexDirection(FlexDirection.Row)
+        alignItems(AlignItems.Center)
+    },
+    val filter: StyleScope.()->Unit = {
+
+    },
+    val overallActionsWrapper: StyleScope.()->Unit = {},
+    val overallActions: StyleScope.()->Unit = {},
     val headerWrapper: StyleScope.()->Unit = {
         //justifyContent(JustifyContent.SpaceBetween)
         display(DisplayStyle.Flex)
@@ -110,6 +122,34 @@ data class ListStyles (
     fun modifyTitle(newStyles: StyleScope.()->Unit): ListStyles = copy(
         title = {
             title()
+            newStyles()
+        }
+    )
+
+    fun modifyFilterWrapper(newStyles: StyleScope.()->Unit): ListStyles = copy(
+        filterWrapper = {
+            filterWrapper()
+            newStyles()
+        }
+    )
+
+    fun modifyFilter(newStyles: StyleScope.()->Unit): ListStyles = copy(
+        filter = {
+            filter()
+            newStyles()
+        }
+    )
+
+    fun modifyOverallActionsWrapper(newStyles: StyleScope.()->Unit): ListStyles = copy(
+        overallActionsWrapper = {
+            overallActionsWrapper()
+            newStyles()
+        }
+    )
+
+    fun modifyOverallActions(newStyles: StyleScope.()->Unit): ListStyles = copy(
+        overallActions = {
+            overallActions()
             newStyles()
         }
     )

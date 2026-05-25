@@ -2,7 +2,6 @@ package org.solyton.solawi.bid.module.banking.component.modal.sepa
 
 import androidx.compose.runtime.*
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.plus
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
 import org.evoleq.compose.date.format
@@ -10,8 +9,6 @@ import org.evoleq.compose.form.Form
 import org.evoleq.compose.form.field.Field
 import org.evoleq.compose.form.label.Label
 import org.evoleq.compose.layout.Horizontal
-import org.evoleq.compose.layout.Property
-import org.evoleq.compose.layout.ReadOnlyProperties
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.compose.modal.Modal
 import org.evoleq.compose.modal.ModalData
@@ -33,27 +30,16 @@ import org.jetbrains.compose.web.css.AlignSelf
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.LineStyle
 import org.jetbrains.compose.web.css.alignSelf
-import org.jetbrains.compose.web.css.flex
 import org.jetbrains.compose.web.css.flexGrow
-import org.jetbrains.compose.web.css.height
 import org.jetbrains.compose.web.css.border
 import org.jetbrains.compose.web.css.borderWidth
-import org.jetbrains.compose.web.css.minHeight
 import org.jetbrains.compose.web.css.paddingLeft
-import org.jetbrains.compose.web.css.paddingRight
-import org.jetbrains.compose.web.css.paddingTop
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.px
-import org.jetbrains.compose.web.css.vh
 import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.Button
-import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.ElementScope
-import org.jetbrains.compose.web.dom.H3
-import org.jetbrains.compose.web.dom.H4
-import org.jetbrains.compose.web.dom.H5
 import org.jetbrains.compose.web.dom.Input
-import org.jetbrains.compose.web.dom.P
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.banking.component.list.ListOfPayments
 import org.solyton.solawi.bid.module.banking.component.properties.PaymentsProperties
@@ -62,19 +48,18 @@ import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.deviceData
 import org.solyton.solawi.bid.module.banking.data.sepa.PaymentExecutionStatus
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
+import org.solyton.solawi.bid.module.control.button.PlusButton
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
 import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
+import org.solyton.solawi.bid.module.list.style.defaultListStyles
 import org.solyton.solawi.bid.module.navbar.component.SimpleUpDown
 import org.solyton.solawi.bid.module.scrollable.Scrollable
 import org.solyton.solawi.bid.module.scrollable.ScrollableStyles
-import org.solyton.solawi.bid.module.style.cursor.Cursor
-import org.solyton.solawi.bid.module.style.cursor.cursor
 import org.solyton.solawi.bid.module.style.form.dateInputDesktopStyle
 import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
 import org.solyton.solawi.bid.module.style.modal.commonModalStyles
-import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.tabs.component.TabContent
 import org.solyton.solawi.bid.module.tabs.component.TabContentWrapper
 import org.solyton.solawi.bid.module.tabs.component.TabParagraph
@@ -83,10 +68,7 @@ import org.solyton.solawi.bid.module.tabs.component.TabTitle
 import org.solyton.solawi.bid.module.tabs.component.TabTrigger
 import org.solyton.solawi.bid.module.tabs.component.TabsWrapper
 import org.solyton.solawi.bid.module.tabs.style.TabStyles
-import org.solyton.solawi.bid.module.user.component.dropdown.dropdownStyles
-import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 import org.w3c.dom.HTMLElement
-import kotlin.time.Duration.Companion.days
 
 sealed class ManageCollectionPayments {
     data class AttachPayments(
@@ -303,12 +285,16 @@ fun ManagePaymentsOfSepaCollectionModal(
                             When(paragraphState == Tabs.Payments.Paragraphs.CREATE_NEW_PAYMENTS) {
                                 TabTitle("Create New payments")
                             }
+                            val listStyles = defaultListStyles.modifyFilter {
+                                width(10.percent)
+                            }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_CREATED) {
                                 TabTitle("Recently created Payments")
                                 ListOfPayments(
                                     null,
                                     sepaCollection.sepaMandates,
                                     openPayments,
+                                    listStyles
                                 )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_MESSAGE_CREATED) {
@@ -317,6 +303,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     null,
                                     sepaCollection.sepaMandates,
                                     messageCreatedPayments,
+                                    listStyles
                                 )
 
                             }
@@ -326,6 +313,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     null,
                                     sepaCollection.sepaMandates,
                                     sentPayments,
+                                    listStyles
                                 )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_PENDING) {
@@ -334,6 +322,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     null,
                                     sepaCollection.sepaMandates,
                                     pendingPayments,
+                                    listStyles
                                 )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_CONFIRMED) {
@@ -342,6 +331,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     null,
                                     sepaCollection.sepaMandates,
                                     confirmedPayments,
+                                    listStyles
                                 )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_FAILED) {
@@ -350,6 +340,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     null,
                                     sepaCollection.sepaMandates,
                                     failedPayments,
+                                    listStyles
                                 )
                             }
                         }
@@ -361,42 +352,65 @@ fun ManagePaymentsOfSepaCollectionModal(
                     selectedTab
                 ) {
                     val openPayments = sepaCollection.sepaPayments.filter { it.status == PaymentExecutionStatus.CREATED }
-                    val executionDates = openPayments.map{it.executionDate}.sortedBy { it }
-                    var executionDateState by remember { mutableStateOf(executionDates.firstOrNull()) }
 
-                    Text("Manage Messages")
-                    Form(formDesktopStyle) {
+                    val executionDatesOfOpenPayments = openPayments.map{it.executionDate}.sortedBy { it }
+                    val allExecutionDates = sepaCollection.sepaPayments.filter{it.status != PaymentExecutionStatus.CREATED}.map{it.executionDate}.distinct().sortedBy { it }
+                    var executionDateState by remember { mutableStateOf(executionDatesOfOpenPayments.firstOrNull()) }
 
-                        Field(fieldDesktopStyle) {
+                    TabTitle("Manage Messages")
+                    Horizontal {
+                        val isValid = executionDatesOfOpenPayments.isNotEmpty()
+                        if (!isValid) Text("No open Payments defined")
+                        Form(formDesktopStyle) {
 
-                            val isValid = executionDates.isNotEmpty()
-                            if(!isValid) Text("No Payments defined")
+                            Field(fieldDesktopStyle) {
 
-                            // State
-                            val initDate = (executionDateState?:today()).format(Locale.Iso)
-                            val dateOptions = executionDates.associateBy {
-                                date -> date.format(Locale.Iso)
-                            }
-                            Label("Execution Date", id = "date" , labelStyle = formLabelDesktopStyle)
-                            Dropdown(
-                                options = dateOptions,
-                                selected = initDate,
-                                styles = dropdownStyles,
-                                iconContent = {opened -> SimpleUpDown(opened) }
-                            ) {
-                                (_, value) -> executionDateState = value
+                                // State
+                                val initDate = (executionDateState ?: today()).format(Locale.Iso)
+                                val dateOptions = executionDatesOfOpenPayments.associateBy { date ->
+                                    date.format(Locale.Iso)
+                                }
+                                Label("Execution Date", id = "date", labelStyle = formLabelDesktopStyle)
+                                Dropdown(
+                                    options = dateOptions,
+                                    selected = initDate,
+                                    styles = dropdownStyles,
+                                    iconContent = { opened -> SimpleUpDown(opened) }
+                                ) { (_, value) ->
+                                    executionDateState = value
+                                }
                             }
                         }
+                        Button({
+                            if (executionDateState == null || !isValid) disabled()
+                            onClick {
+                                if (executionDateState == null) return@onClick
+                                setManageCollectionPayments(
+                                    ManageCollectionPayments.CreateMessage(
+                                        executionDateState!!
+                                    )
+                                )
+                            }
+                        }) {
+                            Text("Generate Sepa Message")
+                        }
                     }
-                    Button({
-                        if(executionDateState == null) disabled()
-                        onClick {
-                            if(executionDateState == null) return@onClick
-                            setManageCollectionPayments(ManageCollectionPayments.CreateMessage(
-                            executionDateState!!
-                        )) }
-                    }) {
-                        Text("Generate Sepa Message")
+
+                    TabParagraph("Sepa messages by execution date")
+                    allExecutionDates.forEach { date ->
+                        val payments = sepaCollection.sepaPayments.filter { it.executionDate == date }
+                        // distinguish status?
+                        ListOfPayments(
+                            "Message for $date",
+                            sepaCollection.sepaMandates,
+                            payments = payments,
+                            overallActions = {
+
+                            },
+                            actions = {
+
+                            }
+                        )
                     }
                 }
             }
