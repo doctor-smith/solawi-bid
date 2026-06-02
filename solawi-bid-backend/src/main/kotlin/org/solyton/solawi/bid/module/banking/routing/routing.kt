@@ -31,6 +31,7 @@ import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.READ_SEPA_C
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.READ_SEPA_MANDATES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_COLLECTIONS
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_MANDATES
+import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_PAYMENTS
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
 import org.solyton.solawi.bid.module.permission.action.db.no
 
@@ -224,7 +225,13 @@ fun <BankingEnv> Routing.banking (
                 }
                 route("payments"){
                     post("create") {
-
+                        NotImplemented("Sepa collection deletion is not implemented yet")
+                    }
+                    patch("update-execution-statuses") {
+                        ReceiveContextual<UpdateSepaPaymentExecutionStatuses>() *
+                        IsGranted(UPDATE_SEPA_PAYMENTS, no) *
+                        UpdateSepaPaymentExecutionStatuses() *
+                        Respond { transform() } runOn Base(call, environment)
                     }
                 }
             }

@@ -51,6 +51,9 @@ data class ReadBankAccount(
 )
 
 @Serializable
+data object ReadPersonalBankAccounts
+
+@Serializable
 data class CreateBankAccount(
     val userId: UserId,
     val bic: BIC,
