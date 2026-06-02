@@ -6,8 +6,48 @@ import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.math.Source
 import org.jetbrains.compose.web.css.CSSColorValue
 import org.jetbrains.compose.web.css.Color
-
-
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun AnglesLeftButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-angles-left"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun AnglesRightButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-angles-right"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
 @Markup
 @Composable
 @Suppress("FunctionName")

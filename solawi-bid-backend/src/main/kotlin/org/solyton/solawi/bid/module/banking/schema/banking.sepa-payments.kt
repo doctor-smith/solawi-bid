@@ -20,6 +20,7 @@ object SepaPayments : AuditableUUIDTable("sepa_payments") {
     val sequenceType = enumerationByName("sequence_type", 10, SepaSequenceType::class)
     val status = enumerationByName("status", 20, PaymentExecutionStatus::class)
     val failureReason = text("failure_reason").nullable()
+    val endToEndId = varchar("end_to_end_id", 35).uniqueIndex().nullable()
 }
 
 class SepaPayment(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
@@ -33,6 +34,7 @@ class SepaPayment(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     var sequenceType by SepaPayments.sequenceType
     var status by SepaPayments.status
     var failureReason by SepaPayments.failureReason
+    var endToEndId by SepaPayments.endToEndId
 
     override var createdAt: DateTime by SepaPayments.createdAt
     override var createdBy: UUID by SepaPayments.createdBy

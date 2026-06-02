@@ -7,6 +7,7 @@ import org.evoleq.ktorx.client.QueryParams
 import org.solyton.solawi.bid.module.banking.data.SepaCollectionId
 import org.solyton.solawi.bid.module.banking.data.SepaMandateId
 import org.solyton.solawi.bid.module.banking.data.SepaPaymentId
+import kotlin.collections.emptyMap
 
 typealias ApiSepaPayment = SepaPayment
 typealias ApiSepaPayments = SepaPayments
@@ -66,6 +67,13 @@ data class UpdateSepaPayment(
     val sequenceType: SepaSequenceType,
     val status: PaymentExecutionStatus,
     val failureReason: String? = null
+)
+
+@Serializable
+data class UpdateSepaPaymentExecutionStatuses(
+    val newStatus: PaymentExecutionStatus,
+    val paymentIds: List<SepaPaymentId>,
+    val failureReasons: Map<SepaPaymentId, String> = emptyMap()
 )
 
 

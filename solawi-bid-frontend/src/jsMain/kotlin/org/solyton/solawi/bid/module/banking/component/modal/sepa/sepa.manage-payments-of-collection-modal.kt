@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.module.banking.component.modal.sepa
 
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
@@ -20,7 +21,10 @@ import org.evoleq.kotlinx.date.today
 import org.evoleq.language.Lang
 import org.evoleq.language.Locale
 import org.evoleq.math.Source
+import org.evoleq.math.emit
+import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.storage.Storage
+import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
@@ -38,16 +42,26 @@ import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.Button
+import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.Input
 import org.jetbrains.compose.web.dom.Text
+import org.solyton.solawi.bid.application.api.solawiApi
+import org.solyton.solawi.bid.module.banking.action.updateSepaPaymentExecutionStatuses
 import org.solyton.solawi.bid.module.banking.component.list.ListOfPayments
 import org.solyton.solawi.bid.module.banking.component.properties.PaymentsProperties
 import org.solyton.solawi.bid.module.banking.component.tab.TabParagraphWrapper
+import org.solyton.solawi.bid.module.banking.data.api.UpdateSepaPaymentExecutionStatuses
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.deviceData
+import org.solyton.solawi.bid.module.banking.data.application.sepaModule
+import org.solyton.solawi.bid.module.banking.data.bankingApplicationActions
 import org.solyton.solawi.bid.module.banking.data.sepa.PaymentExecutionStatus
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
+import org.solyton.solawi.bid.module.banking.data.sepa.sepaCollections
+import org.solyton.solawi.bid.module.banking.data.toApiType
+import org.solyton.solawi.bid.module.control.button.AnglesLeftButton
+import org.solyton.solawi.bid.module.control.button.AnglesRightButton
 import org.solyton.solawi.bid.module.control.button.PlusButton
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
 import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
@@ -95,6 +109,10 @@ sealed class Tabs {
     }
 }
 
+data class UIState(
+    val selectedTab: Int = 0,
+    val selectedParagraph: Tabs.Payments.Paragraphs = Tabs.Payments.Paragraphs.OVERVIEW
+)
 
 @Markup
 @Suppress("FunctionName")
@@ -104,7 +122,9 @@ fun ManagePaymentsOfSepaCollectionModal(
     modals: Storage<Modals<Int>>,
     storage: Storage<BankingApplication>,
     device: Source<DeviceType>,
-    sepaCollection: SepaCollection,
+    uiState: UIState,
+    setUiState: (UIState) -> Unit,
+    sepaCollectionSource: Source<SepaCollection>,
     executionDate: LocalDate?,
     setManageCollectionPayments: (ManageCollectionPayments) -> Unit,
     update: ()->Unit
@@ -119,19 +139,27 @@ fun ManagePaymentsOfSepaCollectionModal(
     texts = texts,
     styles = commonModalStyles(device),
 ) {
-
-        val tabStyles = TabStyles()
-        val dropdownStyles = DropdownStyles()
-            .modifyContainerStyle{
-                alignSelf(AlignSelf.Start)
-            }
-        val scrollableStyles = ScrollableStyles().modifyContainerStyle {
-            //height(100.percent)
-
-            //flexGrow(1)
+    val scope = rememberCoroutineScope()
+    val sepaCollection = sepaCollectionSource.emit()
+    val tabStyles = TabStyles()
+    val dropdownStyles = DropdownStyles()
+        .modifyContainerStyle {
+            alignSelf(AlignSelf.Start)
         }
+    val scrollableStyles = ScrollableStyles().modifyContainerStyle {
+        //height(100.percent)
+
+        //flexGrow(1)
+    }
+
+    var selectedTab by remember { mutableStateOf(uiState.selectedTab) }
+    var paragraphState by remember { mutableStateOf(Tabs.Payments.Paragraphs.OVERVIEW) }
+    LaunchedEffect(selectedTab, paragraphState) {
+        setUiState(UIState(selectedTab, paragraphState))
+    }
+
+    key(sepaCollection) {
         TabsWrapper(tabStyles.tabsWrapperStyles) {
-            var selectedTab by remember { mutableStateOf(0)}
             TabSelectionBar(tabStyles.tabSelectionBarStyles) {
                 TabTrigger(
                     tabStyles.tabTriggerStyles,
@@ -150,13 +178,12 @@ fun ManagePaymentsOfSepaCollectionModal(
                     Text("Messages")
                 }
             }
-            TabContentWrapper(tabStyles.tabContentWrapperStyles){
+            TabContentWrapper(tabStyles.tabContentWrapperStyles) {
                 TabContent(
                     tabStyles.tabContentStyles,
                     0,
                     selectedTab
                 ) {
-
 
 
                     val openPayments =
@@ -174,7 +201,6 @@ fun ManagePaymentsOfSepaCollectionModal(
                     val confirmedPayments =
                         sepaCollection.sepaPayments.filter { payment -> payment.status == PaymentExecutionStatus.CONFIRMED }
 
-                    var paragraphState by remember { mutableStateOf(Tabs.Payments.Paragraphs.OVERVIEW)}
 
                     // GUI states
                     // var detailsHeightState by remember { mutableStateOf(60.0)}
@@ -186,16 +212,17 @@ fun ManagePaymentsOfSepaCollectionModal(
                         }) {
                             // TabTitle("Manage Payments")
                             TabParagraphWrapper(
-                                onClick =  { paragraphState = Tabs.Payments.Paragraphs.OVERVIEW }
+                                onClick = { paragraphState = Tabs.Payments.Paragraphs.OVERVIEW }
                             ) {
                                 TabParagraph("Overview")
                                 PaymentsProperties(sepaCollection.sepaPayments)
                             }
-                            Scrollable(scrollableStyles
+                            Scrollable(
+                                scrollableStyles
                                 // .modifyContainerStyle { minHeight(detailsHeightState.vh) }
                             ) {
                                 TabParagraphWrapper(
-                                    onClick =  { paragraphState = Tabs.Payments.Paragraphs.CREATE_NEW_PAYMENTS }
+                                    onClick = { paragraphState = Tabs.Payments.Paragraphs.CREATE_NEW_PAYMENTS }
                                 ) {
                                     TabParagraph("Create new Payments")
                                     Form(formDesktopStyle) {
@@ -272,12 +299,12 @@ fun ManagePaymentsOfSepaCollectionModal(
                         Vertical({
                             paddingLeft(5.px)
                             width(80.percent)
-                            border{
+                            border {
                                 style = LineStyle.Solid
                                 width = 1.px
                                 color = Color.gray
                             }
-                            borderWidth(0.px,0.px,0.px,1.px)
+                            borderWidth(0.px, 0.px, 0.px, 1.px)
                         }) {
                             When(paragraphState == Tabs.Payments.Paragraphs.OVERVIEW) {
                                 TabTitle("Overview")
@@ -303,9 +330,40 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     null,
                                     sepaCollection.sepaMandates,
                                     messageCreatedPayments,
-                                    listStyles
+                                    listStyles,
+                                    overallActions = { data ->
+                                        Horizontal {
+                                            AnglesLeftButton(
+                                                color = Color.black,
+                                                bgColor = Color.white,
+                                                { "Move selected & visible Payments to the previous state" },
+                                                device,
+                                                isDisabled = true
+                                            ) {
+                                            }
+                                            AnglesRightButton(
+                                                color = Color.black,
+                                                bgColor = Color.white,
+                                                { "Move selected & visible Payments to the next state" },
+                                                device
+                                            ) {
+                                                scope.launch {
+                                                    val selectedPaymentIds = data.itemsMap.filter {
+                                                        it.key in data.visibleItems &&
+                                                                data.checkedPayments[it.key.paymentId] == true
+                                                    }.map { it.key.paymentId }
+                                                    (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
+                                                        UpdateSepaPaymentExecutionStatuses(
+                                                            PaymentExecutionStatus.SENT.toApiType(),
+                                                            selectedPaymentIds,
+                                                        ),
+                                                        sepaCollection.sepaCollectionId
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
                                 )
-
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_SENT) {
                                 TabTitle("Payments sent to to the bank")
@@ -313,7 +371,51 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     null,
                                     sepaCollection.sepaMandates,
                                     sentPayments,
-                                    listStyles
+                                    listStyles,
+                                    overallActions = { data ->
+                                        Horizontal {
+                                            AnglesLeftButton(
+                                                color = Color.black,
+                                                bgColor = Color.white,
+                                                { "Move selected Payments to the previous state" },
+                                                device,
+                                            ) {
+                                                scope.launch {
+                                                    val selectedPaymentIds = data.itemsMap.filter {
+                                                        it.key in data.visibleItems &&
+                                                                data.checkedPayments[it.key.paymentId] == true
+                                                    }.map { it.key.paymentId }
+                                                    (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
+                                                        UpdateSepaPaymentExecutionStatuses(
+                                                            PaymentExecutionStatus.MESSAGE_CREATED.toApiType(),
+                                                            selectedPaymentIds,
+                                                        ),
+                                                        sepaCollection.sepaCollectionId
+                                                    )
+                                                }
+                                            }
+                                            AnglesRightButton(
+                                                color = Color.black,
+                                                bgColor = Color.white,
+                                                { "Move selected Payments to the next state" },
+                                                device
+                                            ) {
+                                                scope.launch {
+                                                    val selectedPaymentIds = data.itemsMap.filter {
+                                                        it.key in data.visibleItems &&
+                                                                data.checkedPayments[it.key.paymentId] == true
+                                                    }.map { it.key.paymentId }
+                                                    (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
+                                                        UpdateSepaPaymentExecutionStatuses(
+                                                            PaymentExecutionStatus.PENDING.toApiType(),
+                                                            selectedPaymentIds,
+                                                        ),
+                                                        sepaCollection.sepaCollectionId
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
                                 )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_PENDING) {
@@ -322,7 +424,32 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     null,
                                     sepaCollection.sepaMandates,
                                     pendingPayments,
-                                    listStyles
+                                    listStyles,
+                                    overallActions = { data ->
+                                        Horizontal {
+                                            AnglesLeftButton(
+                                                color = Color.black,
+                                                bgColor = Color.white,
+                                                { "Move selected Payments to the previous state" },
+                                                device,
+                                            ) {
+                                                scope.launch {
+                                                    val selectedPaymentIds = data.itemsMap.filter {
+                                                        it.key in data.visibleItems &&
+                                                                data.checkedPayments[it.key.paymentId] == true
+                                                    }.map { it.key.paymentId }
+                                                    (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
+                                                        UpdateSepaPaymentExecutionStatuses(
+                                                            PaymentExecutionStatus.MESSAGE_CREATED.toApiType(),
+                                                            selectedPaymentIds,
+                                                        ),
+                                                        sepaCollection.sepaCollectionId
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    },
+                                    actions = {}
                                 )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_CONFIRMED) {
@@ -351,10 +478,13 @@ fun ManagePaymentsOfSepaCollectionModal(
                     1,
                     selectedTab
                 ) {
-                    val openPayments = sepaCollection.sepaPayments.filter { it.status == PaymentExecutionStatus.CREATED }
+                    val openPayments =
+                        sepaCollection.sepaPayments.filter { it.status == PaymentExecutionStatus.CREATED }
 
-                    val executionDatesOfOpenPayments = openPayments.map{it.executionDate}.sortedBy { it }
-                    val allExecutionDates = sepaCollection.sepaPayments.filter{it.status != PaymentExecutionStatus.CREATED}.map{it.executionDate}.distinct().sortedBy { it }
+                    val executionDatesOfOpenPayments = openPayments.map { it.executionDate }.sortedBy { it }
+                    val allExecutionDates =
+                        sepaCollection.sepaPayments.filter { it.status != PaymentExecutionStatus.CREATED }
+                            .map { it.executionDate }.distinct().sortedBy { it }
                     var executionDateState by remember { mutableStateOf(executionDatesOfOpenPayments.firstOrNull()) }
 
                     TabTitle("Manage Messages")
@@ -415,33 +545,40 @@ fun ManagePaymentsOfSepaCollectionModal(
                 }
             }
 
+        }
     }
 }
-
 @Markup
 fun Storage<Modals<Int>>.showManagePaymentsOfSepaCollectionModal(
     storage: Storage<BankingApplication>,
     texts: Lang.Block,
     device: Source<DeviceType>,
-    sepaCollection: SepaCollection,
+    uiState: UIState,
+    setUiState: (UIState) -> Unit,
+    sepaCollection: Source<SepaCollection>,
     executionDate: LocalDate?,
     setManageCollectionPayments: (ManageCollectionPayments) -> Unit,
-    update: ()->Unit
+    update: () -> Unit
 ) = with(nextId()) {
-    put(this to ModalData(
-        ModalType.Dialog,
-        ManagePaymentsOfSepaCollectionModal(
-            this,
-            texts,
-            this@showManagePaymentsOfSepaCollectionModal,
-            storage,
-            device,
-            sepaCollection,
-            executionDate,
-            setManageCollectionPayments,
-            update = update
+    put(
+        this to ModalData(
+            ModalType.Dialog,
+            ManagePaymentsOfSepaCollectionModal(
+                this,
+                texts,
+                this@showManagePaymentsOfSepaCollectionModal,
+                storage,
+                device,
+                uiState,
+                setUiState,
+                sepaCollection,
+                executionDate,
+                setManageCollectionPayments,
+                update = update
+            )
         )
-    ) )
+    )
 }
+
 
 // suspend managePaymentsOfSepaCollection(collection: SepaCollection, data: ManageCollectionPayments)

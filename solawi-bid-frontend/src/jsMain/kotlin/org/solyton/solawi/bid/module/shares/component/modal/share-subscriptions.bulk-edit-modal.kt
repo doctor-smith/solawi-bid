@@ -463,9 +463,9 @@ fun BulkEditShareShareSubscriptionsModal(
                         iconContent = { opened -> SimpleUpDown(opened) },
                     ) { (_, value) ->
                         selectedMandateStatus = value
-                        when (value) {
-                            null -> setChanges(BulkEditShareSubscriptionChanges.None)
-                            else -> {
+                        // when (value) {
+                            // null -> setChanges(BulkEditShareSubscriptionChanges.None)
+                            // else -> {
                                 val sepaCollection = sepaCollectionOptions[selectedSepaCollection]!!
                                 val shareOffer = shareOffersOptions[selectedShareOffer]!!
                                 val minimalMandateNumber = sepaCollection.sepaMandates.size
@@ -482,8 +482,8 @@ fun BulkEditShareShareSubscriptionsModal(
                                         minimalMandateNumber = minimalMandateNumber,
                                     )
                                 )
-                            }
-                        }
+                            //}
+                        //}
                     }
                 }
 

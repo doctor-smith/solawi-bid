@@ -14,6 +14,7 @@ import org.solyton.solawi.bid.module.banking.schema.FiscalYears
 import org.solyton.solawi.bid.module.banking.schema.LegalEntitiesTable
 import org.solyton.solawi.bid.module.banking.schema.LegalEntityType
 import org.solyton.solawi.bid.module.banking.schema.SepaMandatesTable
+import org.solyton.solawi.bid.module.banking.schema.SepaPaymentsTable
 import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.distribution.schema.DistributionPointsTable
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
@@ -214,6 +215,9 @@ val columnsToAdd: List<AddMissingColumns> by lazy {
         ),
         SepaMandatesTable.addColumnsIfMissing(
             ColumnDef.Missing<UUID?>("collection_id", null)
+        ),
+        SepaPaymentsTable.addColumnsIfMissing(
+            ColumnDef.Missing<String?>("end_to_end_id", null)
         )
     )
 }

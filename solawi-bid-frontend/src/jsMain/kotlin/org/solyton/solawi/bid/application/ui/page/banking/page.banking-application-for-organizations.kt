@@ -21,6 +21,7 @@ import org.evoleq.math.Reader
 import org.evoleq.math.emit
 import org.evoleq.math.round
 import org.evoleq.optics.lens.FilterBy
+import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.storage.write
@@ -39,6 +40,7 @@ import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyl
 import org.solyton.solawi.bid.module.banking.action.*
 import org.solyton.solawi.bid.module.banking.component.form.defaultBankAccountInputs
 import org.solyton.solawi.bid.module.banking.component.modal.sepa.ManageCollectionPayments
+import org.solyton.solawi.bid.module.banking.component.modal.sepa.UIState
 import org.solyton.solawi.bid.module.banking.component.modal.sepa.showManagePaymentsOfSepaCollectionModal
 import org.solyton.solawi.bid.module.banking.component.modal.showImportBankAccountsModal
 import org.solyton.solawi.bid.module.banking.component.modal.showUpsertBankAccountModal
@@ -661,6 +663,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                             .sumOf { payment -> payment.amount }
                             .round(2)
 
+                        var uiState by remember { mutableStateOf(UIState()) }
                         ListItemWrapper({listItemWrapperStyle(index)}) {
                             DataWrapper {
                                 TextCell(bankAccount?.iban?.value?: ""){ width(20.percent) }
@@ -676,7 +679,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                             ActionsWrapper {
 
                                 var manageCollectionPaymentsState by remember() { mutableStateOf<ManageCollectionPayments?>(null)}
-
+                                key(collection) {
                                 CreditCardButton(
                                     color = Color.black,
                                     bgColor = Color.white,
@@ -684,13 +687,16 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                                     texts = {"Assoc Payments (to Mandates)"},
                                     isDisabled = collection.sepaMandates.isEmpty()
                                 ) {
+
                                     bankingApplicationModals.showManagePaymentsOfSepaCollectionModal(
-                                        bankingApplicationStorage,
-                                        dialogModalTexts("hahaha"),
-                                        deviceType,
-                                        collection,
-                                        null,
-                                        {data -> manageCollectionPaymentsState = data}
+                                        storage = bankingApplicationStorage,
+                                        texts = dialogModalTexts("hahaha"),
+                                        device = deviceType,
+                                        uiState = uiState,
+                                        setUiState = {data -> uiState = data},
+                                        sepaCollection =sepaCollections * Reader{list: List<SepaCollection> -> list.first { it.sepaCollectionId == collection.sepaCollectionId }},
+                                        executionDate = null,
+                                        setManageCollectionPayments = {data -> manageCollectionPaymentsState = data}
                                     ) {
                                         bankingApplicationModals.showDialogModal(
                                             texts = dialogModalTexts("Are you sure you want to bulk edit share subscriptions?"),
@@ -698,27 +704,30 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                                             symbol = { WarningSymbol(deviceType = deviceType.emit()) },
                                             onCancel = {}
                                         ) {
-                                            scope.launch {
-                                                when (val state = manageCollectionPaymentsState) {
-                                                    null -> Unit
-                                                    is ManageCollectionPayments.AttachPayments -> bankingApplicationActions dispatch createSepaPaymentsForCollection(
-                                                        CreateSepaPaymentsForCollection(
-                                                            collection.sepaCollectionId,
-                                                            state.executionDate,
 
-                                                            ),
-                                                        collection.sepaCollectionId
-                                                    )
-                                                    is ManageCollectionPayments.CreateMessage -> bankingApplicationActions dispatch generateSepaMessageForCollection(
-                                                        GenerateSepaMessageForCollection(
-                                                            collection.sepaCollectionId,
-                                                            state.executionDate
+                                                scope.launch {
+                                                    when (val state = manageCollectionPaymentsState) {
+                                                        null -> Unit
+                                                        is ManageCollectionPayments.AttachPayments -> bankingApplicationActions dispatch createSepaPaymentsForCollection(
+                                                            CreateSepaPaymentsForCollection(
+                                                                collection.sepaCollectionId,
+                                                                state.executionDate,
+
+                                                                ),
+                                                            collection.sepaCollectionId
                                                         )
-                                                    )
+
+                                                        is ManageCollectionPayments.CreateMessage -> bankingApplicationActions dispatch generateSepaMessageForCollection(
+                                                            GenerateSepaMessageForCollection(
+                                                                collection.sepaCollectionId,
+                                                                state.executionDate
+                                                            )
+                                                        )
+                                                    }
                                                 }
                                             }
-                                        }
-                                    }
+
+                                    } }
                                 }
                                 EditButton(
                                     color = Color.black,

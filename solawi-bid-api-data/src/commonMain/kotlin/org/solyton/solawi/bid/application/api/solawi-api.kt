@@ -448,7 +448,10 @@ val solawiApi by lazy {
                 url = "sepa/mandates/update"
             )
 
-
+            patch<UpdateSepaPaymentExecutionStatuses, SepaPayments>(
+                key = UpdateSepaPaymentExecutionStatuses::class,
+                url = "sepa/payments/update-execution-statuses"
+            )
         }
     }
 }
