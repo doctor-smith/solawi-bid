@@ -213,3 +213,13 @@ fun <W, P> Lens<W, List<P>>.update(compare: (updatedData: P, listItem: P) -> Boo
         set( result ) (w) }
     }
 }
+
+fun <W, P> Lens<W, List<P>>.updateAll(compare: (updatedData: P, listItem: P) -> Boolean): Writer<W, List<P>> = Writer { updatedItems -> { w ->
+    val storedList = get(w)
+    val updatedList = mutableListOf<P>()
+    storedList.forEach {  storedItem ->
+        val replacement = updatedItems.firstOrNull { compare(it, storedItem) }
+        if(replacement != null) updatedList.add(replacement) else updatedList.add(storedItem)
+    }
+    set( updatedList ) (w)
+} }
