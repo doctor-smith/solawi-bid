@@ -63,19 +63,20 @@ fun ImportBiddersModal(
     cancel: ()->Unit,
     update: ()->Unit
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
-        id,
-        modals,
-        device,
-        onOk = {
-            update()
-        },
-        onCancel = {
-            cancel()
-        },
-        isOkButtonDisabled = isOkButtonDisabled,
-        texts = texts,
-        styles = auctionModalStyles(device),
-    ) {
+    type = ModalType.Dialog,
+    id = id,
+    modals = modals,
+    device = device,
+    onOk = {
+        update()
+    },
+    onCancel = {
+        cancel()
+    },
+    isOkButtonDisabled = isOkButtonDisabled,
+    texts = texts,
+    styles = auctionModalStyles(device),
+) {
     var isProcessingFileContent by remember { mutableStateOf(false) }
     var importBiddersSource by remember { mutableStateOf(ImportBiddersSource.CSV) }
 
@@ -169,7 +170,7 @@ fun Storage<Modals<Int>>.showImportBiddersModal(
     cancel: ()->Unit,
     update: ()->Unit
 ) = with(nextId()) {
-    put(this to ModalData(
+    put(this to ModalData(this,
         ModalType.Dialog,
         ImportBiddersModal(
             this,

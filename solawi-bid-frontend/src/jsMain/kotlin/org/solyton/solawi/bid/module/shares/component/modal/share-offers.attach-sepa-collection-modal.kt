@@ -41,9 +41,10 @@ fun AttachSepaCollectionModal(
     isOkButtonDisabled: () -> Boolean,
     update: ()->Unit
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
-    id,
-    modals,
-    storage * deviceData * mediaType.get,
+    type = ModalType.Dialog,
+    id = id,
+    modals = modals,
+    device = storage * deviceData * mediaType.get,
     onOk = {
         update()
     },
@@ -73,7 +74,7 @@ fun Storage<Modals<Int>>.showAttachSepaCollectionModal(
     isOkButtonDisabled: () -> Boolean,
     update: ()->Unit
 ) = with(nextId()) {
-    put(this to ModalData(
+    put(this to ModalData(this,
         ModalType.Dialog,
         AttachSepaCollectionModal(
             this,

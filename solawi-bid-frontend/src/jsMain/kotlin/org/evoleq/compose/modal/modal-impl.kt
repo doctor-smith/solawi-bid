@@ -9,6 +9,7 @@ import org.evoleq.language.get
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.optics.storage.Storage
+import org.evoleq.optics.storage.filter
 import org.evoleq.optics.storage.remove
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -18,8 +19,9 @@ import org.solyton.solawi.bid.module.style.button.symbolicButtonStyle
 import org.w3c.dom.HTMLElement
 
 @Markup
-@Suppress("FunctionName")
+@Suppress("FunctionName", "UnusedParameter")
 fun <Id> Modal(
+    type: ModalType<Id>,
     id: Id,
     modals: Storage<Modals<Id>>,
     device: Source<DeviceType>,

@@ -27,6 +27,7 @@ fun ErrorModal(
     device: Source<DeviceType>,
     dataId: String? = null,
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
+    type = ModalType.Dialog,
     id = id,
     modals = modals,
     device = device,
@@ -47,7 +48,7 @@ fun Storage<Modals<Int>>.showErrorModal(
     device: Source<DeviceType>,
     dataId: String? = null,
 ) = with(nextId()){
-    put(this to ModalData(
+    put(this to ModalData(this,
         ModalType.Error,
         ErrorModal(this, texts, this@showErrorModal, device, dataId)
     ))

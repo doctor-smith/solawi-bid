@@ -49,9 +49,10 @@ fun UpsertShareTypeModal(
     setShareType: (ShareType)->Unit,
     update: ()->Unit
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
-    id,
-    modals,
-    storage * deviceData * mediaType.get,
+    type = ModalType.Dialog,
+    id = id,
+    modals = modals,
+    device = storage * deviceData * mediaType.get,
     onOk = {
         update()
     },
@@ -137,6 +138,7 @@ fun Storage<Modals<Int>>.showUpsertShareTypeModal(
     update: ()->Unit
 ) = with(nextId()) {
     put(this to ModalData(
+        this,
         ModalType.Dialog,
         UpsertShareTypeModal(
             this,

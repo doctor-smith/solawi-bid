@@ -2,21 +2,27 @@ package org.evoleq.compose.modal
 
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
+import org.evoleq.math.Source
+import org.evoleq.math.emit
 import org.evoleq.optics.storage.Storage
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.ElementScope
 import org.w3c.dom.HTMLElement
 
-typealias Modals<Id> = Map<Id, ModalData>//@Composable ElementScope<HTMLElement>.() -> Unit>
+typealias Modals<Id> = Map<Id, ModalData<Id>>
 
-interface ModalType {
-    object Dialog : ModalType
-    object Error : ModalType
-    object CookieDisclaimer : ModalType
+interface ModalType<out Id> {
+    object Dialog : ModalType<Nothing>
+    object Error : ModalType<Nothing>
+    object CookieDisclaimer : ModalType<Nothing>
+
+    object Parent : ModalType<Nothing>
+    data class Child<Id>(val parentId: Id) : ModalType<Id>
 }
-data class ModalData(
-    val type: ModalType,
+data class ModalData<out Id>(
+    val id: Id,
+    val type: ModalType<Id>,
     val component: @Composable ElementScope<HTMLElement>.() -> Unit
 )
 
@@ -80,21 +86,52 @@ fun ModalBackground(zIndex: Int) = Div({
 @Markup
 @Composable
 @Suppress("FunctionName", "UNUSED_VARIABLE", "UNUSED_PARAMETER")
-fun SubLayer(name: String, index: Int, modals: List<@Composable ElementScope<HTMLElement>.()->Unit>, styles: StyleScope.()->Unit, ) {
-    if(modals.isNotEmpty()) {Div({
-        style {
-            property("z-index", index)
-            position(Position.Absolute)
-            width(100.vw)
-            height(100.vh)
-            boxSizing("border-box")
-            display(DisplayStyle.Flex)
-            backgroundColor(Color.transparent)
-            styles()
+fun <Id> SubLayer(
+    name: String, index: Int,
+    modals: Source<List<ModalData<Id>>>,
+    styles: StyleScope.()->Unit,
+) {
+    if (modals.emit().isNotEmpty()) {
+        val roots = { modals.emit().filter { it.type !is ModalType.Child<*> } }
+        Div({
+            style {
+                property("z-index", index)
+                position(Position.Absolute)
+                width(100.vw)
+                height(100.vh)
+                boxSizing("border-box")
+                display(DisplayStyle.Flex)
+                backgroundColor(Color.transparent)
+                styles()
+            }
+        }) {
+            roots().forEach { root ->
+                with(root) {
+                    component()
+                }
+            }
         }
-    }){
-        modals.forEach {
-            it()
+        val rootIds = { roots().map { it.id } }
+        val children = { modals.emit().filter { it.type is ModalType.Child<*> && it.type.parentId in rootIds() } }
+        if (children().isNotEmpty()) {
+            val grandChildren = { modals.emit().filterNot { it in children() || it in roots() } }
+            SubLayer(
+                name = name + "Children-" + index,
+                index = index + 10,
+                modals = {
+                    children().map { child ->
+                        ModalData(
+                            id = child.id,
+                            type = ModalType.Parent,
+                            component = child.component
+                        )
+                    } + grandChildren()
+                },
+                styles ={
+                    styles()
+                    // width(90.percent)
+                }
+            )
         }
-    }}
+    }
 }
