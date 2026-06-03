@@ -52,6 +52,7 @@ fun BulkUpdateShareDataByFileImportModal(
     setShareSubscriptions: (ShareSubscriptions)->Unit,
     update: ()->Unit
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
+    type = ModalType.Dialog,
     id = id,
     modals = modals,
     device = device,
@@ -189,7 +190,7 @@ fun Storage<Modals<Int>>.showBulkUpdateShareDataByFileImportModal(
     setShareSubscriptions: (ShareSubscriptions)->Unit,
     update: ()->Unit
 ) = with(nextId()) {
-    put(this to ModalData(
+    put(this to ModalData(this,
         ModalType.Dialog,
         BulkUpdateShareDataByFileImportModal(
             id = this,

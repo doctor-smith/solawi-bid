@@ -1,9 +1,17 @@
 package org.evoleq.compose.modal
 
-import androidx.compose.runtime.Composable
+import org.evoleq.math.Source
 import org.evoleq.optics.storage.Storage
-import org.jetbrains.compose.web.dom.ElementScope
-import org.w3c.dom.HTMLElement
+fun <Id> Storage<Modals<Id>>.components(type: ModalType<Id>): Source<List<ModalData<Id>>> = Source {
+    val roots = read().values.filter { it.type == type }
+    roots + read().values.toList().collectChildren(roots.map { it.id })
+}
 
-fun <Id> Storage<Modals<Id>>.components(type: ModalType): List<@Composable ElementScope<HTMLElement>.() -> Unit> =
-    read().values.filter { it.type == type }.map { it.component }
+fun <Id> List<ModalData<Id>>.collectChildren(parentIds: List<Id>): List<ModalData<Id>> {
+    val children = parentIds.flatMap { parentId ->
+        filter { it.type is ModalType.Child<Id> && it.type.parentId == parentId }
+    }
+    console.log("Found ${children.size} children of $parentIds")
+    if(children.isEmpty()) return emptyList()
+    return children + collectChildren(children.map { it.id })
+}

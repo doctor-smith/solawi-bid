@@ -65,12 +65,12 @@ fun Storage<Application>.failureWriter(): Writer<Unit, Failure> = Writer{
         val nextId = modals.nextId()
         modals.put(
             item = nextId to ModalData(
-                ModalType.Error,
-                ErrorModal(
+                id = nextId,
+                type = ModalType.Error,
+                component = ErrorModal(
                     id = nextId,
                     texts = errorModalTexts(failure.message),
                     modals = modals,
-
                     device = (this@failureWriter * deviceData * mediaType.get) as Source<DeviceType>,
                 )
             )

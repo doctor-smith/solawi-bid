@@ -122,9 +122,10 @@ fun BulkEditShareShareSubscriptionsModal(
     setChanges: (BulkEditShareSubscriptionChanges) -> Unit,
     update: ()->Unit
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
-    id,
-    modals,
-    device,
+    type = ModalType.Dialog,
+    id = id,
+    modals = modals,
+    device = device,
     onOk = {
         update()
     },
@@ -509,7 +510,7 @@ fun Storage<Modals<Int>>.showBulkEditShareShareSubscriptionsModal(
     setChanges: (BulkEditShareSubscriptionChanges) -> Unit,
     update: ()->Unit
 ) = with(nextId()) {
-    put(this to ModalData(
+    put(this to ModalData(this,
         ModalType.Dialog,
         BulkEditShareShareSubscriptionsModal(
             this,

@@ -60,13 +60,15 @@ fun CookieDisclaimerModal(
     modals: Storage<Modals<Int>>,
     cookieDisclaimer: Storage<CookieDisclaimer>,
     device: Source<DeviceType>,
-): ModalData/*@Composable ElementScope<HTMLElement>.()->Unit*/
-= ModalData(
-    ModalType.CookieDisclaimer ,
-    Modal(
-        id,
-        modals,
-        device,
+): ModalData<Int>/*@Composable ElementScope<HTMLElement>.()->Unit*/
+= ModalData<Int>(
+    id = id ,
+    type = ModalType.CookieDisclaimer,
+    component = Modal(
+        type = ModalType.CookieDisclaimer,
+        id = id,
+        modals = modals,
+        device = device,
         dataId = "cookie-disclaimer",
         onOk = {
             (cookieDisclaimer * isConfirmed).write(true)

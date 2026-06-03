@@ -54,9 +54,10 @@ fun ConnectApplicationToOrganizationModal(
     cancel: ()->Unit,
     update: ()->Unit,
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
+    type = ModalType.Dialog,
     id = id,
     modals = modals,
-    device = device,
+    device =  device,
 
     onOk = {
         update()
@@ -107,7 +108,7 @@ fun Storage<Modals<Int>>.showConnectApplicationToOrganizationModule(
     cancel: ()->Unit,
     update: ()->Unit,
 ) = with(nextId()) {
-    put(this to ModalData(
+    put(this to ModalData(this,
         ModalType.Dialog,
         ConnectApplicationToOrganizationModal(
             this,

@@ -58,6 +58,7 @@ fun UpsertBankAccountWithUserSearchModal(
     hasDescription: Boolean = false,
     update: ()->Unit
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
+    type = ModalType.Dialog,
     id = id,
     modals = modals,
     device = storage * deviceData * mediaType.get,
@@ -106,7 +107,7 @@ fun Storage<Modals<Int>>.showUpsertBankAccountWithUserSearchModal(
     hasDescription: Boolean = false,
     update: ()->Unit
 ) = with(nextId()) {
-    put(this to ModalData(
+    put(this to ModalData(this,
         ModalType.Dialog,
         UpsertBankAccountWithUserSearchModal(
             this,
