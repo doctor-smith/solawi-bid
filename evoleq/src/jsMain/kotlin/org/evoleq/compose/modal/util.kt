@@ -11,7 +11,6 @@ fun <Id> List<ModalData<Id>>.collectChildren(parentIds: List<Id>): List<ModalDat
     val children = parentIds.flatMap { parentId ->
         filter { it.type is ModalType.Child<Id> && it.type.parentId == parentId }
     }
-    console.log("Found ${children.size} children of $parentIds")
     if(children.isEmpty()) return emptyList()
     return children + collectChildren(children.map { it.id })
 }

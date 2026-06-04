@@ -1,6 +1,6 @@
 package org.solyton.solawi.bid.module.banking.component.modal.sepa
 
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
 import org.evoleq.compose.modal.Modal
 import org.evoleq.compose.modal.ModalData
@@ -54,10 +54,14 @@ fun MoveFailedPaymentsModal(
         marginLeft(5.percent)
     },
 ) {
-    val selectedPayments = data.itemsMap.filter {
-        it.key in data.visibleItems &&
-                data.checkedPayments[it.key.paymentId] == true
-    }.values.toList()
+    var dataState by remember { mutableStateOf(data) }
+
+    val selectedPayments by derivedStateOf { dataState.itemsMap.filter {
+        it.key in dataState.visibleItems &&
+        dataState.checkedPayments[it.key.paymentId] == true
+    }.values.toList() }
+
+
 
     Wrap {
         ListWrapper() {
@@ -76,13 +80,14 @@ fun MoveFailedPaymentsModal(
                         DataWrapper {
                             TextCell(item.mandate.debtorName) { width(20.percent) }
                             TextCell("${item.payment.amount}") { width(10.percent) }
-                            EditableTextCell(item.payment.failureReason ?: "", style = { width(60.percent) }) {
+                            EditableTextCell(item.payment.failureReason ?: "", style = { width(60.percent) }) { newValue ->
                                 val key = SepaPaymentListItemKey(item.payment.sepaPaymentId, item.payment.sepaMandateId)
-                                val newMap = data.itemsMap.toMutableMap()
-                                newMap[key] = item.copy(payment = item.payment.copy(failureReason = it.ifBlank { null }))
-                                setData(data.copy(
+                                val newMap = dataState.itemsMap.toMutableMap()
+                                newMap[key] = item.copy(payment = item.payment.copy(failureReason = newValue.ifBlank { null }))
+                                dataState = dataState.copy(
                                     itemsMap = newMap,
-                                ))
+                                )
+                                setData(dataState)
                             }
                         }
                     }
