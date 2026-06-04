@@ -228,6 +228,28 @@ fun CommentButton(
 @Markup
 @Composable
 @Suppress("FunctionName")
+fun CommentDollarButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-comment-dollar"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
+@Markup
+@Composable
+@Suppress("FunctionName")
 fun CreditCardButton(
     color: CSSColorValue,
     bgColor: CSSColorValue = Color.transparent,

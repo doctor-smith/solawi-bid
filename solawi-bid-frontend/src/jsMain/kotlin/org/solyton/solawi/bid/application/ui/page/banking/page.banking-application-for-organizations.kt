@@ -3,7 +3,6 @@ package org.solyton.solawi.bid.application.ui.page.banking
 import androidx.compose.runtime.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.format
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
 import org.evoleq.compose.date.format
@@ -21,7 +20,6 @@ import org.evoleq.math.Reader
 import org.evoleq.math.emit
 import org.evoleq.math.round
 import org.evoleq.optics.lens.FilterBy
-import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.storage.write
@@ -30,7 +28,6 @@ import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
-import org.jetbrains.letsPlot.commons.formatting.datetime.DateTimeFormat
 import org.jetbrains.letsPlot.commons.intern.filterNotNullValues
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.managedUsers
@@ -39,14 +36,10 @@ import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.banking.action.*
 import org.solyton.solawi.bid.module.banking.component.form.defaultBankAccountInputs
+import org.solyton.solawi.bid.module.banking.component.modal.*
 import org.solyton.solawi.bid.module.banking.component.modal.sepa.ManageCollectionPayments
 import org.solyton.solawi.bid.module.banking.component.modal.sepa.UIState
 import org.solyton.solawi.bid.module.banking.component.modal.sepa.showManagePaymentsOfSepaCollectionModal
-import org.solyton.solawi.bid.module.banking.component.modal.showImportBankAccountsModal
-import org.solyton.solawi.bid.module.banking.component.modal.showUpsertBankAccountModal
-import org.solyton.solawi.bid.module.banking.component.modal.showUpsertBankAccountWithUserSearchModal
-import org.solyton.solawi.bid.module.banking.component.modal.showUpsertFiscalYearsModal
-import org.solyton.solawi.bid.module.banking.component.modal.showUpsertLegalEntityModal
 import org.solyton.solawi.bid.module.banking.data.SepaCollectionId
 import org.solyton.solawi.bid.module.banking.data.api.CreateSepaPaymentsForCollection
 import org.solyton.solawi.bid.module.banking.data.api.GenerateSepaMessageForCollection
@@ -61,7 +54,6 @@ import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
 import org.solyton.solawi.bid.module.banking.data.internal.Currency
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.message.message
-import org.solyton.solawi.bid.module.banking.data.sepa.payment.executionDate
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaCollections
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaMessageString
 import org.solyton.solawi.bid.module.banking.service.download
@@ -106,7 +98,11 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
     val creditorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.userId == UserId(providerId.value) }
     val customerBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.userId != UserId(providerId.value) }
 
-
+    val bankAccountToUserMap = bankingApplicationStorage * bankAccounts * Reader{ bankAccounts: List<BankAccount> ->
+        bankAccounts.associateBy({it.bankAccountId}) {
+            (managedUsers * FirstOrNull { user -> user.id == it.userId.value }).emit()
+        }.filterNotNullValues()
+    }
     val customerBankAccountCandidates = managedUsers * FilterBy { customerBankAccounts.read().none { customer -> customer.userId.value == it.id } }
 
     val legalEntity = bankingApplicationStorage * legalEntity
@@ -421,6 +417,40 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                                 }
                             }
                         }
+                        DownloadButton(
+                            color = Color.black,
+                            bgColor = Color.white,
+                            texts = { "Download as CSV" },
+                            deviceType = deviceType,
+                        ) {
+                            val checked = listOf(
+                                "username",
+                                "bank_account_holder",
+                                "iban",
+                                "bic",
+                                "description",
+                                "is_active"
+                            )
+
+                            val headers = checked.joinToString(";")
+                            // val numberOfCols = checked.size
+                            //val semiColons = ";".repeat(numberOfCols - 1)
+                            val csvLines: String = customerBankAccounts.read().joinToString("\n") { account ->
+                                val (bankAccountId, userId,  iban, bic, bankAccountHolder,  isActive, bankAccountType, description,) = account
+                                val user = bankAccountToUserMap.emit()[bankAccountId]
+                                when{
+                                    user == null -> ""
+                                    else -> "${user.username};$bankAccountHolder;${iban.value};${bic.value ?: ""};$description;$isActive"
+                                }
+                            }
+
+                            val csv = """
+                                |$headers
+                                |$csvLines
+                            """.trimMargin()
+
+                            downloadCsv(csv, "bank_accounts_${now()}.csv")
+                        }
                     }
                 }
 
@@ -434,9 +464,16 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                             || bankAccount.bic.value.contains(customerBankAccountsSearchInput, ignoreCase = true)
                         }
                     }
-                    SearchInput(customerBankAccountsSearchInput,
-                        styles = SearchInputStyles()) {
-                        customerBankAccountsSearchInput = it
+                    HeaderWrapper {
+                        Header {
+                            HeaderCell("Number: ${customerBankAccounts.read().size}") {width(15.percent)}
+                            SearchInput(
+                                customerBankAccountsSearchInput,
+                                styles = SearchInputStyles()
+                            ) {
+                                customerBankAccountsSearchInput = it
+                            }
+                        }
                     }
                     HeaderWrapper({
                         width(98.percent)
