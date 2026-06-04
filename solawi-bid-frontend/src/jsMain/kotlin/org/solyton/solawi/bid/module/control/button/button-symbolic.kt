@@ -95,6 +95,27 @@ fun ArrowUpButton(
 @Markup
 @Composable
 @Suppress("FunctionName")
+fun BanButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-ban"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+@Markup
+@Composable
+@Suppress("FunctionName")
 fun BuildingColumnsButton(
     color: CSSColorValue,
     bgColor: CSSColorValue = Color.transparent,

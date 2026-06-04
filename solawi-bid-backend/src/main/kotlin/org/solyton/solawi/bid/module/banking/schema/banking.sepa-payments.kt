@@ -71,5 +71,10 @@ enum class PaymentExecutionStatus {
     /**
      * PENDING: Payment is under review by the bank or awaiting settlement.
      */
-    PENDING
+    PENDING,
+
+    /**
+     * PAYED_MANUALLY: Payment was manually processed by the client.
+     */
+    PAYED_MANUALLY,
 }

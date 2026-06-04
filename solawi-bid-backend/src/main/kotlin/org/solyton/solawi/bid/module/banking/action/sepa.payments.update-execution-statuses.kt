@@ -28,7 +28,8 @@ fun UpdateSepaPaymentExecutionStatuses(): KlAction<Result<Contextual<UpdateSepaP
                 val payments = updateSepaPaymentExecutionStatuses(
                     userId,
                     data.paymentIds.map { UUID.fromString(it.value) },
-                    data.newStatus.toDomainType()
+                    data.newStatus.toDomainType(),
+                    data.failureReasons.mapKeys { UUID.fromString(it.key.value) }
                 )
                 ApiSepaPayments(payments.map {
                     it.toApiType()
