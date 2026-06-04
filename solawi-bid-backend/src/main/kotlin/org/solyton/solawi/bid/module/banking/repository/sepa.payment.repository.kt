@@ -272,8 +272,12 @@ fun Transaction.updateSepaPaymentExecutionStatuses(
         require(paymentIds.size == failureReasons.size) { "All transferred payments must be failed" }
         // all payments must be created
         require(paymentIds.all {
-            SepaPaymentEntity.findById(it)?.status == PaymentExecutionStatus.PENDING
-        }) { "All payments must be pending in order to be set to failed" }
+            SepaPaymentEntity.findById(it)?.status in listOf(
+                PaymentExecutionStatus.PENDING,
+                PaymentExecutionStatus.CONFIRMED,
+                PaymentExecutionStatus.PAYED_MANUALLY
+            )
+        }) { "All payments must be pending, confirmed or payed-manually in order to be set to failed" }
 
         failureReasons.forEach { (paymentId, reason) ->
             SepaPaymentsTable.update({ SepaPayments.id eq paymentId }) {

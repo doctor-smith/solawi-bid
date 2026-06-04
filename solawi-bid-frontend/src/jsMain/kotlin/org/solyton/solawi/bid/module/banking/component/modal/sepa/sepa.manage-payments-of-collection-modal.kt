@@ -516,7 +516,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                                                 scope.launch {
                                                     val selectedPayments = dataState.itemsMap.filter {
                                                         it.key in dataState.visibleItems &&
-                                                                dataState.checkedPayments[it.key.paymentId] == true
+                                                        dataState.checkedPayments[it.key.paymentId] == true
                                                     }
                                                     val paymentIds = selectedPayments.map { it.key.paymentId }
                                                     val failureReasons = selectedPayments
