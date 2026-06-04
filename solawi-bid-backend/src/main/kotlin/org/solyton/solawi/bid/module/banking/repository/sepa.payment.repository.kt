@@ -64,6 +64,7 @@ fun Transaction.createPayment(
             SepaSequenceType.RCUR -> SepaSequenceType.RCUR
             SepaSequenceType.FRST -> when(latestPayment.status) {
                 PaymentExecutionStatus.CONFIRMED -> SepaSequenceType.RCUR
+                PaymentExecutionStatus.PAYED_MANUALLY -> latestPayment.sequenceType
                 PaymentExecutionStatus.FAILED -> SepaSequenceType.FRST
                 else -> SepaSequenceType.UNCLEAR
             }
@@ -166,6 +167,7 @@ fun Transaction.updatePayment(
             PaymentExecutionStatus.PENDING -> Triple(BankStatusCode.PENDING, "PENDING",statusChange )
             PaymentExecutionStatus.FAILED -> Triple(BankStatusCode.FAILED, "FAILED", failureReason?: "Reason unknown")
             PaymentExecutionStatus.CONFIRMED -> Triple(BankStatusCode.SUCCESS, "SUCCESS", statusChange)
+            PaymentExecutionStatus.PAYED_MANUALLY -> Triple(BankStatusCode.SUCCESS, "SUCCESS", statusChange)
             PaymentExecutionStatus.CREATED -> throw SepaException.Payment.StateTransitionForbidden(
                 payment.status.name,
                 status.name
@@ -267,11 +269,11 @@ fun Transaction.updateSepaPaymentExecutionStatuses(
         // there must be a failure reason
         require(failureReasons.isNotEmpty()) { "Failure reason must be provided for failed payments" }
         // all payments must be failed
-        require(paymentIds.size == failureReasons.size) { "All payments must be failed" }
+        require(paymentIds.size == failureReasons.size) { "All transferred payments must be failed" }
         // all payments must be created
         require(paymentIds.all {
-            SepaPaymentEntity.findById(it)?.status == PaymentExecutionStatus.CREATED
-        }) { "All payments must be created" }
+            SepaPaymentEntity.findById(it)?.status == PaymentExecutionStatus.PENDING
+        }) { "All payments must be pending in order to be set to failed" }
 
         failureReasons.forEach { (paymentId, reason) ->
             SepaPaymentsTable.update({ SepaPayments.id eq paymentId }) {
@@ -329,6 +331,7 @@ fun Transaction.addHistoryEntry(
         PaymentExecutionStatus.PENDING -> Triple(BankStatusCode.PENDING, "PENDING",statusChange )
         PaymentExecutionStatus.FAILED -> Triple(BankStatusCode.FAILED, "FAILED", reasonText?: "Reason unknown")
         PaymentExecutionStatus.CONFIRMED -> Triple(BankStatusCode.SUCCESS, "SUCCESS", statusChange)
+        PaymentExecutionStatus.PAYED_MANUALLY -> Triple(BankStatusCode.SUCCESS, "SUCCESS", statusChange)
         PaymentExecutionStatus.CREATED -> throw SepaException.Payment.StateTransitionForbidden(
             payment.status.name,
             status.name

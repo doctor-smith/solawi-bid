@@ -194,6 +194,7 @@ fun PaymentExecutionStatus.toApiType(): ApiPaymentExecutionStatus = when(this){
     PaymentExecutionStatus.CREATED -> ApiPaymentExecutionStatus.CREATED
     PaymentExecutionStatus.SENT -> ApiPaymentExecutionStatus.SENT
     PaymentExecutionStatus.CONFIRMED -> ApiPaymentExecutionStatus.CONFIRMED
+    PaymentExecutionStatus.PAYED_MANUALLY -> ApiPaymentExecutionStatus.PAYED_MANUALLY
     PaymentExecutionStatus.FAILED -> ApiPaymentExecutionStatus.FAILED
     PaymentExecutionStatus.PENDING -> ApiPaymentExecutionStatus.PENDING
 }
@@ -203,7 +204,7 @@ fun ApiPaymentExecutionStatus.toDomainType(): PaymentExecutionStatus = when(this
     ApiPaymentExecutionStatus.CREATED -> PaymentExecutionStatus.CREATED
     ApiPaymentExecutionStatus.SENT -> PaymentExecutionStatus.SENT
     ApiPaymentExecutionStatus.CONFIRMED -> PaymentExecutionStatus.CONFIRMED
+    ApiPaymentExecutionStatus.PAYED_MANUALLY -> PaymentExecutionStatus.PAYED_MANUALLY
     ApiPaymentExecutionStatus.FAILED -> PaymentExecutionStatus.FAILED
     ApiPaymentExecutionStatus.PENDING -> PaymentExecutionStatus.PENDING
-
 }

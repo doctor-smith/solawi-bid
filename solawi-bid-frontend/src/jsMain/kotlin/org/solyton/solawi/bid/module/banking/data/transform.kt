@@ -205,6 +205,7 @@ fun ApiPaymentExecutionStatus.toDomainType(): PaymentExecutionStatus = when(this
     CREATED -> PaymentExecutionStatus.CREATED
     SENT -> PaymentExecutionStatus.SENT
     CONFIRMED -> PaymentExecutionStatus.CONFIRMED
+    PAYED_MANUALLY -> PaymentExecutionStatus.PAYED_MANUALLY
     FAILED -> PaymentExecutionStatus.FAILED
     PENDING -> PaymentExecutionStatus.PENDING
 }
@@ -214,6 +215,7 @@ fun PaymentExecutionStatus.toApiType(): ApiPaymentExecutionStatus = when(this) {
     PaymentExecutionStatus.CREATED -> CREATED
     PaymentExecutionStatus.SENT -> SENT
     PaymentExecutionStatus.CONFIRMED -> CONFIRMED
+    PaymentExecutionStatus.PAYED_MANUALLY -> PAYED_MANUALLY
     PaymentExecutionStatus.FAILED -> FAILED
     PaymentExecutionStatus.PENDING -> PENDING
 }
