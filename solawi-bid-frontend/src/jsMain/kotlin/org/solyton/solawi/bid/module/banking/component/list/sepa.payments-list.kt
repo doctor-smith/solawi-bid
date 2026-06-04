@@ -1,62 +1,25 @@
 package org.solyton.solawi.bid.module.banking.component.list
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.*
 import kotlinx.datetime.LocalDate
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
 import org.evoleq.compose.date.format
-import org.evoleq.compose.layout.Horizontal
 import org.evoleq.language.Locale
-import org.evoleq.math.Source
-import org.jetbrains.compose.web.css.JustifyContent
-import org.jetbrains.compose.web.css.justifyContent
-import org.jetbrains.compose.web.css.justifyItems
-
-import org.jetbrains.compose.web.css.paddingLeft
-import org.jetbrains.compose.web.css.percent
-import org.jetbrains.compose.web.css.px
-import org.jetbrains.compose.web.css.width
+import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
-import org.jetbrains.compose.web.dom.TextInput
-import org.jetbrains.letsPlot.Geom
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.banking.data.SepaMandateId
 import org.solyton.solawi.bid.module.banking.data.SepaPaymentId
 import org.solyton.solawi.bid.module.banking.data.sepa.PaymentExecutionStatus
 import org.solyton.solawi.bid.module.banking.data.sepa.mandate.SepaMandate
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
-import org.solyton.solawi.bid.module.list.component.ActionsWrapper
-import org.solyton.solawi.bid.module.list.component.CheckBoxCell
-import org.solyton.solawi.bid.module.list.component.DataWrapper
-import org.solyton.solawi.bid.module.list.component.Filter
-import org.solyton.solawi.bid.module.list.component.FilterParser
-import org.solyton.solawi.bid.module.list.component.FilterWrapper
-import org.solyton.solawi.bid.module.list.component.Header
-import org.solyton.solawi.bid.module.list.component.HeaderCell
-import org.solyton.solawi.bid.module.list.component.HeaderWrapper
-import org.solyton.solawi.bid.module.list.component.ListItemWrapper
-import org.solyton.solawi.bid.module.list.component.ListItemsIndexed
-import org.solyton.solawi.bid.module.list.component.ListWrapper
-import org.solyton.solawi.bid.module.list.component.OverallActions
-import org.solyton.solawi.bid.module.list.component.OverallActionsWrapper
-import org.solyton.solawi.bid.module.list.component.TextCell
-import org.solyton.solawi.bid.module.list.component.TextFilter
-import org.solyton.solawi.bid.module.list.component.Title
-import org.solyton.solawi.bid.module.list.component.TitleWrapper
-import org.solyton.solawi.bid.module.list.component.applyTo
-import org.solyton.solawi.bid.module.list.component.rememberMutableStateMapOf
-import org.solyton.solawi.bid.module.list.component.toFilter
+import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.ListStyles
 import org.solyton.solawi.bid.module.scrollable.Scrollable
+import org.solyton.solawi.bid.module.style.overflow.Overflow
+import org.solyton.solawi.bid.module.style.overflow.overflow
 
 data class SepaPaymentListItemData(
     // val userProfile: UserProfile,
@@ -225,14 +188,27 @@ fun ListOfPayments(
                             TextCell(listItem.payment.executionDate.format(Locale.Iso)) { width(15.percent) }
                             TextCell("${listItem.payment.amount}") { width(10.percent) }
                             TextCell(listItem.payment.sequenceType.name) { width(10.percent) }
-                            TextCell(listItem.payment.failureReason ?: "--") { width(30.percent) }
+                            TextCell(
+                                text = listItem.payment.failureReason ?: "--",
+                                tooltip = listItem.payment.failureReason
+                            ) {
+                                minWidth(0.px)
+                                width(30.percent)
+
+                                flexGrow(0)
+                                flexShrink(0)
+                                property("white-space", "nowrap")
+                                overflow(Overflow.Hidden)
+                                property("text-overflow", "ellipsis")
+                            }
                         }
-                        ActionsWrapper(styles.actionsWrapper) {
-                            actions()
-                        }
+                    }
+                    ActionsWrapper(styles.actionsWrapper) {
+                        actions()
                     }
                 }
             }
         }
     }
 }
+
