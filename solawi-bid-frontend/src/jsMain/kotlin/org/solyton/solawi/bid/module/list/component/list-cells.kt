@@ -15,6 +15,12 @@ import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.banking.data.internal.Currency
 import org.solyton.solawi.bid.module.banking.data.internal.format
 import org.solyton.solawi.bid.module.banking.data.internal.toMoney
+import org.solyton.solawi.bid.module.style.overflow.Overflow
+import org.solyton.solawi.bid.module.style.overflow.overflow
+import org.solyton.solawi.bid.module.style.text.TextOverflow
+import org.solyton.solawi.bid.module.style.text.WhiteSpace
+import org.solyton.solawi.bid.module.style.text.textOverflow
+import org.solyton.solawi.bid.module.style.text.whiteSpace
 import kotlin.js.Date
 
 @Markup
@@ -68,6 +74,11 @@ fun TextCell(
             paddingLeft(5.px)
             paddingRight(5.px)
             width(10.percent)
+            flexGrow(0)
+            flexShrink(0)
+            whiteSpace(WhiteSpace.NoWrap)
+            overflow(Overflow.Hidden)
+            textOverflow(TextOverflow.Ellipsis)
             style()
         }
     }){Text(text)}

@@ -20,6 +20,10 @@ import org.solyton.solawi.bid.module.list.style.ListStyles
 import org.solyton.solawi.bid.module.scrollable.Scrollable
 import org.solyton.solawi.bid.module.style.overflow.Overflow
 import org.solyton.solawi.bid.module.style.overflow.overflow
+import org.solyton.solawi.bid.module.style.text.TextOverflow
+import org.solyton.solawi.bid.module.style.text.WhiteSpace
+import org.solyton.solawi.bid.module.style.text.textOverflow
+import org.solyton.solawi.bid.module.style.text.whiteSpace
 
 data class SepaPaymentListItemData(
     // val userProfile: UserProfile,
@@ -197,9 +201,9 @@ fun ListOfPayments(
 
                                 flexGrow(0)
                                 flexShrink(0)
-                                property("white-space", "nowrap")
+                                whiteSpace(WhiteSpace.NoWrap)
                                 overflow(Overflow.Hidden)
-                                property("text-overflow", "ellipsis")
+                                textOverflow(TextOverflow.Ellipsis)
                             }
                         }
                     }
