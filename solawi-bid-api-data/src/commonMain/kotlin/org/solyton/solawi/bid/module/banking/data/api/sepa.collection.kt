@@ -30,7 +30,8 @@ data class SepaCollection(
     val isActive: Boolean = true,
     val sepaMandates: SepaMandates? = null,
     val sepaPayments: SepaPayments? = null,
-    val referenceIds: List<SepaCollectionReferenceId> = emptyList()
+    val referenceIds: List<SepaCollectionReferenceId> = emptyList(),
+    val mandateReferenceIds: Map<SepaMandateId, List<SepaMandateReferenceId>> = emptyMap()
 )
 
 @Serializable

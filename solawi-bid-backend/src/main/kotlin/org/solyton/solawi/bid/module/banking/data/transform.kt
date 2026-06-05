@@ -2,27 +2,18 @@ package org.solyton.solawi.bid.module.banking.data
 
 import org.evoleq.exposedx.joda.toKotlinxWithZone
 import org.jetbrains.exposed.sql.SizedIterable
-import org.solyton.solawi.bid.module.banking.data.api.ApiAccountType
-import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccount
-import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccounts
-import org.solyton.solawi.bid.module.banking.data.api.ApiFiscalYear
-import org.solyton.solawi.bid.module.banking.data.api.ApiFiscalYears
-import org.solyton.solawi.bid.module.banking.data.api.ApiLegalEntity
-import org.solyton.solawi.bid.module.banking.data.api.ApiLegalEntityType
-import org.solyton.solawi.bid.module.banking.data.api.ApiMandateStatus
-import org.solyton.solawi.bid.module.banking.data.api.ApiPaymentExecutionStatus
-import org.solyton.solawi.bid.module.banking.data.api.ApiSepaCollection
-import org.solyton.solawi.bid.module.banking.data.api.ApiSepaMandate
-import org.solyton.solawi.bid.module.banking.data.api.ApiSepaSequenceType
+import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.banking.data.api.CreditorIdentifier
-import org.solyton.solawi.bid.module.banking.data.api.ApiSepaMandates
-import org.solyton.solawi.bid.module.banking.data.api.ApiSepaPayment
-import org.solyton.solawi.bid.module.banking.data.api.ApiSepaPayments
 import org.solyton.solawi.bid.module.banking.schema.*
+import org.solyton.solawi.bid.module.banking.schema.AccountType
+import org.solyton.solawi.bid.module.banking.schema.LegalEntity
+import org.solyton.solawi.bid.module.banking.schema.LegalEntityType
+import org.solyton.solawi.bid.module.banking.schema.MandateStatus
+import org.solyton.solawi.bid.module.banking.schema.PaymentExecutionStatus
+import org.solyton.solawi.bid.module.banking.schema.SepaSequenceType
 import org.solyton.solawi.bid.module.user.data.toApiType
 import org.solyton.solawi.bid.module.values.LegalEntityId
 import org.solyton.solawil.bid.module.bid.data.api.toUserId
-import kotlin.let
 
 /**
  * Transform a list of [FiscalYearEntity]s to [ApiFiscalYears]
@@ -119,7 +110,11 @@ fun SepaCollectionEntity.toApiType(): ApiSepaCollection = ApiSepaCollection(
     isActive = isActive,
     sepaMandates = sepaMandates.toApiType(),
     sepaPayments = sepaPayments.toApiType(),
-    referenceIds = referenceIds.map { SepaCollectionReferenceId(it.referenceId.toString()) }
+    referenceIds = referenceIds.map { SepaCollectionReferenceId(it.referenceId.toString()) },
+    mandateReferenceIds = sepaMandates.associateBy({mandate -> SepaMandateId(mandate.id.value.toString())}) {
+        it.referenceDataMappings.map {data-> SepaMandateReferenceId(data.referenceId.toString()) }
+    }
+
 )
 
 fun SepaSequenceType.toApiType(): ApiSepaSequenceType = when(this) {

@@ -1,6 +1,5 @@
 package org.solyton.solawi.bid.module.banking.schema
 
-import org.evoleq.exposedx.migrations.MigrationTable.optReference
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -110,6 +109,8 @@ class SepaMandate(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     var collection by SepaCollection optionalReferencedOn SepaMandates.collectionId
 
     val payments by SepaPayment referrersOn  SepaPaymentsTable.mandateId
+
+    val referenceDataMappings by SepaMandateDataMapping referrersOn SepaMandateDataMappingsTable.sepaMandateId
 
     override var createdAt: DateTime by SepaMandates.createdAt
     override var createdBy: UUID by SepaMandates.createdBy
