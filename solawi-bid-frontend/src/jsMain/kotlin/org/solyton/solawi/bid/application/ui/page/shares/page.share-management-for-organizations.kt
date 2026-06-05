@@ -22,6 +22,7 @@ import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.storage.filter
 import org.evoleq.optics.storage.none
 import org.evoleq.optics.transform.times
+import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
@@ -44,7 +45,6 @@ import org.solyton.solawi.bid.module.banking.data.application.creditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.application.fiscalYears
 import org.solyton.solawi.bid.module.banking.data.application.sepaModule
 import org.solyton.solawi.bid.module.banking.data.bankaccount.AccountType
-import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.creditor.identifier.CreditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
 import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
@@ -80,7 +80,6 @@ import org.solyton.solawi.bid.module.shares.data.management.shareOffers
 import org.solyton.solawi.bid.module.shares.data.management.shareSubscriptions
 import org.solyton.solawi.bid.module.shares.data.management.shareTypes
 import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
-import org.solyton.solawi.bid.module.shares.data.offers.fiscalYear
 import org.solyton.solawi.bid.module.shares.data.shareManagementActions
 import org.solyton.solawi.bid.module.shares.data.shareManagementModals
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscription
@@ -121,6 +120,7 @@ data class ShareSubscriptionFilter(
     val isAhcAuthorized: Boolean? = null,
     val userProfiles: List<String>? = null,
     val distributionPoints: List<String>? = null,
+    val sepaCollections: List<SepaCollectionId>? = null
 )
 
 @Markup
@@ -568,9 +568,16 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                 user to bankAccount.emit()
             }.associateBy({it.first.profile?.userProfileId}) { it.second  }.filterNotNullValues()
             // val sepaCollectionsMap = sepaCollections.read().associateBy { it.sepaCollectionId }
-            // val sepaCollectionIdsByReference = sepaCollections.read().map{
-            //     collection -> collection.referenceIds.map{ it to collection.sepaCollectionId }
-            // }.flatten().distinct().groupBy ({ it.first }){it.second}
+            /*
+            val sepaCollectionIdsByReference: Map<SepaCollectionReferenceId, List<SepaCollectionId>> = sepaCollections.read().flatMap { collection ->
+                collection.referenceIds.map { it to collection.sepaCollectionId }
+            }.distinct().groupBy ({ it.first }){it.second}
+             */
+            val sepaCollectionIdToReferences: Map<SepaCollectionId, List<SepaCollectionReferenceId>> = sepaCollections.read().flatMap { collection ->
+                console.log(collection.referenceIds)
+                collection.referenceIds.map { collection.sepaCollectionId to it }
+            }.distinct().groupBy ({ it.first }){it.second}
+
 
             var allChecked by remember { mutableStateOf(false) }
             var filter by  remember { mutableStateOf(ShareSubscriptionFilter()) }
@@ -596,6 +603,18 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                             ?.contains(searchText, ignoreCase = true) == true
                     } ?: true
                     val matchesDistributionPoints = filter.distributionPoints?.let { subscription.distributionPointId in it }?: true
+                    val matchesSepaCollections = filter.sepaCollections?.let { collections ->
+                        when{
+                            collections.isEmpty() -> true
+                            // no sepa mandate associated
+                            collections.size == 1 && collections.first().value == NIL_UUID ->
+                                sepaCollections.none{ collection -> collection.mandateReferenceIds.values.any { it.any{id -> id.value == subscription.shareSubscriptionId }} }
+                            // sepa mandate associated
+                            else -> collections.any {
+                                SepaCollectionReferenceId(subscription.shareOfferId) in (sepaCollectionIdToReferences[it]?:emptyList())
+                            }
+                        }
+                    }?: true
 
                     matchesFiscalYears
                     && matchesShareTypes
@@ -603,6 +622,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                     && matchesAhcAuthorized
                     && matchesUserProfiles
                     && matchesDistributionPoints
+                    && matchesSepaCollections
                 }
                 // Treat checks
                 .map{
@@ -743,7 +763,26 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                 value == null -> null
                                 else -> value.map { it.distributionPointId }})
                         }
+                        var selectedSepaCollections by remember { mutableStateOf("All Sepa") }
+                        val sepaCollectionsOptions = sepaCollections.read().groupBy{it.mandateReferencePrefix.value}.let{
+                            it.toMutableMap<String, List<SepaCollection>?>().apply {
+                                this["All Sepa"] = null
+                                this["No Sepa"] = listOf(SepaCollection.EMPTY)
+                            }
+                        }
+                        Dropdown(
+                            sepaCollectionsOptions,
+                            selectedSepaCollections,
+                            iconContent = {opened -> SimpleUpDown(opened) }
 
+                        ) { (key, value) ->
+                            selectedSepaCollections = key
+                            filter = filter.copy(sepaCollections = when {
+                                value == null -> null
+                                // value == listOf(SepaCollection.EMPTY) -> listOf(SepaCollectionId(NIL_UUID))
+                                else -> value.map { it.sepaCollectionId }
+                            })
+                        }
 
                         var searchText by remember {
                             mutableStateOf(filter.userProfiles?.joinToString(",") { it }.orEmpty())

@@ -3,6 +3,7 @@ package org.solyton.solawi.bid.module.banking.data.sepa.collection
 import org.evoleq.axioms.definition.Lensify
 import org.evoleq.axioms.definition.ReadOnly
 import org.evoleq.axioms.definition.ReadWrite
+import org.evoleq.uuid.NIL_UUID
 import org.solyton.solawi.bid.module.banking.data.*
 import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
 import org.solyton.solawi.bid.module.banking.data.sepa.mandate.SepaMandate
@@ -24,5 +25,26 @@ data class SepaCollection(
     @ReadWrite val isActive: Boolean = false,
     @ReadWrite val sepaMandates: List<SepaMandate> = emptyList(),
     @ReadWrite val sepaPayments: List<SepaPayment> = emptyList(),
-    @ReadWrite val referenceIds: List<SepaCollectionReferenceId> = emptyList()
-)
+    @ReadWrite val referenceIds: List<SepaCollectionReferenceId> = emptyList(),
+    @ReadWrite val mandateReferenceIds: Map<SepaMandateId, List<SepaMandateReferenceId>> = emptyMap()
+)  {
+    companion object {
+        val EMPTY = SepaCollection(
+            SepaCollectionId(NIL_UUID),
+            CreditorIdentifierId(NIL_UUID),
+            BankAccountId(NIL_UUID),
+            MandateReferencePrefix(NIL_UUID),
+            RemittanceInformation(NIL_UUID),
+            SepaSequenceType.FRST,
+            null,
+            ChargeBearer("SLEV"),
+            null, 0,
+            null,
+            false,
+            emptyList(),
+            emptyList(),
+            emptyList()
+        )
+    }
+
+}

@@ -1,21 +1,6 @@
 package org.solyton.solawi.bid.module.banking.data
 
-import org.solyton.solawi.bid.module.banking.data.api.ApiAccountType
-import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccount
-import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccounts
-import org.solyton.solawi.bid.module.banking.data.api.ApiCreditorIdentifier
-import org.solyton.solawi.bid.module.banking.data.api.ApiFiscalYear
-import org.solyton.solawi.bid.module.banking.data.api.ApiFiscalYears
-import org.solyton.solawi.bid.module.banking.data.api.ApiLegalEntity
-import org.solyton.solawi.bid.module.banking.data.api.ApiLegalEntityType
-import org.solyton.solawi.bid.module.banking.data.api.ApiMandateStatus
-import org.solyton.solawi.bid.module.banking.data.api.ApiPaymentExecutionStatus
-import org.solyton.solawi.bid.module.banking.data.api.ApiSepaCollection
-import org.solyton.solawi.bid.module.banking.data.api.ApiSepaMandate
-import org.solyton.solawi.bid.module.banking.data.api.ApiSepaMessageString
-import org.solyton.solawi.bid.module.banking.data.api.SepaMessageVersion as ApiSepaMessageVersion
-import org.solyton.solawi.bid.module.banking.data.api.ApiSepaPayment
-import org.solyton.solawi.bid.module.banking.data.api.ApiSepaSequenceType
+import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.banking.data.api.MandateStatus.*
 import org.solyton.solawi.bid.module.banking.data.api.PaymentExecutionStatus.*
 import org.solyton.solawi.bid.module.banking.data.api.SepaSequenceType.*
@@ -35,6 +20,7 @@ import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessageString
 import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessageVersion
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
 import org.solyton.solawi.bid.module.user.data.transform.toDomainType
+import org.solyton.solawi.bid.module.banking.data.api.SepaMessageVersion as ApiSepaMessageVersion
 
 
 /**
@@ -167,7 +153,8 @@ fun ApiSepaCollection.toDomainType(): SepaCollection = SepaCollection(
     isActive = isActive,
     sepaMandates = sepaMandates?.all?.map{it.toDomainType()}.orEmpty(),
     sepaPayments = sepaPayments?.all?.map{it.toDomainType()}.orEmpty(),
-    referenceIds = referenceIds
+    referenceIds = referenceIds,
+    mandateReferenceIds = mandateReferenceIds
 )
 
 fun ApiMandateStatus.toDomainType(): MandateStatus = when(this) {
