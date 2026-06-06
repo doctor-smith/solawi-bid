@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import org.evoleq.compose.Markup
+import org.evoleq.compose.conditional.When
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.DisplayStyle
 import org.jetbrains.compose.web.css.JustifyContent
@@ -94,6 +95,83 @@ fun <T> Dropdown(
                         }
                     }) {
                         Text(option.key)
+                    }
+                }
+            }
+        }
+    }
+}
+
+data class Item<T>(
+    val value: T,
+    val component: @Composable (T) -> Unit
+)
+
+@Markup
+@Suppress("FunctionName")
+@Composable
+fun <T> SymbolDropdown(
+    options: Map<String, Item<T>>,
+    selected: String?,
+    closeOnSelect: Boolean = true,
+    showCosenOption: Boolean = false,
+    styles: DropdownStyles = DropdownStyles().modifyContainerStyle {
+        width(25.px)
+    },
+    //iconContent: @Composable ((expanded: Boolean) -> Unit)? = null, // Optional custom icon
+    onSelected: (String,T) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Div({
+        style {
+            with(styles) { containerStyle() }
+        }
+    }) {
+
+        // Trigger
+        Div({
+            style { with(styles) { triggerStyle()} }
+            onClick { expanded = !expanded }
+        }) {
+            val icon = options[selected]?.component!!
+            icon(options[selected]!!.value)
+
+            // Text(selected ?: "Select ...")
+            /*
+            // Icon span
+            Span({
+                style { with(styles) { triggerIconStyle()} }
+            }) {
+
+
+                // Use custom icon content if provided, otherwise default to "+"
+                iconContent?.invoke(expanded) ?: Text("+")
+            }
+
+             */
+        }
+
+        // Dropdown content
+        if (expanded) {
+            Div({
+                style { with(styles) { dropdownContentStyle() } }
+            }) {
+                options.filter { showCosenOption || it.key != selected }.forEach { option ->
+                    Div({
+                        style { with(styles) { dropdownItemStyle() } }
+                        onClick {
+                            onSelected(option.key, option.value.value)
+                            if (closeOnSelect) {
+                                expanded = false
+                            }
+                        }
+                    }) {
+                        /*When(showTextOnOptions) {
+
+                        Text(option.key)
+                        }*/
+                        option.value.component(option.value.value)
                     }
                 }
             }
