@@ -1,11 +1,8 @@
 package org.solyton.solawi.bid.module.list.component
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.conditional.When
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.jetbrains.compose.web.css.*
@@ -15,13 +12,90 @@ import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.banking.data.internal.Currency
 import org.solyton.solawi.bid.module.banking.data.internal.format
 import org.solyton.solawi.bid.module.banking.data.internal.toMoney
-import org.solyton.solawi.bid.module.style.overflow.Overflow
-import org.solyton.solawi.bid.module.style.overflow.overflow
-import org.solyton.solawi.bid.module.style.text.TextOverflow
-import org.solyton.solawi.bid.module.style.text.WhiteSpace
-import org.solyton.solawi.bid.module.style.text.textOverflow
-import org.solyton.solawi.bid.module.style.text.whiteSpace
 import kotlin.js.Date
+
+
+data class HeaderCellStyles(
+    val cellWrapperStyles: StyleScope.()->Unit = {
+        display(DisplayStyle.Flex)
+        flexDirection(FlexDirection.Row)
+        alignItems(AlignItems.Center)
+        justifyContent(JustifyContent.SpaceBetween)
+        fontWeight("bold")
+        textAlign("left")
+        paddingLeft(5.px)
+        paddingRight(5.px)
+        width(10.percent)
+    },
+    val cellContentStyles: StyleScope.()->Unit = {
+        display(DisplayStyle.Flex)
+        flexDirection(FlexDirection.Row)
+        alignItems(AlignItems.Center)
+        justifyContent(JustifyContent.FlexStart)
+        flexGrow(1)
+    },
+    val cellActionStyles: StyleScope.()->Unit = {
+        display(DisplayStyle.Flex)
+        flexDirection(FlexDirection.Row)
+        alignItems(AlignItems.Center)
+        justifyContent(JustifyContent.FlexEnd)
+        flexGrow(0)
+    },
+    val cellFilterStyles: StyleScope.()->Unit = {
+        display(DisplayStyle.Flex)
+        flexDirection(FlexDirection.Row)
+        alignItems(AlignItems.Center)
+        justifyContent(JustifyContent.Center)
+        flexGrow(0)
+    },
+    val cellOrderingStyles: StyleScope.()->Unit = {
+        display(DisplayStyle.Flex)
+        flexDirection(FlexDirection.Row)
+        alignItems(AlignItems.Center)
+        justifyContent(JustifyContent.Center)
+        flexGrow(0)
+    }
+) {
+    fun  modifyCellWrapperStyles(styles: StyleScope.()->Unit): HeaderCellStyles = copy(cellWrapperStyles = {cellWrapperStyles(); styles()})
+    fun  modifyCellContentStyles(styles: StyleScope.()->Unit): HeaderCellStyles = copy(cellContentStyles = {cellContentStyles(); styles()})
+    fun  modifyCellActionStyles(styles: StyleScope.()->Unit): HeaderCellStyles = copy(cellActionStyles = {cellActionStyles(); styles()})
+    fun  modifyCellFilterStyles(styles: StyleScope.()->Unit): HeaderCellStyles = copy(cellFilterStyles = {cellFilterStyles(); styles()})
+    fun  modifyCellOrderingStyles(styles: StyleScope.()->Unit): HeaderCellStyles = copy(cellOrderingStyles = {cellOrderingStyles(); styles()})
+
+    fun  width(width: CSSNumericValue<*>): HeaderCellStyles = modifyCellWrapperStyles {
+        width(width)
+    }
+}
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun HeaderCellWithActions(
+    text: Source<String>,
+    styles: HeaderCellStyles = HeaderCellStyles(),
+    ordering: (@Composable () -> Unit)? = null,
+    filters: (@Composable () -> Unit)? = null,
+) = Div({style {
+    with(styles){cellWrapperStyles()}
+}}) {
+    Div({style {with(styles){cellContentStyles()}}}) {
+        Text(text.emit())
+    }
+    Div({style {with(styles){cellActionStyles()}}}) {
+        When(filters != null) {
+            Div({ style { with(styles) { cellFilterStyles() } } }) {
+                filters!!()
+            }
+        }
+        When(ordering != null) {
+            Div({ style { with(styles) { cellOrderingStyles() } } }) {
+                ordering!!()
+            }
+        }
+    }
+}
+
+
 
 @Markup
 @Composable
@@ -74,11 +148,14 @@ fun TextCell(
             paddingLeft(5.px)
             paddingRight(5.px)
             width(10.percent)
+            /*
             flexGrow(0)
             flexShrink(0)
             whiteSpace(WhiteSpace.NoWrap)
             overflow(Overflow.Hidden)
             textOverflow(TextOverflow.Ellipsis)
+
+             */
             style()
         }
     }){Text(text)}

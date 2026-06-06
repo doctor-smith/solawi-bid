@@ -1,13 +1,18 @@
 package org.solyton.solawi.bid.module.banking.component.list
 
 import androidx.compose.runtime.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
 import org.evoleq.compose.date.format
 import org.evoleq.language.Locale
 import org.jetbrains.compose.web.css.*
+import org.jetbrains.compose.web.dom.Button
+import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H3
+import org.jetbrains.compose.web.dom.I
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.banking.data.SepaMandateId
@@ -15,6 +20,7 @@ import org.solyton.solawi.bid.module.banking.data.SepaPaymentId
 import org.solyton.solawi.bid.module.banking.data.sepa.PaymentExecutionStatus
 import org.solyton.solawi.bid.module.banking.data.sepa.mandate.SepaMandate
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
+import org.solyton.solawi.bid.module.control.button.PlayButton
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.ListStyles
 import org.solyton.solawi.bid.module.scrollable.Scrollable
@@ -49,6 +55,55 @@ data class SepaPaymentsFilter(
         failureReason(payment.failureReason.orEmpty()) &&
         custom(listItem)
     }
+}
+
+data class SepaPaymentsOrder(
+    val status: SortOrder = SortOrder.NONE,
+    val debtor: SortOrder = SortOrder.ASC,
+    val executionDate: SortOrder = SortOrder.DESC,
+    val amount: SortOrder = SortOrder.NONE,
+    val sequenceType: SortOrder = SortOrder.NONE,
+    val failureReason: SortOrder = SortOrder.NONE,
+) {
+    fun toComparator(): Comparator<SepaPaymentListItemData> = Comparator { o1, o2 ->
+        var result = 0
+
+        if (result == 0 && status != SortOrder.NONE) {
+            result = compareValues(o1.payment.status.name, o2.payment.status.name)
+            if (status == SortOrder.DESC) result = -result
+        }
+
+        if (result == 0 && debtor != SortOrder.NONE) {
+            result = compareValues(o1.mandate.debtorName, o2.mandate.debtorName)
+            if (debtor == SortOrder.DESC) result = -result
+        }
+
+        if (result == 0 && executionDate != SortOrder.NONE) {
+            result = compareValues(o1.payment.executionDate, o2.payment.executionDate)
+            if (executionDate == SortOrder.DESC) result = -result
+        }
+
+        if (result == 0 && amount != SortOrder.NONE) {
+            result = compareValues(o1.payment.amount, o2.payment.amount)
+            if (amount == SortOrder.DESC) result = -result
+        }
+
+        if (result == 0 && sequenceType != SortOrder.NONE) {
+            result = compareValues(o1.payment.sequenceType.name, o2.payment.sequenceType.name)
+            if (sequenceType == SortOrder.DESC) result = -result
+        }
+
+        if (result == 0 && failureReason != SortOrder.NONE) {
+            result = compareValues(o1.payment.failureReason.orEmpty(), o2.payment.failureReason.orEmpty())
+            if (failureReason == SortOrder.DESC) result = -result
+        }
+
+        result
+    }
+}
+
+fun List<SepaPaymentListItemData>.sortedBy(order: SepaPaymentsOrder): List<SepaPaymentListItemData> {
+    return sortedWith(order.toComparator())
 }
 
 data class SepaPaymentListItemKey(
@@ -86,6 +141,8 @@ fun ListOfPayments(
     var filteredList by remember { mutableStateOf(listData) }
     // stores the filter state
     var filter by remember { mutableStateOf(SepaPaymentsFilter()) }
+    // stores the sort order state
+    var sortOrder by remember { mutableStateOf(SepaPaymentsOrder()) }
     // stores checked state of each item in the list of payments, regardless of the filter state
     val checkedMap = rememberMutableStateMapOf<SepaPaymentId, Boolean>()
     // data to be passed to the overall actions component
@@ -102,10 +159,10 @@ fun ListOfPayments(
         )
     } }
 
-    LaunchedEffect(filter, listData) {
+    LaunchedEffect(filter, listData, sortOrder) {
         filteredList = listData.filter {
             filter applyTo it
-        }
+        }.sortedBy(sortOrder)
     }
 
     // var showFilter by remember { mutableStateOf(false) }
@@ -164,12 +221,38 @@ fun ListOfPayments(
                         }
                     }
                 }
-                HeaderCell("Status") { width(20.percent) }
-                HeaderCell("Debtor"){ width(25.percent) }
-                HeaderCell("Exec. Date"){ width(15.percent) }
-                HeaderCell("Amount") { width(10.percent) }
-                HeaderCell("Seq Type") {width(10.percent)}
-                HeaderCell("Failure Reason") {width(30.percent)}
+
+                HeaderCellWithActions(
+                    text = {"Status"},
+                    styles = HeaderCellStyles().width(15.percent) ,
+                    ordering = { SortByDrop{ order: SortOrder -> sortOrder = sortOrder.copy(status = order) } }
+                )
+                HeaderCellWithActions(
+                    text = {"Debtor"},
+                    styles = HeaderCellStyles().width(25.percent) ,
+                    ordering = { SortByDrop{ order: SortOrder -> sortOrder = sortOrder.copy(debtor = order) } }
+                )
+                HeaderCellWithActions(
+                    text = {"Exec. Date"},
+                    styles = HeaderCellStyles().width(15.percent) ,
+                    ordering = { SortByDrop{ order: SortOrder -> sortOrder = sortOrder.copy(executionDate = order) } }
+                )
+                HeaderCellWithActions(
+                    text = {"Amount"},
+                    styles = HeaderCellStyles().width(10.percent) ,
+                    ordering = { SortByDrop{ order: SortOrder -> sortOrder = sortOrder.copy(amount = order) } }
+                )
+                HeaderCellWithActions(
+                    text = {"S-Type"},
+                    styles = HeaderCellStyles().width(10.percent) ,
+                    ordering = { SortByDrop{ order: SortOrder -> sortOrder = sortOrder.copy(sequenceType = order) } }
+                )
+                // HeaderCell("Status"){ width(15.percent) }
+                // HeaderCell("Debtor"){ width(25.percent) }
+                // HeaderCell("Exec. Date"){ width(15.percent) }
+                // HeaderCell("Amount") { width(10.percent) }
+                // HeaderCell("Seq Type") {width(10.percent)}
+                HeaderCell("Failure Reason") {width(20.percent)}
             }
         }
         Scrollable {
@@ -187,7 +270,7 @@ fun ListOfPayments(
                                     checkedMap[listItem.payment.sepaPaymentId] = true
                                 }
                             }
-                            TextCell(listItem.payment.status.name) { width(20.percent) }
+                            TextCell(listItem.payment.status.name) { width(15.percent) }
                             TextCell(listItem.mandate.debtorName) { width(25.percent) }
                             TextCell(listItem.payment.executionDate.format(Locale.Iso)) { width(15.percent) }
                             TextCell("${listItem.payment.amount}") { width(10.percent) }
@@ -197,7 +280,7 @@ fun ListOfPayments(
                                 tooltip = listItem.payment.failureReason
                             ) {
                                 minWidth(0.px)
-                                width(30.percent)
+                                width(20.percent)
 
                                 flexGrow(0)
                                 flexShrink(0)
@@ -215,4 +298,3 @@ fun ListOfPayments(
         }
     }
 }
-
