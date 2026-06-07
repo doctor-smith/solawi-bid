@@ -43,6 +43,7 @@ import org.solyton.solawi.bid.module.banking.data.RemittanceInformation
 import org.solyton.solawi.bid.module.banking.data.SepaPaymentId
 import org.solyton.solawi.bid.module.banking.data.api.CreateSepaPaymentSuccessors
 import org.solyton.solawi.bid.module.banking.data.api.GenerateSepaMessageForCollection
+import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
 import org.solyton.solawi.bid.module.banking.data.api.UpdateSepaPaymentExecutionStatuses
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.bankingApplicationActions
@@ -194,7 +195,14 @@ fun ManagePaymentsOfSepaCollectionModal(
                     val confirmedPayments =
                         sepaCollection.sepaPayments.filter { payment -> payment.status in listOf( PaymentExecutionStatus.CONFIRMED, PaymentExecutionStatus.PAYED_MANUALLY ) }
 
-                    val paymentCreationCandidates = (confirmedPayments + failedPayments).filter { it.successorId == null }
+                    val forbiddenSeqTypes = listOf(
+                        SepaSequenceType.FNAL,
+                        SepaSequenceType.OOFF,
+                        SepaSequenceType.UNCLEAR
+                    )
+                    val paymentCreationCandidates = (confirmedPayments + failedPayments).filter {
+                        it.successorId == null && it.sequenceType !in forbiddenSeqTypes
+                    }
 
                     // GUI states
                     // var detailsHeightState by remember { mutableStateOf(60.0)}
