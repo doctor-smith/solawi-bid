@@ -33,6 +33,8 @@ class CreditorIdentifier(id: EntityID<UUID>) : UUIDEntity(id),  AuditableEntity<
     var validUntil by CreditorIdentifiers.validUntil
     var isActive by CreditorIdentifiers.isActive
 
+    val sepaMessages by SepaMessageEntity referrersOn SepaMessagesTable.creditorIdentifierId
+
     override var createdAt: DateTime by CreditorIdentifiers.createdAt
     override var createdBy: UUID by CreditorIdentifiers.createdBy
     override var modifiedAt: DateTime? by CreditorIdentifiers.modifiedAt

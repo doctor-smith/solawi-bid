@@ -2,46 +2,26 @@ package org.solyton.solawi.bid.module.banking.service
 
 import junit.framework.TestCase.assertFalse
 import org.evoleq.exposedx.test.runSimpleH2Test
-import org.evoleq.kotlinx.date.now
-import org.evoleq.kotlinx.date.today
 import org.evoleq.uuid.UUID_ZERO
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.Unit
-import org.solyton.solawi.bid.module.banking.data.BIC
-import org.solyton.solawi.bid.module.banking.data.BankAccountId
-import org.solyton.solawi.bid.module.banking.data.CreditorIdentifierId
-import org.solyton.solawi.bid.module.banking.data.IBAN
-import org.solyton.solawi.bid.module.banking.data.MandateReferencePrefix
-import org.solyton.solawi.bid.module.banking.data.RemittanceInformation
-import org.solyton.solawi.bid.module.banking.data.SepaMandateReferenceId
+import org.solyton.solawi.bid.module.banking.data.*
 import org.solyton.solawi.bid.module.banking.data.api.CreateSepaMandateReferenceData
-import org.solyton.solawi.bid.module.banking.data.api.SepaPayments
 import org.solyton.solawi.bid.module.banking.data.internal.Pain008GenerationRequest
 import org.solyton.solawi.bid.module.banking.data.internal.Pain008Transaction
-import org.solyton.solawi.bid.module.banking.repository.createBankAccount
-import org.solyton.solawi.bid.module.banking.repository.createLegalEntity
-import org.solyton.solawi.bid.module.banking.repository.createPayment
-import org.solyton.solawi.bid.module.banking.repository.createPaymentsForCollection
-import org.solyton.solawi.bid.module.banking.repository.createSepaCollection
-import org.solyton.solawi.bid.module.banking.repository.createSepaMandateWithRetry
-import org.solyton.solawi.bid.module.banking.repository.generateSepaMessageForCollection
+import org.solyton.solawi.bid.module.banking.repository.*
 import org.solyton.solawi.bid.module.banking.schema.*
 import org.solyton.solawi.bid.module.permission.repository.createChild
-import org.solyton.solawi.bid.module.permission.repository.createRole
 import org.solyton.solawi.bid.module.permission.repository.createRootContext
 import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.shares.service.UUID_1
 import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateUserProfile
 import org.solyton.solawi.bid.module.user.repository.createUserProfile
-import org.solyton.solawi.bid.module.user.schema.AddressesTable
-import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
-import org.solyton.solawi.bid.module.user.schema.UserEntity
-import org.solyton.solawi.bid.module.user.schema.UserStatus
-import org.solyton.solawi.bid.module.user.schema.UsersTable
+import org.solyton.solawi.bid.module.user.schema.*
 import org.solyton.solawi.bid.module.values.Firstname
 import org.solyton.solawi.bid.module.values.Lastname
 import org.solyton.solawi.bid.module.values.PhoneNumber
@@ -51,7 +31,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
-import kotlin.time.Duration.Companion.days
 
 class Pain008FunctionsTest {
 
@@ -172,7 +151,7 @@ class Pain008FunctionsTest {
         )
 
         // ✅ Funktionale Top-Level-Funktion verwenden
-        val xmlContent = generatePain008Xml(request)
+        val xmlContent = generatePain008Xml(request).pain008Xml
 
         // Grundlegende XML-Prüfungen
         assertNotNull(xmlContent)
@@ -328,7 +307,7 @@ class Pain008FunctionsTest {
             UUID_ZERO,
             collection.id.value,
             executionDate
-        )
+        ).pain008Xml
 
         println(painString)
 

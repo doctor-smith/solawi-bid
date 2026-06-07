@@ -1,6 +1,6 @@
 package org.solyton.solawi.bid.module.banking.service
 
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.Transaction
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.solyton.solawi.bid.module.banking.data.internal.Pain008GenerationRequest
@@ -9,7 +9,6 @@ import org.solyton.solawi.bid.module.banking.exception.BankAccountsException
 import org.solyton.solawi.bid.module.banking.exception.SepaException
 import org.solyton.solawi.bid.module.banking.schema.*
 import java.math.BigDecimal
-import java.util.*
 
 // ================================
 // Constants and formatters
@@ -20,27 +19,32 @@ private val dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss
 // ================================
 // Main generation function
 // ================================
-
+data class SepaMessageGenerationResult(val message: SepaMessageEntity, val pain008Xml: String)
 /**
  * Generiert eine pain.008.xml Datei für SEPA-Lastschriften
  */
-fun generatePain008Xml(request: Pain008GenerationRequest): String {
-    return transaction {
-        val creditorIdentifier = CreditorIdentifier.findById(request.creditorId)
-            ?: throw IllegalArgumentException("Creditor identifier not found")
-        
-        val creditorAccount = BankAccount.findById(request.creditorAccountId)
-            ?: throw IllegalArgumentException("Creditor account not found")
+fun Transaction.generatePain008Xml(request: Pain008GenerationRequest): SepaMessageGenerationResult {
 
-        // Create SEPA Message Entity
-        val sepaMessage = createSepaMessage(request, creditorIdentifier, creditorAccount)
+    val creditorIdentifier = CreditorIdentifier.findById(request.creditorId)
+        ?: throw IllegalArgumentException("Creditor identifier not found")
 
-        // Validate all Transactions
-        validateTransactions(request.transactions)
+    val creditorAccount = BankAccount.findById(request.creditorAccountId)
+        ?: throw IllegalArgumentException("Creditor account not found")
 
-        // Generate XML
-        buildPain008Xml(sepaMessage, creditorIdentifier, creditorAccount, request.transactions)
-    }
+    // Create SEPA Message Entity
+    val sepaMessage = createSepaMessage(request, creditorIdentifier, creditorAccount)
+
+    // Validate all Transactions
+    validateTransactions(request.transactions)
+
+    // Generate XML
+
+    val pain008Xml = buildPain008Xml(sepaMessage, creditorIdentifier, creditorAccount, request.transactions)
+    return SepaMessageGenerationResult(
+        sepaMessage,
+        pain008Xml
+    )
+
 }
 
 // ================================
@@ -65,7 +69,7 @@ private fun createSepaMessage(
 ): SepaMessageEntity {
     val messageId = generateMessageId()
     val totalAmount = request.transactions.sumOf { it.amount }
-
+    val remittanceInformation = request.transactions.firstOrNull()?.remittanceInfo ?: "NOT SET"
     return SepaMessageEntity.new {
         this.createdBy = request.createdBy
         this.creditorIdentifier = creditorIdentifier
@@ -75,6 +79,7 @@ private fun createSepaMessage(
         this.status = SepaMessageStatus.CREATED
         this.numberOfPayments = request.transactions.size
         this.totalAmount = totalAmount.toDouble()
+        this.remittanceInformation = remittanceInformation
     }
 }
 

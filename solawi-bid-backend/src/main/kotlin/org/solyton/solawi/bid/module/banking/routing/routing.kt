@@ -29,6 +29,7 @@ import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.CREATE_SEPA
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.CREATE_SEPA_PAYMENTS
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.READ_SEPA_COLLECTIONS
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.READ_SEPA_MANDATES
+import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.READ_SEPA_MESSAGES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_COLLECTIONS
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_MANDATES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_PAYMENTS
@@ -206,6 +207,12 @@ fun <BankingEnv> Routing.banking (
                         CreateSepaPaymentsForCollection() *
                         Respond { transform() } runOn Base(call, environment)
                     }
+                    post("create-payment-successors") {
+                        ReceiveContextual<CreateSepaPaymentSuccessors>() *
+                        IsGranted(CREATE_SEPA_PAYMENTS, no) *
+                        CreateSepaPaymentSuccessors() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
                     post("generate-sepa-message") {
                         ReceiveContextual<GenerateSepaMessageForCollection>() *
                         IsGranted(CREATE_SEPA_MESSAGES, no) *
@@ -231,6 +238,18 @@ fun <BankingEnv> Routing.banking (
                         ReceiveContextual<UpdateSepaPaymentExecutionStatuses>() *
                         IsGranted(UPDATE_SEPA_PAYMENTS, no) *
                         UpdateSepaPaymentExecutionStatuses() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
+                }
+                route("messages") {
+                    get("by-legal-entity") {
+                        ReceiveContextual<String>{
+                                parameters -> requireNotNull(parameters["legal_entity"]) {
+                                "Parameter 'legal_entity' is empty"
+                            }
+                        } *
+                        IsGranted(READ_SEPA_MESSAGES, no) *
+                        ReadSepaMessagesByLegalEntityId() *
                         Respond { transform() } runOn Base(call, environment)
                     }
                 }

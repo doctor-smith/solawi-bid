@@ -7,6 +7,7 @@
 | GET | auction/all | GetAuctions  | GetAuctions | List |
 | DELETE | auction/bidder/delete | DeleteBidders  | DeleteBidders | Auction |
 | POST | auction/bidder/import | ImportBidders  | ImportBidders | Auction |
+| POST | auction/bidder/import-bidders-from-organization | ImportBiddersFromOrganization  | ImportBiddersFromOrganization | Auction |
 | PATCH | auction/configure | ConfigureAuction  | ConfigureAuction | Auction |
 | POST | auction/create | CreateAuction  | CreateAuction | Auction |
 | DELETE | auction/delete | DeleteAuctions  | DeleteAuctions | List |
@@ -31,6 +32,7 @@
 | POST | shares/subscriptions/create | CreateShareSubscription  | CreateShareSubscription | ShareSubscription |
 | POST | shares/subscriptions/import | ImportShareSubscriptions  | ImportShareSubscriptions | ShareSubscriptions |
 | PATCH | shares/subscriptions/update | UpdateShareSubscription  | UpdateShareSubscription | ShareSubscription |
+| PATCH | shares/subscriptions/update-status | UpdateShareStatus  | UpdateShareStatus | ShareSubscription |
 | GET | shares/types/all | ReadShareTypes  | ReadShareTypes | ShareTypes |
 | POST | shares/types/create | CreateShareType  | CreateShareType | ShareType |
 | PATCH | shares/types/update | UpdateShareType  | UpdateShareType | ShareType |
@@ -91,14 +93,30 @@
 | DELETE | banking/bank-accounts/delete | DeleteBankAccount  | DeleteBankAccount | Boolean |
 | POST | banking/bank-accounts/import | ImportBankAccounts  | ImportBankAccounts | BankAccounts |
 | PATCH | banking/bank-accounts/update | UpdateBankAccount  | UpdateBankAccount | BankAccount |
+| GET | banking/creditors/identifiers/by-legal-entity | ReadCreditorIdentifierByLegalEntity  | ReadCreditorIdentifierByLegalEntity | CreditorIdentifier |
 | GET | banking/fiscal-years/all | ReadFiscalYears  | ReadFiscalYears | FiscalYears |
 | POST | banking/fiscal-years/create | CreateFiscalYear  | CreateFiscalYear | FiscalYear |
 | PATCH | banking/fiscal-years/update | UpdateFiscalYear  | UpdateFiscalYear | FiscalYear |
+| GET | banking/legal-entities/personal | ReadLegalEntity  | ReadLegalEntity | LegalEntity |
+| POST | banking/legal-entities/personal/create | CreateLegalEntity  | CreateLegalEntity | LegalEntity |
+| PATCH | banking/legal-entities/personal/update | UpdateLegalEntity  | UpdateLegalEntity | LegalEntity |
+| GET | banking/sepa/collections/by-legal-entity | ReadSepaCollectionsByLegalEntity  | ReadSepaCollectionsByLegalEntity | SepaCollections |
+| POST | banking/sepa/collections/create | CreateSepaCollection  | CreateSepaCollection | SepaCollection |
+| POST | banking/sepa/collections/create-payment-successors | CreateSepaPaymentSuccessors  | CreateSepaPaymentSuccessors | SepaPayments |
+| POST | banking/sepa/collections/create-payments | CreateSepaPaymentsForCollection  | CreateSepaPaymentsForCollection | SepaPayments |
+| POST | banking/sepa/collections/generate-sepa-message | GenerateSepaMessageForCollection  | GenerateSepaMessageForCollection | SepaMessageString |
+| PATCH | banking/sepa/collections/update | UpdateSepaCollection  | UpdateSepaCollection | SepaCollection |
+| GET | banking/sepa/mandates/by-creditors-legal-entity | ReadSepaMandatesByCreditorsLegalEntity  | ReadSepaMandatesByCreditorsLegalEntity | SepaMandates |
+| POST | banking/sepa/mandates/create | CreateSepaMandate  | CreateSepaMandate | SepaMandate |
+| PATCH | banking/sepa/mandates/update | UpdateSepaMandate  | UpdateSepaMandate | SepaMandate |
+| GET | banking/sepa/messages/by-legal-entity | ReadSepaMessagesByLegalEntityId  | ReadSepaMessagesByLegalEntityId | SepaMessages |
+| PATCH | banking/sepa/payments/update-execution-statuses | UpdateSepaPaymentExecutionStatuses  | UpdateSepaPaymentExecutionStatuses | SepaPayments |
 ## permissions
 
 | Methode | URL | Key | Request Type | Response Type |
 | :--- | :--- | :--- | :--- | :--- |
 | PATCH | permissions/contexts/parent-child-relations | ReadParentChildRelationsOfContexts  | ReadParentChildRelationsOfContexts | ParentChildRelationsOfContext |
+| PUT | permissions/contexts/role-right-context | PutRoleRightContext  | PutRoleRightContext | Context |
 | PATCH | permissions/contexts/roles-and-rights | ReadRightRoleContexts  | ReadRightRoleContexts | Contexts |
 | PATCH | permissions/user/role-right-contexts | ReadRightRoleContextsOfUser  | ReadRightRoleContextsOfUser | Contexts |
 | PUT | permissions/user/user-role-context | PutUserRoleContext  | PutUserRoleContext | UserContext |

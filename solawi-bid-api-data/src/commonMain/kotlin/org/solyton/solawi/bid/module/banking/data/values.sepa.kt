@@ -94,3 +94,13 @@ value class PurposeCode(val value: String) {
         require(value.length <= 4)
     }
 }
+
+@Serializable@Value
+@JvmInline
+value class SepaMessageId(val value: String) {
+    init {
+        require(isValidUUID(value)) { "Id must be a valid UUID" }
+    }
+}
+
+

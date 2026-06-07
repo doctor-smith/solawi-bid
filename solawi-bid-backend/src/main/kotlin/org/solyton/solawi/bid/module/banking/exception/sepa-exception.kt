@@ -43,4 +43,8 @@ sealed class SepaException(override val message: String): Exception(message) {
             private fun readResolve(): Any = ChangeRequiresDateOfReport
         }
     }
+    sealed class Message(override val message: String) : SepaException(message) {
+        data class NoSuchMessage(val id: String): Message("No such message; id = $id")
+        data class Locked(val id: String): Message("Message is locked; id = $id")
+    }
 }

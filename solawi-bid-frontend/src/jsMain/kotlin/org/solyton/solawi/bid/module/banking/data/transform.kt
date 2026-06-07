@@ -16,6 +16,7 @@ import org.solyton.solawi.bid.module.banking.data.sepa.PaymentExecutionStatus
 import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.mandate.SepaMandate
+import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessage
 import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessageString
 import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessageVersion
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
@@ -135,7 +136,9 @@ fun ApiSepaPayment.toDomainType(): SepaPayment = SepaPayment(
     executionDate = executionDate,
     sequenceType = sequenceType.toDomainType(),
     status = status.toDomainType(),
-    failureReason = failureReason
+    failureReason = failureReason,
+    endToEndId = endToEndId,
+    successorId = successorId
 )
 
 fun ApiSepaCollection.toDomainType(): SepaCollection = SepaCollection(
@@ -226,3 +229,11 @@ fun ApiSepaMessageVersion.toDomainType(): SepaMessageVersion = when(this) {
 fun SepaMessageVersion.toApiType(): ApiSepaMessageVersion = when(this) {
     SepaMessageVersion.PAIN008 -> ApiSepaMessageVersion.PAIN008
 }
+
+fun ApiSepaMessage.toDomainType(): SepaMessage = SepaMessage(
+    sepaMessageId = sepaMessageId,
+    messageIdentifier = messageIdentifier,
+    remittanceInformation = remittanceInformation,
+)
+
+fun ApiSepaMessages.toDomainType(): List<SepaMessage> = all.map { it.toDomainType() }

@@ -428,10 +428,18 @@ val solawiApi by lazy {
                 key = CreateSepaPaymentsForCollection::class,
                 url = "sepa/collections/create-payments"
             )
-
+            post<CreateSepaPaymentSuccessors, SepaPayments>(
+                key = CreateSepaPaymentSuccessors::class,
+                url = "sepa/collections/create-payment-successors"
+            )
             post<GenerateSepaMessageForCollection, SepaMessageString>(
                 key = GenerateSepaMessageForCollection::class,
                 url = "sepa/collections/generate-sepa-message"
+            )
+            get<ReadSepaMessagesByLegalEntityId, SepaMessages>(
+                key = ReadSepaMessagesByLegalEntityId::class,
+                url = "sepa/messages/by-legal-entity",
+                parameters = setOf("legal_entity")
             )
 
             post<CreateSepaMandate, SepaMandate>(

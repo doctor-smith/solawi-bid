@@ -1,20 +1,18 @@
 package org.solyton.solawi.bid.module.banking.repository
 
 import org.evoleq.exposedx.joda.now
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
+import org.jetbrains.exposed.dao.flushCache
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.update
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import org.solyton.solawi.bid.module.banking.data.internal.Pain008GenerationRequest
 import org.solyton.solawi.bid.module.banking.data.internal.Pain008Transaction
-import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.banking.exception.SepaException
 import org.solyton.solawi.bid.module.banking.schema.*
-import org.solyton.solawi.bid.module.banking.schema.SepaPaymentEntity
+import org.solyton.solawi.bid.module.banking.service.SepaMessageGenerationResult
 import org.solyton.solawi.bid.module.banking.service.generateE2ETransactionId
 import org.solyton.solawi.bid.module.banking.service.generatePain008Xml
-import org.solyton.solawi.bid.module.permission.action.db.no
 import java.util.*
 
 fun Transaction.createPaymentsForCollection(
@@ -116,7 +114,8 @@ fun Transaction.updatePayment(
     status: PaymentExecutionStatus,
     changeReportedAt: DateTime?,
     failureReason: String?,
-    endToEndId: String? = null
+    endToEndId: String? = null,
+    message: SepaMessage? = null,
 ): SepaPaymentEntity {
     val payment = validatedPayment(sepaPaymentId)
 
@@ -125,6 +124,7 @@ fun Transaction.updatePayment(
     val sequenceTypeChanged = payment.sequenceType != sequenceType
     val statusChanged = payment.status != status
     val endToEndIdChanged = endToEndId != null && payment.endToEndId != endToEndId
+    val messageChanged = message != null && payment.message != message
 
     val changesAllowed = when{
         payment.status == PaymentExecutionStatus.CREATED -> true
@@ -143,16 +143,35 @@ fun Transaction.updatePayment(
     if(sequenceTypeChanged) payment.sequenceType = sequenceType
     if(statusChanged) payment.status = status
     if(endToEndIdChanged) payment.endToEndId = endToEndId
+    if(messageChanged) payment.message = message
 
     val changed = amountChanged
             || executionDateChanged
             || sequenceTypeChanged
             || statusChanged
             || endToEndIdChanged
+            || messageChanged
 
     if(changed) {
         payment.modifiedBy = modifier
         payment.modifiedAt = now()
+    }
+
+    // update message
+    if(statusChanged) {
+        require(status == PaymentExecutionStatus.CREATED || message != null) { "Message must be provided if status is changed" }
+        when(status) {
+            PaymentExecutionStatus.MESSAGE_CREATED -> payment.message?.status = SepaMessageStatus.CREATED
+            PaymentExecutionStatus.SENT -> payment.message?.status = SepaMessageStatus.SENT
+            PaymentExecutionStatus.PENDING -> payment.message?.status = SepaMessageStatus.PENDING
+            PaymentExecutionStatus.FAILED -> payment.message?.status = SepaMessageStatus.FAILED
+            PaymentExecutionStatus.CONFIRMED -> payment.message?.status = SepaMessageStatus.CONFIRMED
+            else -> Unit
+        }
+    }
+
+    if(amountChanged && payment.message != null) {
+        message?.totalAmount = message.payments.sumOf { it.amount }
     }
 
     // Update history
@@ -187,12 +206,78 @@ fun Transaction.updatePayment(
     return payment
 }
 
+fun Transaction.createSuccessorsOfPayments(
+    creator: UUID,
+    executionDate: LocalDate,
+    paymentIds: List<UUID>
+): List<SepaPaymentEntity> {
+    val payments = SepaPaymentEntity.find {
+        SepaPayments.id inList paymentIds
+    }.toList()
+
+    require(payments.size == paymentIds.size) { "All payments must be found" }
+    require(payments.none { it.successor != null }) { "All payments must not have successors" }
+
+    val allowedStatuses = listOf(
+        PaymentExecutionStatus.CONFIRMED,
+        PaymentExecutionStatus.PAYED_MANUALLY,
+        PaymentExecutionStatus.FAILED
+    )
+    require(payments.all { it.status in allowedStatuses }) { "All payments must be in one of the following states: ${allowedStatuses.joinToString()}" }
+
+    return payments.map { payment ->
+        createSuccessorOfPayment(creator, executionDate, payment)
+    }
+}
+
+fun Transaction.createSuccessorOfPayment(
+    creator: UUID,
+    executionDate: LocalDate,
+    payment: SepaPaymentEntity
+): SepaPaymentEntity {
+    val successor = SepaPaymentEntity.new {
+        this.createdBy = creator
+        this.mandate = payment.mandate
+        this.collection = payment.collection
+        this.status = PaymentExecutionStatus.CREATED
+        this.sequenceType = shiftSequenceType(payment)
+        this.amount = payment.amount
+        this.executionDate = executionDate.toDateTimeAtCurrentTime()
+    }
+
+    payment.successor = successor
+    payment.modifiedBy = creator
+    payment.modifiedAt = now()
+
+    // create history entry
+    SepaPaymentStatusHistoryEntity.new {
+        createdBy = creator
+        reportedAt = now()
+        this.payment = successor
+        status = BankStatusCode.NOT_SUBMITTED
+    }
+
+    return successor
+}
+
+fun shiftSequenceType(payment: SepaPaymentEntity): SepaSequenceType {
+    val newSequenceType = when (payment.sequenceType) {
+        SepaSequenceType.FRST -> when(payment.status) {
+            PaymentExecutionStatus.CONFIRMED -> SepaSequenceType.RCUR
+            else -> SepaSequenceType.FRST
+        }
+        else -> payment.sequenceType
+    }
+    return newSequenceType
+}
 
 fun Transaction.generateSepaMessageForCollection(
     creator: UUID,
     collectionId: UUID,
-    executionDate: LocalDate?
-): String {
+    executionDate: LocalDate?,
+    sepaPaymentIds: List<UUID>? = null,
+    remittanceInformation: String? = null,
+): SepaMessageGenerationResult {
 
     val reportedAt = now()
 
@@ -201,11 +286,14 @@ fun Transaction.generateSepaMessageForCollection(
     val creditorIdentifier = collection.creditorIdentifier
 
     val createdPayments = collection.sepaPayments.filter {
-        it.status == PaymentExecutionStatus.CREATED
+        it.status == PaymentExecutionStatus.CREATED &&
+        sepaPaymentIds?.contains(it.id.value) ?: true
     }
 
-    require(createdPayments.isNotEmpty())
+    require(createdPayments.isNotEmpty()){ "No created payments found"}
+    if(sepaPaymentIds != null) require(createdPayments.map { it.id.value }.distinct().size == sepaPaymentIds.size){ "All created payments must be found"}
     if(executionDate == null) require(createdPayments.map { it.executionDate }.distinct().size == 1)
+
     val finalExecutionDate = when(executionDate){
         null -> createdPayments.first().executionDate.toLocalDate()
         else -> executionDate.toDateTimeAtCurrentTime().toLocalDate()
@@ -214,6 +302,8 @@ fun Transaction.generateSepaMessageForCollection(
     val finalPayments = createdPayments.filter { it.executionDate.toLocalDate() == finalExecutionDate }
 
     val paymentWithE2E = finalPayments.map { it to generateE2ETransactionId() }
+
+    val finalRemittanceInformation = remittanceInformation ?: collection.remittanceInformation
 
     val transactions: List<Pain008Transaction> = paymentWithE2E.map { (payment, e2eId) ->
         val mandate = payment.mandate
@@ -229,18 +319,24 @@ fun Transaction.generateSepaMessageForCollection(
             mandate.debtorBankAccount.bic,
             mandate.mandateReference,
             mandate.signedAt.toLocalDate(),
-            collection.remittanceInformation,
+            finalRemittanceInformation,
             sequenceType
         )
     }
 
-    val pain008XmlString = generatePain008Xml(Pain008GenerationRequest(
+    val pain008XmlResult = generatePain008Xml(Pain008GenerationRequest(
         creditorIdentifier.id.value,
         collection.creditorAccount.id.value,
         finalExecutionDate,
         transactions,
         creator
     ))
+    // Flush so that the newly created SepaMessage is persisted before
+    // the payments are updated to reference it (otherwise the FK
+    // constraint SEPA_PAYMENTS.MESSAGE_ID -> SEPA_MESSAGES.ID fails,
+    // because the entity cache may flush the payment updates before
+    // the message insert).
+    flushCache()
     // update payments
     paymentWithE2E.forEach { (payment, e2eId) ->
         updatePayment(
@@ -252,11 +348,12 @@ fun Transaction.generateSepaMessageForCollection(
             PaymentExecutionStatus.MESSAGE_CREATED,
             reportedAt,
             null,
-            e2eId
+            e2eId,
+            pain008XmlResult.message
         )
     }
 
-    return pain008XmlString
+    return pain008XmlResult
 }
 
 fun Transaction.updateSepaPaymentExecutionStatuses(
@@ -358,3 +455,116 @@ fun Transaction.validatedPayment(id: UUID): SepaPaymentEntity = SepaPaymentEntit
 
 // they come with the collections
 // fun Transaction.readPayments()
+
+fun Transaction.updateSepaMessage(
+    modifier: UUID,
+    messageId: UUID,
+    executionDate: LocalDate,
+    numberOfPayments: Int? = null,
+) {
+    val message = validateSepaMessage(messageId)
+    val finalExecutionDate = executionDate.toDateTimeAtCurrentTime()
+    val executionDateChanged = message.executionDate != finalExecutionDate
+    val numberOfPaymentsChanged = numberOfPayments != null && message.numberOfPayments != numberOfPayments
+
+    val messageChanged = executionDateChanged || numberOfPaymentsChanged
+
+    if(!messageChanged) return
+
+    if(executionDateChanged) {
+        message.executionDate = finalExecutionDate
+        message.payments.forEach { it.executionDate = finalExecutionDate }
+    }
+    if(numberOfPaymentsChanged) {
+        message.numberOfPayments = message.payments.count().toInt()
+        message.totalAmount = message.payments.sumOf { it.amount }
+    }
+
+    message.modifiedBy = modifier
+    message.modifiedAt = now()
+}
+
+fun Transaction.addPaymentsToMessage(
+    modifier: UUID,
+    messageId: UUID,
+    paymentIds: List<UUID>
+) {
+    if(paymentIds.isEmpty()) return
+
+    val message = validateSepaMessage(messageId)
+    if(message.status != SepaMessageStatus.CREATED) throw SepaException.Message.Locked(messageId.toString())
+
+    val payments = SepaPaymentEntity.find { SepaPayments.id inList paymentIds }.toList()
+    require(payments.size == paymentIds.size) { "All payments must be found" }
+    require(payments.all { it.message == null }) { "All payments must not have messages" }
+
+
+    payments.forEach {
+        it.message = message
+        it.executionDate = message.executionDate
+    }
+    message.numberOfPayments = message.payments.count().toInt()
+    message.totalAmount = message.payments.sumOf { it.amount }
+
+    message.modifiedBy = modifier
+    message.modifiedAt = now()
+}
+
+fun Transaction.movePaymentsToMessage(
+    modifier: UUID,
+    messageId: UUID,
+    paymentIds: List<UUID>
+) {
+    if(paymentIds.isEmpty()) return
+
+    val message = validateSepaMessage(messageId)
+    if(message.status != SepaMessageStatus.CREATED) throw SepaException.Message.Locked(messageId.toString())
+    val payments = SepaPaymentEntity.find { SepaPayments.id inList paymentIds }.toList()
+
+    require(payments.size == paymentIds.size) { "All payments must be found" }
+    require(payments.none { it.message == null }) { "All payments must have messages" }
+
+    payments.forEach {
+        val oldMessage = requireNotNull(it.message) { "All payments must have a message" }
+        it.message = message
+        it.executionDate = message.executionDate
+
+        oldMessage.numberOfPayments = oldMessage.payments.count().toInt()
+        oldMessage.totalAmount = oldMessage.payments.sumOf { payment -> payment.amount }
+        oldMessage.modifiedBy = modifier
+        oldMessage.modifiedAt = now()
+
+    }
+    message.numberOfPayments = message.payments.count().toInt()
+    message.totalAmount = message.payments.sumOf { it.amount }
+
+    message.modifiedBy = modifier
+    message.modifiedAt = now()
+}
+
+fun Transaction.removePaymentsFromMessage(
+    modifier: UUID,
+    messageId: UUID,
+    paymentIds: List<UUID>
+) {
+    if(paymentIds.isEmpty()) return
+
+    val message = validateSepaMessage(messageId)
+    if(message.status != SepaMessageStatus.CREATED) throw SepaException.Message.Locked(messageId.toString())
+
+    val payments = SepaPaymentEntity.find { SepaPayments.id inList paymentIds }.toList()
+    require(payments.size == paymentIds.size) { "All payments must be found" }
+    require(payments.all { it.message != null }) { "All payments must not have messages" }
+
+
+    payments.forEach {
+        it.message = null
+    }
+    message.numberOfPayments = message.payments.count().toInt()
+    message.totalAmount = message.payments.sumOf { it.amount }
+
+    message.modifiedBy = modifier
+    message.modifiedAt = now()
+}
+fun Transaction.validateSepaMessage(messageId: UUID): SepaMessageEntity = SepaMessageEntity.findById(messageId)
+    ?: throw SepaException.Message.NoSuchMessage(messageId.toString())

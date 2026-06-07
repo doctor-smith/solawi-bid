@@ -19,5 +19,7 @@ data class SepaPayment(
     @ReadWrite val executionDate: LocalDate,
     @ReadWrite val sequenceType: SepaSequenceType,
     @ReadWrite val status: PaymentExecutionStatus,
-    @ReadWrite val failureReason: String? = null
+    @ReadWrite val failureReason: String? = null,
+    @ReadOnly val endToEndId: String? = null,
+    @ReadOnly val successorId: SepaPaymentId? = null,
 )

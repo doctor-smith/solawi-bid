@@ -181,7 +181,9 @@ fun SepaPaymentEntity.toApiType(): ApiSepaPayment = ApiSepaPayment(
     executionDate = executionDate.toKotlinxWithZone().date,
     sequenceType = sequenceType.toApiType(),
     status = status.toApiType(),
-    failureReason = failureReason
+    failureReason = failureReason,
+    endToEndId = endToEndId,
+    successorId = successor?.let { SepaPaymentId(it.id.value.toString()) }
 )
 
 fun PaymentExecutionStatus.toApiType(): ApiPaymentExecutionStatus = when(this){
@@ -203,3 +205,15 @@ fun ApiPaymentExecutionStatus.toDomainType(): PaymentExecutionStatus = when(this
     ApiPaymentExecutionStatus.FAILED -> PaymentExecutionStatus.FAILED
     ApiPaymentExecutionStatus.PENDING -> PaymentExecutionStatus.PENDING
 }
+
+fun SepaMessageEntity.toApiType(): ApiSepaMessage = ApiSepaMessage(
+    sepaMessageId = SepaMessageId(id.value.toString()),
+    messageIdentifier = messageId,
+    executionDate = executionDate.toKotlinxWithZone().date,
+    totalAmount = totalAmount,
+    numberOfPayments = numberOfPayments,
+    remittanceInformation = RemittanceInformation(remittanceInformation),
+    paymentIds = payments.map { SepaPaymentId(it.id.value.toString()) }
+)
+
+fun List<SepaMessageEntity>.toApiType(): ApiSepaMessages = ApiSepaMessages(map { it.toApiType() })

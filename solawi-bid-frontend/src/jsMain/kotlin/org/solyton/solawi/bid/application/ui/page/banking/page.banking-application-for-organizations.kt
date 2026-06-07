@@ -15,10 +15,7 @@ import org.evoleq.device.data.mediaType
 import org.evoleq.kotlinx.date.now
 import org.evoleq.language.Locale
 import org.evoleq.language.extend
-import org.evoleq.math.FirstOrNull
-import org.evoleq.math.Reader
-import org.evoleq.math.emit
-import org.evoleq.math.round
+import org.evoleq.math.*
 import org.evoleq.optics.lens.FilterBy
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
@@ -56,6 +53,7 @@ import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.message.message
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaCollections
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaMessageString
+import org.solyton.solawi.bid.module.banking.data.sepa.sepaMessages
 import org.solyton.solawi.bid.module.banking.service.download
 import org.solyton.solawi.bid.module.constants.checkIcon
 import org.solyton.solawi.bid.module.control.button.*
@@ -110,6 +108,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
 
     val sepaModule = bankingApplicationStorage * sepaModule
     val sepaCollections = sepaModule * sepaCollections
+    val sepaMessages = sepaModule * sepaMessages
     val collectionToBankAccountMap = sepaCollections * Reader<List<SepaCollection>, Map<SepaCollectionId, BankAccount>> {
         collections: List<SepaCollection> -> collections.associateBy({it.sepaCollectionId}) {
             (creditorBankAccounts * FirstOrNull { bankAccount -> bankAccount.bankAccountId == it.creditorBankAccountId }).emit()
@@ -131,6 +130,9 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
         }
         launch{
             bankingApplicationActions dispatch readPersonalSepaCollections(LegalEntityId(providerId.value))
+        }
+        launch {
+            bankingApplicationActions dispatch readSepaMessagesByLegalEntity(LegalEntityId(providerId.value))
         }
     }
     LaunchedEffect(managedUsers.read()) {
@@ -721,7 +723,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                                     color = Color.black,
                                     bgColor = Color.white,
                                     deviceType = deviceType,
-                                    texts = {"Assoc Payments (to Mandates)"},
+                                    texts = {"Manage Mandates, Payments and Sepa Messages"},
                                     isDisabled = collection.sepaMandates.isEmpty()
                                 ) {
 
@@ -731,7 +733,8 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                                         device = deviceType,
                                         uiState = uiState,
                                         setUiState = {data -> uiState = data},
-                                        sepaCollection =sepaCollections * Reader{list: List<SepaCollection> -> list.first { it.sepaCollectionId == collection.sepaCollectionId }},
+                                        sepaCollection = sepaCollections * Reader{list: List<SepaCollection> -> list.first { it.sepaCollectionId == collection.sepaCollectionId }},
+                                        sepaMessages = Source { sepaMessages.read() },
                                         executionDate = null,
                                         setManageCollectionPayments = {data -> manageCollectionPaymentsState = data}
                                     ) {
@@ -749,15 +752,17 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                                                             CreateSepaPaymentsForCollection(
                                                                 collection.sepaCollectionId,
                                                                 state.executionDate,
-
-                                                                ),
+                                                                state.remittanceInformation,
+                                                            ),
                                                             collection.sepaCollectionId
                                                         )
 
                                                         is ManageCollectionPayments.CreateMessage -> bankingApplicationActions dispatch generateSepaMessageForCollection(
                                                             GenerateSepaMessageForCollection(
                                                                 collection.sepaCollectionId,
-                                                                state.executionDate
+                                                                state.executionDate,
+                                                                listOf(),
+                                                                state.remittanceInformation
                                                             )
                                                         )
                                                     }

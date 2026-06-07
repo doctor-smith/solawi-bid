@@ -34,6 +34,8 @@ object SepaMessages : AuditableUUIDTable("sepa_messages") {
         64
     ).uniqueIndex() // Unique message ID, corresponds to <MsgId> in pain.008/pain.001
 
+    val remittanceInformation = varchar("remittance_information", 140).default("NOT SET")
+
     val executionDate = date(
         "execution_date"
     ) // Date when the payments in this batch should be executed
@@ -64,10 +66,13 @@ class SepaMessage(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     var creditorIdentifier by CreditorIdentifier referencedOn SepaMessages.creditorIdentifierId
     var creditorAccount by BankAccount referencedOn SepaMessages.creditorAccountId
     var messageId by SepaMessages.messageId
+    var remittanceInformation by SepaMessages.remittanceInformation
     var executionDate by SepaMessages.executionDate
     var status by SepaMessages.status
     var numberOfPayments by SepaMessages.numberOfPayments
     var totalAmount by SepaMessages.totalAmount
+
+    val payments by SepaPayment optionalReferrersOn SepaPayments.messageId
 
     override var createdAt: org.joda.time.DateTime by SepaMessages.createdAt
     override var createdBy: UUID by SepaMessages.createdBy
@@ -82,6 +87,7 @@ class SepaMessage(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
 enum class SepaMessageStatus {
     CREATED,   // Message prepared but not yet sent
     SENT,      // Message sent to bank
+    PENDING, // Bank is processing the message
     CONFIRMED, // Bank confirmed execution
     FAILED     // Message rejected or failed
 }
