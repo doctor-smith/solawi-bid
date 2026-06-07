@@ -1,20 +1,13 @@
 package org.solyton.solawi.bid.application.data.db.migrations
 
 import org.evoleq.exposedx.migrations.structural.*
-import org.evoleq.uuid.NIL_UUID
 import org.evoleq.uuid.UUID_ZERO
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
 import org.solyton.solawi.bid.module.application.schema.ModulesTable
 import org.solyton.solawi.bid.module.application.schema.UserApplicationsTable
 import org.solyton.solawi.bid.module.application.schema.UserModulesTable
-import org.solyton.solawi.bid.module.banking.schema.AccountType
-import org.solyton.solawi.bid.module.banking.schema.BankAccountsTable
-import org.solyton.solawi.bid.module.banking.schema.FiscalYears
-import org.solyton.solawi.bid.module.banking.schema.LegalEntitiesTable
-import org.solyton.solawi.bid.module.banking.schema.LegalEntityType
-import org.solyton.solawi.bid.module.banking.schema.SepaMandatesTable
-import org.solyton.solawi.bid.module.banking.schema.SepaPaymentsTable
+import org.solyton.solawi.bid.module.banking.schema.*
 import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.distribution.schema.DistributionPointsTable
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
@@ -217,7 +210,12 @@ val columnsToAdd: List<AddMissingColumns> by lazy {
             ColumnDef.Missing<UUID?>("collection_id", null)
         ),
         SepaPaymentsTable.addColumnsIfMissing(
-            ColumnDef.Missing<String?>("end_to_end_id", null)
+            ColumnDef.Missing<String?>("end_to_end_id", null),
+            ColumnDef.Missing<UUID?>("successor_id", null),
+            ColumnDef.Missing<UUID?>("message_id", null),
+        ),
+        SepaMessagesTable.addColumnsIfMissing(
+            ColumnDef.Missing<String>("remittance_information", "NOT SET"),
         )
     )
 }

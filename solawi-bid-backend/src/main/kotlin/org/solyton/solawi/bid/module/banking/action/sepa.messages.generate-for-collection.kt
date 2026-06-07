@@ -24,13 +24,17 @@ fun GenerateSepaMessageForCollection(): KlAction<Result<Contextual<GenerateSepaM
                 val data = contextual.data
                 val userId = contextual.userId
                 val message = generateSepaMessageForCollection(
-                    userId,
-                    UUID.fromString(data.sepaCollectionId.value),
-                    data.executionDate.toJoda()
+                    creator = userId,
+                    collectionId = UUID.fromString(data.sepaCollectionId.value),
+                    executionDate = data.executionDate.toJoda(),
+                    sepaPaymentIds = data.sepaPaymentIds?.let{ids ->
+                        ids.map { id -> UUID.fromString(id.value) }
+                    },
+                    remittanceInformation = data.remittanceInformation?.value,
                 )
                 SepaMessageString(
-                    SepaMessageVersion.PAIN008,
-                    message
+                    version = SepaMessageVersion.PAIN008,
+                    message = message.pain008Xml
                 )
             }
         } x database

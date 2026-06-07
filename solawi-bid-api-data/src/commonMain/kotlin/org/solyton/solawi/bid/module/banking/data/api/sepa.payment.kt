@@ -4,6 +4,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 import org.evoleq.ktorx.client.Parameters
 import org.evoleq.ktorx.client.QueryParams
+import org.solyton.solawi.bid.module.banking.data.RemittanceInformation
 import org.solyton.solawi.bid.module.banking.data.SepaCollectionId
 import org.solyton.solawi.bid.module.banking.data.SepaMandateId
 import org.solyton.solawi.bid.module.banking.data.SepaPaymentId
@@ -27,7 +28,9 @@ data class SepaPayment(
     val executionDate: LocalDate,
     val sequenceType: SepaSequenceType,
     val status: PaymentExecutionStatus,
-    val failureReason: String? = null
+    val failureReason: String? = null,
+    val endToEndId: String? = null,
+    val successorId: SepaPaymentId? = null,
 )
 
 @Serializable
@@ -45,6 +48,7 @@ data class CreateSepaPayment(
 data class CreateSepaPaymentsForCollection(
     val sepaCollectionId: SepaCollectionId,
     val executionDate: LocalDate,
+    val remittanceInformation: RemittanceInformation? = null,
 )
 
 @Serializable
@@ -76,7 +80,11 @@ data class UpdateSepaPaymentExecutionStatuses(
     val failureReasons: Map<SepaPaymentId, String> = emptyMap()
 )
 
-
+@Serializable
+data class CreateSepaPaymentSuccessors(
+    val executionDate: LocalDate,
+    val paymentIds: List<SepaPaymentId>
+)
 
 @Serializable
 data class AddSepaPaymentToCollection(

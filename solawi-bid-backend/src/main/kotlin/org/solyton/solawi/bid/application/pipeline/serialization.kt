@@ -1,6 +1,5 @@
 package org.solyton.solawi.bid.application.pipeline
 
-import io.ktor.server.application.*
 import kotlinx.serialization.builtins.serializer
 import org.evoleq.ktorx.client.Parameters
 import org.evoleq.ktorx.result.Result
@@ -8,13 +7,7 @@ import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.ktorx.result.add
 import org.evoleq.ktorx.result.serializers
 import org.solyton.solawi.bid.module.application.data.*
-import org.solyton.solawi.bid.module.application.data.ApiApplication
-import org.solyton.solawi.bid.module.application.data.ApiApplications
-import org.solyton.solawi.bid.module.application.data.ApiLifecycleStage
-import org.solyton.solawi.bid.module.application.data.ApiModule
-import org.solyton.solawi.bid.module.application.data.ApiUserApplications
 import org.solyton.solawi.bid.module.authentication.data.api.*
-import org.solyton.solawi.bid.module.banking.action.CreateSepaPaymentsForCollection
 import org.solyton.solawi.bid.module.banking.data.*
 import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
@@ -370,6 +363,7 @@ fun installSerializers() {
         add<SepaPayments>(SepaPayments.serializer())
         add<CreateSepaPayment>(CreateSepaPayment.serializer())
         add<CreateSepaPaymentsForCollection>(CreateSepaPaymentsForCollection.serializer())
+        add<CreateSepaPaymentSuccessors>(CreateSepaPaymentSuccessors.serializer())
         add<ReadSepaPaymentsByLegalEntity>(ReadSepaPaymentsByLegalEntity.serializer())
         add<UpdateSepaPayment>(UpdateSepaPayment.serializer())
         add<UpdateSepaPaymentExecutionStatuses>(UpdateSepaPaymentExecutionStatuses.serializer())
@@ -384,6 +378,10 @@ fun installSerializers() {
         add<SepaMessageString>(SepaMessageString.serializer())
         add<SepaMessageVersion>(SepaMessageVersion.serializer())
         add<SepaMessageVersion.PAIN008>(SepaMessageVersion.PAIN008.serializer())
+        add<SepaMessage>(SepaMessage.serializer())
+        add<SepaMessages>(SepaMessages.serializer())
+        add<ReadSepaMessagesByLegalEntityId>(ReadSepaMessagesByLegalEntityId.serializer())
+        add<SepaMessageId>(SepaMessageId.serializer())
 
         // Sepa response from bank
     }

@@ -124,6 +124,8 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
             is SepaException.Payment.ChangesNotAllowed -> HttpStatusCode.BadRequest
             is SepaException.Payment.NoSuchPayment -> HttpStatusCode.NotFound
             is SepaException.Payment.StateTransitionForbidden -> HttpStatusCode.BadRequest
+            is SepaException.Message.Locked -> HttpStatusCode.BadRequest
+            is SepaException.Message.NoSuchMessage -> HttpStatusCode.NotFound
         }
 
         //User

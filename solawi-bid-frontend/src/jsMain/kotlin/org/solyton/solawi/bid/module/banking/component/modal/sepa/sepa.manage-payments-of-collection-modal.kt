@@ -33,15 +33,22 @@ import org.jetbrains.compose.web.dom.Button
 import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.Input
 import org.jetbrains.compose.web.dom.Text
+import org.solyton.solawi.bid.module.banking.action.createSuccessorsForPayments
+import org.solyton.solawi.bid.module.banking.action.generateSepaMessageForCollection
 import org.solyton.solawi.bid.module.banking.action.updateSepaPaymentExecutionStatuses
 import org.solyton.solawi.bid.module.banking.component.list.ListOfPayments
 import org.solyton.solawi.bid.module.banking.component.properties.PaymentsProperties
 import org.solyton.solawi.bid.module.banking.component.tab.TabParagraphWrapper
+import org.solyton.solawi.bid.module.banking.data.RemittanceInformation
+import org.solyton.solawi.bid.module.banking.data.SepaPaymentId
+import org.solyton.solawi.bid.module.banking.data.api.CreateSepaPaymentSuccessors
+import org.solyton.solawi.bid.module.banking.data.api.GenerateSepaMessageForCollection
 import org.solyton.solawi.bid.module.banking.data.api.UpdateSepaPaymentExecutionStatuses
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.bankingApplicationActions
 import org.solyton.solawi.bid.module.banking.data.sepa.PaymentExecutionStatus
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
+import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessage
 import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.control.button.*
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
@@ -62,12 +69,20 @@ import org.w3c.dom.HTMLElement
 
 sealed class ManageCollectionPayments {
     data class AttachPayments(
-        val executionDate: LocalDate
+        val executionDate: LocalDate,
+        val remittanceInformation: RemittanceInformation? = null
     ): ManageCollectionPayments()
 
     data class CreateMessage(
-        val executionDate: LocalDate
+        val executionDate: LocalDate,
+        val remittanceInformation: RemittanceInformation? = null
     ): ManageCollectionPayments()
+
+    data class CreateRecurringMessage(
+        val executionDate: LocalDate,
+        val paymentIds: List<SepaPaymentId>,
+        val remittanceInformation: RemittanceInformation? = null
+    )
 }
 
 sealed class Tabs {
@@ -91,7 +106,7 @@ data class UIState(
 )
 
 @Markup
-@Suppress("FunctionName")
+@Suppress("FunctionName", "CyclomaticComplexMethod")
 fun ManagePaymentsOfSepaCollectionModal(
     id: Int,
     texts: Lang.Block,
@@ -101,6 +116,7 @@ fun ManagePaymentsOfSepaCollectionModal(
     uiState: UIState,
     setUiState: (UIState) -> Unit,
     sepaCollectionSource: Source<SepaCollection>,
+    sepaMessages: Source<List<SepaMessage>>,
     executionDate: LocalDate?,
     setManageCollectionPayments: (ManageCollectionPayments) -> Unit,
     update: ()->Unit
@@ -178,6 +194,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                     val confirmedPayments =
                         sepaCollection.sepaPayments.filter { payment -> payment.status in listOf( PaymentExecutionStatus.CONFIRMED, PaymentExecutionStatus.PAYED_MANUALLY ) }
 
+                    val paymentCreationCandidates = (confirmedPayments + failedPayments).filter { it.successorId == null }
 
                     // GUI states
                     // var detailsHeightState by remember { mutableStateOf(60.0)}
@@ -286,19 +303,130 @@ fun ManagePaymentsOfSepaCollectionModal(
                             When(paragraphState == Tabs.Payments.Paragraphs.OVERVIEW) {
                                 TabTitle("Overview")
                             }
-                            When(paragraphState == Tabs.Payments.Paragraphs.CREATE_NEW_PAYMENTS) {
-                                TabTitle("Create New payments")
-                            }
                             val listStyles = defaultListStyles.modifyFilter {
                                 width(10.percent)
                             }
+                            When(paragraphState == Tabs.Payments.Paragraphs.CREATE_NEW_PAYMENTS) {
+                                TabTitle("Create New payments")
+                                var executionDateState by remember {
+                                    mutableStateOf(
+                                        executionDate ?: today()
+                                    )
+                                }
+                                Form(formDesktopStyle) {
+                                    Field(fieldDesktopStyle) {
+                                        // State
+
+                                        val initDate = executionDateState.format(Locale.Iso)
+
+                                        Label("Execution Date", id = "date", labelStyle = formLabelDesktopStyle)
+                                        Input(InputType.Date) {
+                                            id("date")
+                                            // dataId("create-auction.form.input.date")
+                                            value(initDate)
+                                            style {
+                                                dateInputDesktopStyle()
+                                                alignSelf(AlignSelf.Start)
+                                            }
+                                            onInput {
+                                                executionDateState = LocalDate.parse(it.value)
+                                            }
+                                        }
+                                    }
+                                }
+
+                                ListOfPayments(
+                                    "Candidates for new payments:",
+                                    sepaCollection.sepaMandates,
+                                    paymentCreationCandidates,
+                                    listStyles,
+                                    overallActions = { data ->
+                                        Horizontal {
+                                            PlusButton(
+                                                color = Color.black,
+                                                bgColor = Color.white,
+                                                texts = { "Create new payments for selected & visible items" },
+                                                deviceType = device,
+                                                isDisabled = false
+                                            ) {
+                                                scope.launch {
+                                                    val selectedPaymentIds = data.itemsMap.filter {
+                                                        it.key in data.visibleItems &&
+                                                                data.checkedPayments[it.key.paymentId] == true
+                                                    }.map { it.key.paymentId }
+                                                    (storage * bankingApplicationActions) dispatch createSuccessorsForPayments(
+                                                        data = CreateSepaPaymentSuccessors(
+                                                            executionDate = executionDateState,
+                                                            paymentIds = selectedPaymentIds,
+                                                        ),
+                                                        targetCollectionId = sepaCollection.sepaCollectionId
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                )
+                            }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_CREATED) {
+                                // val sepaMessages = sepaMessages.emit()
                                 TabTitle("Recently created Payments")
                                 ListOfPayments(
                                     null,
                                     sepaCollection.sepaMandates,
                                     openPayments,
-                                    listStyles
+                                    listStyles,
+                                    overallActions = { data -> Horizontal {
+                                        var sepaMessageModalDataState by remember { mutableStateOf(SepaMessageModalData(
+                                            sepaCollection = sepaCollection,
+                                            remittanceInformation = null,
+                                            messages = sepaMessages.emit()
+                                        )) }
+
+                                        AnglesRightButton(
+                                            color = Color.black,
+                                            bgColor = Color.white,
+                                            texts = { "Generate Sepa Message from selected & visible Payments" },
+                                            deviceType = device,
+                                        ) {
+                                            modals.showUpsertSepaMessageModal(
+                                                parentModalId = id,
+                                                texts = dialogModalTexts("Create Sepa Message"),
+                                                device = device,
+                                                data = sepaMessageModalDataState,
+                                                setData = {data ->
+                                                    sepaMessageModalDataState = data
+                                                }
+                                            ) {
+                                                scope.launch {
+
+                                                    val selectedPayments = data.itemsMap.filter {
+                                                        it.key in data.visibleItems &&
+                                                                data.checkedPayments[it.key.paymentId] == true
+                                                    }
+                                                    val selectedPaymentIds = selectedPayments.map { it.key.paymentId }
+                                                    val executionDate = with(selectedPayments.values.map { it.payment.executionDate }.distinct()) {
+                                                        if (size == 1) first() else null
+                                                    }
+                                                    // require(executionDate != null) { "Selected payments must have a common execution date" }
+                                                    if(executionDate != null) {
+                                                        (storage * bankingApplicationActions) dispatch generateSepaMessageForCollection(
+                                                            data = GenerateSepaMessageForCollection(
+                                                                sepaCollectionId = sepaCollection.sepaCollectionId,
+                                                                executionDate = executionDate,
+                                                                sepaPaymentIds = selectedPaymentIds,
+                                                                remittanceInformation = sepaMessageModalDataState.remittanceInformation?.let {
+                                                                    RemittanceInformation(it)
+                                                                }
+                                                            )
+                                                        )
+                                                    } else {
+                                                        // dispatch error message
+                                                        return@launch
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }}
                                 )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_MESSAGE_CREATED) {
@@ -330,11 +458,11 @@ fun ManagePaymentsOfSepaCollectionModal(
                                                                 data.checkedPayments[it.key.paymentId] == true
                                                     }.map { it.key.paymentId }
                                                     (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
-                                                        UpdateSepaPaymentExecutionStatuses(
-                                                            PaymentExecutionStatus.SENT.toApiType(),
-                                                            selectedPaymentIds,
+                                                        data =UpdateSepaPaymentExecutionStatuses(
+                                                            newStatus = PaymentExecutionStatus.SENT.toApiType(),
+                                                            paymentIds = selectedPaymentIds,
                                                         ),
-                                                        sepaCollection.sepaCollectionId
+                                                        targetCollectionId = sepaCollection.sepaCollectionId
                                                     )
                                                 }
                                             }
@@ -454,7 +582,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                                                             "Selected payments and failure reasons count mismatch"
                                                         }
                                                         (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
-                                                            data =UpdateSepaPaymentExecutionStatuses(
+                                                            data = UpdateSepaPaymentExecutionStatuses(
                                                                 newStatus = PaymentExecutionStatus.FAILED.toApiType(),
                                                                 paymentIds = paymentIds,
                                                                 failureReasons = failureReasons
@@ -645,9 +773,12 @@ fun ManagePaymentsOfSepaCollectionModal(
                         sepaCollection.sepaPayments.filter { it.status == PaymentExecutionStatus.CREATED }
 
                     val executionDatesOfOpenPayments = openPayments.map { it.executionDate }.sortedBy { it }
+                    /*
                     val allExecutionDates =
                         sepaCollection.sepaPayments.filter { it.status != PaymentExecutionStatus.CREATED }
                             .map { it.executionDate }.distinct().sortedBy { it }
+
+                     */
                     var executionDateState by remember { mutableStateOf(executionDatesOfOpenPayments.firstOrNull()) }
 
                     TabTitle("Manage Messages")
@@ -690,6 +821,11 @@ fun ManagePaymentsOfSepaCollectionModal(
                     }
 
                     TabParagraph("Sepa messages by execution date")
+                    // val messages = sepaMessages.emit()
+
+                    // List<PaymentMessage>
+
+                    /*
                     allExecutionDates.forEach { date ->
                         val payments = sepaCollection.sepaPayments.filter { it.executionDate == date }
                         // distinguish status?
@@ -705,6 +841,8 @@ fun ManagePaymentsOfSepaCollectionModal(
                             }
                         )
                     }
+
+                     */
                 }
             }
 
@@ -719,6 +857,7 @@ fun Storage<Modals<Int>>.showManagePaymentsOfSepaCollectionModal(
     uiState: UIState,
     setUiState: (UIState) -> Unit,
     sepaCollection: Source<SepaCollection>,
+    sepaMessages: Source<List<SepaMessage>>,
     executionDate: LocalDate?,
     setManageCollectionPayments: (ManageCollectionPayments) -> Unit,
     update: () -> Unit
@@ -735,6 +874,7 @@ fun Storage<Modals<Int>>.showManagePaymentsOfSepaCollectionModal(
                 uiState,
                 setUiState,
                 sepaCollection,
+                sepaMessages,
                 executionDate,
                 setManageCollectionPayments,
                 update = update

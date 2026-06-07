@@ -3,11 +3,12 @@ package org.solyton.solawi.bid.module.banking.schema
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.jodatime.date
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.auditable.AuditableEntity
 import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
-import java.util.UUID
+import java.util.*
 
 typealias SepaPaymentsTable = SepaPayments
 typealias SepaPaymentEntity = SepaPayment
@@ -21,6 +22,16 @@ object SepaPayments : AuditableUUIDTable("sepa_payments") {
     val status = enumerationByName("status", 20, PaymentExecutionStatus::class)
     val failureReason = text("failure_reason").nullable()
     val endToEndId = varchar("end_to_end_id", 35).uniqueIndex().nullable()
+    val successorId = optReference(
+        "successor_id",
+        SepaPayments,
+        onDelete = ReferenceOption.SET_NULL
+    ).uniqueIndex()
+    val messageId = optReference(
+        "message_id",
+        SepaMessages,
+        onDelete = ReferenceOption.SET_NULL
+    )
 }
 
 class SepaPayment(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
@@ -35,6 +46,10 @@ class SepaPayment(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     var status by SepaPayments.status
     var failureReason by SepaPayments.failureReason
     var endToEndId by SepaPayments.endToEndId
+
+    var successor by SepaPayment optionalReferencedOn SepaPayments.successorId
+
+    var message by SepaMessage optionalReferencedOn SepaPayments.messageId
 
     override var createdAt: DateTime by SepaPayments.createdAt
     override var createdBy: UUID by SepaPayments.createdBy
