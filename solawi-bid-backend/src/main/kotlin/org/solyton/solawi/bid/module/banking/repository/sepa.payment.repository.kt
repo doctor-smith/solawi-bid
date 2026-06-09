@@ -15,13 +15,26 @@ import org.solyton.solawi.bid.module.banking.service.generateE2ETransactionId
 import org.solyton.solawi.bid.module.banking.service.generatePain008Xml
 import java.util.*
 
+/**
+ * Create payments for a collection.
+ * Only active mandates are considered.
+ * Recurring payments are created in the same state as the original payments. And only if the original
+ * payments are in one of the following states: CONFIRMED, PAYED_MANUALLY, FAILED and have no accessors yet.
+ * Completely New payments are created for those mandates that have no payments yet.
+ * @param creator The user who created the payments.
+ * @param sepaCollectionId The ID of the SEPA collection for which payments are being created.
+ * @param executionDate The date on which the payments will be executed.
+ * @return A list of created SepaPayment objects.
+ */
 fun Transaction.createPaymentsForCollection(
     creator: UUID,
     sepaCollectionId: UUID,
     executionDate: LocalDate,
 ): List<SepaPayment> {
+
     val sepaCollection = validatedSepaCollection(sepaCollectionId)
-    val mandateIds = sepaCollection.sepaMandates.map { it.id.value }
+    val activeMandates = sepaCollection.sepaMandates.filter{ it.status == MandateStatus.ACTIVE }
+    val mandateIds = activeMandates.map { it.id.value }
 
     val map: Map<UUID, Double> = SepaMandateDataMapping.find{
         SepaMandateDataMappings.sepaMandateId inList mandateIds
@@ -29,33 +42,63 @@ fun Transaction.createPaymentsForCollection(
         mapping -> mapping.amount
     }.mapValues { it.value.sum() }
 
-    return sepaCollection.sepaMandates.map { mandate ->
-        val mandateId = mandate.id.value
-        val amount = requireNotNull(map[mandateId]) {
-            "Entry must not be null! You need to add a product reference to the mandate-data-mappings!"
+    val allowedStatuses = listOf(
+        PaymentExecutionStatus.CONFIRMED,
+        PaymentExecutionStatus.PAYED_MANUALLY,
+        PaymentExecutionStatus.FAILED
+    )
+    return activeMandates.flatMap {  mandate ->
+        // Note that there are no payments at all if there are only payments with associated successors.
+        val relevantPayments = mandate.payments.filter {
+            it.successor == null
         }
-        createPayment(
-            creator,
-            mandateId,
-            sepaCollectionId,
-            amount,
-            executionDate
-        )
+        when{
+            relevantPayments.isNotEmpty() ->
+                relevantPayments.filter{ it.status in allowedStatuses }
+                    .map { payment -> createSuccessorOfPayment(
+                        creator,
+                        executionDate,
+                        payment,
+                    )}
+
+            else ->  {
+                val mandateId = mandate.id.value
+                val amount = requireNotNull(map[mandateId]) {
+                    "Entry must not be null! You need to add a product reference to the mandate-data-mappings!"
+                }
+
+                listOf(createPayment(
+                    creator,
+                    mandateId,
+                    sepaCollectionId,
+                    amount,
+                    executionDate,
+                    ignoreOldPayments = true
+                ))
+            }
+        }
     }
 }
 
+/**
+ * Create a payment for a given mandate.
+ * Only active mandates are considered.
+ */
 fun Transaction.createPayment(
     creator: UUID,
     sepaMandateId: UUID,
     sepaCollectionId: UUID,
     amount: Double,
     executionDate: LocalDate,
+    ignoreOldPayments: Boolean = false,
 ): SepaPaymentEntity {
     val sepaMandate = validatedSepaMandate(sepaMandateId)
+    if(sepaMandate.status != MandateStatus.ACTIVE) throw SepaException.Payment.CannotCreate( "Mandate must be active" )
+
     val sepaCollection = validatedSepaCollection(sepaCollectionId)
     val defaultSequenceType = sepaCollection.sequenceType
     val relatedPayments = sepaMandate.payments
-    val latestPayment = relatedPayments.maxByOrNull { payment -> payment.executionDate }
+    val latestPayment = if(ignoreOldPayments) null else relatedPayments.maxByOrNull { payment -> payment.executionDate }
     val sequenceType = when{
         defaultSequenceType == SepaSequenceType.OOFF -> SepaSequenceType.OOFF
         latestPayment != null -> when(latestPayment.sequenceType){
@@ -206,6 +249,12 @@ fun Transaction.updatePayment(
     return payment
 }
 
+/**
+ * Create successors of payments.
+ * The successors are created in the same state as the original payments.
+ * All payments must be related to an active mandate.
+ * All payments must be in one of the following states: CONFIRMED, PAYED_MANUALLY, FAILED
+ */
 fun Transaction.createSuccessorsOfPayments(
     creator: UUID,
     executionDate: LocalDate,
@@ -224,17 +273,31 @@ fun Transaction.createSuccessorsOfPayments(
         PaymentExecutionStatus.FAILED
     )
     require(payments.all { it.status in allowedStatuses }) { "All payments must be in one of the following states: ${allowedStatuses.joinToString()}" }
+    require(payments.all { it.mandate.status == MandateStatus.ACTIVE }) { "All payments need to be related to an active mandate" }
 
     return payments.map { payment ->
         createSuccessorOfPayment(creator, executionDate, payment)
     }
 }
 
+/**
+ * Create a successor of a payment.
+ * Associated mandate must be active.
+ * Payment must be in one of the following states: CONFIRMED, PAYED_MANUALLY, FAILED
+ */
 fun Transaction.createSuccessorOfPayment(
     creator: UUID,
     executionDate: LocalDate,
     payment: SepaPaymentEntity
 ): SepaPaymentEntity {
+    if(payment.mandate.status != MandateStatus.ACTIVE) throw SepaException.Payment.CannotCreate("Mandate must be active")
+    val allowedStatuses = listOf(
+        PaymentExecutionStatus.CONFIRMED,
+        PaymentExecutionStatus.PAYED_MANUALLY,
+        PaymentExecutionStatus.FAILED
+    )
+    if(payment.status !in allowedStatuses) throw SepaException.Payment.CannotCreate("Payment must be in one of the following states: ${allowedStatuses.joinToString(", ")}")
+
     val successor = SepaPaymentEntity.new {
         this.createdBy = creator
         this.mandate = payment.mandate
