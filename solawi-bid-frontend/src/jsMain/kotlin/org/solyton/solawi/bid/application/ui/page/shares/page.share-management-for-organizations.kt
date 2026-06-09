@@ -863,7 +863,12 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                                 )
                                             }
                                         is BulkEditShareSubscriptionChanges.AddSepaMandate -> {
-                                            shareSubscriptionsState.forEachIndexed {index,  shareSubscription ->
+                                            val forbiddenStatuses = listOf(
+                                                ShareStatus.Suspended,
+                                                ShareStatus.Cancelled,
+                                                // ShareStatus.AwaitingAhcAuthorization,
+                                            )
+                                            shareSubscriptionsState.filter{ it.status !in forbiddenStatuses  }.forEachIndexed {index,  shareSubscription ->
                                                 val debtorBankAccount = userProfileToBankAccountMap[shareSubscription.userProfileId]
                                                 requireNotNull(shareSubscription.pricePerShare) {
                                                     "Price per share needs to be set!!"
