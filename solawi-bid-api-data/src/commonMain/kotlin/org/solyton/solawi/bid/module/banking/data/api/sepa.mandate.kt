@@ -29,6 +29,7 @@ data class SepaMandate(
     val isActive: Boolean = true,
     val amendmentOf: SepaMandateId? = null,
     val collectionId: SepaCollectionId? = null,
+    val referenceIds: List<SepaMandateReferenceId> = emptyList()
 )
 
 @Serializable
