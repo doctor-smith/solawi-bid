@@ -150,7 +150,10 @@ fun SepaMandateEntity.toApiType(): ApiSepaMandate = ApiSepaMandate(
     status = status.toApiType(),
     isActive = isActive,
     amendmentOf = amendmentOf?.let { SepaMandateId(it.id.value.toString()) },
-    collectionId = collection?.let{ SepaCollectionId(it.id.value.toString()) }
+    collectionId = collection?.let{ SepaCollectionId(it.id.value.toString()) },
+    referenceIds = referenceDataMappings
+        .filter{it.mandate.id.value == id.value}
+        .map { SepaMandateReferenceId(it.referenceId.toString()) },
 )
 
 fun MandateStatus.toApiType(): ApiMandateStatus = when(this){

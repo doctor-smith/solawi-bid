@@ -13,6 +13,7 @@ import org.evoleq.language.texts
 import org.evoleq.math.FirstOrNull
 import org.evoleq.math.Source
 import org.evoleq.math.emit
+import org.evoleq.math.map
 import org.evoleq.optics.lens.BiMap
 import org.evoleq.optics.lens.DeepSearch
 import org.evoleq.optics.lens.FilterBy
@@ -21,6 +22,7 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.storage.filter
 import org.evoleq.optics.storage.none
+import org.evoleq.optics.transform.flatMap
 import org.evoleq.optics.transform.times
 import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.compose.web.css.*
@@ -49,6 +51,7 @@ import org.solyton.solawi.bid.module.banking.data.creditor.identifier.CreditorId
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
 import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
+import org.solyton.solawi.bid.module.banking.data.sepa.mandate.SepaMandate
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaCollections
 import org.solyton.solawi.bid.module.banking.service.generateReference
 import org.solyton.solawi.bid.module.constants.CHECK_FALSE
@@ -179,6 +182,9 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
         }
         launch {
             bankingApplicationActions dispatch readPersonalSepaCollections(LegalEntityId(providerId.value))
+        }
+        launch {
+            bankingApplicationActions dispatch readSepaMessagesByLegalEntity(LegalEntityId(providerId.value))
         }
         launch {
             userActions dispatch readOrganizations()
@@ -574,10 +580,23 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
             }.distinct().groupBy ({ it.first }){it.second}
              */
             val sepaCollectionIdToReferences: Map<SepaCollectionId, List<SepaCollectionReferenceId>> = sepaCollections.read().flatMap { collection ->
-                console.log(collection.referenceIds)
                 collection.referenceIds.map { collection.sepaCollectionId to it }
             }.distinct().groupBy ({ it.first }){it.second}
 
+            val sepaMandates: Source<List<SepaMandate>> = sepaCollections flatMap { collection -> collection.sepaMandates }
+
+            val mandatesByReferenceId = sepaMandates map {
+                mandates -> mandates.flatMap{it.referenceIds.map { id -> id to it }}
+                .associateBy({it.first}){it.second}
+            }
+
+            val shareSubscriptionIdToMandateMap: Source<Map<ShareSubscriptionId, SepaMandate?>> =
+                Source{shareSubscriptions.read()} map{ subscriptions: List<ShareSubscription>->
+                    val map = mandatesByReferenceId.emit()
+                    subscriptions.associateBy({ ShareSubscriptionId(it.shareSubscriptionId)}) { subscription ->
+                       map[SepaMandateReferenceId(subscription.shareSubscriptionId)]
+                    }
+                }
 
             var allChecked by remember { mutableStateOf(false) }
             var filter by  remember { mutableStateOf(ShareSubscriptionFilter()) }
@@ -1103,7 +1122,9 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                         bgColor = Color.white,
                                         deviceType = deviceType,
                                         isDisabled = true
-                                    ) {}
+                                    ) {
+                                        shareManagementModals.showUpdateSepaManadateModal()
+                                    }
                                     EditButton(
                                         color = Color.black,
                                         bgColor = Color.white,

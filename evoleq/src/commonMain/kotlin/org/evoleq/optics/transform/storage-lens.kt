@@ -1,6 +1,7 @@
 package org.evoleq.optics.transform
 
 import org.evoleq.math.Maths
+import org.evoleq.math.Source
 import org.evoleq.optics.lens.IdLens
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.lens.LensType
@@ -31,3 +32,18 @@ operator fun <W, P> Storage<W>.times(lens: LensType<W, P>): Storage<P> = when(le
     is Lens<W, P> -> this * lens
     is IdLens<*> -> this * lens
 }
+
+@Maths
+infix fun <W, P> Storage<List<W>>.flatMap(read: (W)->List<P>): Source<List<P>> = Source{
+    read().flatMap { read(it) }
+}
+
+/* Think about that
+@Maths
+fun <W, P> Storage<List<W>>.flatMap(read: (W)->List<P>, write: (List<P>)->(List<W>)->List<W>): Source<List<P>> = Source{
+    read().flatMap { read(it) }
+}
+
+
+ */
+
