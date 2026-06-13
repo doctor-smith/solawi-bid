@@ -20,3 +20,13 @@ fun Label(text: String, id: String = "", isRequired: Boolean = false, labelStyle
         Text(text + if (isRequired) " *" else "")
     }
 }
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun Label(text: ()->String, id: String = "", isRequired: Boolean = false, labelStyle: StyleScope.() -> Unit) = Label(
+    text(),
+    id,
+    isRequired,
+    labelStyle
+)

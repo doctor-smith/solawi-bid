@@ -35,7 +35,7 @@ operator fun <W, P> Storage<W>.times(lens: LensType<W, P>): Storage<P> = when(le
 
 @Maths
 infix fun <W, P> Storage<List<W>>.flatMap(read: (W)->List<P>): Source<List<P>> = Source{
-    read().flatMap { read(it) }
+    read().flatMap ( read )
 }
 
 /* Think about that
