@@ -1,7 +1,6 @@
 package org.solyton.solawi.bid.module.banking.component.form
 
 import androidx.compose.runtime.*
-import kotlinx.serialization.json.internal.decodeByReader
 import org.evoleq.change.data.Change
 import org.evoleq.change.data.Keep
 import org.evoleq.compose.Markup
@@ -15,21 +14,15 @@ import org.evoleq.language.title
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.times
-import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.TextInput
 import org.solyton.solawi.bid.module.banking.data.*
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
-import org.solyton.solawi.bid.module.banking.data.bankaccount.bankAccountHolder
-import org.solyton.solawi.bid.module.banking.data.bankaccount.isActive
-import org.solyton.solawi.bid.module.banking.data.creditor.identifier.CreditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
-import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
-import org.solyton.solawi.bid.module.banking.data.sepa.collection.chargeBearer
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
 import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
-import org.solyton.solawi.bid.module.navbar.component.SimpleUpDown
+import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
 import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle

@@ -12,6 +12,7 @@ import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.I
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.authentication.data.api.Logout
+import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
 import org.solyton.solawi.bid.module.i18n.data.I18N
 import org.solyton.solawi.bid.module.navbar.data.navbar.NavBar
 import org.solyton.solawi.bid.module.navbar.effect.TriggerLogoutEffect

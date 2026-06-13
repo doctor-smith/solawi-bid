@@ -56,7 +56,7 @@ import org.solyton.solawi.bid.module.control.dropdown.Dropdown
 import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
 import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
 import org.solyton.solawi.bid.module.list.style.defaultListStyles
-import org.solyton.solawi.bid.module.navbar.component.SimpleUpDown
+import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
 import org.solyton.solawi.bid.module.scrollable.Scrollable
 import org.solyton.solawi.bid.module.scrollable.ScrollableStyles
 import org.solyton.solawi.bid.module.style.form.dateInputDesktopStyle

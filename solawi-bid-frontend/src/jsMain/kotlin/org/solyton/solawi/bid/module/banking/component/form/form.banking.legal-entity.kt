@@ -5,7 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import kotlinx.datetime.internal.JSJoda.LocalDate
 import org.evoleq.change.data.Change
 import org.evoleq.change.data.Keep
 import org.evoleq.compose.Markup
@@ -31,7 +30,7 @@ import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntity
 import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntityType
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
 import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
-import org.solyton.solawi.bid.module.navbar.component.SimpleUpDown
+import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
 import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle

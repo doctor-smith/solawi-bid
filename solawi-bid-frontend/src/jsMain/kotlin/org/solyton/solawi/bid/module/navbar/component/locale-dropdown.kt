@@ -11,6 +11,7 @@ import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.css.keywords.auto
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Img
+import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
 import org.solyton.solawi.bid.module.i18n.data.I18N
 import org.solyton.solawi.bid.module.i18n.data.locale
 import org.solyton.solawi.bid.module.i18n.data.locales
