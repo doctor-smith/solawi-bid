@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.navbar.component
+package org.solyton.solawi.bid.module.control.dropdown
 
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup

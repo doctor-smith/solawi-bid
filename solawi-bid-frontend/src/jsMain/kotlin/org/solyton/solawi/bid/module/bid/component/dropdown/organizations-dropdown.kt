@@ -1,21 +1,11 @@
 package org.solyton.solawi.bid.module.bid.component.dropdown
 
 import androidx.compose.runtime.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
-import org.evoleq.compose.dropdown.addDropdownCloseHandler
 import org.evoleq.math.Source
 import org.evoleq.math.emit
-import org.evoleq.math.map
-import org.evoleq.math.x
-import org.jetbrains.compose.web.css.*
-import org.jetbrains.compose.web.dom.Div
-import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.application.data.transform.application.import
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
-import org.solyton.solawi.bid.module.modal.constants.DIALOG_LAYER_INDEX
-import org.solyton.solawi.bid.module.navbar.component.SimpleUpDown
+import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
 import org.solyton.solawi.bid.module.user.component.dropdown.dropdownStyles
 import org.solyton.solawi.bid.module.user.component.dropdown.generateOrganizationOptions
 import org.solyton.solawi.bid.module.user.component.dropdown.nameOfSelectedOrganization
