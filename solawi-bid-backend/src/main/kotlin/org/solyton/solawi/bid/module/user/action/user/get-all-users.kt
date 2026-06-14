@@ -11,6 +11,7 @@ import org.evoleq.math.x
 import org.solyton.solawi.bid.module.user.data.api.GetUsers
 import org.solyton.solawi.bid.module.user.data.api.User
 import org.solyton.solawi.bid.module.user.data.api.Users
+import org.solyton.solawi.bid.module.user.data.toApiType
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import java.util.*
 import org.solyton.solawi.bid.module.user.schema.User as UserEntity
@@ -25,7 +26,8 @@ val GetAllUsers: KlAction<Result<GetUsers>, Result<Users>> = KlAction{_ -> DbAct
     Users(UserEntity.all().map { userEntity ->
         User(
             userEntity.id.value.toString(),
-            userEntity.username
+            userEntity.username,
+            userEntity.status.toApiType()
         )
     })
     } x database

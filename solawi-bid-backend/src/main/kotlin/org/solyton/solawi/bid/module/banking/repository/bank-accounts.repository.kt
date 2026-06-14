@@ -5,27 +5,19 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.selectAll
-import org.solyton.solawi.bid.module.banking.data.BIC
-import org.solyton.solawi.bid.module.banking.data.BankAccountId
-import org.solyton.solawi.bid.module.banking.data.IBAN
+import org.solyton.solawi.bid.module.banking.data.*
 import org.solyton.solawi.bid.module.banking.data.api.ImportBankAccount
-import org.solyton.solawi.bid.module.banking.data.toDomainType
-import org.solyton.solawi.bid.module.banking.data.toUUID
-import org.solyton.solawi.bid.module.banking.schema.AccountType
-import org.solyton.solawi.bid.module.banking.schema.BankAccountAccessorEntity
-import org.solyton.solawi.bid.module.banking.schema.BankAccountAccessorsTable
-import org.solyton.solawi.bid.module.banking.schema.BankAccountEntity
-import org.solyton.solawi.bid.module.banking.schema.BankAccounts.accountHolder
-import org.solyton.solawi.bid.module.banking.schema.BankAccountsTable
+import org.solyton.solawi.bid.module.banking.schema.*
 import org.solyton.solawi.bid.module.banking.service.validateBic
 import org.solyton.solawi.bid.module.banking.service.validateIban
 import org.solyton.solawi.bid.module.banking.service.validatedBankAccount
 import org.solyton.solawi.bid.module.user.data.api.ApiUser
+import org.solyton.solawi.bid.module.user.data.api.ApiUserStatus
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
+import org.solyton.solawi.bid.module.user.data.toApiType
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.user.service.user.createUser
-import org.solyton.solawi.bid.module.user.service.validateUserExists
 import org.solyton.solawi.bid.module.values.UserId
 import java.util.*
 
@@ -214,12 +206,13 @@ fun Transaction.importBankAccounts(
         user -> ApiUser(
         user.id.value.toString(),
             user.username,
+            user.status.toApiType()
         )
     }
     val usersToCreate = usernames.filterNot{ existingUsersMap.keys.contains(it) }
 
     val newUsers = usersToCreate.map{ username -> createUser(
-        CreateUser(username, ""),
+        CreateUser(username, null, ApiUserStatus.PENDING),
         creatorId
     ) }.associateBy ({
         user -> user.username

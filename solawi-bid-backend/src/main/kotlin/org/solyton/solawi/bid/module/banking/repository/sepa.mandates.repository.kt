@@ -7,18 +7,10 @@ import org.joda.time.LocalDate
 import org.solyton.solawi.bid.module.banking.data.MandateReference
 import org.solyton.solawi.bid.module.banking.data.api.ApiSepaMandates
 import org.solyton.solawi.bid.module.banking.data.api.CreateSepaMandateReferenceData
-import org.solyton.solawi.bid.module.banking.data.api.SepaMandateReferenceData
 import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.banking.exception.BankAccountsException
 import org.solyton.solawi.bid.module.banking.exception.SepaException
-import org.solyton.solawi.bid.module.banking.schema.CreditorIdentifierEntity
-import org.solyton.solawi.bid.module.banking.schema.CreditorIdentifiers
-import org.solyton.solawi.bid.module.banking.schema.CreditorIdentifiersTable
-import org.solyton.solawi.bid.module.banking.schema.MandateStatus
-import org.solyton.solawi.bid.module.banking.schema.SepaMandateDataMapping
-import org.solyton.solawi.bid.module.banking.schema.SepaMandateEntity
-import org.solyton.solawi.bid.module.banking.schema.SepaMandates
-import org.solyton.solawi.bid.module.banking.schema.SepaMandatesTable
+import org.solyton.solawi.bid.module.banking.schema.*
 import org.solyton.solawi.bid.module.banking.service.validatedBankAccount
 import java.util.*
 
@@ -172,15 +164,19 @@ fun Transaction.updateSepaMandate(
     validFrom: DateTime,
     validUntil: DateTime?,
     lastUsedAt: DateTime?,
+    isActive: Boolean,
     mandateReference: MandateReference? = null,
     status: MandateStatus = MandateStatus.ACTIVE,
 ): SepaMandateEntity {
     val sepaMandate = validatedSepaMandate(sepaMandateId)
-    val hasPayments = !sepaMandate.payments.empty()
-    if(hasPayments) throw SepaException.CannotUpdateSepaMandate(
-        id = sepaMandateId.toString(),
-        reason = "Sepa Mandate has associated payments; Needs to be amended"
-    )
+    // Need a finer-grained check here, as we don't want to
+    // allow updating mandates that have payments
+    //
+    // val hasPayments = !sepaMandate.payments.empty()
+    // if(hasPayments) throw SepaException.CannotUpdateSepaMandate(
+    //     id = sepaMandateId.toString(),
+    //     reason = "Sepa Mandate has associated payments; Needs to be amended"
+    // )
 
     val creditor = validatedCreditor(creditorIdentifierId)
     val debtorBankAccount = validatedBankAccount(debtorBankAccountId)
@@ -196,6 +192,7 @@ fun Transaction.updateSepaMandate(
     val validUntilChanged = validUntil != sepaMandate.validUntil
     val lastUsedAtChanged = lastUsedAt != sepaMandate.lastUsedAt
     val statusChanged = status != sepaMandate.status
+    val isActiveChanged = isActive != sepaMandate.isActive
 
     if(creditorChanged) sepaMandate.creditorIdentifier = creditor
     if(debtorBackAccountChanged) sepaMandate.debtorBankAccount = debtorBankAccount
@@ -206,6 +203,7 @@ fun Transaction.updateSepaMandate(
     if(validUntilChanged) sepaMandate.validUntil = validUntil
     if(lastUsedAtChanged) sepaMandate.lastUsedAt = lastUsedAt
     if(statusChanged) sepaMandate.status = status
+    if(isActiveChanged) sepaMandate.isActive = isActive
 
     val changed = creditorChanged
             || debtorBackAccountChanged
@@ -215,6 +213,7 @@ fun Transaction.updateSepaMandate(
             || validFromChanged
             || statusChanged
             || lastUsedAtChanged
+            || isActiveChanged
 
     if(changed) {
         sepaMandate.modifiedBy = modifierId

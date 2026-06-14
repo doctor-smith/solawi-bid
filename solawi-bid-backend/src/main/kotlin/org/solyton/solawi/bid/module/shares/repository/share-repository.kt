@@ -11,11 +11,14 @@ import org.solyton.solawi.bid.module.banking.schema.FiscalYearEntity
 import org.solyton.solawi.bid.module.distribution.repository.validatedDistributionPoint
 import org.solyton.solawi.bid.module.shares.exception.ShareException
 import org.solyton.solawi.bid.module.shares.schema.*
-import org.solyton.solawi.bid.module.shares.schema.ShareOfferEntity
-import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionEntity
-import org.solyton.solawi.bid.module.shares.schema.ShareTypeEntity
+import org.solyton.solawi.bid.module.user.data.api.ApiUserStatus
+import org.solyton.solawi.bid.module.user.data.api.CreateUser
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
+import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
+import org.solyton.solawi.bid.module.user.schema.UsersTable
+import org.solyton.solawi.bid.module.user.service.user.createUserEntity
+import org.solyton.solawi.bid.module.values.Username
 import java.util.*
 import org.evoleq.math.or as hasChanges
 
@@ -238,16 +241,26 @@ fun Transaction.createShareSubscription(
 
     val initialStatus = initStatus()
 
+
+
     return ShareSubscription.new {
         createdBy = creator
         this.shareOffer = shareOffer
-        this.pricePerShare = pricePerShare
+        this.pricePerShare = finalPricePerShare(shareOffer, pricePerShare)
         this.numberOfShares = numberOfShares
         this.fiscalYear = fiscalYear
         this.distributionPoint = distributionPoint
         this.userProfile = userProfile
         this.ahcAuthorized = ahcAuthorized
         this.status = initialStatus
+    }
+}
+// If pricePerShare is null and shareOffer has a FIXED price,
+// use the price of the shareOffer
+fun finalPricePerShare(shareOffer: ShareOfferEntity, pricePerShare: Double?): Double? {
+    return when(shareOffer.pricingType){
+        PricingType.FIXED -> pricePerShare ?: shareOffer.price
+        PricingType.FLEXIBLE -> pricePerShare
     }
 }
 
@@ -345,6 +358,54 @@ fun Transaction.readShareSubscriptionsOfProvider(
     val shareOffers = readShareOffersByProvider(providerId, fiscalYearIds)
     val allShareSubscriptions = shareOffers.flatMap { it.shareSubscriptions }
     return allShareSubscriptions
+}
+
+@Suppress("UNUSED_PARAMETER")
+fun Transaction.deleteShareSubscription(shareSubscriptionId: UUID): UUID {TODO()}
+
+fun Transaction.updateCoSubscribersByUsernames(
+    modifier: UUID,
+    shareSubscription: ShareSubscriptionEntity,
+    coSubscribers: List<Username>
+): ShareSubscriptionEntity {
+    // create missing users
+    val existingUsers = UserEntity.find {
+        UsersTable.username inList coSubscribers.map { it.value }
+    }.toList()
+    val missingUsers = coSubscribers.filter { !existingUsers.map { user -> user.username }.contains(it.value) }
+    val newUsers = missingUsers.map { username ->
+        createUserEntity(CreateUser(username.value, null, ApiUserStatus.PENDING), modifier)
+    }
+
+    return updateCoSubscribers(modifier, shareSubscription, existingUsers + newUsers)
+}
+
+
+
+fun Transaction.updateCoSubscribers(
+    modifier: UUID,
+    shareSubscription: ShareSubscriptionEntity,
+    coSubscribers: List<UserEntity>
+): ShareSubscriptionEntity {
+    // remove all co-subscribers not listed in the new list
+    val coSubscriberIds = coSubscribers.map { it.id.value }
+    shareSubscription.coSubscribers.filter { !coSubscriberIds.contains(it.user.id.value) }.forEach { coSubscriber ->
+        shareSubscription.coSubscribers - coSubscriber
+    }
+    // create new co-subscribers if they are not already in the list of existing co-subscribers
+    val coSubscribersToAdd: List<UserEntity> = coSubscribers.filter { user ->
+        !shareSubscription.coSubscribers.map { coSubscriber -> coSubscriber.user.id.value
+        }.contains(user.id.value)
+    }
+    coSubscribersToAdd.forEach { coSubscriber ->
+        CoSubscriberEntity.new {
+            createdBy = modifier
+            this.shareSubscription = shareSubscription
+            this.user = coSubscriber
+        }
+    }
+    // All other existing co-subscribers are kept
+    return shareSubscription
 }
 
 fun Transaction.validatePriceAndPricingType(price: Double?, pricingType: PricingType) {

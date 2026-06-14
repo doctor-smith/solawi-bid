@@ -3,6 +3,7 @@ package org.solyton.solawi.bid.module.user.data
 import org.jetbrains.exposed.sql.Transaction
 import org.solyton.solawi.bid.module.permission.data.api.ApiRole
 import org.solyton.solawi.bid.module.permission.repository.getRolesByUserAndContext
+import org.solyton.solawi.bid.module.user.data.api.ApiUserStatus
 import org.solyton.solawi.bid.module.user.data.api.UserD
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiMember
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiOrganization
@@ -11,6 +12,7 @@ import org.solyton.solawi.bid.module.user.data.api.userprofile.ApiUserProfile
 import org.solyton.solawi.bid.module.user.schema.AddressEntity
 import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
+import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.repository.getChildren
 import org.solyton.solawi.bid.module.user.schema.User as UserEntity
 
@@ -19,6 +21,22 @@ fun UserEntity.toApiType(): UserD = UserD(
     username,
     password.orEmpty()
 )
+
+fun ApiUserStatus.toDomainType(): UserStatus = when(this) {
+    ApiUserStatus.ACTIVE -> UserStatus.ACTIVE
+    ApiUserStatus.PENDING -> UserStatus.PENDING
+    ApiUserStatus.INVITED -> UserStatus.INVITED
+    ApiUserStatus.DISABLED -> UserStatus.DISABLED
+    ApiUserStatus.REGISTERED -> UserStatus.REGISTERED
+}
+
+fun UserStatus.toApiType(): ApiUserStatus = when(this) {
+    UserStatus.ACTIVE -> ApiUserStatus.ACTIVE
+    UserStatus.PENDING -> ApiUserStatus.PENDING
+    UserStatus.INVITED -> ApiUserStatus.INVITED
+    UserStatus.DISABLED -> ApiUserStatus.DISABLED
+    UserStatus.REGISTERED -> ApiUserStatus.REGISTERED
+}
 
 fun OrganizationEntity.toApiType(transaction: Transaction): ApiOrganization = ApiOrganization(
     id = id.value.toString(),

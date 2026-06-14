@@ -125,7 +125,8 @@ fun ApiSepaMandate.toDomainType(): SepaMandate = SepaMandate(
     status = status.toDomainType(),
     isActive = isActive,
     amendmentOf = amendmentOf,
-    collectionId = collectionId
+    collectionId = collectionId,
+    referenceIds = referenceIds
 )
 
 fun ApiSepaPayment.toDomainType(): SepaPayment = SepaPayment(
