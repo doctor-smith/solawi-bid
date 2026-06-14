@@ -38,7 +38,6 @@ import org.solyton.solawi.bid.module.banking.component.modal.sepa.ManageCollecti
 import org.solyton.solawi.bid.module.banking.component.modal.sepa.UIState
 import org.solyton.solawi.bid.module.banking.component.modal.sepa.showManagePaymentsOfSepaCollectionModal
 import org.solyton.solawi.bid.module.banking.data.SepaCollectionId
-import org.solyton.solawi.bid.module.banking.data.api.CreateSepaPaymentsForCollection
 import org.solyton.solawi.bid.module.banking.data.api.GenerateSepaMessageForCollection
 import org.solyton.solawi.bid.module.banking.data.api.ImportBankAccounts
 import org.solyton.solawi.bid.module.banking.data.application.*
@@ -57,11 +56,11 @@ import org.solyton.solawi.bid.module.banking.data.sepa.sepaMessages
 import org.solyton.solawi.bid.module.banking.service.download
 import org.solyton.solawi.bid.module.constants.checkIcon
 import org.solyton.solawi.bid.module.control.button.*
+import org.solyton.solawi.bid.module.control.dropdown.SimpleRightDown
 import org.solyton.solawi.bid.module.dialog.component.WarningSymbol
 import org.solyton.solawi.bid.module.dialog.component.showDialogModal
 import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
 import org.solyton.solawi.bid.module.list.component.*
-import org.solyton.solawi.bid.module.control.dropdown.SimpleRightDown
 import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.scrollable.Scrollable
 import org.solyton.solawi.bid.module.scrollable.ScrollableStyles
@@ -748,14 +747,15 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                                                 scope.launch {
                                                     when (val state = manageCollectionPaymentsState) {
                                                         null -> Unit
-                                                        is ManageCollectionPayments.AttachPayments -> bankingApplicationActions dispatch createSepaPaymentsForCollection(
+                                                        is ManageCollectionPayments.AttachPayments -> Unit
+                                                        /*bankingApplicationActions dispatch createSepaPaymentsForCollection(
                                                             CreateSepaPaymentsForCollection(
                                                                 collection.sepaCollectionId,
                                                                 state.executionDate,
                                                                 state.remittanceInformation,
                                                             ),
                                                             collection.sepaCollectionId
-                                                        )
+                                                        )*/
 
                                                         is ManageCollectionPayments.CreateMessage -> bankingApplicationActions dispatch generateSepaMessageForCollection(
                                                             GenerateSepaMessageForCollection(
