@@ -6,23 +6,21 @@ import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.joda.time.DateTime
+import org.solyton.solawi.bid.module.distribution.repository.validatedDistributionPoint
 import org.solyton.solawi.bid.module.shares.data.internal.ChangeReason
 import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
 import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
-import org.solyton.solawi.bid.module.distribution.repository.validatedDistributionPoint
 import org.solyton.solawi.bid.module.shares.exception.ShareException
 import org.solyton.solawi.bid.module.shares.exception.ShareStatusException
+import org.solyton.solawi.bid.module.shares.repository.finalPricePerShare
+import org.solyton.solawi.bid.module.shares.repository.updateCoSubscribersByUsernames
 import org.solyton.solawi.bid.module.shares.repository.validatedShareOffer
 import org.solyton.solawi.bid.module.shares.repository.validatedUserProfile
-import org.solyton.solawi.bid.module.shares.schema.CoSubscriberEntity
-import org.solyton.solawi.bid.module.shares.schema.CoSubscribersTable
-import org.solyton.solawi.bid.module.shares.schema.ShareStatusEntity
-import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionEntity
-import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionStatusHistoryEntry
-import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionsTable
+import org.solyton.solawi.bid.module.shares.schema.*
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.repository.readUserByUsername
+import org.solyton.solawi.bid.module.values.Username
 import java.util.*
 
 data class ShareToImport(
@@ -86,7 +84,7 @@ fun Transaction.importShareSubscriptions(
             this.userProfile = userProfile
             this.shareOffer = shareOffer
             numberOfShares = shareToImport.numberOfShares
-            pricePerShare = shareToImport.pricePerShare
+            pricePerShare = finalPricePerShare(shareOffer, shareToImport.pricePerShare)
             ahcAuthorized = shareToImport.ahcAuthorized
             fiscalYear = shareOffer.fiscalYear
             this.distributionPoint = distributionPoint
@@ -95,25 +93,11 @@ fun Transaction.importShareSubscriptions(
         }
 
         // Add co-subscribers
-        shareToImport.coSubscribers.forEach { coSubscriber ->
-            val existingUser = readUserByUsername(coSubscriber)
-            @Suppress("UnusedPrivateProperty")
-            val user = when{
-                existingUser != null -> existingUser
-                else -> UserEntity.new {
-                    createdBy = importer
-                    username = coSubscriber
-                    status = UserStatus.PENDING
-                    password = null
-                }
-            }
-            CoSubscriberEntity.new {
-                createdBy = importer
-                this.shareSubscription = shareSubscriptionEntity
-                this.user = user
-            }
-        }
-
+        updateCoSubscribersByUsernames(
+            importer,
+            shareSubscriptionEntity,
+            shareToImport.coSubscribers.map { Username(it) }
+        )
         // Add history entry
         try {
             ShareSubscriptionStatusHistoryEntry.new {

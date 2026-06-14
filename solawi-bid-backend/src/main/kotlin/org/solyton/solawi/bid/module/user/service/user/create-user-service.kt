@@ -11,6 +11,8 @@ import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.data.api.ApiUser
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
+import org.solyton.solawi.bid.module.user.data.toApiType
+import org.solyton.solawi.bid.module.user.data.toDomainType
 import org.solyton.solawi.bid.module.user.permission.ApplicationContext
 import org.solyton.solawi.bid.module.user.permission.Value
 import org.solyton.solawi.bid.module.user.schema.UserEntity
@@ -28,7 +30,7 @@ import java.util.*
  */
 fun Transaction.createUser(data: CreateUser, creatorId: UUID): ApiUser {
     val userEntity = createUserEntity(data, creatorId)
-    return ApiUser(userEntity.id.value.toString(), userEntity.username)
+    return ApiUser(userEntity.id.value.toString(), userEntity.username, userEntity.status.toApiType())
 }
 
 /**
@@ -57,10 +59,15 @@ fun Transaction.createUserEntity(data: CreateUser, creatorId: UUID): UserEntity 
         val userRole = applicationContext.roles.find { it.name == Role.user.value }
             ?: throw PermissionExceptionD.NoSuchRole(Role.user.value)
 
+        val (adjustedPassword, adjustedStatus)  = adjustPasswordToStatus(
+            data.password,
+            data.status.toDomainType()
+        )
+
         val userEntity = UserEntity.new {
             username = data.username
-            password = hashPassword(data.password)
-            status = UserStatus.ACTIVE
+            password = adjustedPassword
+            status = adjustedStatus
             createdBy = creatorId
         }
         // UserRoleContext.insert is called twice below to assign the roles in two contexts:
@@ -80,5 +87,16 @@ fun Transaction.createUserEntity(data: CreateUser, creatorId: UUID): UserEntity 
         }
 
         userEntity
+    }
+}
+
+fun Transaction.adjustPasswordToStatus( newPassword: String?, newStatus: UserStatus) : Pair<String?, UserStatus> = when(newStatus){
+    UserStatus.INVITED -> null to newStatus
+    UserStatus.PENDING -> null to newStatus
+    else -> {
+        requireNotNull(newPassword) {
+            "Password cannot be null for a user with status $newStatus"
+        }
+        hashPassword(newPassword) to newStatus
     }
 }

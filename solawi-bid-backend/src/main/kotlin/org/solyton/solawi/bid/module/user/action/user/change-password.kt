@@ -12,6 +12,7 @@ import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.user.data.api.ApiUser
 import org.solyton.solawi.bid.module.user.data.api.ChangePassword
 import org.solyton.solawi.bid.module.user.data.api.User
+import org.solyton.solawi.bid.module.user.data.toApiType
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UsersTable
@@ -31,6 +32,6 @@ val ChangePassword: KlAction<Result<Contextual<ChangePassword>>, Result<User>> =
         user.modifiedBy = modifierId
         user.modifiedAt = DateTime.now()
 
-        ApiUser(user.id.value.toString(), user.username)
+        ApiUser(user.id.value.toString(), user.username, user.status.toApiType())
     } } x database
 } }

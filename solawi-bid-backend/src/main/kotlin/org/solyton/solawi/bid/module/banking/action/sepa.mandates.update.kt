@@ -14,6 +14,7 @@ import org.solyton.solawi.bid.module.banking.data.api.UpdateSepaMandate
 import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.banking.data.toDomainType
 import org.solyton.solawi.bid.module.banking.repository.updateSepaMandate
+import org.solyton.solawi.bid.module.banking.repository.validatedCreditorIdentifier
 import java.util.*
 
 
@@ -27,13 +28,14 @@ fun UpdateSepaMandate(): KlAction<Result<Contextual<UpdateSepaMandate>>, Result<
                 val userId = contextual.userId
 
                 val sepaMandateId = UUID.fromString(data.sepaMandateId.value)
-                val creditorId = UUID.fromString(data.creditorId.value)
+                val creditorId = data.creditorId
+                val creditor = validatedCreditorIdentifier(creditorId)
                 val debtorBankAccountId = UUID.fromString(data.debtorBankAccountId.value)
 
                 updateSepaMandate(
                     modifierId = userId,
                     sepaMandateId = sepaMandateId,
-                    creditorIdentifierId = creditorId,
+                    creditorIdentifierId = creditor.id.value,
                     debtorBankAccountId = debtorBankAccountId,
                     debtorName = data.debtorName,
                     signedAt = data.signedAt.toJoda(),
@@ -41,7 +43,7 @@ fun UpdateSepaMandate(): KlAction<Result<Contextual<UpdateSepaMandate>>, Result<
                     validUntil = data.validUntil?.toJoda(),
                     lastUsedAt = data.lastUsedAt?.toJoda(),
                     status = data.status.toDomainType(),
-                //    isActive = data.isActive,
+                    isActive = data.isActive,
                 //    amendmentOf = data.amendmentOf
 
                 ).toApiType()

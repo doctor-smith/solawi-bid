@@ -37,11 +37,10 @@ import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.banking.action.*
 import org.solyton.solawi.bid.module.banking.component.form.PartialSepaCollection
+import org.solyton.solawi.bid.module.banking.component.modal.sepa.showUpsertSepaMandateModal
+import org.solyton.solawi.bid.module.banking.component.modal.sepa.upsertSepaMandateModalTexts
 import org.solyton.solawi.bid.module.banking.data.*
-import org.solyton.solawi.bid.module.banking.data.api.CreateSepaCollection
-import org.solyton.solawi.bid.module.banking.data.api.CreateSepaMandate
-import org.solyton.solawi.bid.module.banking.data.api.CreateSepaMandateReferenceData
-import org.solyton.solawi.bid.module.banking.data.api.UpdateSepaCollection
+import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.banking.data.application.bankAccounts
 import org.solyton.solawi.bid.module.banking.data.application.creditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.application.fiscalYears
@@ -59,6 +58,7 @@ import org.solyton.solawi.bid.module.constants.CHECK_TRUE
 import org.solyton.solawi.bid.module.constants.checkIcon
 import org.solyton.solawi.bid.module.control.button.*
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
+import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
 import org.solyton.solawi.bid.module.dialog.component.WarningSymbol
 import org.solyton.solawi.bid.module.dialog.component.showDialogModal
 import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
@@ -68,7 +68,6 @@ import org.solyton.solawi.bid.module.distribution.data.distributionpoint.Distrib
 import org.solyton.solawi.bid.module.distribution.data.management.distributionPoints
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.defaultListStyles
-import org.solyton.solawi.bid.module.navbar.component.SimpleUpDown
 import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.scrollable.Scrollable
 import org.solyton.solawi.bid.module.scrollable.ScrollableStyles
@@ -584,7 +583,6 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
             }.distinct().groupBy ({ it.first }){it.second}
 
             val sepaMandates: Source<List<SepaMandate>> = sepaCollections flatMap { collection -> collection.sepaMandates }
-
             val mandatesByReferenceId = sepaMandates map {
                 mandates -> mandates.flatMap{it.referenceIds.map { id -> id to it }}
                 .associateBy({it.first}){it.second}
@@ -1117,13 +1115,48 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                     }
                                 }
                                 ActionsWrapper {
+                                    var sepaMandateState by remember { mutableStateOf<SepaMandate?>(shareSubscriptionIdToMandateMap.emit()[ ShareSubscriptionId(subscription.shareSubscriptionId)]) }
+
+                                    val creditorId = creditorIdentifier.read()?.creditorId
+
                                     CreditCardButton(
                                         color = Color.black,
                                         bgColor = Color.white,
                                         deviceType = deviceType,
-                                        isDisabled = true
+                                        isDisabled = sepaMandateState == null || creditorId == null
                                     ) {
-                                        shareManagementModals.showUpdateSepaManadateModal()
+                                        shareManagementModals.showUpsertSepaMandateModal(
+                                            storage = bankingApplicationStorage,
+                                            device = deviceType,
+                                            sepaMandate = sepaMandateState,
+                                            setSepaMandate = { sepaMandateState = it },
+                                            texts = upsertSepaMandateModalTexts
+                                        ) {
+                                            scope.launch {
+                                                if(sepaMandateState != null && creditorId != null) {
+                                                    val sepaMandate = sepaMandateState
+                                                    requireNotNull(sepaMandate)
+                                                    bankingApplicationActions dispatch updateSepaMandate(
+                                                        UpdateSepaMandate(
+                                                            sepaMandateId = sepaMandate.sepaMandateId,
+                                                            debtorBankAccountId = sepaMandate.debtorBankAccountId,
+                                                            debtorName = sepaMandate.debtorName,
+                                                            mandateReference = sepaMandate.mandateReference,
+                                                            signedAt = sepaMandate.signedAt,
+                                                            validFrom = sepaMandate.validFrom,
+                                                            validUntil = sepaMandate.validUntil,
+                                                            status = sepaMandate.status.toApyType(),
+                                                            isActive = sepaMandate.isActive,
+                                                            amendmentOf = sepaMandate.amendmentOf,
+                                                            creditorId = creditorId,
+                                                            lastUsedAt = sepaMandate.lastUsedAt,
+                                                            collectionId = sepaMandate.collectionId,
+                                                        ),
+                                                        targetCollectionId = sepaMandate.collectionId!!
+                                                    )
+                                                }
+                                            }
+                                        }
                                     }
                                     EditButton(
                                         color = Color.black,

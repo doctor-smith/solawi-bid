@@ -1,11 +1,6 @@
 package org.solyton.solawi.bid.application.ui.component.organization
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.form.Form
@@ -19,42 +14,17 @@ import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.times
 import org.evoleq.uuid.NIL_UUID
-import org.jetbrains.compose.web.css.Color
-import org.jetbrains.compose.web.css.JustifyContent
-import org.jetbrains.compose.web.css.LineStyle
-import org.jetbrains.compose.web.css.backgroundColor
-import org.jetbrains.compose.web.css.border
-import org.jetbrains.compose.web.css.color
-import org.jetbrains.compose.web.css.justifyContent
-import org.jetbrains.compose.web.css.percent
-import org.jetbrains.compose.web.css.px
-import org.jetbrains.compose.web.css.style
-import org.jetbrains.compose.web.css.width
+import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
 import org.solyton.solawi.bid.module.control.button.EditButton
+import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
 import org.solyton.solawi.bid.module.distribution.data.distributionpoint.DistributionPoint
-import org.solyton.solawi.bid.module.list.component.ActionsWrapper
-import org.solyton.solawi.bid.module.list.component.DataWrapper
-import org.solyton.solawi.bid.module.list.component.EditableIntCell
-import org.solyton.solawi.bid.module.list.component.EditableNullablePriceCell
-import org.solyton.solawi.bid.module.list.component.EditableSelectCell
-import org.solyton.solawi.bid.module.list.component.EditableSelectCellStyles
-import org.solyton.solawi.bid.module.list.component.EditableTextCell
-import org.solyton.solawi.bid.module.list.component.Header
-import org.solyton.solawi.bid.module.list.component.HeaderCell
-import org.solyton.solawi.bid.module.list.component.HeaderWrapper
-import org.solyton.solawi.bid.module.list.component.ListItemWrapper
-import org.solyton.solawi.bid.module.list.component.ListItemsIndexed
-import org.solyton.solawi.bid.module.list.component.ListWrapper
-import org.solyton.solawi.bid.module.list.component.TextCell
-import org.solyton.solawi.bid.module.list.component.Title
-import org.solyton.solawi.bid.module.list.component.TitleWrapper
+import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.defaultListStyles
 import org.solyton.solawi.bid.module.modal.constants.MODAL_LAYER_INDEX
-import org.solyton.solawi.bid.module.navbar.component.SimpleUpDown
 import org.solyton.solawi.bid.module.shares.component.dropdown.ShareOffersDropdown
 import org.solyton.solawi.bid.module.shares.data.api.PricingType
 import org.solyton.solawi.bid.module.shares.data.api.UpdateShareStatus
@@ -62,13 +32,7 @@ import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
 import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.shares.data.internal.shareStatusTransitionsWithPermissions
 import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
-import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscription
-import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscriptions
-import org.solyton.solawi.bid.module.shares.data.subscriptions.ahcAuthorized
-import org.solyton.solawi.bid.module.shares.data.subscriptions.coSubscribers
-import org.solyton.solawi.bid.module.shares.data.subscriptions.distributionPointId
-import org.solyton.solawi.bid.module.shares.data.subscriptions.numberOfShares
-import org.solyton.solawi.bid.module.shares.data.subscriptions.pricePerShare
+import org.solyton.solawi.bid.module.shares.data.subscriptions.*
 import org.solyton.solawi.bid.module.shares.data.toApiType
 import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
 import org.solyton.solawi.bid.module.style.form.formDesktopStyle
@@ -78,10 +42,6 @@ import org.solyton.solawi.bid.module.user.data.profile.UserProfile
 import org.solyton.solawi.bid.module.values.ModifierId
 import org.solyton.solawi.bid.module.values.Price
 import org.solyton.solawi.bid.module.values.ProviderId
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.collections.orEmpty
-import kotlin.collections.plus
 
 @Markup
 @Composable

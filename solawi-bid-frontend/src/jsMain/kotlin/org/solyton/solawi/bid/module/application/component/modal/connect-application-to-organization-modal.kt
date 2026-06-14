@@ -1,18 +1,10 @@
 package org.solyton.solawi.bid.module.application.component.modal
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
 import org.evoleq.compose.form.label.Label
 import org.evoleq.compose.layout.Vertical
-import org.evoleq.compose.modal.Modal
-import org.evoleq.compose.modal.ModalData
-import org.evoleq.compose.modal.ModalStyles
-import org.evoleq.compose.modal.ModalType
-import org.evoleq.compose.modal.Modals
+import org.evoleq.compose.modal.*
 import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.language.Lang
 import org.evoleq.math.Source
@@ -21,23 +13,20 @@ import org.evoleq.math.times
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
-import org.jetbrains.compose.web.css.percent
-import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.application.data.application.Application
+import org.solyton.solawi.bid.module.application.i18n.inputs
+import org.solyton.solawi.bid.module.control.dropdown.Dropdown
+import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
 import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
-import org.solyton.solawi.bid.module.user.data.organization.Organization
-import org.solyton.solawi.bid.module.application.i18n.inputs
-import org.solyton.solawi.bid.module.control.dropdown.Dropdown
-import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
-import org.solyton.solawi.bid.module.navbar.component.SimpleUpDown
 import org.solyton.solawi.bid.module.user.component.dropdown.dropdownStyles
 import org.solyton.solawi.bid.module.user.component.dropdown.generateOrganizationOptions
 import org.solyton.solawi.bid.module.user.component.dropdown.nameOfSelectedOrganization
+import org.solyton.solawi.bid.module.user.data.organization.Organization
 import org.w3c.dom.HTMLElement
 
 @Markup

@@ -19,8 +19,6 @@ import org.solyton.solawi.bid.application.pipeline.*
 import org.solyton.solawi.bid.module.application.migrations.applicationMigrations
 import org.solyton.solawi.bid.module.application.routing.application
 import org.solyton.solawi.bid.module.application.schema.*
-import org.solyton.solawi.bid.module.application.schema.ApplicationEntity
-import org.solyton.solawi.bid.module.application.schema.ModuleEntity
 import org.solyton.solawi.bid.module.authentication.environment.JWT
 import org.solyton.solawi.bid.module.authentication.migrations.authenticationMigrations
 import org.solyton.solawi.bid.module.authentication.routing.authentication
@@ -33,6 +31,7 @@ import org.solyton.solawi.bid.module.testFramework.provideUserTokens
 import org.solyton.solawi.bid.module.testFramework.testContexts
 import org.solyton.solawi.bid.module.user.data.api.ApiUser
 import org.solyton.solawi.bid.module.user.data.api.ApiUsers
+import org.solyton.solawi.bid.module.user.data.toApiType
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import java.util.*
@@ -107,7 +106,8 @@ fun Application.applicationTest() {
                         .map{
                             ApiUser(
                                 id = it.id.value.toString(),
-                                username = it.username
+                                username = it.username,
+                                status = it.status.toApiType()
                             )
                         }
 

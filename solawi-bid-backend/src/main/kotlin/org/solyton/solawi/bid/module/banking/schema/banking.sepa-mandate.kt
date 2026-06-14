@@ -106,10 +106,11 @@ class SepaMandate(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     var lastUsedAt by SepaMandates.lastUsedAt
     var isActive by SepaMandates.isActive
     var amendmentOf by SepaMandate optionalReferencedOn SepaMandates.amendmentOf
+    val amendedBy by SepaMandate optionalReferrersOn SepaMandates.amendmentOf
     var collection by SepaCollection optionalReferencedOn SepaMandates.collectionId
 
     val payments by SepaPayment referrersOn  SepaPaymentsTable.mandateId
-
+    
     val referenceDataMappings by SepaMandateDataMapping referrersOn SepaMandateDataMappingsTable.sepaMandateId
 
     override var createdAt: DateTime by SepaMandates.createdAt
@@ -118,8 +119,6 @@ class SepaMandate(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     override var modifiedBy: UUID? by SepaMandates.modifiedBy
 
     companion object : UUIDEntityClass<SepaMandate>(SepaMandates)
-
-
 }
 
 enum class MandateStatus {

@@ -34,6 +34,7 @@ import org.solyton.solawi.bid.module.user.action.user.getUsers
 import org.solyton.solawi.bid.module.user.component.modal.showCreateUserModal
 import org.solyton.solawi.bid.module.user.data.*
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
+import org.solyton.solawi.bid.module.user.data.api.UserStatus
 import org.solyton.solawi.bid.module.user.data.reader.isNotGranted
 
 @Markup
@@ -85,7 +86,7 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
                             texts = dialogs * subComp("createUser"),
                             device = storage * deviceData * mediaType.get,
                             styles = {dev -> auctionModalStyles(dev) },
-                            setUserData = {username, password -> useR = CreateUser(username, password) },
+                            setUserData = {username, password -> useR = CreateUser(username, password, UserStatus.ACTIVE) },
                             cancel = {}
                         ) {
                             CoroutineScope(Job()).launch {
