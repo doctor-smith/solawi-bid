@@ -4,6 +4,7 @@ package org.solyton.solawi.bid.application.api
 import org.evoleq.ktorx.api.Api
 import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.authentication.data.api.*
+import org.solyton.solawi.bid.module.banking.data.SepaPaymentId
 import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.distribution.data.api.*
@@ -431,6 +432,10 @@ val solawiApi by lazy {
             post<CreateSepaPaymentSuccessors, SepaPayments>(
                 key = CreateSepaPaymentSuccessors::class,
                 url = "sepa/collections/create-payment-successors"
+            )
+            delete<DeleteSepaPayment, SepaPaymentId>(
+                key = DeleteSepaPayment::class,
+                url = "sepa/payments/delete"
             )
             post<GenerateSepaMessageForCollection, SepaMessageString>(
                 key = GenerateSepaMessageForCollection::class,

@@ -24,20 +24,28 @@ import java.util.*
  * @param creator The user who created the payments.
  * @param sepaCollectionId The ID of the SEPA collection for which payments are being created.
  * @param executionDate The date on which the payments will be executed.
+ * @param mandateIds If provided, only the mandates with these IDs will be considered.
  * @return A list of created SepaPayment objects.
  */
 fun Transaction.createPaymentsForCollection(
     creator: UUID,
     sepaCollectionId: UUID,
     executionDate: LocalDate,
+    mandateIds: List<UUID>? = null,
 ): List<SepaPayment> {
 
     val sepaCollection = validatedSepaCollection(sepaCollectionId)
-    val activeMandates = sepaCollection.sepaMandates.filter{ it.status == MandateStatus.ACTIVE }
-    val mandateIds = activeMandates.map { it.id.value }
+    // here we take all mandates that are active and, if the provided list of mandates is not null, we filter by it
+    val activeMandates = sepaCollection.sepaMandates.filter{
+        it.status == MandateStatus.ACTIVE && when(mandateIds){
+            null -> true
+            else -> mandateIds.contains(it.id.value)
+        }
+    }
+    val activeMandateIds = activeMandates.map { it.id.value }
 
     val map: Map<UUID, Double> = SepaMandateDataMapping.find{
-        SepaMandateDataMappings.sepaMandateId inList mandateIds
+        SepaMandateDataMappings.sepaMandateId inList activeMandateIds
     }.groupBy({mapping -> mapping.mandate.id.value }) {
         mapping -> mapping.amount
     }.mapValues { it.value.sum() }
@@ -512,6 +520,22 @@ fun Transaction.addHistoryEntry(
     }
 }
 
+/**
+ * Delete a payment.
+ * Only allowed if the payment is in CREATED state.
+ * The payment is deleted and all history entries are deleted.
+ */
+fun Transaction.deletePayment(id: UUID): UUID {
+    val payment = validatedPayment(id)
+    if(payment.status != PaymentExecutionStatus.CREATED) throw SepaException.Payment.StateTransitionForbidden(
+        payment.status.name,
+        "DELETED"
+    )
+    // Delete all trivial history entries
+    SepaPaymentStatusHistoryEntity.find { SepaPaymentStatusHistory.paymentId eq id }.forEach { it.delete() }
+    payment.delete()
+    return id
+}
 
 fun Transaction.validatedPayment(id: UUID): SepaPaymentEntity = SepaPaymentEntity.findById(id)
     ?: throw SepaException.Payment.NoSuchPayment(id.toString())

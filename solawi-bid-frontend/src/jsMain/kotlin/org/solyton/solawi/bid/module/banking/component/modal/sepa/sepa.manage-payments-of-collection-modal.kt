@@ -33,30 +33,24 @@ import org.jetbrains.compose.web.dom.Button
 import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.Input
 import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.module.banking.action.createSuccessorsForPayments
-import org.solyton.solawi.bid.module.banking.action.generateSepaMessageForCollection
-import org.solyton.solawi.bid.module.banking.action.updateSepaPaymentExecutionStatuses
+import org.solyton.solawi.bid.module.banking.action.*
+import org.solyton.solawi.bid.module.banking.component.list.ListOfMandateWithoutPayments
 import org.solyton.solawi.bid.module.banking.component.list.ListOfPayments
 import org.solyton.solawi.bid.module.banking.component.properties.PaymentsProperties
 import org.solyton.solawi.bid.module.banking.component.tab.TabParagraphWrapper
-import org.solyton.solawi.bid.module.banking.data.RemittanceInformation
-import org.solyton.solawi.bid.module.banking.data.SepaPaymentId
-import org.solyton.solawi.bid.module.banking.data.api.CreateSepaPaymentSuccessors
-import org.solyton.solawi.bid.module.banking.data.api.GenerateSepaMessageForCollection
-import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
-import org.solyton.solawi.bid.module.banking.data.api.UpdateSepaPaymentExecutionStatuses
+import org.solyton.solawi.bid.module.banking.data.*
+import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
-import org.solyton.solawi.bid.module.banking.data.bankingApplicationActions
 import org.solyton.solawi.bid.module.banking.data.sepa.PaymentExecutionStatus
+import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessage
-import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.control.button.*
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
 import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
+import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
 import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
 import org.solyton.solawi.bid.module.list.style.defaultListStyles
-import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
 import org.solyton.solawi.bid.module.scrollable.Scrollable
 import org.solyton.solawi.bid.module.scrollable.ScrollableStyles
 import org.solyton.solawi.bid.module.style.form.dateInputDesktopStyle
@@ -342,9 +336,41 @@ fun ManagePaymentsOfSepaCollectionModal(
                                         }
                                     }
                                 }
+                                val usedMandateIds = sepaCollection.sepaPayments.map { it.sepaMandateId }.distinct()
+                                val mandatesWithoutPayments = sepaCollection.sepaMandates.filter {
+                                    mandate -> usedMandateIds.none { it == mandate.sepaMandateId }
+                                }
+                                // These are the ids of the mandates which are visible and checked
+                                var chosenMandateIds by remember { mutableStateOf(emptyList<SepaMandateId>()) }
+                                ListOfMandateWithoutPayments(
+                                    "Mandates without any payments",
+                                    mandatesWithoutPayments,
+                                    overallActions = { data -> Horizontal {
+                                        PlusButton(
+                                            color = Color.black,
+                                            bgColor = Color.white,
+                                            texts = { "Create new payments for selected & visible items" },
+                                            deviceType = device,
+                                            isDisabled = chosenMandateIds.isEmpty()
+                                        ) {
+                                            scope.launch {
+                                                chosenMandateIds = data.visibleItems.filter { it in data.checkedItems && data.checkedItems[it] == true }
 
+                                                if(chosenMandateIds.isEmpty()) return@launch
+                                                (storage * bankingApplicationActions) dispatch createSepaPaymentsForCollection(
+                                                    data = CreateSepaPaymentsForCollection(
+                                                        sepaCollectionId = sepaCollection.sepaCollectionId,
+                                                        executionDate = executionDateState,
+                                                        mandateIds = chosenMandateIds
+                                                    ),
+                                                    targetCollectionId = sepaCollection.sepaCollectionId
+                                                )
+                                            }
+                                        }
+                                    }}
+                                )
                                 ListOfPayments(
-                                    "Candidates for new payments:",
+                                    "Candidates for recurring payments:",
                                     sepaCollection.sepaMandates,
                                     paymentCreationCandidates,
                                     listStyles,
@@ -376,7 +402,6 @@ fun ManagePaymentsOfSepaCollectionModal(
                                 )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_CREATED) {
-                                // val sepaMessages = sepaMessages.emit()
                                 TabTitle("Recently created Payments")
                                 ListOfPayments(
                                     null,
@@ -434,7 +459,23 @@ fun ManagePaymentsOfSepaCollectionModal(
                                                 }
                                             }
                                         }
-                                    }}
+                                    }},
+                                    actions = { data -> Horizontal {
+                                        TrashCanButton(
+                                            color = Color.black,
+                                            bgColor = Color.white,
+                                            deviceType = device,
+                                            isDisabled = false
+                                        ) {
+                                            // delete payments in CREATED state
+                                            scope.launch {
+                                                (storage * bankingApplicationActions) dispatch deleteSepaPayment(
+                                                    data = DeleteSepaPayment(data.data.payment.sepaPaymentId),
+                                                    targetCollectionId = sepaCollection.sepaCollectionId
+                                                )
+                                            }
+                                        }
+                                    } }
                                 )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_MESSAGE_CREATED) {

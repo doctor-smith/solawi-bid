@@ -20,6 +20,7 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.jetbrains.compose.web.attributes.placeholder
+import org.jetbrains.compose.web.css.JustifyContent
 import org.jetbrains.compose.web.css.marginLeft
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.width
@@ -77,7 +78,7 @@ fun UpsertSepaMessageModal(
     Wrap {
         Form(formDesktopStyle) {
             Field(fieldDesktopStyle) {
-                Horizontal {
+                Horizontal({JustifyContent.FlexStart}) {
                     CheckBox(
                         checked = updateExistingMessage,
                         onClick = { isChecked ->
@@ -92,43 +93,51 @@ fun UpsertSepaMessageModal(
         When(updateExistingMessage) {
             Form(formDesktopStyle) {
                 Field(fieldDesktopStyle) {
-                    Text("Update Existing Message")
+                    Text("TOTO - Update Existing Message - A list of messages will be displayed here. So that the user can select the message to update")
+
                 }
+
             }
         }
         When(!updateExistingMessage) {
 
 
             Form(formDesktopStyle) {
-                Field(fieldDesktopStyle) {
-                    Horizontal {
-                        CheckBox(
-                            checked = useDefault,
-                            onClick = { isChecked ->
-                                useDefault = isChecked
-                                if (isChecked) {
-                                    dataState = dataState.copy(remittanceInformation = null)
-                                    setData(dataState)
-                                } else {
-                                    dataState =
-                                        dataState.copy(remittanceInformation = data.sepaCollection.remittanceInformation.value)
-                                    setData(dataState)
+                Horizontal({JustifyContent.FlexStart}) {
+                    Field(fieldDesktopStyle) {
+                        Horizontal {
+                            CheckBox(
+                                checked = useDefault,
+                                onClick = { isChecked ->
+                                    useDefault = isChecked
+                                    if (isChecked) {
+                                        dataState = dataState.copy(remittanceInformation = null)
+                                        setData(dataState)
+                                    } else {
+                                        dataState =
+                                            dataState.copy(remittanceInformation = data.sepaCollection.remittanceInformation.value)
+                                        setData(dataState)
+                                    }
                                 }
-                            }
-                        )
-                        Label("Use Default", id = "use-default", labelStyle = formLabelDesktopStyle)
+                            )
+                            Label("Use Default", id = "use-default", labelStyle = formLabelDesktopStyle)
+                        }
                     }
-                }
-                Field(fieldDesktopStyle) {
-                    Label("Remittance Information", id = "remittance-information", labelStyle = formLabelDesktopStyle)
-                    TextInput(dataState.remittanceInformation ?: "") {
-                        placeholder(data.sepaCollection.remittanceInformation.value)
-                        if (useDefault) disabled()
-                        id("remittance-information")
-                        style { textInputDesktopStyle() }
-                        onInput {
-                            dataState = dataState.copy(remittanceInformation = it.value)
-                            setData(dataState)
+                    Field(fieldDesktopStyle) {
+                        Label(
+                            "Remittance Information",
+                            id = "remittance-information",
+                            labelStyle = formLabelDesktopStyle
+                        )
+                        TextInput(dataState.remittanceInformation ?: "") {
+                            placeholder(data.sepaCollection.remittanceInformation.value)
+                            if (useDefault) disabled()
+                            id("remittance-information")
+                            style { textInputDesktopStyle() }
+                            onInput {
+                                dataState = dataState.copy(remittanceInformation = it.value)
+                                setData(dataState)
+                            }
                         }
                     }
                 }

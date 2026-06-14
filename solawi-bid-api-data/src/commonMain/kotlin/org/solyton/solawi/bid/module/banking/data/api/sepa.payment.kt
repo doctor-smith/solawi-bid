@@ -49,6 +49,7 @@ data class CreateSepaPaymentsForCollection(
     val sepaCollectionId: SepaCollectionId,
     val executionDate: LocalDate,
     val remittanceInformation: RemittanceInformation? = null,
+    val mandateIds: List<SepaMandateId>? = null,
 )
 
 @Serializable
@@ -96,6 +97,11 @@ data class AddSepaPaymentToCollection(
 data class RemoveSepaPaymentFromCollection(
     val sepaMandateId: SepaMandateId,
     val sepaCollectionId: SepaCollectionId
+)
+
+@Serializable
+data class DeleteSepaPayment(
+    val id: SepaPaymentId
 )
 
 @Serializable

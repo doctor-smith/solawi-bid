@@ -28,7 +28,8 @@ fun CreateSepaPaymentsForCollection(): KlAction<Result<Contextual<CreateSepaPaym
                 val payments = createPaymentsForCollection(
                     userId,
                     UUID.fromString(data.sepaCollectionId.value),
-                    data.executionDate.toDateTime().toJoda().toLocalDate()
+                    data.executionDate.toDateTime().toJoda().toLocalDate(),
+                    data.mandateIds?.map { UUID.fromString(it.value) }
                 )
                 ApiSepaPayments(payments.map {
                     it.toApiType()
