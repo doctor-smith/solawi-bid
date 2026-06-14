@@ -61,7 +61,7 @@ import org.solyton.solawi.bid.module.dialog.component.WarningSymbol
 import org.solyton.solawi.bid.module.dialog.component.showDialogModal
 import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
 import org.solyton.solawi.bid.module.list.component.*
-import org.solyton.solawi.bid.module.navbar.component.SimpleRightDown
+import org.solyton.solawi.bid.module.control.dropdown.SimpleRightDown
 import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.scrollable.Scrollable
 import org.solyton.solawi.bid.module.scrollable.ScrollableStyles
