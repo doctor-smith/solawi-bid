@@ -1,8 +1,11 @@
 package org.solyton.solawi.bid.module.banking.component.list
 
 import androidx.compose.runtime.*
+import kotlinx.datetime.LocalDateTime
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
+import org.evoleq.compose.date.format
+import org.evoleq.language.Locale
 import org.jetbrains.compose.web.css.paddingLeft
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.px
@@ -11,6 +14,7 @@ import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.banking.data.SepaMandateId
+import org.solyton.solawi.bid.module.banking.data.sepa.MandateStatus
 import org.solyton.solawi.bid.module.banking.data.sepa.mandate.SepaMandate
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.ListStyles
@@ -24,15 +28,23 @@ data class OverAllMandatesActionData(
 
 data class SepaMandatesFilter(
     val debtor: (String) -> Boolean = { true },
+    val status: (MandateStatus) -> Boolean = { true },
+    val signedAt: (LocalDateTime) -> Boolean = { true },
+    val mandateReference: (String) -> Boolean = { true },
 ) {
     infix fun applyTo(mandate: SepaMandate): Boolean = with(mandate) {
-        debtor(debtorName)
+        debtor(debtorName) &&
+        status(status) &&
+        signedAt(signedAt) &&
+        mandateReference(mandateReference.value)
     }
 }
 
 data class SepaMandatesOrder(
     val debtor: SortOrder = SortOrder.ASC,
     val signedAt: SortOrder = SortOrder.DESC,
+    val status: SortOrder = SortOrder.NONE,
+    val mandateReference: SortOrder = SortOrder.ASC,
 ) {
     fun toComparator(): Comparator<SepaMandate> = Comparator { o1, o2 ->
         var result = 0
@@ -44,7 +56,14 @@ data class SepaMandatesOrder(
             result = compareValues(o1.signedAt, o2.signedAt)
             if (signedAt == SortOrder.DESC) result = -result
         }
-
+        if (result == 0 && status != SortOrder.NONE) {
+            result = compareValues(o1.status.name, o2.status.name)
+            if (status == SortOrder.DESC) result = -result
+        }
+        if (result == 0 && mandateReference != SortOrder.NONE) {
+            result = compareValues(o1.mandateReference.value, o2.mandateReference.value)
+            if (mandateReference == SortOrder.DESC) result = -result
+        }
         result
     }
 }
@@ -108,23 +127,22 @@ fun ListOfMandateWithoutPayments(
             }
 
             FilterWrapper(styles.modifyFilterWrapper { width(80.percent) }.filterWrapper) {
-                /*
-            Filter(styles.modifyFilter {
-                width(20.percent)
-                paddingLeft(20.px)
-            }.filter) {
-                TextFilter("Filter by Status") {
-                    filter = when {
-                        it.isBlank() -> filter.copy(status = { true })
-                        else -> filter.copy(status = { status -> it.toFilter().applyTo(status.name) })
+
+                Filter(styles.modifyFilter {
+                    width(20.percent)
+                    paddingLeft(20.px)
+                }.filter) {
+                    TextFilter("Filter by Status") {
+                        filter = when {
+                            it.isBlank() -> filter.copy(status = { true })
+                            else -> filter.copy(status = { status -> it.toFilter().applyTo(status.name) })
+                        }
                     }
                 }
-            }
 
-             */
                 Filter(styles.modifyFilter {
                     width(25.percent)
-                    paddingLeft(20.px)
+                    //paddingLeft(20.px)
                 }.filter) {
                     TextFilter("Filter by Debtor") {
                         filter = when {
@@ -154,37 +172,26 @@ fun ListOfMandateWithoutPayments(
                         }
                     }
 
-
-
+                    HeaderCellWithActions(
+                        text = { "Status" },
+                        styles = HeaderCellStyles().width(10.percent),
+                        ordering = { SortByDrop { order: SortOrder -> sortOrder = sortOrder.copy(status = order) } }
+                    )
                     HeaderCellWithActions(
                         text = { "Debtor" },
                         styles = HeaderCellStyles().width(25.percent),
                         ordering = { SortByDrop { order: SortOrder -> sortOrder = sortOrder.copy(debtor = order) } }
                     )
-                    /*
-                HeaderCellWithActions(
-                    text = {"Exec. Date"},
-                    styles = HeaderCellStyles().width(15.percent) ,
-                    ordering = { SortByDrop{ order: SortOrder -> sortOrder = sortOrder.copy(executionDate = order) } }
-                )
-                HeaderCellWithActions(
-                    text = {"Amount"},
-                    styles = HeaderCellStyles().width(10.percent) ,
-                    ordering = { SortByDrop{ order: SortOrder -> sortOrder = sortOrder.copy(amount = order) } }
-                )
-                HeaderCellWithActions(
-                    text = {"S-Type"},
-                    styles = HeaderCellStyles().width(10.percent) ,
-                    ordering = { SortByDrop{ order: SortOrder -> sortOrder = sortOrder.copy(sequenceType = order) } }
-                )
-
-                 */
-                    // HeaderCell("Status"){ width(15.percent) }
-                    // HeaderCell("Debtor"){ width(25.percent) }
-                    // HeaderCell("Exec. Date"){ width(15.percent) }
-                    // HeaderCell("Amount") { width(10.percent) }
-                    // HeaderCell("Seq Type") {width(10.percent)}
-                    // HeaderCell("Failure Reason") {width(20.percent)}
+                    HeaderCellWithActions(
+                        text = { "Signed At" },
+                        styles = HeaderCellStyles().width(15.percent),
+                        ordering = { SortByDrop { order: SortOrder -> sortOrder = sortOrder.copy(signedAt = order) } }
+                    )
+                    HeaderCellWithActions(
+                        text = { "Mandate Reference" },
+                        styles = HeaderCellStyles().width(20.percent),
+                        ordering = { SortByDrop { order: SortOrder -> sortOrder = sortOrder.copy(mandateReference = order) } }
+                    )
                 }
             }
             Scrollable {
@@ -202,8 +209,10 @@ fun ListOfMandateWithoutPayments(
                                         checkedMap[listItem.sepaMandateId] = true
                                     }
                                 }
-                                // TextCell(listItem.payment.status.name) { width(15.percent) }
+                                TextCell(listItem.status.name) { width(10.percent) }
                                 TextCell(listItem.debtorName) { width(25.percent) }
+                                TextCell(listItem.signedAt.format(Locale.Iso)) { width(15.percent) }
+                                TextCell(listItem.mandateReference.value) { width(20.percent) }
                                 /*
                             TextCell(listItem.payment.executionDate.format(Locale.Iso)) { width(15.percent) }
                             TextCell("${listItem.payment.amount}") { width(10.percent) }
