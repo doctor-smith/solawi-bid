@@ -42,7 +42,7 @@ class UserActionTests {
     fun createUserTest() = runTest {
         val name = "name"
         installSerializers()
-        val user = CreateUser("username", "password")
+        val user = CreateUser("user@name", "password")
         val action = createUser(user)
 
         composition {

@@ -174,6 +174,7 @@ fun installSerializers() {
         // UserManagement
         add<CreateUser>(CreateUser.serializer())
         add<User>(User.serializer())
+        add<UserStatus>(UserStatus.serializer())
         add<Users>(Users.serializer())
         add<GetUsers>(GetUsers.serializer())
         add<ChangePassword>(ChangePassword.serializer())
@@ -370,6 +371,7 @@ fun installSerializers() {
         add<AddSepaPaymentToCollection>(AddSepaPaymentToCollection.serializer())
         add<RemoveSepaPaymentFromCollection>(RemoveSepaPaymentFromCollection.serializer())
         add<PaymentExecutionStatus>(PaymentExecutionStatus.serializer())
+        add<DeleteSepaPayment>(DeleteSepaPayment.serializer())
 
         // Sepa Payment History
 

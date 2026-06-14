@@ -27,6 +27,7 @@ import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.CREATE_SEPA
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.CREATE_SEPA_MANDATES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.CREATE_SEPA_MESSAGES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.CREATE_SEPA_PAYMENTS
+import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.DELETE_SEPA_PAYMENTS
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.READ_SEPA_COLLECTIONS
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.READ_SEPA_MANDATES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.READ_SEPA_MESSAGES
@@ -238,6 +239,12 @@ fun <BankingEnv> Routing.banking (
                         ReceiveContextual<UpdateSepaPaymentExecutionStatuses>() *
                         IsGranted(UPDATE_SEPA_PAYMENTS, no) *
                         UpdateSepaPaymentExecutionStatuses() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
+                    delete("delete") {
+                        ReceiveContextual<DeleteSepaPayment>() *
+                        IsGranted(DELETE_SEPA_PAYMENTS, no) *
+                        DeleteSepaPayment() *
                         Respond { transform() } runOn Base(call, environment)
                     }
                 }

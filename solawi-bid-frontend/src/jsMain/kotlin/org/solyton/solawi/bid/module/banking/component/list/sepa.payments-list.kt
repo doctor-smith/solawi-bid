@@ -1,18 +1,13 @@
 package org.solyton.solawi.bid.module.banking.component.list
 
 import androidx.compose.runtime.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
 import org.evoleq.compose.date.format
 import org.evoleq.language.Locale
 import org.jetbrains.compose.web.css.*
-import org.jetbrains.compose.web.dom.Button
-import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H3
-import org.jetbrains.compose.web.dom.I
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.banking.data.SepaMandateId
@@ -20,7 +15,6 @@ import org.solyton.solawi.bid.module.banking.data.SepaPaymentId
 import org.solyton.solawi.bid.module.banking.data.sepa.PaymentExecutionStatus
 import org.solyton.solawi.bid.module.banking.data.sepa.mandate.SepaMandate
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
-import org.solyton.solawi.bid.module.control.button.PlayButton
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.ListStyles
 import org.solyton.solawi.bid.module.scrollable.Scrollable
@@ -117,6 +111,10 @@ data class OverAllActionData(
     val checkedPayments: Map<SepaPaymentId, Boolean> = emptyMap()
 )
 
+data class ActionsData(
+    val data: SepaPaymentListItemData
+)
+
 @Markup
 @Composable
 @Suppress("FunctionName")
@@ -125,9 +123,10 @@ fun ListOfPayments(
     mandates: List<SepaMandate>,
     payments: List<SepaPayment>,
     styles: ListStyles = ListStyles(),
+    displayIfEmpty: Boolean = true,
     overallActions: @Composable (data: OverAllActionData) -> Unit = {},
-    actions: @Composable () -> Unit = {}
-){
+    actions: @Composable (data: ActionsData) -> Unit = {}
+) = When(displayIfEmpty || payments.isNotEmpty()) {
     // val sortedPayments = payments.sortedByDescending { it.executionDate }
     val mandatesMap = payments.associateBy({it.sepaPaymentId}) { payment ->
         mandates.firstOrNull { it.sepaMandateId == payment.sepaMandateId }
@@ -289,10 +288,11 @@ fun ListOfPayments(
                                 textOverflow(TextOverflow.Ellipsis)
                             }
                         }
+                        ActionsWrapper(styles.actionsWrapper) {
+                            actions(ActionsData(listItem))
+                        }
                     }
-                    ActionsWrapper(styles.actionsWrapper) {
-                        actions()
-                    }
+
                 }
             }
         }
