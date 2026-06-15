@@ -351,7 +351,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                                             bgColor = Color.white,
                                             texts = { "Create new payments for selected & visible items" },
                                             deviceType = device,
-                                            isDisabled = chosenMandateIds.isEmpty()
+                                            isDisabled = false // chosenMandateIds.isEmpty()
                                         ) {
                                             scope.launch {
                                                 chosenMandateIds = data.visibleItems.filter { it in data.checkedItems && data.checkedItems[it] == true }

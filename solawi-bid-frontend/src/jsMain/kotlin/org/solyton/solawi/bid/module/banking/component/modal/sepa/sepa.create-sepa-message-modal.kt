@@ -78,7 +78,9 @@ fun UpsertSepaMessageModal(
     Wrap {
         Form(formDesktopStyle) {
             Field(fieldDesktopStyle) {
-                Horizontal({JustifyContent.FlexStart}) {
+                Horizontal({
+                    JustifyContent.FlexStart
+                }) {
                     CheckBox(
                         checked = updateExistingMessage,
                         onClick = { isChecked ->
