@@ -25,6 +25,7 @@ import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.Text
+import org.solyton.solawi.bid.module.style.modal.commonModalStyles
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.w3c.dom.HTMLElement
 
@@ -111,10 +112,7 @@ fun ChildDialogModal(
     onCancel = onCancel,
     texts = texts,
     dataId = dataId,
-    styles = ModalStyles().modifyContainerStyle {
-        width(80.percent)
-        marginLeft(5.percent)
-    }
+    styles = commonModalStyles(device)
 ) {
     Wrap({padding(10.px)}){
         Horizontal({gap(10.px)}) {
