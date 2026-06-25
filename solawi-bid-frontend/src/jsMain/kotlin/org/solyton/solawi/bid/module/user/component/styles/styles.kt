@@ -10,9 +10,9 @@ import org.jetbrains.compose.web.css.*
 typealias userModalStyles = ModalStyles
 
 @Style
-fun modalStyles(device : Source<DeviceType>): ModalStyles = ModalStyles(
-    containerStyle = modalContainerStyle(device)
-)
+fun modalStyles(device : Source<DeviceType>): ModalStyles = ModalStyles().modifyContainerStyle{
+    modalContainerStyle(device)
+}
 
 
 @Style

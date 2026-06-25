@@ -16,7 +16,7 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.jetbrains.compose.web.dom.ElementScope
-import org.solyton.solawi.bid.module.user.component.styles.modalStyles
+import org.solyton.solawi.bid.module.style.modal.commonModalStyles
 import org.w3c.dom.HTMLElement
 
 @Markup
@@ -44,7 +44,7 @@ fun ImportMembersToOrganizationModal(
     },
     isOkButtonDisabled = isOkButtonDisabled,
     texts = texts,
-    styles = modalStyles(device),
+    styles = commonModalStyles(device),
 ) {
     var isProcessingFileContent by remember{ mutableStateOf(false) }
 

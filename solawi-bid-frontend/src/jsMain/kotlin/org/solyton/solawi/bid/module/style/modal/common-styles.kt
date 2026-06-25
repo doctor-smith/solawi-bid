@@ -4,17 +4,13 @@ import org.evoleq.compose.Style
 import org.evoleq.compose.modal.ModalStyles
 import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.math.Source
-import org.jetbrains.compose.web.css.JustifyContent
-import org.jetbrains.compose.web.css.StyleScope
-import org.jetbrains.compose.web.css.height
-import org.jetbrains.compose.web.css.justifyContent
-import org.jetbrains.compose.web.css.vh
+import org.jetbrains.compose.web.css.*
 
 // @Style
 @Style
-fun commonModalStyles(device : Source<DeviceType>): ModalStyles = ModalStyles(
-    containerStyle = commonModalContainerStyle(device)
-)
+fun commonModalStyles(device : Source<DeviceType>): ModalStyles = ModalStyles().modifyContainerStyle{
+    commonModalContainerStyle(device)
+}
 
 
 @Style

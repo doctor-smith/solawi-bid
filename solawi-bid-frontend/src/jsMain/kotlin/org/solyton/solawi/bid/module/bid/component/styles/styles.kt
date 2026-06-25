@@ -7,9 +7,9 @@ import org.evoleq.math.Source
 import org.jetbrains.compose.web.css.*
 
 @Style
-fun auctionModalStyles(device : Source<DeviceType>): ModalStyles = ModalStyles(
-    containerStyle = auctionModalContainerStyle(device)
-)
+fun auctionModalStyles(device : Source<DeviceType>): ModalStyles = ModalStyles().modifyContainerStyle {
+    auctionModalContainerStyle(device)
+}
 
 
 @Style
