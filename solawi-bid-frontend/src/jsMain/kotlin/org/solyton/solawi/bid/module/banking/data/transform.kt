@@ -113,6 +113,8 @@ fun ApiCreditorIdentifier.toDomainType(): CreditorIdentifier = CreditorIdentifie
     isActive
 )
 
+fun ApiSepaMandates.toDomainType(): List<SepaMandate> = all.map { it.toDomainType() }
+
 fun ApiSepaMandate.toDomainType(): SepaMandate = SepaMandate(
     sepaMandateId = sepaMandateId,
     debtorBankAccountId = debtorBankAccountId,
@@ -125,7 +127,7 @@ fun ApiSepaMandate.toDomainType(): SepaMandate = SepaMandate(
     status = status.toDomainType(),
     isActive = isActive,
     amendmentOf = amendmentOf,
-    collectionId = collectionId,
+    collectionIds = collectionIds,
     referenceIds = referenceIds
 )
 
@@ -147,6 +149,7 @@ fun ApiSepaCollection.toDomainType(): SepaCollection = SepaCollection(
     creditorIdentifierId = creditorIdentifierId,
     creditorBankAccountId = creditorBankAccountId,
     mandateReferencePrefix = mandateReferencePrefix,
+    collectionKey = collectionKey,
     remittanceInformation = remittanceInformation,
     sepaSequenceType = sepaSequenceType.toDomainType(),
     localInstrument = localInstrument,

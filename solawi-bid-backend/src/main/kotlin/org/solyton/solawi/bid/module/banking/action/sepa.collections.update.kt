@@ -28,6 +28,7 @@ fun UpdateSepaCollection(): KlAction<Result<Contextual<UpdateSepaCollection>>, R
                     creditorIdentifierId = data.creditorIdentifierId,
                     creditorAccountId = data.creditorAccountId,
                     mandateReferencePrefix = data.mandateReferencePrefix,
+                    collectionKey = data.collectionKey,
                     remittanceInformation = data.remittanceInformation,
                     sepaSequenceType = data.sepaSequenceType.toDomainType(),
                     localInstrument = data.localInstrument,

@@ -19,8 +19,11 @@ object SepaCollections : AuditableUUIDTable("sepa_collections") {
     // Bank account (IBAN/BIC) where the collected funds will be credited
     val creditorAccountId = reference("creditor_account_id", BankAccounts)
 
-    // Prefix used to generate unique mandate references (must be unique per mandate)
+    // Prefix used to identify the underlying mandate
     val mandateReferencePrefix = varchar("mandate_reference_prefix", 35)
+
+    // Identifier used to identify collections (e.g., "monthly_subscription")
+    val collectionKey = varchar("collection_key", 35)
 
     // Default remittance information shown to the debtor (usage / payment description)
     val remittanceInformation = varchar("remittance_information", 140)
@@ -62,6 +65,7 @@ class SepaCollection(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID>
     var creditorIdentifier by CreditorIdentifier referencedOn SepaCollections.creditorIdentifierId
     var creditorAccount by BankAccount referencedOn SepaCollections.creditorAccountId
     var mandateReferencePrefix by SepaCollections.mandateReferencePrefix
+    var collectionKey by SepaCollections.collectionKey
     var remittanceInformation by SepaCollections.remittanceInformation
     var sequenceType by SepaCollections.sequenceType
     var localInstrument by SepaCollections.localInstrument
@@ -75,7 +79,7 @@ class SepaCollection(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID>
 
     var isActive by SepaCollections.isActive
 
-    val sepaMandates by SepaMandate optionalReferrersOn SepaMandates.collectionId
+    val sepaMandates by SepaMandate via SepaMandateCollectionsTable// optionalReferrersOn SepaMandates.collectionId
     val sepaPayments by SepaPayment referrersOn SepaPayments.collectionId
 
     val referenceIds by SepaCollectionMapping referrersOn SepaCollectionMappings.sepaCollectionId

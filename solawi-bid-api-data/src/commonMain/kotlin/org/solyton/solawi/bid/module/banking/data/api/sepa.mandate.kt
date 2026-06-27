@@ -28,7 +28,7 @@ data class SepaMandate(
     val status: MandateStatus = MandateStatus.ACTIVE,
     val isActive: Boolean = true,
     val amendmentOf: SepaMandateId? = null,
-    val collectionId: SepaCollectionId? = null,
+    val collectionIds: List<SepaCollectionId> = emptyList(),
     val referenceIds: List<SepaMandateReferenceId> = emptyList()
 )
 

@@ -21,5 +21,6 @@ data class SepaMandate(
     @ReadWrite val isActive: Boolean = true,
     @ReadWrite val amendmentOf: SepaMandateId? = null,
     @ReadWrite val collectionId: SepaCollectionId? = null,
+    @ReadWrite val collectionIds: List<SepaCollectionId> = emptyList(),
     @ReadWrite val referenceIds: List<SepaMandateReferenceId> = emptyList()
 )

@@ -101,6 +101,7 @@ import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.action.organization.readOrganizations
 import org.solyton.solawi.bid.module.user.action.user.getUsers
 import org.solyton.solawi.bid.module.user.action.user.readUserProfiles
+import org.solyton.solawi.bid.module.user.component.dropdown.dropdownStyles
 import org.solyton.solawi.bid.module.user.data.managed.id
 import org.solyton.solawi.bid.module.user.data.managedUsers
 import org.solyton.solawi.bid.module.user.data.organization.members
@@ -364,7 +365,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                         HeaderCell("Price") { width(10.percent) }
                         HeaderCell("PricingType") { width(10.percent) }
                         HeaderCell("SEPA required") { width(10.percent) }
-                        HeaderCell("SEPA - Assoc Collections") { width(40.percent) }
+                        HeaderCell("SEPA - Collection Key / Mandate Ref Prefix") { width(40.percent) }
                     }
                 }
                 ListItemsIndexed(shareOffers.read().let{
@@ -386,7 +387,9 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                             TextCell("${shareOffer.price ?: "--"}") { width(10.percent) }
                             TextCell(shareOffer.pricingType.name) { width(10.percent) }
                             TextCell(getKeyOf(shareOffer.ahcAuthorizationRequired)) { width(10.percent) }
-                            TextCell(sepaCollections.read().joinToString(", ") { sC -> sC.mandateReferencePrefix.value }) {
+                            TextCell(sepaCollections.read().joinToString(", ") {
+                                sC -> "${ sC.collectionKey.value } / ${ sC.mandateReferencePrefix.value }"
+                            }) {
                                 width(40.percent)
                                 overflow(Overflow.Hidden)
                             }
@@ -445,6 +448,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                                         creditorBankAccountId = creditorBankAccountId!!,
                                                         mandateReferencePrefix = mandateReferencePrefix!!,
                                                         remittanceInformation = remittanceInformation!!,
+                                                        collectionKey = collectionKey!!,
                                                         sepaSequenceType = sepaSequenceType!!.toApiType(),
                                                         localInstrument = localInstrument,
                                                         chargeBearer = chargeBearer!!,
@@ -471,6 +475,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                                         creditorIdentifierId = creditorIdentifierId!!,
                                                         creditorAccountId = creditorBankAccountId!!,
                                                         mandateReferencePrefix = mandateReferencePrefix!!,
+                                                        collectionKey = collectionKey!!,
                                                         remittanceInformation = remittanceInformation!!,
                                                         sepaSequenceType = sepaSequenceType!!.toApiType(),
                                                         localInstrument = localInstrument,
@@ -781,7 +786,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                 else -> value.map { it.distributionPointId }})
                         }
                         var selectedSepaCollections by remember { mutableStateOf("All Sepa") }
-                        val sepaCollectionsOptions = sepaCollections.read().groupBy{it.mandateReferencePrefix.value}.let{
+                        val sepaCollectionsOptions = sepaCollections.read().groupBy{"${it.collectionKey.value} / ${it.mandateReferencePrefix.value}"}.let{
                             it.toMutableMap<String, List<SepaCollection>?>().apply {
                                 this["All Sepa"] = null
                                 this["No Sepa"] = listOf(SepaCollection.EMPTY)
@@ -790,6 +795,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                         Dropdown(
                             sepaCollectionsOptions,
                             selectedSepaCollections,
+                            styles = dropdownStyles.modifyContainerStyle { width(250.px) },
                             iconContent = {opened -> SimpleUpDown(opened) }
 
                         ) { (key, value) ->
@@ -1060,7 +1066,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                         HeaderCell("Depot") { width(10.percent) }
                         HeaderCell("User") { width(20.percent) }
                         HeaderCell("SEPA") { width(5.percent) }
-                        HeaderCell("SEPA - Assoc Collection") { width(20.percent) }
+                        HeaderCell("SEPA - Collection Key / Mandate Ref Pref") { width(20.percent) }
                     }
                 }
                 Scrollable(ScrollableStyles()
@@ -1109,7 +1115,9 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                             coll,
                                             userProfileToBankAccountMap
                                         )
-                                    }.joinToString(", ") { sC -> sC.mandateReferencePrefix.value }) {
+                                    }.joinToString(", ") {
+                                        sC -> "${sC.collectionKey.value} / ${sC.mandateReferencePrefix.value}"
+                                    }) {
                                         width(20.percent)
                                         overflow(Overflow.Hidden)
                                     }
@@ -1136,7 +1144,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                                 if(sepaMandateState != null && creditorId != null) {
                                                     val sepaMandate = sepaMandateState
                                                     requireNotNull(sepaMandate)
-                                                    bankingApplicationActions dispatch updateSepaMandate(
+                                                    bankingApplicationActions dispatch updateSepaMandateInSepaCollection(
                                                         UpdateSepaMandate(
                                                             sepaMandateId = sepaMandate.sepaMandateId,
                                                             debtorBankAccountId = sepaMandate.debtorBankAccountId,

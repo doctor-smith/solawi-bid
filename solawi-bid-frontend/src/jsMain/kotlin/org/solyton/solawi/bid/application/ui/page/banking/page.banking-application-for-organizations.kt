@@ -7,6 +7,7 @@ import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
 import org.evoleq.compose.date.format
 import org.evoleq.compose.download.downloadCsv
+import org.evoleq.compose.effect.LaunchedEffectOnSource
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Property
 import org.evoleq.compose.layout.ReadOnlyProperties
@@ -17,6 +18,7 @@ import org.evoleq.language.Locale
 import org.evoleq.language.extend
 import org.evoleq.math.*
 import org.evoleq.optics.lens.FilterBy
+import org.evoleq.optics.storage.Read
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.storage.write
@@ -37,9 +39,12 @@ import org.solyton.solawi.bid.module.banking.component.modal.*
 import org.solyton.solawi.bid.module.banking.component.modal.sepa.ManageCollectionPayments
 import org.solyton.solawi.bid.module.banking.component.modal.sepa.UIState
 import org.solyton.solawi.bid.module.banking.component.modal.sepa.showManagePaymentsOfSepaCollectionModal
+import org.solyton.solawi.bid.module.banking.component.modal.sepa.showUpsertSepaMandatesModal
+import org.solyton.solawi.bid.module.banking.component.modal.sepa.upsertSepaMandatesModalTexts
 import org.solyton.solawi.bid.module.banking.data.SepaCollectionId
 import org.solyton.solawi.bid.module.banking.data.api.GenerateSepaMessageForCollection
 import org.solyton.solawi.bid.module.banking.data.api.ImportBankAccounts
+import org.solyton.solawi.bid.module.banking.data.api.UpdateSepaMandate
 import org.solyton.solawi.bid.module.banking.data.application.*
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.bankingApplicationActions
@@ -51,8 +56,10 @@ import org.solyton.solawi.bid.module.banking.data.internal.Currency
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.message.message
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaCollections
+import org.solyton.solawi.bid.module.banking.data.sepa.sepaMandates
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaMessageString
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaMessages
+import org.solyton.solawi.bid.module.banking.data.toApyType
 import org.solyton.solawi.bid.module.banking.service.download
 import org.solyton.solawi.bid.module.constants.checkIcon
 import org.solyton.solawi.bid.module.control.button.*
@@ -113,6 +120,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
             (creditorBankAccounts * FirstOrNull { bankAccount -> bankAccount.bankAccountId == it.creditorBankAccountId }).emit()
         }.filterNotNullValues()
     }
+    val sepaMandates = sepaModule * sepaMandates
 
     LaunchedEffect(providerId) {
         launch {
@@ -134,13 +142,18 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
             bankingApplicationActions dispatch readSepaMessagesByLegalEntity(LegalEntityId(providerId.value))
         }
     }
-    LaunchedEffect(managedUsers.read()) {
+    LaunchedEffectOnSource(Read(managedUsers)) {
         storage * userIso * userActions dispatch readUserProfiles(managedUsers.read().map { it.id })
     }
-    LaunchedEffect(legalEntity.read()) {
+    LaunchedEffectOnSource(Read(legalEntity)) {
         val legalEntityId = legalEntity.read().legalEntityId
         if(legalEntityId.value != NIL_UUID) {
-            bankingApplicationActions dispatch readPersonalCreditorIdentifier(legalEntityId)
+            launch {
+                bankingApplicationActions dispatch readPersonalCreditorIdentifier(legalEntityId)
+            }
+            launch {
+                bankingApplicationActions dispatch readSepaMandatesByCreditorsLegalEntity(LegalEntityId(providerId.value))
+            }
         }
     }
 
@@ -542,6 +555,57 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                                             }
                                         }
                                     }
+                                    val usersSepaMandates = sepaMandates * FilterBy { it.debtorBankAccountId == bankAccount.bankAccountId }
+                                    val usersSepaMandateIds = Read(usersSepaMandates).emit().map { mandate -> mandate.sepaMandateId }
+                                    val usersCollections = sepaCollections * FilterBy {
+                                        it.sepaMandates.map { mandate -> mandate.sepaMandateId }.any{
+                                            id -> id in usersSepaMandateIds
+                                        }
+                                    }
+                                    var usersSepaMandatesState by remember { mutableStateOf(usersSepaMandates.read() ) }
+                                    val creditorId = creditorIdentifier.read()?.creditorId
+                                    CreditCardButton(
+                                        color = Color.black,
+                                        bgColor = Color.white,
+                                        texts = { "Manage SEPA Mandates" },
+                                        deviceType = deviceType,
+                                        isDisabled = creditorId == null
+                                    ) {
+                                        scope.launch {
+                                            bankingApplicationModals.showUpsertSepaMandatesModal(
+                                                storage = bankingApplicationStorage,
+                                                texts = upsertSepaMandatesModalTexts,
+                                                device = deviceType,
+                                                sepaCollections = usersCollections.read(),
+                                                sepaMandates = usersSepaMandates.read(),
+                                                setSepaMandates = { mandates -> usersSepaMandatesState = mandates },
+                                            ) {
+                                                scope.launch {
+
+                                                    usersSepaMandatesState.forEach {
+                                                        bankingApplicationActions dispatch updateSepaMandate(
+                                                            UpdateSepaMandate(
+                                                                it.sepaMandateId,
+                                                                it.debtorBankAccountId,
+                                                                requireNotNull(creditorId) {
+                                                                    "Creditor ID is null"
+                                                                },
+                                                                it.debtorName,
+                                                                it.mandateReference,
+                                                                it.signedAt,
+                                                                it.validFrom,
+                                                                it.validUntil,
+                                                                it.lastUsedAt,
+                                                                it.status.toApyType(),
+                                                                it.isActive,
+                                                                it.amendmentOf
+                                                            ),
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                     TrashCanButton(
                                         color = Color.black,
                                         bgColor = Color.white,
@@ -668,6 +732,11 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                 }
             }
         }
+        LaunchedEffectOnSource(Read(sepaMandates)) {
+            launch{
+                bankingApplicationActions dispatch readPersonalSepaCollections(LegalEntityId(providerId.value))
+            }
+        }
 
 
         Wrap {
@@ -681,12 +750,16 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                     HeaderWrapper {
                         Header {
                             HeaderCell("Bank Account") { width(20.percent) }
+                            HeaderCell("CollectionKey"){ width(10.percent) }
                             HeaderCell("Mandate Ref Prefix"){ width(15.percent) }
                             HeaderCell("Remittance Info"){ width(20.percent) }
                             HeaderCell("Active"){ width(5.percent) }
                             HeaderCell("Seq. Type") { width(10.percent) }
+                            /*
                             HeaderCell("L-Time"){ width(5.percent) }
                             HeaderCell("C-Day"){ width(5.percent) }
+
+                             */
                             // HeaderCell("Next Payment"){width(10.percent)}
                             HeaderCell("Amount"){width(10.percent)}
                         }
@@ -705,12 +778,16 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                         ListItemWrapper({listItemWrapperStyle(index)}) {
                             DataWrapper {
                                 TextCell(bankAccount?.iban?.value?: ""){ width(20.percent) }
+                                TextCell(collection.collectionKey.value){  width(10.percent)}
                                 TextCell(collection.mandateReferencePrefix.value){  width(15.percent)}
                                 TextCell(collection.remittanceInformation.value) { width(20.percent) }
                                 TextCell(collection.isActive.checkIcon("--")){ width(5.percent) }
                                 TextCell(collection.sepaSequenceType.name){  width(10.percent)}
+                                /*
                                 NumberCell(collection.leadTimesDays){  width(5.percent)}
                                 NumberCell(collection.requestedCollectionDay?:-1){  width(5.percent)}
+
+                                 */
                                 PriceCell(cumulatedAmount, Currency.EUR) { width(10.percent) }
                                 // TextCell(collection.){}
                             }

@@ -48,6 +48,14 @@ value class SepaMandateReferenceId(val value: String) {
 
 @Serializable@Value
 @JvmInline
+value class SepaCollectionKey(val value: String) {
+    init {
+        require(value.length <= 35) { "Length of SepaCollectionKey must be at most 35 characters" }
+    }
+}
+
+@Serializable@Value
+@JvmInline
 value class MandateReference(val value: String) {
     init {
         require(value.length in (1..35)) { "length must lie in [1,35]" }
