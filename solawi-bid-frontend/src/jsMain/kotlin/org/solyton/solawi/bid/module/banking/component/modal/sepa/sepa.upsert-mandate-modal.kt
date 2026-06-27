@@ -28,9 +28,10 @@ import org.w3c.dom.HTMLElement
 
 
 @Markup
-@Suppress("FunctionName")
+@Suppress("FunctionName", "UnusedParameter")
 fun UpsertSepaMandateModal(
     id: Int,
+    parentModalId: Int? = null,
     texts: Source<Lang.Block>,
     modals: Storage<Modals<Int>>,
     storage: Storage<BankingApplication>,
@@ -61,6 +62,7 @@ fun UpsertSepaMandateModal(
 
 @Markup
 fun Storage<Modals<Int>>.showUpsertSepaMandateModal(
+    parentModalId: Int? = null,
     storage: Storage<BankingApplication>,
     texts: Source<Lang.Block>,
     device: Source<DeviceType>,
@@ -69,9 +71,13 @@ fun Storage<Modals<Int>>.showUpsertSepaMandateModal(
     update: ()->Unit
 ) = with(nextId()) {
     put(this to ModalData(this,
-        ModalType.Dialog,
+        when (parentModalId) {
+                null -> ModalType.Dialog
+                else -> ModalType.Child<Int>(parentModalId)
+        },
         UpsertSepaMandateModal(
             this,
+            parentModalId,
             texts,
             this@showUpsertSepaMandateModal,
             storage,
@@ -80,8 +86,9 @@ fun Storage<Modals<Int>>.showUpsertSepaMandateModal(
             setSepaMandate,
             update = update
         )
-    ) )
+     ))
 }
+
 
 val upsertSepaMandateModalTexts = Source {
     "dialog" texts {

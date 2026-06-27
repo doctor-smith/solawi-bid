@@ -28,6 +28,7 @@ fun CreateSepaCollection(): KlAction<Result<Contextual<CreateSepaCollection>>, R
                     creditorIdentifierId = data.creditorIdentifierId,
                     creditorAccountId = data.creditorBankAccountId,
                     mandateReferencePrefix = data.mandateReferencePrefix,
+                    collectionKey = data.collectionKey,
                     remittanceInformation = data.remittanceInformation,
                     sepaSequenceType = data.sepaSequenceType.toDomainType(),
                     localInstrument = data.localInstrument,

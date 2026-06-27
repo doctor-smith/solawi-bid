@@ -21,9 +21,6 @@ import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.jetbrains.compose.web.attributes.placeholder
 import org.jetbrains.compose.web.css.JustifyContent
-import org.jetbrains.compose.web.css.marginLeft
-import org.jetbrains.compose.web.css.percent
-import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.dom.TextInput
@@ -65,10 +62,7 @@ fun UpsertSepaMessageModal(
     },
     onCancel = {},
     texts = texts,
-    styles = commonModalStyles(device).modifyContainerStyle {
-        width(80.percent)
-        marginLeft(5.percent)
-    },
+    styles = commonModalStyles(device),
 ) {
     var dataState by remember { mutableStateOf(data) }
     var useDefault by remember { mutableStateOf(true) }

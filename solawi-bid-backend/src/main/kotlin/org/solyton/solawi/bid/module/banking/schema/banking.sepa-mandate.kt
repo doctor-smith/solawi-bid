@@ -108,6 +108,7 @@ class SepaMandate(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     var amendmentOf by SepaMandate optionalReferencedOn SepaMandates.amendmentOf
     val amendedBy by SepaMandate optionalReferrersOn SepaMandates.amendmentOf
     var collection by SepaCollection optionalReferencedOn SepaMandates.collectionId
+    val collections by SepaCollection via SepaMandateCollectionsTable
 
     val payments by SepaPayment referrersOn  SepaPaymentsTable.mandateId
     

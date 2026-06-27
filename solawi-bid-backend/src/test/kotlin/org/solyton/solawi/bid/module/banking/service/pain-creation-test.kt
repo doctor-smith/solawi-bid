@@ -52,7 +52,9 @@ class Pain008FunctionsTest {
         SepaCollectionsTable,
         SepaCollectionMappings,
         SepaMandateDataMappingsTable,
-        SepaPaymentStatusHistory
+        SepaMandateCollectionsTable,
+        SepaPaymentStatusHistory,
+        SepaPaymentTemplatesTable
     )
 
     @DbFunctional
@@ -154,10 +156,19 @@ class Pain008FunctionsTest {
         val xmlContent = generatePain008Xml(request).pain008Xml
 
         // Grundlegende XML-Prüfungen
-        assertNotNull(xmlContent)
-        assertTrue(xmlContent.contains("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"))
-        assertTrue(xmlContent.contains("pain.008.001.02"))
-        assertTrue(xmlContent.contains("CstmrDrctDbtInitn"))
+        assertNotNull(xmlContent) {
+            "XML-content should not be null"
+        }
+        assertTrue(
+            xmlContent.contains("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"),
+            "XML  header missing"
+        )
+        assertTrue(
+            xmlContent.contains("pain.008.001.02"),
+            "XML content should contain the pain.008 namespace"
+        )
+        assertTrue(xmlContent.contains("CstmrDrctDbtInitn"),
+            "XML content should contain the CstmrDrctDbtInitn element")
 
         // Schema-Validierung
         val validationResult = validatePain008XmlWithDetails(xmlContent)
@@ -189,13 +200,13 @@ class Pain008FunctionsTest {
     private fun assertXmlContent(xmlContent: String, request: Pain008GenerationRequest) {
         // Prüfe Anzahl Transaktionen
         val txnCount = request.transactions.size
-        assertTrue(xmlContent.contains("<NbOfTxs>$txnCount</NbOfTxs>"))
+        assertTrue(xmlContent.contains("<NbOfTxs>$txnCount</NbOfTxs>"), "NbOfTxs not found in XML")
 
         // Prüfe alle Transaktions-IDs
         request.transactions.forEach { transaction ->
-            assertTrue(xmlContent.contains(transaction.endToEndId))
-            assertTrue(xmlContent.contains(transaction.debtorIban))
-            assertTrue(xmlContent.contains(transaction.mandateReference))
+            assertTrue(xmlContent.contains(transaction.endToEndId), "EndToEndId not found in XML")
+            assertTrue(xmlContent.contains(transaction.debtorIban), "DebtorIban not found in XML")
+            assertTrue(xmlContent.contains(transaction.mandateReference), "MandateReference not found in XML")
         }
     }
 
@@ -266,6 +277,7 @@ class Pain008FunctionsTest {
             CreditorIdentifierId(creditorIdentifier.id.value.toString()),
             BankAccountId(bankAccount.id.value.toString()),
             MandateReferencePrefix("MANDATE"),
+            SepaCollectionKey("COLLECTION KEY"),
             RemittanceInformation("REMITTANCE INFO"),
             SepaSequenceType.FRST,
             null,
@@ -288,9 +300,9 @@ class Pain008FunctionsTest {
             )
         )
 
-        assertTrue {
+        assertTrue (
             SepaCollectionEntity.findById(collection.id.value)?.sepaMandates?.contains(sepaMandate)?:false
-        }
+        , "SepaMandate not found in collection")
 
         val executionDate = LocalDate.now().plusDays(5)
 

@@ -42,6 +42,8 @@ sealed class SepaException(override val message: String): Exception(message) {
             @Suppress("UnusedPrivateMember")
             private fun readResolve(): Any = ChangeRequiresDateOfReport
         }
+
+        data class NoSuchTemplate(val id: String): Payment("No such payment template; id = $id")
     }
     sealed class Message(override val message: String) : SepaException(message) {
         data class NoSuchMessage(val id: String): Message("No such message; id = $id")

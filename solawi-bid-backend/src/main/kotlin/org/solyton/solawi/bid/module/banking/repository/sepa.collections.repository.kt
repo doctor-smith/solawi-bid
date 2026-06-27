@@ -20,6 +20,7 @@ fun Transaction.createSepaCollection(
     creditorIdentifierId: CreditorIdentifierId,
     creditorAccountId: BankAccountId,
     mandateReferencePrefix: MandateReferencePrefix,
+    collectionKey: SepaCollectionKey,
     remittanceInformation: RemittanceInformation,
     sepaSequenceType: SepaSequenceType,
     localInstrument: LocalInstrument?,
@@ -50,6 +51,7 @@ fun Transaction.createSepaCollection(
         this.creditorAccount = creditorAccount
         this.remittanceInformation = remittanceInformation
         this.mandateReferencePrefix = mandateReferencePrefix
+        this.collectionKey = collectionKey.value
         this.sequenceType = sepaSequenceType
         this.localInstrument = localInstrument
         this.chargeBearer = chargeBearer
@@ -94,6 +96,7 @@ fun Transaction.updateSepaCollection(
     creditorIdentifierId: CreditorIdentifierId,
     creditorAccountId: BankAccountId,
     mandateReferencePrefix: MandateReferencePrefix,
+    collectionKey: SepaCollectionKey,
     remittanceInformation: RemittanceInformation,
     sepaSequenceType: SepaSequenceType,
     localInstrument: LocalInstrument?,
@@ -121,6 +124,7 @@ fun Transaction.updateSepaCollection(
     val creditorIdentifierChanged = creditorIdentifier != sepaCollection.creditorIdentifier
     val creditorAccountChanged = creditorAccount != sepaCollection.creditorAccount
     val mandateReferencePrefixChanged = mandateReferencePrefix != sepaCollection.mandateReferencePrefix
+    val collectionKeyChanged = collectionKey.value != sepaCollection.collectionKey
     val remittanceInformationChanged = remittanceInformation != sepaCollection.remittanceInformation
     val localInstrumentChanged = localInstrument != sepaCollection.localInstrument
     val chargeBearerChanged = chargeBearer != sepaCollection.chargeBearer
@@ -137,6 +141,9 @@ fun Transaction.updateSepaCollection(
     }
     if(mandateReferencePrefixChanged) {
         sepaCollection.mandateReferencePrefix = mandateReferencePrefix
+    }
+    if(collectionKeyChanged) {
+        sepaCollection.collectionKey = collectionKey.value
     }
     if(remittanceInformationChanged) {
         sepaCollection.remittanceInformation = remittanceInformation
@@ -162,6 +169,7 @@ fun Transaction.updateSepaCollection(
     val changed = creditorIdentifierChanged
             || creditorAccountChanged
             || mandateReferencePrefixChanged
+            || collectionKeyChanged
             || remittanceInformationChanged
             || localInstrumentChanged
             || chargeBearerChanged

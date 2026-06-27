@@ -213,10 +213,15 @@ val columnsToAdd: List<AddMissingColumns> by lazy {
             ColumnDef.Missing<String?>("end_to_end_id", null),
             ColumnDef.Missing<UUID?>("successor_id", null),
             ColumnDef.Missing<UUID?>("message_id", null),
+            ColumnDef.Missing<UUID?>("template_id", null),
         ),
         SepaMessagesTable.addColumnsIfMissing(
             ColumnDef.Missing<String>("remittance_information", "NOT SET"),
-        )
+        ),
+        SepaCollectionsTable.addColumnsIfMissing(
+            ColumnDef.Missing<String>("collection_key", ""),
+        ),
+
     )
 }
 
@@ -248,6 +253,15 @@ val columnPropertiesToModify by lazy {
                 "username",
                 newLength = 100,
             )
-        )
+        ),
+        /*
+        SepaCollectionsTable.modifyColumnProperties(
+            ColumnDef.ModifyProperties.Varchar(
+                "collection_key",
+                newLength = 35,
+            )
+        ),
+
+         */
     )
 }

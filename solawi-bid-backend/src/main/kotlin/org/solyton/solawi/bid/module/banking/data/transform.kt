@@ -100,6 +100,7 @@ fun SepaCollectionEntity.toApiType(): ApiSepaCollection = ApiSepaCollection(
     creditorIdentifierId = CreditorIdentifierId(creditorIdentifier.id.value.toString()),
     creditorBankAccountId = BankAccountId(creditorAccount.id.value.toString()),
     mandateReferencePrefix = MandateReferencePrefix(mandateReferencePrefix),
+    collectionKey = SepaCollectionKey(collectionKey),
     remittanceInformation = RemittanceInformation(remittanceInformation),
     sepaSequenceType = sequenceType.toApiType(),
     localInstrument = localInstrument?.let{ LocalInstrument(it) },
@@ -150,7 +151,8 @@ fun SepaMandateEntity.toApiType(): ApiSepaMandate = ApiSepaMandate(
     status = status.toApiType(),
     isActive = isActive,
     amendmentOf = amendmentOf?.let { SepaMandateId(it.id.value.toString()) },
-    collectionId = collection?.let{ SepaCollectionId(it.id.value.toString()) },
+    // collectionId = collection?.let{ SepaCollectionId(it.id.value.toString()) },
+    collectionIds = collections.map { SepaCollectionId(it.id.value.toString()) },
     referenceIds = referenceDataMappings
         .filter{it.mandate.id.value == id.value}
         .map { SepaMandateReferenceId(it.referenceId.toString()) },

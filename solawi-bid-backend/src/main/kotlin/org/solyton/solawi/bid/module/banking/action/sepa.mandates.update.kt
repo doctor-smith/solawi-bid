@@ -44,6 +44,7 @@ fun UpdateSepaMandate(): KlAction<Result<Contextual<UpdateSepaMandate>>, Result<
                     lastUsedAt = data.lastUsedAt?.toJoda(),
                     status = data.status.toDomainType(),
                     isActive = data.isActive,
+                    mandateReference = data.mandateReference,
                 //    amendmentOf = data.amendmentOf
 
                 ).toApiType()

@@ -28,7 +28,7 @@ import java.util.*
  * @throws ExposedSQLException If a database error occurs that is not a unique constraint violation.
  * @throws IllegalStateException If unable to generate a unique mandate reference after the specified number of retries.
  */
-@Suppress("NoNameShadowing")
+@Suppress("NoNameShadowing", "CognitiveComplexMethod")
 fun Transaction.createSepaMandateWithRetry(
     creatorId: UUID,
     creditorIdentifierId: UUID,
@@ -69,8 +69,14 @@ fun Transaction.createSepaMandateWithRetry(
                 this.validUntil = validUntil
                 this.status = status
                 this.isActive = true
-                this.collection = collection
+                //this.collection = collection
             }
+            // Add the collection to the mandate
+            if(collection != null) SepaMandateCollectionEntity.new {
+                this.sepaMandate = sepaMandate
+                this.sepaCollection = collection
+            }
+
             if(referenceData != null) {
                 SepaMandateDataMapping.new  {
                     this.createdBy = creatorId
