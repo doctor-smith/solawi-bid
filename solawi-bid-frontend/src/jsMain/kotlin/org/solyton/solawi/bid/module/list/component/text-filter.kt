@@ -43,8 +43,9 @@ fun TextFilter(
     title: String,
     state: String = "",
     refreshOnInput: Boolean = false,
+    ignoreCase: Boolean = false,
     styles: TextFilterStyles = TextFilterStyles(),
-    handleInput: (String) -> Unit
+    handleInput: (String, Boolean) -> Unit
 ) {
     var textState by remember { mutableStateOf(state) }
     Vertical(style = styles.wrapperStyle) {
@@ -56,20 +57,21 @@ fun TextFilter(
         TextInput(textState) {
             onInput {
                 textState = it.value
-                if (refreshOnInput) handleInput(it.value)
+                if (refreshOnInput) handleInput(it.value, ignoreCase)
             }
             onKeyDown {
-                if (it.key == "Enter") handleInput(textState)
+                if (it.key == "Enter") handleInput(textState, ignoreCase)
             }
         }
     }
 }
 
-fun String.toFilter(): (String) -> Boolean =
-    FilterParser(this).parse()
+fun String.toFilter(ignoreCase: Boolean = false): (String) -> Boolean =
+    FilterParser(this, ignoreCase).parse()
+
 fun ((String) -> Boolean).applyTo(input:String) = this(input)
 
-class FilterParser(private val input: String) {
+class FilterParser(private val input: String, private val ignoreCase: Boolean = false) {
 
     private var pos = 0
 
@@ -166,7 +168,7 @@ class FilterParser(private val input: String) {
 
         val token = input.substring(start, pos)
 
-        return { x -> x.contains(token) }
+        return { x -> x.contains(token, ignoreCase) }
     }
 
     private fun match(s: String): Boolean {
