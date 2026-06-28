@@ -8,7 +8,6 @@ import org.solyton.solawi.bid.module.banking.data.RemittanceInformation
 import org.solyton.solawi.bid.module.banking.data.SepaCollectionId
 import org.solyton.solawi.bid.module.banking.data.SepaMandateId
 import org.solyton.solawi.bid.module.banking.data.SepaPaymentId
-import kotlin.collections.emptyMap
 
 typealias ApiSepaPayment = SepaPayment
 typealias ApiSepaPayments = SepaPayments

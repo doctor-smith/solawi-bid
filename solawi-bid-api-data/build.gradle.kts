@@ -46,8 +46,6 @@ kotlin{
     jvm(){ }
     sourceSets {
         val commonMain by getting {
-            kotlin.srcDir("/src/commonMain/kotlin")
-
             dependencies {
                 implementation(libs.benasher.uuid)
                 implementation(libs.kotlinx.coroutines.core)
