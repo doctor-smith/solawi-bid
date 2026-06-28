@@ -248,6 +248,12 @@ fun <BankingEnv> Routing.banking (
                         DeleteSepaPayment() *
                         Respond { transform() } runOn Base(call, environment)
                     }
+                    delete("delete-many") {
+                        ReceiveContextual<DeleteSepaPayments>() *
+                        IsGranted(DELETE_SEPA_PAYMENTS, no) *
+                        DeleteSepaPayments() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
                 }
                 route("payment-links") {
                     get("by-legal-entity") {

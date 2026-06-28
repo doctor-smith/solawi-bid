@@ -759,6 +759,11 @@ fun Transaction.deletePayment(id: UUID): UUID {
     return id
 }
 
+fun Transaction.deletePayments(ids: List<UUID>): List<UUID> {
+    ids.forEach { deletePayment(it) }
+    return ids
+}
+
 fun Transaction.validatedPayment(id: UUID): SepaPaymentEntity = SepaPaymentEntity.findById(id)
     ?: throw SepaException.Payment.NoSuchPayment(id.toString())
 

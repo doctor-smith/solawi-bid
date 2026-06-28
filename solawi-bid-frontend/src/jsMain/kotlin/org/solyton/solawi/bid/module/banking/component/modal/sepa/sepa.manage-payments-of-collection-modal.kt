@@ -444,8 +444,6 @@ fun ManagePaymentsOfSepaCollectionModal(
                                             }
                                         }
                                     )
-
-
                                 }
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_CREATED) {
@@ -461,7 +459,25 @@ fun ManagePaymentsOfSepaCollectionModal(
                                             remittanceInformation = null,
                                             messages = sepaMessages.emit()
                                         )) }
+                                        TrashCanButton(
+                                            color = Color.black,
+                                            bgColor = Color.white,
+                                            texts = { "Delete selected & visible Payments" },
+                                            deviceType = device,
+                                        ) {
+                                            val selectedPayments = data.itemsMap.filter {
+                                                it.key in data.visibleItems &&
+                                                        data.checkedPayments[it.key.paymentId] == true
+                                            }
+                                            val selectedPaymentIds = selectedPayments.map { it.key.paymentId }
 
+                                            scope.launch {
+                                                (storage * bankingApplicationActions) dispatch deleteSepaPayments(
+                                                    data = DeleteSepaPayments(selectedPaymentIds),
+                                                    targetCollectionId = sepaCollection.sepaCollectionId
+                                                )
+                                            }
+                                        }
                                         AnglesRightButton(
                                             color = Color.black,
                                             bgColor = Color.white,
