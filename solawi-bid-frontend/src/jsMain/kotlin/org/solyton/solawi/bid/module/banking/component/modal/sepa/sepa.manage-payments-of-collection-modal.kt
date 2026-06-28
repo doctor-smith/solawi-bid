@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.module.banking.component.modal.sepa
 
 import androidx.compose.runtime.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import org.evoleq.compose.Markup
@@ -16,6 +17,7 @@ import org.evoleq.compose.modal.ModalData
 import org.evoleq.compose.modal.ModalType
 import org.evoleq.compose.modal.Modals
 import org.evoleq.compose.style.data.device.DeviceType
+import org.evoleq.device.data.Device
 import org.evoleq.kotlinx.date.today
 import org.evoleq.language.Lang
 import org.evoleq.language.Locale
@@ -29,6 +31,8 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.attributes.disabled
 import org.jetbrains.compose.web.css.*
+import org.jetbrains.compose.web.css.maxHeight
+import org.jetbrains.compose.web.css.minHeight
 import org.jetbrains.compose.web.dom.Button
 import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.Input
@@ -36,6 +40,9 @@ import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.banking.action.*
 import org.solyton.solawi.bid.module.banking.component.list.ListOfMandateWithoutPayments
 import org.solyton.solawi.bid.module.banking.component.list.ListOfPayments
+import org.solyton.solawi.bid.module.banking.component.list.OverAllActionData
+import org.solyton.solawi.bid.module.banking.component.list.SepaPaymentListItemData
+import org.solyton.solawi.bid.module.banking.component.list.SepaPaymentListItemKey
 import org.solyton.solawi.bid.module.banking.component.properties.PaymentsProperties
 import org.solyton.solawi.bid.module.banking.component.tab.TabParagraphWrapper
 import org.solyton.solawi.bid.module.banking.data.*
@@ -45,11 +52,13 @@ import org.solyton.solawi.bid.module.banking.data.sepa.PaymentExecutionStatus
 import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessage
+import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
 import org.solyton.solawi.bid.module.control.button.*
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
 import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
 import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
 import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
+import org.solyton.solawi.bid.module.list.style.ListStyles
 import org.solyton.solawi.bid.module.list.style.defaultListStyles
 import org.solyton.solawi.bid.module.scrollable.Scrollable
 import org.solyton.solawi.bid.module.scrollable.ScrollableStyles
@@ -58,7 +67,6 @@ import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
 import org.solyton.solawi.bid.module.style.modal.commonModalStyles
-import org.solyton.solawi.bid.module.style.overflow.Overflow
 import org.solyton.solawi.bid.module.tabs.component.*
 import org.solyton.solawi.bid.module.tabs.style.TabStyles
 import org.w3c.dom.HTMLElement
@@ -100,6 +108,40 @@ data class UIState(
     val selectedTab: Int = 0,
     val selectedParagraph: Tabs.Payments.Paragraphs = Tabs.Payments.Paragraphs.OVERVIEW
 )
+
+@Markup
+fun Storage<Modals<Int>>.showManagePaymentsOfSepaCollectionModal(
+    storage: Storage<BankingApplication>,
+    texts: Lang.Block,
+    device: Source<DeviceType>,
+    uiState: UIState,
+    setUiState: (UIState) -> Unit,
+    sepaCollection: Source<SepaCollection>,
+    sepaMessages: Source<List<SepaMessage>>,
+    executionDate: LocalDate?,
+    setManageCollectionPayments: (ManageCollectionPayments) -> Unit,
+    update: () -> Unit
+) = with(nextId()) {
+    put(
+        this to ModalData(this,
+            ModalType.Dialog,
+            ManagePaymentsOfSepaCollectionModal(
+                this,
+                texts,
+                this@showManagePaymentsOfSepaCollectionModal,
+                storage,
+                device,
+                uiState,
+                setUiState,
+                sepaCollection,
+                sepaMessages,
+                executionDate,
+                setManageCollectionPayments,
+                update = update
+            )
+        )
+    )
+}
 
 @Markup
 @Suppress("FunctionName", "CyclomaticComplexMethod")
@@ -314,583 +356,80 @@ fun ManagePaymentsOfSepaCollectionModal(
                                 width(10.percent)
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.CREATE_NEW_PAYMENTS) {
-                                TabTitle("Create New payments")
-                                var executionDateState by remember {
-                                    mutableStateOf(
-                                        executionDate ?: today()
-                                    )
-                                }
-                                Scrollable(scrollableStyles.modifyContainerStyle {
-                                    maxHeight(100.percent)
-                                }.modifyContentStyle {
-                                    minHeight(100.percent)
-                                }) {
-                                    Vertical({ flexGrow(1) }) {
-                                        Form(formDesktopStyle) {
-                                            Field(fieldDesktopStyle) {
-                                                // State
-
-                                                val initDate = executionDateState.format(Locale.Iso)
-
-                                                Label("Execution Date", id = "date", labelStyle = formLabelDesktopStyle)
-                                                Input(InputType.Date) {
-                                                    id("date")
-                                                    // dataId("create-auction.form.input.date")
-                                                    value(initDate)
-                                                    style {
-                                                        dateInputDesktopStyle()
-                                                        alignSelf(AlignSelf.Start)
-                                                    }
-                                                    onInput {
-                                                        executionDateState = LocalDate.parse(it.value)
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        val usedMandateIds =
-                                            sepaCollection.sepaPayments.map { it.sepaMandateId }.distinct()
-                                        val mandatesWithoutPayments = sepaCollection.sepaMandates.filter { mandate ->
-                                            usedMandateIds.none { it == mandate.sepaMandateId }
-                                        }
-                                        // These are the ids of the mandates which are visible and checked
-                                        var chosenMandateIds by remember { mutableStateOf(emptyList<SepaMandateId>()) }
-                                        val computeMinHeight : (number: Int) -> CSSNumeric = { (it * 6 + 25).percent }
-                                        ListOfMandateWithoutPayments(
-                                            "Mandates without any payments",
-                                            mandatesWithoutPayments,
-                                            listStyles.modifyListWrapper {
-                                                flexGrow(1)
-                                                minHeight(computeMinHeight( minOf(mandatesWithoutPayments.size , 60) ) )
-                                                maxHeight(90.percent)
-                                            },
-                                            overallActions = { data ->
-                                                Horizontal {
-                                                    PlusButton(
-                                                        color = Color.black,
-                                                        bgColor = Color.white,
-                                                        texts = { "Create new payments for selected & visible items" },
-                                                        deviceType = device,
-                                                        isDisabled = false // chosenMandateIds.isEmpty()
-                                                    ) {
-                                                        scope.launch {
-                                                            chosenMandateIds =
-                                                                data.visibleItems.filter { it in data.checkedItems && data.checkedItems[it] == true }
-
-                                                            if (chosenMandateIds.isEmpty()) return@launch
-                                                            (storage * bankingApplicationActions) dispatch createSepaPaymentsForCollection(
-                                                                data = CreateSepaPaymentsForCollection(
-                                                                    sepaCollectionId = sepaCollection.sepaCollectionId,
-                                                                    executionDate = executionDateState,
-                                                                    mandateIds = chosenMandateIds
-                                                                ),
-                                                                targetCollectionId = sepaCollection.sepaCollectionId
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        )
-                                        ListOfPayments(
-                                            "Candidates for recurring payments:",
-                                            sepaCollection.sepaMandates,
-                                            nextPeriodPaymentCreationCandidates,
-                                            listStyles.modifyListWrapper {
-                                                flexGrow(1)
-                                                minHeight(computeMinHeight( minOf(nextPeriodPaymentCreationCandidates.size, 60) ) )
-                                                maxHeight(90.percent)
-                                            },
-                                            overallActions = { data ->
-                                                Horizontal {
-                                                    PlusButton(
-                                                        color = Color.black,
-                                                        bgColor = Color.white,
-                                                        texts = { "Create new payments for selected & visible items" },
-                                                        deviceType = device,
-                                                        isDisabled = false
-                                                    ) {
-                                                        scope.launch {
-                                                            val selectedPaymentIds = data.itemsMap.filter {
-                                                                it.key in data.visibleItems &&
-                                                                        data.checkedPayments[it.key.paymentId] == true
-                                                            }.map { it.key.paymentId }
-                                                            (storage * bankingApplicationActions) dispatch createSuccessorsForPayments(
-                                                                data = CreateSepaPaymentSuccessors(
-                                                                    executionDate = executionDateState,
-                                                                    paymentIds = selectedPaymentIds,
-                                                                    kind = SuccessorKind.NEXT_PERIOD
-                                                                ),
-                                                                targetCollectionId = sepaCollection.sepaCollectionId
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        )
-
-                                        ListOfPayments(
-                                            "Candidates for retry payments:",
-                                            sepaCollection.sepaMandates,
-                                            retryPaymentCreationCandidates,
-                                            listStyles.modifyListWrapper {
-                                                flexGrow(1)
-                                                minHeight(computeMinHeight( minOf(retryPaymentCreationCandidates.size, 60) ) )
-                                                maxHeight(90.percent)
-                                            },
-                                            overallActions = { data ->
-                                                Horizontal {
-                                                    PlusButton(
-                                                        color = Color.black,
-                                                        bgColor = Color.white,
-                                                        texts = { "Create new payments for selected & visible items" },
-                                                        deviceType = device,
-                                                        isDisabled = false
-                                                    ) {
-                                                        scope.launch {
-                                                            val selectedPaymentIds = data.itemsMap.filter {
-                                                                it.key in data.visibleItems &&
-                                                                        data.checkedPayments[it.key.paymentId] == true
-                                                            }.map { it.key.paymentId }
-                                                            (storage * bankingApplicationActions) dispatch createSuccessorsForPayments(
-                                                                data = CreateSepaPaymentSuccessors(
-                                                                    executionDate = executionDateState,
-                                                                    paymentIds = selectedPaymentIds,
-                                                                    kind = SuccessorKind.RETRY
-                                                                ),
-                                                                targetCollectionId = sepaCollection.sepaCollectionId
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        )
-                                    }
-                                }
+                                CreateNewPayments(
+                                    sepaCollection,
+                                    executionDate,
+                                    nextPeriodPaymentCreationCandidates,
+                                    retryPaymentCreationCandidates,
+                                    listStyles,
+                                    scrollableStyles,
+                                    scope,
+                                    storage,
+                                    device,
+                                )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_CREATED) {
-                                TabTitle("Recently created Payments")
-                                ListOfPayments(
-                                    null,
-                                    sepaCollection.sepaMandates,
+                                RecentlyCreatedPayments(
+                                    sepaCollection,
                                     openPayments,
+                                    sepaMessages,
                                     listStyles,
-                                    overallActions = { data -> Horizontal {
-                                        var sepaMessageModalDataState by remember { mutableStateOf(SepaMessageModalData(
-                                            sepaCollection = sepaCollection,
-                                            remittanceInformation = null,
-                                            messages = sepaMessages.emit()
-                                        )) }
-                                        TrashCanButton(
-                                            color = Color.black,
-                                            bgColor = Color.white,
-                                            texts = { "Delete selected & visible Payments" },
-                                            deviceType = device,
-                                        ) {
-                                            val selectedPayments = data.itemsMap.filter {
-                                                it.key in data.visibleItems &&
-                                                        data.checkedPayments[it.key.paymentId] == true
-                                            }
-                                            val selectedPaymentIds = selectedPayments.map { it.key.paymentId }
-
-                                            scope.launch {
-                                                (storage * bankingApplicationActions) dispatch deleteSepaPayments(
-                                                    data = DeleteSepaPayments(selectedPaymentIds),
-                                                    targetCollectionId = sepaCollection.sepaCollectionId
-                                                )
-                                            }
-                                        }
-                                        AnglesRightButton(
-                                            color = Color.black,
-                                            bgColor = Color.white,
-                                            texts = { "Generate Sepa Message from selected & visible Payments" },
-                                            deviceType = device,
-                                        ) {
-                                            modals.showUpsertSepaMessageModal(
-                                                parentModalId = id,
-                                                texts = dialogModalTexts("Create Sepa Message"),
-                                                device = device,
-                                                data = sepaMessageModalDataState,
-                                                setData = {data ->
-                                                    sepaMessageModalDataState = data
-                                                }
-                                            ) {
-                                                scope.launch {
-
-                                                    val selectedPayments = data.itemsMap.filter {
-                                                        it.key in data.visibleItems &&
-                                                                data.checkedPayments[it.key.paymentId] == true
-                                                    }
-                                                    val selectedPaymentIds = selectedPayments.map { it.key.paymentId }
-                                                    val executionDate = with(selectedPayments.values.map { it.payment.executionDate }.distinct()) {
-                                                        if (size == 1) first() else null
-                                                    }
-                                                    // require(executionDate != null) { "Selected payments must have a common execution date" }
-                                                    if(executionDate != null) {
-                                                        (storage * bankingApplicationActions) dispatch generateSepaMessageForCollection(
-                                                            data = GenerateSepaMessageForCollection(
-                                                                sepaCollectionId = sepaCollection.sepaCollectionId,
-                                                                executionDate = executionDate,
-                                                                sepaPaymentIds = selectedPaymentIds,
-                                                                remittanceInformation = sepaMessageModalDataState.remittanceInformation?.let {
-                                                                    RemittanceInformation(it)
-                                                                }
-                                                            )
-                                                        )
-                                                    } else {
-                                                        // dispatch error message
-                                                        return@launch
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }},
-                                    actions = { data -> Horizontal {
-                                        TrashCanButton(
-                                            color = Color.black,
-                                            bgColor = Color.white,
-                                            deviceType = device,
-                                            isDisabled = false
-                                        ) {
-                                            // delete payments in CREATED state
-                                            scope.launch {
-                                                (storage * bankingApplicationActions) dispatch deleteSepaPayment(
-                                                    data = DeleteSepaPayment(data.data.payment.sepaPaymentId),
-                                                    targetCollectionId = sepaCollection.sepaCollectionId
-                                                )
-                                            }
-                                        }
-                                    } }
+                                    scope,
+                                    storage,
+                                    device,
+                                    id
                                 )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_MESSAGE_CREATED) {
-                                TabTitle("Ready to be sent to the bank")
-                                ListOfPayments(
-                                    null,
-                                    sepaCollection.sepaMandates,
+                                PaymentsReadyToBeSentToTheBank(
+                                    sepaCollection,
                                     messageCreatedPayments,
                                     listStyles,
-                                    overallActions = { data ->
-                                        Horizontal {
-                                            AnglesLeftButton(
-                                                color = Color.black,
-                                                bgColor = Color.white,
-                                                { "Move selected & visible Payments to the previous state" },
-                                                device,
-                                                isDisabled = true
-                                            ) {
-                                            }
-                                            AnglesRightButton(
-                                                color = Color.black,
-                                                bgColor = Color.white,
-                                                { "Move selected & visible Payments to the next state" },
-                                                device
-                                            ) {
-                                                scope.launch {
-                                                    val selectedPaymentIds = data.itemsMap.filter {
-                                                        it.key in data.visibleItems &&
-                                                                data.checkedPayments[it.key.paymentId] == true
-                                                    }.map { it.key.paymentId }
-                                                    (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
-                                                        data =UpdateSepaPaymentExecutionStatuses(
-                                                            newStatus = PaymentExecutionStatus.SENT.toApiType(),
-                                                            paymentIds = selectedPaymentIds,
-                                                        ),
-                                                        targetCollectionId = sepaCollection.sepaCollectionId
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
+                                    scope,
+                                    storage,
+                                    device,
                                 )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_SENT) {
-                                TabTitle("Payments sent to to the bank")
-                                ListOfPayments(
-                                    null,
-                                    sepaCollection.sepaMandates,
+                                PaymentsSentToTheBank(
+                                    sepaCollection,
                                     sentPayments,
                                     listStyles,
-                                    overallActions = { data ->
-                                        Horizontal {
-                                            AnglesLeftButton(
-                                                color = Color.black,
-                                                bgColor = Color.white,
-                                                { "Move selected Payments to the previous state" },
-                                                device,
-                                            ) {
-                                                scope.launch {
-                                                    val selectedPaymentIds = data.itemsMap.filter {
-                                                        it.key in data.visibleItems &&
-                                                                data.checkedPayments[it.key.paymentId] == true
-                                                    }.map { it.key.paymentId }
-                                                    (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
-                                                        UpdateSepaPaymentExecutionStatuses(
-                                                            PaymentExecutionStatus.MESSAGE_CREATED.toApiType(),
-                                                            selectedPaymentIds,
-                                                        ),
-                                                        sepaCollection.sepaCollectionId
-                                                    )
-                                                }
-                                            }
-                                            AnglesRightButton(
-                                                color = Color.black,
-                                                bgColor = Color.white,
-                                                { "Move selected Payments to the next state" },
-                                                device
-                                            ) {
-                                                scope.launch {
-                                                    val selectedPaymentIds = data.itemsMap.filter {
-                                                        it.key in data.visibleItems &&
-                                                                data.checkedPayments[it.key.paymentId] == true
-                                                    }.map { it.key.paymentId }
-                                                    (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
-                                                        UpdateSepaPaymentExecutionStatuses(
-                                                            PaymentExecutionStatus.PENDING.toApiType(),
-                                                            selectedPaymentIds,
-                                                        ),
-                                                        sepaCollection.sepaCollectionId
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
+                                    scope,
+                                    storage,
+                                    device,
                                 )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_PENDING) {
-                                TabTitle("Pending Payments")
-                                ListOfPayments(
-                                    null,
-                                    sepaCollection.sepaMandates,
+                                PendingPayments(
+                                    sepaCollection,
                                     pendingPayments,
                                     listStyles,
-                                    overallActions = { data ->
-                                        Horizontal {
-                                            AnglesLeftButton(
-                                                color = Color.black,
-                                                bgColor = Color.white,
-                                                { "Move selected Payments to the previous state" },
-                                                device,
-                                            ) {
-                                                scope.launch {
-                                                    val selectedPaymentIds = data.itemsMap.filter {
-                                                        it.key in data.visibleItems &&
-                                                                data.checkedPayments[it.key.paymentId] == true
-                                                    }.map { it.key.paymentId }
-                                                    (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
-                                                        UpdateSepaPaymentExecutionStatuses(
-                                                            PaymentExecutionStatus.MESSAGE_CREATED.toApiType(),
-                                                            selectedPaymentIds,
-                                                        ),
-                                                        sepaCollection.sepaCollectionId
-                                                    )
-                                                }
-                                            }
-                                            var dataState by remember { mutableStateOf(data) }
-                                            BanButton(
-                                                color = Color.black,
-                                                bgColor = Color.white,
-                                                { "Move selected Payments to the failed state" },
-                                                device,
-                                            ) {
-
-                                                (modals.showMoveFailedPaymentsModal(
-                                                    parentModalId = id,
-                                                    texts = dialogModalTexts("Yeeeeeha!"),
-                                                    device = device,
-                                                    data = dataState,
-                                                    setData = {newData -> dataState = newData},
-
-                                                ){
-                                                    scope.launch {
-                                                        val selectedPayments = dataState.itemsMap.filter {
-                                                            it.key in dataState.visibleItems &&
-                                                                    dataState.checkedPayments[it.key.paymentId] == true
-                                                        }
-                                                        val paymentIds = selectedPayments.map { it.key.paymentId }
-                                                        val failureReasons = selectedPayments
-                                                                .filter{it.value.payment.failureReason != null}
-                                                                .map { it.key.paymentId to it.value.payment.failureReason!! }
-                                                                .toMap()
-                                                        require(failureReasons.size == selectedPayments.size)   {
-                                                            "Selected payments and failure reasons count mismatch"
-                                                        }
-                                                        (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
-                                                            data = UpdateSepaPaymentExecutionStatuses(
-                                                                newStatus = PaymentExecutionStatus.FAILED.toApiType(),
-                                                                paymentIds = paymentIds,
-                                                                failureReasons = failureReasons
-                                                            ),
-                                                            sepaCollection.sepaCollectionId
-                                                        )
-                                                    }
-                                                })
-                                            }
-                                            SackDollarButton(
-                                                color = Color.black,
-                                                bgColor = Color.white,
-                                                { "Move selected Payments to the confirmed state" },
-                                                device,
-                                            ) {
-                                                scope.launch {
-                                                    val selectedPaymentIds = data.itemsMap.filter {
-                                                        it.key in data.visibleItems &&
-                                                        data.checkedPayments[it.key.paymentId] == true
-                                                    }.map { it.key.paymentId }
-                                                    (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
-                                                        UpdateSepaPaymentExecutionStatuses(
-                                                            PaymentExecutionStatus.CONFIRMED.toApiType(),
-                                                            selectedPaymentIds,
-                                                        ),
-                                                        sepaCollection.sepaCollectionId
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    },
-                                    actions = {}
+                                    scope,
+                                    storage,
+                                    device,
+                                    id,
                                 )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_CONFIRMED) {
-                                TabTitle("Confirmed Payments")
-                                ListOfPayments(
-                                    null,
-                                    sepaCollection.sepaMandates,
+                                ConfirmedPayments(
+                                    sepaCollection,
                                     confirmedPayments,
                                     listStyles,
-                                    overallActions = { data -> Horizontal {
-                                        var dataState by remember { mutableStateOf(data) }
-                                        BanButton(
-                                            color = Color.black,
-                                            bgColor = Color.white,
-                                            { "Move selected Payments to the failed state" },
-                                            device,
-                                        ) {
-
-                                            (modals.showMoveFailedPaymentsModal(
-                                                parentModalId = id,
-                                                texts = dialogModalTexts("Yeeeeeha!"),
-                                                device = device,
-                                                data = dataState,
-                                                setData = {newData -> dataState = newData},
-
-                                                ){
-                                                scope.launch {
-                                                    val selectedPayments = dataState.itemsMap.filter {
-                                                        it.key in dataState.visibleItems &&
-                                                        dataState.checkedPayments[it.key.paymentId] == true
-                                                    }
-                                                    val paymentIds = selectedPayments.map { it.key.paymentId }
-                                                    val failureReasons = selectedPayments
-                                                        .filter{it.value.payment.failureReason != null}
-                                                        .map { it.key.paymentId to it.value.payment.failureReason!! }
-                                                        .toMap()
-                                                    require(failureReasons.size == selectedPayments.size)   {
-                                                        "Selected payments and failure reasons count mismatch"
-                                                    }
-                                                    (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
-                                                        data =UpdateSepaPaymentExecutionStatuses(
-                                                            newStatus = PaymentExecutionStatus.FAILED.toApiType(),
-                                                            paymentIds = paymentIds,
-                                                            failureReasons = failureReasons
-                                                        ),
-                                                        sepaCollection.sepaCollectionId
-                                                    )
-                                                }
-                                            })
-                                        }
-                                        CommentDollarButton(
-                                            color = Color.black,
-                                            bgColor = Color.white,
-                                            texts = { "Move selected Payments to the manually-payed state" },
-                                            deviceType = device,
-                                        ) {
-                                            scope.launch {
-                                                val selectedPaymentIds = data.itemsMap.filter {
-                                                    it.key in data.visibleItems &&
-                                                            data.checkedPayments[it.key.paymentId] == true
-                                                }.map { it.key.paymentId }
-                                                (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
-                                                    UpdateSepaPaymentExecutionStatuses(
-                                                        PaymentExecutionStatus.PAYED_MANUALLY.toApiType(),
-                                                        selectedPaymentIds,
-                                                    ),
-                                                    sepaCollection.sepaCollectionId
-                                                )
-                                            }
-                                        }
-                                        SackDollarButton(
-                                            color = Color.black,
-                                            bgColor = Color.white,
-                                            { "Move selected Payments to the confirmed state" },
-                                            device,
-                                        ) {
-                                            scope.launch {
-                                                val selectedPaymentIds = data.itemsMap.filter {
-                                                    it.key in data.visibleItems &&
-                                                            data.checkedPayments[it.key.paymentId] == true
-                                                }.map { it.key.paymentId }
-                                                (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
-                                                    UpdateSepaPaymentExecutionStatuses(
-                                                        PaymentExecutionStatus.CONFIRMED.toApiType(),
-                                                        selectedPaymentIds,
-                                                    ),
-                                                    sepaCollection.sepaCollectionId
-                                                )
-                                            }
-                                        }
-
-                                    }}
+                                    scope,
+                                    storage,
+                                    device,
+                                    id,
                                 )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_FAILED) {
-                                TabTitle("Failed Payments")
-                                ListOfPayments(
-                                    null,
-                                    sepaCollection.sepaMandates,
+                                FailedPayments(
+                                    sepaCollection,
                                     failedPayments,
                                     listStyles,
-                                    overallActions = { data -> Horizontal {
-                                        CommentDollarButton(
-                                            color = Color.black,
-                                            bgColor = Color.white,
-                                            texts = { "Move selected Payments to the manually-payed state" },
-                                            deviceType = device,
-                                        ) {
-                                            scope.launch {
-                                                val selectedPaymentIds = data.itemsMap.filter {
-                                                    it.key in data.visibleItems &&
-                                                            data.checkedPayments[it.key.paymentId] == true
-                                                }.map { it.key.paymentId }
-                                                (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
-                                                    UpdateSepaPaymentExecutionStatuses(
-                                                        PaymentExecutionStatus.PAYED_MANUALLY.toApiType(),
-                                                        selectedPaymentIds,
-                                                    ),
-                                                    sepaCollection.sepaCollectionId
-                                                )
-                                            }
-                                        }
-                                        SackDollarButton(
-                                            color = Color.black,
-                                            bgColor = Color.white,
-                                            { "Move selected Payments to the confirmed state" },
-                                            device,
-                                        ) {
-                                            scope.launch {
-                                                val selectedPaymentIds = data.itemsMap.filter {
-                                                    it.key in data.visibleItems &&
-                                                            data.checkedPayments[it.key.paymentId] == true
-                                                }.map { it.key.paymentId }
-                                                (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
-                                                    UpdateSepaPaymentExecutionStatuses(
-                                                        PaymentExecutionStatus.CONFIRMED.toApiType(),
-                                                        selectedPaymentIds,
-                                                    ),
-                                                    sepaCollection.sepaCollectionId
-                                                )
-                                            }
-                                        }
-
-                                    } }
+                                    scope,
+                                    storage,
+                                    device,
                                 )
                             }
                         }
@@ -981,39 +520,610 @@ fun ManagePaymentsOfSepaCollectionModal(
         }
     }
 }
-@Markup
-fun Storage<Modals<Int>>.showManagePaymentsOfSepaCollectionModal(
-    storage: Storage<BankingApplication>,
-    texts: Lang.Block,
-    device: Source<DeviceType>,
-    uiState: UIState,
-    setUiState: (UIState) -> Unit,
-    sepaCollection: Source<SepaCollection>,
-    sepaMessages: Source<List<SepaMessage>>,
+
+@Composable
+fun CreateNewPayments(
+    sepaCollection: SepaCollection,
     executionDate: LocalDate?,
-    setManageCollectionPayments: (ManageCollectionPayments) -> Unit,
-    update: () -> Unit
-) = with(nextId()) {
-    put(
-        this to ModalData(this,
-            ModalType.Dialog,
-            ManagePaymentsOfSepaCollectionModal(
-                this,
-                texts,
-                this@showManagePaymentsOfSepaCollectionModal,
-                storage,
-                device,
-                uiState,
-                setUiState,
-                sepaCollection,
-                sepaMessages,
-                executionDate,
-                setManageCollectionPayments,
-                update = update
-            )
+    nextPeriodPaymentCreationCandidates: List<SepaPayment>,
+    retryPaymentCreationCandidates: List<SepaPayment>,
+    listStyles: ListStyles,
+    scrollableStyles: ScrollableStyles,
+    scope: CoroutineScope,
+    storage: Storage<BankingApplication>,
+    device: Source<DeviceType>,
+) {
+    TabTitle("Create New payments")
+    var executionDateState by remember {
+        mutableStateOf(
+            executionDate ?: today()
         )
+    }
+    Scrollable(scrollableStyles.modifyContainerStyle {
+        maxHeight(100.percent)
+    }.modifyContentStyle {
+        minHeight(100.percent)
+    }) {
+        Vertical({ flexGrow(1) }) {
+            Form(formDesktopStyle) {
+                Field(fieldDesktopStyle) {
+                    // State
+
+                    val initDate = executionDateState.format(Locale.Iso)
+
+                    Label("Execution Date", id = "date", labelStyle = formLabelDesktopStyle)
+                    Input(InputType.Date) {
+                        id("date")
+                        // dataId("create-auction.form.input.date")
+                        value(initDate)
+                        style {
+                            dateInputDesktopStyle()
+                            alignSelf(AlignSelf.Start)
+                        }
+                        onInput {
+                            executionDateState = LocalDate.parse(it.value)
+                        }
+                    }
+                }
+            }
+            val usedMandateIds =
+                sepaCollection.sepaPayments.map { it.sepaMandateId }.distinct()
+            val mandatesWithoutPayments = sepaCollection.sepaMandates.filter { mandate ->
+                usedMandateIds.none { it == mandate.sepaMandateId }
+            }
+            // These are the ids of the mandates which are visible and checked
+            var chosenMandateIds by remember { mutableStateOf(emptyList<SepaMandateId>()) }
+            val computeMinHeight : (number: Int) -> CSSNumeric = { (it * 6 + 25).percent }
+            ListOfMandateWithoutPayments(
+                "Mandates without any payments",
+                mandatesWithoutPayments,
+                listStyles.modifyListWrapper {
+                    flexGrow(1)
+                    minHeight(computeMinHeight( minOf(mandatesWithoutPayments.size , 60) ) )
+                    maxHeight(90.percent)
+                },
+                overallActions = { data ->
+                    Horizontal {
+                        PlusButton(
+                            color = Color.black,
+                            bgColor = Color.white,
+                            texts = { "Create new payments for selected & visible items" },
+                            deviceType = device,
+                            isDisabled = false // chosenMandateIds.isEmpty()
+                        ) {
+                            scope.launch {
+                                chosenMandateIds =
+                                    data.visibleItems.filter { it in data.checkedItems && data.checkedItems[it] == true }
+
+                                if (chosenMandateIds.isEmpty()) return@launch
+                                (storage * bankingApplicationActions) dispatch createSepaPaymentsForCollection(
+                                    data = CreateSepaPaymentsForCollection(
+                                        sepaCollectionId = sepaCollection.sepaCollectionId,
+                                        executionDate = executionDateState,
+                                        mandateIds = chosenMandateIds
+                                    ),
+                                    targetCollectionId = sepaCollection.sepaCollectionId
+                                )
+                            }
+                        }
+                    }
+                }
+            )
+            ListOfPayments(
+                "Candidates for recurring payments:",
+                sepaCollection.sepaMandates,
+                nextPeriodPaymentCreationCandidates,
+                listStyles.modifyListWrapper {
+                    flexGrow(1)
+                    minHeight(computeMinHeight( minOf(nextPeriodPaymentCreationCandidates.size, 60) ) )
+                    maxHeight(90.percent)
+                },
+                overallActions = { data ->
+                    Horizontal {
+                        PlusButton(
+                            color = Color.black,
+                            bgColor = Color.white,
+                            texts = { "Create new payments for selected & visible items" },
+                            deviceType = device,
+                            isDisabled = false
+                        ) {
+                            scope.launch {
+                                (storage * bankingApplicationActions) dispatch createSuccessorsForPayments(
+                                    data = CreateSepaPaymentSuccessors(
+                                        executionDate = executionDateState,
+                                        paymentIds = data.selectedVisiblePaymentIds(),
+                                        kind = SuccessorKind.NEXT_PERIOD
+                                    ),
+                                    targetCollectionId = sepaCollection.sepaCollectionId
+                                )
+                            }
+                        }
+                    }
+                }
+            )
+
+            ListOfPayments(
+                "Candidates for retry payments:",
+                sepaCollection.sepaMandates,
+                retryPaymentCreationCandidates,
+                listStyles.modifyListWrapper {
+                    flexGrow(1)
+                    minHeight(computeMinHeight( minOf(retryPaymentCreationCandidates.size, 60) ) )
+                    maxHeight(90.percent)
+                },
+                overallActions = { data ->
+                    Horizontal {
+                        PlusButton(
+                            color = Color.black,
+                            bgColor = Color.white,
+                            texts = { "Create new payments for selected & visible items" },
+                            deviceType = device,
+                            isDisabled = false
+                        ) {
+                            scope.launch {
+                                (storage * bankingApplicationActions) dispatch createSuccessorsForPayments(
+                                    data = CreateSepaPaymentSuccessors(
+                                        executionDate = executionDateState,
+                                        paymentIds = data.selectedVisiblePaymentIds(),
+                                        kind = SuccessorKind.RETRY
+                                    ),
+                                    targetCollectionId = sepaCollection.sepaCollectionId
+                                )
+                            }
+                        }
+                    }
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun RecentlyCreatedPayments(
+    sepaCollection: SepaCollection,
+    openPayments: List<SepaPayment>,
+    sepaMessages: Source<List<SepaMessage>>,
+    listStyles: ListStyles,
+    scope: CoroutineScope,
+    storage: Storage<BankingApplication>,
+    device: Source<DeviceType>,
+    modalId: Int,
+) {
+    TabTitle("Recently created Payments")
+    ListOfPayments(
+        null,
+        sepaCollection.sepaMandates,
+        openPayments,
+        listStyles,
+        overallActions = { data -> Horizontal {
+            var sepaMessageModalDataState by remember { mutableStateOf(SepaMessageModalData(
+                sepaCollection = sepaCollection,
+                remittanceInformation = null,
+                messages = sepaMessages.emit()
+            )) }
+            TrashCanButton(
+                color = Color.black,
+                bgColor = Color.white,
+                texts = { "Delete selected & visible Payments" },
+                deviceType = device,
+            ) {
+                scope.launch {
+                    (storage * bankingApplicationActions) dispatch deleteSepaPayments(
+                        data = DeleteSepaPayments(data.selectedVisiblePaymentIds()),
+                        targetCollectionId = sepaCollection.sepaCollectionId
+                    )
+                }
+            }
+            AnglesRightButton(
+                color = Color.black,
+                bgColor = Color.white,
+                texts = { "Generate Sepa Message from selected & visible Payments" },
+                deviceType = device,
+            ) {
+                (storage * bankingApplicationModals).showUpsertSepaMessageModal(
+                    parentModalId = modalId,
+                    texts = dialogModalTexts("Create Sepa Message"),
+                    device = device,
+                    data = sepaMessageModalDataState,
+                    setData = {data ->
+                        sepaMessageModalDataState = data
+                    }
+                ) {
+                    scope.launch {
+
+                        val selectedPayments = data.selectedVisibleEntries()
+                        val selectedPaymentIds = selectedPayments.map { it.key.paymentId }
+                        val executionDate = with(selectedPayments.values.map { it.payment.executionDate }.distinct()) {
+                            if (size == 1) first() else null
+                        }
+                        // require(executionDate != null) { "Selected payments must have a common execution date" }
+                        if(executionDate != null) {
+                            (storage * bankingApplicationActions) dispatch generateSepaMessageForCollection(
+                                data = GenerateSepaMessageForCollection(
+                                    sepaCollectionId = sepaCollection.sepaCollectionId,
+                                    executionDate = executionDate,
+                                    sepaPaymentIds = selectedPaymentIds,
+                                    remittanceInformation = sepaMessageModalDataState.remittanceInformation?.let {
+                                        RemittanceInformation(it)
+                                    }
+                                )
+                            )
+                        } else {
+                            // dispatch error message
+                            return@launch
+                        }
+                    }
+                }
+            }
+        }},
+        actions = { data -> Horizontal {
+            TrashCanButton(
+                color = Color.black,
+                bgColor = Color.white,
+                deviceType = device,
+                isDisabled = false
+            ) {
+                // delete payments in CREATED state
+                scope.launch {
+                    (storage * bankingApplicationActions) dispatch deleteSepaPayment(
+                        data = DeleteSepaPayment(data.data.payment.sepaPaymentId),
+                        targetCollectionId = sepaCollection.sepaCollectionId
+                    )
+                }
+            }
+        } }
+    )
+}
+
+@Composable
+fun PaymentsReadyToBeSentToTheBank(
+    sepaCollection: SepaCollection,
+    messageCreatedPayments: List<SepaPayment>,
+    listStyles: ListStyles,
+    scope: CoroutineScope,
+    storage: Storage<BankingApplication>,
+    device: Source<DeviceType>,
+) {
+    TabTitle("Ready to be sent to the bank")
+    ListOfPayments(
+        null,
+        sepaCollection.sepaMandates,
+        messageCreatedPayments,
+        listStyles,
+        overallActions = { data ->
+            Horizontal {
+                AnglesLeftButton(
+                    color = Color.black,
+                    bgColor = Color.white,
+                    { "Move selected & visible Payments to the previous state" },
+                    device,
+                    isDisabled = true
+                ) {
+                }
+                AnglesRightButton(
+                    color = Color.black,
+                    bgColor = Color.white,
+                    { "Move selected & visible Payments to the next state" },
+                    device
+                ) {
+                    scope.launch {
+                        storage.dispatchStatusChange(
+                            newStatus = PaymentExecutionStatus.SENT,
+                            paymentIds = data.selectedVisiblePaymentIds(),
+                            targetCollectionId = sepaCollection.sepaCollectionId,
+                        )
+                    }
+                }
+            }
+        }
+    )
+}
+
+@Composable
+fun PaymentsSentToTheBank(
+    sepaCollection: SepaCollection,
+    sentPayments: List<SepaPayment>,
+    listStyles: ListStyles,
+    scope: CoroutineScope,
+    storage: Storage<BankingApplication>,
+    device: Source<DeviceType>,
+) {
+    TabTitle("Payments sent to to the bank")
+    ListOfPayments(
+        null,
+        sepaCollection.sepaMandates,
+        sentPayments,
+        listStyles,
+        overallActions = { data ->
+            Horizontal {
+                AnglesLeftButton(
+                    color = Color.black,
+                    bgColor = Color.white,
+                    { "Move selected Payments to the previous state" },
+                    device,
+                ) {
+                    scope.launch {
+                        storage.dispatchStatusChange(
+                            newStatus = PaymentExecutionStatus.MESSAGE_CREATED,
+                            paymentIds = data.selectedVisiblePaymentIds(),
+                            targetCollectionId = sepaCollection.sepaCollectionId,
+                        )
+                    }
+                }
+                AnglesRightButton(
+                    color = Color.black,
+                    bgColor = Color.white,
+                    { "Move selected Payments to the next state" },
+                    device
+                ) {
+                    scope.launch {
+                        storage.dispatchStatusChange(
+                            newStatus = PaymentExecutionStatus.PENDING,
+                            paymentIds = data.selectedVisiblePaymentIds(),
+                            targetCollectionId = sepaCollection.sepaCollectionId,
+                        )
+                    }
+                }
+            }
+        }
+    )
+}
+
+@Composable
+fun PendingPayments(
+    sepaCollection: SepaCollection,
+    pendingPayments: List<SepaPayment>,
+    listStyles: ListStyles,
+    scope: CoroutineScope,
+    storage: Storage<BankingApplication>,
+    device: Source<DeviceType>,
+    modalId: Int,
+) {
+    TabTitle("Pending Payments")
+    ListOfPayments(
+        null,
+        sepaCollection.sepaMandates,
+        pendingPayments,
+        listStyles,
+        overallActions = { data ->
+            Horizontal {
+                AnglesLeftButton(
+                    color = Color.black,
+                    bgColor = Color.white,
+                    { "Move selected Payments to the previous state" },
+                    device,
+                ) {
+                    scope.launch {
+                        storage.dispatchStatusChange(
+                            newStatus = PaymentExecutionStatus.MESSAGE_CREATED,
+                            paymentIds = data.selectedVisiblePaymentIds(),
+                            targetCollectionId = sepaCollection.sepaCollectionId,
+                        )
+                    }
+                }
+                var dataState by remember { mutableStateOf(data) }
+                BanButton(
+                    color = Color.black,
+                    bgColor = Color.white,
+                    { "Move selected Payments to the failed state" },
+                    device,
+                ) {
+
+                    (storage * bankingApplicationModals).showMoveFailedPaymentsModal(
+                        parentModalId = modalId,
+                        texts = dialogModalTexts("Yeeeeeha!"),
+                        device = device,
+                        data = dataState,
+                        setData = {newData -> dataState = newData},
+
+                        ){
+                        scope.launch {
+                            val selectedPayments = dataState.selectedVisibleEntries()
+                            val paymentIds = selectedPayments.map { it.key.paymentId }
+                            val failureReasons = selectedPayments
+                                .filter{it.value.payment.failureReason != null}
+                                .map { it.key.paymentId to it.value.payment.failureReason!! }
+                                .toMap()
+                            require(failureReasons.size == selectedPayments.size)   {
+                                "Selected payments and failure reasons count mismatch"
+                            }
+                            (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
+                                data = UpdateSepaPaymentExecutionStatuses(
+                                    newStatus = PaymentExecutionStatus.FAILED.toApiType(),
+                                    paymentIds = paymentIds,
+                                    failureReasons = failureReasons
+                                ),
+                                sepaCollection.sepaCollectionId
+                            )
+                        }
+                    }
+                }
+                SackDollarButton(
+                    color = Color.black,
+                    bgColor = Color.white,
+                    { "Move selected Payments to the confirmed state" },
+                    device,
+                ) {
+                    scope.launch {
+                        storage.dispatchStatusChange(
+                            newStatus = PaymentExecutionStatus.CONFIRMED,
+                            paymentIds = data.selectedVisiblePaymentIds(),
+                            targetCollectionId = sepaCollection.sepaCollectionId,
+                        )
+                    }
+                }
+            }
+        },
+        actions = {}
     )
 }
 
 
+@Composable
+fun ConfirmedPayments(
+    sepaCollection: SepaCollection,
+    confirmedPayments: List<SepaPayment>,
+    listStyles: ListStyles,
+    scope: CoroutineScope,
+    storage: Storage<BankingApplication>,
+    device: Source<DeviceType>,
+    modalId: Int,
+) {
+    TabTitle("Confirmed Payments")
+    ListOfPayments(
+        null,
+        sepaCollection.sepaMandates,
+        confirmedPayments,
+        listStyles,
+        overallActions = { data -> Horizontal {
+            var dataState by remember { mutableStateOf(data) }
+            BanButton(
+                color = Color.black,
+                bgColor = Color.white,
+                { "Move selected Payments to the failed state" },
+                device,
+            ) {
+
+                (storage * bankingApplicationModals).showMoveFailedPaymentsModal(
+                    parentModalId = modalId,
+                    texts = dialogModalTexts("Yeeeeeha!"),
+                    device = device,
+                    data = dataState,
+                    setData = {newData -> dataState = newData},
+
+                    ){
+                    scope.launch {
+                        val selectedPayments = dataState.selectedVisibleEntries()
+                        val paymentIds = selectedPayments.map { it.key.paymentId }
+                        val failureReasons = selectedPayments
+                            .filter{it.value.payment.failureReason != null}
+                            .map { it.key.paymentId to it.value.payment.failureReason!! }
+                            .toMap()
+                        require(failureReasons.size == selectedPayments.size)   {
+                            "Selected payments and failure reasons count mismatch"
+                        }
+                        (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
+                            data =UpdateSepaPaymentExecutionStatuses(
+                                newStatus = PaymentExecutionStatus.FAILED.toApiType(),
+                                paymentIds = paymentIds,
+                                failureReasons = failureReasons
+                            ),
+                            sepaCollection.sepaCollectionId
+                        )
+                    }
+                }
+            }
+            CommentDollarButton(
+                color = Color.black,
+                bgColor = Color.white,
+                texts = { "Move selected Payments to the manually-payed state" },
+                deviceType = device,
+            ) {
+                scope.launch {
+                    storage.dispatchStatusChange(
+                        newStatus = PaymentExecutionStatus.PAYED_MANUALLY,
+                        paymentIds = data.selectedVisiblePaymentIds(),
+                        targetCollectionId = sepaCollection.sepaCollectionId,
+                    )
+                }
+            }
+            SackDollarButton(
+                color = Color.black,
+                bgColor = Color.white,
+                { "Move selected Payments to the confirmed state" },
+                device,
+            ) {
+                scope.launch {
+                    storage.dispatchStatusChange(
+                        newStatus = PaymentExecutionStatus.CONFIRMED,
+                        paymentIds = data.selectedVisiblePaymentIds(),
+                        targetCollectionId = sepaCollection.sepaCollectionId,
+                    )
+                }
+            }
+
+        }}
+    )
+}
+
+@Composable
+fun FailedPayments(
+    sepaCollection: SepaCollection,
+    failedPayments: List<SepaPayment>,
+    listStyles: ListStyles,
+    scope: CoroutineScope,
+    storage: Storage<BankingApplication>,
+    device: Source<DeviceType>,
+) {
+    TabTitle("Failed Payments")
+    ListOfPayments(
+        null,
+        sepaCollection.sepaMandates,
+        failedPayments,
+        listStyles,
+        overallActions = { data -> Horizontal {
+            CommentDollarButton(
+                color = Color.black,
+                bgColor = Color.white,
+                texts = { "Move selected Payments to the manually-payed state" },
+                deviceType = device,
+            ) {
+                scope.launch {
+                    storage.dispatchStatusChange(
+                        newStatus = PaymentExecutionStatus.PAYED_MANUALLY,
+                        paymentIds = data.selectedVisiblePaymentIds(),
+                        targetCollectionId = sepaCollection.sepaCollectionId,
+                    )
+                }
+            }
+            SackDollarButton(
+                color = Color.black,
+                bgColor = Color.white,
+                { "Move selected Payments to the confirmed state" },
+                device,
+            ) {
+                scope.launch {
+                    storage.dispatchStatusChange(
+                        newStatus = PaymentExecutionStatus.CONFIRMED,
+                        paymentIds = data.selectedVisiblePaymentIds(),
+                        targetCollectionId = sepaCollection.sepaCollectionId,
+                    )
+                }
+            }
+
+        } }
+    )
+}
+
 // suspend managePaymentsOfSepaCollection(collection: SepaCollection, data: ManageCollectionPayments)
+
+/**
+ * Returns the entries (key -> data) of the items that are both visible (i.e. match the current
+ * filter) and currently checked by the user.
+ */
+private fun OverAllActionData.selectedVisibleEntries(): Map<SepaPaymentListItemKey, SepaPaymentListItemData> =
+    itemsMap.filter { it.key in visibleItems && checkedPayments[it.key.paymentId] == true }
+
+/**
+ * Convenience for the common pattern of collecting the [SepaPaymentId]s of selected & visible items.
+ */
+private fun OverAllActionData.selectedVisiblePaymentIds(): List<SepaPaymentId> =
+    selectedVisibleEntries().map { it.key.paymentId }
+
+/**
+ * Dispatches an [updateSepaPaymentExecutionStatuses] action moving the given [paymentIds] to
+ * the [newStatus] for the [targetCollectionId].
+ */
+private suspend fun Storage<BankingApplication>.dispatchStatusChange(
+    newStatus: PaymentExecutionStatus,
+    paymentIds: List<SepaPaymentId>,
+    targetCollectionId: SepaCollectionId,
+) {
+    (this * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
+        data = UpdateSepaPaymentExecutionStatuses(
+            newStatus = newStatus.toApiType(),
+            paymentIds = paymentIds,
+        ),
+        targetCollectionId = targetCollectionId
+    )
+}
