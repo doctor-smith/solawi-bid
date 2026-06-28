@@ -187,18 +187,19 @@ fun ListOfPayments(
                 width(20.percent)
                 paddingLeft(20.px)
             }.filter) {
-                TextFilter("Filter by Status") {
+                TextFilter("Filter by Status", ignoreCase = true) { text, ignoreCase ->
                     filter = when {
-                        it.isBlank() -> filter.copy(status = { true })
-                        else -> filter.copy(status = { status -> it.toFilter().applyTo(status.name) })
+                        text.isBlank() -> filter.copy(status = { true })
+                        else -> filter.copy(status = { status -> text.toFilter(ignoreCase
+                        ).applyTo(status.name) })
                     }
                 }
             }
             Filter(styles.modifyFilter { width(25.percent) }.filter) {
-                TextFilter("Filter by Debtor") {
+                TextFilter("Filter by Debtor", ignoreCase = true) { text, ignoreCase ->
                     filter = when {
-                        it.isBlank() -> filter.copy(debtor = { true })
-                        else -> filter.copy(debtor = { debtor -> it.toFilter().applyTo(debtor) })
+                        text.isBlank() -> filter.copy(debtor = { true })
+                        else -> filter.copy(debtor = { debtor -> text.toFilter(ignoreCase).applyTo(debtor) })
                     }
                 }
             }
