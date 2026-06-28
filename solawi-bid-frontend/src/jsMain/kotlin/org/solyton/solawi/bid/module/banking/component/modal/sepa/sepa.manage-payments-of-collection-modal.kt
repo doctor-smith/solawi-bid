@@ -194,8 +194,12 @@ fun ManagePaymentsOfSepaCollectionModal(
                         SepaSequenceType.OOFF,
                         SepaSequenceType.UNCLEAR
                     )
-                    val paymentCreationCandidates = (confirmedPayments + failedPayments).filter {
-                        it.successorId == null && it.sequenceType !in forbiddenSeqTypes
+                    val nextPeriodPaymentCreationCandidates = (confirmedPayments + failedPayments).filter {
+                        it.nextPeriodSuccessorId == null && it.sequenceType !in forbiddenSeqTypes
+                    }
+
+                    val retryPaymentCreationCandidates = failedPayments.filter {
+                        it.retrySuccessorId == null && it.sequenceType !in forbiddenSeqTypes
                     }
 
                     // GUI states
@@ -315,91 +319,134 @@ fun ManagePaymentsOfSepaCollectionModal(
                                         executionDate ?: today()
                                     )
                                 }
-                                Form(formDesktopStyle) {
-                                    Field(fieldDesktopStyle) {
-                                        // State
+                                Scrollable(scrollableStyles.modifyContainerStyle {
+                                    height(100.percent)
+                                }) {
+                                    Form(formDesktopStyle) {
+                                        Field(fieldDesktopStyle) {
+                                            // State
 
-                                        val initDate = executionDateState.format(Locale.Iso)
+                                            val initDate = executionDateState.format(Locale.Iso)
 
-                                        Label("Execution Date", id = "date", labelStyle = formLabelDesktopStyle)
-                                        Input(InputType.Date) {
-                                            id("date")
-                                            // dataId("create-auction.form.input.date")
-                                            value(initDate)
-                                            style {
-                                                dateInputDesktopStyle()
-                                                alignSelf(AlignSelf.Start)
-                                            }
-                                            onInput {
-                                                executionDateState = LocalDate.parse(it.value)
-                                            }
-                                        }
-                                    }
-                                }
-                                val usedMandateIds = sepaCollection.sepaPayments.map { it.sepaMandateId }.distinct()
-                                val mandatesWithoutPayments = sepaCollection.sepaMandates.filter {
-                                    mandate -> usedMandateIds.none { it == mandate.sepaMandateId }
-                                }
-                                // These are the ids of the mandates which are visible and checked
-                                var chosenMandateIds by remember { mutableStateOf(emptyList<SepaMandateId>()) }
-                                ListOfMandateWithoutPayments(
-                                    "Mandates without any payments",
-                                    mandatesWithoutPayments,
-                                    overallActions = { data -> Horizontal {
-                                        PlusButton(
-                                            color = Color.black,
-                                            bgColor = Color.white,
-                                            texts = { "Create new payments for selected & visible items" },
-                                            deviceType = device,
-                                            isDisabled = false // chosenMandateIds.isEmpty()
-                                        ) {
-                                            scope.launch {
-                                                chosenMandateIds = data.visibleItems.filter { it in data.checkedItems && data.checkedItems[it] == true }
-
-                                                if(chosenMandateIds.isEmpty()) return@launch
-                                                (storage * bankingApplicationActions) dispatch createSepaPaymentsForCollection(
-                                                    data = CreateSepaPaymentsForCollection(
-                                                        sepaCollectionId = sepaCollection.sepaCollectionId,
-                                                        executionDate = executionDateState,
-                                                        mandateIds = chosenMandateIds
-                                                    ),
-                                                    targetCollectionId = sepaCollection.sepaCollectionId
-                                                )
-                                            }
-                                        }
-                                    }}
-                                )
-                                ListOfPayments(
-                                    "Candidates for recurring payments:",
-                                    sepaCollection.sepaMandates,
-                                    paymentCreationCandidates,
-                                    listStyles,
-                                    overallActions = { data ->
-                                        Horizontal {
-                                            PlusButton(
-                                                color = Color.black,
-                                                bgColor = Color.white,
-                                                texts = { "Create new payments for selected & visible items" },
-                                                deviceType = device,
-                                                isDisabled = false
-                                            ) {
-                                                scope.launch {
-                                                    val selectedPaymentIds = data.itemsMap.filter {
-                                                        it.key in data.visibleItems &&
-                                                                data.checkedPayments[it.key.paymentId] == true
-                                                    }.map { it.key.paymentId }
-                                                    (storage * bankingApplicationActions) dispatch createSuccessorsForPayments(
-                                                        data = CreateSepaPaymentSuccessors(
-                                                            executionDate = executionDateState,
-                                                            paymentIds = selectedPaymentIds,
-                                                        ),
-                                                        targetCollectionId = sepaCollection.sepaCollectionId
-                                                    )
+                                            Label("Execution Date", id = "date", labelStyle = formLabelDesktopStyle)
+                                            Input(InputType.Date) {
+                                                id("date")
+                                                // dataId("create-auction.form.input.date")
+                                                value(initDate)
+                                                style {
+                                                    dateInputDesktopStyle()
+                                                    alignSelf(AlignSelf.Start)
+                                                }
+                                                onInput {
+                                                    executionDateState = LocalDate.parse(it.value)
                                                 }
                                             }
                                         }
                                     }
-                                )
+                                    val usedMandateIds = sepaCollection.sepaPayments.map { it.sepaMandateId }.distinct()
+                                    val mandatesWithoutPayments = sepaCollection.sepaMandates.filter { mandate ->
+                                        usedMandateIds.none { it == mandate.sepaMandateId }
+                                    }
+                                    // These are the ids of the mandates which are visible and checked
+                                    var chosenMandateIds by remember { mutableStateOf(emptyList<SepaMandateId>()) }
+                                    ListOfMandateWithoutPayments(
+                                        "Mandates without any payments",
+                                        mandatesWithoutPayments,
+                                        overallActions = { data ->
+                                            Horizontal {
+                                                PlusButton(
+                                                    color = Color.black,
+                                                    bgColor = Color.white,
+                                                    texts = { "Create new payments for selected & visible items" },
+                                                    deviceType = device,
+                                                    isDisabled = false // chosenMandateIds.isEmpty()
+                                                ) {
+                                                    scope.launch {
+                                                        chosenMandateIds =
+                                                            data.visibleItems.filter { it in data.checkedItems && data.checkedItems[it] == true }
+
+                                                        if (chosenMandateIds.isEmpty()) return@launch
+                                                        (storage * bankingApplicationActions) dispatch createSepaPaymentsForCollection(
+                                                            data = CreateSepaPaymentsForCollection(
+                                                                sepaCollectionId = sepaCollection.sepaCollectionId,
+                                                                executionDate = executionDateState,
+                                                                mandateIds = chosenMandateIds
+                                                            ),
+                                                            targetCollectionId = sepaCollection.sepaCollectionId
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    )
+                                    ListOfPayments(
+                                        "Candidates for recurring payments:",
+                                        sepaCollection.sepaMandates,
+                                        nextPeriodPaymentCreationCandidates,
+                                        listStyles,
+                                        overallActions = { data ->
+                                            Horizontal {
+                                                PlusButton(
+                                                    color = Color.black,
+                                                    bgColor = Color.white,
+                                                    texts = { "Create new payments for selected & visible items" },
+                                                    deviceType = device,
+                                                    isDisabled = false
+                                                ) {
+                                                    scope.launch {
+                                                        val selectedPaymentIds = data.itemsMap.filter {
+                                                            it.key in data.visibleItems &&
+                                                                    data.checkedPayments[it.key.paymentId] == true
+                                                        }.map { it.key.paymentId }
+                                                        (storage * bankingApplicationActions) dispatch createSuccessorsForPayments(
+                                                            data = CreateSepaPaymentSuccessors(
+                                                                executionDate = executionDateState,
+                                                                paymentIds = selectedPaymentIds,
+                                                                kind = SuccessorKind.NEXT_PERIOD
+                                                            ),
+                                                            targetCollectionId = sepaCollection.sepaCollectionId
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    )
+
+                                    ListOfPayments(
+                                        "Candidates for retry payments:",
+                                        sepaCollection.sepaMandates,
+                                        retryPaymentCreationCandidates,
+                                        listStyles,
+                                        overallActions = { data ->
+                                            Horizontal {
+                                                PlusButton(
+                                                    color = Color.black,
+                                                    bgColor = Color.white,
+                                                    texts = { "Create new payments for selected & visible items" },
+                                                    deviceType = device,
+                                                    isDisabled = false
+                                                ) {
+                                                    scope.launch {
+                                                        val selectedPaymentIds = data.itemsMap.filter {
+                                                            it.key in data.visibleItems &&
+                                                                    data.checkedPayments[it.key.paymentId] == true
+                                                        }.map { it.key.paymentId }
+                                                        (storage * bankingApplicationActions) dispatch createSuccessorsForPayments(
+                                                            data = CreateSepaPaymentSuccessors(
+                                                                executionDate = executionDateState,
+                                                                paymentIds = selectedPaymentIds,
+                                                                kind = SuccessorKind.RETRY
+                                                            ),
+                                                            targetCollectionId = sepaCollection.sepaCollectionId
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    )
+
+
+                                }
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_CREATED) {
                                 TabTitle("Recently created Payments")

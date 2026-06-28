@@ -35,8 +35,12 @@ data class SepaMandate(
 @Serializable
 data class CreateSepaMandateReferenceData(
     val referenceId: SepaMandateReferenceId,
-    val amount: Double
-)
+    val amount: Double,
+) {
+    init {
+        require(amount >= 0.0) { "Amount must be greater than 0" }
+    }
+}
 
 @Serializable
 data class SepaMandateReferenceData(
@@ -79,6 +83,12 @@ data class ReadSepaMandatesByCreditorsLegalEntity(
 ) : Parameters()
 
 @Serializable
+data class UpdateSepaMandates(
+    val all: List<SepaMandate>
+)
+
+
+@Serializable
 data class UpdateSepaMandate(
     val sepaMandateId: SepaMandateId,
     val debtorBankAccountId: BankAccountId,
@@ -94,6 +104,9 @@ data class UpdateSepaMandate(
     val amendmentOf: SepaMandateId? = null,
     val collectionId: SepaCollectionId? = null,
 )
+
+@Serializable
+data object UpdateSepaMandateInSepaCollection
 
 @Serializable
 data class AddSepaMandateToCollection(

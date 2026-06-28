@@ -1,8 +1,14 @@
 package org.solyton.solawi.bid.module.banking.repository
 
+import eq
 import org.evoleq.exposedx.joda.now
 import org.jetbrains.exposed.dao.flushCache
+import org.jetbrains.exposed.sql.JoinType
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.Transaction
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.or
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
@@ -16,7 +22,7 @@ import org.solyton.solawi.bid.module.banking.service.generatePain008Xml
 import java.util.*
 
 /**
- * Create payments for a collection.
+ * Create payments for the next period of a collection.
  * Only active mandates are considered.
  * Recurring payments are created in the same state as the original payments. And only if the original
  * payments are in one of the following states: CONFIRMED, PAYED_MANUALLY, FAILED and have no accessors yet.
@@ -58,7 +64,7 @@ fun Transaction.createPaymentsForCollection(
     return activeMandates.flatMap {  mandate ->
         // Note that there are no payments at all if there are only payments with associated successors.
         val relevantPayments = mandate.payments.filter {
-            it.successor == null
+            it.nextPeriodSuccessor == null
         }
         when{
             relevantPayments.isNotEmpty() ->
@@ -67,6 +73,7 @@ fun Transaction.createPaymentsForCollection(
                         creator,
                         executionDate,
                         payment,
+                        SuccessorKind.NEXT_PERIOD
                     )}
 
             else ->  {
@@ -89,8 +96,9 @@ fun Transaction.createPaymentsForCollection(
 }
 
 /**
- * Create a payment for a given mandate.
+ * Create a payment for a given mandate and a given collection.
  * Only active mandates are considered.
+ * If the pair (mandate, collection) has no associated payment-template yet, a new payment-template is created.
  */
 fun Transaction.createPayment(
     creator: UUID,
@@ -105,6 +113,10 @@ fun Transaction.createPayment(
 
     val sepaCollection = validatedSepaCollection(sepaCollectionId)
     val defaultSequenceType = sepaCollection.sequenceType
+    val template = readSepaPaymentTemplateByMandateAndCollection(sepaMandateId, sepaCollectionId)?: createSepaPaymentTemplate(
+        creator, sepaMandate, amount, sepaCollection
+    )
+
     val relatedPayments = sepaMandate.payments
     val latestPayment = if(ignoreOldPayments) null else relatedPayments.maxByOrNull { payment -> payment.executionDate }
     val sequenceType = when{
@@ -132,6 +144,7 @@ fun Transaction.createPayment(
         this.sequenceType = sequenceType
         this.amount = amount
         this.executionDate = executionDate.toDateTimeAtCurrentTime()
+        this.template = template
     }
 
     // create history entry
@@ -235,7 +248,7 @@ fun Transaction.updatePayment(
             PaymentExecutionStatus.MESSAGE_CREATED -> Triple(BankStatusCode.PENDING, "MESSAGE_CREATED", "Sepa Message created for Payment")
             PaymentExecutionStatus.SENT -> Triple(BankStatusCode.PENDING, "SENT", "Payment request sent")
             PaymentExecutionStatus.PENDING -> Triple(BankStatusCode.PENDING, "PENDING",statusChange )
-            PaymentExecutionStatus.FAILED -> Triple(BankStatusCode.FAILED, "FAILED", failureReason?: "Reason unknown")
+            PaymentExecutionStatus.FAILED, PaymentExecutionStatus.DROPPED -> Triple(BankStatusCode.FAILED, "FAILED", failureReason?: "Reason unknown")
             PaymentExecutionStatus.CONFIRMED -> Triple(BankStatusCode.SUCCESS, "SUCCESS", statusChange)
             PaymentExecutionStatus.PAYED_MANUALLY -> Triple(BankStatusCode.SUCCESS, "SUCCESS", statusChange)
             PaymentExecutionStatus.CREATED -> throw SepaException.Payment.StateTransitionForbidden(
@@ -266,6 +279,7 @@ fun Transaction.updatePayment(
 fun Transaction.createSuccessorsOfPayments(
     creator: UUID,
     executionDate: LocalDate,
+    kind: SuccessorKind,
     paymentIds: List<UUID>
 ): List<SepaPaymentEntity> {
     val payments = SepaPaymentEntity.find {
@@ -273,7 +287,15 @@ fun Transaction.createSuccessorsOfPayments(
     }.toList()
 
     require(payments.size == paymentIds.size) { "All payments must be found" }
-    require(payments.none { it.successor != null }) { "All payments must not have successors" }
+    require(payments.none {
+        when(kind) {
+            SuccessorKind.NEXT_PERIOD -> it.nextPeriodSuccessor != null
+            SuccessorKind.RETRY -> it.retrySuccessor != null
+            SuccessorKind.MERGE -> it.mergeSuccessor != null
+        }
+    }) {
+        "All payments must not have successors of the desired kind"
+    }
 
     val allowedStatuses = listOf(
         PaymentExecutionStatus.CONFIRMED,
@@ -284,7 +306,7 @@ fun Transaction.createSuccessorsOfPayments(
     require(payments.all { it.mandate.status == MandateStatus.ACTIVE }) { "All payments need to be related to an active mandate" }
 
     return payments.map { payment ->
-        createSuccessorOfPayment(creator, executionDate, payment)
+        createSuccessorOfPayment(creator, executionDate, payment, kind)
     }
 }
 
@@ -296,7 +318,8 @@ fun Transaction.createSuccessorsOfPayments(
 fun Transaction.createSuccessorOfPayment(
     creator: UUID,
     executionDate: LocalDate,
-    payment: SepaPaymentEntity
+    payment: SepaPaymentEntity,
+    kind: SuccessorKind
 ): SepaPaymentEntity {
     if(payment.mandate.status != MandateStatus.ACTIVE) throw SepaException.Payment.CannotCreate("Mandate must be active")
     val allowedStatuses = listOf(
@@ -304,19 +327,38 @@ fun Transaction.createSuccessorOfPayment(
         PaymentExecutionStatus.PAYED_MANUALLY,
         PaymentExecutionStatus.FAILED
     )
-    if(payment.status !in allowedStatuses) throw SepaException.Payment.CannotCreate("Payment must be in one of the following states: ${allowedStatuses.joinToString(", ")}")
+    if(payment.status !in allowedStatuses) throw SepaException.Payment.CannotCreate(
+        "Payment must be in one of the following states: ${allowedStatuses.joinToString(", ")}"
+    )
+    // create template if necessary
+    val template = payment.template?: createSepaPaymentTemplate(
+        creator,
+        payment.mandate,
+        payment.amount,
+        payment.collection
+    )
+    if(payment.template == null) payment.template = template
 
     val successor = SepaPaymentEntity.new {
         this.createdBy = creator
+        this.createdAt = now()
         this.mandate = payment.mandate
         this.collection = payment.collection
         this.status = PaymentExecutionStatus.CREATED
         this.sequenceType = shiftSequenceType(payment)
-        this.amount = payment.amount
+        this.amount = template.amount
         this.executionDate = executionDate.toDateTimeAtCurrentTime()
+        this.template = template
     }
 
-    payment.successor = successor
+    SepaPaymentLinkEntity.new {
+        this.createdBy = creator
+        this.createdAt = now()
+        this.predecessor = payment
+        this.successor = successor
+        this.kind = kind
+    }
+
     payment.modifiedBy = creator
     payment.modifiedAt = now()
 
@@ -331,6 +373,103 @@ fun Transaction.createSuccessorOfPayment(
     return successor
 }
 
+/**
+ * Create a SEPA payment template.
+ */
+fun Transaction.createSepaPaymentTemplate(
+    creator: UUID,
+    mandate: SepaMandateEntity,
+    amount: Double,
+    collection: SepaCollectionEntity,
+): SepaPaymentTemplateEntity {
+    val template = SepaPaymentTemplateEntity.new {
+        this.createdBy = creator
+        this.createdAt = now()
+        this.mandate = mandate
+        this.amount = amount
+        this.collection = collection
+        this.initialSequenceType = initialSequenceType(collection.sequenceType)
+    }
+    return template
+}
+
+/**
+ * Read a SEPA payment template by mandate and collection.
+ * The template is not expected to be already persisted.
+ * But if it is there, it is uniquely identified by the mandate and collection.
+ */
+fun Transaction.readSepaPaymentTemplateByMandateAndCollection(
+    mandateId: UUID, collectionId: UUID
+) : SepaPaymentTemplateEntity? = SepaPaymentTemplateEntity.find {
+        (SepaPaymentTemplates.mandateId eq  mandateId) and
+        (SepaPaymentTemplates.collectionId eq collectionId)
+    }.firstOrNull()
+
+/**
+ * Updates the SEPA payment template with new values if any of the provided parameters differ from the existing template.
+ * Also updates the `modifiedBy` and `modifiedAt` fields of the template if changes are made.
+ *
+ * @param modifierId the UUID of the user or system making the modifications
+ * @param templateId the UUID of the SEPA payment template to be updated
+ * @param sepaMandateId the UUID of the SEPA mandate to associate with the template
+ * @param sepaCollectionId the UUID of the SEPA collection to associate with the template
+ * @param amount the new amount to be set in the template
+ * @param initialSequenceType the initial SEPA sequence type to be set in the template
+ * @return the updated SEPA payment template entity
+ */
+fun Transaction.updateSepaPaymentTemplate(
+    modifierId: UUID,
+    templateId: UUID,
+    sepaMandateId: UUID,
+    sepaCollectionId: UUID,
+    amount: Double,
+    initialSequenceType: SepaSequenceType,
+): SepaPaymentTemplateEntity {
+    val template = validatedSepaPaymentTemplate(templateId)
+    val mandate = validatedSepaMandate(sepaMandateId)
+    val collection = validatedSepaCollection(sepaCollectionId)
+
+    val mandateChanged = template.mandate.id.value != sepaMandateId
+    val collectionChanged = template.collection?.id?.value != sepaCollectionId
+    val amountChanged = template.amount != amount
+    val initialSequenceTypeChanged = template.initialSequenceType != initialSequenceType
+
+    if(mandateChanged) template.mandate = mandate
+    if(collectionChanged) template.collection = collection
+    if(amountChanged) template.amount = amount
+    if(initialSequenceTypeChanged) template.initialSequenceType = initialSequenceType
+
+    val changed = mandateChanged ||
+            collectionChanged ||
+            amountChanged ||
+            initialSequenceTypeChanged
+
+    if (changed) {
+        template.modifiedBy = modifierId
+        template.modifiedAt = now()
+    }
+    return template
+}
+
+fun Transaction.validatedSepaPaymentTemplate(templateId: UUID): SepaPaymentTemplateEntity = SepaPaymentTemplateEntity.find {
+    SepaPaymentTemplates.id eq templateId
+}.firstOrNull()?: throw SepaException.Payment.NoSuchTemplate(templateId.toString())
+
+/**
+ * Get the initial [SepaSequenceType] from a given one.
+ */
+fun initialSequenceType(sequenceType: SepaSequenceType): SepaSequenceType = when(sequenceType) {
+    SepaSequenceType.FRST -> SepaSequenceType.FRST
+    SepaSequenceType.RCUR -> SepaSequenceType.FRST
+    SepaSequenceType.FNAL -> SepaSequenceType.FRST
+    SepaSequenceType.OOFF -> SepaSequenceType.OOFF
+    SepaSequenceType.UNCLEAR -> throw SepaException.Payment.CannotCreate("cannot create template for unclear collection")
+}
+
+/**
+ * Get the next [SepaSequenceType] of a payment.
+ * The new sequence type is determined by the current status of the payment.
+ */
 fun shiftSequenceType(payment: SepaPaymentEntity): SepaSequenceType {
     val newSequenceType = when (payment.sequenceType) {
         SepaSequenceType.FRST -> when(payment.status) {
@@ -464,6 +603,27 @@ fun Transaction.updateSepaPaymentExecutionStatuses(
             )
         }
     }
+    else if(newStatus == PaymentExecutionStatus.DROPPED) {
+        require(paymentIds.all {
+            SepaPaymentEntity.findById(it)?.status == PaymentExecutionStatus.FAILED
+        }) { "All payments must be failed in order to be set to dropped" }
+
+        SepaPaymentsTable.update({ SepaPayments.id inList paymentIds }) {
+            it[status] = newStatus
+            it[modifiedBy] = modifier
+            it[modifiedAt] = now()
+        }
+
+        paymentIds.forEach {
+            addHistoryEntry(
+                modifier,
+                it,
+                newStatus,
+                failureReasons[it],
+                now()
+            )
+        }
+    }
     else {
         SepaPaymentsTable.update({ SepaPayments.id inList paymentIds }) {
             it[status] = newStatus
@@ -485,6 +645,68 @@ fun Transaction.updateSepaPaymentExecutionStatuses(
     return SepaPaymentEntity.find { SepaPayments.id inList paymentIds }.toList()
 }
 
+/**
+ * Read all payments for a given legal entity.
+ */
+fun Transaction.readPaymentsByLegalEntity(legalEntityId: UUID): List<SepaPaymentEntity> {
+    val query = SepaPaymentsTable.join(
+        otherTable = SepaMandatesTable, 
+        onColumn = SepaPaymentsTable.mandateId,
+        otherColumn = SepaMandatesTable.id,
+        joinType = JoinType.INNER
+    ).join(
+        otherTable = BankAccountsTable, 
+        onColumn = SepaMandatesTable.debtorBankAccountId,
+        otherColumn = BankAccountsTable.id,
+        joinType = JoinType.INNER
+    ).join(
+        otherTable = BankAccountAccessorsTable, 
+        onColumn = BankAccountsTable.id,
+        otherColumn = BankAccountAccessorsTable.bankAccountId,
+        joinType = JoinType.INNER
+    ).select(SepaPaymentsTable.columns).where {
+        BankAccountAccessorsTable.accessorId eq legalEntityId
+    }
+
+    return SepaPaymentEntity.wrapRows(query).toList()
+}
+
+/**
+ * Read all payments for a given user.
+ */
+fun Transaction.readPaymentsByUser(userId: UUID): List<SepaPaymentEntity> {
+    val query = SepaPaymentsTable.join(
+        otherTable = SepaMandatesTable,
+        onColumn = SepaPaymentsTable.mandateId,
+        otherColumn = SepaMandatesTable.id,
+        joinType = JoinType.INNER
+    ).join(
+        otherTable = BankAccountsTable,
+        onColumn = SepaMandatesTable.debtorBankAccountId,
+        otherColumn = BankAccountsTable.id,
+        joinType = JoinType.INNER
+    ).select(SepaPaymentsTable.columns).where {
+        BankAccountsTable.userId eq userId
+    }
+
+    return SepaPaymentEntity.wrapRows(query).toList()
+}
+
+fun Transaction.readSepaPaymentLinksByLegalEntity(legalEntityId: UUID): List<SepaPaymentLinkEntity> {
+
+    val payments = readPaymentsByLegalEntity(legalEntityId).map { it.id.value }
+    return SepaPaymentLinkEntity.find {
+        SepaPaymentLinks.successorId inList payments and (SepaPaymentLinks.predecessorId inList payments)
+    }.toList()
+}
+
+fun Transaction.readSepaPaymentLinksByUser(userId: UUID): List<SepaPaymentLinkEntity> {
+    val payments = readPaymentsByUser(userId).map { it.id.value }
+    return SepaPaymentLinkEntity.find {
+        SepaPaymentLinks.successorId inList payments and (SepaPaymentLinks.predecessorId inList payments)
+    }.toList()
+}
+
 fun Transaction.addHistoryEntry(
     modifier: UUID,
     paymentId: UUID,
@@ -501,7 +723,7 @@ fun Transaction.addHistoryEntry(
         PaymentExecutionStatus.MESSAGE_CREATED -> Triple(BankStatusCode.PENDING, "MESSAGE_CREATED", "Sepa Message created for Payment")
         PaymentExecutionStatus.SENT -> Triple(BankStatusCode.PENDING, "SENT", "Payment request sent")
         PaymentExecutionStatus.PENDING -> Triple(BankStatusCode.PENDING, "PENDING",statusChange )
-        PaymentExecutionStatus.FAILED -> Triple(BankStatusCode.FAILED, "FAILED", reasonText?: "Reason unknown")
+        PaymentExecutionStatus.FAILED, PaymentExecutionStatus.DROPPED-> Triple(BankStatusCode.FAILED, "FAILED", reasonText?: "Reason unknown")
         PaymentExecutionStatus.CONFIRMED -> Triple(BankStatusCode.SUCCESS, "SUCCESS", statusChange)
         PaymentExecutionStatus.PAYED_MANUALLY -> Triple(BankStatusCode.SUCCESS, "SUCCESS", statusChange)
         PaymentExecutionStatus.CREATED -> throw SepaException.Payment.StateTransitionForbidden(

@@ -110,6 +110,7 @@
 | POST | banking/sepa/mandates/create | CreateSepaMandate  | CreateSepaMandate | SepaMandate |
 | PATCH | banking/sepa/mandates/update | UpdateSepaMandate  | UpdateSepaMandate | SepaMandate |
 | GET | banking/sepa/messages/by-legal-entity | ReadSepaMessagesByLegalEntityId  | ReadSepaMessagesByLegalEntityId | SepaMessages |
+| DELETE | banking/sepa/payments/delete | DeleteSepaPayment  | DeleteSepaPayment | SepaPaymentId |
 | PATCH | banking/sepa/payments/update-execution-statuses | UpdateSepaPaymentExecutionStatuses  | UpdateSepaPaymentExecutionStatuses | SepaPayments |
 ## permissions
 

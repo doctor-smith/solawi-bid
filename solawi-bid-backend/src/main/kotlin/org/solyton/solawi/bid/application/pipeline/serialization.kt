@@ -376,6 +376,13 @@ fun installSerializers() {
         add<PaymentExecutionStatus>(PaymentExecutionStatus.serializer())
         add<DeleteSepaPayment>(DeleteSepaPayment.serializer())
 
+        // Sepa Payment Links
+        add<SepaPaymentLink>(SepaPaymentLink.serializer())
+        add<SepaPaymentLinks>(SepaPaymentLinks.serializer())
+        add<SuccessorKind>(SuccessorKind.serializer())
+        add<ReadSepaPaymentLinksByLegalEntity>(ReadSepaPaymentLinksByLegalEntity.serializer())
+        add<ReadPersonalSepaPaymentLinks>(ReadPersonalSepaPaymentLinks.serializer())
+
         // Sepa Payment History
 
         // Sepa Messages

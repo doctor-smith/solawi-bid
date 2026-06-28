@@ -20,9 +20,15 @@ fun Container(device: Source<DeviceType>, content: @Composable ElementScope<HTML
     Div({
         style {
             if(device.emit() > DeviceType.Tablet) {
+                /*
                 width(80.percent)
                 marginLeft(10.percent)
                 marginRight(10.percent)
+
+                 */
+                width(94.percent)
+                marginLeft(3.percent)
+                marginRight(3.percent)
             } else {
                 width(98.percent)
                 marginLeft(1.percent)

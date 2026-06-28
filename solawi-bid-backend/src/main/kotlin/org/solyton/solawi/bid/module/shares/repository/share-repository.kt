@@ -6,8 +6,10 @@ import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.solyton.solawi.bid.module.auditable.markModifiedBy
+import org.solyton.solawi.bid.module.banking.repository.updateSepaPaymentTemplate
 import org.solyton.solawi.bid.module.banking.repository.validatedFiscalYear
 import org.solyton.solawi.bid.module.banking.schema.FiscalYearEntity
+import org.solyton.solawi.bid.module.banking.service.getSepaPaymentTemplateByReferenceId
 import org.solyton.solawi.bid.module.distribution.repository.validatedDistributionPoint
 import org.solyton.solawi.bid.module.shares.exception.ShareException
 import org.solyton.solawi.bid.module.shares.schema.*
@@ -289,6 +291,8 @@ fun Transaction.updateShareSubscription(
     val pricePerShareChanged = shareSubscription.pricePerShare != pricePerShare
     val ahcAuthorizedChanged = shareSubscription.ahcAuthorized != ahcAuthorized
 
+    val totalAmountChanged = pricePerShareChanged || numberOfSharesChanged
+
     if(shareOfferChanged || fiscalYearChanged || pricePerShareChanged) {
         val shareOffer = validatedShareOffer(shareOfferId)
         val fiscalYear = validatedFiscalYear(fiscalYearId)
@@ -325,6 +329,27 @@ fun Transaction.updateShareSubscription(
         pricePerShareChanged,
         ahcAuthorizedChanged
     )) shareSubscription.markModifiedBy(modifier)
+
+    if(totalAmountChanged && pricePerShare != null) {
+        // need to find associated sepa payment template and update it
+        val sepaPaymentTemplate = getSepaPaymentTemplateByReferenceId(
+            shareSubscription.id.value
+        )
+        if(sepaPaymentTemplate != null && sepaPaymentTemplate.collection != null) {
+            val collection = sepaPaymentTemplate.collection
+            requireNotNull(collection)
+            requireNotNull(pricePerShare)
+            val newTotalAmount = pricePerShare * shareSubscription.numberOfShares
+            updateSepaPaymentTemplate(
+                modifier,
+                sepaPaymentTemplate.id.value,
+                sepaPaymentTemplate.mandate.id.value,
+                collection.id.value,
+                newTotalAmount,
+                sepaPaymentTemplate.initialSequenceType
+            )
+        }
+    }
 
     return shareSubscription
 }

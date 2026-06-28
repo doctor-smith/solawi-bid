@@ -465,6 +465,16 @@ val solawiApi by lazy {
                 key = UpdateSepaPaymentExecutionStatuses::class,
                 url = "sepa/payments/update-execution-statuses"
             )
+
+            get<ReadPersonalSepaPaymentLinks, SepaPaymentLinks>(
+                key = ReadPersonalSepaPaymentLinks::class,
+                url = "sepa/payment-links/personal"
+            )
+            get<ReadSepaPaymentLinksByLegalEntity, SepaPaymentLinks>(
+                key = ReadSepaPaymentLinksByLegalEntity::class,
+                url = "sepa/payment-links/by-legal-entity",
+                parameters = setOf("legal_entity")
+            )
         }
     }
 }

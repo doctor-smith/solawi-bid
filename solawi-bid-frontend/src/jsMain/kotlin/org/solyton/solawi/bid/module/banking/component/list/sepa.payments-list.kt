@@ -18,6 +18,7 @@ import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.ListStyles
 import org.solyton.solawi.bid.module.scrollable.Scrollable
+import org.solyton.solawi.bid.module.scrollable.ScrollableStyles
 import org.solyton.solawi.bid.module.style.overflow.Overflow
 import org.solyton.solawi.bid.module.style.overflow.overflow
 import org.solyton.solawi.bid.module.style.text.TextOverflow
@@ -202,7 +203,7 @@ fun ListOfPayments(
                 }
             }
         }
-
+        Scrollable(ScrollableStyles.Horizontal) {
         HeaderWrapper(styles.headerWrapper) {
             Header(styles.header) {
                 val allChecked = filteredList.isNotEmpty() && filteredList.all { checkedMap[it.payment.sepaPaymentId] == true }
@@ -246,11 +247,6 @@ fun ListOfPayments(
                     styles = HeaderCellStyles().width(10.percent) ,
                     ordering = { SortByDrop{ order: SortOrder -> sortOrder = sortOrder.copy(sequenceType = order) } }
                 )
-                // HeaderCell("Status"){ width(15.percent) }
-                // HeaderCell("Debtor"){ width(25.percent) }
-                // HeaderCell("Exec. Date"){ width(15.percent) }
-                // HeaderCell("Amount") { width(10.percent) }
-                // HeaderCell("Seq Type") {width(10.percent)}
                 HeaderCell("Failure Reason") {width(20.percent)}
             }
         }
@@ -295,6 +291,6 @@ fun ListOfPayments(
 
                 }
             }
-        }
+        } }
     }
 }

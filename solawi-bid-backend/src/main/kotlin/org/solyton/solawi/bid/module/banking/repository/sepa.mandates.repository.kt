@@ -84,6 +84,12 @@ fun Transaction.createSepaMandateWithRetry(
                     this.referenceId = UUID.fromString(referenceData.referenceId.value)
                     this.amount = referenceData.amount
                 }
+                if(collection != null) createSepaPaymentTemplate(
+                    creatorId,
+                    sepaMandate,
+                    referenceData.amount,
+                    collection,
+                )
             }
 
             return sepaMandate
