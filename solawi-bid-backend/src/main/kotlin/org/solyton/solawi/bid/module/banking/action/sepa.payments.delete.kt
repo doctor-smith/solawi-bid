@@ -10,13 +10,16 @@ import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.solyton.solawi.bid.module.banking.data.SepaPaymentId
 import org.solyton.solawi.bid.module.banking.data.api.DeleteSepaPayment
+import org.solyton.solawi.bid.module.banking.data.api.DeleteSepaPayments
+import org.solyton.solawi.bid.module.banking.data.api.SepaPaymentIds
 import org.solyton.solawi.bid.module.banking.repository.deletePayment
+import org.solyton.solawi.bid.module.banking.repository.deletePayments
 import java.util.*
 
 
 @MathDsl
 @Suppress("FunctionName")
-fun DeleteSepaPayment(): KlAction<org.evoleq.ktorx.result.Result<Contextual<DeleteSepaPayment>>, Result<SepaPaymentId>> = KlAction { result ->
+fun DeleteSepaPayment(): KlAction<Result<Contextual<DeleteSepaPayment>>, Result<SepaPaymentId>> = KlAction { result ->
     DbAction { database ->
         result bindSuspend { contextual ->
             resultTransaction(database) {
@@ -28,3 +31,21 @@ fun DeleteSepaPayment(): KlAction<org.evoleq.ktorx.result.Result<Contextual<Dele
         } x database
     }
 }
+
+@MathDsl
+@Suppress("FunctionName")
+fun DeleteSepaPayments(): KlAction<Result<Contextual<DeleteSepaPayments>>, Result<SepaPaymentIds>> = KlAction { result ->
+    DbAction { database ->
+        result bindSuspend { contextual ->
+            resultTransaction(database) {
+                val data = contextual.data
+                val paymentIds = data.paymentIds.map { UUID.fromString(it.value) }
+                deletePayments(
+                    paymentIds
+                )
+                SepaPaymentIds(data.paymentIds)
+            }
+        } x database
+    }
+}
+

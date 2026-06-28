@@ -437,6 +437,10 @@ val solawiApi by lazy {
                 key = DeleteSepaPayment::class,
                 url = "sepa/payments/delete"
             )
+            delete<DeleteSepaPayments, SepaPaymentIds>(
+                key = DeleteSepaPayments::class,
+                url = "sepa/payments/delete-many"
+            )
             post<GenerateSepaMessageForCollection, SepaMessageString>(
                 key = GenerateSepaMessageForCollection::class,
                 url = "sepa/collections/generate-sepa-message"

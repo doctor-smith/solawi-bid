@@ -19,6 +19,11 @@ data class SepaPayments(
 )
 
 @Serializable
+data class SepaPaymentIds(
+    val all: List<SepaPaymentId>
+)
+
+@Serializable
 data class SepaPayment(
     val sepaPaymentId: SepaPaymentId,
     val sepaMandateId: SepaMandateId,
@@ -103,6 +108,11 @@ data class AddSepaPaymentToCollection(
 data class RemoveSepaPaymentFromCollection(
     val sepaMandateId: SepaMandateId,
     val sepaCollectionId: SepaCollectionId
+)
+
+@Serializable
+data class DeleteSepaPayments(
+    val paymentIds: List<SepaPaymentId>
 )
 
 @Serializable
