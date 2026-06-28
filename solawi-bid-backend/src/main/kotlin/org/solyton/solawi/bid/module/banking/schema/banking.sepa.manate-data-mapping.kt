@@ -14,6 +14,7 @@ typealias SepaMandateDataMappingEntity = SepaMandateDataMapping
 object SepaMandateDataMappings: AuditableUUIDTable("sepa_mandate_data_mappings") {
     val sepaMandateId = reference("sepa_mandate_id", SepaMandates)
     val referenceId = uuid("reference_id")
+    // Deprecated
     val amount = double("amount")
 }
 

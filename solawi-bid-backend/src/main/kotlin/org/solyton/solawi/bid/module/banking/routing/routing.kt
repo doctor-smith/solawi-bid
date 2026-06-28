@@ -31,6 +31,7 @@ import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.DELETE_SEPA
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.READ_SEPA_COLLECTIONS
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.READ_SEPA_MANDATES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.READ_SEPA_MESSAGES
+import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.READ_SEPA_PAYMENTS
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_COLLECTIONS
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_MANDATES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_PAYMENTS
@@ -233,7 +234,7 @@ fun <BankingEnv> Routing.banking (
                 }
                 route("payments"){
                     post("create") {
-                        NotImplemented("Sepa collection deletion is not implemented yet")
+                        NotImplemented("Sepa collection creation is not implemented yet")
                     }
                     patch("update-execution-statuses") {
                         ReceiveContextual<UpdateSepaPaymentExecutionStatuses>() *
@@ -245,6 +246,24 @@ fun <BankingEnv> Routing.banking (
                         ReceiveContextual<DeleteSepaPayment>() *
                         IsGranted(DELETE_SEPA_PAYMENTS, no) *
                         DeleteSepaPayment() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
+                }
+                route("payment-links") {
+                    get("by-legal-entity") {
+                        ReceiveContextual<String>{
+                            parameters -> requireNotNull(parameters["legal_entity"]) {
+                                "Parameter 'legal_entity' is empty"
+                            }
+                        } *
+                        IsGranted(READ_SEPA_PAYMENTS, no) *
+                        ReadSepaPaymentLinksByLegalEntity() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
+                    get("personal") {
+                        ReceiveContextual<Unit>{} *
+                        IsGranted(READ_SEPA_PAYMENTS, no) *
+                        ReadPersonalSepaPaymentLinks() *
                         Respond { transform() } runOn Base(call, environment)
                     }
                 }

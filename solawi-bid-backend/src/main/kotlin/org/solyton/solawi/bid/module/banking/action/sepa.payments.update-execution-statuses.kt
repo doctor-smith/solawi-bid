@@ -8,6 +8,8 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
+import org.solyton.solawi.bid.module.banking.data.SepaPaymentId
+import org.solyton.solawi.bid.module.banking.data.SepaPaymentLinksHelper
 import org.solyton.solawi.bid.module.banking.data.api.ApiSepaPayments
 import org.solyton.solawi.bid.module.banking.data.api.UpdateSepaPaymentExecutionStatuses
 import org.solyton.solawi.bid.module.banking.data.toApiType
@@ -31,8 +33,14 @@ fun UpdateSepaPaymentExecutionStatuses(): KlAction<Result<Contextual<UpdateSepaP
                     data.newStatus.toDomainType(),
                     data.failureReasons.mapKeys { UUID.fromString(it.key.value) }
                 )
-                ApiSepaPayments(payments.map {
-                    it.toApiType()
+                ApiSepaPayments(payments.map { entity ->
+                    entity.toApiType(this) {
+                        SepaPaymentLinksHelper(
+                            entity.nextPeriodSuccessor?.id?.value?.let{ SepaPaymentId(it.toString())},
+                            entity.retrySuccessor?.id?.value?.let{ SepaPaymentId(it.toString())},
+                            entity.mergeSuccessor?.id?.value?.let{ SepaPaymentId(it.toString())},
+                        )
+                    }
                 })
             }
         } x database

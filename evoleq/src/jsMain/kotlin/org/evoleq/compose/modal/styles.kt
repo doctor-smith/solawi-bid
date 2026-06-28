@@ -1,9 +1,12 @@
 package org.evoleq.compose.modal
 
-import org.jetbrains.compose.web.css.StyleScope
-import org.jetbrains.compose.web.css.flexGrow
+import org.jetbrains.compose.web.css.*
+
 data class ModalStyles(
     val containerStyle: StyleScope.()->Unit = {
+        width(96.vw)
+        alignSelf(AlignSelf.SelfStart)
+        property("margin", "0 auto")
         property(
             "box-shadow",
             "0px 4px 12px rgba(0, 0, 0, 0.5)"

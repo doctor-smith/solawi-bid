@@ -3,19 +3,8 @@ package org.solyton.solawi.bid.module.scrollable
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
 import org.evoleq.compose.layout.Vertical
-import org.jetbrains.compose.web.css.DisplayStyle
-import org.jetbrains.compose.web.css.FlexDirection
-import org.jetbrains.compose.web.css.StyleScope
-import org.jetbrains.compose.web.css.display
-import org.jetbrains.compose.web.css.flexDirection
-import org.jetbrains.compose.web.css.height
-import org.jetbrains.compose.web.css.maxHeight
-import org.jetbrains.compose.web.css.minHeight
-import org.jetbrains.compose.web.css.minHeight
-import org.jetbrains.compose.web.css.flexGrow
-import org.jetbrains.compose.web.css.percent
-import org.jetbrains.compose.web.css.px
-import org.jetbrains.compose.web.css.width
+import org.jetbrains.compose.web.css.*
+import org.jetbrains.compose.web.css.keywords.auto
 import org.jetbrains.compose.web.dom.Div
 import org.solyton.solawi.bid.module.style.overflow.Overflow
 import org.solyton.solawi.bid.module.style.overflow.overflowX
@@ -53,6 +42,18 @@ data class ScrollableStyles(
 
     companion object {
         val Default = ScrollableStyles()
+        val Horizontal = ScrollableStyles(
+            contentStyle = {
+                flexDirection(FlexDirection.Row)
+                minHeight(0.px)
+                flexGrow(1)
+                width(auto)
+                display(DisplayStyle.Flex)
+                overflowX(Overflow.Auto)
+                overflowY(Overflow.Hidden)
+            }
+        )
+
         fun modifyContainerStyle(style: StyleScope.()->Unit) = Default.modifyContainerStyle(style)
         fun modifyContentStyle(style: StyleScope.()->Unit) = Default.modifyContentStyle(style)
     }

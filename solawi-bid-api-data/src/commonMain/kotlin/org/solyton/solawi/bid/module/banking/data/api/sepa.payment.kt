@@ -30,8 +30,14 @@ data class SepaPayment(
     val status: PaymentExecutionStatus,
     val failureReason: String? = null,
     val endToEndId: String? = null,
-    val successorId: SepaPaymentId? = null,
-)
+    val nextPeriodSuccessorId: SepaPaymentId? = null,
+    val retrySuccessorId: SepaPaymentId? = null,
+    val mergeSuccessorId: SepaPaymentId? = null,
+) {
+    init {
+        require(if(retrySuccessorId != null) {status == PaymentExecutionStatus.FAILED} else { true}  )
+    }
+}
 
 @Serializable
 data class CreateSepaPayment(
@@ -84,7 +90,8 @@ data class UpdateSepaPaymentExecutionStatuses(
 @Serializable
 data class CreateSepaPaymentSuccessors(
     val executionDate: LocalDate,
-    val paymentIds: List<SepaPaymentId>
+    val paymentIds: List<SepaPaymentId>,
+    val kind: SuccessorKind
 )
 
 @Serializable
@@ -139,4 +146,9 @@ enum class PaymentExecutionStatus {
      * PAYED_MANUALLY: Payment was manually processed by the client.
      */
     PAYED_MANUALLY,
+
+    /**
+     * DROPPED: Payment has been cancelled or dropped from processing and will not be executed.
+     */
+    DROPPED,
 }

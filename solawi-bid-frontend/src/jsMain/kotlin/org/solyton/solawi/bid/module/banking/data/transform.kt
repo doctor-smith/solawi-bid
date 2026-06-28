@@ -20,6 +20,7 @@ import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessage
 import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessageString
 import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessageVersion
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
+import org.solyton.solawi.bid.module.banking.data.sepa.payment.mergeSuccessorId
 import org.solyton.solawi.bid.module.user.data.transform.toDomainType
 import org.solyton.solawi.bid.module.banking.data.api.SepaMessageVersion as ApiSepaMessageVersion
 
@@ -141,7 +142,9 @@ fun ApiSepaPayment.toDomainType(): SepaPayment = SepaPayment(
     status = status.toDomainType(),
     failureReason = failureReason,
     endToEndId = endToEndId,
-    successorId = successorId
+    nextPeriodSuccessorId = nextPeriodSuccessorId,
+    retrySuccessorId = retrySuccessorId,
+    mergeSuccessorId = mergeSuccessorId,
 )
 
 fun ApiSepaCollection.toDomainType(): SepaCollection = SepaCollection(
@@ -202,6 +205,7 @@ fun ApiPaymentExecutionStatus.toDomainType(): PaymentExecutionStatus = when(this
     PAYED_MANUALLY -> PaymentExecutionStatus.PAYED_MANUALLY
     FAILED -> PaymentExecutionStatus.FAILED
     PENDING -> PaymentExecutionStatus.PENDING
+    DROPPED -> PaymentExecutionStatus.DROPPED
 }
 
 fun PaymentExecutionStatus.toApiType(): ApiPaymentExecutionStatus = when(this) {
@@ -212,6 +216,7 @@ fun PaymentExecutionStatus.toApiType(): ApiPaymentExecutionStatus = when(this) {
     PaymentExecutionStatus.PAYED_MANUALLY -> PAYED_MANUALLY
     PaymentExecutionStatus.FAILED -> FAILED
     PaymentExecutionStatus.PENDING -> PENDING
+    PaymentExecutionStatus.DROPPED -> DROPPED
 }
 
 fun ApiSepaMessageString.toDomainType(): SepaMessageString = SepaMessageString(

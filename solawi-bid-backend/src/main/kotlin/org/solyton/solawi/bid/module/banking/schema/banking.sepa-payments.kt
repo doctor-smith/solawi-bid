@@ -4,6 +4,7 @@ import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.ReferenceOption
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.jodatime.date
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.auditable.AuditableEntity
@@ -22,6 +23,8 @@ object SepaPayments : AuditableUUIDTable("sepa_payments") {
     val status = enumerationByName("status", 20, PaymentExecutionStatus::class)
     val failureReason = text("failure_reason").nullable()
     val endToEndId = varchar("end_to_end_id", 35).uniqueIndex().nullable()
+    val templateId = optReference("template_id", SepaPaymentTemplates)
+    // Deprecated, use sepa-payment-links instead
     val successorId = optReference(
         "successor_id",
         SepaPayments,
@@ -46,10 +49,26 @@ class SepaPayment(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     var status by SepaPayments.status
     var failureReason by SepaPayments.failureReason
     var endToEndId by SepaPayments.endToEndId
-
-    var successor by SepaPayment optionalReferencedOn SepaPayments.successorId
+    var template by SepaPaymentTemplate optionalReferencedOn SepaPayments.templateId
+    val predecessors by SepaPayment.via(SepaPaymentLinks.successorId, SepaPaymentLinks.predecessorId)
+    val successors by SepaPayment.via(SepaPaymentLinks.predecessorId, SepaPaymentLinks.successorId)
 
     var message by SepaMessage optionalReferencedOn SepaPayments.messageId
+
+    val nextPeriodSuccessor: SepaPayment?
+        get() = SepaPaymentLink.find {
+            (SepaPaymentLinks.predecessorId eq this@SepaPayment.id) and (SepaPaymentLinks.kind eq SuccessorKind.NEXT_PERIOD)
+        }.firstOrNull()?.successor
+
+    val retrySuccessor: SepaPayment?
+        get() = SepaPaymentLink.find {
+            (SepaPaymentLinks.predecessorId eq this@SepaPayment.id) and (SepaPaymentLinks.kind eq SuccessorKind.RETRY)
+        }.firstOrNull()?.successor
+
+    val mergeSuccessor: SepaPayment?
+        get() = SepaPaymentLink.find {
+            (SepaPaymentLinks.predecessorId eq this@SepaPayment.id) and (SepaPaymentLinks.kind eq SuccessorKind.MERGE)
+        }.firstOrNull()?.successor
 
     override var createdAt: DateTime by SepaPayments.createdAt
     override var createdBy: UUID by SepaPayments.createdBy
@@ -92,4 +111,9 @@ enum class PaymentExecutionStatus {
      * PAYED_MANUALLY: Payment was manually processed by the client.
      */
     PAYED_MANUALLY,
+
+    /**
+     * DROPPED: Payment has been cancelled or dropped from processing and will not be executed.
+     */
+    DROPPED,
 }

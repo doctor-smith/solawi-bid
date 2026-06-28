@@ -4,6 +4,7 @@ import org.jetbrains.exposed.sql.Transaction
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.banking.data.*
 import org.solyton.solawi.bid.module.banking.data.api.ApiSepaCollections
+import org.solyton.solawi.bid.module.banking.data.api.ApiSepaPayments
 import org.solyton.solawi.bid.module.banking.exception.SepaException
 import org.solyton.solawi.bid.module.banking.schema.CreditorIdentifierEntity
 import org.solyton.solawi.bid.module.banking.schema.CreditorIdentifiersTable
@@ -86,7 +87,30 @@ fun Transaction.readSepaCollectionsByLegalEntity(legalEntityId: UUID): ApiSepaCo
         SepaCollectionsTable.creditorIdentifierId inList creditorIdentifierIds
     }
 
-    return ApiSepaCollections(collections.map{it.toApiType() })
+    val successorsMap = collections.flatMap {
+        it.sepaPayments.map { payment ->
+            payment.id.value to Triple(
+                payment.nextPeriodSuccessor?.id?.value,
+                payment.retrySuccessor?.id?.value,
+                payment.mergeSuccessor?.id?.value
+            )
+        }
+    }.associateBy({it.first.toString()}) { it.second }
+
+    val apiPreCollections = collections.map{ it.toApiType() }
+    val apiCollections = apiPreCollections.map { collection -> collection.copy(sepaPayments = collection.sepaPayments?.all?.map{
+        payment ->
+        val nextPeriodSuccessorId = successorsMap[payment.sepaPaymentId.value]?.first
+        val retrySuccessorId = successorsMap[payment.sepaPaymentId.value]?.second
+        val mergeSuccessorId = successorsMap[payment.sepaPaymentId.value]?.third
+        payment.copy(
+            nextPeriodSuccessorId = nextPeriodSuccessorId?.let{SepaPaymentId(it.toString())},
+            retrySuccessorId = retrySuccessorId?.let{SepaPaymentId(it.toString())},
+            mergeSuccessorId = mergeSuccessorId?.let{SepaPaymentId(it.toString())}
+        )
+    }?.let{ ApiSepaPayments(it)}) }
+
+    return ApiSepaCollections(apiCollections )
 }
 
 @Suppress("CyclomaticComplexMethod", "NoNameShadowing")

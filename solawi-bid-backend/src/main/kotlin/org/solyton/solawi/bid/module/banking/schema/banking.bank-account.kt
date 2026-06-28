@@ -33,6 +33,8 @@ class BankAccount(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
 
     var description by BankAccounts.description
 
+    val accessors by BankAccountAccessor referrersOn BankAccountAccessors.bankAccountId
+
     override var createdAt: DateTime by BankAccounts.createdAt
     override var createdBy: UUID by BankAccounts.createdBy
     override var modifiedAt: DateTime? by BankAccounts.modifiedAt

@@ -74,5 +74,18 @@ enum class PaymentExecutionStatus {
      * PAYED_MANUALLY: Payment was manually processed by the client.
      */
     PAYED_MANUALLY,
+
+    /**
+     * DROPPED: Payment has been cancelled or dropped from processing and will not be executed.
+     */
+    DROPPED,
 }
 
+
+enum class SuccessorKind {
+    NEXT_PERIOD,    // the regularly scheduled follow-up
+    RETRY,          // re-execution after FAILED,
+    MERGE,
+    // CORRECTION,     // manual correction / adjustment
+    // REPLACEMENT,    // replaces a cancelled message
+}

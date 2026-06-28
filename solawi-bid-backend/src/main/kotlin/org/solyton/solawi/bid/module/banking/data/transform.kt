@@ -2,9 +2,11 @@ package org.solyton.solawi.bid.module.banking.data
 
 import org.evoleq.exposedx.joda.toKotlinxWithZone
 import org.jetbrains.exposed.sql.SizedIterable
+import org.jetbrains.exposed.sql.Transaction
 import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.banking.data.api.CreditorIdentifier
 import org.solyton.solawi.bid.module.banking.schema.*
+import org.solyton.solawi.bid.module.banking.schema.SuccessorKind
 import org.solyton.solawi.bid.module.banking.schema.AccountType
 import org.solyton.solawi.bid.module.banking.schema.LegalEntity
 import org.solyton.solawi.bid.module.banking.schema.LegalEntityType
@@ -188,8 +190,55 @@ fun SepaPaymentEntity.toApiType(): ApiSepaPayment = ApiSepaPayment(
     status = status.toApiType(),
     failureReason = failureReason,
     endToEndId = endToEndId,
-    successorId = successor?.let { SepaPaymentId(it.id.value.toString()) }
 )
+
+data class SepaPaymentLinksHelper(
+    val nextPeriodSuccessor: SepaPaymentId?,
+    val retrySuccessor: SepaPaymentId?,
+    val mergeSuccessor: SepaPaymentId?,
+)
+
+fun SepaPaymentEntity.toApiType(
+    transaction: Transaction,
+    getLinks: Transaction.()-> SepaPaymentLinksHelper
+): ApiSepaPayment  {
+    val links = transaction.getLinks()
+    return ApiSepaPayment(
+        sepaPaymentId = SepaPaymentId(id.value.toString()),
+        sepaMandateId = SepaMandateId(mandate.id.value.toString()),
+        sepaCollectionId = SepaCollectionId(collection.id.value.toString()),
+        amount = amount,
+        executionDate = executionDate.toKotlinxWithZone().date,
+        sequenceType = sequenceType.toApiType(),
+        status = status.toApiType(),
+        failureReason = failureReason,
+        endToEndId = endToEndId,
+        nextPeriodSuccessorId = links.nextPeriodSuccessor,
+        retrySuccessorId = links.retrySuccessor,
+        mergeSuccessorId = links.mergeSuccessor,
+    )
+}
+
+fun List<SepaPaymentLinkEntity>.toApiType(): List<ApiSepaPaymentLink> = map { it.toApiType() }
+
+fun SepaPaymentLinkEntity.toApiType(): ApiSepaPaymentLink = ApiSepaPaymentLink(
+    successorId = SepaPaymentId(successor.id.value.toString()),
+    predecessorId = SepaPaymentId(predecessor.id.value.toString()),
+    kind = kind.toApiType()
+)
+
+fun SuccessorKind.toApiType(): ApiSuccessorKind = when(this){
+    SuccessorKind.NEXT_PERIOD -> ApiSuccessorKind.NEXT_PERIOD
+    SuccessorKind.RETRY -> ApiSuccessorKind.RETRY
+    SuccessorKind.MERGE -> ApiSuccessorKind.MERGE
+
+}
+
+fun ApiSuccessorKind.toDomainType(): SuccessorKind = when(this) {
+    ApiSuccessorKind.NEXT_PERIOD -> SuccessorKind.NEXT_PERIOD
+    ApiSuccessorKind.RETRY -> SuccessorKind.RETRY
+    ApiSuccessorKind.MERGE -> SuccessorKind.MERGE
+}
 
 fun PaymentExecutionStatus.toApiType(): ApiPaymentExecutionStatus = when(this){
     PaymentExecutionStatus.MESSAGE_CREATED -> ApiPaymentExecutionStatus.MESSAGE_CREATED
@@ -199,6 +248,7 @@ fun PaymentExecutionStatus.toApiType(): ApiPaymentExecutionStatus = when(this){
     PaymentExecutionStatus.PAYED_MANUALLY -> ApiPaymentExecutionStatus.PAYED_MANUALLY
     PaymentExecutionStatus.FAILED -> ApiPaymentExecutionStatus.FAILED
     PaymentExecutionStatus.PENDING -> ApiPaymentExecutionStatus.PENDING
+    PaymentExecutionStatus.DROPPED -> ApiPaymentExecutionStatus.DROPPED
 }
 
 fun ApiPaymentExecutionStatus.toDomainType(): PaymentExecutionStatus = when(this) {
@@ -209,6 +259,7 @@ fun ApiPaymentExecutionStatus.toDomainType(): PaymentExecutionStatus = when(this
     ApiPaymentExecutionStatus.PAYED_MANUALLY -> PaymentExecutionStatus.PAYED_MANUALLY
     ApiPaymentExecutionStatus.FAILED -> PaymentExecutionStatus.FAILED
     ApiPaymentExecutionStatus.PENDING -> PaymentExecutionStatus.PENDING
+    ApiPaymentExecutionStatus.DROPPED -> PaymentExecutionStatus.DROPPED
 }
 
 fun SepaMessageEntity.toApiType(): ApiSepaMessage = ApiSepaMessage(
