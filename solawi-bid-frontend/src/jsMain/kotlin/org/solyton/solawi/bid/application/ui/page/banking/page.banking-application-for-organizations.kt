@@ -822,12 +822,8 @@ fun SepaCollections(
     scope: CoroutineScope,
     deviceType: Source<DeviceType>
 ) {
-
     val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
     val bankingApplicationModals = bankingApplicationStorage * bankingApplicationModals
-
-    val legalEntity = bankingApplicationStorage * legalEntity
-    val creditorIdentifier = bankingApplicationStorage * creditorIdentifier
 
     val creditorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.userId == UserId(providerId.value) }
 
