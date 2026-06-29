@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.application.ui.page.banking
 
 import androidx.compose.runtime.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import org.evoleq.compose.Markup
@@ -12,6 +13,7 @@ import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Property
 import org.evoleq.compose.layout.ReadOnlyProperties
 import org.evoleq.compose.routing.navigate
+import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.device.data.mediaType
 import org.evoleq.kotlinx.date.now
 import org.evoleq.language.Locale
@@ -36,19 +38,13 @@ import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyl
 import org.solyton.solawi.bid.module.banking.action.*
 import org.solyton.solawi.bid.module.banking.component.form.defaultBankAccountInputs
 import org.solyton.solawi.bid.module.banking.component.modal.*
-import org.solyton.solawi.bid.module.banking.component.modal.sepa.ManageCollectionPayments
-import org.solyton.solawi.bid.module.banking.component.modal.sepa.UIState
-import org.solyton.solawi.bid.module.banking.component.modal.sepa.showManagePaymentsOfSepaCollectionModal
-import org.solyton.solawi.bid.module.banking.component.modal.sepa.showUpsertSepaMandatesModal
-import org.solyton.solawi.bid.module.banking.component.modal.sepa.upsertSepaMandatesModalTexts
-import org.solyton.solawi.bid.module.banking.data.SepaCollectionId
+import org.solyton.solawi.bid.module.banking.component.modal.sepa.*
+import org.solyton.solawi.bid.module.banking.data.*
 import org.solyton.solawi.bid.module.banking.data.api.GenerateSepaMessageForCollection
 import org.solyton.solawi.bid.module.banking.data.api.ImportBankAccounts
 import org.solyton.solawi.bid.module.banking.data.api.UpdateSepaMandate
 import org.solyton.solawi.bid.module.banking.data.application.*
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
-import org.solyton.solawi.bid.module.banking.data.bankingApplicationActions
-import org.solyton.solawi.bid.module.banking.data.bankingApplicationModals
 import org.solyton.solawi.bid.module.banking.data.download.Download
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
@@ -59,7 +55,6 @@ import org.solyton.solawi.bid.module.banking.data.sepa.sepaCollections
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaMandates
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaMessageString
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaMessages
-import org.solyton.solawi.bid.module.banking.data.toApyType
 import org.solyton.solawi.bid.module.banking.service.download
 import org.solyton.solawi.bid.module.constants.checkIcon
 import org.solyton.solawi.bid.module.control.button.*
@@ -73,13 +68,13 @@ import org.solyton.solawi.bid.module.scrollable.Scrollable
 import org.solyton.solawi.bid.module.scrollable.ScrollableStyles
 import org.solyton.solawi.bid.module.search.component.SearchInput
 import org.solyton.solawi.bid.module.search.component.SearchInputStyles
-import org.solyton.solawi.bid.module.structure.s
 import org.solyton.solawi.bid.module.style.page.PageTitle
 import org.solyton.solawi.bid.module.style.page.SubTitle
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.action.user.getUsers
 import org.solyton.solawi.bid.module.user.action.user.readUserProfiles
+import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 import org.solyton.solawi.bid.module.user.data.userActions
 import org.solyton.solawi.bid.module.values.AccessorId
 import org.solyton.solawi.bid.module.values.LegalEntityId
@@ -91,36 +86,12 @@ import org.solyton.solawi.bid.module.values.UserId
 @Suppress("FunctionName","CognitiveComplexMethod", "CyclomaticComplexMethod")
 fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, providerId: ProviderId, up: String) {
     val scope = rememberCoroutineScope()
-
     val managedUsers = storage * managedUsers
     val bankingApplicationStorage = storage * bankingApplicationIso
     val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
-    val bankingApplicationModals = bankingApplicationStorage * bankingApplicationModals
     val deviceType = bankingApplicationStorage * deviceData * mediaType.get
 
-    val fiscalYears = bankingApplicationStorage * fiscalYears
-    val creditorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.userId == UserId(providerId.value) }
-    val customerBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.userId != UserId(providerId.value) }
-
-    val bankAccountToUserMap = bankingApplicationStorage * bankAccounts * Reader{ bankAccounts: List<BankAccount> ->
-        bankAccounts.associateBy({it.bankAccountId}) {
-            (managedUsers * FirstOrNull { user -> user.id == it.userId.value }).emit()
-        }.filterNotNullValues()
-    }
-    val customerBankAccountCandidates = managedUsers * FilterBy { customerBankAccounts.read().none { customer -> customer.userId.value == it.id } }
-
     val legalEntity = bankingApplicationStorage * legalEntity
-    val creditorIdentifier = bankingApplicationStorage * creditorIdentifier
-
-    val sepaModule = bankingApplicationStorage * sepaModule
-    val sepaCollections = sepaModule * sepaCollections
-    val sepaMessages = sepaModule * sepaMessages
-    val collectionToBankAccountMap = sepaCollections * Reader<List<SepaCollection>, Map<SepaCollectionId, BankAccount>> {
-        collections: List<SepaCollection> -> collections.associateBy({it.sepaCollectionId}) {
-            (creditorBankAccounts * FirstOrNull { bankAccount -> bankAccount.bankAccountId == it.creditorBankAccountId }).emit()
-        }.filterNotNullValues()
-    }
-    val sepaMandates = sepaModule * sepaMandates
 
     LaunchedEffect(providerId) {
         launch {
@@ -180,19 +151,71 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
             SubTitle("Manage your banking for Organizations")
         }
 
-        Wrap{key(legalEntity.read()){
+        LegalEntity(
+            bankingApplicationStorage,
+            providerId,
+            scope,
+            deviceType
+        )
+
+        CreditorBankAccounts(
+            bankingApplicationStorage,
+            providerId,
+            scope,
+            deviceType
+        )
+
+        CustomerBankAccounts(
+            bankingApplicationStorage,
+            managedUsers,
+            providerId,
+            scope,
+            deviceType
+        )
+
+        FiscalYears(
+            bankingApplicationStorage,
+            providerId,
+            scope,
+            deviceType
+        )
+
+        SepaCollections(
+            bankingApplicationStorage,
+            providerId,
+            scope,
+            deviceType
+        )
+    }
+}
+
+@Composable
+fun LegalEntity(
+    bankingApplicationStorage: Storage<BankingApplication>,
+    providerId: ProviderId,
+    scope: CoroutineScope,
+    deviceType: Source<DeviceType>
+) {
+    val bankingApplicationModals = bankingApplicationStorage * bankingApplicationModals
+
+    val legalEntity = bankingApplicationStorage * legalEntity
+    val creditorIdentifier = bankingApplicationStorage * creditorIdentifier
+
+
+    Wrap {
+        key(legalEntity.read()) {
             Horizontal({
                 width(100.percent)
                 justifyContent(JustifyContent.SpaceBetween)
             }) {
                 H3 { Text("Your data as Legal Entity:") }
 
-                var legalEntityState by remember{ mutableStateOf(legalEntity.read()) }
-                var creditorIdentifierState by remember { mutableStateOf(creditorIdentifier.read())}
+                var legalEntityState by remember { mutableStateOf(legalEntity.read()) }
+                var creditorIdentifierState by remember { mutableStateOf(creditorIdentifier.read()) }
                 EditButton(
                     color = Color.black,
                     bgColor = Color.white,
-                    texts = {"Edit "},
+                    texts = { "Edit " },
                     deviceType = deviceType
                 ) {
                     bankingApplicationModals.showUpsertLegalEntityModal(
@@ -217,31 +240,200 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                         LegalEntityId(providerId.value),
                         creditorIdentifierState,
                         legalEntityState,
-                        {l, c ->
+                        { l, c ->
                             legalEntityState = l
                             creditorIdentifierState = c
                         }
                     ) {
+                        scope.launch {
 
+                        }
                     }
                 }
             }
-            ReadOnlyProperties(listOf(
-                Property("Name", legalEntity.read().name){ it.toString() },
-                Property("Legal Form", legalEntity.read().legalForm){it?.toString()?:""},
-                Property("Type", legalEntity.read().legalEntityType.name){it.toString()},
-                Property("Creditor Id", creditorIdentifier.read()?.creditorId?.value ?: "---"){it.toString()},
-            ))
-        }}
+            ReadOnlyProperties(
+                listOf(
+                    Property("Name", legalEntity.read().name) { it.toString() },
+                    Property("Legal Form", legalEntity.read().legalForm) { it?.toString() ?: "" },
+                    Property("Type", legalEntity.read().legalEntityType.name) { it.toString() },
+                    Property(
+                        "Creditor Id",
+                        creditorIdentifier.read()?.creditorId?.value ?: "---"
+                    ) { it.toString() },
+                )
+            )
+        }
+    }
+}
 
 
+@Composable
+fun CreditorBankAccounts(
+    bankingApplicationStorage: Storage<BankingApplication>,
+    providerId: ProviderId,
+    scope: CoroutineScope,
+    deviceType: Source<DeviceType>
+) {
+    val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
+    val bankingApplicationModals = bankingApplicationStorage * bankingApplicationModals
+    val creditorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.userId == UserId(providerId.value) }
 
+    Wrap {
+        ListWrapper {
+            TitleWrapper {
+                SimpleRightDown(true) {}
+                Title { H3 { Text("Creditor Bank Accounts") } }
+                var bankAccountState by remember { mutableStateOf<BankAccount?>(null) }
+                PlusButton(
+                    color = Color.black,
+                    bgColor = Color.white,
+                    deviceType = deviceType,
+                ) {
+                    val bankAccountTexts = dialogModalTexts("BankAccounts").extend {
+                        add(defaultBankAccountInputs())
+                    }
 
-        Wrap {
-            ListWrapper {
-                TitleWrapper {
-                    SimpleRightDown(true) {}
-                    Title { H3{ Text("Creditor Bank Accounts") } }
+                    bankingApplicationModals.showUpsertBankAccountModal(
+                        storage = bankingApplicationStorage,
+                        texts = bankAccountTexts,
+                        device = deviceType,
+                        legalEntityId = LegalEntityId(providerId.value),
+                        bankAccount = null,
+                        setBankAccount = { bA -> bankAccountState = bA },
+                        isOkButtonDisabled = { bankAccountState == null },
+                        hasDescription = true
+                    ) {
+                        if (bankAccountState != null) {
+                            val newBankAccount = requireNotNull(bankAccountState)
+                            scope.launch {
+                                bankingApplicationActions dispatch createBankAccount(
+                                    newBankAccount.userId,
+                                    newBankAccount.iban,
+                                    newBankAccount.bic,
+                                    newBankAccount.bankAccountHolder,
+                                    newBankAccount.isActive,
+                                    newBankAccount.bankAccountType,
+                                    newBankAccount.description
+                                )
+                                bankAccountState = null
+                            }
+                        }
+                    }
+                }
+            }
+            HeaderWrapper {
+                Header {
+                    HeaderCell("Account Holder") { width(30.percent) }
+                    HeaderCell("Description") { width(15.percent) }
+                    HeaderCell("IBAN") { width(30.percent) }
+                    HeaderCell("BIC") { width(20.percent) }
+                    HeaderCell("Active") { width(5.percent) }
+                }
+            }
+            ListItemsIndexed(creditorBankAccounts.read().let {
+                it.sortedByDescending { bankAccount -> bankAccount.bic.value }
+            }) { index, bankAccount ->
+                ListItemWrapper({ listItemWrapperStyle(index) }) {
+                    DataWrapper {
+                        TextCell(bankAccount.bankAccountHolder) { width(30.percent) }
+                        TextCell(bankAccount.description ?: "") { width(15.percent) }
+                        TextCell(bankAccount.iban.value) { width(30.percent) }
+                        TextCell(bankAccount.bic.value) { width(20.percent) }
+                        TextCell(bankAccount.isActive.toString()) { width(5.percent) }
+                    }
+                    ActionsWrapper {
+                        var bankAccountState by remember { mutableStateOf<BankAccount?>(null) }
+                        EditButton(
+                            color = Color.black,
+                            bgColor = Color.white,
+                            deviceType = deviceType,
+                            isDisabled = false
+                        ) {
+                            val bankAccountTexts = dialogModalTexts("BankAccounts").extend {
+                                add(defaultBankAccountInputs())
+                            }
+
+                            bankingApplicationModals.showUpsertBankAccountModal(
+                                storage = bankingApplicationStorage,
+                                texts = bankAccountTexts,
+                                device = deviceType,
+                                legalEntityId = LegalEntityId(providerId.value),
+                                bankAccount = bankAccount,
+                                setBankAccount = { bA -> bankAccountState = bA },
+                                isOkButtonDisabled = { bankAccountState == null },
+                                hasDescription = true
+                            ) {
+                                if (bankAccountState != null) {
+                                    val newBankAccount = requireNotNull(bankAccountState)
+                                    scope.launch {
+                                        bankingApplicationActions dispatch updateBankAccount(
+                                            bankAccount.bankAccountId,
+                                            newBankAccount.userId,
+                                            newBankAccount.iban,
+                                            newBankAccount.bic,
+                                            newBankAccount.bankAccountHolder,
+                                            newBankAccount.isActive,
+                                            newBankAccount.bankAccountType,
+                                            newBankAccount.description
+                                        )
+                                        bankAccountState = null
+                                    }
+                                }
+                            }
+                        }
+                        TrashCanButton(
+                            color = Color.black,
+                            bgColor = Color.white,
+                            deviceType = deviceType,
+                            isDisabled = false
+                        ) {
+                            scope.launch {
+                                bankingApplicationActions dispatch deleteBankAccount(bankAccount.bankAccountId)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+@Composable
+@Suppress("CognitiveComplexMethod")
+fun CustomerBankAccounts(
+    bankingApplicationStorage: Storage<BankingApplication>,
+    managedUsers: Storage<List<ManagedUser>>,
+    providerId: ProviderId,
+    scope: CoroutineScope,
+    deviceType: Source<DeviceType>
+) {
+    val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
+    val bankingApplicationModals = bankingApplicationStorage * bankingApplicationModals
+
+    val creditorIdentifier = bankingApplicationStorage * creditorIdentifier
+    val customerBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.userId != UserId(providerId.value) }
+
+    val bankAccountToUserMap: Source<Map<BankAccountId, ManagedUser?>> = bankingApplicationStorage * bankAccounts * Reader{ bankAccounts: List<BankAccount> ->
+        bankAccounts.associateBy<BankAccount, BankAccountId, ManagedUser?>({it.bankAccountId}) {
+            (managedUsers * FirstOrNull<ManagedUser> { user: ManagedUser -> user.id == it.userId.value }).emit()
+        }.filterNotNullValues()
+    }
+    val customerBankAccountCandidates = managedUsers * FilterBy { customerBankAccounts.read().none { customer -> customer.userId.value == it.id } }
+
+    val sepaModule = bankingApplicationStorage * sepaModule
+    val sepaMandates = sepaModule * sepaMandates
+    val sepaCollections = sepaModule * sepaCollections
+
+    Wrap {
+        ListWrapper {
+            var opened by remember { mutableStateOf(false) }
+            TitleWrapper {
+
+                SimpleRightDown(opened) { opened = !opened }
+                Title(onClick = { opened = !opened }) { H3 { Text("Customer Bank Accounts") } }
+
+                When(opened) {
                     var bankAccountState by remember { mutableStateOf<BankAccount?>(null) }
                     PlusButton(
                         color = Color.black,
@@ -252,17 +444,19 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                             add(defaultBankAccountInputs())
                         }
 
-                        bankingApplicationModals.showUpsertBankAccountModal(
+                        bankingApplicationModals.showUpsertBankAccountWithUserSearchModal(
                             storage = bankingApplicationStorage,
                             texts = bankAccountTexts,
                             device = deviceType,
-                            legalEntityId = LegalEntityId(providerId.value),
+                            legalEntities = customerBankAccountCandidates.read(),
+                            legalEntityId = null,
                             bankAccount = null,
-                            setBankAccount = {bA -> bankAccountState = bA},
-                            isOkButtonDisabled = {bankAccountState == null},
-                            hasDescription = true
+                            setBankAccount = { bA -> bankAccountState = bA },
+                            isOkButtonDisabled = {
+                                bankAccountState == null || bankAccountState?.userId?.value == NIL_UUID
+                            }
                         ) {
-                            if(bankAccountState != null ) {
+                            if (bankAccountState != null) {
                                 val newBankAccount = requireNotNull(bankAccountState)
                                 scope.launch {
                                     bankingApplicationActions dispatch createBankAccount(
@@ -272,435 +466,223 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                                         newBankAccount.bankAccountHolder,
                                         newBankAccount.isActive,
                                         newBankAccount.bankAccountType,
-                                        newBankAccount.description
+                                        null,
+                                        listOf(AccessorId(providerId.value))
                                     )
                                     bankAccountState = null
                                 }
                             }
                         }
                     }
-                }
-                HeaderWrapper {
-                    Header{
-                        HeaderCell("Account Holder") { width(30.percent) }
-                        HeaderCell("Description") {  width(15.percent)}
-                        HeaderCell("IBAN") { width(30.percent) }
-                        HeaderCell("BIC") { width(20.percent) }
-                        HeaderCell("Active"){ width(5.percent) }
-                    }
-                }
-                ListItemsIndexed(creditorBankAccounts.read().let{
-                    it.sortedByDescending { bankAccount -> bankAccount.bic.value  }
-                }) {index,  bankAccount ->
-                    ListItemWrapper({ listItemWrapperStyle(index) }) {
-                        DataWrapper {
-                            TextCell(bankAccount.bankAccountHolder) {width(30.percent)}
-                            TextCell(bankAccount.description?:"") {width(15.percent)}
-                            TextCell(bankAccount.iban.value) {width(30.percent)}
-                            TextCell(bankAccount.bic.value) {width(20.percent)}
-                            TextCell(bankAccount.isActive.toString()) {width(5.percent)}
-                        }
-                        ActionsWrapper {
-                            var bankAccountState by remember { mutableStateOf<BankAccount?>(null) }
-                            EditButton(
-                                color = Color.black,
-                                bgColor = Color.white,
-                                deviceType = deviceType,
-                                isDisabled = false
-                            ) {
-                                val bankAccountTexts = dialogModalTexts("BankAccounts").extend {
-                                    add(defaultBankAccountInputs())
-                                }
-
-                                bankingApplicationModals.showUpsertBankAccountModal(
-                                    storage = bankingApplicationStorage,
-                                    texts = bankAccountTexts,
-                                    device = deviceType,
-                                    legalEntityId = LegalEntityId(providerId.value),
-                                    bankAccount = bankAccount,
-                                    setBankAccount = {bA -> bankAccountState = bA},
-                                    isOkButtonDisabled = {bankAccountState == null},
-                                    hasDescription = true
-                                ) {
-                                    if(bankAccountState != null ) {
-                                        val newBankAccount = requireNotNull(bankAccountState)
-                                        scope.launch {
-                                            bankingApplicationActions dispatch updateBankAccount(
-                                                bankAccount.bankAccountId,
-                                                newBankAccount.userId,
-                                                newBankAccount.iban,
-                                                newBankAccount.bic,
-                                                newBankAccount.bankAccountHolder,
-                                                newBankAccount.isActive,
-                                                newBankAccount.bankAccountType,
-                                                newBankAccount.description
-                                            )
-                                            bankAccountState = null
-                                        }
-                                    }
-                                }
+                    var importBankAccountsState by remember { mutableStateOf<ImportBankAccounts?>(null) }
+                    UploadButton(
+                        color = Color.black,
+                        bgColor = Color.white,
+                        deviceType = deviceType,
+                    ) {
+                        bankingApplicationModals.showImportBankAccountsModal(
+                            texts = dialogModalTexts("Import Bank Accounts"),
+                            device = deviceType,
+                            accessorId = AccessorId(providerId.value),
+                            bankAccounts = customerBankAccounts.read(),
+                            users = managedUsers.read(),
+                            setImportBankAccounts = {
+                                importBankAccountsState = it
                             }
-                            TrashCanButton(
-                                color = Color.black,
-                                bgColor = Color.white,
-                                deviceType = deviceType,
-                                isDisabled = false
-                            ) {
-                                scope.launch {
-                                    bankingApplicationActions dispatch deleteBankAccount(bankAccount.bankAccountId)
-                                }
+                        ) {
+                            if (importBankAccountsState == null) return@showImportBankAccountsModal
+                            val state = requireNotNull(importBankAccountsState)
+                            scope.launch {
+                                bankingApplicationActions dispatch importBankAccounts(
+                                    state.override,
+                                    state.accessorId,
+                                    state.bankAccounts
+                                )
                             }
                         }
                     }
-                }
-            }
-        }
+                    DownloadButton(
+                        color = Color.black,
+                        bgColor = Color.white,
+                        texts = { "Download as CSV" },
+                        deviceType = deviceType,
+                    ) {
+                        val checked = listOf(
+                            "username",
+                            "bank_account_holder",
+                            "iban",
+                            "bic",
+                            "description",
+                            "is_active"
+                        )
 
-        Wrap {
-            ListWrapper { var opened by remember { mutableStateOf(false) }
-                TitleWrapper {
-
-                    SimpleRightDown(opened) {opened = !opened}
-                    Title(onClick = {opened = !opened}) { H3{ Text("Customer Bank Accounts") } }
-
-                    When(opened) {
-                        var bankAccountState by remember { mutableStateOf<BankAccount?>(null) }
-                        PlusButton(
-                            color = Color.black,
-                            bgColor = Color.white,
-                            deviceType = deviceType,
-                        ) {
-                            val bankAccountTexts = dialogModalTexts("BankAccounts").extend {
-                                add(defaultBankAccountInputs())
-                            }
-
-                            bankingApplicationModals.showUpsertBankAccountWithUserSearchModal(
-                                storage = bankingApplicationStorage,
-                                texts = bankAccountTexts,
-                                device = deviceType,
-                                legalEntities = customerBankAccountCandidates.read(),
-                                legalEntityId = null,
-                                bankAccount = null,
-                                setBankAccount = { bA -> bankAccountState = bA },
-                                isOkButtonDisabled = {
-                                    bankAccountState == null || bankAccountState?.userId?.value == NIL_UUID
-                                }
-                            ) {
-                                if (bankAccountState != null) {
-                                    val newBankAccount = requireNotNull(bankAccountState)
-                                    scope.launch {
-                                        bankingApplicationActions dispatch createBankAccount(
-                                            newBankAccount.userId,
-                                            newBankAccount.iban,
-                                            newBankAccount.bic,
-                                            newBankAccount.bankAccountHolder,
-                                            newBankAccount.isActive,
-                                            newBankAccount.bankAccountType,
-                                            null,
-                                            listOf(AccessorId(providerId.value))
-                                        )
-                                        bankAccountState = null
-                                    }
-                                }
+                        val headers = checked.joinToString(";")
+                        // val numberOfCols = checked.size
+                        //val semiColons = ";".repeat(numberOfCols - 1)
+                        val csvLines: String = customerBankAccounts.read().joinToString("\n") { account ->
+                            val (bankAccountId, userId, iban, bic, bankAccountHolder, isActive, bankAccountType, description, ) = account
+                            val user = bankAccountToUserMap.emit()[bankAccountId]
+                            when {
+                                user == null -> ""
+                                else -> "${user.username};$bankAccountHolder;${iban.value};${bic.value ?: ""};$description;$isActive"
                             }
                         }
-                        var importBankAccountsState by remember { mutableStateOf<ImportBankAccounts?>(null)}
-                        UploadButton(
-                            color = Color.black,
-                            bgColor = Color.white,
-                            deviceType = deviceType,
-                        ) {
-                            bankingApplicationModals.showImportBankAccountsModal(
-                                texts = dialogModalTexts("Import Bank Accounts"),
-                                device = deviceType,
-                                accessorId = AccessorId(providerId.value),
-                                bankAccounts= customerBankAccounts.read(),
-                                users = managedUsers.read(),
-                                setImportBankAccounts = {
-                                    importBankAccountsState = it
-                                }
-                            ) {
-                                if(importBankAccountsState == null) return@showImportBankAccountsModal
-                                val state = requireNotNull(importBankAccountsState)
-                                scope.launch {
-                                    bankingApplicationActions dispatch importBankAccounts(
-                                        state.override,
-                                        state.accessorId,
-                                        state.bankAccounts
-                                    )
-                                }
-                            }
-                        }
-                        DownloadButton(
-                            color = Color.black,
-                            bgColor = Color.white,
-                            texts = { "Download as CSV" },
-                            deviceType = deviceType,
-                        ) {
-                            val checked = listOf(
-                                "username",
-                                "bank_account_holder",
-                                "iban",
-                                "bic",
-                                "description",
-                                "is_active"
-                            )
 
-                            val headers = checked.joinToString(";")
-                            // val numberOfCols = checked.size
-                            //val semiColons = ";".repeat(numberOfCols - 1)
-                            val csvLines: String = customerBankAccounts.read().joinToString("\n") { account ->
-                                val (bankAccountId, userId,  iban, bic, bankAccountHolder,  isActive, bankAccountType, description,) = account
-                                val user = bankAccountToUserMap.emit()[bankAccountId]
-                                when{
-                                    user == null -> ""
-                                    else -> "${user.username};$bankAccountHolder;${iban.value};${bic.value ?: ""};$description;$isActive"
-                                }
-                            }
-
-                            val csv = """
+                        val csv = """
                                 |$headers
                                 |$csvLines
                             """.trimMargin()
 
-                            downloadCsv(csv, "bank_accounts_${now()}.csv")
-                        }
-                    }
-                }
-
-                When(opened) {
-                    var customerBankAccountsSearchInput by remember { mutableStateOf("") }
-                    var customerBankAccountsFilter by remember { mutableStateOf<(BankAccount)->Boolean>({true}) }
-                    LaunchedEffect(customerBankAccountsSearchInput) {
-                        customerBankAccountsFilter = { bankAccount ->
-                            bankAccount.bankAccountHolder.contains(customerBankAccountsSearchInput, ignoreCase = true)
-                            || bankAccount.iban.value.contains(customerBankAccountsSearchInput, ignoreCase = true)
-                            || bankAccount.bic.value.contains(customerBankAccountsSearchInput, ignoreCase = true)
-                        }
-                    }
-                    HeaderWrapper {
-                        Header {
-                            HeaderCell("Number: ${customerBankAccounts.read().size}") {width(15.percent)}
-                            SearchInput(
-                                customerBankAccountsSearchInput,
-                                styles = SearchInputStyles()
-                            ) {
-                                customerBankAccountsSearchInput = it
-                            }
-                        }
-                    }
-                    HeaderWrapper({
-                        width(98.percent)
-                    }) {
-                        Header {
-                            HeaderCell("Account Holder") { width(30.percent) }
-                            HeaderCell("IBAN") { width(30.percent) }
-                            HeaderCell("BIC") { width(20.percent) }
-                            HeaderCell("Active") { width(10.percent) }
-                        }
-                    }
-                    Scrollable(ScrollableStyles
-                        .modifyContainerStyle { height(80.vh) }
-                        .modifyContentStyle { width(100.percent) }
-                    ) {
-                        ListItemsIndexed(customerBankAccounts.read()
-                            .filter(customerBankAccountsFilter)
-                            .let {
-                            it.sortedByDescending { bankAccount -> bankAccount.bic.value }
-                        }) { index, bankAccount ->
-                            ListItemWrapper({
-                                listItemWrapperStyle(index)
-                                width(98.percent)
-                            }) {
-                                DataWrapper {
-                                    TextCell(bankAccount.bankAccountHolder) { width(30.percent) }
-                                    TextCell(bankAccount.iban.value) { width(30.percent) }
-                                    TextCell(bankAccount.bic.value) { width(20.percent) }
-                                    TextCell(bankAccount.isActive.toString()) { width(10.percent) }
-                                }
-                                ActionsWrapper {
-                                    var bankAccountState by remember { mutableStateOf<BankAccount?>(null) }
-                                    EditButton(
-                                        color = Color.black,
-                                        bgColor = Color.white,
-                                        deviceType = deviceType,
-                                        isDisabled = false
-                                    ) {
-                                        val bankAccountTexts = dialogModalTexts("BankAccounts").extend {
-                                            add(defaultBankAccountInputs())
-                                        }
-
-                                        bankingApplicationModals.showUpsertBankAccountModal(
-                                            bankingApplicationStorage,
-                                            bankAccountTexts,
-                                            deviceType,
-                                            LegalEntityId(bankAccount.userId.value),
-                                            bankAccount,
-                                            { bA -> bankAccountState = bA }
-                                        ) {
-                                            if (bankAccountState != null) {
-                                                val newBankAccount = requireNotNull(bankAccountState)
-                                                scope.launch {
-                                                    bankingApplicationActions dispatch updateBankAccount(
-                                                        bankAccount.bankAccountId,
-                                                        newBankAccount.userId,
-                                                        newBankAccount.iban,
-                                                        newBankAccount.bic,
-                                                        newBankAccount.bankAccountHolder,
-                                                        newBankAccount.isActive,
-                                                        newBankAccount.bankAccountType
-                                                    )
-                                                    bankAccountState = null
-                                                }
-                                            }
-                                        }
-                                    }
-                                    val usersSepaMandates = sepaMandates * FilterBy { it.debtorBankAccountId == bankAccount.bankAccountId }
-                                    val usersSepaMandateIds = Read(usersSepaMandates).emit().map { mandate -> mandate.sepaMandateId }
-                                    val usersCollections = sepaCollections * FilterBy {
-                                        it.sepaMandates.map { mandate -> mandate.sepaMandateId }.any{
-                                            id -> id in usersSepaMandateIds
-                                        }
-                                    }
-                                    var usersSepaMandatesState by remember { mutableStateOf(usersSepaMandates.read() ) }
-                                    val creditorId = creditorIdentifier.read()?.creditorId
-                                    CreditCardButton(
-                                        color = Color.black,
-                                        bgColor = Color.white,
-                                        texts = { "Manage SEPA Mandates" },
-                                        deviceType = deviceType,
-                                        isDisabled = creditorId == null
-                                    ) {
-                                        scope.launch {
-                                            bankingApplicationModals.showUpsertSepaMandatesModal(
-                                                storage = bankingApplicationStorage,
-                                                texts = upsertSepaMandatesModalTexts,
-                                                device = deviceType,
-                                                sepaCollections = usersCollections.read(),
-                                                sepaMandates = usersSepaMandates.read(),
-                                                setSepaMandates = { mandates -> usersSepaMandatesState = mandates },
-                                            ) {
-                                                scope.launch {
-
-                                                    usersSepaMandatesState.forEach {
-                                                        bankingApplicationActions dispatch updateSepaMandate(
-                                                            UpdateSepaMandate(
-                                                                it.sepaMandateId,
-                                                                it.debtorBankAccountId,
-                                                                requireNotNull(creditorId) {
-                                                                    "Creditor ID is null"
-                                                                },
-                                                                it.debtorName,
-                                                                it.mandateReference,
-                                                                it.signedAt,
-                                                                it.validFrom,
-                                                                it.validUntil,
-                                                                it.lastUsedAt,
-                                                                it.status.toApyType(),
-                                                                it.isActive,
-                                                                it.amendmentOf
-                                                            ),
-                                                        )
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    TrashCanButton(
-                                        color = Color.black,
-                                        bgColor = Color.white,
-                                        deviceType = deviceType,
-                                        isDisabled = false
-                                    ) {
-                                        scope.launch {
-                                            bankingApplicationActions dispatch deleteBankAccount(bankAccount.bankAccountId)
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        downloadCsv(csv, "bank_accounts_${now()}.csv")
                     }
                 }
             }
-        }
-    }
-    s("Fiscal Years") {
-        Wrap {
-            ListWrapper {
-                var opened by remember { mutableStateOf(false) }
-                TitleWrapper {
-                    SimpleRightDown(opened) {opened = !opened}
-                    Title { H3 { Text("Fiscal Years") } }
-                    When(opened) {
-                        var fiscalYearState by remember { mutableStateOf<FiscalYear?>(null) }
-                        PlusButton(
-                            color = Color.black,
-                            bgColor = Color.white,
-                            deviceType = deviceType,
+
+            When(opened) {
+                var customerBankAccountsSearchInput by remember { mutableStateOf("") }
+                var customerBankAccountsFilter by remember { mutableStateOf<(BankAccount) -> Boolean>({ true }) }
+                LaunchedEffect(customerBankAccountsSearchInput) {
+                    customerBankAccountsFilter = { bankAccount ->
+                        bankAccount.bankAccountHolder.contains(customerBankAccountsSearchInput, ignoreCase = true)
+                                || bankAccount.iban.value.contains(
+                            customerBankAccountsSearchInput,
+                            ignoreCase = true
+                        )
+                                || bankAccount.bic.value.contains(
+                            customerBankAccountsSearchInput,
+                            ignoreCase = true
+                        )
+                    }
+                }
+                HeaderWrapper {
+                    Header {
+                        HeaderCell("Number: ${customerBankAccounts.read().size}") { width(15.percent) }
+                        SearchInput(
+                            customerBankAccountsSearchInput,
+                            styles = SearchInputStyles()
                         ) {
-                            bankingApplicationModals.showUpsertFiscalYearsModal(
-                                bankingApplicationStorage,
-                                dialogModalTexts("Message"),
-                                deviceType,
-                                fiscalYears.read(),
-                                fiscalYearState,
-                                { fiscalYear -> fiscalYearState = fiscalYear },
-                            ) {
-                                val state = fiscalYearState
-                                requireNotNull(state)
-                                scope.launch {
-                                    bankingApplicationActions dispatch createFiscalYear(
-                                        providerId.value,
-                                        state.start,
-                                        state.end
-                                    )
-                                }
-                            }
+                            customerBankAccountsSearchInput = it
                         }
                     }
                 }
-                When(opened) {
-                    HeaderWrapper {
-                        Header {
-                            HeaderCell("Fiscal Year") { width(10.percent) }
-                            HeaderCell("Start Date") { width(10.percent) }
-                            HeaderCell("End Date") { width(10.percent) }
-                        }
+                HeaderWrapper({
+                    width(98.percent)
+                }) {
+                    Header {
+                        HeaderCell("Account Holder") { width(30.percent) }
+                        HeaderCell("IBAN") { width(30.percent) }
+                        HeaderCell("BIC") { width(20.percent) }
+                        HeaderCell("Active") { width(10.percent) }
                     }
-                    ListItemsIndexed(fiscalYears.read().let {
-                        it.sortedByDescending { fiscalYear -> fiscalYear.format() }
-                    }) { index, fiscalYear ->
-                        ListItemWrapper({ listItemWrapperStyle(index) }) {
-                            fun LocalDate.format(): String = "$year-$monthNumber-$dayOfMonth"
+                }
+                Scrollable(
+                    ScrollableStyles
+                        .modifyContainerStyle { height(80.vh) }
+                        .modifyContentStyle { width(100.percent) }
+                ) {
+                    ListItemsIndexed(
+                        customerBankAccounts.read()
+                            .filter(customerBankAccountsFilter)
+                            .let {
+                                it.sortedByDescending { bankAccount -> bankAccount.bic.value }
+                            }) { index, bankAccount ->
+                        ListItemWrapper({
+                            listItemWrapperStyle(index)
+                            width(98.percent)
+                        }) {
                             DataWrapper {
-                                TextCell(fiscalYear.format()) { width(10.percent) }
-                                TextCell(fiscalYear.start.toString()) { width(10.percent) }
-                                TextCell(fiscalYear.end.toString()) { width(10.percent) }
+                                TextCell(bankAccount.bankAccountHolder) { width(30.percent) }
+                                TextCell(bankAccount.iban.value) { width(30.percent) }
+                                TextCell(bankAccount.bic.value) { width(20.percent) }
+                                TextCell(bankAccount.isActive.toString()) { width(10.percent) }
                             }
                             ActionsWrapper {
-                                var fiscalYearState by remember { mutableStateOf<FiscalYear?>(fiscalYear) }
+                                var bankAccountState by remember { mutableStateOf<BankAccount?>(null) }
                                 EditButton(
                                     color = Color.black,
                                     bgColor = Color.white,
                                     deviceType = deviceType,
+                                    isDisabled = false
                                 ) {
-                                    bankingApplicationModals.showUpsertFiscalYearsModal(
+                                    val bankAccountTexts = dialogModalTexts("BankAccounts").extend {
+                                        add(defaultBankAccountInputs())
+                                    }
+
+                                    bankingApplicationModals.showUpsertBankAccountModal(
                                         bankingApplicationStorage,
-                                        dialogModalTexts("Message"),
+                                        bankAccountTexts,
                                         deviceType,
-                                        fiscalYears.read(),
-                                        fiscalYearState,
-                                        { fiscalYear -> fiscalYearState = fiscalYear },
+                                        LegalEntityId(bankAccount.userId.value),
+                                        bankAccount,
+                                        { bA -> bankAccountState = bA }
                                     ) {
-                                        val state = fiscalYearState
-                                        requireNotNull(state)
-                                        scope.launch {
-                                            bankingApplicationActions dispatch updateFiscalYear(
-                                                fiscalYear.fiscalYearId,
-                                                providerId.value,
-                                                state.start,
-                                                state.end
-                                            )
+                                        if (bankAccountState != null) {
+                                            val newBankAccount = requireNotNull(bankAccountState)
+                                            scope.launch {
+                                                bankingApplicationActions dispatch updateBankAccount(
+                                                    bankAccount.bankAccountId,
+                                                    newBankAccount.userId,
+                                                    newBankAccount.iban,
+                                                    newBankAccount.bic,
+                                                    newBankAccount.bankAccountHolder,
+                                                    newBankAccount.isActive,
+                                                    newBankAccount.bankAccountType
+                                                )
+                                                bankAccountState = null
+                                            }
+                                        }
+                                    }
+                                }
+                                val usersSepaMandates =
+                                    sepaMandates * FilterBy { it.debtorBankAccountId == bankAccount.bankAccountId }
+                                val usersSepaMandateIds =
+                                    Read(usersSepaMandates).emit().map { mandate -> mandate.sepaMandateId }
+                                val usersCollections = sepaCollections * FilterBy {
+                                    it.sepaMandates.map { mandate -> mandate.sepaMandateId }.any { id ->
+                                        id in usersSepaMandateIds
+                                    }
+                                }
+                                var usersSepaMandatesState by remember { mutableStateOf(usersSepaMandates.read()) }
+                                val creditorId = creditorIdentifier.read()?.creditorId
+                                CreditCardButton(
+                                    color = Color.black,
+                                    bgColor = Color.white,
+                                    texts = { "Manage SEPA Mandates" },
+                                    deviceType = deviceType,
+                                    isDisabled = creditorId == null
+                                ) {
+                                    scope.launch {
+                                        bankingApplicationModals.showUpsertSepaMandatesModal(
+                                            storage = bankingApplicationStorage,
+                                            texts = upsertSepaMandatesModalTexts,
+                                            device = deviceType,
+                                            sepaCollections = usersCollections.read(),
+                                            sepaMandates = usersSepaMandates.read(),
+                                            setSepaMandates = { mandates -> usersSepaMandatesState = mandates },
+                                        ) {
+                                            scope.launch {
+
+                                                usersSepaMandatesState.forEach {
+                                                    bankingApplicationActions dispatch updateSepaMandate(
+                                                        UpdateSepaMandate(
+                                                            it.sepaMandateId,
+                                                            it.debtorBankAccountId,
+                                                            requireNotNull(creditorId) {
+                                                                "Creditor ID is null"
+                                                            },
+                                                            it.debtorName,
+                                                            it.mandateReference,
+                                                            it.signedAt,
+                                                            it.validFrom,
+                                                            it.validUntil,
+                                                            it.lastUsedAt,
+                                                            it.status.toApyType(),
+                                                            it.isActive,
+                                                            it.amendmentOf
+                                                        ),
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -708,9 +690,11 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                                     color = Color.black,
                                     bgColor = Color.white,
                                     deviceType = deviceType,
-                                    isDisabled = true
+                                    isDisabled = false
                                 ) {
-
+                                    scope.launch {
+                                        bankingApplicationActions dispatch deleteBankAccount(bankAccount.bankAccountId)
+                                    }
                                 }
                             }
                         }
@@ -719,82 +703,218 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
             }
         }
     }
-
-    s("SEPA") {
-
-        LaunchedEffect((sepaModule * sepaMessageString).read()) {
-            val sepaMessageString = sepaModule * sepaMessageString
-            val downloadStatus = sepaMessageString.read().download
-            if(downloadStatus == Download.Start) {
-                download((sepaMessageString * message).read(), "PAIN_${now().format(Locale.Iso)}.xml")
-                scope.launch {
-                    downloadStatus.write(Download.Done)
-                }
-            }
-        }
-        LaunchedEffectOnSource(Read(sepaMandates)) {
-            launch{
-                bankingApplicationActions dispatch readPersonalSepaCollections(LegalEntityId(providerId.value))
-            }
-        }
+}
 
 
-        Wrap {
-            ListWrapper {
-                var opened by remember { mutableStateOf(false) }
-                TitleWrapper {
-                    SimpleRightDown(opened) {opened = !opened}
-                    Title { H3 { Text("SEPA") } }
-                }
+@Composable
+fun FiscalYears(
+    bankingApplicationStorage: Storage<BankingApplication>,
+    providerId: ProviderId,
+    scope: CoroutineScope,
+    deviceType: Source<DeviceType>
+) {
+    val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
+    val bankingApplicationModals = bankingApplicationStorage * bankingApplicationModals
+
+    val fiscalYears = bankingApplicationStorage * fiscalYears
+
+
+    Wrap {
+        ListWrapper {
+            var opened by remember { mutableStateOf(false) }
+            TitleWrapper {
+                SimpleRightDown(opened) {opened = !opened}
+                Title { H3 { Text("Fiscal Years") } }
                 When(opened) {
-                    HeaderWrapper {
-                        Header {
-                            HeaderCell("Bank Account") { width(20.percent) }
-                            HeaderCell("CollectionKey"){ width(10.percent) }
-                            HeaderCell("Mandate Ref Prefix"){ width(15.percent) }
-                            HeaderCell("Remittance Info"){ width(20.percent) }
-                            HeaderCell("Active"){ width(5.percent) }
-                            HeaderCell("Seq. Type") { width(10.percent) }
-                            /*
-                            HeaderCell("L-Time"){ width(5.percent) }
-                            HeaderCell("C-Day"){ width(5.percent) }
-
-                             */
-                            // HeaderCell("Next Payment"){width(10.percent)}
-                            HeaderCell("Amount"){width(10.percent)}
+                    var fiscalYearState by remember { mutableStateOf<FiscalYear?>(null) }
+                    PlusButton(
+                        color = Color.black,
+                        bgColor = Color.white,
+                        deviceType = deviceType,
+                    ) {
+                        bankingApplicationModals.showUpsertFiscalYearsModal(
+                            bankingApplicationStorage,
+                            dialogModalTexts("Message"),
+                            deviceType,
+                            fiscalYears.read(),
+                            fiscalYearState,
+                            { fiscalYear -> fiscalYearState = fiscalYear },
+                        ) {
+                            val state = fiscalYearState
+                            requireNotNull(state)
+                            scope.launch {
+                                bankingApplicationActions dispatch createFiscalYear(
+                                    providerId.value,
+                                    state.start,
+                                    state.end
+                                )
+                            }
                         }
                     }
-
-                    ListItemsIndexed(sepaCollections.read()) { index , collection ->
-
-                        val bankAccount = collectionToBankAccountMap.emit()[collection.sepaCollectionId]
-                        val latestExecutionDate = collection.sepaPayments.maxOfOrNull{payment -> payment.executionDate}
-                        val cumulatedAmount = collection.sepaPayments
-                            .filter { it.executionDate == latestExecutionDate }
-                            .sumOf { payment -> payment.amount }
-                            .round(2)
-
-                        var uiState by remember { mutableStateOf(UIState()) }
-                        ListItemWrapper({listItemWrapperStyle(index)}) {
-                            DataWrapper {
-                                TextCell(bankAccount?.iban?.value?: ""){ width(20.percent) }
-                                TextCell(collection.collectionKey.value){  width(10.percent)}
-                                TextCell(collection.mandateReferencePrefix.value){  width(15.percent)}
-                                TextCell(collection.remittanceInformation.value) { width(20.percent) }
-                                TextCell(collection.isActive.checkIcon("--")){ width(5.percent) }
-                                TextCell(collection.sepaSequenceType.name){  width(10.percent)}
-                                /*
-                                NumberCell(collection.leadTimesDays){  width(5.percent)}
-                                NumberCell(collection.requestedCollectionDay?:-1){  width(5.percent)}
-
-                                 */
-                                PriceCell(cumulatedAmount, Currency.EUR) { width(10.percent) }
-                                // TextCell(collection.){}
+                }
+            }
+            When(opened) {
+                HeaderWrapper {
+                    Header {
+                        HeaderCell("Fiscal Year") { width(10.percent) }
+                        HeaderCell("Start Date") { width(10.percent) }
+                        HeaderCell("End Date") { width(10.percent) }
+                    }
+                }
+                ListItemsIndexed(fiscalYears.read().let {
+                    it.sortedByDescending { fiscalYear -> fiscalYear.format() }
+                }) { index, fiscalYear ->
+                    ListItemWrapper({ listItemWrapperStyle(index) }) {
+                        fun LocalDate.format(): String = "$year-$monthNumber-$dayOfMonth"
+                        DataWrapper {
+                            TextCell(fiscalYear.format()) { width(10.percent) }
+                            TextCell(fiscalYear.start.toString()) { width(10.percent) }
+                            TextCell(fiscalYear.end.toString()) { width(10.percent) }
+                        }
+                        ActionsWrapper {
+                            var fiscalYearState by remember { mutableStateOf<FiscalYear?>(fiscalYear) }
+                            EditButton(
+                                color = Color.black,
+                                bgColor = Color.white,
+                                deviceType = deviceType,
+                            ) {
+                                bankingApplicationModals.showUpsertFiscalYearsModal(
+                                    bankingApplicationStorage,
+                                    dialogModalTexts("Message"),
+                                    deviceType,
+                                    fiscalYears.read(),
+                                    fiscalYearState,
+                                    { fiscalYear -> fiscalYearState = fiscalYear },
+                                ) {
+                                    val state = fiscalYearState
+                                    requireNotNull(state)
+                                    scope.launch {
+                                        bankingApplicationActions dispatch updateFiscalYear(
+                                            fiscalYear.fiscalYearId,
+                                            providerId.value,
+                                            state.start,
+                                            state.end
+                                        )
+                                    }
+                                }
                             }
-                            ActionsWrapper {
+                            TrashCanButton(
+                                color = Color.black,
+                                bgColor = Color.white,
+                                deviceType = deviceType,
+                                isDisabled = true
+                            ) {
 
-                                var manageCollectionPaymentsState by remember() { mutableStateOf<ManageCollectionPayments?>(null)}
-                                key(collection) {
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun SepaCollections(
+    bankingApplicationStorage: Storage<BankingApplication>,
+    providerId: ProviderId,
+    scope: CoroutineScope,
+    deviceType: Source<DeviceType>
+) {
+
+    val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
+    val bankingApplicationModals = bankingApplicationStorage * bankingApplicationModals
+
+    val legalEntity = bankingApplicationStorage * legalEntity
+    val creditorIdentifier = bankingApplicationStorage * creditorIdentifier
+
+    val creditorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.userId == UserId(providerId.value) }
+
+    val sepaModule = bankingApplicationStorage * sepaModule
+    val sepaCollections = sepaModule * sepaCollections
+    val sepaMessages = sepaModule * sepaMessages
+    val collectionToBankAccountMap = sepaCollections * Reader<List<SepaCollection>, Map<SepaCollectionId, BankAccount>> {
+            collections: List<SepaCollection> -> collections.associateBy({it.sepaCollectionId}) {
+        (creditorBankAccounts * FirstOrNull { bankAccount -> bankAccount.bankAccountId == it.creditorBankAccountId }).emit()
+    }.filterNotNullValues()
+    }
+    val sepaMandates = sepaModule * sepaMandates
+
+
+    LaunchedEffect((sepaModule * sepaMessageString).read()) {
+        val sepaMessageString = sepaModule * sepaMessageString
+        val downloadStatus = sepaMessageString.read().download
+        if(downloadStatus == Download.Start) {
+            download((sepaMessageString * message).read(), "PAIN_${now().format(Locale.Iso)}.xml")
+            scope.launch {
+                downloadStatus.write(Download.Done)
+            }
+        }
+    }
+    LaunchedEffectOnSource(Read(sepaMandates)) {
+        launch{
+            bankingApplicationActions dispatch readPersonalSepaCollections(LegalEntityId(providerId.value))
+        }
+    }
+
+
+    Wrap {
+        ListWrapper {
+            var opened by remember { mutableStateOf(false) }
+            TitleWrapper {
+                SimpleRightDown(opened) {opened = !opened}
+                Title { H3 { Text("SEPA") } }
+            }
+            When(opened) {
+                HeaderWrapper {
+                    Header {
+                        HeaderCell("Bank Account") { width(20.percent) }
+                        HeaderCell("CollectionKey"){ width(10.percent) }
+                        HeaderCell("Mandate Ref Prefix"){ width(15.percent) }
+                        HeaderCell("Remittance Info"){ width(20.percent) }
+                        HeaderCell("Active"){ width(5.percent) }
+                        HeaderCell("Seq. Type") { width(10.percent) }
+                        /*
+                        HeaderCell("L-Time"){ width(5.percent) }
+                        HeaderCell("C-Day"){ width(5.percent) }
+
+                         */
+                        // HeaderCell("Next Payment"){width(10.percent)}
+                        HeaderCell("Amount"){width(10.percent)}
+                    }
+                }
+
+                ListItemsIndexed(sepaCollections.read()) { index , collection ->
+
+                    val bankAccount = collectionToBankAccountMap.emit()[collection.sepaCollectionId]
+                    val latestExecutionDate = collection.sepaPayments.maxOfOrNull{payment -> payment.executionDate}
+                    val cumulatedAmount = collection.sepaPayments
+                        .filter { it.executionDate == latestExecutionDate }
+                        .sumOf { payment -> payment.amount }
+                        .round(2)
+
+                    var uiState by remember { mutableStateOf(UIState()) }
+                    ListItemWrapper({listItemWrapperStyle(index)}) {
+                        DataWrapper {
+                            TextCell(bankAccount?.iban?.value?: ""){ width(20.percent) }
+                            TextCell(collection.collectionKey.value){  width(10.percent)}
+                            TextCell(collection.mandateReferencePrefix.value){  width(15.percent)}
+                            TextCell(collection.remittanceInformation.value) { width(20.percent) }
+                            TextCell(collection.isActive.checkIcon("--")){ width(5.percent) }
+                            TextCell(collection.sepaSequenceType.name){  width(10.percent)}
+                            /*
+                            NumberCell(collection.leadTimesDays){  width(5.percent)}
+                            NumberCell(collection.requestedCollectionDay?:-1){  width(5.percent)}
+
+                             */
+                            PriceCell(cumulatedAmount, Currency.EUR) { width(10.percent) }
+                            // TextCell(collection.){}
+                        }
+                        ActionsWrapper {
+
+                            var manageCollectionPaymentsState by remember() { mutableStateOf<ManageCollectionPayments?>(null)}
+                            key(collection) {
                                 CreditCardButton(
                                     color = Color.black,
                                     bgColor = Color.white,
@@ -821,42 +941,41 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                                             onCancel = {}
                                         ) {
 
-                                                scope.launch {
-                                                    when (val state = manageCollectionPaymentsState) {
-                                                        null -> Unit
-                                                        is ManageCollectionPayments.AttachPayments -> Unit
-                                                        /*bankingApplicationActions dispatch createSepaPaymentsForCollection(
-                                                            CreateSepaPaymentsForCollection(
-                                                                collection.sepaCollectionId,
-                                                                state.executionDate,
-                                                                state.remittanceInformation,
-                                                            ),
-                                                            collection.sepaCollectionId
-                                                        )*/
+                                            scope.launch {
+                                                when (val state = manageCollectionPaymentsState) {
+                                                    null -> Unit
+                                                    is ManageCollectionPayments.AttachPayments -> Unit
+                                                    /*bankingApplicationActions dispatch createSepaPaymentsForCollection(
+                                                        CreateSepaPaymentsForCollection(
+                                                            collection.sepaCollectionId,
+                                                            state.executionDate,
+                                                            state.remittanceInformation,
+                                                        ),
+                                                        collection.sepaCollectionId
+                                                    )*/
 
-                                                        is ManageCollectionPayments.CreateMessage -> bankingApplicationActions dispatch generateSepaMessageForCollection(
-                                                            GenerateSepaMessageForCollection(
-                                                                collection.sepaCollectionId,
-                                                                state.executionDate,
-                                                                listOf(),
-                                                                state.remittanceInformation
-                                                            )
+                                                    is ManageCollectionPayments.CreateMessage -> bankingApplicationActions dispatch generateSepaMessageForCollection(
+                                                        GenerateSepaMessageForCollection(
+                                                            collection.sepaCollectionId,
+                                                            state.executionDate,
+                                                            listOf(),
+                                                            state.remittanceInformation
                                                         )
-                                                    }
+                                                    )
                                                 }
                                             }
+                                        }
 
                                     } }
-                                }
-                                EditButton(
-                                    color = Color.black,
-                                    bgColor = Color.white,
-                                    texts = {"Edit Sepa Collection"},
-                                    deviceType = deviceType,
-                                    isDisabled = true
-                                ) {
+                            }
+                            EditButton(
+                                color = Color.black,
+                                bgColor = Color.white,
+                                texts = {"Edit Sepa Collection"},
+                                deviceType = deviceType,
+                                isDisabled = true
+                            ) {
 
-                                }
                             }
                         }
                     }
