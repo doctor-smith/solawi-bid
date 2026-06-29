@@ -1,17 +1,14 @@
 package org.solyton.solawi.bid.module.banking.repository
 
-import eq
 import org.evoleq.exposedx.joda.now
 import org.jetbrains.exposed.dao.flushCache
 import org.jetbrains.exposed.sql.JoinType
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.or
-import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
+import org.solyton.solawi.bid.module.banking.data.SepaMessageId
 import org.solyton.solawi.bid.module.banking.data.internal.Pain008GenerationRequest
 import org.solyton.solawi.bid.module.banking.data.internal.Pain008Transaction
 import org.solyton.solawi.bid.module.banking.exception.SepaException
@@ -156,6 +153,41 @@ fun Transaction.createPayment(
     }
 
     return payment
+}
+
+/**
+ * Create a payment for a given mandate and a given collection.
+ */
+@Suppress("CyclomaticComplexMethod", "CognitiveComplexMethod")
+fun Transaction.updatePayment(
+    modifier: UUID,
+    sepaPaymentId: UUID,
+    amount: Double,
+    executionDate: LocalDate,
+    sequenceType: SepaSequenceType,
+    status: PaymentExecutionStatus,
+    changeReportedAt: DateTime?,
+    failureReason: String?,
+    endToEndId: String? = null,
+    messageId: SepaMessageId? = null,
+): SepaPaymentEntity {
+    val message = messageId?.let {
+        val uuid = UUID.fromString(it.value)
+        validateSepaMessage(uuid)
+    }
+
+    return updatePayment(
+        modifier,
+        sepaPaymentId,
+        amount,
+        executionDate,
+        sequenceType,
+        status,
+        changeReportedAt,
+        failureReason,
+        endToEndId,
+        message
+    )
 }
 
 /**

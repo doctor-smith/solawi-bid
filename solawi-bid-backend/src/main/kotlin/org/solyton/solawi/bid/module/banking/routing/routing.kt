@@ -242,6 +242,12 @@ fun <BankingEnv> Routing.banking (
                         UpdateSepaPaymentExecutionStatuses() *
                         Respond { transform() } runOn Base(call, environment)
                     }
+                    patch("update") {
+                        ReceiveContextual<UpdateSepaPayment>() *
+                        IsGranted(UPDATE_SEPA_PAYMENTS, no) *
+                        UpdateSepaPayment() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
                     delete("delete") {
                         ReceiveContextual<DeleteSepaPayment>() *
                         IsGranted(DELETE_SEPA_PAYMENTS, no) *

@@ -45,6 +45,7 @@ class BlockConfiguration : Configuration<Block> {
     }
 
     fun add(vararg values: Lang) = value.addAll(values)
+    operator fun Lang.unaryPlus() = value.add(this)
 }
 
 class VariableConfiguration : Configuration<Lang.Variable> {

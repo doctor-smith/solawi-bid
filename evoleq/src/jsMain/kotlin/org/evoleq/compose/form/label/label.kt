@@ -2,6 +2,8 @@ package org.evoleq.compose.form.label
 
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
+import org.evoleq.math.Reader
+import org.evoleq.math.emit
 import org.jetbrains.compose.web.attributes.forId
 import org.jetbrains.compose.web.css.StyleScope
 import org.jetbrains.compose.web.dom.Label
@@ -26,6 +28,16 @@ fun Label(text: String, id: String = "", isRequired: Boolean = false, labelStyle
 @Suppress("FunctionName")
 fun Label(text: ()->String, id: String = "", isRequired: Boolean = false, labelStyle: StyleScope.() -> Unit) = Label(
     text(),
+    id,
+    isRequired,
+    labelStyle
+)
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun Label(text: Reader<Unit, String>, id: String = "", isRequired: Boolean = false, labelStyle: StyleScope.() -> Unit) = Label(
+    text.emit(),
     id,
     isRequired,
     labelStyle
