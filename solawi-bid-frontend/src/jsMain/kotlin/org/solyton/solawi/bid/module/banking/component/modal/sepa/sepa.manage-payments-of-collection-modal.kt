@@ -17,7 +17,6 @@ import org.evoleq.compose.modal.ModalData
 import org.evoleq.compose.modal.ModalType
 import org.evoleq.compose.modal.Modals
 import org.evoleq.compose.style.data.device.DeviceType
-import org.evoleq.device.data.Device
 import org.evoleq.kotlinx.date.today
 import org.evoleq.language.Lang
 import org.evoleq.language.Locale
@@ -31,18 +30,12 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.attributes.disabled
 import org.jetbrains.compose.web.css.*
-import org.jetbrains.compose.web.css.maxHeight
-import org.jetbrains.compose.web.css.minHeight
 import org.jetbrains.compose.web.dom.Button
 import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.Input
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.banking.action.*
-import org.solyton.solawi.bid.module.banking.component.list.ListOfMandateWithoutPayments
-import org.solyton.solawi.bid.module.banking.component.list.ListOfPayments
-import org.solyton.solawi.bid.module.banking.component.list.OverAllActionData
-import org.solyton.solawi.bid.module.banking.component.list.SepaPaymentListItemData
-import org.solyton.solawi.bid.module.banking.component.list.SepaPaymentListItemKey
+import org.solyton.solawi.bid.module.banking.component.list.*
 import org.solyton.solawi.bid.module.banking.component.properties.PaymentsProperties
 import org.solyton.solawi.bid.module.banking.component.tab.TabParagraphWrapper
 import org.solyton.solawi.bid.module.banking.data.*
@@ -521,6 +514,21 @@ fun ManagePaymentsOfSepaCollectionModal(
     }
 }
 
+/**
+ * A composable function to create new SEPA payments based on the provided SEPA collection, execution date, and
+ * payment creation candidates. This function allows users to create payments for mandates without payments, retry
+ * failed payments, and generate recurring payments.
+ *
+ * @param sepaCollection The SEPA collection containing mandates and payments.
+ * @param executionDate The optional execution date for the payments. Defaults to the current date if null.
+ * @param nextPeriodPaymentCreationCandidates A list of SEPA payments eligible for next period creation.
+ * @param retryPaymentCreationCandidates A list of SEPA payments eligible for retrying failed payments.
+ * @param listStyles Styling configuration for the displayed list elements.
+ * @param scrollableStyles Styling configuration for the scrollable container.
+ * @param scope The coroutine scope used to launch background operations.
+ * @param storage The storage mechanism for managing the current banking application state and actions.
+ * @param device The source that determines the type of device interacting with the application.
+ */
 @Composable
 fun CreateNewPayments(
     sepaCollection: SepaCollection,
@@ -678,6 +686,20 @@ fun CreateNewPayments(
     }
 }
 
+/**
+ * Composable function to display and manage recently created SEPA (Single Euro Payments Area) payments
+ * within a given SEPA collection. This function provides actions such as deleting payments or generating
+ * SEPA messages based on selected payments.
+ *
+ * @param sepaCollection The SEPA collection containing details and data of SEPA mandates and payments.
+ * @param openPayments A list of currently open SEPA payments to be displayed.
+ * @param sepaMessages A reactive source of SEPA messages for generating or managing payments.
+ * @param listStyles A set of styles applied to the displayed list of payments.
+ * @param scope A coroutine scope for managing asynchronous operations within the function.
+ * @param storage Storage access interface for managing banking application data and actions.
+ * @param device A reactive source providing the type of device on which the UI is being rendered.
+ * @param modalId The ID of the modal associated with this component, used for modal management.
+ */
 @Composable
 fun RecentlyCreatedPayments(
     sepaCollection: SepaCollection,
@@ -757,6 +779,40 @@ fun RecentlyCreatedPayments(
             }
         }},
         actions = { data -> Horizontal {
+            var paymentState by remember { mutableStateOf(data.data.payment) }
+            EditButton(
+                color = Color.black,
+                bgColor = Color.white,
+                deviceType = device,
+            ) {
+
+                (storage * bankingApplicationModals).showUpdateSepaPaymentModal(
+                    modalId,
+                    storage,
+                    updateSepaPaymentModalTexts,
+                    device,
+                    paymentState,
+                    {
+                        payment -> paymentState = payment
+                    }
+                ) {
+                    scope.launch {
+                        (storage * bankingApplicationActions) dispatch updateSepaPayment(
+                            data = UpdateSepaPayment(
+                                sepaPaymentId = paymentState.sepaPaymentId,
+                                sepaMandateId = paymentState.sepaMandateId,
+                                sepaCollectionId = sepaCollection.sepaCollectionId,
+                                amount = paymentState.amount,
+                                executionDate = paymentState.executionDate,
+                                sequenceType = paymentState.sequenceType.toApiType(),
+                                status = paymentState.status.toApiType(),
+                                failureReason = paymentState.failureReason
+                            ),
+                            targetCollectionId = sepaCollection.sepaCollectionId
+                        )
+                    }
+                }
+            }
             TrashCanButton(
                 color = Color.black,
                 bgColor = Color.white,

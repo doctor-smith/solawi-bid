@@ -433,6 +433,10 @@ val solawiApi by lazy {
                 key = CreateSepaPaymentSuccessors::class,
                 url = "sepa/collections/create-payment-successors"
             )
+            patch<UpdateSepaPayment, SepaPayment>(
+                key = UpdateSepaPayment::class,
+                url = "sepa/payments/update"
+            )
             delete<DeleteSepaPayment, SepaPaymentId>(
                 key = DeleteSepaPayment::class,
                 url = "sepa/payments/delete"

@@ -4,10 +4,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 import org.evoleq.ktorx.client.Parameters
 import org.evoleq.ktorx.client.QueryParams
-import org.solyton.solawi.bid.module.banking.data.RemittanceInformation
-import org.solyton.solawi.bid.module.banking.data.SepaCollectionId
-import org.solyton.solawi.bid.module.banking.data.SepaMandateId
-import org.solyton.solawi.bid.module.banking.data.SepaPaymentId
+import org.solyton.solawi.bid.module.banking.data.*
 
 typealias ApiSepaPayment = SepaPayment
 typealias ApiSepaPayments = SepaPayments
@@ -81,7 +78,9 @@ data class UpdateSepaPayment(
     val executionDate: LocalDate,
     val sequenceType: SepaSequenceType,
     val status: PaymentExecutionStatus,
-    val failureReason: String? = null
+    val failureReason: String? = null,
+    val endToEndId: String? = null,
+    val sepaMessageId: SepaMessageId? = null,
 )
 
 @Serializable

@@ -4,7 +4,9 @@ import org.jetbrains.compose.web.css.*
 
 data class ModalStyles(
     val containerStyle: StyleScope.()->Unit = {
+        minWidth(400.px)
         width(96.vw)
+        minHeight(300.px)
         alignSelf(AlignSelf.SelfStart)
         property("margin", "0 auto")
         property(
@@ -42,4 +44,9 @@ data class ModalStyles(
         cancelButtonStyles()
         styles()
     })
+    
+    fun compact(): ModalStyles = modifyContainerStyle {
+        property("width", "fit-content")
+        property("height", "fit-content")
+    }
 }
