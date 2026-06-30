@@ -7,7 +7,7 @@ import org.solyton.solawi.bid.module.banking.data.sepa.SuccessorKind
 
 @Lensify
 data class SepaPaymentLink(
-    @ReadOnly val source: SepaPaymentId,
-    @ReadOnly val target: SepaPaymentId,
+    @ReadOnly val successorId: SepaPaymentId,
+    @ReadOnly val predecessorId: SepaPaymentId,
     @ReadOnly val kind: SuccessorKind
 )

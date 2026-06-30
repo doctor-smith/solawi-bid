@@ -5,7 +5,6 @@ import org.evoleq.ktorx.client.EmptyParams
 import org.evoleq.ktorx.client.Parameters
 import org.evoleq.ktorx.client.QueryParams
 import org.solyton.solawi.bid.module.banking.data.SepaPaymentId
-import org.solyton.solawi.bid.module.values.LegalEntityId
 
 typealias ApiSepaPaymentLinks = SepaPaymentLinks
 typealias ApiSepaPaymentLink = SepaPaymentLink
@@ -26,7 +25,8 @@ data class SepaPaymentLink(
 enum class SuccessorKind {
     NEXT_PERIOD,    // the regularly scheduled follow-up
     RETRY,          // re-execution after FAILED,
-    MERGE,
+    MERGE,          // merge of two or more payments
+    AD_HOC,         // newly introduced payment outside the scheduled sequence
     // CORRECTION,     // manual correction / adjustment
     // REPLACEMENT,    // replaces a cancelled message
 }

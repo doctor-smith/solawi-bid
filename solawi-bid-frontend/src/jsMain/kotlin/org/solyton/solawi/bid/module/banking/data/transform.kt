@@ -14,13 +14,14 @@ import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntityType
 import org.solyton.solawi.bid.module.banking.data.sepa.MandateStatus
 import org.solyton.solawi.bid.module.banking.data.sepa.PaymentExecutionStatus
 import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
+import org.solyton.solawi.bid.module.banking.data.sepa.SuccessorKind
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.mandate.SepaMandate
 import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessage
 import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessageString
 import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessageVersion
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
-import org.solyton.solawi.bid.module.banking.data.sepa.payment.mergeSuccessorId
+import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPaymentLink
 import org.solyton.solawi.bid.module.user.data.transform.toDomainType
 import org.solyton.solawi.bid.module.banking.data.api.SepaMessageVersion as ApiSepaMessageVersion
 
@@ -146,6 +147,32 @@ fun ApiSepaPayment.toDomainType(): SepaPayment = SepaPayment(
     retrySuccessorId = retrySuccessorId,
     mergeSuccessorId = mergeSuccessorId,
 )
+
+fun ApiSepaPaymentLink.toDomainType(): SepaPaymentLink = SepaPaymentLink(
+    successorId = successorId,
+    predecessorId = predecessorId,
+    kind = kind.toDomainType()
+)
+
+fun SepaPaymentLink.toApiType(): ApiSepaPaymentLink = ApiSepaPaymentLink(
+    successorId = successorId,
+    predecessorId = predecessorId,
+    kind = kind.toApiType()
+)
+
+fun ApiSuccessorKind.toDomainType(): SuccessorKind = when(this) {
+    ApiSuccessorKind.NEXT_PERIOD -> SuccessorKind.NEXT_PERIOD
+    ApiSuccessorKind.RETRY -> SuccessorKind.RETRY
+    ApiSuccessorKind.MERGE -> SuccessorKind.MERGE
+    ApiSuccessorKind.AD_HOC -> SuccessorKind.AD_HOC
+}
+
+fun SuccessorKind.toApiType(): ApiSuccessorKind = when(this) {
+    SuccessorKind.NEXT_PERIOD -> ApiSuccessorKind.NEXT_PERIOD
+    SuccessorKind.RETRY -> ApiSuccessorKind.RETRY
+    SuccessorKind.MERGE -> ApiSuccessorKind.MERGE
+    SuccessorKind.AD_HOC -> ApiSuccessorKind.AD_HOC
+}
 
 fun ApiSepaCollection.toDomainType(): SepaCollection = SepaCollection(
     sepaCollectionId = sepaCollectionId,

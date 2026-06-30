@@ -85,7 +85,8 @@ enum class PaymentExecutionStatus {
 enum class SuccessorKind {
     NEXT_PERIOD,    // the regularly scheduled follow-up
     RETRY,          // re-execution after FAILED,
-    MERGE,
+    MERGE,          // merge of two or more payments
+    AD_HOC,         // newly introduced payment outside the scheduled sequence
     // CORRECTION,     // manual correction / adjustment
     // REPLACEMENT,    // replaces a cancelled message
 }

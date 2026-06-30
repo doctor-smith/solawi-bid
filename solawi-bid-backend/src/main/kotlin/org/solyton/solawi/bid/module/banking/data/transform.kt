@@ -6,13 +6,13 @@ import org.jetbrains.exposed.sql.Transaction
 import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.banking.data.api.CreditorIdentifier
 import org.solyton.solawi.bid.module.banking.schema.*
-import org.solyton.solawi.bid.module.banking.schema.SuccessorKind
 import org.solyton.solawi.bid.module.banking.schema.AccountType
 import org.solyton.solawi.bid.module.banking.schema.LegalEntity
 import org.solyton.solawi.bid.module.banking.schema.LegalEntityType
 import org.solyton.solawi.bid.module.banking.schema.MandateStatus
 import org.solyton.solawi.bid.module.banking.schema.PaymentExecutionStatus
 import org.solyton.solawi.bid.module.banking.schema.SepaSequenceType
+import org.solyton.solawi.bid.module.banking.schema.SuccessorKind
 import org.solyton.solawi.bid.module.user.data.toApiType
 import org.solyton.solawi.bid.module.values.LegalEntityId
 import org.solyton.solawil.bid.module.bid.data.api.toUserId
@@ -231,13 +231,14 @@ fun SuccessorKind.toApiType(): ApiSuccessorKind = when(this){
     SuccessorKind.NEXT_PERIOD -> ApiSuccessorKind.NEXT_PERIOD
     SuccessorKind.RETRY -> ApiSuccessorKind.RETRY
     SuccessorKind.MERGE -> ApiSuccessorKind.MERGE
-
+    SuccessorKind.AD_HOC -> ApiSuccessorKind.AD_HOC
 }
 
 fun ApiSuccessorKind.toDomainType(): SuccessorKind = when(this) {
     ApiSuccessorKind.NEXT_PERIOD -> SuccessorKind.NEXT_PERIOD
     ApiSuccessorKind.RETRY -> SuccessorKind.RETRY
     ApiSuccessorKind.MERGE -> SuccessorKind.MERGE
+    ApiSuccessorKind.AD_HOC -> SuccessorKind.AD_HOC
 }
 
 fun PaymentExecutionStatus.toApiType(): ApiPaymentExecutionStatus = when(this){
