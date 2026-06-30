@@ -112,8 +112,10 @@
 | GET | banking/sepa/messages/by-legal-entity | ReadSepaMessagesByLegalEntityId  | ReadSepaMessagesByLegalEntityId | SepaMessages |
 | GET | banking/sepa/payment-links/by-legal-entity | ReadSepaPaymentLinksByLegalEntity  | ReadSepaPaymentLinksByLegalEntity | SepaPaymentLinks |
 | GET | banking/sepa/payment-links/personal | ReadPersonalSepaPaymentLinks  | ReadPersonalSepaPaymentLinks | SepaPaymentLinks |
+| POST | banking/sepa/payments/create-ad-hoc | CreateAdHocSepaPayment  | CreateAdHocSepaPayment | SepaPayment |
 | DELETE | banking/sepa/payments/delete | DeleteSepaPayment  | DeleteSepaPayment | SepaPaymentId |
 | DELETE | banking/sepa/payments/delete-many | DeleteSepaPayments  | DeleteSepaPayments | SepaPaymentIds |
+| PATCH | banking/sepa/payments/update | UpdateSepaPayment  | UpdateSepaPayment | SepaPayment |
 | PATCH | banking/sepa/payments/update-execution-statuses | UpdateSepaPaymentExecutionStatuses  | UpdateSepaPaymentExecutionStatuses | SepaPayments |
 ## permissions
 

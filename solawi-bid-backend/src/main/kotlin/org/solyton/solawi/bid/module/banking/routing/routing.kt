@@ -236,6 +236,12 @@ fun <BankingEnv> Routing.banking (
                     post("create") {
                         NotImplemented("Sepa collection creation is not implemented yet")
                     }
+                    post("create-ad-hoc") {
+                        ReceiveContextual<CreateAdHocSepaPayment>() *
+                        IsGranted(UPDATE_SEPA_PAYMENTS, no) *
+                        CreateAdHocSepaPayment() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
                     patch("update-execution-statuses") {
                         ReceiveContextual<UpdateSepaPaymentExecutionStatuses>() *
                         IsGranted(UPDATE_SEPA_PAYMENTS, no) *

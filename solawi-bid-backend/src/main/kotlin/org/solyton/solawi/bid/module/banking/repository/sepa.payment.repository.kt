@@ -156,7 +156,41 @@ fun Transaction.createPayment(
 }
 
 /**
- * Create a payment for a given mandate and a given collection.
+ * Create an ad-hoc payment for a given mandate and a given collection.
+ */
+fun Transaction.createAdHocPayment(
+    creator: UUID,
+    sepaMandateId: UUID,
+    sepaCollectionId: UUID,
+    amount: Double,
+    executionDate: LocalDate,
+    predecessorId: UUID? = null,
+): SepaPaymentEntity {
+    val ignoreOldPayments = predecessorId != null
+    val newPayment = createPayment(
+        creator,
+        sepaMandateId,
+        sepaCollectionId,
+        amount,
+        executionDate,
+        ignoreOldPayments
+    )
+
+    if(predecessorId != null) {
+        val predecessor = validatedPayment(predecessorId)
+        SepaPaymentLinkEntity.new {
+            createdBy = creator
+            this.predecessor = predecessor
+            this.successor = newPayment
+            kind = SuccessorKind.AD_HOC
+        }
+    }
+
+    return newPayment
+}
+
+/**
+ * Update a payment for a given mandate and a given collection.
  */
 @Suppress("CyclomaticComplexMethod", "CognitiveComplexMethod")
 fun Transaction.updatePayment(
@@ -324,6 +358,7 @@ fun Transaction.createSuccessorsOfPayments(
             SuccessorKind.NEXT_PERIOD -> it.nextPeriodSuccessor != null
             SuccessorKind.RETRY -> it.retrySuccessor != null
             SuccessorKind.MERGE -> it.mergeSuccessor != null
+            SuccessorKind.AD_HOC -> false
         }
     }) {
         "All payments must not have successors of the desired kind"

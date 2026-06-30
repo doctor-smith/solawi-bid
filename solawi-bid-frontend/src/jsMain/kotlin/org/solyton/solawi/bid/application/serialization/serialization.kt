@@ -368,6 +368,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<SepaPayments>(SepaPayments.serializer())
         add<SepaPaymentIds>(SepaPaymentIds.serializer())
         add<CreateSepaPayment>(CreateSepaPayment.serializer())
+        add<CreateAdHocSepaPayment>(CreateAdHocSepaPayment.serializer())
         add<CreateSepaPaymentsForCollection>(CreateSepaPaymentsForCollection.serializer())
         add<CreateSepaPaymentSuccessors>(CreateSepaPaymentSuccessors.serializer())
         add<ReadSepaPaymentsByLegalEntity>(ReadSepaPaymentsByLegalEntity.serializer())

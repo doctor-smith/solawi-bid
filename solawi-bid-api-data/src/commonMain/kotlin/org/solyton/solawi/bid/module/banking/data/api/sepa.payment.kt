@@ -52,6 +52,16 @@ data class CreateSepaPayment(
 )
 
 @Serializable
+data class CreateAdHocSepaPayment(
+    val sepaMandateId: SepaMandateId,
+    val sepaCollectionId: SepaCollectionId,
+    val amount: Double,
+    val executionDate: LocalDate,
+    val status: PaymentExecutionStatus,
+    val predecessorId: SepaPaymentId? = null,
+)
+
+@Serializable
 data class CreateSepaPaymentsForCollection(
     val sepaCollectionId: SepaCollectionId,
     val executionDate: LocalDate,
