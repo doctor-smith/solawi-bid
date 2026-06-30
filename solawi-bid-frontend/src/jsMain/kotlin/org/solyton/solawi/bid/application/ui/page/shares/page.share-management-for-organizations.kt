@@ -18,10 +18,7 @@ import org.evoleq.optics.lens.BiMap
 import org.evoleq.optics.lens.DeepSearch
 import org.evoleq.optics.lens.FilterBy
 import org.evoleq.optics.lens.FirstBy
-import org.evoleq.optics.storage.Storage
-import org.evoleq.optics.storage.dispatch
-import org.evoleq.optics.storage.filter
-import org.evoleq.optics.storage.none
+import org.evoleq.optics.storage.*
 import org.evoleq.optics.transform.flatMap
 import org.evoleq.optics.transform.times
 import org.evoleq.uuid.NIL_UUID
@@ -76,6 +73,7 @@ import org.solyton.solawi.bid.module.search.component.SearchInputStyles
 import org.solyton.solawi.bid.module.shares.action.*
 import org.solyton.solawi.bid.module.shares.component.modal.*
 import org.solyton.solawi.bid.module.shares.data.api.UpdateShareStatus
+import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
 import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.shares.data.management.deviceData
 import org.solyton.solawi.bid.module.shares.data.management.shareOffers
@@ -659,15 +657,46 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                 TitleWrapper(/*{width(90.percent)}*/) {
                     Title { H3 { Text("Share Subscriptions") } }
                     Horizontal({ JustifyContent.SpaceBetween }) {
+                        var newShareSubscriptionState by remember { mutableStateOf<ShareSubscription?>(null) }
                         PlusButton(
                             color = Color.black,
                             bgColor = Color.white,
                             deviceType = deviceType,
-                            isDisabled = true
+                            isDisabled = false
                         ) {
-
+                            shareManagementModals.showUpsertShareSubscriptionModal(
+                                shareManagementStore,
+                                upsertShareSubscriptionModalTexts.emit(),
+                                deviceType,
+                                Read(fiscalYears),
+                                Read(distributionPoints),
+                                Read(shareOffers),
+                                providerId,
+                                Read(usersStorage),
+                                ChangedBy.PROVIDER,
+                                null,
+                                { data -> newShareSubscriptionState = data }
+                            ) {
+                                if (newShareSubscriptionState != null) {
+                                    val data = requireNotNull(newShareSubscriptionState)
+                                    scope.launch {
+                                        with(data) {
+                                            shareManagementActions dispatch createShareSubscription(
+                                                providerId.value,
+                                                shareOfferId,
+                                                userProfileId,
+                                                distributionPointId,
+                                                fiscalYearId,
+                                                numberOfShares,
+                                                pricePerShare,
+                                                ahcAuthorized,
+                                                coSubscribers,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
-
                     }
                 }
                 HeaderWrapper {
@@ -1166,12 +1195,45 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                             }
                                         }
                                     }
+
+                                    var newShareSubscriptionState by remember { mutableStateOf(subscription) }
                                     EditButton(
                                         color = Color.black,
                                         bgColor = Color.white,
                                         deviceType = deviceType,
-                                        isDisabled = true
-                                    ) {}
+                                        isDisabled = false
+                                    ) {
+                                        shareManagementModals.showUpsertShareSubscriptionModal(
+                                            shareManagementStore,
+                                            upsertShareSubscriptionModalTexts.emit(),
+                                            deviceType,
+                                            Read(fiscalYears),
+                                            Read(distributionPoints),
+                                            Read(shareOffers),
+                                            providerId,
+                                            Read(usersStorage),
+                                            ChangedBy.PROVIDER,
+                                            subscription,
+                                            {data -> newShareSubscriptionState = data}
+                                        ) {
+                                            scope.launch {
+                                                with(newShareSubscriptionState) {
+                                                    shareManagementActions dispatch updateShareSubscription(
+                                                        shareSubscriptionId,
+                                                        providerId.value,
+                                                        shareOfferId,
+                                                        userProfileId,
+                                                        distributionPointId,
+                                                        fiscalYearId,
+                                                        numberOfShares,
+                                                        pricePerShare,
+                                                        ahcAuthorized,
+                                                        coSubscribers,
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
                                     TrashCanButton(
                                         color = Color.black,
                                         bgColor = Color.white,
@@ -1190,7 +1252,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
 }
 
 fun shareManagementForOrganizationsTexts(): Source<Lang.Block> = {
-    "shareManagementForOrganizations" texts{
+    "shareManagementForOrganizations" texts {
         "shareOffersList" block {
             "item" block {
                 "actions" block {

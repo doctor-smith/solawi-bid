@@ -558,6 +558,28 @@ fun ShareNodesButton(
 @Markup
 @Composable
 @Suppress("FunctionName")
+fun SquareCheckButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-square-check"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
+@Markup
+@Composable
+@Suppress("FunctionName")
 fun SupportButton(
     color: CSSColorValue,
     bgColor: CSSColorValue = Color.transparent,
