@@ -429,6 +429,10 @@ val solawiApi by lazy {
                 key = CreateSepaPaymentsForCollection::class,
                 url = "sepa/collections/create-payments"
             )
+            post<CreateAdHocSepaPayment, SepaPayment>(
+                key = CreateAdHocSepaPayment::class,
+                url = "sepa/payments/create-ad-hoc"
+            )
             post<CreateSepaPaymentSuccessors, SepaPayments>(
                 key = CreateSepaPaymentSuccessors::class,
                 url = "sepa/collections/create-payment-successors"
