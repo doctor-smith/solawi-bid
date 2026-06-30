@@ -7,7 +7,7 @@ import org.jetbrains.exposed.sql.ReferenceOption
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.auditable.AuditableEntity
 import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
-import java.util.UUID
+import java.util.*
 
 typealias SepaPaymentLinksTable = SepaPaymentLinks
 typealias SepaPaymentLinkEntity = SepaPaymentLink
@@ -40,7 +40,8 @@ class SepaPaymentLink(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID
 enum class SuccessorKind {
     NEXT_PERIOD,    // the regularly scheduled follow-up
     RETRY,          // re-execution after FAILED,
-    MERGE,
+    MERGE,          // merge of two or more payments
+    AD_HOC,         // newly introduced payment outside the scheduled sequence
     // CORRECTION,     // manual correction / adjustment
     // REPLACEMENT,    // replaces a cancelled message
 }
