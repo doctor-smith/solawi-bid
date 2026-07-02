@@ -17,18 +17,8 @@ import org.evoleq.math.Source
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
-import org.jetbrains.compose.web.css.Color
-import org.jetbrains.compose.web.css.color
-import org.jetbrains.compose.web.css.gap
-import org.jetbrains.compose.web.css.percent
-import org.jetbrains.compose.web.css.px
-import org.jetbrains.compose.web.css.width
-import org.jetbrains.compose.web.dom.ElementScope
-import org.jetbrains.compose.web.dom.Li
-import org.jetbrains.compose.web.dom.Span
-import org.jetbrains.compose.web.dom.Text
-import org.jetbrains.compose.web.dom.TextInput
-import org.jetbrains.compose.web.dom.Ul
+import org.jetbrains.compose.web.css.*
+import org.jetbrains.compose.web.dom.*
 import org.solyton.solawi.bid.module.banking.data.creditor.identifier.CreditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
@@ -40,8 +30,8 @@ import org.solyton.solawi.bid.module.constants.CHECK_TRUE
 import org.solyton.solawi.bid.module.constants.checkIcon
 import org.solyton.solawi.bid.module.control.checkbox.CheckBox
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
-import org.solyton.solawi.bid.module.distribution.data.distributionpoint.DistributionPoint
 import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
+import org.solyton.solawi.bid.module.distribution.data.distributionpoint.DistributionPoint
 import org.solyton.solawi.bid.module.shares.data.internal.ChangeReason
 import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
 import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
@@ -373,24 +363,32 @@ fun BulkEditShareShareSubscriptionsModal(
                 var selectedSepaCollection by remember { mutableStateOf("Select Sepa Collection")}
                 var selectedMandateStatus by remember { mutableStateOf(MandateStatus.ACTIVE)}
 
-                val sepaCollectionOptions =
-                    sepaCollections.associateBy { it.mandateReferencePrefix.value }.let {
-                        it.toMutableMap<String, SepaCollection?>().apply {
-                            this["Select Sepa Collection"] = null
-                        }
-                    }
-
-                var shareOffersOptions by remember(selectedSepaCollection){
-                    val allowedOffers = sepaCollectionOptions[selectedSepaCollection]?.referenceIds?.map { it.value }.orEmpty()
-                    mutableStateOf(shareOffers
-                        .filter { it.shareOfferId in allowedOffers }
+                // Restrict choices of share offers to those that are associated with a sepa collection
+                val referenceIds = sepaCollections.flatMap { it.referenceIds.map { id -> id.value } }.distinct()
+                val allowedShareOffers = shareOffers.filter { it.shareOfferId in referenceIds }.distinct()
+                val shareOffersOptions = allowedShareOffers
+                        .sortedByDescending { it.fiscalYear.start }
                         .associateBy { "${it.fiscalYear.format()} - ${it.shareType.name}" }
                         .let {
                             it.toMutableMap<String, ShareOffer?>().apply {
                                 this["Select Share Offer"] = null
                             }
                         }
-                    )
+
+
+                var sepaCollectionOptions by remember(selectedShareOffer) {
+                    val shareOffer = shareOffersOptions[selectedShareOffer]
+                    val allowedCollections = when{
+                        shareOffer != null -> sepaCollections.filter {
+                            collection -> shareOffer.shareOfferId in collection.referenceIds.map { id -> id.value }
+                        }
+                        else -> sepaCollections
+                    }
+                    mutableStateOf(allowedCollections.associateBy { "${it.collectionKey.value} / ${it.mandateReferencePrefix.value}" }.let {
+                        it.toMutableMap<String, SepaCollection?>().apply {
+                            this["Select Sepa Collection"] = null
+                        }
+                    })
                 }
 
                 val mandateStatusOptions = mapOf(
@@ -406,27 +404,30 @@ fun BulkEditShareShareSubscriptionsModal(
                         selected = selectedShareOffer,
                         iconContent = { opened -> SimpleUpDown(opened) },
                     ) { (key, value) ->
-                        selectedShareOffer = key
+
                         when (value) {
                             null -> setChanges(BulkEditShareSubscriptionChanges.None)
                             else -> {
-                                val sepaCollection = sepaCollectionOptions[selectedSepaCollection]!!
+                                val sepaCollection = sepaCollectionOptions[key]
+                                if (sepaCollection != null) {
                                 val minimalMandateNumber = sepaCollection.sepaMandates.size
                                 val mandateReferencePadStart = 4
 
-                                setChanges(
-                                    BulkEditShareSubscriptionChanges.AddSepaMandate(
-                                        shareOfferId = ShareOfferId(value.shareOfferId),
-                                        creditorIdentifier = creditorIdentifier,
-                                        sepaCollection = sepaCollection,
-                                        status = selectedMandateStatus,
-                                        isActive = selectedMandateStatus in activeMandateStatuses,
-                                        mandateReferencePadStart = mandateReferencePadStart,
-                                        minimalMandateNumber = minimalMandateNumber,
+                                    setChanges(
+                                        BulkEditShareSubscriptionChanges.AddSepaMandate(
+                                            shareOfferId = ShareOfferId(value.shareOfferId),
+                                            creditorIdentifier = creditorIdentifier,
+                                            sepaCollection = sepaCollection,
+                                            status = selectedMandateStatus,
+                                            isActive = selectedMandateStatus in activeMandateStatuses,
+                                            mandateReferencePadStart = mandateReferencePadStart,
+                                            minimalMandateNumber = minimalMandateNumber,
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
+                        selectedShareOffer = key
                     }
 
                     Dropdown(
@@ -434,11 +435,11 @@ fun BulkEditShareShareSubscriptionsModal(
                         selected = selectedSepaCollection,
                         iconContent = { opened -> SimpleUpDown(opened) },
                     ) { (key, value) ->
-                        selectedSepaCollection = key
                         when (value) {
                             null -> setChanges(BulkEditShareSubscriptionChanges.None)
                             else -> {
-                                val shareOffer = shareOffersOptions[selectedShareOffer]!!
+                                val shareOffer = shareOffersOptions[key]
+                                if (shareOffer != null) {
                                 val minimalMandateNumber = value.sepaMandates.size
                                 val mandateReferencePadStart = 4
 
@@ -453,9 +454,11 @@ fun BulkEditShareShareSubscriptionsModal(
                                         minimalMandateNumber = minimalMandateNumber,
                                     )
                                 )
-                            }
+                            }}
                         }
+                        selectedSepaCollection = key
                     }
+
 
                     Dropdown(
                         mandateStatusOptions,

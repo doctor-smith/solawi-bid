@@ -1,40 +1,9 @@
 package org.solyton.solawi.bid.module.control.dropdown
 
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
-import org.evoleq.compose.conditional.When
-import org.jetbrains.compose.web.css.Color
-import org.jetbrains.compose.web.css.DisplayStyle
-import org.jetbrains.compose.web.css.JustifyContent
-import org.jetbrains.compose.web.css.LineStyle
-import org.jetbrains.compose.web.css.Position
-import org.jetbrains.compose.web.css.display
-import org.jetbrains.compose.web.css.justifyContent
-import org.jetbrains.compose.web.css.StyleScope
-import org.jetbrains.compose.web.css.backgroundColor
-import org.jetbrains.compose.web.css.border
-import org.jetbrains.compose.web.css.borderRadius
-import org.jetbrains.compose.web.css.color
-import org.jetbrains.compose.web.css.fontWeight
-import org.jetbrains.compose.web.css.left
-import org.jetbrains.compose.web.css.marginLeft
-import org.jetbrains.compose.web.css.marginRight
-import org.jetbrains.compose.web.css.maxHeight
-import org.jetbrains.compose.web.css.padding
-import org.jetbrains.compose.web.css.paddingBottom
-import org.jetbrains.compose.web.css.paddingLeft
-import org.jetbrains.compose.web.css.paddingTop
-import org.jetbrains.compose.web.css.percent
-import org.jetbrains.compose.web.css.position
-import org.jetbrains.compose.web.css.px
-import org.jetbrains.compose.web.css.right
-import org.jetbrains.compose.web.css.top
-import org.jetbrains.compose.web.css.width
+import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Text
@@ -64,43 +33,44 @@ fun <T> Dropdown(
         }
     }) {
 
-        // Trigger
-        Div({
-            style { with(styles) { triggerStyle()} }
-            onClick { expanded = !expanded }
-        }) {
-            Text(selected ?: "Select ...")
-            // Icon span
-            Span({
-                style { with(styles) { triggerIconStyle()} }
-            }) {
-                // Use custom icon content if provided, otherwise default to "+"
-                iconContent?.invoke(expanded) ?: Text("+")
-            }
-        }
-
-        // Dropdown content
-        if (expanded) {
+            // Trigger
             Div({
-                style { with(styles) { dropdownContentStyle() } }
+                style { with(styles) { triggerStyle() } }
+                onClick { expanded = !expanded }
             }) {
-                options.forEach { option ->
-                    Div({
-                        style { with(styles) { dropdownItemStyle() } }
-                        onClick {
-                            onSelected(option)
-                            if (closeOnSelect) {
-                                expanded = false
+                Text(selected ?: "Select ...")
+                // Icon span
+                Span({
+                    style { with(styles) { triggerIconStyle() } }
+                }) {
+                    // Use custom icon content if provided, otherwise default to "+"
+                    iconContent?.invoke(expanded) ?: Text("+")
+                }
+            }
+
+            // Dropdown content
+            if (expanded) {
+                Div({
+                    style { with(styles) { dropdownContentStyle() } }
+                }) {
+                    options.forEach { option ->
+                        Div({
+                            style { with(styles) { dropdownItemStyle() } }
+                            onClick {
+                                onSelected(option)
+                                if (closeOnSelect) {
+                                    expanded = false
+                                }
                             }
+                        }) {
+                            Text(option.key)
                         }
-                    }) {
-                        Text(option.key)
                     }
                 }
             }
         }
     }
-}
+
 
 data class Item<T>(
     val value: T,
