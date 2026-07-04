@@ -14,7 +14,6 @@ import org.solyton.solawi.bid.module.shares.data.toApiType
 import org.solyton.solawi.bid.module.shares.repository.updateShareSubscription
 import java.util.*
 
-
 @MathDsl
 @Suppress("FunctionName")
 fun UpdateShareSubscription() = KlAction<Result<Contextual<UpdateShareSubscription>>, Result<ShareSubscription>> { result ->
@@ -30,6 +29,7 @@ fun UpdateShareSubscription() = KlAction<Result<Contextual<UpdateShareSubscripti
             data.numberOfShares,
             data.pricePerShare,
             data.ahcAuthorized,
+            data.coSubscribers,
             userId
         ).toApiType()
     } }  x database

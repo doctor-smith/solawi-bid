@@ -13,7 +13,23 @@ import org.jetbrains.compose.web.dom.Text
 data class SearchInputStyles(
     val containerStyle: StyleScope.()->Unit = {},
     val inputStyle: StyleScope.()->Unit = {},
-)
+) {
+    companion object {
+        val Default = SearchInputStyles()
+    }
+    fun modifyContainerStyle(modifier: StyleScope.()->Unit) = with(Default) {
+        copy( containerStyle = {
+            containerStyle()
+            modifier()
+        })
+    }
+    fun modifyInputStyle(modifier: StyleScope.()->Unit) = with(Default) {
+        copy( inputStyle = {
+            inputStyle()
+            modifier()
+        })
+    }
+}
 
 @OptIn(ExperimentalComposeWebApi::class)
 @Markup

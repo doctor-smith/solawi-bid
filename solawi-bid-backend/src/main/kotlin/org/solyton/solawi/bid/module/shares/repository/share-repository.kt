@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.module.shares.repository
 
 import org.evoleq.exposedx.NO_MESSAGE_PROVIDED
+import org.jetbrains.exposed.dao.flushCache
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
@@ -279,6 +280,7 @@ fun Transaction.updateShareSubscription(
     numberOfShares: Int,
     pricePerShare: Double?,
     ahcAuthorized: Boolean?,
+    coSubscribers: List<Username>,
     modifier: UUID
 ): ShareSubscriptionEntity {
     val shareSubscription = validatedShareSubscription(shareSubscriptionId)
@@ -290,6 +292,7 @@ fun Transaction.updateShareSubscription(
     val numberOfSharesChanged = shareSubscription.numberOfShares != numberOfShares
     val pricePerShareChanged = shareSubscription.pricePerShare != pricePerShare
     val ahcAuthorizedChanged = shareSubscription.ahcAuthorized != ahcAuthorized
+    val coSubscribersChanged = shareSubscription.coSubscribers.map { it.user.username } != coSubscribers.map { it.value }
 
     val totalAmountChanged = pricePerShareChanged || numberOfSharesChanged
 
@@ -318,7 +321,13 @@ fun Transaction.updateShareSubscription(
     if(ahcAuthorizedChanged) {
         shareSubscription.ahcAuthorized = ahcAuthorized
     }
-
+    if(coSubscribersChanged) {
+        updateCoSubscribersByUsernames(
+            modifier,
+            shareSubscription,
+            coSubscribers
+        )
+    }
 
     if(hasChanges(
         shareOfferChanged,
@@ -327,7 +336,8 @@ fun Transaction.updateShareSubscription(
         distributionPointChanged,
         numberOfSharesChanged,
         pricePerShareChanged,
-        ahcAuthorizedChanged
+        ahcAuthorizedChanged,
+        coSubscribersChanged
     )) shareSubscription.markModifiedBy(modifier)
 
     if(totalAmountChanged && pricePerShare != null) {
@@ -351,7 +361,9 @@ fun Transaction.updateShareSubscription(
         }
     }
 
-    return shareSubscription
+    flushCache()
+
+    return validatedShareSubscription(shareSubscriptionId)
 }
 /**
 * Read personal ShareOffers by userProfile and filter by fiscal years.

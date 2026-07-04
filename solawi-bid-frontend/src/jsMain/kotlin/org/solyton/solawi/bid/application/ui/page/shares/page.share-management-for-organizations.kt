@@ -965,7 +965,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                                         shareSubscription.numberOfShares,
                                                         trChanges.pricePerShare,
                                                         shareSubscription.ahcAuthorized,
-                                                        shareSubscription.coSubscribers,
+                                                        shareSubscription.coSubscribers.map { Username(it) },
                                                     )
 
                                                 }
@@ -982,7 +982,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                                         trChanges.numberOfShares,
                                                         shareSubscription.pricePerShare,
                                                         shareSubscription.ahcAuthorized,
-                                                        shareSubscription.coSubscribers,
+                                                        shareSubscription.coSubscribers.map { Username(it) },
                                                     )
                                                 }
 
@@ -998,7 +998,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                                         shareSubscription.numberOfShares,
                                                         shareSubscription.pricePerShare,
                                                         shareSubscription.ahcAuthorized,
-                                                        shareSubscription.coSubscribers,
+                                                        shareSubscription.coSubscribers.map { Username(it) },
                                                     )
                                                 }
 
@@ -1014,7 +1014,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                                         shareSubscription.numberOfShares,
                                                         shareSubscription.pricePerShare,
                                                         trChanges.isAhcAuthorized,
-                                                        shareSubscription.coSubscribers,
+                                                        shareSubscription.coSubscribers.map { Username(it) },
                                                     )
                                                 }
                                             }
@@ -1067,7 +1067,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                                 shareSubscription.numberOfShares,
                                                 shareSubscription.pricePerShare,
                                                 shareSubscription.ahcAuthorized,
-                                                shareSubscription.coSubscribers,
+                                                shareSubscription.coSubscribers.map { Username(it) },
                                             )
                                         }
                                         bulkUpdateShareSubscriptionsState = null
@@ -1228,7 +1228,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                                         numberOfShares,
                                                         pricePerShare,
                                                         ahcAuthorized,
-                                                        coSubscribers,
+                                                        coSubscribers.map { Username(it) },
                                                     )
                                                 }
                                             }

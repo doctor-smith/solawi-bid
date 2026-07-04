@@ -16,7 +16,6 @@ import org.solyton.solawi.bid.module.banking.action.importBankAccounts
 import org.solyton.solawi.bid.module.banking.action.updateBankAccount
 import org.solyton.solawi.bid.module.banking.data.api.ImportBankAccount
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
-import org.solyton.solawi.bid.module.banking.data.bankaccount.bankAccountHolder
 import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.shares.action.CREATE_SHARE_SUBSCRIPTION
 import org.solyton.solawi.bid.module.shares.action.UPDATE_SHARE_SUBSCRIPTION
@@ -222,7 +221,7 @@ fun Storage<Application>.memberUpdateAction(
                         shareSubscription.numberOfShares,
                         shareSubscription.pricePerShare,
                         shareSubscription.ahcAuthorized,
-                        shareSubscription.coSubscribers,
+                        shareSubscription.coSubscribers.map { Username(it) },
                     ),
                     id = UPDATE_SHARE_SUBSCRIPTION+"_$index",
                     clearOnFinish = true
