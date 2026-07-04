@@ -9,7 +9,7 @@ import org.solyton.solawi.bid.module.user.data.api.GetUsers
 import org.solyton.solawi.bid.module.user.data.api.Users
 import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 
-const val GET_USERS = "GetUsers"
+const val GET_USERS = "GET_USERS"
 
 @Markup
 fun getUsers(nameSuffix: String = "") = Action<Application, GetUsers, Users>(

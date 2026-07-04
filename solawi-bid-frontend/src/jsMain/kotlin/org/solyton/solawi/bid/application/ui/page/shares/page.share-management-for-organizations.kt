@@ -155,6 +155,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
     val memberStorage = organizationStorage * members
     val usersStorage = storage * userIso * managedUsers
     val currentUserId = usersStorage * FirstBy { it.username == (storage * userIso * user * username).read() } * id
+    val membersAsUsers = usersStorage * FilterBy { it.username in (memberStorage.read().map { m -> m.username }) }
 
     LaunchedEffect(providerId) {
         launch {
@@ -672,7 +673,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                 Read(distributionPoints),
                                 Read(shareOffers),
                                 providerId,
-                                Read(usersStorage),
+                                Read(membersAsUsers),
                                 ChangedBy.PROVIDER,
                                 null,
                                 { data -> newShareSubscriptionState = data }
@@ -1211,7 +1212,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                             Read(distributionPoints),
                                             Read(shareOffers),
                                             providerId,
-                                            Read(usersStorage),
+                                            Read(membersAsUsers),
                                             ChangedBy.PROVIDER,
                                             subscription,
                                             {data -> newShareSubscriptionState = data}
