@@ -9,6 +9,7 @@ import org.solyton.solawi.bid.module.shares.data.api.UpdateShareSubscription
 import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
 import org.solyton.solawi.bid.module.shares.data.management.shareSubscriptions
 import org.solyton.solawi.bid.module.shares.data.toDomainType
+import org.solyton.solawi.bid.module.values.Username
 
 const val UPDATE_SHARE_SUBSCRIPTION = "UpdateShareSubscription"
 /**
@@ -37,7 +38,7 @@ fun updateShareSubscription(
     numberOfShares: Int,
     pricePerShare: Double?,
     ahcAuthorized: Boolean?,
-    coSubscribers: List<String> = emptyList(),
+    coSubscribers: List<Username> = emptyList(),
     nameSuffix: String = ""
 ): Action<ShareManagement, UpdateShareSubscription, ApiShareSubscription> = Action(
     name = UPDATE_SHARE_SUBSCRIPTION.suffixed(nameSuffix),

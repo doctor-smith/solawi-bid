@@ -2,14 +2,16 @@ package org.solyton.solawi.bid.module.shares.component.modal
 
 
 import androidx.compose.runtime.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.evoleq.change.data.Change
 import org.evoleq.change.data.Keep
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.disabled
 import org.evoleq.compose.conditional.When
 import org.evoleq.compose.form.Form
 import org.evoleq.compose.form.field.Field
 import org.evoleq.compose.form.label.Label
-import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.modal.Modal
 import org.evoleq.compose.modal.ModalData
 import org.evoleq.compose.modal.ModalType
@@ -17,10 +19,7 @@ import org.evoleq.compose.modal.Modals
 import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.device.data.mediaType
 import org.evoleq.kotlinx.date.now
-import org.evoleq.language.Lang
-import org.evoleq.language.get
-import org.evoleq.language.subComp
-import org.evoleq.language.texts
+import org.evoleq.language.*
 import org.evoleq.math.Reader
 import org.evoleq.math.Source
 import org.evoleq.math.emit
@@ -30,11 +29,9 @@ import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
 import org.evoleq.uuid.NIL_UUID
+import org.jetbrains.compose.web.attributes.placeholder
 import org.jetbrains.compose.web.css.*
-import org.jetbrains.compose.web.dom.ElementScope
-import org.jetbrains.compose.web.dom.P
-import org.jetbrains.compose.web.dom.Text
-import org.jetbrains.compose.web.dom.TextInput
+import org.jetbrains.compose.web.dom.*
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
@@ -45,6 +42,8 @@ import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
 import org.solyton.solawi.bid.module.distribution.data.distributionpoint.DistributionPoint
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.ListStyles
+import org.solyton.solawi.bid.module.loading.component.LoadingContent
+import org.solyton.solawi.bid.module.modal.constants.DIALOG_LAYER_INDEX
 import org.solyton.solawi.bid.module.scrollable.Scrollable
 import org.solyton.solawi.bid.module.scrollable.ScrollableStyles
 import org.solyton.solawi.bid.module.search.component.SearchInput
@@ -56,14 +55,19 @@ import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
 import org.solyton.solawi.bid.module.shares.data.management.deviceData
 import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscription
+import org.solyton.solawi.bid.module.shares.i18n.Component
+import org.solyton.solawi.bid.module.shares.i18n.LangField
+import org.solyton.solawi.bid.module.shares.i18n.LangForm
 import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
 import org.solyton.solawi.bid.module.style.modal.commonModalStyles
+import org.solyton.solawi.bid.module.style.zindex.zIndex
 import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 import org.solyton.solawi.bid.module.user.service.profile.fullname
 import org.solyton.solawi.bid.module.values.ProviderId
 import org.w3c.dom.HTMLElement
+import kotlin.time.Duration.Companion.milliseconds
 
 
 @Markup
@@ -136,8 +140,12 @@ fun UpsertShareSubscriptionModal(
     texts = texts,
     styles = commonModalStyles(device).modifyContainerStyle {
         height(80.vh)
-    },
+    }.modifyContentWrapperStyle {
+        minWidth(50.vw)
+    }.compact(),
 ) {
+
+    val scope = rememberCoroutineScope()
 
     val shareSubscriptionId = shareSubscription?.shareSubscriptionId ?: NIL_UUID
 
@@ -154,6 +162,12 @@ fun UpsertShareSubscriptionModal(
     var shareOfferState by remember { mutableStateOf(initialShareOffer) }
 
     // fiscal year state
+    // If no fiscal year is selected, we use the current fiscal year
+    // If the modal is opened for a new share subscription, we use the current fiscal year
+    // Otherwise, we use the fiscal year of the share subscription
+    // IMPORTANT:
+    // - If the share subscription is has status other then EXTERNAL or PENDING_ACTIVATION, the fiscal year is not to be edited at all!
+    // - The set of available share offers varies with fiscal year
     val today = now()
     val currentFiscalYear = fiscalYears.emit().first {
         today.year in it.start.year..it.end.year
@@ -163,87 +177,151 @@ fun UpsertShareSubscriptionModal(
     } ?: currentFiscalYear
     var fiscalYearState by remember { mutableStateOf(initialFiscalYear) }
 
-    var pricePerShareState by remember { mutableStateOf(shareSubscription?.pricePerShare ?: 0.0) }
+    // Price per Share
+    // Here we guarantee that the initial price per share is set correctly:
+    // if the price is null and the share type is FIXED, we use the price from the share-offer,
+    // otherwise we use 0.0
+    val initialPricePerShare = shareSubscription?.pricePerShare ?: initialShareOffer?.let{
+        when(it.shareType.name) {
+            "FIXED" -> it.price
+            else -> null
+        }
+    } ?: 0.0
+    var pricePerShareState by remember { mutableStateOf(initialPricePerShare) }
+
+    // Number of Shares
     var numberOfSharesState by remember { mutableStateOf(shareSubscription?.numberOfShares ?: 0) }
+
+    // AHC Authorized
     var ahcAuthorizedState by remember { mutableStateOf(shareSubscription?.ahcAuthorized ?: false) }
 
     // distribution point state
     val initialDistributionPoint = shareSubscription?.distributionPointId?.let { distributionPointId ->
         distributionPoints.emit().first { it.distributionPointId == distributionPointId }
     }
+
+    // initial distribution point state
     var distributionPointState by remember { mutableStateOf(initialDistributionPoint) }
 
+    // CoSubscribers
     var coSubscribersState by remember { mutableStateOf(shareSubscription?.coSubscribers ?: emptyList()) }
 
+    // Status
     var statusState by remember { mutableStateOf(shareSubscription?.status ?: ShareStatus.PendingActivation) }
 
+    // Effects
+    LaunchedEffect(fiscalYearState) {
+        // Restrict the
+    }
+
+
+    // Styles
     val dropdownStyles = DropdownStyles().modifyContainerStyle {
-        width(200.px)
+        width(100.percent)
+    }.modifyDropdownContentStyle {
+        zIndex(DIALOG_LAYER_INDEX + 100)
     }
     val dropdownFieldStyles: StyleScope.() -> Unit = {
+        width(100.percent)
         fieldDesktopStyle()
         alignItems(AlignItems.Start)
     }
 
-    val inputs = Source{texts} * subComp("upsertShareSubscriptionForm") * subComp("inputs")
+    // I18n
+    val inputs = Source{texts} * upsertShareSubscriptionForm * LangForm.inputs
+
 
     Scrollable(ScrollableStyles().modifyContainerStyle {}) {
         Form(formDesktopStyle) {
-
             Field(dropdownFieldStyles){
+                val userField = inputs * LangField.user
+                val listOfUsers = userField * LangField.listOfUsers
+                val searchBox = userField * LangField.searchBox
                 Label(
-                    text = "Member",
-                    id = "member",
-                    labelStyle = formLabelDesktopStyle,
+                    text = userField * title,
+                    id = "user",
+                    labelStyle = {formLabelDesktopStyle()},
                     isRequired = true
                 )
-                P{Text(userState?.profile?.fullname() ?: "Select member")}
+                TextInput(userState?.profile?.fullname() ?: "") {
+                    disabled()
+                    placeholder((searchBox * LangField.placeholder).emit())
+                    style{
+                        marginBottom(10.px)
+                        width(100.percent)
+                    }
+                }
                 When(shareSubscription == null) {
                     // Member selection box (Search box)
-                    var searchUsersResult by remember { mutableStateOf(emptyList<ManagedUser>()) }
+                    var searchUsersResult by remember { mutableStateOf(users) }
+                    var isListReady by remember { mutableStateOf(false) }
+
+                    val selectUser = { user: ManagedUser -> userState = when {
+                        userState != user -> user
+                        else -> null
+                    }}
+
+                    LaunchedEffect(searchUsersResult) {
+                        isListReady = false
+                        delay(10.milliseconds) // Small delay to allow UI to render first
+                        isListReady = true
+                    }
+
                     SearchInput(
                         initialUser?.profile.fullname(),
-                        SearchInputStyles(),
+                        SearchInputStyles().modifyContainerStyle {
+                            width(100.percent)
+                        },
                         true
                     ) {
-                        searchUsersResult = users.filter { user ->
-                            user.profile.fullname().contains(it, true) ||
-                                    user.username.contains(it, true)
+                        scope.launch {
+                            searchUsersResult = users.filter { user ->
+                                user.profile.fullname().contains(it, true) ||
+                                        user.username.contains(it, true)
+                            }
                         }
                     }
                     val listStyles = ListStyles().modifyListItemWrapper {
-                        minHeight(300.px)
+                        minHeight(250.px)
                     }
+
                     ListWrapper {
                         HeaderWrapper {
                             Header {
-                                HeaderCell("Username") { width(50.percent) }
-                                HeaderCell("Fullname") { width(50.percent) }
+                                HeaderCell(listOfUsers * LangField.header * LangField.username * title) { width(50.percent) }
+                                HeaderCell(listOfUsers * LangField.header * LangField.fullName * title) { width(50.percent) }
                             }
                         }
                         Scrollable(ScrollableStyles().modifyContainerStyle {
                             maxHeight(300.px)
+                            minHeight(300.px)
                         }) {
-                            ListItemsIndexed(searchUsersResult) { index, user ->
-                                ListItemWrapper({
-                                    listItemWrapperStyle(this, index)
-                                }) {
-                                    DataWrapper(listStyles.dataWrapper) {
-                                        TextCell(user.username) { width(50.percent) }
-                                        TextCell(user.profile.fullname()) { width(50.percent) }
-                                    }
-                                    ActionsWrapper {
-                                        SquareCheckButton(
-                                            Color.black,
-                                            Color.white,
-                                            { "Select / Deselect user" },
-                                            device,
-                                            false,
-                                            null,
-                                        ) {
-                                            userState = when {
-                                                userState != user -> user
-                                                else -> null
+                            When(!isListReady) {
+                                LoadingContent()
+                            }
+                            When(isListReady) {
+                                
+                                ListItemsIndexed(searchUsersResult) { index, user ->
+                                    ListItemWrapper({
+                                        listItemWrapperStyle(this, index)
+                                    }) {
+                                        DataWrapper(listStyles.dataWrapper) {
+                                            TextCell(user.username) { width(50.percent) }
+                                            TextCell(user.profile.fullname()) { width(50.percent) }
+                                        }
+                                        ActionsWrapper {
+                                            SquareCheckButton(
+                                                Color.black,
+                                                Color.white,
+                                                listOfUsers * LangField.actions * LangField.selectUser * LangField.tooltip * text,
+                                                device,
+                                                false,
+                                                null,
+                                            ) {
+                                                
+                                                scope.launch {
+                                                    selectUser(user)
+                                                }
                                             }
                                         }
                                     }
@@ -253,174 +331,33 @@ fun UpsertShareSubscriptionModal(
                     }
                 }
             }
-            Horizontal({
-                JustifyContent.FlexStart
-            }) {
-                // Fiscal year dropdown
-                Field(dropdownFieldStyles) {
-                    Label(
-                        text = "Fiscal Year",
-                        id = "fiscal-year",
-                        labelStyle = formLabelDesktopStyle,
-                        isRequired = true
-                    )
+            // Fiscal year dropdown
+            Field(dropdownFieldStyles) {
+                val fiscalYearField = inputs * LangField.fiscalYear
+                Label(
+                    text = fiscalYearField * title,
+                    id = "fiscal-year",
+                    labelStyle = formLabelDesktopStyle,
+                    isRequired = true
+                )
 
-                    val options = fiscalYears.emit().associateBy { it.format() }
-                    Dropdown(
-                        options = options,
-                        selected = fiscalYearState.format(),
-                        styles = dropdownStyles,
-                        iconContent = { expanded -> SimpleUpDown(expanded) }
-                    ) { (_, value) ->
-                        update(
-                            ShareSubscriptionChange(
-                                shareSubscriptionId,
-                                providerId,
-                                Change(
-                                    fiscalYearState,
-                                    value
-                                ) {
-                                    fiscalYearState = value
-                                },
-                                Keep(userState),
-                                Keep(shareOfferState),
-                                Keep(distributionPointState),
-                                Keep(pricePerShareState),
-                                Keep(numberOfSharesState),
-                                Keep(coSubscribersState),
-                                Keep(ahcAuthorizedState),
-                                Keep(statusState)
-                            )
-                        ) { data ->
-                            setShareSubscription(data)
-                        }
-                    }
-                }
-
-
-                // Share offer dropdown
-                Field(dropdownFieldStyles) {
-                    val options = shareOffers.emit().associateBy { it.shareType.name + " - " + it.fiscalYear.format() }
-                    Label(
-                        text = "Share Offer",
-                        id = "share-offer",
-                        labelStyle = formLabelDesktopStyle,
-                        isRequired = true
-                    )
-                    Dropdown(
-                        options = options,
-                        selected = shareOfferState?.let { it.shareType.name + " - " + it.fiscalYear.format() }
-                            ?: "Select share offer",
-                        styles = dropdownStyles.modifyContainerStyle {
-                            width(300.px)
-                        },
-                        iconContent = { expanded -> SimpleUpDown(expanded) }
-                    ) { (_, value) ->
-                        update(
-                            ShareSubscriptionChange(
-                                shareSubscriptionId,
-                                providerId,
-                                Keep(fiscalYearState),
-                                Keep(userState),
-                                Change(
-                                    shareOfferState,
-                                    value
-                                ) {
-                                    shareOfferState = value
-                                },
-                                Keep(distributionPointState),
-                                Keep(pricePerShareState),
-                                Keep(numberOfSharesState),
-                                Keep(coSubscribersState),
-                                Keep(ahcAuthorizedState),
-                                Keep(statusState)
-                            )
-                        ) { data ->
-                            setShareSubscription(data)
-                        }
-                    }
-                }
-                // Distribution point dropdown
-                Field(dropdownFieldStyles) {
-                    Label(
-                        text = "Distribution Point",
-                        id = "distribution-point",
-                        labelStyle = formLabelDesktopStyle,
-                        isRequired = true
-                    )
-                    val options = distributionPoints.emit().associateBy { it.name }
-                    Dropdown(
-                        options = options,
-                        selected = distributionPointState?.name ?: "Select distribution point",
-                        styles = dropdownStyles.modifyContainerStyle {
-                            width(300.px)
-                        },
-                        iconContent = { expanded -> SimpleUpDown(expanded) }
-                    ) { (_, value) ->
-                        update(
-                            ShareSubscriptionChange(
-                                shareSubscriptionId,
-                                providerId,
-                                Keep(fiscalYearState),
-                                Keep(userState),
-                                Keep(shareOfferState),
-                                Change(
-                                    distributionPointState,
-                                    value
-                                ) { distributionPointState = value },
-                                Keep(pricePerShareState),
-                                Keep(numberOfSharesState),
-                                Keep(coSubscribersState),
-                                Keep(ahcAuthorizedState),
-                                Keep(statusState)
-
-                            )
-                        ) { data ->
-                            setShareSubscription(data)
-                        }
-                    }
-                }
-            }
-            Horizontal({
-                JustifyContent.FlexStart
-            }) {
-                // Share status dropdown
-                Field(dropdownFieldStyles) {
-                    Label(
-                        text = "Share Status",
-                        id = "share-status",
-                        labelStyle = formLabelDesktopStyle,
-                        isRequired = true
-                    )
-                    val allowedShareStatusTransitionTargets = requireNotNull(
-                        shareStatusTransitionsWithPermissions[statusState]
-                    ) {
-                        "Share status transition not found for status $statusState"
-                    }.filter { it.permissions[changesDoneBy] != null }.associateBy({ it.shareStatus.value }) {
-                        it.shareStatus
-                    }// + (shareSubscription.status.value to shareSubscription.status)
-                    @Suppress("UnusedPrivateProperty")
-                    val changeReasons = requireNotNull(
-                        shareStatusTransitionsWithPermissions[statusState]
-                    ) {
-                        "Share status transition not found for status $statusState"
-                    }.filter { it.permissions[changesDoneBy] != null }.associateBy({ it.shareStatus.value }) {
-                        it.permissions[changesDoneBy].orEmpty()
-                    }
-
-                    Dropdown(
-                        options = allowedShareStatusTransitionTargets,
-                        selected = statusState.value,
-                        styles = dropdownStyles.modifyContainerStyle {
-                            width(300.px)
-                        },
-                        iconContent = { expanded -> SimpleUpDown(expanded) }
-                    ) {
-                        (_, value) ->
-                        update(ShareSubscriptionChange(
+                val options = fiscalYears.emit().associateBy { it.format() }
+                Dropdown(
+                    options = options,
+                    selected = fiscalYearState.format(),
+                    styles = dropdownStyles,
+                    iconContent = { expanded -> SimpleUpDown(expanded) }
+                ) { (_, value) ->
+                    update(
+                        ShareSubscriptionChange(
                             shareSubscriptionId,
                             providerId,
-                            Keep(fiscalYearState),
+                            Change(
+                                fiscalYearState,
+                                value
+                            ) {
+                                fiscalYearState = value
+                            },
                             Keep(userState),
                             Keep(shareOfferState),
                             Keep(distributionPointState),
@@ -428,148 +365,339 @@ fun UpsertShareSubscriptionModal(
                             Keep(numberOfSharesState),
                             Keep(coSubscribersState),
                             Keep(ahcAuthorizedState),
-                            Change(statusState, value) { statusState = value },
-
-                        )) {
-                            data -> setShareSubscription(data)
-                        }
+                            Keep(statusState)
+                        )
+                    ) { data ->
+                        setShareSubscription(data)
                     }
                 }
-                // Price per share
-                Field(dropdownFieldStyles) {
-                    Label(
-                        text  ="Price per share",
-                        id = "price-per-share",
-                        labelStyle = formLabelDesktopStyle,
-                        isRequired = true
-                    )
-                    TextInput(
-                        pricePerShareState.toString(),
-                    ) {
-                        onInput {
-                            event ->
-                            val value = event.value.toDoubleOrNull() ?: 0.0
-                            update(
-                                ShareSubscriptionChange(
-                                    shareSubscriptionId,
-                                    providerId,
-                                    Keep(fiscalYearState),
-                                    Keep(userState),
-                                    Keep(shareOfferState),
-                                    Keep(distributionPointState),
-                                    Change(
-                                        pricePerShareState,
-                                        value
-                                    ) {
-                                        pricePerShareState = value
-                                    },
-                                    Keep(numberOfSharesState),
-                                    Keep(coSubscribersState),
-                                    Keep(ahcAuthorizedState),
-                                    Keep(statusState),
-                                )
+            }
+
+
+            // Share offer dropdown
+            Field(dropdownFieldStyles) {
+                val shareOfferField = inputs * LangField.shareOffer
+
+                val options = shareOffers.emit().filter { it.fiscalYear == fiscalYearState }.associateBy { it.shareType.name + " - " + it.fiscalYear.format() }
+                Label(
+                    text = shareOfferField * title,
+                    id = "share-offer",
+                    labelStyle = formLabelDesktopStyle,
+                    isRequired = true
+                )
+                Dropdown(
+                    options = options,
+                    selected = shareOfferState?.let { it.shareType.name + " - " + it.fiscalYear.format() }
+                        ?: (shareOfferField * LangField.placeholder).emit(),
+                    styles = dropdownStyles,
+                    iconContent = { expanded -> SimpleUpDown(expanded) }
+                ) { (_, value) ->
+                    update(
+                        ShareSubscriptionChange(
+                            shareSubscriptionId,
+                            providerId,
+                            Keep(fiscalYearState),
+                            Keep(userState),
+                            Change(
+                                shareOfferState,
+                                value
                             ) {
-                                data -> setShareSubscription(data)
-                            }
-                        }
+                                shareOfferState = value
+                            },
+                            Keep(distributionPointState),
+                            Keep(pricePerShareState),
+                            Keep(numberOfSharesState),
+                            Keep(coSubscribersState),
+                            Keep(ahcAuthorizedState),
+                            Keep(statusState)
+                        )
+                    ) { data ->
+                        setShareSubscription(data)
                     }
                 }
-                // Number of shares
-                Field(dropdownFieldStyles) {
-                    Label(
-                        text = "Number of shares",
-                        id = "number-of-shares",
-                        labelStyle = formLabelDesktopStyle,
-                        isRequired = true
-                    )
-                    TextInput(
-                        numberOfSharesState.toString(),
-                    ) {
-                        onInput { event ->
-                                val value = event.value.toIntOrNull() ?: 0
-                                update(
-                                    ShareSubscriptionChange(
-                                        shareSubscriptionId,
-                                        providerId, Keep(fiscalYearState),
-                                        Keep(userState),
-                                        Keep(shareOfferState),
-                                        Keep(distributionPointState),
-                                        Keep(pricePerShareState),
-                                        Change(
-                                            numberOfSharesState,
-                                            value
-                                        ) {
-                                            console.log("numberOfSharesState: $numberOfSharesState")
-                                            numberOfSharesState = value
-                                        },
-                                        Keep(coSubscribersState),
-                                        Keep(ahcAuthorizedState),
-                                        Keep(statusState)
-                                    )
-                                ) { data ->
-                                    setShareSubscription(data)
-                                }
+            }
+            // Distribution point dropdown
+            Field(dropdownFieldStyles) {
+                val distributionPointField = inputs * LangField.distributionPoint
+                Label(
+                    text = distributionPointField * title,
+                    id = "distribution-point",
+                    labelStyle = formLabelDesktopStyle,
+                    isRequired = true
+                )
+                val options = distributionPoints.emit().associateBy { it.name }
+                Dropdown(
+                    options = options,
+                    selected = distributionPointState?.name ?: "Select distribution point",
+                    styles = dropdownStyles,
+                    iconContent = { expanded -> SimpleUpDown(expanded) }
+                ) { (_, value) ->
+                    update(
+                        ShareSubscriptionChange(
+                            shareSubscriptionId,
+                            providerId,
+                            Keep(fiscalYearState),
+                            Keep(userState),
+                            Keep(shareOfferState),
+                            Change(
+                                distributionPointState,
+                                value
+                            ) { distributionPointState = value },
+                            Keep(pricePerShareState),
+                            Keep(numberOfSharesState),
+                            Keep(coSubscribersState),
+                            Keep(ahcAuthorizedState),
+                            Keep(statusState)
 
-                        }
+                        )
+                    ) { data ->
+                        setShareSubscription(data)
                     }
                 }
-                // AHC authorized checkbox
-                Field(dropdownFieldStyles) {
-                    Label(
-                        text = "AHC authorized",
-                        id = "ahc-authorized",
-                        labelStyle = formLabelDesktopStyle,
-                        isRequired = true
-                    )
-                    val checkIt: (Boolean) -> Reader<Lang.Block, String> = { bool: Boolean ->
-                        Reader { lang: Lang.Block ->
-                            lang["$bool"]
-                        }
+            }
+            // Share status dropdown
+            Field(dropdownFieldStyles) {
+                Label(
+                    text = inputs * LangField.shareStatus * title,
+                    id = "share-status",
+                    labelStyle = formLabelDesktopStyle,
+                    isRequired = true
+                )
+                val allowedShareStatusTransitionTargets = requireNotNull(
+                    shareStatusTransitionsWithPermissions[statusState]
+                ) {
+                    "Share status transition not found for status $statusState"
+                }.filter { it.permissions[changesDoneBy] != null }.associateBy({ it.shareStatus.value }) {
+                    it.shareStatus
+                }// + (shareSubscription.status.value to shareSubscription.status)
+                @Suppress("UnusedPrivateProperty")
+                val changeReasons = requireNotNull(
+                    shareStatusTransitionsWithPermissions[statusState]
+                ) {
+                    "Share status transition not found for status $statusState"
+                }.filter { it.permissions[changesDoneBy] != null }.associateBy({ it.shareStatus.value }) {
+                    it.permissions[changesDoneBy].orEmpty()
+                }
+
+                Dropdown(
+                    options = allowedShareStatusTransitionTargets,
+                    selected = statusState.value,
+                    styles = dropdownStyles,
+                    iconContent = { expanded -> SimpleUpDown(expanded) }
+                ) {
+                    (_, value) ->
+                    update(ShareSubscriptionChange(
+                        shareSubscriptionId,
+                        providerId,
+                        Keep(fiscalYearState),
+                        Keep(userState),
+                        Keep(shareOfferState),
+                        Keep(distributionPointState),
+                        Keep(pricePerShareState),
+                        Keep(numberOfSharesState),
+                        Keep(coSubscribersState),
+                        Keep(ahcAuthorizedState),
+                        Change(statusState, value) { statusState = value },
+
+                    )) {
+                        data -> setShareSubscription(data)
                     }
-                    val check = { checked: Boolean ->
-                        (inputs * subComp("ahcAuthorized") * checkIt(
-                            checked
-                        )).emit()
-                    }
-                    val options = mapOf(
-                        check(true) to true,
-                        check(false) to false
-                    )
-                    Dropdown(
-                        options = options,
-                        selected = check(ahcAuthorizedState),
-                        styles = dropdownStyles.modifyContainerStyle {
-                            width(75.px)
-                        },
-                        iconContent = { expanded -> SimpleUpDown(expanded) }
-                    ) {
-                        (_, checked) ->
+                }
+            }
+            // Price per share
+            Field(dropdownFieldStyles) {
+                Label(
+                    text  = inputs * LangField.pricePerShare * title,
+                    id = "price-per-share",
+                    labelStyle = formLabelDesktopStyle,
+                    isRequired = true
+                )
+                TextInput(
+                    pricePerShareState.toString(),
+                ) {
+                    style{width(100.percent)}
+                    onInput {
+                        event ->
+                        val value = event.value.toDoubleOrNull() ?: 0.0
                         update(
                             ShareSubscriptionChange(
                                 shareSubscriptionId,
-                                providerId,Keep(fiscalYearState),
+                                providerId,
+                                Keep(fiscalYearState),
                                 Keep(userState),
                                 Keep(shareOfferState),
                                 Keep(distributionPointState),
-                                Keep(pricePerShareState),
+                                Change(
+                                    pricePerShareState,
+                                    value
+                                ) {
+                                    pricePerShareState = value
+                                },
                                 Keep(numberOfSharesState),
                                 Keep(coSubscribersState),
-                                Change(
-                                    ahcAuthorizedState,
-                                    checked
-                                ) {
-                                    ahcAuthorizedState = checked
-                                },
-                                Keep(statusState)
+                                Keep(ahcAuthorizedState),
+                                Keep(statusState),
                             )
                         ) {
                             data -> setShareSubscription(data)
                         }
                     }
                 }
-                // Co-subscribers (Search box + list of so-subscribers)
-                Field(dropdownFieldStyles) {
+            }
+            // Number of shares
+            Field(dropdownFieldStyles) {
+                Label(
+                    text = inputs * LangField.numberOfShares * title,
+                    id = "number-of-shares",
+                    labelStyle = {formLabelDesktopStyle(); width(100.percent)},
+                    isRequired = true
+                )
+                TextInput(
+                    numberOfSharesState.toString(),
+                ) {
+                    style{width(100.percent)}
+                    onInput { event ->
+                            val value = event.value.toIntOrNull() ?: 0
+                            update(
+                                ShareSubscriptionChange(
+                                    shareSubscriptionId,
+                                    providerId, Keep(fiscalYearState),
+                                    Keep(userState),
+                                    Keep(shareOfferState),
+                                    Keep(distributionPointState),
+                                    Keep(pricePerShareState),
+                                    Change(
+                                        numberOfSharesState,
+                                        value
+                                    ) {
+                                        numberOfSharesState = value
+                                    },
+                                    Keep(coSubscribersState),
+                                    Keep(ahcAuthorizedState),
+                                    Keep(statusState)
+                                )
+                            ) { data ->
+                                setShareSubscription(data)
+                            }
 
+                    }
+                }
+            }
+            // AHC authorized checkbox
+            Field(dropdownFieldStyles) {
+                Label(
+                    text = inputs * LangField.ahcAuthorized * title,
+                    id = "ahc-authorized",
+                    labelStyle = formLabelDesktopStyle,
+                    isRequired = true
+                )
+                val checkIt: (Boolean) -> Reader<Lang.Block, String> = { bool: Boolean ->
+                    Reader { lang: Lang.Block ->
+                        lang["$bool"]
+                    }
+                }
+                val check = { checked: Boolean ->
+                    (inputs * LangField.ahcAuthorized * checkIt(
+                        checked
+                    )).emit()
+                }
+                val options = mapOf(
+                    check(true) to true,
+                    check(false) to false
+                )
+                Dropdown(
+                    options = options,
+                    selected = check(ahcAuthorizedState),
+                    styles = dropdownStyles,
+                    iconContent = { expanded -> SimpleUpDown(expanded) }
+                ) {
+                    (_, checked) ->
+                    update(
+                        ShareSubscriptionChange(
+                            shareSubscriptionId,
+                            providerId,Keep(fiscalYearState),
+                            Keep(userState),
+                            Keep(shareOfferState),
+                            Keep(distributionPointState),
+                            Keep(pricePerShareState),
+                            Keep(numberOfSharesState),
+                            Keep(coSubscribersState),
+                            Change(
+                                ahcAuthorizedState,
+                                checked
+                            ) {
+                                ahcAuthorizedState = checked
+                            },
+                            Keep(statusState)
+                        )
+                    ) {
+                        data -> setShareSubscription(data)
+                    }
+                }
+            }
+            // Co-subscribers (Search box + list of so-subscribers)
+            Field(dropdownFieldStyles) {
+                var forbiddenUsernames by remember { mutableStateOf(emptyList<String>()) }
+                Label(
+                    text = inputs * LangField.coSubscribers * title,
+                    id = "co-subscribers",
+                    labelStyle = formLabelDesktopStyle,
+                    isRequired = true
+                )
+                TextArea(coSubscribersState.joinToString(",\n")) {
+                    style{
+                        width(100.percent)
+                        height(150.px)
+                    }
+                    onInput { event ->
+                        val value = event.value.trim()
+                        val values = value.split(",\n", ",", "\n").map { it.trim() }
+                        val coSubscribers = when {
+                            value.endsWith(",\n") ||
+                            value.endsWith(",") ||
+                            value.endsWith("\n") -> values
+                            else -> values.filter { it.isNotEmpty() }
+                        }
+
+                        val usernames = users.map { it.username }.toSet()
+                        forbiddenUsernames = coSubscribers.filter { coSubscriber -> usernames.none { it == coSubscriber } }
+                        update(
+                            ShareSubscriptionChange(
+                                shareSubscriptionId,
+                                providerId, Keep(fiscalYearState),
+                                Keep(userState),
+                                Keep(shareOfferState),
+                                Keep(distributionPointState),
+                                Keep(pricePerShareState),
+                                Keep(numberOfSharesState),
+                                Change(
+                                    coSubscribersState,
+                                    coSubscribers
+                                ) {
+                                    coSubscribersState = coSubscribers
+                                },
+                                Keep(ahcAuthorizedState),
+                                Keep(statusState)
+                            )
+                        ) { data ->
+                            setShareSubscription(data)
+                        }
+
+                    }
+                }
+                When(forbiddenUsernames.isNotEmpty()) {
+                    Div({
+                        style {
+                            color(Color.red)
+                        }
+                    }) {
+                        val message = (inputs * LangField.coSubscribers * LangField.messages * LangField.forbiddenUsers).emit()
+                        P { Text(message) }
+                        forbiddenUsernames.forEach { username ->
+                        P {
+                            Text(username) }
+                        }
+                    }
                 }
             }
         }
@@ -592,6 +720,24 @@ data class ShareSubscriptionChange(
     val status: Change<ShareStatus>,
 )
 
+fun validate(change: ShareSubscriptionChange) {
+    val errors = mutableListOf<Exception>(
+
+    )
+    if (change.user.new == null) {
+        errors + IllegalArgumentException("User is required")
+    }
+    if (change.shareOffer.new == null) {
+        errors + IllegalArgumentException("Share offer is required")
+    }
+    if (change.distributionPoint.new == null) {
+        errors + IllegalArgumentException("Distribution point is required")
+    }
+    if (change.pricePerShare.new == null) {
+        errors + IllegalArgumentException("Price per share is required")
+    }
+}
+
 fun update(change: ShareSubscriptionChange, update: (ShareSubscription) -> Unit) {
     try {
         update(
@@ -602,7 +748,6 @@ fun update(change: ShareSubscriptionChange, update: (ShareSubscription) -> Unit)
                 userProfileId = change.user.new!!.profile!!.userProfileId,
                 shareOfferId = change.shareOffer.new!!.shareOfferId,
                 distributionPointId = change.distributionPoint.new!!.distributionPointId,
-
                 pricePerShare = change.pricePerShare.new!!,
                 numberOfShares = change.numberOfShares.new!!,
                 coSubscribers = change.coSubscribers.new!!,
@@ -625,6 +770,7 @@ fun update(change: ShareSubscriptionChange, update: (ShareSubscription) -> Unit)
 }
 
 
+@I18N
 val upsertShareSubscriptionModalTexts = Source {
     "upsertShareSubscriptionModal" texts {
         "title" colon "Create or Update Share Subscription"
@@ -638,32 +784,81 @@ val upsertShareSubscriptionModalTexts = Source {
     }
 }
 
+@I18N
 val upsertShareSubscriptionFormTexts = Source {
     "upsertShareSubscriptionForm" texts {
         "inputs" block {
-            "fiscalYear" block{
-               "title"  colon "Fiscal Year"
-            }
-            "shareOffer" block{
-               "title"  colon "Share Offer"
-            }
-            "distributionPoint" block{
-               "title"  colon "Distribution Point"
-            }
-            "numberOfShares" block{
-               "title"  colon "Number of Shares"
-            }
-            "pricePerShare" block{
-                "title"  colon "Price Per Share"
-            }
             "ahcAuthorized" block{
-                "title"  colon "AHC Authorized"
+                "title"  colon "SEPA Mandate signed"
                 "true"  colon "☑️"
                 "false" colon "❌"
+                "description"  colon "AHC Authorized is a flag that indicates whether the user has signed the AHC Authorized Agreement."
+                "placeholder" colon "Select AHC Authorized"
             }
             "coSubscribers" block{
                 "title"  colon "Co-Subscribers"
+                "description"  colon "Co-subscribers are the users that are subscribed to the share offer."
+                "placeholder" colon "Select co-subscribers"
+                "messages" block {
+                    "forbiddenUsers" colon "The following usernames are not allowed until you add them as members to your organization: "
+                }
+            }
+
+            "distributionPoint" block{
+               "title"  colon "Distribution Point"
+               "description"  colon "Distribution point is the distribution point of the share offer that the user is subscribing to."
+                "placeholder" colon "Select distribution point"
+            }
+            "fiscalYear" block{
+                "title"  colon "Fiscal Year"
+                "description"  colon "Fiscal year is the fiscal year of the share offer that the user is subscribing to."
+                "placeholder" colon "Select fiscal year"
+            }
+            "numberOfShares" block{
+               "title"  colon "Number of Shares"
+                "description"  colon "Number of shares is the number of shares of the share offer that the user is subscribing to."
+            }
+            "pricePerShare" block{
+                "title"  colon "Price Per Share"
+                "description"  colon "Price per share is the price of a single share of the share offer."
+            }
+            "shareOffer" block{
+                "title"  colon "Share Offer"
+                "description"  colon "Share offer is the share offer that the user is subscribing to."
+                "placeholder" colon "Select share offer"
+            }
+            "shareStatus" block{
+                "title"  colon "Share Status"
+                "description"  colon "Share status is the status of the share subscription."
+                "placeholder" colon "Select share status"
+            }
+            "user" block {
+                "title" colon "User Profile"
+                "description" colon "User profile is the user profile of the user that is subscribing to the share offer."
+                "listOfUsers" block {
+                    "title" colon "List of Users"
+                    "header" block {
+                        "username" block {"title" colon "Username" }
+                        "fullName" block {"title" colon "Full name"}
+                    }
+                    "actions" block {
+                        "selectUser" block {
+                            "tooltip" block {
+                                "text" colon "Select / Deselect user"
+                            }
+                        }
+                    }
+                    "noUsers" colon "No users found"
+                }
+                "searchBox" block {
+                    "title" colon "Search Box"
+                    "placeholder" colon "Select user"
+                }
             }
         }
     }
 }
+
+
+val upsertShareSubscriptionModal: Component = { block -> block.component("upsertShareSubscriptionModal") }
+val upsertShareSubscriptionForm: Component = { block -> block.component("upsertShareSubscriptionForm") }
