@@ -162,6 +162,105 @@ fun BulkEditButton(
 @Markup
 @Composable
 @Suppress("FunctionName")
+fun ChevronDownButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    // fa-list-check
+    //"fa-check-square"),
+    arrayOf("fa-solid", "fa-chevron-down"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun ChevronLeftButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    // fa-list-check
+    //"fa-check-square"),
+    arrayOf("fa-solid", "fa-chevron-left"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun ChevronRightButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    // fa-list-check
+    //"fa-check-square"),
+    arrayOf("fa-solid", "fa-chevron-right"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun ChevronUpButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    // fa-list-check
+    //"fa-check-square"),
+    arrayOf("fa-solid", "fa-chevron-up"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
+@Markup
+@Composable
+@Suppress("FunctionName")
 fun ClockButton(
     color: CSSColorValue,
     bgColor: CSSColorValue = Color.transparent,

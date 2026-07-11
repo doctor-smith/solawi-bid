@@ -1,19 +1,19 @@
 package org.solyton.solawi.bid.application.ui.page.shares
 
 import androidx.compose.runtime.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.routing.navigate
+import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.device.data.mediaType
 import org.evoleq.kotlinx.date.now
 import org.evoleq.language.Lang
+import org.evoleq.language.subComp
 import org.evoleq.language.texts
-import org.evoleq.math.FirstOrNull
-import org.evoleq.math.Source
-import org.evoleq.math.emit
-import org.evoleq.math.map
+import org.evoleq.math.*
 import org.evoleq.optics.lens.BiMap
 import org.evoleq.optics.lens.DeepSearch
 import org.evoleq.optics.lens.FilterBy
@@ -23,6 +23,7 @@ import org.evoleq.optics.transform.flatMap
 import org.evoleq.optics.transform.times
 import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.compose.web.css.*
+import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.letsPlot.commons.intern.filterNotNullValues
@@ -38,6 +39,7 @@ import org.solyton.solawi.bid.module.banking.component.modal.sepa.showUpsertSepa
 import org.solyton.solawi.bid.module.banking.component.modal.sepa.upsertSepaMandateModalTexts
 import org.solyton.solawi.bid.module.banking.data.*
 import org.solyton.solawi.bid.module.banking.data.api.*
+import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.bankAccounts
 import org.solyton.solawi.bid.module.banking.data.application.creditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.application.fiscalYears
@@ -62,8 +64,10 @@ import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
 import org.solyton.solawi.bid.module.distribution.action.readDistributionPoints
 import org.solyton.solawi.bid.module.distribution.data.distributionManagementActions
 import org.solyton.solawi.bid.module.distribution.data.distributionpoint.DistributionPoint
+import org.solyton.solawi.bid.module.distribution.data.management.DistributionManagement
 import org.solyton.solawi.bid.module.distribution.data.management.distributionPoints
 import org.solyton.solawi.bid.module.list.component.*
+import org.solyton.solawi.bid.module.list.style.ListStyles
 import org.solyton.solawi.bid.module.list.style.defaultListStyles
 import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.scrollable.Scrollable
@@ -75,6 +79,7 @@ import org.solyton.solawi.bid.module.shares.component.modal.*
 import org.solyton.solawi.bid.module.shares.data.api.UpdateShareStatus
 import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
 import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
+import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
 import org.solyton.solawi.bid.module.shares.data.management.deviceData
 import org.solyton.solawi.bid.module.shares.data.management.shareOffers
 import org.solyton.solawi.bid.module.shares.data.management.shareSubscriptions
@@ -100,6 +105,7 @@ import org.solyton.solawi.bid.module.user.action.organization.readOrganizations
 import org.solyton.solawi.bid.module.user.action.user.getUsers
 import org.solyton.solawi.bid.module.user.action.user.readUserProfiles
 import org.solyton.solawi.bid.module.user.component.dropdown.dropdownStyles
+import org.solyton.solawi.bid.module.user.data.UserApplication
 import org.solyton.solawi.bid.module.user.data.managed.id
 import org.solyton.solawi.bid.module.user.data.managedUsers
 import org.solyton.solawi.bid.module.user.data.organization.members
@@ -130,32 +136,22 @@ data class ShareSubscriptionFilter(
 fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerId: ProviderId, up: String) {
     val scope = rememberCoroutineScope()
 
-
-
     val shareManagementStore = storage * shareManagementIso
     val shareManagementActions = shareManagementStore * shareManagementActions
-    val shareManagementModals = shareManagementStore * shareManagementModals
 
     val distributionManagementStorage = storage * distributionManagementIso
     val distributionManagementActions = distributionManagementStorage * distributionManagementActions
 
     val bankingApplicationStorage = storage * bankingApplicationIso
     val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
-    val debtorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.bankAccountType == AccountType.DEBTOR }
-    val fiscalYears = bankingApplicationStorage * fiscalYears
-    val creditorIdentifier = bankingApplicationStorage * creditorIdentifier
-    val creditorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.bankAccountType == AccountType.CREDITOR }
-    val sepaModule = bankingApplicationStorage * sepaModule
-    val sepaCollections = sepaModule * sepaCollections
 
 
-    val userActions = storage * userIso * userActions
-    val organizationsStorage = storage * userIso * user * organizations
+    val userStorage = storage * userIso
+    val userActions = userStorage * userActions
+    val organizationsStorage = userStorage * user * organizations
     val organizationStorage = organizationsStorage * DeepSearch { it.organizationId == providerId.value }
     val memberStorage = organizationStorage * members
     val usersStorage = storage * userIso * managedUsers
-    val currentUserId = usersStorage * FirstBy { it.username == (storage * userIso * user * username).read() } * id
-    val membersAsUsers = usersStorage * FilterBy { it.username in (memberStorage.read().map { m -> m.username }) }
 
     LaunchedEffect(providerId) {
         launch {
@@ -201,12 +197,9 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
         }
     }
 
-
-    val shareTypes = shareManagementStore * shareTypes
-    val shareOffers = shareManagementStore * shareOffers
-    val shareSubscriptions = shareManagementStore * shareSubscriptions
-    val distributionPoints = distributionManagementStorage * distributionPoints
     val deviceType = shareManagementStore * deviceData * mediaType.get
+
+    val texts = shareManagementForOrganizationsTexts()
 
     Page(verticalPageStyle) {
         Wrap{
@@ -228,13 +221,83 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                     }
                 }
             }
-            SubTitle("Manage share types and offers for your organization.")
+            SubTitle("Manage share types, offers and subscriptions of your organization.")
         }
-        Wrap {
-            ListWrapper({ defaultListStyles.listWrapper(this) }) {
-                TitleWrapper {
-                    Title { H3 { Text("Share Types") } }
-                    var shareTypeState by remember { mutableStateOf<ShareType?>(null) }
+
+        ShareTypeManagement(
+            scope,
+            shareManagementStore,
+            texts * subComp("shareTypeManagement"),
+            deviceType,
+            providerId,
+        )
+
+        ShareOfferManagement(
+            scope,
+            shareManagementStore,
+            bankingApplicationStorage,
+            texts * subComp("shareOfferManagement"),
+            deviceType,
+            providerId,
+        )
+
+        val fiscalYears = bankingApplicationStorage * fiscalYears
+        val currentFiscalYear = fiscalYears * FirstOrNull { now().date in it.start..it.end }
+        var filter by remember{ mutableStateOf( ShareSubscriptionFilter(
+            fiscalYears = currentFiscalYear.read()?.let{
+                listOf(FiscalYearId(it.fiscalYearId))
+            },
+            statuses = listOf(ShareStatus.Subscribed),
+            isAhcAuthorized = true,
+        ))}
+        val uiState = Storage(
+            read = { ShareSubscriptionManagementState(filter)},
+            write = { filter = it.filter },
+        )
+
+        ShareSubscriptionManagement(
+            scope,
+            shareManagementStore,
+            distributionManagementStorage,
+            userStorage,
+            bankingApplicationStorage,
+            uiState,
+            texts * subComp("shareSubscriptionManagement"),
+            deviceType,
+            providerId,
+        )
+    }
+}
+
+@Markup
+@Composable
+@Suppress("UnusedParameter")
+fun ShareTypeManagement(
+    scope: CoroutineScope,
+    shareManagementStore: Storage<ShareManagement>,
+    texts: Source<Lang.Block>,
+    deviceType: Source<DeviceType>,
+    providerId: ProviderId,
+) {
+    val shareManagementModals = shareManagementStore * shareManagementModals
+    val shareManagementActions = shareManagementStore * shareManagementActions
+
+    val shareTypes = shareManagementStore * shareTypes
+
+    val listStyles = ListStyles().modifyTitleWrapper {
+        width(100.percent)
+    }
+    Wrap {
+        ListWrapper({ defaultListStyles.listWrapper(this) }) {
+            var opened by remember { mutableStateOf(false) }
+            TitleWrapper(listStyles.titleWrapper) {
+                Title { H3 { Text("Share Types") } }
+                var shareTypeState by remember { mutableStateOf<ShareType?>(null) }
+
+                Horizontal(styles = {
+                    flexGrow(1.0)
+                    justifyContent(JustifyContent.SpaceBetween)
+                }) {
                     PlusButton(
                         color = Color.black,
                         bgColor = Color.white,
@@ -261,7 +324,36 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                             }
                         }
                     }
+                    Div({
+                        style {
+                            alignSelf(AlignSelf.FlexEnd)
+                        }
+                    }) {
+                        When(!opened) {
+                            ChevronDownButton(
+                                Color.black,
+                                Color.white,
+                                { "Open" },
+                                deviceType,
+                            ) {
+                                opened = true
+                            }
+
+                        }
+                        When(opened) {
+                            ChevronLeftButton(
+                                Color.black,
+                                Color.white,
+                                { "Close" },
+                                deviceType,
+                            ) {
+                                opened = false
+                            }
+                        }
+                    }
                 }
+            }
+            When(opened) {
                 HeaderWrapper {
                     Header {
                         HeaderCell("Name") { width(20.percent) }
@@ -321,12 +413,46 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                 }
             }
         }
+    }
+}
 
-        Wrap{
-            ListWrapper({ defaultListStyles.listWrapper(this) }) {
-                TitleWrapper {
-                    Title { H3 { Text("Share Offers") } }
-                    var shareOfferState by remember { mutableStateOf<ShareOffer?>(null) }
+@Markup
+@Composable
+@Suppress("UNUSED_PARAMETER", "CyclomaticComplexMethod")
+fun ShareOfferManagement(
+    scope: CoroutineScope,
+    shareManagementStore: Storage<ShareManagement>,
+    bankingApplicationStorage: Storage<BankingApplication>,
+    texts: Source<Lang.Block>,
+    deviceType: Source<DeviceType>,
+    providerId: ProviderId,
+) {
+    // Share Management stuff
+    val shareManagementModals = shareManagementStore * shareManagementModals
+    val shareManagementActions = shareManagementStore * shareManagementActions
+
+    val shareTypes = shareManagementStore * shareTypes
+    val shareOffers = shareManagementStore * shareOffers
+
+    // Banking stuff
+    val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
+    val debtorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.bankAccountType == AccountType.DEBTOR }
+    val fiscalYears = bankingApplicationStorage * fiscalYears
+    val creditorIdentifier = bankingApplicationStorage * creditorIdentifier
+    val creditorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.bankAccountType == AccountType.CREDITOR }
+    val sepaModule = bankingApplicationStorage * sepaModule
+    val sepaCollections = sepaModule * sepaCollections
+
+    Wrap{
+        var opened by remember { mutableStateOf(false) }
+        ListWrapper({ defaultListStyles.listWrapper(this) }) {
+            TitleWrapper {
+                Title { H3 { Text("Share Offers") } }
+                var shareOfferState by remember { mutableStateOf<ShareOffer?>(null) }
+                Horizontal(styles = {
+                    flexGrow(1.0)
+                    justifyContent(JustifyContent.SpaceBetween)
+                }) {
                     PlusButton(
                         color = Color.black,
                         bgColor = Color.white,
@@ -356,7 +482,36 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                             }
                         }
                     }
+                    Div({
+                        style {
+                            alignSelf(AlignSelf.FlexEnd)
+                        }
+                    }) {
+                        When(!opened) {
+                            ChevronDownButton(
+                                Color.black,
+                                Color.white,
+                                { "Open" },
+                                deviceType,
+                            ) {
+                                opened = true
+                            }
+
+                        }
+                        When(opened) {
+                            ChevronLeftButton(
+                                Color.black,
+                                Color.white,
+                                { "Close" },
+                                deviceType,
+                            ) {
+                                opened = false
+                            }
+                        }
+                    }
                 }
+            }
+            When(opened) {
                 HeaderWrapper {
                     Header {
                         HeaderCell("Fiscal Year") { width(10.percent) }
@@ -367,7 +522,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                         HeaderCell("SEPA - Collection Key / Mandate Ref Prefix") { width(40.percent) }
                     }
                 }
-                ListItemsIndexed(shareOffers.read().let{
+                ListItemsIndexed(shareOffers.read().let {
                     it.sortedByDescending { s -> s.fiscalYear.format() }
                 }) { index, shareOffer ->
                     ListItemWrapper({
@@ -377,8 +532,10 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                             CHECK_TRUE to true,
                             CHECK_FALSE to false
                         )
+
                         fun getKeyOf(value: Boolean): String = booleansMap.filter { it.value == value }.keys.first()
-                        val sepaCollections = sepaCollections * FilterBy { shareOffer.shareOfferId in it.referenceIds.map{ ref -> ref.value} }
+                        val sepaCollections =
+                            sepaCollections * FilterBy { shareOffer.shareOfferId in it.referenceIds.map { ref -> ref.value } }
 
                         DataWrapper() {
                             TextCell(shareOffer.fiscalYear.format()) { width(10.percent) }
@@ -386,8 +543,8 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                             TextCell("${shareOffer.price ?: "--"}") { width(10.percent) }
                             TextCell(shareOffer.pricingType.name) { width(10.percent) }
                             TextCell(getKeyOf(shareOffer.ahcAuthorizationRequired)) { width(10.percent) }
-                            TextCell(sepaCollections.read().joinToString(", ") {
-                                sC -> "${ sC.collectionKey.value } / ${ sC.mandateReferencePrefix.value }"
+                            TextCell(sepaCollections.read().joinToString(", ") { sC ->
+                                "${sC.collectionKey.value} / ${sC.mandateReferencePrefix.value}"
                             }) {
                                 width(40.percent)
                                 overflow(Overflow.Hidden)
@@ -395,25 +552,36 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                         }
                         ActionsWrapper {
                             var shareOfferState by remember { mutableStateOf<ShareOffer>(shareOffer) }
-                            var creditorIdentifierState by remember { mutableStateOf<CreditorIdentifier?>(creditorIdentifier.read()) }
+                            var creditorIdentifierState by remember {
+                                mutableStateOf<CreditorIdentifier?>(
+                                    creditorIdentifier.read()
+                                )
+                            }
 
-                            When(creditorIdentifierState != null ) {
-                                val finalCreditorIdentifier = requireNotNull(creditorIdentifierState) {"Cannot be null "}
-                                val sepaCollectionReader = sepaCollections * FirstOrNull { shareOffer.shareOfferId in it.referenceIds.map { id -> id.value } }
+                            When(creditorIdentifierState != null) {
+                                val finalCreditorIdentifier =
+                                    requireNotNull(creditorIdentifierState) { "Cannot be null " }
+                                val sepaCollectionReader =
+                                    sepaCollections * FirstOrNull { shareOffer.shareOfferId in it.referenceIds.map { id -> id.value } }
                                 var sepaCollectionState by remember {
-                                    mutableStateOf(PartialSepaCollection(
-                                        sepaCollectionId = sepaCollectionReader.emit()?.sepaCollectionId,
-                                        creditorIdentifierId = finalCreditorIdentifier.creditorIdentifierId,
-                                        creditorBankAccountId = sepaCollectionReader.emit()?.creditorBankAccountId,
-                                        mandateReferencePrefix = sepaCollectionReader.emit()?.mandateReferencePrefix,
-                                        remittanceInformation = sepaCollectionReader.emit()?.remittanceInformation,
-                                        sepaSequenceType = sepaCollectionReader.emit()?.sepaSequenceType?: SepaSequenceType.FRST,
-                                        localInstrument = sepaCollectionReader.emit()?.localInstrument,
-                                        isActive = sepaCollectionReader.emit()?.isActive?:true,
-                                        leadTimesDays = sepaCollectionReader.emit()?.leadTimesDays?:5,
-                                        requestedCollectionDay = sepaCollectionReader.emit()?.requestedCollectionDay?:2,
-                                        chargeBearer = sepaCollectionReader.emit()?.chargeBearer?: ChargeBearer("SLEV")
-                                    ))
+                                    mutableStateOf(
+                                        PartialSepaCollection(
+                                            sepaCollectionId = sepaCollectionReader.emit()?.sepaCollectionId,
+                                            creditorIdentifierId = finalCreditorIdentifier.creditorIdentifierId,
+                                            creditorBankAccountId = sepaCollectionReader.emit()?.creditorBankAccountId,
+                                            mandateReferencePrefix = sepaCollectionReader.emit()?.mandateReferencePrefix,
+                                            remittanceInformation = sepaCollectionReader.emit()?.remittanceInformation,
+                                            sepaSequenceType = sepaCollectionReader.emit()?.sepaSequenceType
+                                                ?: SepaSequenceType.FRST,
+                                            localInstrument = sepaCollectionReader.emit()?.localInstrument,
+                                            isActive = sepaCollectionReader.emit()?.isActive ?: true,
+                                            leadTimesDays = sepaCollectionReader.emit()?.leadTimesDays ?: 5,
+                                            requestedCollectionDay = sepaCollectionReader.emit()?.requestedCollectionDay
+                                                ?: 2,
+                                            chargeBearer = sepaCollectionReader.emit()?.chargeBearer
+                                                ?: ChargeBearer("SLEV")
+                                        )
+                                    )
                                 }
                                 CreditCardButton(
                                     color = Color.black,
@@ -427,19 +595,21 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                         device = deviceType,
                                         bankAccounts = creditorBankAccounts.read(),
                                         sepaCollection = sepaCollectionState,
-                                        isOkButtonDisabled = {with(sepaCollectionState){
-                                            creditorBankAccountId == null
-                                            || creditorIdentifierId == null
-                                            || mandateReferencePrefix == null
-                                            || remittanceInformation == null
-                                            || sepaSequenceType == null
-                                            || leadTimesDays == null
-                                            || chargeBearer == null
-                                            || isActive == null
-                                        } },
-                                        setSepaCollection = {collection -> sepaCollectionState = collection}
+                                        isOkButtonDisabled = {
+                                            with(sepaCollectionState) {
+                                                creditorBankAccountId == null
+                                                        || creditorIdentifierId == null
+                                                        || mandateReferencePrefix == null
+                                                        || remittanceInformation == null
+                                                        || sepaSequenceType == null
+                                                        || leadTimesDays == null
+                                                        || chargeBearer == null
+                                                        || isActive == null
+                                            }
+                                        },
+                                        setSepaCollection = { collection -> sepaCollectionState = collection }
                                     ) {
-                                        when(val sepaCollectionId = sepaCollectionState.sepaCollectionId) {
+                                        when (val sepaCollectionId = sepaCollectionState.sepaCollectionId) {
                                             null -> {
                                                 val data = with(sepaCollectionState) {
                                                     CreateSepaCollection(
@@ -467,6 +637,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                                     )
                                                 }
                                             }
+
                                             else -> {
                                                 val data = with(sepaCollectionState) {
                                                     UpdateSepaCollection(
@@ -497,13 +668,13 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                     }
                                 }
                             }
-                            When(creditorIdentifierState == null){
+                            When(creditorIdentifierState == null) {
                                 CreditCardButton(
                                     color = Color.black,
                                     bgColor = Color.white,
                                     deviceType = deviceType,
                                     isDisabled = true,
-                                    texts = {"No creditor identifiers defined"}
+                                    texts = { "No creditor identifiers defined" }
                                 ) {
 
                                 }
@@ -551,175 +722,269 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                 }
             }
         }
+    }
+}
 
-        Wrap{
-            val checkedMap = remember {  mutableStateMapOf<String, Boolean>() }
-            fun isChecked(id: String): Boolean = checkedMap[id] ?: false
-            val checkedSubscriptions = shareSubscriptions * BiMap<ShareSubscription, CheckedShareSubscription>(
-                { s -> CheckedShareSubscription(isChecked(s.shareSubscriptionId), s)},
-                {cS->
-                    checkedMap[cS.shareSubscription.shareSubscriptionId] = cS.checked
-                    cS.shareSubscription
-                }
-            )
-            val fiscalYearsMap = fiscalYears.read().associateBy { it.fiscalYearId }
-            val distributionPointsMap = distributionPoints.read().associateBy { it.distributionPointId }
-            val shareOffersMap = shareOffers.read().associateBy { it.shareOfferId }
-            val shareTypesMap = shareOffersMap.mapNotNull { it.key to it.value.shareType }.associateBy({it.first}) { it.second }
-            val userProfilesMap = memberStorage.read().map{ member ->
-                usersStorage.read().firstOrNull{ user -> user.id == member.memberId }?.profile
-            }.mapNotNull { it }.associateBy { it.userProfileId }
-            val userProfileToUserMap = memberStorage.read().mapNotNull { member ->
-                usersStorage.read().firstOrNull { user -> user.id == member.memberId }
-            }.associateBy { it.profile?.userProfileId }
-            val userProfileToBankAccountMap = usersStorage.read().map { user ->
-                val bankAccount = debtorBankAccounts * FirstOrNull { it.userId.value == user.id }
-                user to bankAccount.emit()
-            }.associateBy({it.first.profile?.userProfileId}) { it.second  }.filterNotNullValues()
-            // val sepaCollectionsMap = sepaCollections.read().associateBy { it.sepaCollectionId }
-            /*
-            val sepaCollectionIdsByReference: Map<SepaCollectionReferenceId, List<SepaCollectionId>> = sepaCollections.read().flatMap { collection ->
-                collection.referenceIds.map { it to collection.sepaCollectionId }
-            }.distinct().groupBy ({ it.first }){it.second}
-             */
-            val sepaCollectionIdToReferences: Map<SepaCollectionId, List<SepaCollectionReferenceId>> = sepaCollections.read().flatMap { collection ->
-                collection.referenceIds.map { collection.sepaCollectionId to it }
-            }.distinct().groupBy ({ it.first }){it.second}
 
-            val sepaMandates: Source<List<SepaMandate>> = sepaCollections flatMap { collection -> collection.sepaMandates }
-            val mandatesByReferenceId = sepaMandates map {
+data class ShareSubscriptionManagementState(
+    val filter: ShareSubscriptionFilter
+)
+
+@Markup
+@Composable
+@Suppress("UNUSED_PARAMETER", "CyclomaticComplexMethod", "CognitiveComplexMethod")
+fun ShareSubscriptionManagement(
+    scope: CoroutineScope,
+    shareManagementStore: Storage<ShareManagement>,
+    distributionManagementStorage: Storage<DistributionManagement>,
+    userStorage: Storage<UserApplication>,
+    bankingApplicationStorage: Storage<BankingApplication>,
+    uiState: Storage<ShareSubscriptionManagementState>,
+    texts: Source<Lang.Block>,
+    deviceType: Source<DeviceType>,
+    providerId: ProviderId,
+) {
+    // Share Management stuff
+    val shareManagementModals = shareManagementStore * shareManagementModals
+    val shareManagementActions = shareManagementStore * shareManagementActions
+
+    val shareTypes = shareManagementStore * shareTypes
+    val shareOffers = shareManagementStore * shareOffers
+    val shareSubscriptions = shareManagementStore * shareSubscriptions
+
+    // Distribution Points stuff
+    val distributionManagementActions = distributionManagementStorage * distributionManagementActions
+    val distributionPoints = distributionManagementStorage * distributionPoints
+
+    // Banking stuff
+    val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
+    val debtorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.bankAccountType == AccountType.DEBTOR }
+    val fiscalYears = bankingApplicationStorage * fiscalYears
+    val currentFiscalYear = fiscalYears * FirstOrNull { now().date in it.start..it.end }
+    val creditorIdentifier = bankingApplicationStorage * creditorIdentifier
+    val creditorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.bankAccountType == AccountType.CREDITOR }
+    val sepaModule = bankingApplicationStorage * sepaModule
+    val sepaCollections = sepaModule * sepaCollections
+
+    // User stuff
+    val userActions = userStorage * userActions
+    val organizationsStorage = userStorage * user * organizations
+    val organizationStorage = organizationsStorage * DeepSearch { it.organizationId == providerId.value }
+    val memberStorage = organizationStorage * members
+    val usersStorage = userStorage * managedUsers
+    val currentUserId = usersStorage * FirstBy { it.username == (userStorage * user * username).read() } * id
+    val membersAsUsers = usersStorage * FilterBy { it.username in (memberStorage.read().map { m -> m.username }) }
+
+    Wrap{
+        val checkedMap = remember {  mutableStateMapOf<String, Boolean>() }
+        fun isChecked(id: String): Boolean = checkedMap[id] ?: false
+        val checkedSubscriptions = shareSubscriptions * BiMap<ShareSubscription, CheckedShareSubscription>(
+            { s -> CheckedShareSubscription(isChecked(s.shareSubscriptionId), s)},
+            {cS->
+                checkedMap[cS.shareSubscription.shareSubscriptionId] = cS.checked
+                cS.shareSubscription
+            }
+        )
+        val fiscalYearsMap = fiscalYears.read().associateBy { it.fiscalYearId }
+        val distributionPointsMap = distributionPoints.read().associateBy { it.distributionPointId }
+        val shareOffersMap = shareOffers.read().associateBy { it.shareOfferId }
+        val shareTypesMap = shareOffersMap.mapNotNull { it.key to it.value.shareType }.associateBy({it.first}) { it.second }
+        val userProfilesMap = memberStorage.read().map{ member ->
+            usersStorage.read().firstOrNull{ user -> user.id == member.memberId }?.profile
+        }.mapNotNull { it }.associateBy { it.userProfileId }
+        val userProfileToUserMap = memberStorage.read().mapNotNull { member ->
+            usersStorage.read().firstOrNull { user -> user.id == member.memberId }
+        }.associateBy { it.profile?.userProfileId }
+        val userProfileToBankAccountMap = usersStorage.read().map { user ->
+            val bankAccount = debtorBankAccounts * FirstOrNull { it.userId.value == user.id }
+            user to bankAccount.emit()
+        }.associateBy({it.first.profile?.userProfileId}) { it.second  }.filterNotNullValues()
+        // val sepaCollectionsMap = sepaCollections.read().associateBy { it.sepaCollectionId }
+        /*
+        val sepaCollectionIdsByReference: Map<SepaCollectionReferenceId, List<SepaCollectionId>> = sepaCollections.read().flatMap { collection ->
+            collection.referenceIds.map { it to collection.sepaCollectionId }
+        }.distinct().groupBy ({ it.first }){it.second}
+         */
+        val sepaCollectionIdToReferences: Map<SepaCollectionId, List<SepaCollectionReferenceId>> = sepaCollections.read().flatMap { collection ->
+            collection.referenceIds.map { collection.sepaCollectionId to it }
+        }.distinct().groupBy ({ it.first }){it.second}
+
+        val sepaMandates: Source<List<SepaMandate>> = sepaCollections flatMap { collection -> collection.sepaMandates }
+        val mandatesByReferenceId = sepaMandates map {
                 mandates -> mandates.flatMap{it.referenceIds.map { id -> id to it }}
-                .associateBy({it.first}){it.second}
+            .associateBy({it.first}){it.second}
+        }
+
+        val shareSubscriptionIdToMandateMap: Source<Map<ShareSubscriptionId, SepaMandate?>> =
+            Source{shareSubscriptions.read()} map{ subscriptions: List<ShareSubscription>->
+                val map = mandatesByReferenceId.emit()
+                subscriptions.associateBy({ ShareSubscriptionId(it.shareSubscriptionId)}) { subscription ->
+                    map[SepaMandateReferenceId(subscription.shareSubscriptionId)]
+                }
             }
 
-            val shareSubscriptionIdToMandateMap: Source<Map<ShareSubscriptionId, SepaMandate?>> =
-                Source{shareSubscriptions.read()} map{ subscriptions: List<ShareSubscription>->
-                    val map = mandatesByReferenceId.emit()
-                    subscriptions.associateBy({ ShareSubscriptionId(it.shareSubscriptionId)}) { subscription ->
-                       map[SepaMandateReferenceId(subscription.shareSubscriptionId)]
-                    }
-                }
+        var opened by remember { mutableStateOf(false) }
+        var allChecked by remember { mutableStateOf(false) }
+        var filter by  remember { mutableStateOf(uiState.read().filter) }
+        var filteredCheckedSubscriptions by remember { mutableStateOf(checkedSubscriptions.read()) }
 
-            var allChecked by remember { mutableStateOf(false) }
-            var filter by  remember { mutableStateOf(ShareSubscriptionFilter()) }
-            var filteredCheckedSubscriptions by remember { mutableStateOf(checkedSubscriptions.read()) }
-
-            LaunchedEffect(
-                filter,
-                allChecked,
-                checkedMap.filter { it.value }.keys,
-                checkedMap.keys.size,
-                shareSubscriptions.read().joinToString("-") { "$it" },
-            ) {
-                filteredCheckedSubscriptions = checkedSubscriptions.filter { (_, subscription) ->
-                    val matchesFiscalYears =
-                        filter.fiscalYears?.let { FiscalYearId(subscription.fiscalYearId) in it } ?: true
-                    val matchesShareTypes =
-                        filter.shareTypes?.let { ShareTypeId(shareTypesMap[subscription.shareOfferId]!!.shareTypeId) in it }
-                            ?: true
-                    val matchesStatuses = filter.statuses?.let { subscription.status in it } ?: true
-                    val matchesAhcAuthorized = filter.isAhcAuthorized?.let { subscription.ahcAuthorized == it } ?: true
-                    val matchesUserProfiles = filter.userProfiles?.any { searchText ->
-                        userProfilesMap[subscription.userProfileId]?.fullname()
-                            ?.contains(searchText, ignoreCase = true) == true
-                    } ?: true
-                    val matchesDistributionPoints = filter.distributionPoints?.let { subscription.distributionPointId in it }?: true
-                    val matchesSepaCollections = filter.sepaCollections?.let { collections ->
-                        when{
-                            collections.isEmpty() -> true
-                            // no sepa mandate associated
-                            collections.size == 1 && collections.first().value == NIL_UUID ->
-                                sepaCollections.none{ collection -> collection.mandateReferenceIds.values.any { it.any{id -> id.value == subscription.shareSubscriptionId }} }
-                            // sepa mandate associated
-                            else -> collections.any {
-                                SepaCollectionReferenceId(subscription.shareOfferId) in (sepaCollectionIdToReferences[it]?:emptyList())
-                            }
+        LaunchedEffect(
+            filter,
+            allChecked,
+            checkedMap.filter { it.value }.keys,
+            checkedMap.keys.size,
+            shareSubscriptions.read().joinToString("-") { "$it" },
+        ) {
+            filteredCheckedSubscriptions = checkedSubscriptions.filter { (_, subscription) ->
+                val matchesFiscalYears =
+                    filter.fiscalYears?.let { FiscalYearId(subscription.fiscalYearId) in it } ?: true
+                val matchesShareTypes =
+                    filter.shareTypes?.let { ShareTypeId(shareTypesMap[subscription.shareOfferId]!!.shareTypeId) in it }
+                        ?: true
+                val matchesStatuses = filter.statuses?.let { subscription.status in it } ?: true
+                val matchesAhcAuthorized = filter.isAhcAuthorized?.let { subscription.ahcAuthorized == it } ?: true
+                val matchesUserProfiles = filter.userProfiles?.any { searchText ->
+                    userProfilesMap[subscription.userProfileId]?.fullname()
+                        ?.contains(searchText, ignoreCase = true) == true
+                } ?: true
+                val matchesDistributionPoints = filter.distributionPoints?.let { subscription.distributionPointId in it }?: true
+                val matchesSepaCollections = filter.sepaCollections?.let { collections ->
+                    when{
+                        collections.isEmpty() -> true
+                        // no sepa mandate associated
+                        collections.size == 1 && collections.first().value == NIL_UUID ->
+                            sepaCollections.none{ collection -> collection.mandateReferenceIds.values.any { it.any{id -> id.value == subscription.shareSubscriptionId }} }
+                        // sepa mandate associated
+                        else -> collections.any {
+                            SepaCollectionReferenceId(subscription.shareOfferId) in (sepaCollectionIdToReferences[it]?:emptyList())
                         }
-                    }?: true
+                    }
+                }?: true
 
-                    matchesFiscalYears
-                    && matchesShareTypes
-                    && matchesStatuses
-                    && matchesAhcAuthorized
-                    && matchesUserProfiles
-                    && matchesDistributionPoints
-                    && matchesSepaCollections
-                }
+                matchesFiscalYears
+                        && matchesShareTypes
+                        && matchesStatuses
+                        && matchesAhcAuthorized
+                        && matchesUserProfiles
+                        && matchesDistributionPoints
+                        && matchesSepaCollections
+            }
                 // Treat checks
                 .map{
                     it.copy(checked = checkedMap[it.shareSubscription.shareSubscriptionId] ?: false)
                 }
-                // Keep checks on visible items only
-                checkedMap.clear()
-                checkedMap.putAll(filteredCheckedSubscriptions.associateBy({it.shareSubscription.shareSubscriptionId}) { it.checked })
-            }
+            // Keep checks on visible items only
+            checkedMap.clear()
+            checkedMap.putAll(filteredCheckedSubscriptions.associateBy({it.shareSubscription.shareSubscriptionId}) { it.checked })
+            uiState.write(uiState.read().copy(filter = filter))
+        }
 
-            ListWrapper({ defaultListStyles.listWrapper(this) }) {
-                TitleWrapper(/*{width(90.percent)}*/) {
-                    Title { H3 { Text("Share Subscriptions") } }
-                    Horizontal({ JustifyContent.SpaceBetween }) {
-                        var newShareSubscriptionState by remember { mutableStateOf<ShareSubscription?>(null) }
-                        PlusButton(
-                            color = Color.black,
-                            bgColor = Color.white,
-                            deviceType = deviceType,
-                            isDisabled = false
+        ListWrapper({ defaultListStyles.listWrapper(this) }) {
+
+            TitleWrapper(/*{width(90.percent)}*/) {
+                Title { H3 { Text("Share Subscriptions") } }
+                Horizontal(styles = {
+                    flexGrow(1.0)
+                    justifyContent(JustifyContent.SpaceBetween)
+                }) {
+                    var newShareSubscriptionState by remember { mutableStateOf<ShareSubscription?>(null) }
+                    PlusButton(
+                        color = Color.black,
+                        bgColor = Color.white,
+                        deviceType = deviceType,
+                        isDisabled = false
+                    ) {
+                        shareManagementModals.showUpsertShareSubscriptionModal(
+                            shareManagementStore,
+                            upsertShareSubscriptionModalTexts.emit(),
+                            deviceType,
+                            Read(fiscalYears),
+                            Read(distributionPoints),
+                            Read(shareOffers),
+                            providerId,
+                            Read(membersAsUsers),
+                            ChangedBy.PROVIDER,
+                            null,
+                            { data -> newShareSubscriptionState = data }
                         ) {
-                            shareManagementModals.showUpsertShareSubscriptionModal(
-                                shareManagementStore,
-                                upsertShareSubscriptionModalTexts.emit(),
-                                deviceType,
-                                Read(fiscalYears),
-                                Read(distributionPoints),
-                                Read(shareOffers),
-                                providerId,
-                                Read(membersAsUsers),
-                                ChangedBy.PROVIDER,
-                                null,
-                                { data -> newShareSubscriptionState = data }
-                            ) {
-                                if (newShareSubscriptionState != null) {
-                                    val data = requireNotNull(newShareSubscriptionState)
-                                    scope.launch {
-                                        with(data) {
-                                            shareManagementActions dispatch createShareSubscription(
-                                                providerId.value,
-                                                shareOfferId,
-                                                userProfileId,
-                                                distributionPointId,
-                                                fiscalYearId,
-                                                numberOfShares,
-                                                pricePerShare,
-                                                ahcAuthorized,
-                                                coSubscribers,
-                                            )
-                                        }
+                            if (newShareSubscriptionState != null) {
+                                val data = requireNotNull(newShareSubscriptionState)
+                                scope.launch {
+                                    with(data) {
+                                        shareManagementActions dispatch createShareSubscription(
+                                            providerId.value,
+                                            shareOfferId,
+                                            userProfileId,
+                                            distributionPointId,
+                                            fiscalYearId,
+                                            numberOfShares,
+                                            pricePerShare,
+                                            ahcAuthorized,
+                                            coSubscribers,
+                                        )
                                     }
                                 }
                             }
                         }
                     }
+                    Div({
+                        style {
+                            alignSelf(AlignSelf.FlexEnd)
+                        }
+                    }) {
+                        When(!opened) {
+                            ChevronDownButton(
+                                Color.black,
+                                Color.white,
+                                { "Open" },
+                                deviceType,
+                            ) {
+                                opened = true
+                            }
+
+                        }
+                        When(opened) {
+                            ChevronLeftButton(
+                                Color.black,
+                                Color.white,
+                                { "Close" },
+                                deviceType,
+                            ) {
+                                opened = false
+                            }
+                        }
+                    }
                 }
+            }
+            When(opened) {
                 HeaderWrapper {
                     Horizontal({
                         width(80.percent)
                         alignSelf(AlignSelf.End)
                     }) {
-                        val fiscalYearOptions: Map<String, List<FiscalYearId>> = fiscalYears.read().groupBy { it.format() }.map { (year, fiscalYears) ->
-                            year to fiscalYears.map { FiscalYearId(it.fiscalYearId) }
-                        }.associateBy ({ it.first }){it.second}
-                            .let {
-                            it.toMutableMap().apply {
-                                this["All Years"] = emptyList()
-                            }
+                        val fiscalYearOptions: Map<String, List<FiscalYearId>> =
+                            fiscalYears.read().groupBy { it.format() }.map { (year, fiscalYears) ->
+                                year to fiscalYears.map { FiscalYearId(it.fiscalYearId) }
+                            }.associateBy({ it.first }) { it.second }
+                                .let {
+                                    it.toMutableMap().apply {
+                                        this["All Years"] = emptyList()
+                                    }
+                                }
+                        var selectedFiscalYear by remember {
+                            val filteredFiscalYears = uiState.read().filter.fiscalYears
+                            mutableStateOf(when{
+                                filteredFiscalYears == null -> "All Years"
+                                filteredFiscalYears.isEmpty() -> "All Years"
+                                else -> fiscalYears.filter { FiscalYearId(it.fiscalYearId) in filteredFiscalYears }.first().format()
+                            })
+                            //mutableStateOf("All Years")
                         }
-                        var selectedFiscalYear by remember { mutableStateOf("All Years") }
                         Dropdown(
                             fiscalYearOptions,
                             selectedFiscalYear,
-                            iconContent = {opened -> SimpleUpDown(opened) }
-                        ) {
-                            (key, value) ->
+                            iconContent = { opened -> SimpleUpDown(opened) }
+                        ) { (key, value) ->
                             filter = filter.copy(
                                 fiscalYears = when {
                                     value.isEmpty() -> null
@@ -729,16 +994,23 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                             selectedFiscalYear = key
                         }
 
-                        var selectedShareType by remember { mutableStateOf("All Shares") }
-                        val shareTypeOptions = shareTypes.read().groupBy{it.name}.let {
-                            it.toMutableMap<String, List<ShareType>?>().apply{
+                        var selectedShareType by remember {
+                            val filteredShareTypes = uiState.read().filter.shareTypes
+                            val shareType = when{
+                                filteredShareTypes.isNullOrEmpty() -> "All Shares"
+                                else -> shareTypes.filter{ShareTypeId(it.shareTypeId) in filteredShareTypes}.first().name
+                            }
+                            mutableStateOf(shareType)
+                        }
+                        val shareTypeOptions = shareTypes.read().groupBy { it.name }.let {
+                            it.toMutableMap<String, List<ShareType>?>().apply {
                                 this["All Shares"] = null
                             }
                         }
                         Dropdown(
                             shareTypeOptions,
                             selectedShareType,
-                            iconContent = {opened -> SimpleUpDown(opened) }
+                            iconContent = { opened -> SimpleUpDown(opened) }
                         ) { (key, shareTypes) ->
                             selectedShareType = key
                             filter = filter.copy(
@@ -749,7 +1021,15 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                             )
                         }
 
-                        var selectedStatus by remember { mutableStateOf("All Statuses") }
+                        var selectedStatus by remember {
+                            val statuses = uiState.read().filter.statuses
+                            val status = when {
+                                statuses.isNullOrEmpty() -> "All Statuses"
+                                else -> statuses.first().value
+
+                            }
+                            mutableStateOf(status)
+                        }
                         val statusOptions = mapOf(
                             "All Statuses" to null,
                             ShareStatus.ActivationRejected.value to ShareStatus.ActivationRejected,
@@ -769,7 +1049,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                         Dropdown(
                             statusOptions,
                             selectedStatus,
-                            iconContent = {opened -> SimpleUpDown(opened) }
+                            iconContent = { opened -> SimpleUpDown(opened) }
                         ) { (key, status) ->
                             selectedStatus = key
                             filter = filter.copy(
@@ -780,7 +1060,15 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                             )
                         }
 
-                        var selectedAhcAuthorized by remember { mutableStateOf("All Auth") }
+                        var selectedAhcAuthorized by remember {
+                            val filteredAhcAuthorized = uiState.read().filter.isAhcAuthorized
+                            val ahcAuthorized = when{
+                                filteredAhcAuthorized == true -> CHECK_TRUE
+                                filteredAhcAuthorized == false -> CHECK_FALSE
+                                else -> "All Auth"
+                            }
+                            mutableStateOf(ahcAuthorized)
+                        }
                         val ahcAuthorizedOptions = mapOf(
                             "All Authorized" to null,
                             CHECK_TRUE to true,
@@ -789,34 +1077,52 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                         Dropdown(
                             ahcAuthorizedOptions,
                             selectedAhcAuthorized,
-                            iconContent = {opened -> SimpleUpDown(opened) }
-                        ) {
-                            (key, ahcAuthorized) ->
+                            iconContent = { opened -> SimpleUpDown(opened) }
+                        ) { (key, ahcAuthorized) ->
                             selectedAhcAuthorized = key
                             filter = filter.copy(
                                 isAhcAuthorized = ahcAuthorized
                             )
                         }
 
-                        var selectedDistributionPoint by remember { mutableStateOf("All Depots") }
-                        val distributionPointOptions = distributionPoints.read().groupBy{it.name}.let{
-                            it.toMutableMap<String, List<DistributionPoint>?>().apply{
+                        var selectedDistributionPoint by remember {
+                            val filteredDistributionPoints = uiState.read().filter.distributionPoints
+                            val distributionPoint = when{
+                                filteredDistributionPoints.isNullOrEmpty() -> "All Depots"
+                                else -> distributionPoints.filter{it.distributionPointId in filteredDistributionPoints}.first().name
+                            }
+
+                            mutableStateOf(distributionPoint)
+                        }
+                        val distributionPointOptions = distributionPoints.read().groupBy { it.name }.let {
+                            it.toMutableMap<String, List<DistributionPoint>?>().apply {
                                 this["All Deports"] = null
                             }
                         }
                         Dropdown(
                             distributionPointOptions,
                             selectedDistributionPoint,
-                            iconContent = {opened -> SimpleUpDown(opened) }
-                        ) {
-                            (key, value) ->
+                            iconContent = { opened -> SimpleUpDown(opened) }
+                        ) { (key, value) ->
                             selectedDistributionPoint = key
-                            filter = filter.copy(distributionPoints = when{
+                            filter = filter.copy(
+                                distributionPoints = when {
                                 value == null -> null
-                                else -> value.map { it.distributionPointId }})
+                                else -> value.map { it.distributionPointId }
+                            }
+                            )
                         }
-                        var selectedSepaCollections by remember { mutableStateOf("All Sepa") }
-                        val sepaCollectionsOptions = sepaCollections.read().groupBy{"${it.collectionKey.value} / ${it.mandateReferencePrefix.value}"}.let{
+                        var selectedSepaCollections by remember {
+                            val filteredSepaCollections = uiState.read().filter.sepaCollections
+                            val sepaCollections = when{
+                                filteredSepaCollections.isNullOrEmpty() -> "All Sepa"
+                                else -> sepaCollections.filter{it.sepaCollectionId in filteredSepaCollections}.first().collectionKey.value
+                            }
+
+                            mutableStateOf(sepaCollections)
+                        }
+                        val sepaCollectionsOptions = sepaCollections.read()
+                            .groupBy { "${it.collectionKey.value} / ${it.mandateReferencePrefix.value}" }.let {
                             it.toMutableMap<String, List<SepaCollection>?>().apply {
                                 this["All Sepa"] = null
                                 this["No Sepa"] = listOf(SepaCollection.EMPTY)
@@ -826,11 +1132,12 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                             sepaCollectionsOptions,
                             selectedSepaCollections,
                             styles = dropdownStyles.modifyContainerStyle { width(250.px) },
-                            iconContent = {opened -> SimpleUpDown(opened) }
+                            iconContent = { opened -> SimpleUpDown(opened) }
 
                         ) { (key, value) ->
                             selectedSepaCollections = key
-                            filter = filter.copy(sepaCollections = when {
+                            filter = filter.copy(
+                                sepaCollections = when {
                                 value == null -> null
                                 // value == listOf(SepaCollection.EMPTY) -> listOf(SepaCollectionId(NIL_UUID))
                                 else -> value.map { it.sepaCollectionId }
@@ -840,8 +1147,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                         var searchText by remember {
                             mutableStateOf(filter.userProfiles?.joinToString(",") { it }.orEmpty())
                         }
-                        SearchInput(searchText, SearchInputStyles()) {
-                            text ->
+                        SearchInput(searchText, SearchInputStyles()) { text ->
                             searchText = text
                             filter = filter.copy(
                                 userProfiles = when {
@@ -850,13 +1156,19 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                 }
                             )
                         }
-                        var bulksEditShareSubscriptionChanges by remember { mutableStateOf<BulkEditShareSubscriptionChanges>(
-                            BulkEditShareSubscriptionChanges.None) }
-                        var shareSubscriptionsState by remember { mutableStateOf<List<ShareSubscription>>(
-                            filteredCheckedSubscriptions.map { it.shareSubscription }
-                        ) }
+                        var bulksEditShareSubscriptionChanges by remember {
+                            mutableStateOf<BulkEditShareSubscriptionChanges>(
+                                BulkEditShareSubscriptionChanges.None
+                            )
+                        }
+                        var shareSubscriptionsState by remember {
+                            mutableStateOf<List<ShareSubscription>>(
+                                filteredCheckedSubscriptions.map { it.shareSubscription }
+                            )
+                        }
                         LaunchedEffect(filter, checkedMap.filter { it.value }.keys, allChecked) {
-                            shareSubscriptionsState = filteredCheckedSubscriptions.filter { it.checked }.map { it.shareSubscription }
+                            shareSubscriptionsState =
+                                filteredCheckedSubscriptions.filter { it.checked }.map { it.shareSubscription }
                         }
                         BulkEditButton(
                             color = Color.black,
@@ -866,7 +1178,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                         ) {
                             shareManagementModals.showBulkEditShareShareSubscriptionsModal(
                                 storage = shareManagementStore,
-                                texts = defaultBulkEditTexts() ,
+                                texts = defaultBulkEditTexts(),
                                 device = deviceType,
                                 modifier = ModifierId(currentUserId.read()),
                                 fiscalYears = fiscalYears.read(),
@@ -875,7 +1187,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                 shareSubscriptions = shareSubscriptionsState,
                                 sepaCollections = sepaCollections.read(),
                                 creditorIdentifier = creditorIdentifier.read(),
-                                setChanges = {changes -> bulksEditShareSubscriptionChanges = changes}
+                                setChanges = { changes -> bulksEditShareSubscriptionChanges = changes }
                             ) {
 
                                 shareManagementModals.showDialogModal(
@@ -884,157 +1196,165 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                     symbol = { WarningSymbol(deviceType = deviceType.emit()) },
                                     onCancel = {},
                                 ) {
-                                scope.launch {
-                                    when(val changes = bulksEditShareSubscriptionChanges) {
-                                        is BulkEditShareSubscriptionChanges.None -> Unit
-                                        is BulkEditShareSubscriptionChanges.Status ->
-                                            shareSubscriptionsState.forEach { shareSubscription ->
-                                                shareManagementActions dispatch updateShareStatus(
-                                                    UpdateShareStatus(
-                                                        providerId,
-                                                        ShareSubscriptionId(shareSubscription.shareSubscriptionId),
-                                                        changes.status.toApiType(),
-                                                        changes.reason.toApiType(),
-                                                        changes.changedBy.toApiType(),
-                                                        changes.modifier,
-                                                        changes.comment.orEmpty()
-                                                    ),
-                                                )
-                                            }
-                                        is BulkEditShareSubscriptionChanges.AddShareOffer ->
-                                            shareSubscriptionsState.forEach { shareSubscription ->
-                                                shareManagementActions dispatch createShareSubscription(
-                                                    providerId.value,
-                                                    changes.shareOfferId,
-                                                    shareSubscription.userProfileId,
-                                                    shareSubscription.distributionPointId,
-                                                    changes.fiscalYearId,
-                                                    changes.numberOfShares,
-                                                    changes.pricePerShare,
-                                                    changes.isAhcAuthorized,
-                                                    emptyList(),
-                                                )
-                                            }
-                                        is BulkEditShareSubscriptionChanges.AddSepaMandate -> {
-                                            val forbiddenStatuses = listOf(
-                                                ShareStatus.Suspended,
-                                                ShareStatus.Cancelled,
-                                                // ShareStatus.AwaitingAhcAuthorization,
-                                            )
-                                            shareSubscriptionsState.filter{ it.status !in forbiddenStatuses  }.forEachIndexed {index,  shareSubscription ->
-                                                val debtorBankAccount = userProfileToBankAccountMap[shareSubscription.userProfileId]
-                                                requireNotNull(shareSubscription.pricePerShare) {
-                                                    "Price per share needs to be set!!"
-                                                }
-                                                // Leave out subscriptions of users without bank account
-                                                if(debtorBankAccount == null) return@forEachIndexed
-                                                bankingApplicationActions dispatch createSepaMandate(
-                                                    CreateSepaMandate(
-                                                        creditorId = changes.creditorIdentifier.creditorId,
-                                                        debtorBankAccountId = debtorBankAccount.bankAccountId,
-                                                        debtorName = debtorBankAccount.bankAccountHolder,
-                                                        mandateReference = changes.sepaCollection.mandateReferencePrefix.generateReference(
-                                                            changes.mandateReferencePadStart, 8, index
+                                    scope.launch {
+                                        when (val changes = bulksEditShareSubscriptionChanges) {
+                                            is BulkEditShareSubscriptionChanges.None -> Unit
+                                            is BulkEditShareSubscriptionChanges.Status ->
+                                                shareSubscriptionsState.forEach { shareSubscription ->
+                                                    shareManagementActions dispatch updateShareStatus(
+                                                        UpdateShareStatus(
+                                                            providerId,
+                                                            ShareSubscriptionId(shareSubscription.shareSubscriptionId),
+                                                            changes.status.toApiType(),
+                                                            changes.reason.toApiType(),
+                                                            changes.changedBy.toApiType(),
+                                                            changes.modifier,
+                                                            changes.comment.orEmpty()
                                                         ),
-                                                        mandateReferencePrefix = null,
-                                                        signedAt = now(),
-                                                        validFrom = now(),
-                                                        validUntil = null,
-                                                        status = changes.status.toApyType(),
-                                                        isActive = changes.isActive,
-                                                        amendmentOf = null,
-                                                        collectionId = changes.sepaCollection.sepaCollectionId,
-                                                        sepaMandateReferenceData = CreateSepaMandateReferenceData(
-                                                            referenceId = SepaMandateReferenceId(shareSubscription.shareSubscriptionId),
-                                                            amount = shareSubscription.numberOfShares.toDouble() * shareSubscription.pricePerShare
-                                                        )
-                                                    ),
-                                                    targetCollectionId = changes.sepaCollection.sepaCollectionId,
+                                                    )
+                                                }
+
+                                            is BulkEditShareSubscriptionChanges.AddShareOffer ->
+                                                shareSubscriptionsState.forEach { shareSubscription ->
+                                                    shareManagementActions dispatch createShareSubscription(
+                                                        providerId.value,
+                                                        changes.shareOfferId,
+                                                        shareSubscription.userProfileId,
+                                                        shareSubscription.distributionPointId,
+                                                        changes.fiscalYearId,
+                                                        changes.numberOfShares,
+                                                        changes.pricePerShare,
+                                                        changes.isAhcAuthorized,
+                                                        emptyList(),
+                                                    )
+                                                }
+
+                                            is BulkEditShareSubscriptionChanges.AddSepaMandate -> {
+                                                val forbiddenStatuses = listOf(
+                                                    ShareStatus.Suspended,
+                                                    ShareStatus.Cancelled,
+                                                    // ShareStatus.AwaitingAhcAuthorization,
                                                 )
+                                                shareSubscriptionsState.filter { it.status !in forbiddenStatuses }
+                                                    .forEachIndexed { index, shareSubscription ->
+                                                        val debtorBankAccount =
+                                                            userProfileToBankAccountMap[shareSubscription.userProfileId]
+                                                        requireNotNull(shareSubscription.pricePerShare) {
+                                                            "Price per share needs to be set!!"
+                                                        }
+                                                        // Leave out subscriptions of users without bank account
+                                                        if (debtorBankAccount == null) return@forEachIndexed
+                                                        bankingApplicationActions dispatch createSepaMandate(
+                                                            CreateSepaMandate(
+                                                                creditorId = changes.creditorIdentifier.creditorId,
+                                                                debtorBankAccountId = debtorBankAccount.bankAccountId,
+                                                                debtorName = debtorBankAccount.bankAccountHolder,
+                                                                mandateReference = changes.sepaCollection.mandateReferencePrefix.generateReference(
+                                                                    changes.mandateReferencePadStart, 8, index
+                                                                ),
+                                                                mandateReferencePrefix = null,
+                                                                signedAt = now(),
+                                                                validFrom = now(),
+                                                                validUntil = null,
+                                                                status = changes.status.toApyType(),
+                                                                isActive = changes.isActive,
+                                                                amendmentOf = null,
+                                                                collectionId = changes.sepaCollection.sepaCollectionId,
+                                                                sepaMandateReferenceData = CreateSepaMandateReferenceData(
+                                                                    referenceId = SepaMandateReferenceId(
+                                                                        shareSubscription.shareSubscriptionId
+                                                                    ),
+                                                                    amount = shareSubscription.numberOfShares.toDouble() * shareSubscription.pricePerShare
+                                                                )
+                                                            ),
+                                                            targetCollectionId = changes.sepaCollection.sepaCollectionId,
+                                                        )
+                                                    }
                                             }
-                                        }
-                                        is BulkEditShareSubscriptionChanges.Trivial -> when(val trChanges: BulkEditShareSubscriptionChanges.Trivial = changes) {
-                                            is BulkEditShareSubscriptionChanges.Trivial.PricePerShare ->
-                                                shareSubscriptionsState.forEach { shareSubscription ->
-                                                    shareManagementActions dispatch updateShareSubscription(
-                                                        shareSubscription.shareSubscriptionId,
-                                                        providerId.value,
-                                                        shareSubscription.shareOfferId,
-                                                        shareSubscription.userProfileId,
-                                                        shareSubscription.distributionPointId,
-                                                        shareSubscription.fiscalYearId,
-                                                        shareSubscription.numberOfShares,
-                                                        trChanges.pricePerShare,
-                                                        shareSubscription.ahcAuthorized,
-                                                        shareSubscription.coSubscribers.map { Username(it) },
-                                                    )
 
-                                                }
+                                            is BulkEditShareSubscriptionChanges.Trivial -> when (val trChanges: BulkEditShareSubscriptionChanges.Trivial =
+                                                changes) {
+                                                is BulkEditShareSubscriptionChanges.Trivial.PricePerShare ->
+                                                    shareSubscriptionsState.forEach { shareSubscription ->
+                                                        shareManagementActions dispatch updateShareSubscription(
+                                                            shareSubscription.shareSubscriptionId,
+                                                            providerId.value,
+                                                            shareSubscription.shareOfferId,
+                                                            shareSubscription.userProfileId,
+                                                            shareSubscription.distributionPointId,
+                                                            shareSubscription.fiscalYearId,
+                                                            shareSubscription.numberOfShares,
+                                                            trChanges.pricePerShare,
+                                                            shareSubscription.ahcAuthorized,
+                                                            shareSubscription.coSubscribers.map { Username(it) },
+                                                        )
 
-                                            is BulkEditShareSubscriptionChanges.Trivial.NumberOfShares ->
-                                                shareSubscriptionsState.forEach { shareSubscription ->
-                                                    shareManagementActions dispatch updateShareSubscription(
-                                                        shareSubscription.shareSubscriptionId,
-                                                        providerId.value,
-                                                        shareSubscription.shareOfferId,
-                                                        shareSubscription.userProfileId,
-                                                        shareSubscription.distributionPointId,
-                                                        shareSubscription.fiscalYearId,
-                                                        trChanges.numberOfShares,
-                                                        shareSubscription.pricePerShare,
-                                                        shareSubscription.ahcAuthorized,
-                                                        shareSubscription.coSubscribers.map { Username(it) },
-                                                    )
-                                                }
+                                                    }
 
-                                            is BulkEditShareSubscriptionChanges.Trivial.DistributionPoint ->
-                                                shareSubscriptionsState.forEach { shareSubscription ->
-                                                    shareManagementActions dispatch updateShareSubscription(
-                                                        shareSubscription.shareSubscriptionId,
-                                                        providerId.value,
-                                                        shareSubscription.shareOfferId,
-                                                        shareSubscription.userProfileId,
-                                                        trChanges.distributionPointId,
-                                                        shareSubscription.fiscalYearId,
-                                                        shareSubscription.numberOfShares,
-                                                        shareSubscription.pricePerShare,
-                                                        shareSubscription.ahcAuthorized,
-                                                        shareSubscription.coSubscribers.map { Username(it) },
-                                                    )
-                                                }
+                                                is BulkEditShareSubscriptionChanges.Trivial.NumberOfShares ->
+                                                    shareSubscriptionsState.forEach { shareSubscription ->
+                                                        shareManagementActions dispatch updateShareSubscription(
+                                                            shareSubscription.shareSubscriptionId,
+                                                            providerId.value,
+                                                            shareSubscription.shareOfferId,
+                                                            shareSubscription.userProfileId,
+                                                            shareSubscription.distributionPointId,
+                                                            shareSubscription.fiscalYearId,
+                                                            trChanges.numberOfShares,
+                                                            shareSubscription.pricePerShare,
+                                                            shareSubscription.ahcAuthorized,
+                                                            shareSubscription.coSubscribers.map { Username(it) },
+                                                        )
+                                                    }
 
-                                            is BulkEditShareSubscriptionChanges.Trivial.AhcAuthorization ->
-                                                shareSubscriptionsState.forEach { shareSubscription ->
-                                                    shareManagementActions dispatch updateShareSubscription(
-                                                        shareSubscription.shareSubscriptionId,
-                                                        providerId.value,
-                                                        shareSubscription.shareOfferId,
-                                                        shareSubscription.userProfileId,
-                                                        shareSubscription.distributionPointId,
-                                                        shareSubscription.fiscalYearId,
-                                                        shareSubscription.numberOfShares,
-                                                        shareSubscription.pricePerShare,
-                                                        trChanges.isAhcAuthorized,
-                                                        shareSubscription.coSubscribers.map { Username(it) },
-                                                    )
-                                                }
+                                                is BulkEditShareSubscriptionChanges.Trivial.DistributionPoint ->
+                                                    shareSubscriptionsState.forEach { shareSubscription ->
+                                                        shareManagementActions dispatch updateShareSubscription(
+                                                            shareSubscription.shareSubscriptionId,
+                                                            providerId.value,
+                                                            shareSubscription.shareOfferId,
+                                                            shareSubscription.userProfileId,
+                                                            trChanges.distributionPointId,
+                                                            shareSubscription.fiscalYearId,
+                                                            shareSubscription.numberOfShares,
+                                                            shareSubscription.pricePerShare,
+                                                            shareSubscription.ahcAuthorized,
+                                                            shareSubscription.coSubscribers.map { Username(it) },
+                                                        )
+                                                    }
+
+                                                is BulkEditShareSubscriptionChanges.Trivial.AhcAuthorization ->
+                                                    shareSubscriptionsState.forEach { shareSubscription ->
+                                                        shareManagementActions dispatch updateShareSubscription(
+                                                            shareSubscription.shareSubscriptionId,
+                                                            providerId.value,
+                                                            shareSubscription.shareOfferId,
+                                                            shareSubscription.userProfileId,
+                                                            shareSubscription.distributionPointId,
+                                                            shareSubscription.fiscalYearId,
+                                                            shareSubscription.numberOfShares,
+                                                            shareSubscription.pricePerShare,
+                                                            trChanges.isAhcAuthorized,
+                                                            shareSubscription.coSubscribers.map { Username(it) },
+                                                        )
+                                                    }
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                        var bulkUpdateShareSubscriptionsState by remember{ mutableStateOf<ShareSubscriptions?> (null) }
+                        var bulkUpdateShareSubscriptionsState by remember { mutableStateOf<ShareSubscriptions?>(null) }
                         val initialShareSubscriptions = {
-                            filteredCheckedSubscriptions.filter{
+                            filteredCheckedSubscriptions.filter {
                                 it.checked
-                            }.map{ s ->
+                            }.map { s ->
                                 val username =
                                     userProfileToUserMap[s.shareSubscription.userProfileId]!!.username
                                 Username(username) to s.shareSubscription
-                            }.associateBy ({
+                            }.associateBy({
                                 it.first
-                            }){it.second}
+                            }) { it.second }
                         }
                         UploadButton(
                             color = Color.black,
@@ -1080,11 +1400,11 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                 }
                 HeaderWrapper {
                     Header {
-                        CheckBoxCell({allChecked}, {width(2.percent)}) {
+                        CheckBoxCell({ allChecked }, { width(2.percent) }) {
                             val newCheckedState = !allChecked
                             checkedMap.clear()
-                            if(newCheckedState) {
-                                checkedMap.putAll(filteredCheckedSubscriptions.associateBy({it.shareSubscription.shareSubscriptionId}) { true })
+                            if (newCheckedState) {
+                                checkedMap.putAll(filteredCheckedSubscriptions.associateBy({ it.shareSubscription.shareSubscriptionId }) { true })
                             }
                             allChecked = newCheckedState
                         }
@@ -1099,7 +1419,8 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                         HeaderCell("SEPA - Collection Key / Mandate Ref Pref") { width(20.percent) }
                     }
                 }
-                Scrollable(ScrollableStyles()
+                Scrollable(
+                    ScrollableStyles()
                     .modifyContainerStyle {
                         height(80.vh)
                         flexDirection(FlexDirection.RowReverse)
@@ -1131,7 +1452,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                     ) { width(15.percent) }
                                     TextCell(subscription.status.value) { width(20.percent) }
                                     NumberCell(subscription.numberOfShares) { width(5.percent) }
-                                    NumberCell(subscription.pricePerShare?:0) { width(5.percent) }
+                                    NumberCell(subscription.pricePerShare ?: 0) { width(5.percent) }
 
                                     TextCell(
                                         distributionPointsMap[subscription.distributionPointId]?.name ?: ""
@@ -1140,20 +1461,24 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                         userProfilesMap[subscription.userProfileId]?.fullname() ?: ""
                                     ) { width(20.percent) }
                                     TextCell(subscription.ahcAuthorized.checkIcon("--")) { width(5.percent) }
-                                    TextCell(sepaCollections.read().filter{
-                                        coll -> coll.refersTo(subscription) && subscription.relatedBankAccountExists(
+                                    TextCell(sepaCollections.read().filter { coll ->
+                                        coll.refersTo(subscription) && subscription.relatedBankAccountExists(
                                             coll,
                                             userProfileToBankAccountMap
                                         )
-                                    }.joinToString(", ") {
-                                        sC -> "${sC.collectionKey.value} / ${sC.mandateReferencePrefix.value}"
+                                    }.joinToString(", ") { sC ->
+                                        "${sC.collectionKey.value} / ${sC.mandateReferencePrefix.value}"
                                     }) {
                                         width(20.percent)
                                         overflow(Overflow.Hidden)
                                     }
                                 }
                                 ActionsWrapper {
-                                    var sepaMandateState by remember { mutableStateOf<SepaMandate?>(shareSubscriptionIdToMandateMap.emit()[ ShareSubscriptionId(subscription.shareSubscriptionId)]) }
+                                    var sepaMandateState by remember {
+                                        mutableStateOf<SepaMandate?>(
+                                            shareSubscriptionIdToMandateMap.emit()[ShareSubscriptionId(subscription.shareSubscriptionId)]
+                                        )
+                                    }
 
                                     val creditorId = creditorIdentifier.read()?.creditorId
 
@@ -1171,7 +1496,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                             texts = upsertSepaMandateModalTexts
                                         ) {
                                             scope.launch {
-                                                if(sepaMandateState != null && creditorId != null) {
+                                                if (sepaMandateState != null && creditorId != null) {
                                                     val sepaMandate = sepaMandateState
                                                     requireNotNull(sepaMandate)
                                                     bankingApplicationActions dispatch updateSepaMandateInSepaCollection(
@@ -1215,7 +1540,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                                             Read(membersAsUsers),
                                             ChangedBy.PROVIDER,
                                             subscription,
-                                            {data -> newShareSubscriptionState = data}
+                                            { data -> newShareSubscriptionState = data }
                                         ) {
                                             scope.launch {
                                                 with(newShareSubscriptionState) {
@@ -1245,7 +1570,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                             }
                         }
                     }
-                
+
                 }
             }
         }
@@ -1254,7 +1579,10 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
 
 fun shareManagementForOrganizationsTexts(): Source<Lang.Block> = {
     "shareManagementForOrganizations" texts {
-        "shareOffersList" block {
+        "shareTypesManagement" block {
+            "title" colon "Share Types"
+        }
+        "shareOfferManagement" block {
             "item" block {
                 "actions" block {
                     "attachSepaCollection" block {
@@ -1267,6 +1595,9 @@ fun shareManagementForOrganizationsTexts(): Source<Lang.Block> = {
                     }
                 }
             }
+        }
+        "shareSubscriptionManagement" block {
+            "title" colon "Share Subscriptions"
         }
 
         "dialogs" block {
