@@ -23,7 +23,6 @@ import org.evoleq.optics.transform.flatMap
 import org.evoleq.optics.transform.times
 import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.compose.web.css.*
-import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.letsPlot.commons.intern.filterNotNullValues
@@ -67,8 +66,6 @@ import org.solyton.solawi.bid.module.distribution.data.distributionpoint.Distrib
 import org.solyton.solawi.bid.module.distribution.data.management.DistributionManagement
 import org.solyton.solawi.bid.module.distribution.data.management.distributionPoints
 import org.solyton.solawi.bid.module.list.component.*
-import org.solyton.solawi.bid.module.list.style.ListStyles
-import org.solyton.solawi.bid.module.list.style.defaultListStyles
 import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.scrollable.Scrollable
 import org.solyton.solawi.bid.module.scrollable.ScrollableStyles
@@ -95,6 +92,8 @@ import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
 import org.solyton.solawi.bid.module.shares.data.values.ShareTypeId
 import org.solyton.solawi.bid.module.shares.service.refersTo
 import org.solyton.solawi.bid.module.shares.service.relatedBankAccountExists
+import org.solyton.solawi.bid.module.style.card.cardStyle
+import org.solyton.solawi.bid.module.style.list.cardListStyles
 import org.solyton.solawi.bid.module.style.overflow.Overflow
 import org.solyton.solawi.bid.module.style.overflow.overflow
 import org.solyton.solawi.bid.module.style.page.PageTitle
@@ -284,78 +283,60 @@ fun ShareTypeManagement(
 
     val shareTypes = shareManagementStore * shareTypes
 
-    val listStyles = ListStyles().modifyTitleWrapper {
-        width(100.percent)
-    }
-    Wrap {
-        ListWrapper({ defaultListStyles.listWrapper(this) }) {
+
+    Wrap({
+        cardStyle()
+    }) {
+        ListWrapper(cardListStyles.listWrapper) {
             var opened by remember { mutableStateOf(false) }
-            TitleWrapper(listStyles.titleWrapper) {
+            TitleWrapper(cardListStyles.titleWrapper) {
                 Title { H3 { Text("Share Types") } }
                 var shareTypeState by remember { mutableStateOf<ShareType?>(null) }
 
                 Horizontal(styles = {
                     flexGrow(1.0)
-                    justifyContent(JustifyContent.SpaceBetween)
+                    justifyContent(JustifyContent.FlexEnd)
                 }) {
-                    PlusButton(
-                        color = Color.black,
-                        bgColor = Color.white,
-                        deviceType = deviceType,
-                    ) {
-                        shareManagementModals.showUpsertShareTypeModal(
-                            shareManagementStore,
-                            dialogModalTexts(""),
-                            deviceType,
-                            providerId,
-                            shareTypeState,
-                            { point ->
-                                shareTypeState = point
-                            }) {
-                            val state = shareTypeState
-                            requireNotNull(state)
-                            scope.launch {
-                                shareManagementActions dispatch createShareType(
-                                    providerId.value,
-                                    state.name,
-                                    state.key,
-                                    state.description,
-                                )
+                    When(opened) {
+                        PlusButton(
+                            color = Color.black,
+                            bgColor = Color.white,
+                            deviceType = deviceType,
+                        ) {
+                            shareManagementModals.showUpsertShareTypeModal(
+                                shareManagementStore,
+                                dialogModalTexts(""),
+                                deviceType,
+                                providerId,
+                                shareTypeState,
+                                { point ->
+                                    shareTypeState = point
+                                }) {
+                                val state = shareTypeState
+                                requireNotNull(state)
+                                scope.launch {
+                                    shareManagementActions dispatch createShareType(
+                                        providerId.value,
+                                        state.name,
+                                        state.key,
+                                        state.description,
+                                    )
+                                }
                             }
                         }
                     }
-                    Div({
-                        style {
-                            alignSelf(AlignSelf.FlexEnd)
-                        }
-                    }) {
-                        When(!opened) {
-                            ChevronDownButton(
-                                Color.black,
-                                Color.white,
-                                { "Open" },
-                                deviceType,
-                            ) {
-                                opened = true
-                            }
-
-                        }
-                        When(opened) {
-                            ChevronLeftButton(
-                                Color.black,
-                                Color.white,
-                                { "Close" },
-                                deviceType,
-                            ) {
-                                opened = false
-                            }
-                        }
+                    CardChevrons(
+                        texts = Source{cardChevronTexts()},
+                        deviceType = deviceType,
+                        opened = opened
+                    ) {
+                        opened = it
                     }
                 }
             }
             When(opened) {
                 HeaderWrapper {
-                    Header {
+                    Header(cardListStyles.header) {
                         HeaderCell("Name") { width(20.percent) }
                         HeaderCell("key") { width(10.percent) }
                         HeaderCell("Description") { width(70.percent) }
@@ -365,7 +346,7 @@ fun ShareTypeManagement(
                     ListItemWrapper({
                         listItemWrapperStyle(this, index)
                     }) {
-                        DataWrapper() {
+                        DataWrapper(cardListStyles.dataWrapper) {
                             TextCell(shareType.name) { width(20.percent) }
                             TextCell(shareType.key) { width(10.percent) }
                             TextCell(shareType.description) { width(70.percent) }
@@ -443,16 +424,19 @@ fun ShareOfferManagement(
     val sepaModule = bankingApplicationStorage * sepaModule
     val sepaCollections = sepaModule * sepaCollections
 
-    Wrap{
+    Wrap({
+        cardStyle()
+    }){
         var opened by remember { mutableStateOf(false) }
-        ListWrapper({ defaultListStyles.listWrapper(this) }) {
+        ListWrapper(cardListStyles.listWrapper) {
             TitleWrapper {
                 Title { H3 { Text("Share Offers") } }
                 var shareOfferState by remember { mutableStateOf<ShareOffer?>(null) }
                 Horizontal(styles = {
                     flexGrow(1.0)
-                    justifyContent(JustifyContent.SpaceBetween)
+                    justifyContent(JustifyContent.FlexEnd)
                 }) {
+                    When(opened) {
                     PlusButton(
                         color = Color.black,
                         bgColor = Color.white,
@@ -481,39 +465,19 @@ fun ShareOfferManagement(
                                 )
                             }
                         }
-                    }
-                    Div({
-                        style {
-                            alignSelf(AlignSelf.FlexEnd)
-                        }
-                    }) {
-                        When(!opened) {
-                            ChevronDownButton(
-                                Color.black,
-                                Color.white,
-                                { "Open" },
-                                deviceType,
-                            ) {
-                                opened = true
-                            }
-
-                        }
-                        When(opened) {
-                            ChevronLeftButton(
-                                Color.black,
-                                Color.white,
-                                { "Close" },
-                                deviceType,
-                            ) {
-                                opened = false
-                            }
-                        }
+                    }}
+                    CardChevrons(
+                        texts = Source{cardChevronTexts()},
+                        deviceType = deviceType,
+                        opened = opened
+                    ) {
+                        opened = it
                     }
                 }
             }
             When(opened) {
                 HeaderWrapper {
-                    Header {
+                    Header(cardListStyles.header) {
                         HeaderCell("Fiscal Year") { width(10.percent) }
                         HeaderCell("Share Type") { width(20.percent) }
                         HeaderCell("Price") { width(10.percent) }
@@ -537,7 +501,7 @@ fun ShareOfferManagement(
                         val sepaCollections =
                             sepaCollections * FilterBy { shareOffer.shareOfferId in it.referenceIds.map { ref -> ref.value } }
 
-                        DataWrapper() {
+                        DataWrapper(cardListStyles.dataWrapper) {
                             TextCell(shareOffer.fiscalYear.format()) { width(10.percent) }
                             TextCell(shareOffer.shareType.name) { width(20.percent) }
                             TextCell("${shareOffer.price ?: "--"}") { width(10.percent) }
@@ -775,7 +739,9 @@ fun ShareSubscriptionManagement(
     val currentUserId = usersStorage * FirstBy { it.username == (userStorage * user * username).read() } * id
     val membersAsUsers = usersStorage * FilterBy { it.username in (memberStorage.read().map { m -> m.username }) }
 
-    Wrap{
+    Wrap({
+        cardStyle()
+    }){
         val checkedMap = remember {  mutableStateMapOf<String, Boolean>() }
         fun isChecked(id: String): Boolean = checkedMap[id] ?: false
         val checkedSubscriptions = shareSubscriptions * BiMap<ShareSubscription, CheckedShareSubscription>(
@@ -879,80 +845,62 @@ fun ShareSubscriptionManagement(
             uiState.write(uiState.read().copy(filter = filter))
         }
 
-        ListWrapper({ defaultListStyles.listWrapper(this) }) {
+        ListWrapper(cardListStyles.listWrapper) {
 
             TitleWrapper(/*{width(90.percent)}*/) {
                 Title { H3 { Text("Share Subscriptions") } }
                 Horizontal(styles = {
                     flexGrow(1.0)
-                    justifyContent(JustifyContent.SpaceBetween)
+                    justifyContent(JustifyContent.FlexEnd)
                 }) {
                     var newShareSubscriptionState by remember { mutableStateOf<ShareSubscription?>(null) }
-                    PlusButton(
-                        color = Color.black,
-                        bgColor = Color.white,
-                        deviceType = deviceType,
-                        isDisabled = false
-                    ) {
-                        shareManagementModals.showUpsertShareSubscriptionModal(
-                            shareManagementStore,
-                            upsertShareSubscriptionModalTexts.emit(),
-                            deviceType,
-                            Read(fiscalYears),
-                            Read(distributionPoints),
-                            Read(shareOffers),
-                            providerId,
-                            Read(membersAsUsers),
-                            ChangedBy.PROVIDER,
-                            null,
-                            { data -> newShareSubscriptionState = data }
+                    When(opened) {
+                        PlusButton(
+                            color = Color.black,
+                            bgColor = Color.white,
+                            deviceType = deviceType,
+                            isDisabled = false
                         ) {
-                            if (newShareSubscriptionState != null) {
-                                val data = requireNotNull(newShareSubscriptionState)
-                                scope.launch {
-                                    with(data) {
-                                        shareManagementActions dispatch createShareSubscription(
-                                            providerId.value,
-                                            shareOfferId,
-                                            userProfileId,
-                                            distributionPointId,
-                                            fiscalYearId,
-                                            numberOfShares,
-                                            pricePerShare,
-                                            ahcAuthorized,
-                                            coSubscribers,
-                                        )
+                            shareManagementModals.showUpsertShareSubscriptionModal(
+                                shareManagementStore,
+                                upsertShareSubscriptionModalTexts.emit(),
+                                deviceType,
+                                Read(fiscalYears),
+                                Read(distributionPoints),
+                                Read(shareOffers),
+                                providerId,
+                                Read(membersAsUsers),
+                                ChangedBy.PROVIDER,
+                                null,
+                                { data -> newShareSubscriptionState = data }
+                            ) {
+                                if (newShareSubscriptionState != null) {
+                                    val data = requireNotNull(newShareSubscriptionState)
+                                    scope.launch {
+                                        with(data) {
+                                            shareManagementActions dispatch createShareSubscription(
+                                                providerId.value,
+                                                shareOfferId,
+                                                userProfileId,
+                                                distributionPointId,
+                                                fiscalYearId,
+                                                numberOfShares,
+                                                pricePerShare,
+                                                ahcAuthorized,
+                                                coSubscribers,
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                    Div({
-                        style {
-                            alignSelf(AlignSelf.FlexEnd)
-                        }
-                    }) {
-                        When(!opened) {
-                            ChevronDownButton(
-                                Color.black,
-                                Color.white,
-                                { "Open" },
-                                deviceType,
-                            ) {
-                                opened = true
-                            }
-
-                        }
-                        When(opened) {
-                            ChevronLeftButton(
-                                Color.black,
-                                Color.white,
-                                { "Close" },
-                                deviceType,
-                            ) {
-                                opened = false
-                            }
-                        }
+                    CardChevrons(
+                        texts = Source{ cardChevronTexts() },
+                        deviceType = deviceType,
+                        opened = opened
+                    ) {
+                        opened = it
                     }
                 }
             }
@@ -1399,7 +1347,7 @@ fun ShareSubscriptionManagement(
                     }
                 }
                 HeaderWrapper {
-                    Header {
+                    Header(cardListStyles.header) {
                         CheckBoxCell({ allChecked }, { width(2.percent) }) {
                             val newCheckedState = !allChecked
                             checkedMap.clear()
@@ -1438,7 +1386,7 @@ fun ShareSubscriptionManagement(
                             ListItemWrapper({
                                 listItemWrapperStyle(this, index)
                             }) {
-                                DataWrapper() {
+                                DataWrapper(cardListStyles.dataWrapper) {
                                     var checkedState by remember { mutableStateOf(checked) }
                                     CheckBoxCell({ checkedState }, { width(2.percent) }) {
                                         checkedMap[subscription.shareSubscriptionId] = !checkedState

@@ -132,7 +132,6 @@ fun Card(
 ) = Div({
     onClick { onClick() }
     style{
-        style()
         display(DisplayStyle.Flex)
         flexDirection(FlexDirection.Column)
         width(25.percent)
@@ -146,6 +145,7 @@ fun Card(
             borderRadius(5.px)
         }
         cursor("pointer")
+        style()
     }
 }) {
     content()
