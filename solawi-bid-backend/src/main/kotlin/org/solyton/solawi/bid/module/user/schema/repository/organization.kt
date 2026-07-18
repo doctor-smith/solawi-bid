@@ -3,24 +3,17 @@ package org.solyton.solawi.bid.module.user.schema.repository
 import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.permission.exception.ContextException
 import org.solyton.solawi.bid.module.permission.repository.createChild
 import org.solyton.solawi.bid.module.permission.repository.grant
 import org.solyton.solawi.bid.module.permission.repository.of
 import org.solyton.solawi.bid.module.permission.repository.remove
-import org.solyton.solawi.bid.module.permission.schema.ContextEntity
-import org.solyton.solawi.bid.module.permission.schema.ContextsTable
-import org.solyton.solawi.bid.module.permission.schema.RightEntity
-import org.solyton.solawi.bid.module.permission.schema.Rights
-import org.solyton.solawi.bid.module.permission.schema.RoleEntity
-import org.solyton.solawi.bid.module.permission.schema.Roles
-import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
+import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.user.exception.OrganizationException
 import org.solyton.solawi.bid.module.user.permission.OrganizationRight
-import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
-import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
-import org.solyton.solawi.bid.module.user.schema.UserEntity
-import org.solyton.solawi.bid.module.user.schema.UserOrganization
+import org.solyton.solawi.bid.module.user.schema.*
+import org.solyton.solawi.bid.module.user.schema.UserOrganizationHistory.userOrganizationId
 import java.util.*
 import org.evoleq.permission.Role as BasicRole
 
@@ -218,27 +211,60 @@ fun getOrganizationByName(name: String): OrganizationEntity = OrganizationEntity
     OrganizationsTable.name eq name
 }.first()
 
-fun OrganizationEntity.addUser(user: UserEntity): OrganizationEntity {
+fun OrganizationEntity.addUser(modifier: UUID, user: UserEntity): OrganizationEntity {
     if(!users.contains(user)) {
-        UserOrganization.insert {
+        val id = UserOrganization.insertAndGetId {
             it[userId] = user.id
             it[organizationId] = this@addUser.id
         }
+        UserOrganizationHistory.insert {
+            it[userOrganizationId] = id
+            it[createdBy] = modifier
+            // Rest is given by default values
+        }
+        modifiedBy = modifier
+        modifiedAt = DateTime.now()
     }
     return this
 }
 
-fun OrganizationEntity.removeUser(user: UserEntity): OrganizationEntity {
+fun OrganizationEntity.changeMemberState(
+    modifier: UUID,
+    member: UserEntity,
+    status: MembershipStatus,
+): OrganizationEntity {
+
+    val userOrganization = UserOrganization.select(UserOrganization.id).where {
+        UserOrganization.userId eq member.id and (UserOrganization.organizationId eq this@changeMemberState.id)
+    }.firstOrNull()?.let{it[UserOrganization.id].value}?: throw OrganizationException.NoSuchMember(member.id.value.toString())
+
+    UserOrganizationHistoryEntry.find {
+        userOrganizationId eq userOrganization
+    }.forEach {
+        it.modifiedBy = modifier
+        it.modifiedAt = DateTime.now()
+        it.status = status
+    }
+    modifiedBy = modifier
+    modifiedAt = DateTime.now()
+    return this
+}
+
+fun OrganizationEntity.removeUser(modifier: UUID, user: UserEntity): OrganizationEntity {
     UserOrganization.deleteWhere {
         userId eq user.id and  (organizationId eq this@removeUser.id)
     }
+    modifiedBy = modifier
+    modifiedAt = DateTime.now()
     return this
 }
 
-fun OrganizationEntity.removeUsers(): OrganizationEntity {
+fun OrganizationEntity.removeUsers(modifier: UUID): OrganizationEntity {
     UserOrganization.deleteWhere {
           organizationId eq this@removeUsers.id
     }
+    modifiedBy = modifier
+    modifiedAt = DateTime.now()
     return this
 }
 

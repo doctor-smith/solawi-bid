@@ -142,6 +142,7 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
             is OrganizationException.NoSuchOrganization -> HttpStatusCode.NotFound
             is OrganizationException.NoSuchChildOrganization -> HttpStatusCode.NotFound
             is OrganizationException.DuplicateMember -> HttpStatusCode.Conflict
+            is OrganizationException.NoSuchMember -> HttpStatusCode.NotFound
             is OrganizationException.CannotDeleteOrganization -> HttpStatusCode.Conflict
             is OrganizationException.NoRoot -> HttpStatusCode.BadRequest
         }

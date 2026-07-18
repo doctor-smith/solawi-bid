@@ -8,12 +8,10 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.notInList
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
+import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.action.db.isGranted
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
@@ -21,14 +19,12 @@ import org.solyton.solawi.bid.module.permission.schema.RolesTable
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
 import org.solyton.solawi.bid.module.user.data.api.organization.*
+import org.solyton.solawi.bid.module.user.data.api.organization.Organization
 import org.solyton.solawi.bid.module.user.data.toApiType
+import org.solyton.solawi.bid.module.user.data.toDomainType
 import org.solyton.solawi.bid.module.user.exception.OrganizationException
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
-import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
-import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
-import org.solyton.solawi.bid.module.user.schema.UserEntity
-import org.solyton.solawi.bid.module.user.schema.UserOrganization
-import org.solyton.solawi.bid.module.user.schema.UsersTable
+import org.solyton.solawi.bid.module.user.schema.*
 import org.solyton.solawi.bid.module.user.service.user.createUserEntity
 import java.util.*
 
@@ -55,9 +51,14 @@ fun AddMember(): KlAction<Result<Contextual<AddMember>>, Result<Organization>> =
         if(organization.members.toList().contains(member)) throw OrganizationException.DuplicateMember("$memberId")
 
         // add member
-        UserOrganization.insert {
+        val id =  UserOrganization.insertAndGetId {
             it[UserOrganization.userId] = member.id
             it[UserOrganization.organizationId] = organization.id
+        }
+
+        UserOrganizationHistory.insert {
+            it[userOrganizationId] = id
+            it[createdBy] = userId
         }
 
         // add roles to user-role-contexts
@@ -68,6 +69,9 @@ fun AddMember(): KlAction<Result<Contextual<AddMember>>, Result<Organization>> =
                 it[UserRoleContext.contextId] = organization.context.id.value
             }
         }
+
+        organization.modifiedBy = userId
+        organization.modifiedAt = DateTime.now()
 
         // return
         organization.toApiType(this)
@@ -143,6 +147,21 @@ fun UpdateMember(): KlAction<Result<Contextual<UpdateMember>>, Result<Organizati
                 it[UserRoleContext.contextId] = organization.context.id.value
             }
         }
+
+        val userOrganization = UserOrganizationEntity.find { UserOrganization.userId eq memberId and (UserOrganization.organizationId eq organization.id) }.firstOrNull()
+            ?: throw OrganizationException.NoSuchMember(memberId.toString())
+
+        UserOrganizationHistoryEntry.new{
+            createdBy = userId
+            userOrganizationId = userOrganization.id
+            this.status = data.status.toDomainType()
+            this.modifiedBy = userId
+            this.modifiedAt = DateTime.now()
+        }
+
+        organization.modifiedBy = userId
+        organization.modifiedAt = DateTime.now()
+
         // return
         organization.toApiType(this)
     } } x database
@@ -186,18 +205,31 @@ fun ImportMembers(): KlAction<Result<Contextual<ImportMembers>>, Result<Organiza
         val userRole = RoleEntity.find { RolesTable.name eq "USER" }.first()
 
         // Add users to the organization and give them the user role
-        listOf(membersWithUserAccounts, recentlyAddedUserAccounts).flatten().distinctBy { it.username }.forEach { member ->
-            UserOrganization.insert {
+        val usersToAdd = listOf(membersWithUserAccounts, recentlyAddedUserAccounts).flatten().distinctBy { it.username }
+        usersToAdd.forEach { member ->
+            val id = UserOrganization.insertAndGetId {
                 it[UserOrganization.userId] = member.id
                 it[UserOrganization.organizationId] = organization.id
             }
+
             UserRoleContext.insert {
                 it[UserRoleContext.userId] = member.id.value
                 it[UserRoleContext.roleId] = userRole.id.value
                 it[UserRoleContext.contextId] = organization.context.id.value
             }
+
+            UserOrganizationHistory.insert {
+                it[userOrganizationId] = id
+                it[createdBy] = userId
+            }
         }
 
+        if(usersToAdd.isNotEmpty()) {
+            organization.modifiedBy = userId
+            organization.modifiedAt = DateTime.now()
+
+            // TODO add entry to organization History
+        }
         // return
         organization.toApiType(this)
     } } x database

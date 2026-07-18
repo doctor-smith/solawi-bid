@@ -22,6 +22,8 @@ class UserOrganizationHistoryEntry(id: EntityID<UUID>) : UUIDEntity(id), Auditab
     var status by UserOrganizationHistory.status
     var since by UserOrganizationHistory.since
 
+    var organization by Organization via UserOrganization
+
     override var createdAt: DateTime by UserOrganizationHistory.createdAt
     override var createdBy: UUID by UserOrganizationHistory.createdBy
     override var modifiedBy: UUID? by UserOrganizationHistory.modifiedBy

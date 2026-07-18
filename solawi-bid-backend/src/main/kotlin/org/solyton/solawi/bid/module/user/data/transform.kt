@@ -6,13 +6,11 @@ import org.solyton.solawi.bid.module.permission.repository.getRolesByUserAndCont
 import org.solyton.solawi.bid.module.user.data.api.ApiUserStatus
 import org.solyton.solawi.bid.module.user.data.api.UserD
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiMember
+import org.solyton.solawi.bid.module.user.data.api.organization.ApiMembershipStatus
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiOrganization
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ApiAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ApiUserProfile
-import org.solyton.solawi.bid.module.user.schema.AddressEntity
-import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
-import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
-import org.solyton.solawi.bid.module.user.schema.UserStatus
+import org.solyton.solawi.bid.module.user.schema.*
 import org.solyton.solawi.bid.module.user.schema.repository.getChildren
 import org.solyton.solawi.bid.module.user.schema.User as UserEntity
 
@@ -87,3 +85,19 @@ fun AddressEntity.toApiType(): ApiAddress = ApiAddress(
     countryCode = countryCode,
     stateOrProvince = stateOrProvince
 )
+
+fun ApiMembershipStatus.toDomainType(): MembershipStatus = when (this) {
+    ApiMembershipStatus.ACTIVE -> MembershipStatus.ACTIVE
+    ApiMembershipStatus.APPLICANT -> MembershipStatus.APPLICANT
+    ApiMembershipStatus.FORMER -> MembershipStatus.FORMER
+    ApiMembershipStatus.PAUSED -> MembershipStatus.PAUSED
+    ApiMembershipStatus.REJECTED -> MembershipStatus.REJECTED
+}
+
+fun MembershipStatus.toApiType(): ApiMembershipStatus = when (this) {
+    MembershipStatus.ACTIVE -> ApiMembershipStatus.ACTIVE
+    MembershipStatus.APPLICANT -> ApiMembershipStatus.APPLICANT
+    MembershipStatus.FORMER -> ApiMembershipStatus.FORMER
+    MembershipStatus.PAUSED -> ApiMembershipStatus.PAUSED
+    MembershipStatus.REJECTED -> ApiMembershipStatus.REJECTED
+}

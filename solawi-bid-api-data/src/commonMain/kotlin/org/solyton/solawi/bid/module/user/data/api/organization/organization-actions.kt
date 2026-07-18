@@ -2,7 +2,6 @@ package org.solyton.solawi.bid.module.user.data.api.organization
 
 import kotlinx.serialization.Serializable
 import org.evoleq.ktorx.client.EmptyParams
-import org.evoleq.ktorx.client.Parameters
 
 @Serializable
 data class CreateOrganization(
@@ -33,7 +32,8 @@ data class DeleteOrganization(
 data class AddMember(
     val organizationId: String,
     val userId: String,
-    val roles: List<String>
+    val roles: List<String>,
+    val status: MembershipStatus
 )
 
 @Serializable
@@ -46,7 +46,8 @@ data class RemoveMember(
 data class UpdateMember(
     val organizationId: String,
     val userId: String,
-    val roles: List<String>
+    val roles: List<String>,
+    val status: MembershipStatus
 )
 
 @Serializable

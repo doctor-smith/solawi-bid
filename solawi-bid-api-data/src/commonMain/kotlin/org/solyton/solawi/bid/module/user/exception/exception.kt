@@ -24,6 +24,8 @@ sealed class OrganizationException(override val message: String) : Exception(mes
 
     data class DuplicateMember(val id: String): OrganizationException("Member already exists: id = $id")
 
+    data class NoSuchMember(val id: String): OrganizationException("Member does not exist in organization: id = $id")
+
     data class CannotDeleteOrganization(val id: String, val reason: String): OrganizationException(
         "Organization $id cannot be deleted. Reason: $reason"
     )

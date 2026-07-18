@@ -3,11 +3,13 @@ package org.solyton.solawi.bid.module.user.data.transform
 import org.solyton.solawi.bid.module.permissions.data.transform.toDomainType
 import org.solyton.solawi.bid.module.user.data.address.Address
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiMember
+import org.solyton.solawi.bid.module.user.data.api.organization.ApiMembershipStatus
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiOrganizations
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ApiAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ApiUserProfile
 import org.solyton.solawi.bid.module.user.data.member.Member
+import org.solyton.solawi.bid.module.user.data.member.status.MembershipStatus
 import org.solyton.solawi.bid.module.user.data.organization.Organization
 import org.solyton.solawi.bid.module.user.data.profile.UserProfile
 
@@ -66,3 +68,19 @@ fun Address.toApiType(): ApiAddress = ApiAddress(
     postalCode = postalCode,
     countryCode = countryCode
 )
+
+fun ApiMembershipStatus.toDomainType(): MembershipStatus = when (this) {
+    ApiMembershipStatus.ACTIVE -> MembershipStatus.ACTIVE
+    ApiMembershipStatus.PAUSED -> MembershipStatus.PAUSED
+    ApiMembershipStatus.FORMER -> MembershipStatus.FORMER
+    ApiMembershipStatus.REJECTED -> MembershipStatus.REJECTED
+    ApiMembershipStatus.APPLICANT -> MembershipStatus.APPLICANT
+}
+
+fun MembershipStatus.toApiType(): ApiMembershipStatus = when (this) {
+    MembershipStatus.ACTIVE -> ApiMembershipStatus.ACTIVE
+    MembershipStatus.PAUSED -> ApiMembershipStatus.PAUSED
+    MembershipStatus.FORMER -> ApiMembershipStatus.FORMER
+    MembershipStatus.REJECTED -> ApiMembershipStatus.REJECTED
+    MembershipStatus.APPLICANT -> ApiMembershipStatus.APPLICANT
+}

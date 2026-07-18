@@ -1,37 +1,20 @@
 package org.solyton.solawi.bid.module.usermanagement.routing
 
 import com.typesafe.config.ConfigFactory
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.config.HoconApplicationConfig
-import io.ktor.server.testing.testApplication
+import io.ktor.http.*
+import io.ktor.server.config.*
+import io.ktor.server.testing.*
 import kotlinx.coroutines.runBlocking
 import org.evoleq.exposedx.migrations.isNotNull
 import org.evoleq.ktorx.result.Result
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
-import org.solyton.solawi.bid.module.testFramework.contextExists
-import org.solyton.solawi.bid.module.testFramework.getTestContextIdByName
-import org.solyton.solawi.bid.module.testFramework.getTestRoleIdByName
-import org.solyton.solawi.bid.module.testFramework.getTestToken
-import org.solyton.solawi.bid.module.testFramework.getUserId
-import org.solyton.solawi.bid.module.user.data.api.organization.AddMember
-import org.solyton.solawi.bid.module.user.data.api.organization.ApiOrganization
-import org.solyton.solawi.bid.module.user.data.api.organization.ApiOrganizations
-import org.solyton.solawi.bid.module.user.data.api.organization.CreateChildOrganization
-import org.solyton.solawi.bid.module.user.data.api.organization.CreateOrganization
-import org.solyton.solawi.bid.module.user.data.api.organization.RemoveMember
-import org.solyton.solawi.bid.module.user.data.api.organization.UpdateMember
-import org.solyton.solawi.bid.module.user.data.api.organization.UpdateOrganization
-import org.solyton.solawi.bid.module.usermanagement.routing.util.addMemberToOrganization
-import org.solyton.solawi.bid.module.usermanagement.routing.util.createChildOrganization
-import org.solyton.solawi.bid.module.usermanagement.routing.util.createOrganization
-import org.solyton.solawi.bid.module.usermanagement.routing.util.readOrganizations
-import org.solyton.solawi.bid.module.usermanagement.routing.util.removeMemberFromOrganization
-import org.solyton.solawi.bid.module.usermanagement.routing.util.updateMemberOfOrganization
-import org.solyton.solawi.bid.module.usermanagement.routing.util.updateOrganization
+import org.solyton.solawi.bid.module.testFramework.*
+import org.solyton.solawi.bid.module.user.data.api.organization.*
+import org.solyton.solawi.bid.module.usermanagement.routing.util.*
 import java.io.File
-import java.util.UUID
+import java.util.*
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
@@ -372,7 +355,8 @@ class OrganizationRoutingTests {
                 AddMember(
                     apiOrganization.id,
                     memberId,
-                    listOf(userRoleId)
+                    listOf(userRoleId),
+                    ApiMembershipStatus.ACTIVE
                 ),
                 token,
                 organizationContextId
@@ -435,7 +419,8 @@ class OrganizationRoutingTests {
                 AddMember(
                     apiOrganization.id,
                     memberId,
-                    listOf(userRoleId)
+                    listOf(userRoleId),
+                    ApiMembershipStatus.ACTIVE
                 ),
                 token,
                 organizationContextId
@@ -459,7 +444,8 @@ class OrganizationRoutingTests {
                 AddMember(
                     apiOrganization.id,
                     memberId,
-                    listOf(userRoleId)
+                    listOf(userRoleId),
+                    ApiMembershipStatus.ACTIVE
                 ),
                 token,
                 organizationContextId
@@ -513,7 +499,8 @@ class OrganizationRoutingTests {
                 AddMember(
                     apiOrganization.id,
                     memberId,
-                    listOf(userRoleId)
+                    listOf(userRoleId),
+                    ApiMembershipStatus.ACTIVE
                 ),
                 unAuthorizedToken,
                 organizationContextId
@@ -568,7 +555,8 @@ class OrganizationRoutingTests {
                 AddMember(
                     apiOrganization.id,
                     memberId,
-                    listOf(userRoleId)
+                    listOf(userRoleId),
+                    ApiMembershipStatus.ACTIVE
                 ),
                 token,
                 applicationContextId
@@ -623,7 +611,8 @@ class OrganizationRoutingTests {
                 AddMember(
                     apiOrganization.id,
                     memberId,
-                    listOf(userRoleId)
+                    listOf(userRoleId),
+                    ApiMembershipStatus.ACTIVE
                 ),
                 token,
                 organizationContextId
@@ -646,7 +635,8 @@ class OrganizationRoutingTests {
                 UpdateMember(
                     apiOrganization.id,
                     memberId,
-                    listOf(managerRoleId)
+                    listOf(managerRoleId),
+                    ApiMembershipStatus.ACTIVE
                 ),
                 token,
                 organizationContextId
@@ -710,7 +700,8 @@ class OrganizationRoutingTests {
                 AddMember(
                     apiOrganization.id,
                     memberId,
-                    listOf(userRoleId)
+                    listOf(userRoleId),
+                    ApiMembershipStatus.ACTIVE
                 ),
                 token,
                 organizationContextId
@@ -733,7 +724,8 @@ class OrganizationRoutingTests {
                 UpdateMember(
                     apiOrganization.id,
                     memberId,
-                    listOf(managerRoleId)
+                    listOf(managerRoleId),
+                    ApiMembershipStatus.ACTIVE
                 ),
                 unAuthorizedToken,
                 organizationContextId
@@ -785,7 +777,8 @@ class OrganizationRoutingTests {
                 AddMember(
                     apiOrganization.id,
                     memberId,
-                    listOf(userRoleId)
+                    listOf(userRoleId),
+                    ApiMembershipStatus.ACTIVE
                 ),
                 token,
                 organizationContextId
@@ -808,7 +801,8 @@ class OrganizationRoutingTests {
                 UpdateMember(
                     apiOrganization.id,
                     memberId,
-                    listOf(managerRoleId)
+                    listOf(managerRoleId),
+                    ApiMembershipStatus.ACTIVE
                 ),
                 token,
                 applicationContextId
@@ -862,7 +856,8 @@ class OrganizationRoutingTests {
                 AddMember(
                     apiOrganization.id,
                     memberId,
-                    listOf(userRoleId)
+                    listOf(userRoleId),
+                    ApiMembershipStatus.ACTIVE
                 ),
                 token,
                 organizationContextId
@@ -940,7 +935,8 @@ class OrganizationRoutingTests {
                 AddMember(
                     apiOrganization.id,
                     memberId,
-                    listOf(userRoleId)
+                    listOf(userRoleId),
+                    ApiMembershipStatus.ACTIVE
                 ),
                 token,
                 organizationContextId
@@ -1014,7 +1010,8 @@ class OrganizationRoutingTests {
                 AddMember(
                     apiOrganization.id,
                     memberId,
-                    listOf(userRoleId)
+                    listOf(userRoleId),
+                    ApiMembershipStatus.ACTIVE
                 ),
                 token,
                 organizationContextId

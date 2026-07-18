@@ -6,6 +6,7 @@ import org.solyton.solawi.bid.module.permission.data.api.ApiRole
 typealias ApiOrganization = Organization
 typealias ApiOrganizations = Organizations
 typealias ApiMember = Member
+typealias ApiMembershipStatus = MembershipStatus
 
 @Serializable
 data class Organizations(
@@ -27,3 +28,13 @@ data class Member(
     val username: String,
     val roles: List<ApiRole>
 )
+
+
+@Serializable
+enum class MembershipStatus {
+    APPLICANT,
+    ACTIVE,
+    PAUSED,
+    FORMER,
+    REJECTED
+}

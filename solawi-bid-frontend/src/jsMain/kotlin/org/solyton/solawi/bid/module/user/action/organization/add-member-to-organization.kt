@@ -10,7 +10,9 @@ import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.module.user.data.Application
 import org.solyton.solawi.bid.module.user.data.api.organization.AddMember
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiOrganization
+import org.solyton.solawi.bid.module.user.data.member.status.MembershipStatus
 import org.solyton.solawi.bid.module.user.data.organization.Organization
+import org.solyton.solawi.bid.module.user.data.transform.toApiType
 import org.solyton.solawi.bid.module.user.data.transform.toDomainType
 
 const val ADD_MEMBER_TO_ORGANIZATION = "AddMemberToOrganization"
@@ -20,12 +22,13 @@ fun addMember(
     memberId: String,
     // list of uuid strings
     roles: List<String>,
+    status: MembershipStatus,
     organization: Lens<Application, Organization>
 ) : Action<Application, AddMember, ApiOrganization> = Action(
     name = ADD_MEMBER_TO_ORGANIZATION,
     endPoint = AddMember::class,
     reader = organization * Reader {
-        o:Organization -> AddMember(o.organizationId,memberId, roles)
+        o:Organization -> AddMember(o.organizationId,memberId, roles, status = status.toApiType())
     },
     writer = organization.set contraMap { apiOrganization: ApiOrganization -> apiOrganization.toDomainType() }
 )
@@ -35,12 +38,13 @@ fun addMember(
     memberId: Reader<Application, String>,
     // list of uuid strings
     roles: List<String>,
+    status: MembershipStatus,
     organization: Lens<Application, Organization>
 ) : Action<Application, AddMember, ApiOrganization> = Action(
     name = ADD_MEMBER_TO_ORGANIZATION,
     endPoint = AddMember::class,
     reader = (organization.get branch memberId) * Reader {
-            pair -> AddMember(pair.first.organizationId,pair.second, roles)
+            pair -> AddMember(pair.first.organizationId,pair.second, roles, status = status.toApiType())
     },
     writer = organization.set contraMap { apiOrganization: ApiOrganization -> apiOrganization.toDomainType() }
 )

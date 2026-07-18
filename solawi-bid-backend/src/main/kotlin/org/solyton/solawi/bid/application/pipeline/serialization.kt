@@ -286,6 +286,7 @@ fun installSerializers() {
         add<RemoveMember>(RemoveMember.serializer())
         add<UpdateMember>(UpdateMember.serializer())
         add<ImportMembers>(ImportMembers.serializer())
+        add<MembershipStatus>(MembershipStatus.serializer())
 
         // Banking
         add<BankAccount>(BankAccount.serializer())

@@ -9,7 +9,9 @@ import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.module.user.data.Application
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiOrganization
 import org.solyton.solawi.bid.module.user.data.api.organization.UpdateMember
+import org.solyton.solawi.bid.module.user.data.member.status.MembershipStatus
 import org.solyton.solawi.bid.module.user.data.organization.Organization
+import org.solyton.solawi.bid.module.user.data.transform.toApiType
 import org.solyton.solawi.bid.module.user.data.transform.toDomainType
 
 fun updateMember(
@@ -17,12 +19,13 @@ fun updateMember(
     memberId: String,
     // list of uuid strings
     roles: List<String>,
+    status: MembershipStatus,
     organization: Lens<Application, Organization>
 ) : Action<Application, UpdateMember, ApiOrganization> = Action(
     name = "UpdateMember",
     endPoint = UpdateMember::class,
     reader = organization * Reader {
-            o:Organization -> UpdateMember(o.organizationId,memberId, roles)
+            o:Organization -> UpdateMember(o.organizationId,memberId, roles, status = status.toApiType())
     },
     writer = organization.set contraMap { apiOrganization: ApiOrganization -> apiOrganization.toDomainType() }
 )

@@ -7,15 +7,8 @@ import org.jetbrains.exposed.sql.selectAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.application.data.db.migrations.setupBasicRolesAndRights
-import org.solyton.solawi.bid.module.db.schema.*
 import org.solyton.solawi.bid.module.permission.schema.*
-import org.solyton.solawi.bid.module.permission.schema.ContextEntity
-import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
-import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
-import org.solyton.solawi.bid.module.user.schema.UserEntity
-import org.solyton.solawi.bid.module.user.schema.UserOrganization
-import org.solyton.solawi.bid.module.user.schema.UserStatus
-import org.solyton.solawi.bid.module.user.schema.UsersTable
+import org.solyton.solawi.bid.module.user.schema.*
 import org.solyton.solawi.bid.module.user.schema.repository.*
 import java.util.*
 import kotlin.test.assertEquals
@@ -70,7 +63,7 @@ class OrganizationTests {
         }
         val organization = createRootOrganization(organizationName)
 
-        organization.addUser(user)
+        organization.addUser(UUID_ZERO, user)
 
         val result = getOrganizationByName(organizationName)
         assertFalse{ result.users.empty() }
