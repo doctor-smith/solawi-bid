@@ -36,6 +36,7 @@ import org.jetbrains.compose.web.dom.Input
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.banking.action.*
 import org.solyton.solawi.bid.module.banking.component.list.*
+import org.solyton.solawi.bid.module.banking.component.properties.PaymentsOverviewProperties
 import org.solyton.solawi.bid.module.banking.component.properties.PaymentsProperties
 import org.solyton.solawi.bid.module.banking.component.tab.TabParagraphWrapper
 import org.solyton.solawi.bid.module.banking.data.*
@@ -46,6 +47,8 @@ import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessage
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
+import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPaymentHistories
+import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPaymentLink
 import org.solyton.solawi.bid.module.control.button.*
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
 import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
@@ -111,6 +114,7 @@ fun Storage<Modals<Int>>.showManagePaymentsOfSepaCollectionModal(
     setUiState: (UIState) -> Unit,
     sepaCollection: Source<SepaCollection>,
     sepaMessages: Source<List<SepaMessage>>,
+    sepaPaymentLinks: Source<List<SepaPaymentLink>>,
     executionDate: LocalDate?,
     setManageCollectionPayments: (ManageCollectionPayments) -> Unit,
     update: () -> Unit
@@ -128,6 +132,7 @@ fun Storage<Modals<Int>>.showManagePaymentsOfSepaCollectionModal(
                 setUiState,
                 sepaCollection,
                 sepaMessages,
+                sepaPaymentLinks,
                 executionDate,
                 setManageCollectionPayments,
                 update = update
@@ -148,6 +153,7 @@ fun ManagePaymentsOfSepaCollectionModal(
     setUiState: (UIState) -> Unit,
     sepaCollectionSource: Source<SepaCollection>,
     sepaMessages: Source<List<SepaMessage>>,
+    sepaPaymentLinks: Source<List<SepaPaymentLink>>,
     executionDate: LocalDate?,
     setManageCollectionPayments: (ManageCollectionPayments) -> Unit,
     update: ()->Unit
@@ -208,7 +214,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                     0,
                     selectedTab
                 ) {
-
+                    val paymentHistory = SepaPaymentHistories.build(sepaPaymentLinks.emit())
 
                     val openPayments =
                         sepaCollection.sepaPayments.filter { payment -> payment.status == PaymentExecutionStatus.CREATED }
@@ -231,7 +237,13 @@ fun ManagePaymentsOfSepaCollectionModal(
                         SepaSequenceType.UNCLEAR
                     )
                     val nextPeriodPaymentCreationCandidates = (confirmedPayments + failedPayments).filter {
-                        it.nextPeriodSuccessorId == null && it.sequenceType !in forbiddenSeqTypes
+                        // Payments might be created if
+                        // the sequenceType is allowed
+                        it.sequenceType !in forbiddenSeqTypes &&
+                        // there is no regular next period payment and
+                        it.nextPeriodSuccessorId == null &&
+                        // if the payment is retried, we can create a new one, if it has no failing predecessors
+                        it.retrySuccessorId != null && paymentHistory.predecessorOf(it.sepaPaymentId)?.didNotFail() ?: true
                     }
 
                     val retryPaymentCreationCandidates = failedPayments.filter {
@@ -251,7 +263,8 @@ fun ManagePaymentsOfSepaCollectionModal(
                                 onClick = { paragraphState = Tabs.Payments.Paragraphs.OVERVIEW }
                             ) {
                                 TabParagraph("Overview")
-                                PaymentsProperties(sepaCollection.sepaPayments)
+                                // We only want to count payments that have not been retried to avoid double counting
+                                PaymentsProperties(sepaCollection.sepaPayments.filter{ it.retrySuccessorId == null })
                             }
                             Scrollable(
                                 scrollableStyles
@@ -321,7 +334,8 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     onClick = { paragraphState = Tabs.Payments.Paragraphs.PAYMENTS_FAILED }
                                 ) {
                                     TabParagraph("Failed Payments")
-                                    PaymentsProperties(failedPayments)
+                                    // We only want to see failed payments that have not been retried
+                                    PaymentsProperties(failedPayments.filter { it.retrySuccessorId == null })
                                 }
                                 TabParagraphWrapper(
                                     isLast = true,
@@ -344,6 +358,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                         }) {
                             When(paragraphState == Tabs.Payments.Paragraphs.OVERVIEW) {
                                 TabTitle("Overview")
+                                PaymentsOverviewProperties(sepaCollection.sepaPayments)
                             }
                             val listStyles = defaultListStyles.modifyFilter {
                                 width(10.percent)
@@ -509,7 +524,6 @@ fun ManagePaymentsOfSepaCollectionModal(
                      */
                 }
             }
-
         }
     }
 }
@@ -736,11 +750,15 @@ fun RecentlyCreatedPayments(
                     )
                 }
             }
+            val generateSepaMessageButtonText =
+                "Generate Sepa Message from selected & visible Payments. All these payments must be of the same execution date"
+
             AnglesRightButton(
                 color = Color.black,
                 bgColor = Color.white,
-                texts = { "Generate Sepa Message from selected & visible Payments" },
+                texts = { generateSepaMessageButtonText },
                 deviceType = device,
+                isDisabled = data.isAllSelectedVisiblePaymentsOfSameExecutionDate()
             ) {
                 (storage * bankingApplicationModals).showUpsertSepaMessageModal(
                     parentModalId = modalId,
@@ -1115,7 +1133,7 @@ fun FailedPayments(
     ListOfPayments(
         null,
         sepaCollection.sepaMandates,
-        failedPayments,
+        failedPayments.filter{ it.retrySuccessorId == null },
         listStyles,
         overallActions = { data -> Horizontal {
             CommentDollarButton(
@@ -1165,6 +1183,9 @@ private fun OverAllActionData.selectedVisibleEntries(): Map<SepaPaymentListItemK
  */
 private fun OverAllActionData.selectedVisiblePaymentIds(): List<SepaPaymentId> =
     selectedVisibleEntries().map { it.key.paymentId }
+
+private fun OverAllActionData.isAllSelectedVisiblePaymentsOfSameExecutionDate(): Boolean =
+    selectedVisibleEntries().map { it.value.payment.executionDate }.distinct().size == 1
 
 /**
  * Dispatches an [updateSepaPaymentExecutionStatuses] action moving the given [paymentIds] to

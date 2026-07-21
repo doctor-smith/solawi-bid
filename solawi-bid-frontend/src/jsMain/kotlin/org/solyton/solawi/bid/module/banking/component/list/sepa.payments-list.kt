@@ -203,6 +203,22 @@ fun ListOfPayments(
                     }
                 }
             }
+            Filter(styles.modifyFilter { width(15.percent) }.filter) {
+                TextFilter("Filter by Execution Date", ignoreCase = true) { text, ignoreCase ->
+                    filter = when {
+                        text.isBlank() -> filter.copy(executionDate = { true })
+                        else -> filter.copy(executionDate = { date -> text.toFilter(ignoreCase).applyTo(date.format(Locale.Iso)) })
+                    }
+                }
+            }
+            Filter(styles.modifyFilter { width(10.percent) }.filter) {
+                TextFilter("Filter by Seq Type", ignoreCase = true) { text, ignoreCase ->
+                    filter = when {
+                        text.isBlank() -> filter.copy(sequenceType = { true })
+                        else -> filter.copy(sequenceType = { sType -> text.toFilter(ignoreCase).applyTo(sType) })
+                    }
+                }
+            }
         }
         Scrollable(ScrollableStyles.Horizontal) {
         HeaderWrapper(styles.headerWrapper) {
