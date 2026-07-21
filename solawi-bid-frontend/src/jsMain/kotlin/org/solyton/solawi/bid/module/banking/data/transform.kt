@@ -148,6 +148,8 @@ fun ApiSepaPayment.toDomainType(): SepaPayment = SepaPayment(
     mergeSuccessorId = mergeSuccessorId,
 )
 
+fun ApiSepaPaymentLinks.toDomainType(): List<SepaPaymentLink> = all.map { it.toDomainType() }
+
 fun ApiSepaPaymentLink.toDomainType(): SepaPaymentLink = SepaPaymentLink(
     successorId = successorId,
     predecessorId = predecessorId,

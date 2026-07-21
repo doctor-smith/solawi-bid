@@ -49,12 +49,9 @@ import org.solyton.solawi.bid.module.banking.data.download.Download
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
 import org.solyton.solawi.bid.module.banking.data.internal.Currency
+import org.solyton.solawi.bid.module.banking.data.sepa.*
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.message.message
-import org.solyton.solawi.bid.module.banking.data.sepa.sepaCollections
-import org.solyton.solawi.bid.module.banking.data.sepa.sepaMandates
-import org.solyton.solawi.bid.module.banking.data.sepa.sepaMessageString
-import org.solyton.solawi.bid.module.banking.data.sepa.sepaMessages
 import org.solyton.solawi.bid.module.banking.service.download
 import org.solyton.solawi.bid.module.constants.checkIcon
 import org.solyton.solawi.bid.module.control.button.*
@@ -112,6 +109,9 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
         }
         launch {
             bankingApplicationActions dispatch readSepaMessagesByLegalEntity(LegalEntityId(providerId.value))
+        }
+        launch {
+            bankingApplicationActions dispatch readSepaPaymentLInksByLegalEntity(LegalEntityId(providerId.value))
         }
     }
     LaunchedEffectOnSource(Read(managedUsers)) {
@@ -891,7 +891,7 @@ fun SepaCollections(
     }.filterNotNullValues()
     }
     val sepaMandates = sepaModule * sepaMandates
-
+    val sepaPaymentLinks = sepaModule * sepaPaymentLinks
 
     LaunchedEffect((sepaModule * sepaMessageString).read()) {
         val sepaMessageString = sepaModule * sepaMessageString
@@ -994,6 +994,7 @@ fun SepaCollections(
                                         setUiState = {data -> uiState = data},
                                         sepaCollection = sepaCollections * Reader{list: List<SepaCollection> -> list.first { it.sepaCollectionId == collection.sepaCollectionId }},
                                         sepaMessages = Source { sepaMessages.read() },
+                                        sepaPaymentLinks = Source { sepaPaymentLinks.read() },
                                         executionDate = null,
                                         setManageCollectionPayments = {data -> manageCollectionPaymentsState = data}
                                     ) {

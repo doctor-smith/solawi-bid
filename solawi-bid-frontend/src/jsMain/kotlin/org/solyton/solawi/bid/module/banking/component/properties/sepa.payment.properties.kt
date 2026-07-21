@@ -11,6 +11,7 @@ import org.jetbrains.compose.web.css.width
 import org.solyton.solawi.bid.module.banking.data.internal.Currency
 import org.solyton.solawi.bid.module.banking.data.internal.format
 import org.solyton.solawi.bid.module.banking.data.internal.toMoney
+import org.solyton.solawi.bid.module.banking.data.sepa.PaymentExecutionStatus
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
 
 @Markup
@@ -31,4 +32,41 @@ fun PaymentsProperties(payments: List<SepaPayment>) =
             }
         }
     )
+
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun PaymentsOverviewProperties(payments: List<SepaPayment>) {
+    val relevantPayments = payments.filter { it.retrySuccessorId == null }
+    val confirmedPayments = relevantPayments.filter {
+        it.status in listOf(PaymentExecutionStatus.CONFIRMED, PaymentExecutionStatus.PAYED_MANUALLY, "EXECUTED")
+    }
+    val failedPayments = relevantPayments.filter { it.status == PaymentExecutionStatus.FAILED }
+    val openPayments = relevantPayments.filterNot { it.status in listOf(
+        PaymentExecutionStatus.FAILED,
+        PaymentExecutionStatus.CONFIRMED,
+        PaymentExecutionStatus.PAYED_MANUALLY
+    ) }
+    ReadOnlyProperties(listOf(
+        Property("Total Number", relevantPayments.size),
+        Property("Confirmed", confirmedPayments.size),
+        Property("Open", openPayments.size),
+        Property("Failed", failedPayments.size),
+        Property("Total Amount", (relevantPayments.sumOf { it.amount }).toMoney(Currency.EUR).format()),
+        Property("Confirmed Amount", (confirmedPayments.sumOf { it.amount }).toMoney(Currency.EUR).format()),
+        Property("Open Amount", (openPayments.sumOf { it.amount }).toMoney(Currency.EUR).format()),
+        Property("Failed Amount", (failedPayments.sumOf { it.amount }).toMoney(Currency.EUR).format()),
+    ),
+        PropertiesStyles().modifyContainerStyle {
+            flexGrow(1)
+        }.modifyPropertyStyles {
+            modifyKeyStyle {
+                width(50.percent)
+            }.modifyValueStyle {
+                width(50.percent)
+            }
+        }
+    )
+}
 
