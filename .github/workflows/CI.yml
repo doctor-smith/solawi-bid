@@ -136,6 +136,13 @@ jobs:
           chmod 644 ./infrastructure/database/setup.sql
           docker compose -f docker-compose.e2e.yml up -d --wait --quiet-pull
 
+      # Dump logs on failure
+      - name: Dump container logs on failure
+        if: failure()
+        run: |
+          docker ps -a
+          docker compose -f docker-compose.e2e.yml logs --no-color
+
       # E2E Tests im E2E Runner Container ausführen
       - name: Cache Gradle dependencies
         uses: actions/cache@v4
