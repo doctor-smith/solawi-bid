@@ -1,6 +1,5 @@
-import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
-import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.targets.js.ir.DefaultIncrementalSyncTask
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 
 plugins {
     alias(libs.plugins.android)
@@ -90,11 +89,18 @@ kotlin {
                 // qr todo "Add dependency to lib, if possible"
                 implementation(npm("qrcode", "1.5.1"))
 
+                // Cache busting
+                implementation(devNpm("html-webpack-plugin", "5.6.0"))
+
+                // bundle-analyzer
+                implementation(devNpm("webpack-bundle-analyzer", "4.10.2"))
             }
         }
 
         val jsTest by getting {
             kotlin.srcDir("src/jsTest/kotlin")
+            resources.srcDir("src/main/resources")
+            resources.exclude("index.html")
 
             dependencies {
                 implementation(libs.kotlinx.coroutines.core)
@@ -290,6 +296,25 @@ tasks.named<DefaultIncrementalSyncTask>("jsProductionExecutableCompileSync") {
         if (destinationDirectory.get().exists()) {
             destinationDirectory.get().deleteRecursively()
         }
+    }
+}
+
+tasks.withType<Copy>().configureEach {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+tasks.named<Copy>("jsBrowserDistribution") {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
+    from("src/main/resources") {
+        include("config.json.template", "config.json")
+    }
+    into(layout.buildDirectory.dir("dist/js/productionExecutable"))
+
+    doFirst {
+        delete(fileTree(layout.buildDirectory.dir("dist/js/productionExecutable")) {
+            include("*.js", "*.js.map", "*.js.LICENSE.txt")
+        })
     }
 }
 
