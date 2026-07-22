@@ -4,6 +4,8 @@ import org.evoleq.compose.Markup
 import org.evoleq.optics.storage.Action
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.userData
+import org.solyton.solawi.bid.application.storage.event.ACCESS_TOKEN
+import org.solyton.solawi.bid.application.storage.event.REFRESH_TOKEN
 import org.solyton.solawi.bid.module.authentication.data.api.IsLoggedIn
 import org.solyton.solawi.bid.module.authentication.data.api.LoggedInAs
 import org.solyton.solawi.bid.module.localstorage.api.write
@@ -21,8 +23,11 @@ val isLoggedInAction: Action<Application, IsLoggedIn, LoggedInAs> =
         endPoint = IsLoggedIn::class,
         writer = { loggedInAs: LoggedInAs -> {
             app -> if(loggedInAs.username == "" ){
-                write("accessToken", "")
-                write("refreshToken", "")
+            val env = app.environment.type
+            val accessTokenKey = "${env.lowercase()}_$ACCESS_TOKEN"
+            val refreshTokenKey = "${env.lowercase()}_$REFRESH_TOKEN"
+                write(accessTokenKey, "")
+                write(refreshTokenKey, "")
                 app.userData {
                     accessToken { "" }.
                     refreshToken { "" }
