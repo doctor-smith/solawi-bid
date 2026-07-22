@@ -10,4 +10,12 @@ if (config.mode === "production") {
     config.output = config.output || {};
     config.output.filename = "[name].[contenthash].js";
     config.output.chunkFilename = "[name].[contenthash].js";
+    // Ensure chunks (e.g. runtime.<hash>.js) are always loaded from the site
+    // root. Otherwise, on deep SPA routes like
+    //   /app/management/organizations/<uuid>/
+    // the browser would try to fetch chunks relative to that path, e.g.
+    //   /app/management/organizations/<uuid>/runtime.<hash>.js
+    // which does not exist (nginx SPA fallback serves index.html and the
+    // browser then reports a MIME type / module load error).
+    config.output.publicPath = "/";
 }
