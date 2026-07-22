@@ -20,7 +20,7 @@ val navbarPreIso: Lens<Application, NavBar> by lazy {
         get = { whole -> NavBar(
             actions = ActionDispatcher {  },
             i18n = whole.i18N,
-            environment = Environment,
+            environment = Environment(type = whole.environment.type),
             modals = whole.modals,
             deviceData = whole.deviceData,
             user = NavBarUser(

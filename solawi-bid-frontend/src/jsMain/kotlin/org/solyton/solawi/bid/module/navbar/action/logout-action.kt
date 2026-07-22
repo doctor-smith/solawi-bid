@@ -2,6 +2,8 @@ package org.solyton.solawi.bid.module.navbar.action
 
 import org.evoleq.compose.Markup
 import org.evoleq.optics.storage.Action
+import org.solyton.solawi.bid.application.storage.event.ACCESS_TOKEN
+import org.solyton.solawi.bid.application.storage.event.REFRESH_TOKEN
 import org.solyton.solawi.bid.module.authentication.data.api.Logout
 import org.solyton.solawi.bid.module.localstorage.api.write
 import org.solyton.solawi.bid.module.navbar.data.navbar.NavBar
@@ -18,8 +20,11 @@ val logoutAction: Action<NavBar, Logout, Unit> by lazy {
         reader = {app: NavBar -> Logout(app.user.refreshToken)},
         endPoint = Logout::class,
         writer = {_:Unit-> {app:NavBar ->
-            write("accessToken", "")
-            write("refreshToken", "")
+            val env = app.environment.type
+            val accessTokenKey = "${env.lowercase()}_$ACCESS_TOKEN"
+            val refreshTokenKey = "${env.lowercase()}_$REFRESH_TOKEN"
+            write(accessTokenKey, "")
+            write(refreshTokenKey, "")
             app.user {
                 refreshToken { "" }.
                 accessToken { "" }.

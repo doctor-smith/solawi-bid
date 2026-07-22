@@ -6,6 +6,8 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.context
+import org.solyton.solawi.bid.application.data.env.type
+import org.solyton.solawi.bid.application.data.environment
 import org.solyton.solawi.bid.application.service.getContextByName
 import org.solyton.solawi.bid.module.application.permission.Context
 import org.solyton.solawi.bid.module.context.data.current
@@ -41,12 +43,13 @@ private var pagehideCallback: ((dynamic) -> Unit)? = null
 fun Storage<Application>.checkContext() {
     val storedContextId: String? = read(CONTEXT_ID)
     val currentPath = currentPath()
-
+    val env = (this@checkContext * environment * type).read()
+    val contextIdKey = "${env.lowercase()}_$CONTEXT_ID"
     when {
         currentPath.isPublicRoute() -> return
         storedContextId == null -> with(getContextByName(Context.Application.value)) {
             if(this != null) {
-                write(CONTEXT_ID, contextId)
+                write(contextIdKey, contextId)
                 (this@checkContext * context * current).write(contextId)
             }
             return
@@ -59,7 +62,7 @@ fun Storage<Application>.checkContext() {
 
     // add current listener
     val cb: (dynamic) -> Unit = {
-        write(CONTEXT_ID, (this * context * current).read())
+        write(contextIdKey, (this * context * current).read())
     }
     pagehideCallback = cb
     window.addEventListener("pagehide", cb, AddEventListenerOptions(once = true))
