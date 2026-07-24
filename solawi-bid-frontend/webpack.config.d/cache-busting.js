@@ -6,16 +6,18 @@
 //   (see infrastructure/nginx/default.conf), which is exactly what we want.
 // - config.json / config.json.template are not processed by webpack and therefore
 //   remain unhashed (they are rewritten at container start via envsubst).
+
+// Ensure chunks (e.g. runtime.<hash>.js) are always loaded from the site
+// root. Otherwise, on deep SPA routes like
+//   /app/management/organizations/<uuid>/
+// the browser would try to fetch chunks relative to that path, e.g.
+//   /app/management/organizations/<uuid>/runtime.<hash>.js
+// which does not exist (nginx SPA fallback serves index.html and the
+// browser then reports a MIME type / module load error).
+config.output = config.output || {};
+config.output.publicPath = "/";
+
 if (config.mode === "production") {
-    config.output = config.output || {};
     config.output.filename = "[name].[contenthash].js";
     config.output.chunkFilename = "[name].[contenthash].js";
-    // Ensure chunks (e.g. runtime.<hash>.js) are always loaded from the site
-    // root. Otherwise, on deep SPA routes like
-    //   /app/management/organizations/<uuid>/
-    // the browser would try to fetch chunks relative to that path, e.g.
-    //   /app/management/organizations/<uuid>/runtime.<hash>.js
-    // which does not exist (nginx SPA fallback serves index.html and the
-    // browser then reports a MIME type / module load error).
-    config.output.publicPath = "/";
 }
