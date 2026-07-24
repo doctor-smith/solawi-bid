@@ -64,12 +64,16 @@ object UniversalDocGenerator {
                     Line(group, url, httpMethod, sName, tName, keyName)
 
                 }.groupBy { it.group }.forEach { (group, lines) ->
-                    appendLine("## $group")
+                    appendLine("<details>")
+                    appendLine("<summary> <strong> $group </strong> </summary>")
+
                     appendLine()
                     tableHead()
                     lines.forEach { line ->
                         appendLine("| ${line.httpMethod} | ${line.url} | ${line.key}  | ${line.requestType} | ${line.responseType} |")
                     }
+                    appendLine()
+                    appendLine("</details>")
                 }
 
             }
