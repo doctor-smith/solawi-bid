@@ -1,5 +1,6 @@
 # API Documentation
-## Auctions
+<details>
+<summary> <strong> Auctions </strong> </summary>
 
 | Methode | URL | Key | Request Type | Response Type |
 | :--- | :--- | :--- | :--- | :--- |
@@ -36,7 +37,10 @@
 | GET | shares/types/all | ReadShareTypes  | ReadShareTypes | ShareTypes |
 | POST | shares/types/create | CreateShareType  | CreateShareType | ShareType |
 | PATCH | shares/types/update | UpdateShareType  | UpdateShareType | ShareType |
-## User management and organizations
+
+</details>
+<details>
+<summary> <strong> User management and organizations </strong> </summary>
 
 | Methode | URL | Key | Request Type | Response Type |
 | :--- | :--- | :--- | :--- | :--- |
@@ -58,7 +62,10 @@
 | POST | users/profiles/import | ImportUserProfiles  | ImportUserProfiles | UserProfiles |
 | PATCH | users/profiles/read-by-ids | ReadUserProfiles  | ReadUserProfiles | UserProfiles |
 | PATCH | users/profiles/update | UpdateUserProfile  | UpdateUserProfile | UserProfile |
-## applications and modules
+
+</details>
+<details>
+<summary> <strong> applications and modules </strong> </summary>
 
 | Methode | URL | Key | Request Type | Response Type |
 | :--- | :--- | :--- | :--- | :--- |
@@ -76,7 +83,10 @@
 | PATCH | applications/personal/subscribe | SubscribeApplications  | SubscribeApplications | Applications |
 | PATCH | applications/personal/trial | StartTrialsOfApplications  | StartTrialsOfApplications | Applications |
 | PATCH | applications/personal/update-organization-module-relations | UpdateOrganizationModuleRelations  | UpdateOrganizationModuleRelations | ApplicationOrganizationRelations |
-## authentication
+
+</details>
+<details>
+<summary> <strong> authentication </strong> </summary>
 
 | Methode | URL | Key | Request Type | Response Type |
 | :--- | :--- | :--- | :--- | :--- |
@@ -84,7 +94,10 @@
 | POST | login | Login  | Login | LoggedIn |
 | PATCH | logout | Logout  | Logout | Unit |
 | POST | refresh | RefreshToken  | RefreshToken | LoggedIn |
-## banking
+
+</details>
+<details>
+<summary> <strong> banking </strong> </summary>
 
 | Methode | URL | Key | Request Type | Response Type |
 | :--- | :--- | :--- | :--- | :--- |
@@ -117,7 +130,10 @@
 | DELETE | banking/sepa/payments/delete-many | DeleteSepaPayments  | DeleteSepaPayments | SepaPaymentIds |
 | PATCH | banking/sepa/payments/update | UpdateSepaPayment  | UpdateSepaPayment | SepaPayment |
 | PATCH | banking/sepa/payments/update-execution-statuses | UpdateSepaPaymentExecutionStatuses  | UpdateSepaPaymentExecutionStatuses | SepaPayments |
-## permissions
+
+</details>
+<details>
+<summary> <strong> permissions </strong> </summary>
 
 | Methode | URL | Key | Request Type | Response Type |
 | :--- | :--- | :--- | :--- | :--- |
@@ -127,3 +143,5 @@
 | PATCH | permissions/user/role-right-contexts | ReadRightRoleContextsOfUser  | ReadRightRoleContextsOfUser | Contexts |
 | PUT | permissions/user/user-role-context | PutUserRoleContext  | PutUserRoleContext | UserContext |
 | PATCH | permissions/users/role-right-contexts | ReadRightRoleContextsOfUsers  | ReadRightRoleContextsOfUsers | UserToContextsMap |
+
+</details>
