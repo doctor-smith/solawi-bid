@@ -32,6 +32,12 @@ fun <T> FirstOrNull(predicate: (T)->Boolean): Reader<List<T>,T?> = Reader{
 }
 
 @MathDsl
+@Suppress("FunctionName")
+fun <T> Size(): Reader<List<T>, Int> = Reader{
+    it.size
+}
+
+@MathDsl
 fun <T> assureValue(): Reader<T?, T> = Reader{value -> require(value != null); value}
 
 @MathDsl

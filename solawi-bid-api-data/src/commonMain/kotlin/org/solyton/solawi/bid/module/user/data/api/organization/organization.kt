@@ -17,13 +17,13 @@ data class Organization(
     val id: String,
     val name: String,
     val contextId: String,
-    val subOrganizations: List<Organization>,
-    val members: List<Member>
+    val subOrganizations: List<Organization> = emptyList(),
+    val members: List<Member> = emptyList()
 )
 
 @Serializable
 data class Member(
     val userId: String,
     val username: String,
-    val roles: List<ApiRole>
+    val roles: List<ApiRole> = emptyList()
 )
