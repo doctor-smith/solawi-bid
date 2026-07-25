@@ -1,8 +1,6 @@
 package org.solyton.solawi.bid.application.ui.page.user
 
 import androidx.compose.runtime.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.guard.data.isLoading
@@ -15,11 +13,8 @@ import org.evoleq.language.component
 import org.evoleq.language.subComp
 import org.evoleq.language.title
 import org.evoleq.language.tooltip
-import org.evoleq.math.Reader
+import org.evoleq.math.*
 import org.evoleq.math.Source
-import org.evoleq.math.emit
-import org.evoleq.math.on
-import org.evoleq.math.times
 import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.lens.times
@@ -28,8 +23,6 @@ import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.storage.split
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
-import org.jetbrains.compose.web.css.display
-import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.H2
@@ -74,68 +67,76 @@ import org.solyton.solawi.bid.module.user.permission.OrganizationRight
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun OrganizationManagementPage(storage: Storage<Application>) = withLoading(
-    isLoading = isLoading(
+fun OrganizationManagementPage(storage: Storage<Application>) {
+    val scope = rememberCoroutineScope()
+    withLoading(
+        isLoading = isLoading(
             onNullLaunch(
                 storage * availablePermissions * contextFromPath("APPLICATION"),
             ){
-                rememberCoroutineScope().launch { (storage * actions).dispatch(readUserPermissionsAction()) }
+                scope.launch { (storage * actions).dispatch(readUserPermissionsAction()) }
             },
-        onMissing(
-            OrganizationLangComponent.OrganizationManagementPage,
-            storage * i18n.get,
-        ) {
-            LaunchComponentLookup(
-                langComponent = OrganizationLangComponent.OrganizationManagementPage,
-                environment = storage * environment.get,
-                i18n = (storage * i18n)
-            )
-        }
-    ),
-    onLoading = { Loading() }
-){
-    LaunchedEffect(Unit) {
-        (storage * actions).dispatch(readOrganizations())
-    }
-
-    // Data / I18N
-    val texts = storage * i18n * language * component(OrganizationLangComponent.OrganizationManagementPage)
-    val buttons = texts * subComp("buttons")
-    val dialogs = texts * subComp("dialogs")
-
-    // Permission
-    val cannotCreateOrganization = Source { false }
-
-    Page(verticalPageStyle){
-        Wrap{ Horizontal(styles = { justifyContent(JustifyContent.FlexStart); alignItems(AlignItems.Center); width(100.percent); gap(20.px) }) {
-            H1 { Text((texts * title).emit()) }
-
-            var createOrganizationData by remember{ mutableStateOf(CreateOrganization("")) }
-            PlusButton(
-                Color.black,
-                Color.white,
-                (buttons * subComp("createOrganization") * tooltip),
-                storage * deviceData * mediaType.get,
-                cannotCreateOrganization.emit(),
-                "organization-management-page.button.create-organization",
+            onMissing(
+                OrganizationLangComponent.OrganizationManagementPage,
+                storage * i18n.get,
             ) {
-                // open "create organization dialog"
-                (storage * modals).showCreateOrganizationModal(
-                    dialogs * subComp("createOrganization"),
+                LaunchComponentLookup(
+                    langComponent = OrganizationLangComponent.OrganizationManagementPage,
+                    environment = storage * environment.get,
+                    i18n = (storage * i18n)
+                )
+            }
+        ),
+        onLoading = { Loading() }
+    ){
+        LaunchedEffect(Unit) {
+            (storage * actions).dispatch(readOrganizations())
+        }
+
+        // Need to reload User Permissions when the number of organizations changes
+        LaunchedEffect((storage * user * organizations * Size()).emit()) {
+            (storage * actions).dispatch(readUserPermissionsAction())
+        }
+
+        // Data / I18N
+        val texts = storage * i18n * language * component(OrganizationLangComponent.OrganizationManagementPage)
+        val buttons = texts * subComp("buttons")
+        val dialogs = texts * subComp("dialogs")
+
+        // Permission
+        val cannotCreateOrganization = Source { false }
+
+        Page(verticalPageStyle){
+            Wrap{ Horizontal(styles = { justifyContent(JustifyContent.FlexStart); alignItems(AlignItems.Center); width(100.percent); gap(20.px) }) {
+                H1 { Text((texts * title).emit()) }
+
+                var createOrganizationData by remember{ mutableStateOf(CreateOrganization("")) }
+                PlusButton(
+                    Color.black,
+                    Color.white,
+                    (buttons * subComp("createOrganization") * tooltip),
                     storage * deviceData * mediaType.get,
-                    styles = {dev -> auctionModalStyles(dev) },
-                    setOrganizationData = { name -> createOrganizationData = createOrganizationData.copy(name = name) },
-                    cancel = {}
+                    cannotCreateOrganization.emit(),
+                    "organization-management-page.button.create-organization",
                 ) {
-                    CoroutineScope(Job()).launch {
-                        val action = createOrganization(createOrganizationData.name)
-                        trigger(action) on storage
+                    // open "create organization dialog"
+                    (storage * modals).showCreateOrganizationModal(
+                        dialogs * subComp("createOrganization"),
+                        storage * deviceData * mediaType.get,
+                        styles = {dev -> auctionModalStyles(dev) },
+                        setOrganizationData = { name -> createOrganizationData = createOrganizationData.copy(name = name) },
+                        cancel = {}
+                    ) {
+                        scope.launch {
+                            val action = createOrganization(createOrganizationData.name)
+                            trigger(action) on storage
+                        }
                     }
                 }
-            }
-        } }
+            } }
 
-        Wrap { ListOfOrganizations(storage) }
+            Wrap { ListOfOrganizations(storage) }
+        }
     }
 }
 
@@ -172,6 +173,7 @@ fun ListOfOrganizations(storage: Storage<Application>) {
 @Composable
 @Suppress("FunctionName")
 fun OrganizationItems(listStyles: ListStyles, organizations: Lens<Application, List<Organization>>, organization: Storage<Organization>, storage: Storage<Application>, deepth: Int = 0) {
+    val scope = rememberCoroutineScope()
     // State
     var opened by remember { mutableStateOf(false) }
 
@@ -187,6 +189,11 @@ fun OrganizationItems(listStyles: ListStyles, organizations: Lens<Application, L
     val isMember = (organization.read().members.firstOrNull{it.username == username} != null)
 
     val hasSubOrganizations = (organization * subOrganizations * Reader { list:List<Organization> -> list.isNotEmpty() })
+
+    // Need to reload User Permissions when the number of sub-organizations changes
+    LaunchedEffect((organization * subOrganizations * Size()).emit()) {
+        (storage * actions).dispatch(readUserPermissionsAction())
+    }
 
     ListItemWrapper(listStyles.listItemWrapper) {
         DataWrapper() {
@@ -223,7 +230,7 @@ fun OrganizationItems(listStyles: ListStyles, organizations: Lens<Application, L
                     setOrganizationData = { name -> createChildOrganization = createChildOrganization.copy(name = name) },
                     cancel = {}
                 ) {
-                    CoroutineScope(Job()).launch {
+                    scope.launch {
                         val action = createChildOrganization(
                             createChildOrganization.name,
                             organizations * FirstBy { it.organizationId == organizationId },
@@ -269,7 +276,7 @@ fun OrganizationItems(listStyles: ListStyles, organizations: Lens<Application, L
                     setOrganizationData = { name -> updateOrganization = updateOrganization.copy(name = name) },
                     cancel = {}
                 ) {
-                    CoroutineScope(Job()).launch {
+                    scope.launch {
                         val action = updateOrganization(
                             updateOrganization.name,
                             organizations * FirstBy { it.organizationId == organizationId }
@@ -286,7 +293,7 @@ fun OrganizationItems(listStyles: ListStyles, organizations: Lens<Application, L
                 storage * deviceData * mediaType.get,
                 (storage * isNotGranted(OrganizationRight.Organization.delete, organizationContextId, )).emit(),
             ) {
-                CoroutineScope(Job()).launch {
+                scope.launch {
                     val action = deleteOrganization(organizationId)
                     trigger(action) on storage
                 }
