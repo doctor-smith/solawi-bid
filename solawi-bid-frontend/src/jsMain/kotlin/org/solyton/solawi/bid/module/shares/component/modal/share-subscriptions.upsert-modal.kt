@@ -81,9 +81,10 @@ fun Storage<Modals<Int>>.showUpsertShareSubscriptionModal(
     providerId: ProviderId,
     users: Source<List<ManagedUser>>,
     changesDoneBy: ChangedBy,
+    isOkButtonDisabled: () -> Boolean = { false },
     shareSubscription: ShareSubscription? = null,
     setShareSubscription: (ShareSubscription) -> Unit = {},
-    update: () -> Unit
+    update: () -> Unit = { }
 ) = with(nextId()) {
     put(
         this to ModalData(
@@ -101,6 +102,7 @@ fun Storage<Modals<Int>>.showUpsertShareSubscriptionModal(
                 providerId,
                 users.emit(),
                 changesDoneBy,
+                isOkButtonDisabled,
                 shareSubscription,
                 setShareSubscription,
                 update = update
@@ -124,6 +126,7 @@ fun UpsertShareSubscriptionModal(
     providerId: ProviderId,
     users: List<ManagedUser>,
     changesDoneBy: ChangedBy,
+    isOkButtonDisabled: () -> Boolean,
     shareSubscription: ShareSubscription?,
     // Action
     setShareSubscription: (ShareSubscription) -> Unit,
@@ -143,6 +146,7 @@ fun UpsertShareSubscriptionModal(
     }.modifyContentWrapperStyle {
         minWidth(50.vw)
     }.compact(),
+    isOkButtonDisabled = isOkButtonDisabled
 ) {
 
     val scope = rememberCoroutineScope()
@@ -256,10 +260,30 @@ fun UpsertShareSubscriptionModal(
                     var searchUsersResult by remember { mutableStateOf(users) }
                     var isListReady by remember { mutableStateOf(false) }
 
-                    val selectUser = { user: ManagedUser -> userState = when {
-                        userState != user -> user
-                        else -> null
-                    }}
+                    val selectUser = { user: ManagedUser ->
+                        update(
+                            ShareSubscriptionChange(
+                                shareSubscriptionId,
+                                providerId,
+                                Keep(fiscalYearState,),
+                                Change(userState, user) {
+                                    userState = when {
+                                        userState != user -> user
+                                        else -> null
+                                    }
+                                },
+                                Keep(shareOfferState),
+                                Keep(distributionPointState),
+                                Keep(pricePerShareState),
+                                Keep(numberOfSharesState),
+                                Keep(coSubscribersState),
+                                Keep(ahcAuthorizedState),
+                                Keep(statusState)
+                            )
+                        ) { data ->
+                            setShareSubscription(data)
+                        }
+                    }
 
                     LaunchedEffect(searchUsersResult) {
                         isListReady = false
