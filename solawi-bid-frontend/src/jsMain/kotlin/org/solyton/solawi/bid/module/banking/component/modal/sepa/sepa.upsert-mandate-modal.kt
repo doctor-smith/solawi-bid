@@ -92,7 +92,7 @@ fun Storage<Modals<Int>>.showUpsertSepaMandateModal(
 
 val upsertSepaMandateModalTexts = Source {
     "dialog" texts {
-        "title" colon "Create or Update SEPA mandate"
+        "title" colon "Create or Update SEPA mandate - (Creation is not yet implemented)"
         "okButton" block {
             "title" colon "Ok"
         }
