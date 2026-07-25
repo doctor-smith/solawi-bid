@@ -424,226 +424,25 @@ fun ShareOfferManagement(
     val sepaModule = bankingApplicationStorage * sepaModule
     val sepaCollections = sepaModule * sepaCollections
 
+
+
+
+
     Wrap({
         cardStyle()
-    }){
+    }) {
         var opened by remember { mutableStateOf(false) }
-        ListWrapper(cardListStyles.listWrapper) {
-            TitleWrapper {
-                Title { H3 { Text("Share Offers") } }
-                var shareOfferState by remember { mutableStateOf<ShareOffer?>(null) }
-                Horizontal(styles = {
-                    flexGrow(1.0)
-                    justifyContent(JustifyContent.FlexEnd)
-                }) {
-                    When(opened) {
-                    PlusButton(
-                        color = Color.black,
-                        bgColor = Color.white,
-                        deviceType = deviceType,
-                    ) {
-                        shareManagementModals.showUpsertShareOffersModal(
-                            shareManagementStore,
-                            dialogModalTexts(""),
-                            deviceType,
-                            fiscalYears.read(),
-                            shareTypes.read(),
-                            shareOfferState,
-                            { state ->
-                                shareOfferState = state
-                            }) {
-                            val state = shareOfferState
-                            requireNotNull(state)
-                            scope.launch {
-                                shareManagementActions dispatch createShareOffer(
-                                    providerId.value,
-                                    state.shareType.shareTypeId,
-                                    state.fiscalYear.fiscalYearId,
-                                    state.price,
-                                    state.pricingType,
-                                    state.ahcAuthorizationRequired,
-                                )
-                            }
-                        }
-                    }}
-                    CardChevrons(
-                        texts = Source{cardChevronTexts()},
-                        deviceType = deviceType,
-                        opened = opened
-                    ) {
-                        opened = it
-                    }
-                }
-            }
-            When(opened) {
-                HeaderWrapper {
-                    Header(cardListStyles.header) {
-                        HeaderCell("Fiscal Year") { width(10.percent) }
-                        HeaderCell("Share Type") { width(20.percent) }
-                        HeaderCell("Price") { width(10.percent) }
-                        HeaderCell("PricingType") { width(10.percent) }
-                        HeaderCell("SEPA required") { width(10.percent) }
-                        HeaderCell("SEPA - Collection Key / Mandate Ref Prefix") { width(40.percent) }
-                    }
-                }
-                ListItemsIndexed(shareOffers.read().let {
-                    it.sortedByDescending { s -> s.fiscalYear.format() }
-                }) { index, shareOffer ->
-                    ListItemWrapper({
-                        listItemWrapperStyle(this, index)
+        key((sepaCollections * Size()).emit()) {
+            ListWrapper(cardListStyles.listWrapper) {
+                TitleWrapper {
+                    Title { H3 { Text("Share Offers") } }
+                    var shareOfferState by remember { mutableStateOf<ShareOffer?>(null) }
+                    Horizontal(styles = {
+                        flexGrow(1.0)
+                        justifyContent(JustifyContent.FlexEnd)
                     }) {
-                        val booleansMap: Map<String, Boolean> = mapOf(
-                            CHECK_TRUE to true,
-                            CHECK_FALSE to false
-                        )
-
-                        fun getKeyOf(value: Boolean): String = booleansMap.filter { it.value == value }.keys.first()
-                        val sepaCollections =
-                            sepaCollections * FilterBy { shareOffer.shareOfferId in it.referenceIds.map { ref -> ref.value } }
-
-                        DataWrapper(cardListStyles.dataWrapper) {
-                            TextCell(shareOffer.fiscalYear.format()) { width(10.percent) }
-                            TextCell(shareOffer.shareType.name) { width(20.percent) }
-                            TextCell("${shareOffer.price ?: "--"}") { width(10.percent) }
-                            TextCell(shareOffer.pricingType.name) { width(10.percent) }
-                            TextCell(getKeyOf(shareOffer.ahcAuthorizationRequired)) { width(10.percent) }
-                            TextCell(sepaCollections.read().joinToString(", ") { sC ->
-                                "${sC.collectionKey.value} / ${sC.mandateReferencePrefix.value}"
-                            }) {
-                                width(40.percent)
-                                overflow(Overflow.Hidden)
-                            }
-                        }
-                        ActionsWrapper {
-                            var shareOfferState by remember { mutableStateOf<ShareOffer>(shareOffer) }
-                            var creditorIdentifierState by remember {
-                                mutableStateOf<CreditorIdentifier?>(
-                                    creditorIdentifier.read()
-                                )
-                            }
-
-                            When(creditorIdentifierState != null) {
-                                val finalCreditorIdentifier =
-                                    requireNotNull(creditorIdentifierState) { "Cannot be null " }
-                                val sepaCollectionReader =
-                                    sepaCollections * FirstOrNull { shareOffer.shareOfferId in it.referenceIds.map { id -> id.value } }
-                                var sepaCollectionState by remember {
-                                    mutableStateOf(
-                                        PartialSepaCollection(
-                                            sepaCollectionId = sepaCollectionReader.emit()?.sepaCollectionId,
-                                            creditorIdentifierId = finalCreditorIdentifier.creditorIdentifierId,
-                                            creditorBankAccountId = sepaCollectionReader.emit()?.creditorBankAccountId,
-                                            mandateReferencePrefix = sepaCollectionReader.emit()?.mandateReferencePrefix,
-                                            remittanceInformation = sepaCollectionReader.emit()?.remittanceInformation,
-                                            sepaSequenceType = sepaCollectionReader.emit()?.sepaSequenceType
-                                                ?: SepaSequenceType.FRST,
-                                            localInstrument = sepaCollectionReader.emit()?.localInstrument,
-                                            isActive = sepaCollectionReader.emit()?.isActive ?: true,
-                                            leadTimesDays = sepaCollectionReader.emit()?.leadTimesDays ?: 5,
-                                            requestedCollectionDay = sepaCollectionReader.emit()?.requestedCollectionDay
-                                                ?: 2,
-                                            chargeBearer = sepaCollectionReader.emit()?.chargeBearer
-                                                ?: ChargeBearer("SLEV")
-                                        )
-                                    )
-                                }
-                                CreditCardButton(
-                                    color = Color.black,
-                                    bgColor = Color.white,
-                                    deviceType = deviceType,
-                                ) {
-
-                                    shareManagementModals.showAttachSepaCollectionModal(
-                                        bankingApplicationStorage,
-                                        texts = dialogModalTexts("Attach Sepa Collection"),
-                                        device = deviceType,
-                                        bankAccounts = creditorBankAccounts.read(),
-                                        sepaCollection = sepaCollectionState,
-                                        isOkButtonDisabled = {
-                                            with(sepaCollectionState) {
-                                                creditorBankAccountId == null
-                                                        || creditorIdentifierId == null
-                                                        || mandateReferencePrefix == null
-                                                        || remittanceInformation == null
-                                                        || sepaSequenceType == null
-                                                        || leadTimesDays == null
-                                                        || chargeBearer == null
-                                                        || isActive == null
-                                            }
-                                        },
-                                        setSepaCollection = { collection -> sepaCollectionState = collection }
-                                    ) {
-                                        when (val sepaCollectionId = sepaCollectionState.sepaCollectionId) {
-                                            null -> {
-                                                val data = with(sepaCollectionState) {
-                                                    CreateSepaCollection(
-                                                        creditorIdentifierId = creditorIdentifierId!!,
-                                                        creditorBankAccountId = creditorBankAccountId!!,
-                                                        mandateReferencePrefix = mandateReferencePrefix!!,
-                                                        remittanceInformation = remittanceInformation!!,
-                                                        collectionKey = collectionKey!!,
-                                                        sepaSequenceType = sepaSequenceType!!.toApiType(),
-                                                        localInstrument = localInstrument,
-                                                        chargeBearer = chargeBearer!!,
-                                                        requestedCollectionDay = requestedCollectionDay,
-                                                        leadTimeDays = leadTimesDays!!,
-                                                        purposeCode = purposeCode,
-                                                        isActive = isActive!!,
-                                                        sepaMandates = null,
-                                                        sepaPayments = null,
-                                                        referenceIds = listOf(SepaCollectionReferenceId(shareOffer.shareOfferId)),
-                                                    )
-                                                }
-
-                                                scope.launch {
-                                                    bankingApplicationActions dispatch createSepaCollection(
-                                                        data
-                                                    )
-                                                }
-                                            }
-
-                                            else -> {
-                                                val data = with(sepaCollectionState) {
-                                                    UpdateSepaCollection(
-                                                        sepaCollectionId,
-                                                        creditorIdentifierId = creditorIdentifierId!!,
-                                                        creditorAccountId = creditorBankAccountId!!,
-                                                        mandateReferencePrefix = mandateReferencePrefix!!,
-                                                        collectionKey = collectionKey!!,
-                                                        remittanceInformation = remittanceInformation!!,
-                                                        sepaSequenceType = sepaSequenceType!!.toApiType(),
-                                                        localInstrument = localInstrument,
-                                                        chargeBearer = chargeBearer!!,
-                                                        requestedCollectionDay = requestedCollectionDay,
-                                                        leadTimeDays = leadTimesDays!!,
-                                                        purposeCode = purposeCode,
-                                                        isActive = isActive!!,
-                                                        referenceIds = listOf(SepaCollectionReferenceId(shareOffer.shareOfferId)),
-                                                    )
-                                                }
-
-                                                scope.launch {
-                                                    bankingApplicationActions dispatch updateSepaCollection(
-                                                        data
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            When(creditorIdentifierState == null) {
-                                CreditCardButton(
-                                    color = Color.black,
-                                    bgColor = Color.white,
-                                    deviceType = deviceType,
-                                    isDisabled = true,
-                                    texts = { "No creditor identifiers defined" }
-                                ) {
-
-                                }
-                            }
-                            EditButton(
+                        When(opened) {
+                            PlusButton(
                                 color = Color.black,
                                 bgColor = Color.white,
                                 deviceType = deviceType,
@@ -661,8 +460,7 @@ fun ShareOfferManagement(
                                     val state = shareOfferState
                                     requireNotNull(state)
                                     scope.launch {
-                                        shareManagementActions dispatch updateShareOffer(
-                                            state.shareOfferId,
+                                        shareManagementActions dispatch createShareOffer(
                                             providerId.value,
                                             state.shareType.shareTypeId,
                                             state.fiscalYear.fiscalYearId,
@@ -673,13 +471,224 @@ fun ShareOfferManagement(
                                     }
                                 }
                             }
-                            TrashCanButton(
-                                color = Color.black,
-                                bgColor = Color.white,
-                                deviceType = deviceType,
-                                isDisabled = true
-                            ) {
+                        }
+                        CardChevrons(
+                            texts = Source { cardChevronTexts() },
+                            deviceType = deviceType,
+                            opened = opened
+                        ) {
+                            opened = it
+                        }
+                    }
+                }
+                When(opened) {
+                    HeaderWrapper {
+                        Header(cardListStyles.header) {
+                            HeaderCell("Fiscal Year") { width(10.percent) }
+                            HeaderCell("Share Type") { width(20.percent) }
+                            HeaderCell("Price") { width(10.percent) }
+                            HeaderCell("PricingType") { width(10.percent) }
+                            HeaderCell("SEPA required") { width(10.percent) }
+                            HeaderCell("SEPA - Collection Key / Mandate Ref Prefix") { width(40.percent) }
+                        }
+                    }
+                    ListItemsIndexed(shareOffers.read().let {
+                        it.sortedByDescending { s -> s.fiscalYear.format() }
+                    }) { index, shareOffer ->
+                        ListItemWrapper({
+                            listItemWrapperStyle(this, index)
+                        }) {
+                            val booleansMap: Map<String, Boolean> = mapOf(
+                                CHECK_TRUE to true,
+                                CHECK_FALSE to false
+                            )
 
+                            fun getKeyOf(value: Boolean): String = booleansMap.filter { it.value == value }.keys.first()
+                            val sepaCollections =
+                                sepaCollections * FilterBy { shareOffer.shareOfferId in it.referenceIds.map { ref -> ref.value } }
+
+                            DataWrapper(cardListStyles.dataWrapper) {
+                                TextCell(shareOffer.fiscalYear.format()) { width(10.percent) }
+                                TextCell(shareOffer.shareType.name) { width(20.percent) }
+                                TextCell("${shareOffer.price ?: "--"}") { width(10.percent) }
+                                TextCell(shareOffer.pricingType.name) { width(10.percent) }
+                                TextCell(getKeyOf(shareOffer.ahcAuthorizationRequired)) { width(10.percent) }
+                                TextCell(sepaCollections.read().joinToString(", ") { sC ->
+                                    "${sC.collectionKey.value} / ${sC.mandateReferencePrefix.value}"
+                                }) {
+                                    width(40.percent)
+                                    overflow(Overflow.Hidden)
+                                }
+                            }
+                            ActionsWrapper {
+                                var shareOfferState by remember { mutableStateOf<ShareOffer>(shareOffer) }
+                                var creditorIdentifierState by remember {
+                                    mutableStateOf<CreditorIdentifier?>(
+                                        creditorIdentifier.read()
+                                    )
+                                }
+
+                                When(creditorIdentifierState != null) {
+                                    val finalCreditorIdentifier =
+                                        requireNotNull(creditorIdentifierState) { "Cannot be null " }
+                                    val sepaCollectionReader =
+                                        sepaCollections * FirstOrNull { shareOffer.shareOfferId in it.referenceIds.map { id -> id.value } }
+                                    var sepaCollectionState by remember {
+                                        mutableStateOf(
+                                            PartialSepaCollection(
+                                                sepaCollectionId = sepaCollectionReader.emit()?.sepaCollectionId,
+                                                creditorIdentifierId = finalCreditorIdentifier.creditorIdentifierId,
+                                                creditorBankAccountId = sepaCollectionReader.emit()?.creditorBankAccountId,
+                                                collectionKey = sepaCollectionReader.emit()?.collectionKey,
+                                                mandateReferencePrefix = sepaCollectionReader.emit()?.mandateReferencePrefix,
+                                                remittanceInformation = sepaCollectionReader.emit()?.remittanceInformation,
+                                                sepaSequenceType = sepaCollectionReader.emit()?.sepaSequenceType
+                                                    ?: SepaSequenceType.FRST,
+                                                localInstrument = sepaCollectionReader.emit()?.localInstrument,
+                                                isActive = sepaCollectionReader.emit()?.isActive ?: true,
+                                                leadTimesDays = sepaCollectionReader.emit()?.leadTimesDays ?: 5,
+                                                requestedCollectionDay = sepaCollectionReader.emit()?.requestedCollectionDay
+                                                    ?: 2,
+                                                chargeBearer = sepaCollectionReader.emit()?.chargeBearer
+                                                    ?: ChargeBearer("SLEV")
+                                            )
+                                        )
+                                    }
+                                    CreditCardButton(
+                                        color = Color.black,
+                                        bgColor = Color.white,
+                                        deviceType = deviceType,
+                                    ) {
+
+                                        shareManagementModals.showAttachSepaCollectionModal(
+                                            bankingApplicationStorage,
+                                            texts = dialogModalTexts("Attach Sepa Collection"),
+                                            device = deviceType,
+                                            bankAccounts = creditorBankAccounts.read(),
+                                            sepaCollection = sepaCollectionState,
+                                            isOkButtonDisabled = {
+                                                with(sepaCollectionState) {
+                                                    creditorBankAccountId == null
+                                                            || creditorIdentifierId == null
+                                                            || mandateReferencePrefix == null
+                                                            || collectionKey == null
+                                                            || remittanceInformation == null
+                                                            || sepaSequenceType == null
+                                                            || leadTimesDays == null
+                                                            || chargeBearer == null
+                                                            || isActive == null
+                                                }
+                                            },
+                                            setSepaCollection = { collection -> sepaCollectionState = collection }
+                                        ) {
+                                            when (val sepaCollectionId = sepaCollectionState.sepaCollectionId) {
+                                                null, SepaCollectionId(NIL_UUID) -> {
+                                                    val data = with(sepaCollectionState) {
+                                                        CreateSepaCollection(
+                                                            creditorIdentifierId = creditorIdentifierId!!,
+                                                            creditorBankAccountId = creditorBankAccountId!!,
+                                                            mandateReferencePrefix = mandateReferencePrefix!!,
+                                                            remittanceInformation = remittanceInformation!!,
+                                                            collectionKey = collectionKey!!,
+                                                            sepaSequenceType = sepaSequenceType!!.toApiType(),
+                                                            localInstrument = localInstrument,
+                                                            chargeBearer = chargeBearer!!,
+                                                            requestedCollectionDay = requestedCollectionDay,
+                                                            leadTimeDays = leadTimesDays!!,
+                                                            purposeCode = purposeCode,
+                                                            isActive = isActive!!,
+                                                            sepaMandates = null,
+                                                            sepaPayments = null,
+                                                            referenceIds = listOf(SepaCollectionReferenceId(shareOffer.shareOfferId)),
+                                                        )
+                                                    }
+
+                                                    scope.launch {
+                                                        bankingApplicationActions dispatch createSepaCollection(
+                                                            data
+                                                        )
+                                                    }
+                                                }
+
+                                                else -> {
+                                                    val data = with(sepaCollectionState) {
+                                                        UpdateSepaCollection(
+                                                            sepaCollectionId,
+                                                            creditorIdentifierId = creditorIdentifierId!!,
+                                                            creditorAccountId = creditorBankAccountId!!,
+                                                            mandateReferencePrefix = mandateReferencePrefix!!,
+                                                            collectionKey = collectionKey!!,
+                                                            remittanceInformation = remittanceInformation!!,
+                                                            sepaSequenceType = sepaSequenceType!!.toApiType(),
+                                                            localInstrument = localInstrument,
+                                                            chargeBearer = chargeBearer!!,
+                                                            requestedCollectionDay = requestedCollectionDay,
+                                                            leadTimeDays = leadTimesDays!!,
+                                                            purposeCode = purposeCode,
+                                                            isActive = isActive!!,
+                                                            referenceIds = listOf(SepaCollectionReferenceId(shareOffer.shareOfferId)),
+                                                        )
+                                                    }
+
+                                                    scope.launch {
+                                                        bankingApplicationActions dispatch updateSepaCollection(
+                                                            data
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                When(creditorIdentifierState == null) {
+                                    CreditCardButton(
+                                        color = Color.black,
+                                        bgColor = Color.white,
+                                        deviceType = deviceType,
+                                        isDisabled = true,
+                                        texts = { "No creditor identifiers defined" }
+                                    ) {
+
+                                    }
+                                }
+                                EditButton(
+                                    color = Color.black,
+                                    bgColor = Color.white,
+                                    deviceType = deviceType,
+                                ) {
+                                    shareManagementModals.showUpsertShareOffersModal(
+                                        shareManagementStore,
+                                        dialogModalTexts(""),
+                                        deviceType,
+                                        fiscalYears.read(),
+                                        shareTypes.read(),
+                                        shareOfferState,
+                                        { state ->
+                                            shareOfferState = state
+                                        }) {
+                                        val state = shareOfferState
+                                        requireNotNull(state)
+                                        scope.launch {
+                                            shareManagementActions dispatch updateShareOffer(
+                                                state.shareOfferId,
+                                                providerId.value,
+                                                state.shareType.shareTypeId,
+                                                state.fiscalYear.fiscalYearId,
+                                                state.price,
+                                                state.pricingType,
+                                                state.ahcAuthorizationRequired,
+                                            )
+                                        }
+                                    }
+                                }
+                                TrashCanButton(
+                                    color = Color.black,
+                                    bgColor = Color.white,
+                                    deviceType = deviceType,
+                                    isDisabled = true
+                                ) {
+
+                                }
                             }
                         }
                     }

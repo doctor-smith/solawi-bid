@@ -110,7 +110,7 @@ fun SepaCollectionForm(
                 id = "collection-key-label",
                 labelStyle = formLabelDesktopStyle
             )
-            TextInput(mandateReferencePrefixState?.value?: "") {
+            TextInput(collectionKeyState?.value?: "") {
                 id("collection-key-input")
                 style { textInputDesktopStyle() }
                 onInput {
@@ -155,7 +155,7 @@ fun SepaCollectionForm(
                         mandateReferencePrefix = Change(mandateReferencePrefixState, newValue) {
                             mandateReferencePrefixState = newValue
                         }  ,
-                        collectionKey = Keep(sepaCollection?.collectionKey),
+                        collectionKey = Keep(collectionKeyState),
                         remittanceInformation = Keep(remittanceInformationState),
                         requestedCollectionDay = Keep(requestedCollectionDayState),
                         sepaSequenceType = Keep(sepaCollection?.sepaSequenceType),
@@ -189,7 +189,7 @@ fun SepaCollectionForm(
                         remittanceInformation = Change(remittanceInformationState, newValue) {
                             remittanceInformationState = newValue
                         },
-                        collectionKey = Keep(sepaCollection?.collectionKey),
+                        collectionKey = Keep(collectionKeyState),
                         requestedCollectionDay = Keep(requestedCollectionDayState),
                         sepaSequenceType = Keep(sepaCollection?.sepaSequenceType),
                         localInstrument = Keep(sepaCollection?.localInstrument),
@@ -223,7 +223,7 @@ fun SepaCollectionForm(
                         requestedCollectionDay = Change(requestedCollectionDayState, newValue) {
                             requestedCollectionDayState = newValue
                         },
-                        collectionKey = Keep(sepaCollection?.collectionKey),
+                        collectionKey = Keep(collectionKeyState),
                         sepaSequenceType = Keep(sepaCollection?.sepaSequenceType),
                         localInstrument = Keep(sepaCollection?.localInstrument),
                         chargeBearer = Keep(sepaCollection?.chargeBearer),
@@ -257,7 +257,7 @@ fun SepaCollectionForm(
                     creditorBankAccountId = Change(bankAccountState?.bankAccountId, newValue.bankAccountId) {
                         bankAccountState = newValue
                     },
-                    collectionKey = Keep(sepaCollection?.collectionKey),
+                    collectionKey = Keep(collectionKeyState),
                     mandateReferencePrefix = Keep(mandateReferencePrefixState),
                     remittanceInformation = Keep(remittanceInformationState),
                     requestedCollectionDay = Keep(requestedCollectionDayState),
@@ -290,7 +290,6 @@ fun update(change: SepaCollectionChange, onChange: (PartialSepaCollection)-> Uni
             leadTimesDays = leadTimesDays.new,
             requestedCollectionDay = requestedCollectionDay.new
         )
-        println(collection)
         onChange(collection)
     }
 } catch(_ : Exception) {
