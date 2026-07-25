@@ -44,25 +44,25 @@ fun CardChevrons(
         alignSelf(AlignSelf.FlexEnd)
     }
 }) {
-    When(!opened) {
+    When(opened) {
         ChevronDownButton(
             Color.black,
             Color.white,
             texts * open,
             deviceType,
         ) {
-            setOpened(true)
+            setOpened(false)
         }
 
     }
-    When(opened) {
+    When(!opened) {
         ChevronLeftButton(
             Color.black,
             Color.white,
             texts * close,
             deviceType,
         ) {
-            setOpened(false)
+            setOpened(true)
         }
     }
 }

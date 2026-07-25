@@ -880,6 +880,14 @@ fun ShareSubscriptionManagement(
                                 providerId,
                                 Read(membersAsUsers),
                                 ChangedBy.PROVIDER,
+                                {
+                                    newShareSubscriptionState?.userProfileId == null
+                                            || newShareSubscriptionState?.distributionPointId == null
+                                            || newShareSubscriptionState?.shareOfferId == null
+                                            || newShareSubscriptionState?.fiscalYearId == null
+                                            || newShareSubscriptionState?.status == null
+                                            || newShareSubscriptionState?.ahcAuthorized == null
+                                },
                                 null,
                                 { data -> newShareSubscriptionState = data }
                             ) {
@@ -1496,6 +1504,7 @@ fun ShareSubscriptionManagement(
                                             providerId,
                                             Read(membersAsUsers),
                                             ChangedBy.PROVIDER,
+                                            { false },
                                             subscription,
                                             { data -> newShareSubscriptionState = data }
                                         ) {
