@@ -71,6 +71,7 @@ data class UpdateShareSubscription(
     val providerId: String,
     val shareOfferId: String,
     val userProfileId: String,
+    val status: ShareStatus,
     val distributionPointId: String?,
     val fiscalYearId: String,
     val numberOfShares: Int,

@@ -21,6 +21,8 @@ import org.solyton.solawi.bid.module.banking.component.form.UpsertSepaMandateFor
 import org.solyton.solawi.bid.module.banking.component.form.updateSepaMandateFormTexts
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.deviceData
+import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
+import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.mandate.SepaMandate
 import org.solyton.solawi.bid.module.style.modal.commonModalStyles
 import org.solyton.solawi.bid.module.style.wrap.Wrap
@@ -36,6 +38,8 @@ fun UpsertSepaMandateModal(
     modals: Storage<Modals<Int>>,
     storage: Storage<BankingApplication>,
     device: Source<DeviceType>,
+    bankAccount: BankAccount?,
+    collections: List<SepaCollection>,
     sepaMandate: SepaMandate?,
     setSepaMandate: (SepaMandate) -> Unit,
     update: ()->Unit
@@ -54,6 +58,8 @@ fun UpsertSepaMandateModal(
     Wrap {
         UpsertSepaMandateForm(
             texts = texts,
+            bankAccount = bankAccount,
+            collections = collections,
             sepaMandate = sepaMandate,
             setSepaMandate = setSepaMandate
         )
@@ -66,6 +72,8 @@ fun Storage<Modals<Int>>.showUpsertSepaMandateModal(
     storage: Storage<BankingApplication>,
     texts: Source<Lang.Block>,
     device: Source<DeviceType>,
+    bankAccount: BankAccount?,
+    collections: List<SepaCollection>,
     sepaMandate: SepaMandate?,
     setSepaMandate: (SepaMandate) -> Unit,
     update: ()->Unit
@@ -82,6 +90,8 @@ fun Storage<Modals<Int>>.showUpsertSepaMandateModal(
             this@showUpsertSepaMandateModal,
             storage,
             device,
+            bankAccount,
+            collections,
             sepaMandate,
             setSepaMandate,
             update = update

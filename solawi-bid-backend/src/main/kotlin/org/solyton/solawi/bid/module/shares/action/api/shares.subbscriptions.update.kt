@@ -11,6 +11,7 @@ import org.evoleq.math.x
 import org.solyton.solawi.bid.module.shares.data.api.ShareSubscription
 import org.solyton.solawi.bid.module.shares.data.api.UpdateShareSubscription
 import org.solyton.solawi.bid.module.shares.data.toApiType
+import org.solyton.solawi.bid.module.shares.data.toInternalType
 import org.solyton.solawi.bid.module.shares.repository.updateShareSubscription
 import java.util.*
 
@@ -24,6 +25,7 @@ fun UpdateShareSubscription() = KlAction<Result<Contextual<UpdateShareSubscripti
             UUID.fromString(data.id),
             UUID.fromString(data.shareOfferId),
             UUID.fromString(data.userProfileId),
+            data.status.toInternalType(),
             UUID.fromString(data.distributionPointId),
             UUID.fromString(data.fiscalYearId),
             data.numberOfShares,

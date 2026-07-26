@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.banking.repository
 
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.Transaction
+import org.jetbrains.exposed.sql.and
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import org.solyton.solawi.bid.module.banking.data.MandateReference
@@ -18,12 +19,20 @@ import java.util.*
  * Creates a SEPA mandate entity with a retry mechanism to handle unique constraint violations
  * during the generation of the mandate reference. The method attempts to insert a new
  * SEPA mandate into the database up to the specified maximum number of retries.
+ * If the mandate reference is already in use, the method will retry with a new unique reference.
+ * If the maximum number of retries is reached without finding a unique reference, an exception is thrown.
+ * If the mandate is successfully inserted, the method returns the newly created SEPA mandate entity.
+ * If the mandate already exists, the method returns the existing mandate.
+ * If the database throws an exception other than a unique constraint violation, the exception is re-thrown.
+ *
+ * Each user should have at most one active SEPA mandate per debtor bank account and mandate reference prefix.
  *
  * @param creditorIdentifierId The unique identifier of the creditor for whom the mandate is created.
  * @param debtorBankAccountId The unique identifier of the debtor's bank account associated with the mandate.
  * @param debtorName The name of the debtor associated with the bank account.
  * @param signedAt The date and time when the SEPA mandate was signed.
  * @param maxRetries The maximum number of attempts to generate a unique mandate reference. Defaults to 5.
+ * @param reUseActiveMandate If true, the method will attempt to reuse an active mandate with the same mandate reference prefix.
  * @return The newly created SEPA mandate entity.
  * @throws ExposedSQLException If a database error occurs that is not a unique constraint violation.
  * @throws IllegalStateException If unable to generate a unique mandate reference after the specified number of retries.
@@ -42,7 +51,8 @@ fun Transaction.createSepaMandateWithRetry(
     status: MandateStatus = MandateStatus.ACTIVE,
     collectionId: UUID? = null,
     referenceData: CreateSepaMandateReferenceData? = null,
-    maxRetries: Int = 5
+    maxRetries: Int = 5,
+    reUseActiveMandate: Boolean = true
 ): SepaMandateEntity {
     val creditor = validatedCreditor(creditorIdentifierId)
     val debtorBankAccount = validatedBankAccount(debtorBankAccountId)
@@ -56,35 +66,53 @@ fun Transaction.createSepaMandateWithRetry(
             validatedSepaCollection(collectionId)
         } else null
 
+        val reUsedMandate = when {
+            reUseActiveMandate && mandateReferencePrefix != null -> {
+                val activeMandate = SepaMandateEntity.find {
+                    SepaMandatesTable.mandateReference like "${mandateReferencePrefix}%" and
+                    (SepaMandatesTable.status eq MandateStatus.ACTIVE) and
+                    (SepaMandatesTable.debtorBankAccountId eq debtorBankAccountId)
+                }.firstOrNull()
+                activeMandate
+            }
+            else -> null
+        }
+
+        val createNewMandate = !reUseActiveMandate || reUsedMandate == null
+
         try {
-            val sepaMandate =  SepaMandateEntity.new {
-                this.createdBy = creatorId
-                this.creditorIdentifier = creditor
-                this.debtorBankAccount = debtorBankAccount
-                this.debtorName = debtorName
-                this.mandateReference = mandateReference
-                this.signedAt = signedAt
-                this.status = MandateStatus.ACTIVE
-                this.validFrom = validFrom
-                this.validUntil = validUntil
-                this.status = status
-                this.isActive = true
-                //this.collection = collection
+            val sepaMandate =  when(createNewMandate) {
+                true -> SepaMandateEntity.new {
+                    this.createdBy = creatorId
+                    this.creditorIdentifier = creditor
+                    this.debtorBankAccount = debtorBankAccount
+                    this.debtorName = debtorName
+                    this.mandateReference = mandateReference
+                    this.signedAt = signedAt
+                    this.status = MandateStatus.ACTIVE
+                    this.validFrom = validFrom
+                    this.validUntil = validUntil
+                    this.status = status
+                    this.isActive = true
+                }
+                false -> reUsedMandate
             }
             // Add the collection to the mandate
-            if(collection != null) SepaMandateCollectionEntity.new {
-                this.sepaMandate = sepaMandate
-                this.sepaCollection = collection
+            if(!(collection == null || collection.sepaMandates.contains(sepaMandate))) {
+                SepaMandateCollectionEntity.new {
+                    this.sepaMandate = sepaMandate
+                    this.sepaCollection = collection
+                }
             }
 
             if(referenceData != null) {
-                SepaMandateDataMapping.new  {
+                SepaMandateDataMapping.new {
                     this.createdBy = creatorId
                     this.mandate = sepaMandate
                     this.referenceId = UUID.fromString(referenceData.referenceId.value)
                     this.amount = referenceData.amount
                 }
-                if(collection != null) createSepaPaymentTemplate(
+                if (collection != null) createSepaPaymentTemplate(
                     creatorId,
                     sepaMandate,
                     referenceData.amount,

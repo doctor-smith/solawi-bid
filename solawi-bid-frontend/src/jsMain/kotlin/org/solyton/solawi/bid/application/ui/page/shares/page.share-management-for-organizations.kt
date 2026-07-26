@@ -798,6 +798,16 @@ fun ShareSubscriptionManagement(
                 }
             }
 
+        val shareSubscriptionToCollectionsMap: Source<Map<ShareSubscriptionId, List<SepaCollection>>> = Read(shareSubscriptions) map {
+            subscriptions -> subscriptions.associateBy({ ShareSubscriptionId(it.shareSubscriptionId) }) { subscription ->
+                (Read(sepaCollections) map { collections -> collections.filter {
+                    collection -> collection.referenceIds.any { id ->
+                        id.value == subscription.shareOfferId
+                    }
+                }}).emit()
+            }
+        }
+
         var opened by remember { mutableStateOf(false) }
         var allChecked by remember { mutableStateOf(false) }
         var filter by  remember { mutableStateOf(uiState.read().filter) }
@@ -1246,6 +1256,7 @@ fun ShareSubscriptionManagement(
                                                             providerId.value,
                                                             shareSubscription.shareOfferId,
                                                             shareSubscription.userProfileId,
+                                                            shareSubscription.status,
                                                             shareSubscription.distributionPointId,
                                                             shareSubscription.fiscalYearId,
                                                             shareSubscription.numberOfShares,
@@ -1263,6 +1274,7 @@ fun ShareSubscriptionManagement(
                                                             providerId.value,
                                                             shareSubscription.shareOfferId,
                                                             shareSubscription.userProfileId,
+                                                            shareSubscription.status,
                                                             shareSubscription.distributionPointId,
                                                             shareSubscription.fiscalYearId,
                                                             trChanges.numberOfShares,
@@ -1279,6 +1291,7 @@ fun ShareSubscriptionManagement(
                                                             providerId.value,
                                                             shareSubscription.shareOfferId,
                                                             shareSubscription.userProfileId,
+                                                            shareSubscription.status,
                                                             trChanges.distributionPointId,
                                                             shareSubscription.fiscalYearId,
                                                             shareSubscription.numberOfShares,
@@ -1295,6 +1308,7 @@ fun ShareSubscriptionManagement(
                                                             providerId.value,
                                                             shareSubscription.shareOfferId,
                                                             shareSubscription.userProfileId,
+                                                            shareSubscription.status,
                                                             shareSubscription.distributionPointId,
                                                             shareSubscription.fiscalYearId,
                                                             shareSubscription.numberOfShares,
@@ -1348,6 +1362,7 @@ fun ShareSubscriptionManagement(
                                                 providerId.value,
                                                 shareSubscription.shareOfferId,
                                                 shareSubscription.userProfileId,
+                                                shareSubscription.status,
                                                 shareSubscription.distributionPointId,
                                                 shareSubscription.fiscalYearId,
                                                 shareSubscription.numberOfShares,
@@ -1444,44 +1459,77 @@ fun ShareSubscriptionManagement(
                                             shareSubscriptionIdToMandateMap.emit()[ShareSubscriptionId(subscription.shareSubscriptionId)]
                                         )
                                     }
-
+                                    val collections = shareSubscriptionToCollectionsMap.emit()[ShareSubscriptionId(subscription.shareSubscriptionId)] ?: listOf()
                                     val creditorId = creditorIdentifier.read()?.creditorId
-
+                                    val bankAccount = userProfileToBankAccountMap[subscription.userProfileId]
                                     CreditCardButton(
                                         color = Color.black,
                                         bgColor = Color.white,
                                         deviceType = deviceType,
-                                        isDisabled = sepaMandateState == null || creditorId == null
+                                        isDisabled = bankAccount == null || collections.isEmpty() || creditorId == null
                                     ) {
                                         shareManagementModals.showUpsertSepaMandateModal(
                                             storage = bankingApplicationStorage,
                                             device = deviceType,
+                                            bankAccount = bankAccount,
+                                            collections = collections,
                                             sepaMandate = sepaMandateState,
                                             setSepaMandate = { sepaMandateState = it },
                                             texts = upsertSepaMandateModalTexts
                                         ) {
                                             scope.launch {
-                                                if (sepaMandateState != null && creditorId != null) {
+                                                if (sepaMandateState != null && creditorId != null && bankAccount != null) {
                                                     val sepaMandate = sepaMandateState
                                                     requireNotNull(sepaMandate)
-                                                    bankingApplicationActions dispatch updateSepaMandateInSepaCollection(
-                                                        UpdateSepaMandate(
-                                                            sepaMandateId = sepaMandate.sepaMandateId,
-                                                            debtorBankAccountId = sepaMandate.debtorBankAccountId,
-                                                            debtorName = sepaMandate.debtorName,
-                                                            mandateReference = sepaMandate.mandateReference,
-                                                            signedAt = sepaMandate.signedAt,
-                                                            validFrom = sepaMandate.validFrom,
-                                                            validUntil = sepaMandate.validUntil,
-                                                            status = sepaMandate.status.toApyType(),
-                                                            isActive = sepaMandate.isActive,
-                                                            amendmentOf = sepaMandate.amendmentOf,
-                                                            creditorId = creditorId,
-                                                            lastUsedAt = sepaMandate.lastUsedAt,
-                                                            collectionId = sepaMandate.collectionId,
-                                                        ),
-                                                        targetCollectionId = sepaMandate.collectionId!!
-                                                    )
+                                                    val isNewSepaMandate = sepaMandate.sepaMandateId.value == NIL_UUID
+                                                    when(isNewSepaMandate) {
+                                                        true -> {
+                                                            println("""Creating new SEPA mandate:
+                                                                |$sepaMandate
+                                                                |
+                                                                |
+                                                            """.trimMargin())
+                                                            requireNotNull(sepaMandate.collectionId)
+                                                            val mandateReferencePrefix = collections
+                                                                .first { it.sepaCollectionId == sepaMandate.collectionId }
+                                                                .mandateReferencePrefix
+                                                            bankingApplicationActions dispatch createSepaMandate(
+                                                                CreateSepaMandate(
+                                                                    debtorBankAccountId = sepaMandate.debtorBankAccountId,
+                                                                    debtorName = sepaMandate.debtorName,
+                                                                    mandateReference = sepaMandate.mandateReference,
+                                                                    signedAt = sepaMandate.signedAt,
+                                                                    validFrom = sepaMandate.validFrom,
+                                                                    validUntil = sepaMandate.validUntil,
+                                                                    status = sepaMandate.status.toApyType(),
+                                                                    isActive = sepaMandate.isActive,
+                                                                    amendmentOf = sepaMandate.amendmentOf,
+                                                                    creditorId = creditorId,
+                                                                    mandateReferencePrefix = mandateReferencePrefix
+                                                                ),
+                                                                sepaMandate.collectionId,
+                                                            )
+                                                        }
+
+                                                        else -> bankingApplicationActions dispatch updateSepaMandateInSepaCollection(
+                                                            UpdateSepaMandate(
+                                                                sepaMandateId = sepaMandate.sepaMandateId,
+                                                                debtorBankAccountId = sepaMandate.debtorBankAccountId,
+                                                                debtorName = sepaMandate.debtorName,
+                                                                mandateReference = sepaMandate.mandateReference,
+                                                                signedAt = sepaMandate.signedAt,
+                                                                validFrom = sepaMandate.validFrom,
+                                                                validUntil = sepaMandate.validUntil,
+                                                                status = sepaMandate.status.toApyType(),
+                                                                isActive = sepaMandate.isActive,
+                                                                amendmentOf = sepaMandate.amendmentOf,
+                                                                creditorId = creditorId,
+                                                                lastUsedAt = sepaMandate.lastUsedAt,
+                                                                collectionId = sepaMandate.collectionId,
+                                                            ),
+                                                            targetCollectionId = sepaMandate.collectionId!!
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
@@ -1515,6 +1563,7 @@ fun ShareSubscriptionManagement(
                                                         providerId.value,
                                                         shareOfferId,
                                                         userProfileId,
+                                                        status,
                                                         distributionPointId,
                                                         fiscalYearId,
                                                         numberOfShares,

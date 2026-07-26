@@ -12,6 +12,7 @@ import org.solyton.solawi.bid.module.banking.repository.validatedFiscalYear
 import org.solyton.solawi.bid.module.banking.schema.FiscalYearEntity
 import org.solyton.solawi.bid.module.banking.service.getSepaPaymentTemplateByReferenceId
 import org.solyton.solawi.bid.module.distribution.repository.validatedDistributionPoint
+import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.shares.exception.ShareException
 import org.solyton.solawi.bid.module.shares.schema.*
 import org.solyton.solawi.bid.module.user.data.api.ApiUserStatus
@@ -271,10 +272,12 @@ fun finalPricePerShare(shareOffer: ShareOfferEntity, pricePerShare: Double?): Do
  * Update [ShareSubscription]
  * Note: This function does not apply status changes
  */
+@Suppress("CognitiveComplexMethod")
 fun Transaction.updateShareSubscription(
     shareSubscriptionId: UUID,
     shareOfferId: UUID,
     userProfileId: UUID,
+    status: ShareStatus,
     distributionPointId: UUID,
     fiscalYearId: UUID,
     numberOfShares: Int,
@@ -288,6 +291,7 @@ fun Transaction.updateShareSubscription(
     val shareOfferChanged = shareSubscription.shareOffer.id.value != shareOfferId
     val fiscalYearChanged = shareSubscription.fiscalYear.id.value != fiscalYearId
     val userProfileChanged = shareSubscription.userProfile.id.value != userProfileId
+    val statusChanged = ShareStatus.from(shareSubscription.status.name) != status
     val distributionPointChanged = shareSubscription.distributionPoint?.id?.value != distributionPointId
     val numberOfSharesChanged = shareSubscription.numberOfShares != numberOfShares
     val pricePerShareChanged = shareSubscription.pricePerShare != pricePerShare
@@ -310,6 +314,10 @@ fun Transaction.updateShareSubscription(
     if(userProfileChanged) {
         val userProfile = validatedUserProfile(userProfileId)
         shareSubscription.userProfile = userProfile
+    }
+    if(statusChanged) {
+        val shareStatusEntity = statusEntity(status)
+        shareSubscription.status = shareStatusEntity
     }
     if(distributionPointChanged) {
         val distributionPoint = validatedDistributionPoint(distributionPointId)
@@ -337,7 +345,8 @@ fun Transaction.updateShareSubscription(
         numberOfSharesChanged,
         pricePerShareChanged,
         ahcAuthorizedChanged,
-        coSubscribersChanged
+        coSubscribersChanged,
+        statusChanged
     )) shareSubscription.markModifiedBy(modifier)
 
     if(totalAmountChanged && pricePerShare != null) {

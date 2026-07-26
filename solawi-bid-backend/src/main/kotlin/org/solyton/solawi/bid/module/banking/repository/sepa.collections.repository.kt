@@ -6,12 +6,7 @@ import org.solyton.solawi.bid.module.banking.data.*
 import org.solyton.solawi.bid.module.banking.data.api.ApiSepaCollections
 import org.solyton.solawi.bid.module.banking.data.api.ApiSepaPayments
 import org.solyton.solawi.bid.module.banking.exception.SepaException
-import org.solyton.solawi.bid.module.banking.schema.CreditorIdentifierEntity
-import org.solyton.solawi.bid.module.banking.schema.CreditorIdentifiersTable
-import org.solyton.solawi.bid.module.banking.schema.SepaCollectionEntity
-import org.solyton.solawi.bid.module.banking.schema.SepaCollectionMapping
-import org.solyton.solawi.bid.module.banking.schema.SepaCollectionsTable
-import org.solyton.solawi.bid.module.banking.schema.SepaSequenceType
+import org.solyton.solawi.bid.module.banking.schema.*
 import org.solyton.solawi.bid.module.banking.service.validatedBankAccount
 import java.util.*
 
@@ -209,6 +204,8 @@ fun Transaction.updateSepaCollection(
 
     return sepaCollection
 }
+
+
 
 fun Transaction.validatedSepaCollection(id: UUID): SepaCollectionEntity =
     SepaCollectionEntity.findById(id)?: throw SepaException.NoSuchSepaCollection(id.toString())

@@ -5,6 +5,8 @@ import kotlinx.datetime.LocalDateTime
 import org.evoleq.change.data.Change
 import org.evoleq.change.data.Keep
 import org.evoleq.compose.attribute.disabled
+import org.evoleq.compose.conditional.When
+import org.evoleq.compose.date.format
 import org.evoleq.compose.date.parse
 import org.evoleq.compose.form.Form
 import org.evoleq.compose.form.field.Field
@@ -28,7 +30,9 @@ import org.solyton.solawi.bid.module.banking.data.BankAccountId
 import org.solyton.solawi.bid.module.banking.data.MandateReference
 import org.solyton.solawi.bid.module.banking.data.SepaCollectionId
 import org.solyton.solawi.bid.module.banking.data.SepaMandateId
+import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.sepa.MandateStatus
+import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.mandate.SepaMandate
 import org.solyton.solawi.bid.module.banking.i18n.*
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
@@ -42,6 +46,8 @@ import org.solyton.solawi.bid.module.user.component.dropdown.dropdownStyles
 @Composable
 fun UpsertSepaMandateForm(
     texts: Source<Lang.Block> = updateSepaMandateFormTexts,
+    collections: List<SepaCollection>,
+    bankAccount: BankAccount?,
     sepaMandate: SepaMandate?,
     setSepaMandate: (SepaMandate) -> Unit,
 ) = Form(formDesktopStyle){
@@ -52,8 +58,8 @@ fun UpsertSepaMandateForm(
 
     val inputs = texts * inputs
 
-    val bankAccountId = sepaMandate?.debtorBankAccountId ?: BankAccountId(NIL_UUID)
-    var debtorNameState by remember { mutableStateOf(sepaMandate?.debtorName) }
+    val bankAccountId = sepaMandate?.debtorBankAccountId ?: bankAccount?.bankAccountId?: BankAccountId(NIL_UUID)
+    var debtorNameState by remember { mutableStateOf(sepaMandate?.debtorName?:bankAccount?.bankAccountHolder) }
     var mandateReferenceState by remember { mutableStateOf(sepaMandate?.mandateReference) }
     var statusState by remember { mutableStateOf(sepaMandate?.status ?: MandateStatus.ACTIVE) }
     var signedAtState by remember { mutableStateOf(sepaMandate?.signedAt) }
@@ -74,7 +80,7 @@ fun UpsertSepaMandateForm(
         )
         TextInput(debtorNameState?: "") {
             disabled()
-            onChange { event ->
+            onInput { event ->
                 val newState = event.value
                 update(SepaMandateChange(
                     sepaMandateId = sepaMandate?.sepaMandateId,
@@ -97,24 +103,63 @@ fun UpsertSepaMandateForm(
             }
         }
     }
-    // Mandate Reference
-    Field(fieldDesktopStyle) {
-        Label(
-            text = (inputs * mandateReference * label * title).emit(),
-            id = "mandate-reference",
-            labelStyle = formLabelDesktopStyle,
-            isRequired = true
-        )
-        TextInput(mandateReferenceState?.value?: "") {
-            disabled()
-            onChange { event ->
-                update(SepaMandateChange(
+    When(sepaMandate != null){
+        // Mandate Reference
+        Field(fieldDesktopStyle) {
+            Label(
+                text = (inputs * mandateReference * label * title).emit(),
+                id = "mandate-reference",
+                labelStyle = formLabelDesktopStyle,
+                isRequired = true
+            )
+            TextInput(mandateReferenceState?.value?: "") {
+                if(sepaMandate != null) disabled()
+                onInput { event ->
+                    update(SepaMandateChange(
+                        sepaMandateId = sepaMandate?.sepaMandateId,
+                        debtorBankAccountId = Keep(bankAccountId),
+                        debtorName = Keep(debtorNameState),
+                        mandateReference = Change(mandateReferenceState, MandateReference(event.value)){
+                            mandateReferenceState = MandateReference(event.value)
+                        },
+                        signedAt = Keep(signedAtState),
+                        status = Keep(statusState),
+                        validFrom = Keep(validFromState),
+                        validUntil = Keep(validUntilState),
+                        lastUsedAt = Keep(lastUsedAtState),
+                        isActive = Keep(isActiveState),
+                        amendmentOf = Keep(amendmentOfState),
+                        collectionId = Keep(collectionIdState)
+                    )) {
+                        sepaMandate -> setSepaMandate(sepaMandate)
+                    }
+                }
+            }
+        }
+    }
+    When(sepaMandate == null){
+        // Choose Collection / Reference Prefix
+        Field(fieldDesktopStyle) {
+            Label(
+                text = (inputs * collection * label * title).emit(),
+                id = "collection-key-reference-prefix",
+                labelStyle = formLabelDesktopStyle,
+                isRequired = true
+            )
+
+            val options = collections.associateBy({"${it.collectionKey.value} / ${it.mandateReferencePrefix.value}"}) {it}
+            Dropdown(
+                options = options,
+                selected = options.keys.firstOrNull() ?: "",
+                iconContent = { open -> SimpleUpDown(open) },
+                styles = dropdownStyles,
+            ) { (_, value) ->
+                update(
+                    SepaMandateChange(
                     sepaMandateId = sepaMandate?.sepaMandateId,
                     debtorBankAccountId = Keep(bankAccountId),
                     debtorName = Keep(debtorNameState),
-                    mandateReference = Change(mandateReferenceState, MandateReference(event.value)){
-                        mandateReferenceState = MandateReference(event.value)
-                    },
+                    mandateReference = Keep(mandateReferenceState),
                     signedAt = Keep(signedAtState),
                     status = Keep(statusState),
                     validFrom = Keep(validFromState),
@@ -122,9 +167,14 @@ fun UpsertSepaMandateForm(
                     lastUsedAt = Keep(lastUsedAtState),
                     isActive = Keep(isActiveState),
                     amendmentOf = Keep(amendmentOfState),
-                    collectionId = Keep(collectionIdState)
-                )) {
-                    sepaMandate -> setSepaMandate(sepaMandate)
+                    collectionId = Change(
+                        collectionIdState,
+                        value.sepaCollectionId
+                    ) {
+                        collectionIdState = value.sepaCollectionId
+                    }
+                )) { sepaMandate ->
+                    setSepaMandate(sepaMandate)
                 }
             }
         }
@@ -141,7 +191,7 @@ fun UpsertSepaMandateForm(
             Input(InputType.Date) {
                 id("signed-at")
                 // dataId("sepa.form.input.date.start")
-                value((signedAtState?:now()).date.toString())
+                value((signedAtState?:now()).date.format(Locale.Iso))
                 style { dateInputDesktopStyle() }
                 onInput {
                     update(SepaMandateChange(
@@ -239,10 +289,10 @@ fun update(sepaMandateChange: SepaMandateChange, onChange: (SepaMandate) -> Unit
         sepaMandateId = sepaMandateChange.sepaMandateId?: SepaMandateId(NIL_UUID),
         debtorBankAccountId = sepaMandateChange.debtorBankAccountId.new!!,
         debtorName = sepaMandateChange.debtorName.new!!,
-        mandateReference = sepaMandateChange.mandateReference.new!!,
+        mandateReference = sepaMandateChange.mandateReference.new?: MandateReference("NOT_SET"),
         signedAt = sepaMandateChange.signedAt.new!!,
         status = sepaMandateChange.status.new!!,
-        validFrom = sepaMandateChange.validFrom.new!!,
+        validFrom = sepaMandateChange.validFrom.new?: sepaMandateChange.signedAt.new!!,
         validUntil = sepaMandateChange.validUntil.new,
         lastUsedAt = sepaMandateChange.lastUsedAt.new,
         isActive = sepaMandateChange.isActive.new!!,
@@ -277,6 +327,11 @@ val updateSepaMandateFormTexts = Source {
         "mandateReference" block {
             "label" block {
                 "title" colon "MandateReference"
+            }
+        }
+        "collection" block {
+            "label" block {
+                "title" colon "Collection Key / Reference Prefix"
             }
         }
         "dateSigned" block {
