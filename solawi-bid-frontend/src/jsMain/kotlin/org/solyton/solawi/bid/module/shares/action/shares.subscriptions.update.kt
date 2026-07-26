@@ -6,8 +6,10 @@ import org.evoleq.optics.storage.suffixed
 import org.evoleq.optics.transform.update
 import org.solyton.solawi.bid.module.shares.data.api.ApiShareSubscription
 import org.solyton.solawi.bid.module.shares.data.api.UpdateShareSubscription
+import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
 import org.solyton.solawi.bid.module.shares.data.management.shareSubscriptions
+import org.solyton.solawi.bid.module.shares.data.toApiType
 import org.solyton.solawi.bid.module.shares.data.toDomainType
 import org.solyton.solawi.bid.module.values.Username
 
@@ -33,6 +35,7 @@ fun updateShareSubscription(
     providerId: String,
     shareOfferId: String,
     userProfileId: String,
+    status: ShareStatus,
     distributionPointId: String?,
     fiscalYearId: String,
     numberOfShares: Int,
@@ -48,6 +51,7 @@ fun updateShareSubscription(
             providerId = providerId,
             shareOfferId = shareOfferId,
             userProfileId = userProfileId,
+            status = status.toApiType(),
             distributionPointId = distributionPointId,
             fiscalYearId = fiscalYearId,
             numberOfShares = numberOfShares,

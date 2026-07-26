@@ -216,6 +216,7 @@ fun Storage<Application>.memberUpdateAction(
                         shareSubscription.providerId,
                         shareSubscription.shareOfferId,
                         shareSubscription.userProfileId,
+                        shareSubscription.status,
                         shareSubscription.distributionPointId,
                         shareSubscription.fiscalYearId,
                         shareSubscription.numberOfShares,

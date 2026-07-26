@@ -11,6 +11,7 @@ typealias Value = Reader<Lang.Block, String>
 // Components
 val debtorName: Component = { block -> block.component("debtorName") }
 val mandateReference: Component = { block -> block.component("mandateReference") }
+val collection: Component = { block -> block.component("collection") }
 val dateSigned: Component = { block -> block.component("dateSigned") }
 val executionDate: Component = { block -> block.component("executionDate") }
 val failureReason: Component = { block -> block.component("failureReason") }

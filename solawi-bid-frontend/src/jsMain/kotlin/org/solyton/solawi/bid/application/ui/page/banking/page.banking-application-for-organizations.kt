@@ -700,6 +700,7 @@ fun CustomerBankAccounts(
                                             storage = bankingApplicationStorage,
                                             texts = upsertSepaMandatesModalTexts,
                                             device = deviceType,
+                                            bankAccount = bankAccount,
                                             sepaCollections = usersCollections.read(),
                                             sepaMandates = usersSepaMandates.read(),
                                             setSepaMandates = { mandates -> usersSepaMandatesState = mandates },

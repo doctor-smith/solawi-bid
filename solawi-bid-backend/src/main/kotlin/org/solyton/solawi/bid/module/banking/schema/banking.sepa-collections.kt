@@ -6,7 +6,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.auditable.AuditableEntity
 import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
-import java.util.UUID
+import java.util.*
 
 typealias SepaCollectionsTable = SepaCollections
 typealias SepaCollectionEntity = SepaCollection
@@ -79,10 +79,12 @@ class SepaCollection(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID>
 
     var isActive by SepaCollections.isActive
 
-    val sepaMandates by SepaMandate via SepaMandateCollectionsTable// optionalReferrersOn SepaMandates.collectionId
+    val sepaMandates by SepaMandate via SepaMandateCollectionsTable
     val sepaPayments by SepaPayment referrersOn SepaPayments.collectionId
 
     val referenceIds by SepaCollectionMapping referrersOn SepaCollectionMappings.sepaCollectionId
+
+    // val successors by SepaCollection via SepaCollectionLinks
 
     override var createdAt: DateTime by SepaCollections.createdAt
     override var createdBy: UUID by SepaCollections.createdBy
