@@ -373,6 +373,11 @@ val solawiApi by lazy {
                 url = "bank-accounts/all",
                 parameters = setOf("legal_entity")
             )
+            get<ReadPersonalBankAccounts, BankAccounts>(
+                key = ReadPersonalBankAccounts::class,
+                url = "bank-accounts/personal/all",
+                parameters = setOf()
+            )
             post<CreateBankAccount, BankAccount>(
                 key = CreateBankAccount::class,
                 url = "bank-accounts/create"

@@ -108,7 +108,7 @@ fun Storage<Modals<Int>>.showUpsertBankAccountModal(
             storage,
             device,
             legalEntityId,
-                    bankAccount,
+            bankAccount,
             setBankAccount,
             isOkButtonDisabled,
             hasDescription,

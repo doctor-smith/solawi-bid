@@ -131,8 +131,12 @@ fun <BankingEnv> Routing.banking (
                     Respond{ transform() } runOn Base(call, environment)
                 }
                 route("personal") {
-                    get("/") {
-                        NotImplemented("") * Respond { transform() } runOn Base(call, environment)
+                    get("/all") {
+                        ReceiveContextual<String>{
+                            _ -> ""
+                        } *
+                        ReadPersonalBankAccounts() *
+                        Respond { transform() } runOn Base(call, environment)
                     }
                     post("create") {
                         NotImplemented("") * Respond { transform() } runOn Base(call, environment)

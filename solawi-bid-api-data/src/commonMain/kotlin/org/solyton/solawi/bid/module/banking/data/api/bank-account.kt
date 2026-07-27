@@ -51,8 +51,12 @@ data class ReadBankAccount(
 )
 
 @Serializable
-data object ReadPersonalBankAccounts
-
+data class ReadPersonalBankAccounts(
+    /**
+     * takes no param
+     */
+    override val queryParams: QueryParams = emptyList()
+) : Parameters()
 @Serializable
 data class CreateBankAccount(
     val userId: UserId,

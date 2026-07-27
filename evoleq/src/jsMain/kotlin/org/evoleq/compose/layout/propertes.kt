@@ -10,11 +10,14 @@ import org.jetbrains.compose.web.dom.Text
 data class Property<T>(
     val key: String,
     val value: T,
+    val action: (@Composable (T)->Unit)? = null,
     val format: (T)->String = {"$it"}
 )
 
 data class PropertiesStyles(
-    val containerStyle: StyleScope.()->Unit = {},
+    val containerStyle: StyleScope.()->Unit = {
+        width(100.percent)
+    },
     val propertyStyles: PropertyStyles = PropertyStyles()
 ) {
 
@@ -33,13 +36,20 @@ data class PropertiesStyles(
 data class PropertyStyles(
     val propertyStyle: StyleScope.()->Unit = {
         margin(10.px)
+        width(100.percent)
     },
     val keyStyle: StyleScope.()->Unit = {
         width(20.percent)
         alignContent(AlignContent.Start)
     },
     val valueStyle: StyleScope.()->Unit = {
+        width(40.percent)
         alignContent(AlignContent.Start)
+    },
+    val actionStyle: StyleScope.()->Unit = {
+        width(40.percent)
+        justifyContent(JustifyContent.FlexEnd)
+       alignSelf(AlignSelf.FlexEnd)
     }
 ) {
     fun modifyPropertyStyle(styles: StyleScope. ()->Unit): PropertyStyles = copy(
@@ -63,6 +73,13 @@ data class PropertyStyles(
             styles()
         }
     )
+
+    fun modifyActionStyle(styles: StyleScope. ()->Unit): PropertyStyles = copy(
+        actionStyle = {
+            actionStyle()
+            styles()
+        }
+    )
 }
 
 @Markup
@@ -77,7 +94,7 @@ fun <T> ReadOnlyProperties(properties: List<Property<T>>, styles: PropertiesStyl
         }
     }) {
         properties.forEach {
-            ReadOnlyProperty(it, styles.propertyStyles)
+            ReadOnlyProperty(it, styles.propertyStyles, it.action)
         }
     }
 }
@@ -87,7 +104,8 @@ fun <T> ReadOnlyProperties(properties: List<Property<T>>, styles: PropertiesStyl
 @Suppress("FunctionName")
 fun <T> ReadOnlyProperty(
     property: Property<T>,
-    styles:  PropertyStyles = PropertyStyles()
+    styles:  PropertyStyles = PropertyStyles(),
+    action: (@Composable (T)->Unit)? = null,
 ) {
     Div(attrs = {
         style {
@@ -113,6 +131,15 @@ fun <T> ReadOnlyProperty(
         }) {
             Text(property.format(property.value))
         }
-
+        if(action != null) {
+            Div(attrs = {
+                style {
+                    alignSelf(AlignSelf.FlexEnd)
+                    with(styles){actionStyle()}
+                }
+            }) {
+                action(property.value)
+            }
+        }
     }
 }
