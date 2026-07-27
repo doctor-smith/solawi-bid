@@ -3,6 +3,9 @@
   become: true
   vars:
     backup_system_db: true
+    backend_replicas: >
+      {% if environment_letter == 'P' %}2{% else %}1{% endif %}
+    max_backend_replicas: 10
     deployment_id: "{{ lookup('pipe', 'date +%s') }}"
   tasks:
 
@@ -114,6 +117,11 @@
     # ---------------------------
     # Frontend Deployment
     # ---------------------------
+    - name: Remove legacy frontend container
+      community.docker.docker_container:
+        name: "solawi-bid_frontend_{{ environment_letter }}"
+        state: absent
+
     - name: Deploy Frontend container for {{ environment_letter }}
       vars:
         frontend_cpu: >
@@ -122,6 +130,7 @@
           {% if environment_letter == 'P' %}2048M{% elif environment_letter == 'Q' %}768M{% else %}512M{% endif %}
         keys:
           - "traefik.enable"
+          - "traefik.docker.network"
           - "traefik.http.routers.solawi-bid_frontend_{{ environment_letter }}.rule"
           - "traefik.http.routers.solawi-bid_frontend_{{ environment_letter }}.entrypoints"
           - "traefik.http.services.solawi-bid_frontend_{{ environment_letter }}.loadbalancer.server.port"
@@ -129,6 +138,7 @@
           - "traefik.http.routers.solawi-bid_frontend_{{ environment_letter }}.tls.certresolver"
         values:
           - "true"
+          - "reverse-proxy"
           - "Host(`{{ frontend_domain }}`)"
           - "web, websecure"
           - "80"
@@ -175,16 +185,25 @@
     # ---------------------------
     # Backend Deployment
     # ---------------------------
+    - name: Remove legacy unnumbered backend container
+      community.docker.docker_container:
+        name: "solawi-bid_backend_{{ environment_letter }}"
+        state: absent
+    - name: Remove old backend replicas
+      community.docker.docker_container:
+        name: "solawi-bid_backend_{{ environment_letter }}_{{ item }}"
+        state: absent
+      loop: "{{ range((backend_replicas | int) + 1, max_backend_replicas) | list }}"
+
     - name: Deploy Backend container for {{ environment_letter }}
       vars:
-        backend_replicas: >
-          {% if environment_letter == 'P' %}2{% else %}1{% endif %}
         backend_cpu: >
           {% if environment_letter == 'P' %}0.75{% elif environment_letter == 'Q' %}0.5{% else %}0.25{% endif %}
         backend_mem: >
           {% if environment_letter == 'P' %}1024M{% elif environment_letter == 'Q' %}768M{% else %}512M{% endif %}
         keys:
           - "traefik.enable"
+          - "traefik.docker.network"
           - "traefik.http.routers.solawi-bid_backend_{{ environment_letter }}.rule"
           - "traefik.http.routers.solawi-bid_backend_{{ environment_letter }}.entrypoints"
           - "traefik.http.services.solawi-bid_backend_{{ environment_letter }}.loadbalancer.server.port"
@@ -192,6 +211,7 @@
           - "traefik.http.routers.solawi-bid_backend_{{ environment_letter }}.tls.certresolver"
         values:
           - "true"
+          - "reverse-proxy"
           - "Host(`{{ backend_domain }}`)"
           - "web, websecure"
           - "8080"
@@ -235,3 +255,12 @@
         networks:
           - name: "solawi-bid-{{ environment_letter }}"
           - name: reverse-proxy
+
+    - name: Wait for backend replicas to become healthy
+      community.docker.docker_container_info:
+        name: "solawi-bid_backend_{{ environment_letter }}_{{ item }}"
+      register: backend_info
+      until: backend_info.container.State.Health.Status == "healthy"
+      retries: 60
+      delay: 5
+      loop: "{{ range(1, (backend_replicas | int) + 1) | list }}"
