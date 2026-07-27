@@ -223,3 +223,14 @@ fun <W, P> Lens<W, List<P>>.updateAll(compare: (updatedData: P, listItem: P) -> 
     }
     set( updatedList ) (w)
 } }
+
+fun <W, P> Lens<W, List<P>>.upsertAll(compare: (updatedData: P, listItem: P) -> Boolean): Writer<W, List<P>> = Writer { updatedItems -> { w ->
+    val storedList = get(w)
+    val updatedList = mutableListOf<P>()
+    storedList.forEach {  storedItem ->
+        val replacement = updatedItems.firstOrNull { compare(it, storedItem) }
+        if(replacement != null) updatedList.add(replacement) else updatedList.add(storedItem)
+    }
+    updatedItems.filterNot{ updatedList.contains(it) }.forEach { updatedItem -> updatedList.add(updatedItem) }
+    set( updatedList ) (w)
+} }

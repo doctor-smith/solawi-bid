@@ -292,6 +292,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<BankAccounts>(BankAccounts.serializer())
         add<ReadBankAccounts>(ReadBankAccounts.serializer())
         add<ReadBankAccount>(ReadBankAccount.serializer())
+        add<ReadPersonalBankAccounts>(ReadPersonalBankAccounts.serializer())
         add<UpdateBankAccount>(UpdateBankAccount.serializer())
         add<CreateBankAccount>(CreateBankAccount.serializer())
         add<DeleteBankAccount>(DeleteBankAccount.serializer())
