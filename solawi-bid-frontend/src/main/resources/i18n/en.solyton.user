@@ -68,7 +68,9 @@ en {
                     changePassword {
                         title: "Change Password"
                     }
-                }
+                    changeUsername {
+                        title: "Change Username"
+                    }
                 personalData {
                     title: "Your data"
                     properties {
@@ -107,6 +109,36 @@ en {
                     }
                 }
                 dialogs {
+                    updateUser {
+                        title: "Update User"
+                        inputs {
+                            username {
+                                title: "Username"
+                            }
+                            oldPassword {
+                                title: "Old Password"
+                            }
+                            newPassword {
+                                title: "New Password"
+                            }
+                            repeatPassword {
+                                title: "Repeat Password"
+                            }
+                        }
+                        errors {
+                            wrongPassword: "Wrong Password"
+                            requirementsViolated: "Password requirements violated"
+                            repeatedPasswordMismatch: "Password mismatch"
+                            newPasswordEqualsOld: "New password must be different from old password"
+                        }
+                        okButton {
+                            title: "Ok"
+                        }
+                        cancelButton {
+                            title: "Cancel"
+                        }
+                    }
+
                     changePassword {
                         title: "Change Password"
                         inputs {

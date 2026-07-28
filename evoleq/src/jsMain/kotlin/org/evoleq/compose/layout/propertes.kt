@@ -49,7 +49,6 @@ data class PropertyStyles(
     val actionStyle: StyleScope.()->Unit = {
         width(40.percent)
         justifyContent(JustifyContent.FlexEnd)
-       alignSelf(AlignSelf.FlexEnd)
     }
 ) {
     fun modifyPropertyStyle(styles: StyleScope. ()->Unit): PropertyStyles = copy(
@@ -134,7 +133,6 @@ fun <T> ReadOnlyProperty(
         if(action != null) {
             Div(attrs = {
                 style {
-                    alignSelf(AlignSelf.FlexEnd)
                     with(styles){actionStyle()}
                 }
             }) {

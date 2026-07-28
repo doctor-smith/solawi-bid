@@ -37,6 +37,7 @@ fun CreateUserModal(
     texts: Source<Lang.Block>,
     modals: Storage<Modals<Int>>,
     device: Source<DeviceType>,
+    isOkButtonDisabled: ()->Boolean,
     styles: (Source<DeviceType>)-> ModalStyles,
     setUserData: (username: String, password: String) -> Unit,
     cancel: ()->Unit,
@@ -55,6 +56,7 @@ fun CreateUserModal(
     },
     texts = texts.emit(),
     styles = styles(device),
+    isOkButtonDisabled = isOkButtonDisabled,
 ) {
     var username by remember{ mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -148,6 +150,7 @@ fun Storage<Modals<Int>>.showCreateUserModal(
     texts: Source<Lang.Block>,
     device: Source<DeviceType>,
     styles: (Source<DeviceType>)-> ModalStyles,
+    isOkButtonDisabled: ()->Boolean = {false},
     setUserData: (username: String, password: String) -> Unit,
     cancel: ()->Unit,
     update: ()->Unit,
@@ -160,6 +163,7 @@ fun Storage<Modals<Int>>.showCreateUserModal(
             texts,
             this@showCreateUserModal,
             device,
+            isOkButtonDisabled = isOkButtonDisabled,
             styles,
             setUserData,
             cancel,

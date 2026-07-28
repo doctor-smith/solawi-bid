@@ -224,6 +224,10 @@ val solawiApi by lazy {
                 key = ChangePassword::class,
                 url = "users/change-password"
             )
+            patch<UpdateUser, User>(
+                key = UpdateUser::class,
+                url = "users/update"
+            )
 
             post<RegisterUser, UserRegistered>(
                 key = RegisterUser::class,
@@ -472,6 +476,11 @@ val solawiApi by lazy {
                 key = ReadSepaMandatesByCreditorsLegalEntity::class,
                 url = "sepa/mandates/by-creditors-legal-entity",
                 parameters = setOf("legal_entity")
+            )
+            get<ReadPersonalSepaMandates, SepaMandates>(
+                key = ReadPersonalSepaMandates::class,
+                url = "sepa/mandates/personal/all",
+                parameters = setOf()
             )
             patch<UpdateSepaMandate, SepaMandate>(
                 key = UpdateSepaMandate::class,

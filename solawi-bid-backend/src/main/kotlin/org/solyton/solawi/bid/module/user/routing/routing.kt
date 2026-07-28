@@ -39,6 +39,9 @@ fun <UserEnv> Routing.user(
             patch("change-password") {
                 ReceiveContextual<ChangePassword>() * ChangePassword * Respond<User>{ transform() } runOn Base(call, environment)
             }
+            patch("update") {
+                ReceiveContextual<UpdateUser>() * UpdateUser * Respond<User>{ transform() } runOn Base(call, environment)
+            }
             route("profiles") {
                 patch("read-by-ids") { // todo:test write api test
                     ReceiveContextual<ReadUserProfiles>() *

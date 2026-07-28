@@ -48,6 +48,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<ModifierId>(ModifierId.serializer())
         add<CreatorId>(CreatorId.serializer())
         add<Username>(Username.serializer())
+        add<Password>(Password.serializer())
         add<Firstname>(Firstname.serializer())
         add<Lastname>(Lastname.serializer())
         add<Title>(Title.serializer())
@@ -177,6 +178,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<Users>(Users.serializer())
         add<GetUsers>(GetUsers.serializer())
         add<ChangePassword>(ChangePassword.serializer())
+        add<UpdateUser>(UpdateUser.serializer())
         add<UserProfile>(UserProfile.serializer())
         add<UserProfiles>(UserProfiles.serializer())
         add<ReadUserProfile>(ReadUserProfile.serializer())
@@ -363,6 +365,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<AttachSepaMandateReferenceData>(AttachSepaMandateReferenceData.serializer())
         add<CreateSepaMandateReferenceData>(CreateSepaMandateReferenceData.serializer())
         add<SepaMandateReferenceId>(SepaMandateReferenceId.serializer())
+        add<ReadPersonalSepaMandates>(ReadPersonalSepaMandates.serializer())
 
         // Sepa Payments
         add<SepaPayment>(SepaPayment.serializer())

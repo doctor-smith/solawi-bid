@@ -60,3 +60,7 @@ infix fun <S, T> Reader<S, Boolean>.and(other: Reader<T, Boolean>): Reader<Pair<
 infix fun <S, T> Source<S>.x(other: Source<T>): Source<Pair<S, T>> = Source {
     Pair(emit(), other.emit())
 }
+
+
+operator fun <T> Source<List<T>>.contains(value: T): Boolean =
+    emit().contains(value)

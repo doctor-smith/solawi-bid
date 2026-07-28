@@ -189,6 +189,15 @@ fun <BankingEnv> Routing.banking (
                         Respond{ transform() } runOn Base(call, environment)
 
                     }
+                    route("personal") {
+                        get("all") {
+                            ReceiveContextual<String>{
+                                _-> ""
+                            } *
+                            ReadPersonalSepaMandates() *
+                            Respond { transform() } runOn Base(call, environment)
+                        }
+                    }
                 }
                 route("collections"){
                     get("by-legal-entity") {

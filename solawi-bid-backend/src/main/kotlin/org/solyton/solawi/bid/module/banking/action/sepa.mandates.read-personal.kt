@@ -9,18 +9,19 @@ import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.solyton.solawi.bid.module.banking.data.api.SepaMandates
-import org.solyton.solawi.bid.module.banking.repository.readSepaMandatesByCreditorsLegalEntity
+import org.solyton.solawi.bid.module.banking.data.toApiType
+import org.solyton.solawi.bid.module.banking.repository.readSepaMandatesOfUser
 import java.util.*
 
 
 @MathDsl
 @Suppress("FunctionName")
-fun ReadSepaMandatesByCreditorsLegalEntity(): KlAction<Result<Contextual<String>>, Result<SepaMandates>> = KlAction { result ->
+fun ReadPersonalSepaMandates(): KlAction<org.evoleq.ktorx.result.Result<Contextual<String>>, Result<SepaMandates>> = KlAction { result ->
     DbAction { database ->
         result bindSuspend { contextual ->
             resultTransaction(database) {
                 val legalEntity = UUID.fromString(contextual.data)
-                readSepaMandatesByCreditorsLegalEntity(legalEntity)
+                SepaMandates(readSepaMandatesOfUser(legalEntity).map { mandate -> mandate.toApiType()})
             }
         } x database
     }

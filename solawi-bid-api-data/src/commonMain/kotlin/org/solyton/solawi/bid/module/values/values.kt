@@ -81,6 +81,11 @@ value class Username(val value: String) {
     }
 }
 
+@Serializable@Value
+@JvmInline
+value class Password(val value: String)
+
+
 @Serializable//@Value
 @JvmInline
 value class Price(val value: Double) {
