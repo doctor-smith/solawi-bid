@@ -193,6 +193,19 @@ fun Transaction.readSepaMandatesByCreditorsLegalEntity(legalEntityId: UUID): Api
     })
 }
 
+fun Transaction.readSepaMandatesOfUser(userId: UUID): List<SepaMandateEntity> {
+    val bankAccounts = BankAccountEntity.find {
+        BankAccountsTable.userId eq userId
+    }.toList()
+    if(bankAccounts.isEmpty()) {
+        return emptyList()
+    }
+
+    return SepaMandateEntity.find {
+        SepaMandatesTable.debtorBankAccountId inList bankAccounts.map { it.id.value }
+    }.toList()
+}
+
 @Suppress("CyclomaticComplexMethod", "NoNameShadowing")
 fun Transaction.updateSepaMandate(
     modifierId: UUID,

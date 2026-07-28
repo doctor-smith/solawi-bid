@@ -10,7 +10,7 @@ data class CreateUser(
     val status: UserStatus = UserStatus.ACTIVE
 ) {
     init {
-        val isValid = isValidEmail(username) && (
+        val isValid = isValidEmail(username)  && (
                 (password == null && status in listOf(UserStatus.PENDING, UserStatus.INVITED)) ||
                 (password != null && status in listOf(UserStatus.ACTIVE, UserStatus.REGISTERED, UserStatus.DISABLED))
         )

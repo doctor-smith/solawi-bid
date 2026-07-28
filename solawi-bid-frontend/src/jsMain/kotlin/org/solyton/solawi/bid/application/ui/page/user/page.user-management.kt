@@ -1,8 +1,6 @@
 package org.solyton.solawi.bid.application.ui.page.user
 
 import androidx.compose.runtime.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.layout.Horizontal
@@ -42,6 +40,8 @@ import org.solyton.solawi.bid.module.user.data.reader.isNotGranted
 @Suppress("FunctionName")
 fun UserManagementPage(storage: Storage<Application>) = Div {
 
+    val scope = rememberCoroutineScope()
+
     // Data
     val environment = storage * environment
     val applicationContextId = storage * availablePermissions * contextFromPath("APPLICATION") * assureValue() * contextId.get
@@ -67,7 +67,7 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
     }
 
     // State
-    var useR by remember { mutableStateOf(CreateUser("", "")) }
+    var useR by remember { mutableStateOf<CreateUser?>(null) }
     val loaded = (storage * i18n * componentLoaded(UserLangComponent.UserManagementPage)).emit()
     if(!loaded) return@Div
     // Markup
@@ -86,11 +86,18 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
                             texts = dialogs * subComp("createUser"),
                             device = storage * deviceData * mediaType.get,
                             styles = {dev -> auctionModalStyles(dev) },
-                            setUserData = {username, password -> useR = CreateUser(username, password, UserStatus.ACTIVE) },
+                            isOkButtonDisabled = { useR == null },
+                            setUserData = {username, password ->
+                                try {
+                                    useR = CreateUser(username, password, UserStatus.ACTIVE)
+                                } catch (_: Exception) { }
+                            },
+
                             cancel = {}
                         ) {
-                            CoroutineScope(Job()).launch {
-                                val action = createUser(useR)
+                            scope.launch {
+                                val user = requireNotNull(useR) { "useR is null" }
+                                val action = createUser(user)
                                 trigger(action) on storage
                             }
                         }

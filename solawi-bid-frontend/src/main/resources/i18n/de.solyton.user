@@ -68,6 +68,9 @@ de {
                     changePassword {
                         title: "Passwort ändern"
                     }
+                    changeUsername {
+                        title: "Nutzername ändern"
+                    }
                 }
                 personalData {
                     title: "Deine Daten"
@@ -107,6 +110,36 @@ de {
                     }
                 }
                 dialogs {
+                    updateUser {
+                        title: "Update User"
+                        inputs {
+                            username {
+                                title: "Username"
+                            }
+                            oldPassword {
+                                title: "Altes Passwort"
+                            }
+                            newPassword {
+                                title: "Neues Passwort"
+                            }
+                            repeatPassword {
+                                title: "Passwort wiederholen"
+                            }
+                        }
+                        errors {
+                            wrongPassword: "Falsches Passwort"
+                            requirementsViolated: "Passwortanforferungen verletzt"
+                            repeatedPasswordMismatch: "Passwörter stimmen nicht überein"
+                            newPasswordEqualsOld: "Das neue Passwort muss sich vom alten unterscheiden"
+                        }
+                        okButton {
+                            title: "Ok"
+                        }
+                        cancelButton {
+                            title: "Abbrechen"
+                        }
+
+                    }
                     changePassword {
                         title: "Passwort Ändern"
                         inputs {

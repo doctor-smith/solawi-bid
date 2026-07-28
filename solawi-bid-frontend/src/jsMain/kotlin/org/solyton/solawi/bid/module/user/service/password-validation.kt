@@ -9,7 +9,8 @@ fun <T> onPasswordCombinationValid(
     act: (T)->Unit
 ): PasswordCombinationCheck = when {
     storedPassword != null && oldPassword != null && oldPassword != storedPassword -> PasswordCombinationCheck.WrongPassword
-    newPassword.isBlank() -> PasswordCombinationCheck.RequirementsViolated
+    // newPassword.isBlank() -> PasswordCombinationCheck.RequirementsViolated
+    newPassword.isNotEmpty() && (newPassword.length < 8 || newPassword.contains(" ")) -> PasswordCombinationCheck.RequirementsViolated
     newPassword == storedPassword -> PasswordCombinationCheck.NewPasswordEqualsStoredPassword
     newPassword != newPasswordRepeat -> PasswordCombinationCheck.RepeatedPasswordMismatch
     else -> {

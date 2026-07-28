@@ -74,6 +74,14 @@ data class CreateSepaMandate(
 )
 
 @Serializable
+data class ReadPersonalSepaMandates(
+    /**
+     * take no params
+     */
+    override val queryParams: QueryParams = emptyList()
+): Parameters()
+
+@Serializable
 data class ReadSepaMandatesByCreditorsLegalEntity(
     /**
      * takes param
