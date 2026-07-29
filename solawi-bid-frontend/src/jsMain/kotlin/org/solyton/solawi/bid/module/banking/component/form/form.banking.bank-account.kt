@@ -1,13 +1,10 @@
 package org.solyton.solawi.bid.module.banking.component.form
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import org.evoleq.change.data.Change
 import org.evoleq.change.data.Keep
 import org.evoleq.compose.Markup
+import org.evoleq.compose.conditional.When
 import org.evoleq.compose.form.Form
 import org.evoleq.compose.form.field.Field
 import org.evoleq.compose.form.label.Label
@@ -15,7 +12,6 @@ import org.evoleq.compose.layout.Horizontal
 import org.evoleq.language.Lang
 import org.evoleq.language.subComp
 import org.evoleq.language.texts
-import org.evoleq.compose.conditional.When
 import org.evoleq.language.title
 import org.evoleq.math.Source
 import org.evoleq.math.emit
@@ -31,8 +27,8 @@ import org.solyton.solawi.bid.module.banking.data.BIC
 import org.solyton.solawi.bid.module.banking.data.BankAccountId
 import org.solyton.solawi.bid.module.banking.data.IBAN
 import org.solyton.solawi.bid.module.banking.data.bankaccount.AccountType
-import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccountChange
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
+import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccountChange
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
 import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
 import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
@@ -75,7 +71,8 @@ fun BankAccountForm(
                 Label(
                     (bankAccountInputs * subComp("accountType") * title).emit(),
                     id = "bank-account-type",
-                    labelStyle = formLabelDesktopStyle
+                    labelStyle = formLabelDesktopStyle,
+                    isRequired = true
                 )
                 val accountTypesMap: Map<String, AccountType> = mapOf(
                     "CREDITOR" to AccountType.CREDITOR,
@@ -110,7 +107,8 @@ fun BankAccountForm(
                 Label(
                     (bankAccountInputs * subComp("isActive") * title).emit(),
                     id = "bank-account-is-active",
-                    labelStyle = formLabelDesktopStyle
+                    labelStyle = formLabelDesktopStyle,
+                    isRequired = true
                 )
                 val accountTypesMap: Map<String, Boolean> = mapOf(
                     "TRUE" to true,
@@ -147,7 +145,8 @@ fun BankAccountForm(
             Label(
                 (bankAccountInputs * subComp("accountHolder") * title).emit(),
                 id = "account-holder",
-                labelStyle = formLabelDesktopStyle
+                labelStyle = formLabelDesktopStyle,
+                isRequired = true
             )
             TextInput(accountHolderState ?: "") {
                 id("account-holder")
@@ -206,7 +205,8 @@ fun BankAccountForm(
             Label(
                 (bankAccountInputs * subComp("iban") * title).emit(),
                 id = "iban",
-                labelStyle = formLabelDesktopStyle
+                labelStyle = formLabelDesktopStyle,
+                isRequired = true
             )
             TextInput(ibanState ?: "") {
                 id("iban")
@@ -257,7 +257,6 @@ fun BankAccountForm(
                 }
             }
         }
-
     }
 }
 
@@ -312,7 +311,7 @@ fun defaultBankAccountInputs() = texts {
 }
 
 
-val defaultInputs by lazy {   Source{ defaultBankAccountInputs() }}
+val defaultInputs by lazy { Source{ defaultBankAccountInputs() }}
 
 
 fun update(change: BankAccountChange, onChange: (BankAccount) -> Unit ) {

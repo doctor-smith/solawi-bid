@@ -4,13 +4,10 @@ import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
 import org.evoleq.math.Source
 import org.evoleq.math.emit
-import org.jetbrains.compose.web.css.Color
-import org.jetbrains.compose.web.css.StyleScope
-import org.jetbrains.compose.web.css.color
-import org.jetbrains.compose.web.css.em
-import org.jetbrains.compose.web.css.fontSize
+import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.H2
+import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 
 
@@ -60,6 +57,33 @@ fun SubTitle(
         style{
             color(Color.gray)
             fontSize(1.2.em)
+            styles()
+        }
+    }
+){
+    Text(text)
+}
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun SubTitleOfH3(
+    text: Source<String>,
+    styles: StyleScope.()->Unit = {}
+) = SubTitleOfH3(text.emit(), styles)
+
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun SubTitleOfH3(
+    text: String,
+    styles: StyleScope.()->Unit = {}
+) = H3(
+    attrs = {
+        style{
+            color(Color.gray)
+            fontSize(0.9.em)
             styles()
         }
     }
