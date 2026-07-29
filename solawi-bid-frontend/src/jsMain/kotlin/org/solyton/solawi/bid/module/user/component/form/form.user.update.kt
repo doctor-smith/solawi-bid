@@ -3,17 +3,19 @@ package org.solyton.solawi.bid.module.user.component.form
 import androidx.compose.runtime.*
 import org.evoleq.compose.form.label.Label
 import org.evoleq.compose.layout.Vertical
+import org.evoleq.compose.symbols.WarnLi
 import org.evoleq.language.Lang
+import org.evoleq.language.subComp
 import org.evoleq.language.title
+import org.evoleq.language.valueOf
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.times
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.color
-import org.jetbrains.compose.web.dom.Div
-import org.jetbrains.compose.web.dom.PasswordInput
-import org.jetbrains.compose.web.dom.Text
-import org.jetbrains.compose.web.dom.TextInput
+import org.jetbrains.compose.web.css.em
+import org.jetbrains.compose.web.css.paddingLeft
+import org.jetbrains.compose.web.dom.*
 import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
@@ -41,11 +43,31 @@ fun UpdateUserForm(
     var passwordCombinationCheckState by remember { mutableStateOf<PasswordCombinationCheck>(PasswordCombinationCheck.Empty) }
 
     val inputs = texts * inputs
+    val hints = texts * subComp("hints")
+    val hintsTitle = hints * title
+    val authenticationRequired = hints * valueOf("authenticationRequired")
+    val loginCredentialsChanged = hints * valueOf("loginCredentialsChanged")
 
     Vertical {
+
         Div(attrs = { style { formDesktopStyle() } }) {
+            P { Text(hintsTitle.emit()) }
+            Ul(attrs = {
+                style {
+                    paddingLeft(1.5.em)
+                }
+            }) {
+                WarnLi { Text(authenticationRequired.emit()) }
+                WarnLi { Text(loginCredentialsChanged.emit()) }
+            }
+
             Div(attrs = { style { fieldDesktopStyle() } }) {
-                Label((inputs * usernameReader * title).emit(), id = "username", labelStyle = formLabelDesktopStyle)
+                Label(
+                    text = (inputs * usernameReader * title).emit(),
+                    id = "username",
+                    labelStyle = formLabelDesktopStyle,
+                    isRequired = true
+                )
                 TextInput(username) {
                     // disabled()
                     id("username")
@@ -63,7 +85,12 @@ fun UpdateUserForm(
             }
 
             Div(attrs = { style { fieldDesktopStyle() } }) {
-                Label((inputs * oldPassword * title).emit(), id = "oldPassword", labelStyle = formLabelDesktopStyle)
+                Label(
+                    text = (inputs * oldPassword * title).emit(),
+                    id = "oldPassword",
+                    labelStyle = formLabelDesktopStyle,
+                    isRequired = true
+                )
                 PasswordInput(oldPasswordState) {
                     id("oldPassword")
                     style { textInputDesktopStyle() }

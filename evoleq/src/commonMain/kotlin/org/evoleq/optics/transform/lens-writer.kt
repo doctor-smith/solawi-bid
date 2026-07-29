@@ -1,9 +1,6 @@
 package org.evoleq.optics.transform
 
-import org.evoleq.math.MathDsl
-import org.evoleq.math.Writer
-import org.evoleq.math.merge
-import org.evoleq.math.write
+import org.evoleq.math.*
 import org.evoleq.optics.lens.Lens
 
 /**
@@ -234,3 +231,17 @@ fun <W, P> Lens<W, List<P>>.upsertAll(compare: (updatedData: P, listItem: P) -> 
     updatedItems.filterNot{ updatedList.contains(it) }.forEach { updatedItem -> updatedList.add(updatedItem) }
     set( updatedList ) (w)
 } }
+
+
+fun <W, P> seq(writers: Sequence<Writer<W, P>>): Writer<W, P> = Writer { updatedItem ->
+    when(val initial = writers.firstOrNull()) {
+        null -> {w:W -> w}
+        else -> {
+            val others = writers.drop(1)
+            others.fold(initial(updatedItem)) { acc, next -> next(updatedItem) o acc }
+        }
+    }
+}
+
+
+fun <W, P> seq(vararg writers: Writer<W, P>): Writer<W, P> = seq(writers.asSequence())

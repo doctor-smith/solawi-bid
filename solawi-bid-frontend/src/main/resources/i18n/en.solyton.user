@@ -17,6 +17,7 @@ en {
                             }
                             password {
                                 title: "Password"
+                                hint: "Password must contain at least 8 characters,"
                             }
                             repeatPassword{
                                 title: "Repeat Password"
@@ -111,6 +112,7 @@ en {
                 dialogs {
                     updateUser {
                         title: "Update User"
+                        subTitle: "Update username or password"
                         inputs {
                             username {
                                 title: "Username"
@@ -124,6 +126,11 @@ en {
                             repeatPassword {
                                 title: "Repeat Password"
                             }
+                        }
+                        hints {
+                            title: "Hints"
+                            authenticationRequired: "Authentication required. You need to provide your current password to change your username or password."
+                            loginCredentialsChanged: "Changing your username or password will change your login credentials."
                         }
                         errors {
                             wrongPassword: "Wrong Password"

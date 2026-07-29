@@ -111,7 +111,8 @@ de {
                 }
                 dialogs {
                     updateUser {
-                        title: "Update User"
+                        title: "Nutzerdaten bearbeiten"
+                        subTitle: "Nutzernamen oder Passwort ändern."
                         inputs {
                             username {
                                 title: "Username"
@@ -131,6 +132,11 @@ de {
                             requirementsViolated: "Passwortanforferungen verletzt"
                             repeatedPasswordMismatch: "Passwörter stimmen nicht überein"
                             newPasswordEqualsOld: "Das neue Passwort muss sich vom alten unterscheiden"
+                        }
+                        hints {
+                            title: "Hinweise"
+                            authenticationRequired: "Authentifizierung erforderlich. Sie müssen Ihr aktuelles Passwort eingeben, um Ihren Benutzernamen oder Ihr Passwort zu ändern."
+                            loginCredentialsChanged: "Wenn Sie Ihren Benutzernamen oder Ihr Passwort ändern, ändern sich auch Ihre Anmeldedaten."
                         }
                         okButton {
                             title: "Ok"

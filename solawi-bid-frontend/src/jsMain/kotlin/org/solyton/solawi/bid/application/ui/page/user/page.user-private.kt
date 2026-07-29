@@ -16,7 +16,6 @@ import org.evoleq.language.*
 import org.evoleq.math.*
 import org.evoleq.optics.lens.FilterBy
 import org.evoleq.optics.lens.Lens
-import org.evoleq.optics.lens.times
 import org.evoleq.optics.prism.Either
 import org.evoleq.optics.storage.Read
 import org.evoleq.optics.storage.Storage
@@ -86,6 +85,7 @@ import org.solyton.solawi.bid.module.user.data.reader.personalData
 import org.solyton.solawi.bid.module.user.data.reader.properties
 import org.solyton.solawi.bid.module.user.data.reader.table
 import org.solyton.solawi.bid.module.user.data.reader.value
+import org.solyton.solawi.bid.module.user.data.user
 import org.solyton.solawi.bid.module.user.data.user.User
 import org.solyton.solawi.bid.module.user.data.user.profile
 import org.solyton.solawi.bid.module.user.data.user.username
@@ -152,13 +152,14 @@ fun PrivateUserPage(storage: Storage<Application>) = withLoading(
 
     val permissions = texts * subComp("permissions")
 
-
+/*
     LaunchedEffect((userDataStorage * userIdFromToken).emit()) {
         val userId = (userDataStorage * userIdFromToken).emit()
         if(userId != null) {
             (storage * userIso * userActions).dispatch(readPersonalUserProfile(UserId(userId)))
         }
     }
+    */
     LaunchedEffect((userDataStorage * userIdFromToken).emit()) {
         val userId = (userDataStorage * userIdFromToken).emit()
         if(userId != null) {
@@ -242,7 +243,7 @@ fun UserData(
             H3 { Text("Nutzerdaten") }
             Horizontal {
                 When(opened) {
-                    val storedUser = userDataStorage.read()
+                    var storedUser by remember { mutableStateOf( userDataStorage.read()) }
                     var userState by remember { mutableStateOf(UpdateUser(
                         oldUsername = Username(storedUser.username ),
                         newUsername = Username(storedUser.username),
@@ -258,7 +259,9 @@ fun UserData(
                         (storage * modals).showUpdateUserModal(
                             texts = dialogs * subComp("updateUser"),
                             device = deviceData,
-                            isOkButtonDisabled = {false},
+                            isOkButtonDisabled = {
+                                userState.oldPassword.value.isBlank()
+                            },
                             user = storedUser,
                             setUser = {userState = it},
                         ) {
@@ -306,13 +309,15 @@ fun UserProfile(
     deviceData: Source<DeviceType>,
 ) {
 
-    val userDataStorage = storage * userData
+    val scope = rememberCoroutineScope()
+
+    val userDataStorage = storage * userIso * user
     // User Profile
-    val userProfilePrism = (userData * profile).asPrism()
-    val titlePrism = (userData * profile).asPrism() * userTitle
-    val phoneNumberPrism = (userData * profile).asPrism() * phoneNumber
-    val phoneNumber1NumberPrism = (userData * profile).asPrism() * phoneNumber1
-    val addressesPrism = (userData * profile).asPrism() * addresses
+    val userProfilePrism = profile.asPrism()
+    val titlePrism = profile.asPrism() * userTitle
+    val phoneNumberPrism = profile.asPrism() * phoneNumber
+    val phoneNumber1NumberPrism = profile.asPrism() * phoneNumber1
+    val addressesPrism = profile.asPrism() * addresses
     val firstAddressPrism = addressesPrism * Lens(
         get = { it.first() },
         set = { address -> { list: List<Address> -> list + listOf(address) } }
@@ -324,26 +329,36 @@ fun UserProfile(
     val firstAddressStateOrProvincePrism = firstAddressPrism * stateOrProvince
     val firstAddressCityPrism = firstAddressPrism * city
 
-    val userProfileStorage = storage * userProfilePrism
-    val titleStorage = storage * titlePrism
-    val phoneNumberStorage = storage * phoneNumberPrism
-    val phoneNumber1NumberStorage = storage * phoneNumber1NumberPrism
-    val firstAddressStorage = storage * firstAddressPrism
-    val firstAddressLine1Storage = storage * firstAddressLine1Prism
-    val firstAddressLine2Storage = storage * firstAddressLine2Prism
-    val firstAddressPostalCodeStorage = storage * firstAddressPostalCodePrism
-    val firstAddressCountryStorage = storage * firstAddressCountryPrism
-    val firstAddressStateOrProvinceStorage = storage * firstAddressStateOrProvincePrism
-    val firstAddressCityStorage = storage * firstAddressCityPrism
+    val userProfileStorage = userDataStorage * userProfilePrism
+    val titleStorage = userDataStorage * titlePrism
+    val phoneNumberStorage = userDataStorage * phoneNumberPrism
+    val phoneNumber1NumberStorage = userDataStorage * phoneNumber1NumberPrism
+    val firstAddressStorage = userDataStorage * firstAddressPrism
+    val firstAddressLine1Storage = userDataStorage * firstAddressLine1Prism
+    val firstAddressLine2Storage = userDataStorage* firstAddressLine2Prism
+    val firstAddressPostalCodeStorage = userDataStorage * firstAddressPostalCodePrism
+    val firstAddressCountryStorage = userDataStorage * firstAddressCountryPrism
+    val firstAddressStateOrProvinceStorage = userDataStorage * firstAddressStateOrProvincePrism
+    val firstAddressCityStorage = userDataStorage * firstAddressCityPrism
 
     val countryTexts = storage * i18N * language * CountryLangComponent.Base.component
 
     var userProfileState by remember { mutableStateOf(userProfileStorage.read()) }
     var opened by remember { mutableStateOf(false) }
-    val upsertUserProfileScope = rememberCoroutineScope()
 
 
-    val userId = userDataStorage * userIdFromToken map { UserId(requireNotNull(it){"Token should contain user id. User id is null."}) }
+    val userId = userDataStorage * userIdFromToken map { it?.let{UserId(it)} }
+
+    LaunchedEffect(userId.emit()) {
+        val id = userId.emit()
+        if(id != null) {
+            (storage * userIso * userActions).dispatch(readPersonalUserProfile(id))
+        }
+    }
+    LaunchedEffect(userProfileStorage.read()) {
+        userProfileState = userProfileStorage.read()
+    }
+
     // User Profile
     Wrap(cardStyle) {
         Horizontal({
@@ -361,7 +376,6 @@ fun UserProfile(
                             deviceType = deviceData,
                         ) {
                             // open create dialog
-                            // open update dialog
                             (storage * userIso * userModals).showUpsertUserProfileModal(
                                 styles = { dev -> commonModalStyles(dev) },
                                 device = deviceData,
@@ -373,8 +387,9 @@ fun UserProfile(
                             ) {
                                 if (userProfileState == null) return@showUpsertUserProfileModal
                                 val profile = requireNotNull(userProfileState) { "userProfileState is null" }
+                                val userId = requireNotNull(userId.emit()) { "userId is null" }
                                 val data = CreateUserProfile(
-                                    userId = userId.emit(),
+                                    userId = userId,
                                     firstname = Firstname(profile.firstname),
                                     lastname = Lastname(profile.lastname),
                                     title = profile.title?.let { Title(it) },
@@ -392,7 +407,7 @@ fun UserProfile(
                                     )}?: CreateAddress.empty
                                     ,
                                 )
-                                upsertUserProfileScope.launch {
+                                scope.launch {
                                     (storage * userIso * userActions) dispatch createUserProfile(data)
                                 }
                             }
@@ -411,7 +426,7 @@ fun UserProfile(
                                 device = deviceData,
                                 texts = texts * subComp("dialogs.updateUserProfile"),
                                 countryTexts = countryTexts,
-                                userProfile = userProfileStorage.read(),
+                                userProfile = userProfileState,
                                 setUserProfile = { userProfile -> userProfileState = userProfile },
                                 cancel = {}
                             ) {
@@ -439,7 +454,7 @@ fun UserProfile(
                                         )
                                     },
                                 )
-                                upsertUserProfileScope.launch {
+                                scope.launch {
                                     (storage * userIso * userActions) dispatch updateUserProfile(data)
                                 }
                             }
@@ -505,6 +520,7 @@ fun UserProfile(
                     Text("Keine Adresse angegeben")
                 }
             }
+
         }
     }
 }

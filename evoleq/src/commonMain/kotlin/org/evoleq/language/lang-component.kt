@@ -16,3 +16,6 @@ val component: (LangComponent)->Reader<Lang, Lang.Block> = { c -> Reader { lang 
 
 @I18N
 val subComp: (String)->Reader<Lang, Lang.Block> = {c -> Reader { lang -> (lang as Lang.Block).component(c) }}
+
+@I18N
+val valueOf: (String)->Reader<Lang.Block, String> = { s -> Reader { lang -> lang[s] } }

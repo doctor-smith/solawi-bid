@@ -9,13 +9,13 @@ import org.evoleq.language.get
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.optics.storage.Storage
-import org.evoleq.optics.storage.filter
 import org.evoleq.optics.storage.remove
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 import org.solyton.solawi.bid.module.control.button.CancelButton
 import org.solyton.solawi.bid.module.control.button.SubmitButton
 import org.solyton.solawi.bid.module.style.button.symbolicButtonStyle
+import org.solyton.solawi.bid.module.style.page.SubTitleOfH3
 import org.w3c.dom.HTMLElement
 
 @Markup
@@ -137,8 +137,14 @@ fun <Id> ModalHeader(
     }){
         Text(texts["title"])
     }
+    val subTitle = tryOrNull{ texts["subTitle"] }
+    if(subTitle != null) SubTitleOfH3(subTitle) {
+        marginTop((-10).px)
+        marginLeft(10.px)
+        marginBottom(10.px)
+    }
 }
-
+fun <T> tryOrNull(block: ()->T) = try{block()}catch(_: Exception) { null }
 @Markup
 @Composable
 @Suppress("FunctionName")
