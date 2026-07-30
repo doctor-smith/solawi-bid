@@ -1,9 +1,3 @@
-// This file has been partially auto generated. 
-// Please don't make any changes to the lenses.
-// Feel free to add or remove annotated properties from
-// the generator data class. The corresponding lenses 
-// will be removed or added on the next run of the 
-// lens generator. See below for more details.
 package org.solyton.solawi.bid.application.data
 
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -41,16 +35,6 @@ import org.solyton.solawi.bid.module.shares.data.types.ShareType
 import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 import org.solyton.solawi.bid.module.user.data.user.User
 
-/**
- * Generator class.
- * Feel free to add or remove annotated properties from
- * the class. Make sure that they are annotated with
- * - @ReadOnly
- * - @ReadWrite
- * If you want that a property-lens will be generated
- * on the next run of the lens generator.
- * If not, just omit the annotation or annotate it with @Ignore.
- */
 @Lensify data class Application (
     @ReadOnly val environment: Environment,
     @ReadOnly val api: Api = solawiApi,
@@ -95,6 +79,8 @@ import org.solyton.solawi.bid.module.user.data.user.User
     @ReadWrite val userApplications: List<UserApplications> = listOf(),
     @ReadWrite val applicationOrganizationRelations: List<ApplicationOrganizationRelation> = listOf(),
 ): ProcessManager<Application> {
-    override fun withProcesses(processes: Processes): Application
-        = copy(processes = processes)
+    override fun withProcesses(processes: Processes): Application = apply {
+        this.processes.registry.clear()
+        this.processes.registry.putAll(processes.registry)
+    }
 }
