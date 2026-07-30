@@ -4,7 +4,6 @@ import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
 import org.evoleq.compose.storage.onInit
 import org.evoleq.math.state.runOn
-import org.evoleq.optics.storage.Action
 import org.evoleq.optics.storage.ActionEnvelope
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.onChange
@@ -14,6 +13,7 @@ import org.solyton.solawi.bid.application.data.actions
 import org.solyton.solawi.bid.application.data.env.Environment
 import org.solyton.solawi.bid.application.storage.event.*
 import org.solyton.solawi.bid.application.storage.middleware.ProcessAction
+import org.solyton.solawi.bid.module.process.data.processes.Processes
 import org.solyton.solawi.bid.module.user.data.user.User
 
 
@@ -26,10 +26,21 @@ fun Storage(): Storage<Application> {
         userData = User()
     ))}
 
+    // Keep processes separate - changes shall not trigger rendering
+    val processes = Processes()
+
     return Storage<Application>(
-        read = { application },
+        read = { application.copy(processes = processes) },
         write = {
-            newApplication -> application = newApplication
+            newApplication -> when{
+                newApplication.processes !== processes -> {
+                    processes.registry.clear()
+                    processes.registry.putAll(newApplication.processes.registry)
+                }
+                else -> {
+                    application = newApplication
+                }
+            }
         }
     )
     .onInit {

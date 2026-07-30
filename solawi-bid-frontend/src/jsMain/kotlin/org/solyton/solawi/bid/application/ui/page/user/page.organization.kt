@@ -28,6 +28,7 @@ import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.application.data.context
 import org.solyton.solawi.bid.application.data.env.i18nEnvironment
 import org.solyton.solawi.bid.application.data.i18N
 import org.solyton.solawi.bid.application.data.mainActions
@@ -72,6 +73,7 @@ import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.fiscalYears
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.mappings.BankingMappings
+import org.solyton.solawi.bid.module.context.data.isEmpty
 import org.solyton.solawi.bid.module.control.button.*
 import org.solyton.solawi.bid.module.country.i18n.CountryLangComponent
 import org.solyton.solawi.bid.module.distribution.action.READ_DISTRIBUTION_POINTS
@@ -145,7 +147,11 @@ import org.solyton.solawi.bid.application.data.environment as appEnv
 @Composable
 @Suppress("FunctionName","CyclomaticComplexMethod", "CognitiveComplexMethod")
 fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: String) {
+
+    if((applicationStorage * context * isEmpty()).emit() ) return@OrganizationPage
+
     val scope = rememberCoroutineScope()
+
     return withLoading(
         isLoading = isLoading(
             // I18N stuff
