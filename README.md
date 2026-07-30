@@ -97,6 +97,18 @@ Instead of manually compiling and executing a Kotlin/JS project every time you w
 ./gradlew jsBrowserRun --continuous
 ```
 
+## Tests
+
+### Run E2E-Tests locally
+To run the e2e-tests for the web app on a local machine, one has to 
+ - set the env vars TEST_USER and TEST_USER_PASSWORD in ```local.properties```
+   ```
+      # E2E tests
+      TEST_USER=<youruser>
+      TEST_USER_PASSWORD=<yourpassword>
+   ```
+   and then execute the gradle task ```e2e:test```
+ - start the application (frontend and backend)
 
 ## Useful links 
 

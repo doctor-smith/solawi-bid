@@ -1,1 +1,5 @@
 sdk.dir=</path/to/Android/Sdk>
+
+# E2E tests
+TEST_USER=<youruser>
+TEST_USER_PASSWORD=<yourpassword>

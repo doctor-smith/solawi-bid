@@ -1,3 +1,6 @@
+import java.util.*
+
+
 plugins {
     kotlin("jvm")
     alias(libs.plugins.evoleq.exposedx.migrations)
@@ -56,5 +59,20 @@ tasks.withType<Test>().configureEach {
         val requestedTasks = gradle.startParameter.taskNames
         // Disable tests if `build` is requested and this test task wasn't explicitly requested
         !("build" in requestedTasks && name !in requestedTasks)
+    }
+}
+
+
+val localProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+
+tasks.withType<Test>().configureEach {
+    // Only set if not already provided by the shell / CI
+    listOf("TEST_USER", "TEST_USER_PASSWORD").forEach { key ->
+        val fromEnv = System.getenv(key)
+        val fromProps = localProps.getProperty(key)
+        (fromEnv ?: fromProps)?.let { environment(key, it) }
     }
 }
