@@ -233,6 +233,8 @@ fun UserData(
 
     val dialogs = texts * subComp("dialogs")
 
+    val storedUserName = userDataStorage * username
+
     Wrap(cardStyle) {
         var opened by remember { mutableStateOf(true) }
         // User Data
@@ -243,10 +245,9 @@ fun UserData(
             H3 { Text("Nutzerdaten") }
             Horizontal {
                 When(opened) {
-                    var storedUser by remember { mutableStateOf( userDataStorage.read()) }
                     var userState by remember { mutableStateOf(UpdateUser(
-                        oldUsername = Username(storedUser.username ),
-                        newUsername = Username(storedUser.username),
+                        oldUsername = Username(storedUserName.read() ),
+                        newUsername = Username(storedUserName.read()),
                         oldPassword = Password(""),
                         newPassword = Password("")
                     )) }
@@ -262,7 +263,7 @@ fun UserData(
                             isOkButtonDisabled = {
                                 userState.oldPassword.value.isBlank()
                             },
-                            user = storedUser,
+                            user = userDataStorage.read(),
                             setUser = {userState = it},
                         ) {
                             scope.launch {
