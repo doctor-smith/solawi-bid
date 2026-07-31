@@ -22,6 +22,7 @@ import org.evoleq.language.Lang
 import org.evoleq.language.Locale
 import org.evoleq.math.Source
 import org.evoleq.math.emit
+import org.evoleq.math.map
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.storage.nextId
@@ -87,7 +88,12 @@ sealed class ManageCollectionPayments {
 }
 
 sealed class Tabs {
-    class Payments {
+
+    interface Id {
+        val id: Int
+    }
+    class Payments : Id {
+        override val id = 0
         enum class Paragraphs {
             OVERVIEW,
             CREATE_NEW_PAYMENTS,
@@ -99,6 +105,19 @@ sealed class Tabs {
             PAYMENTS_CONFIRMED
         }
     }
+    class PaymentHistory : Id {
+        override val id = 1
+    }
+
+    class Messages : Id {
+        override val id: Int = 2
+    }
+}
+
+private enum class TabId(val id: Int) {
+    Payments (0),
+    PaymentHistories(1),
+    Messages(2),
 }
 
 data class UIState(
@@ -168,7 +187,9 @@ fun ManagePaymentsOfSepaCollectionModal(
     },
     onCancel = {},
     texts = texts,
-    styles = commonModalStyles(device),
+    styles = commonModalStyles(device).modifyContainerStyle {
+        //height(80.vh)
+    },
 ) {
     val scope = rememberCoroutineScope()
     val sepaCollection = sepaCollectionSource.emit()
@@ -194,17 +215,25 @@ fun ManagePaymentsOfSepaCollectionModal(
             TabSelectionBar(tabStyles.tabSelectionBarStyles) {
                 TabTrigger(
                     tabStyles.tabTriggerStyles,
-                    id = 0,
+                    id = TabId.Payments.id,
                     currentTab = selectedTab,
-                    trigger = { selectedTab = 0 }
+                    trigger = { selectedTab = TabId.Payments.id }
                 ) {
                     Text("Payments")
                 }
                 TabTrigger(
                     tabStyles.tabTriggerStyles,
-                    id = 1,
+                    id = TabId.PaymentHistories.id,
                     currentTab = selectedTab,
-                    trigger = { selectedTab = 1 }
+                    trigger = { selectedTab = TabId.PaymentHistories.id }
+                ) {
+                    Text("Payment Histories")
+                }
+                TabTrigger(
+                    tabStyles.tabTriggerStyles,
+                    id = TabId.Messages.id,
+                    currentTab = selectedTab,
+                    trigger = { selectedTab = TabId.Messages.id }
                 ) {
                     Text("Messages")
                 }
@@ -212,10 +241,13 @@ fun ManagePaymentsOfSepaCollectionModal(
             TabContentWrapper(tabStyles.tabContentWrapperStyles) {
                 TabContent(
                     tabStyles.tabContentStyles,
-                    0,
+                    TabId.Payments.id,
                     selectedTab
                 ) {
-                    val paymentHistory = SepaPaymentHistories.build(sepaPaymentLinks.emit())
+                    val paymentHistory = SepaPaymentHistories.build(
+                        sepaCollection.sepaPayments.map{it.sepaPaymentId},
+                        sepaPaymentLinks.emit()
+                    )
 
                     val openPayments =
                         sepaCollection.sepaPayments.filter { payment -> payment.status == PaymentExecutionStatus.CREATED }
@@ -440,7 +472,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                 }
                 TabContent(
                     tabStyles.tabContentStyles,
-                    1,
+                    TabId.Messages.id,
                     selectedTab
                 ) {
                     val openPayments =
@@ -518,7 +550,25 @@ fun ManagePaymentsOfSepaCollectionModal(
 
                      */
                 }
+                TabContent(
+                    tabStyles.tabContentStyles,
+                    TabId.PaymentHistories.id,
+                    selectedTab
+                ) {
+
+
+
+                    TabTitle("Payment Histories")
+
+                    SepaPaymentHistoryList(
+                        sepaPaymentLinks = sepaPaymentLinks,
+                        sepaPayments = sepaCollectionSource map { it.sepaPayments },
+                        sepaMandates = sepaCollectionSource map { it.sepaMandates }
+                    )
+
+                }
             }
+
         }
     }
 }

@@ -15,9 +15,14 @@ data class SepaPaymentLink(
 data class SepaPaymentPreNode(val id: SepaPaymentId, val links: List<SepaPaymentLink>)
 
 sealed class SepaPaymentHistory(open val id: SepaPaymentId) {
-    data class Initial(override val id: SepaPaymentId, val links: List<Successor>) : SepaPaymentHistory(id)
+
+    interface Links {
+        val links: List<Successor>
+    }
+
+    data class Initial(override val id: SepaPaymentId, override val links: List<Successor>) : SepaPaymentHistory(id), Links
     sealed class Successor(override val id: SepaPaymentId, open val kind: SuccessorKind): SepaPaymentHistory(id) {
-        data class Node(override val id: SepaPaymentId, override val kind: SuccessorKind, val links: List<Successor>) : Successor(id, kind)
+        data class Node(override val id: SepaPaymentId, override val kind: SuccessorKind, override val links: List<Successor>) : Successor(id, kind), Links
         data class Leaf(override val id: SepaPaymentId, override val kind: SuccessorKind) : Successor(id, kind)
     }
 
@@ -138,7 +143,7 @@ data class SepaPaymentHistories(val all: List<SepaPaymentHistory.Initial>) {
     }
 
     companion object {
-        fun build(links: List<SepaPaymentLink>): SepaPaymentHistories {
+        fun build(paymentIds: List<SepaPaymentId>, links: List<SepaPaymentLink>): SepaPaymentHistories {
             // Group links by predecessor to quickly find successors
             val successorsByPredecessor = links.groupBy { it.predecessorId }
 
@@ -146,8 +151,17 @@ data class SepaPaymentHistories(val all: List<SepaPaymentHistory.Initial>) {
             val allSuccessorIds = links.map { it.successorId }.toSet()
 
             // Find root payments (those that are predecessors but never successors)
-            val rootIds = links.map { it.predecessorId }.distinct()
+            val rootIdsFromLinks = links.map { it.predecessorId }.distinct()
                 .filterNot { it in allSuccessorIds }
+            // Build list of paymentIds which do not appear in links
+            val rootIdsRest = paymentIds.filterNot {
+                id -> id in links.flatMap {
+                    listOf(it.successorId, it.predecessorId)
+                }.distinct()
+            }
+            // Put all root ids together
+            val rootIds = rootIdsFromLinks + rootIdsRest
+
 
             // Recursive function to build successor tree
             fun buildSuccessors(paymentId: SepaPaymentId): List<SepaPaymentHistory.Successor> {

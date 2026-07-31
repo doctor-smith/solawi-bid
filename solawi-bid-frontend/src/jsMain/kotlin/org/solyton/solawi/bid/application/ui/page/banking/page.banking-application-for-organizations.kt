@@ -31,6 +31,7 @@ import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.letsPlot.commons.intern.filterNotNullValues
 import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.application.data.context
 import org.solyton.solawi.bid.application.data.managedUsers
 import org.solyton.solawi.bid.application.data.transform.banking.bankingApplicationIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
@@ -54,6 +55,7 @@ import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.message.message
 import org.solyton.solawi.bid.module.banking.service.download
 import org.solyton.solawi.bid.module.constants.checkIcon
+import org.solyton.solawi.bid.module.context.data.isEmpty
 import org.solyton.solawi.bid.module.control.button.*
 import org.solyton.solawi.bid.module.dialog.component.WarningSymbol
 import org.solyton.solawi.bid.module.dialog.component.showDialogModal
@@ -83,6 +85,9 @@ import org.solyton.solawi.bid.module.values.UserId
 @Composable
 @Suppress("FunctionName","CognitiveComplexMethod", "CyclomaticComplexMethod")
 fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, providerId: ProviderId, up: String) {
+
+    if((storage * context * isEmpty()).emit() ) return@BankingApplicationForOrganizationsPage
+
     val scope = rememberCoroutineScope()
     val managedUsers = storage * managedUsers
     val bankingApplicationStorage = storage * bankingApplicationIso
@@ -115,7 +120,9 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
         }
     }
     LaunchedEffectOnSource(Read(managedUsers)) {
-        storage * userIso * userActions dispatch readUserProfiles(managedUsers.read().map { it.id })
+        if(Read(managedUsers).emit().isNotEmpty()) {
+            storage * userIso * userActions dispatch readUserProfiles(managedUsers.read().map { it.id })
+        }
     }
     LaunchedEffectOnSource(Read(legalEntity)) {
         val legalEntityId = legalEntity.read().legalEntityId
