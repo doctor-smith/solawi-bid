@@ -44,6 +44,9 @@ data class SepaPaymentHistories(val all: List<SepaPaymentHistory.Initial>) {
         }
     }
 
+    /**
+     *
+     */
     @Suppress("CognitiveComplexMethod", "ReturnCount")
     fun predecessorOf(id: SepaPaymentId): SepaPaymentHistory? {
         // Helper function to check if successors list contains the given id
@@ -56,6 +59,8 @@ data class SepaPaymentHistories(val all: List<SepaPaymentHistory.Initial>) {
         @Suppress("CognitiveComplexMethod")
         fun searchInSuccessors(successors: List<SepaPaymentHistory.Successor>): SepaPaymentHistory? {
             for (successor in successors) {
+                if (successor.id == id) return successor
+
                 when (successor) {
                     is SepaPaymentHistory.Successor.Node -> {
                         // Check if this node directly contains the id in its links
@@ -69,6 +74,13 @@ data class SepaPaymentHistories(val all: List<SepaPaymentHistory.Initial>) {
 
                     is SepaPaymentHistory.Successor.Leaf -> {
                         // Leaf nodes have no successors, continue
+                        /*
+                        if(successor.id == id) {
+                            return successor
+                        }
+
+                         */
+                        continue
                     }
                 }
             }
@@ -79,6 +91,8 @@ data class SepaPaymentHistories(val all: List<SepaPaymentHistory.Initial>) {
         for (initial in all) {
             // Check if the initial directly contains the id in its links
             if (hasSuccessorWithId(initial.links)) {
+                println(">>>>>>>>>>>>>>>>>>>>>> initial case")
+                println("id = ${initial.id}")
                 return initial
             }
             // Recursively search in the initial's successors

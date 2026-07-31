@@ -49,6 +49,7 @@ import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessage
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPaymentHistories
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPaymentLink
+import org.solyton.solawi.bid.module.banking.service.isCandidateForNextPeriodPayment
 import org.solyton.solawi.bid.module.control.button.*
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
 import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
@@ -237,13 +238,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                         SepaSequenceType.UNCLEAR
                     )
                     val nextPeriodPaymentCreationCandidates = (confirmedPayments + failedPayments).filter {
-                        // Payments might be created if
-                        // the sequenceType is allowed
-                        it.sequenceType !in forbiddenSeqTypes &&
-                        // there is no regular next period payment and
-                        it.nextPeriodSuccessorId == null &&
-                        // if the payment is retried, we can create a new one, if it has no failing predecessors
-                        it.retrySuccessorId != null && paymentHistory.predecessorOf(it.sepaPaymentId)?.didNotFail() ?: true
+                        it.isCandidateForNextPeriodPayment(paymentHistory, forbiddenSeqTypes)
                     }
 
                     val retryPaymentCreationCandidates = failedPayments.filter {
@@ -611,7 +606,8 @@ fun CreateNewPayments(
                             bgColor = Color.white,
                             texts = { "Create new payments for selected & visible items" },
                             deviceType = device,
-                            isDisabled = false // chosenMandateIds.isEmpty()
+                            isDisabled = false
+
                         ) {
                             scope.launch {
                                 chosenMandateIds =
@@ -758,7 +754,7 @@ fun RecentlyCreatedPayments(
                 bgColor = Color.white,
                 texts = { generateSepaMessageButtonText },
                 deviceType = device,
-                isDisabled = data.isAllSelectedVisiblePaymentsOfSameExecutionDate()
+                isDisabled = !data.isAllSelectedVisiblePaymentsOfSameExecutionDate()
             ) {
                 (storage * bankingApplicationModals).showUpsertSepaMessageModal(
                     parentModalId = modalId,
