@@ -1,14 +1,15 @@
 package org.solyton.solawi.bid.application.ui.component.organization
 
 import androidx.compose.runtime.*
-import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
+import org.evoleq.compose.conditional.When
 import org.evoleq.compose.form.Form
 import org.evoleq.compose.form.field.Field
 import org.evoleq.compose.form.label.Label
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.compose.style.data.device.DeviceType
+import org.evoleq.compose.symbols.InfoLi
 import org.evoleq.language.Lang
 import org.evoleq.language.get
 import org.evoleq.language.subComp
@@ -22,7 +23,7 @@ import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.dom.TextInput
-import org.solyton.solawi.bid.module.control.button.StdButton
+import org.jetbrains.compose.web.dom.Ul
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
 import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
 import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
@@ -34,7 +35,6 @@ import org.solyton.solawi.bid.module.style.form.formDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
 import org.solyton.solawi.bid.module.style.form.textInputDesktopStyle
 import org.solyton.solawi.bid.module.user.data.address.*
-import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfileToImport
 import org.solyton.solawi.bid.module.user.data.profile.UserProfile
 import org.solyton.solawi.bid.module.user.data.profile.addresses
@@ -42,7 +42,7 @@ import org.solyton.solawi.bid.module.values.Username
 
 @Markup
 @Composable
-@Suppress("FunctionName", "CyclomaticComplexMethod")
+@Suppress("FunctionName", "CyclomaticComplexMethod", "UnusedParameter")
 fun UserProfileForm(
     device: Source<DeviceType>,
     inputs: Source<Lang.Block>,
@@ -53,8 +53,6 @@ fun UserProfileForm(
     setUserProfile: (UserProfile) -> Unit,
     importUserProfile: (UserProfileToImport) -> Unit,
 ){
-    val scope = rememberCoroutineScope()
-
     var userProfileState by remember { mutableStateOf(userProfile) }
     Form(formDesktopStyle) {
         val horizontalFieldsStyle: StyleScope.() -> Unit = {
@@ -64,7 +62,17 @@ fun UserProfileForm(
         // User Profile is used everywhere
         val userProfileInputs = inputs * subComp("userProfile")
         var usernameState by remember { mutableStateOf(username?.value) }
-
+        Ul(attrs = {
+            style {
+                paddingLeft(1.5.em)
+            }
+        }) {
+            When(userProfileState == null ){
+                InfoLi { Text("Wenn Sie Ihrer Organisation ein existirerendes Nutzer Konto als Mitgied hinzufügen wollen, dann geben Sie bitte eine Email Adresses ein und clicken 'Ok'") }
+                InfoLi { Text("Es ist nicht möglich ein Mitglied ein zweites Mal hinzuzufügen. Der Ok Button wird in diesem Fall deaktiviert.") }
+                InfoLi { Text("Sobald dem Nutzer Konto ein Profil zugewiesen wurde, bekommen Sie die Möglichkeit zusätzliche Daten zu bearbeiten.") }
+            }
+        }
 
         Horizontal {
 
@@ -86,8 +94,8 @@ fun UserProfileForm(
                             try {
                                 val username = Username(it.value.trim().lowercase())
                                 setUsername(username)
-                            } catch (exception: Exception) {
-                                console.log("Username is not valid")
+                            } catch (_: Exception) {
+                                // console.log("Username is not valid")
                             }
                         }
                     }
@@ -406,7 +414,24 @@ fun UserProfileForm(
                 }
             }
         }
+/*
+        When(username != null && userProfile == null) {
+            // Try to find user profile
+            StdButton(
+                texts = {"Find Profile"},
+                deviceType = device,
+                disabled =  usernameState == null || userProfileState == null || userProfileState?.addresses?.isEmpty()?:false,
+                styles = {},
+                dataId = "updateProfileButton",
+            ) {
+                scope.launch {
+                    actions dispatch readUserProfiles()
+                }
+            }
+        }
+*/
         // var showUpdateProfileButton by remember {mutableStateOf(true)}
+        /*
         if(( username == null || userProfile == null)) {
             StdButton(
                 texts = {"Create Profile"},
@@ -441,5 +466,7 @@ fun UserProfileForm(
                 }
             }
         }
+
+         */
     }
 }

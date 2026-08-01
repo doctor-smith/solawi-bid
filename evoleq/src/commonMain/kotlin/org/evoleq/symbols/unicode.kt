@@ -10,4 +10,4 @@ const val FORBIDDEN = "🚫"
 
 const val BUCKET = "🗑"
 
-const val INFO = "i"
+const val INFO = "\uD83D\uDEC8"
