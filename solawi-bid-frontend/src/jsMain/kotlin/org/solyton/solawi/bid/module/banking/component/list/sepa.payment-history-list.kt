@@ -201,16 +201,12 @@ fun PaymentItem(
     data: VisualPayment,
     handleClick: () -> Unit = {}
 ) {
-    val statusColor = when(data.status) {
-        PaymentExecutionStatus.FAILED -> Color.crimson
-        PaymentExecutionStatus.CONFIRMED,
-        PaymentExecutionStatus.PAYED_MANUALLY -> Color.seagreen
-        PaymentExecutionStatus.CREATED,
-        PaymentExecutionStatus.MESSAGE_CREATED,
-        PaymentExecutionStatus.SENT,
-        PaymentExecutionStatus.PENDING -> Color.orange
-        PaymentExecutionStatus.DROPPED -> Color.gray
+    val statusColor = colorOf(data.status)
+    val currentRetry = when(data ) {
+        is VisualPayment.Periodic -> data.retries.lastOrNull()
+        else -> null
     }
+    val retryStatusColor = currentRetry?.let{ colorOf(it.status )}?: statusColor
 
     Div({
         title( data.executionDate.format(Locale.Iso))
@@ -220,6 +216,7 @@ fun PaymentItem(
                 style(LineStyle.Solid)
                 width(1.px)
                 borderRadius(5.px)
+                color(retryStatusColor)
             }
             display(DisplayStyle.Flex)
             flexDirection(FlexDirection.Column)
@@ -235,7 +232,17 @@ fun PaymentItem(
         Text(data.status.name)
 
     }
+}
 
+fun colorOf(data: PaymentExecutionStatus): CSSColorValue = when(data) {
+    PaymentExecutionStatus.FAILED -> Color.crimson
+    PaymentExecutionStatus.CONFIRMED,
+    PaymentExecutionStatus.PAYED_MANUALLY -> Color.seagreen
+    PaymentExecutionStatus.CREATED,
+    PaymentExecutionStatus.MESSAGE_CREATED,
+    PaymentExecutionStatus.SENT,
+    PaymentExecutionStatus.PENDING -> Color.orange
+    PaymentExecutionStatus.DROPPED -> Color.gray
 }
 
 data class PeriodicPaymentsData(
