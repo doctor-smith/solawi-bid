@@ -49,6 +49,7 @@ import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
 import org.solyton.solawi.bid.application.ui.page.dashboard.permissions.canAccessApplication
 import org.solyton.solawi.bid.application.ui.page.user.action.Change
+import org.solyton.solawi.bid.application.ui.page.user.action.Requirements
 import org.solyton.solawi.bid.application.ui.page.user.action.memberCreateAction
 import org.solyton.solawi.bid.application.ui.page.user.action.memberUpdateAction
 import org.solyton.solawi.bid.application.ui.page.user.data.isApplicationListOpened
@@ -225,6 +226,7 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
 
         val organization = userModuleStorage * user * organizations * DeepSearch { it.organizationId == organizationId }
         val members = organization * members
+        val usernamesOfMembers = Read(members ) map {list -> list.map { it.username} }
         val memberProfilesMap = (userModuleStorage * managedUsers.get) map { users: List<ManagedUser> ->
             users.associateBy({ it.id }) { it.profile }
         }
@@ -517,21 +519,49 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                             val addressesAreValid = addresses.all { it.isValid() }
                                             when {
                                                 un == null -> true
+                                                un.value in usernamesOfMembers.emit() -> true
                                                 up == null -> false
                                                 up.lastname.isBlank() -> true
                                                 up.firstname.isBlank() -> true
-                                                addresses.isEmpty() -> true
+                                                addresses.isEmpty() -> false
                                                 !addressesAreValid -> true
                                                 else -> false
                                             }
                                         }
                                     ) {
+                                        val username = requireNotNull(usernameState) { "Username is null" }
+                                        val userProfile = userProfileState
+                                        val bankAccount = bankAccountState
+                                        val shareSubscriptions = shareSubscriptionsState
+                                        val requirements = when{
+                                            userProfile == null -> Requirements(
+                                                profileRequired = false,
+                                                addressRequired = false,
+                                                bankAccountRequired = false,
+                                                shareSubscriptionsRequired = false
+                                            )
+
+                                            userProfile.addresses.isEmpty() -> Requirements(
+                                                profileRequired = true,
+                                                addressRequired = false,
+                                                bankAccountRequired = false,
+                                                shareSubscriptionsRequired = false
+                                            )
+                                            else -> Requirements(
+                                                profileRequired = true,
+                                                addressRequired = true,
+                                                bankAccountRequired = false,
+                                                shareSubscriptionsRequired = false
+                                            )
+                                        }
+
                                         val actions = memberCreateAction(
                                             providerId = ProviderId(organizationId),
-                                            username = usernameState!!,
-                                            userProfileChange = Change(null, userProfileState),
-                                            bankAccountChange = Change(null, bankAccountState),
-                                            shareSubscriptionsChange = Change(null, shareSubscriptionsState)
+                                            username = username,
+                                            userProfileChange = Change(null, userProfile),
+                                            bankAccountChange = Change(null, bankAccount),
+                                            shareSubscriptionsChange = Change(null, shareSubscriptions),
+                                            requirements = requirements
                                         ).next(
                                             *dataActions(organizationId)
                                         )

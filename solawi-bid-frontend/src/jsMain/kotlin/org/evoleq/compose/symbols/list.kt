@@ -1,10 +1,7 @@
 package org.evoleq.compose.symbols
 
 import androidx.compose.runtime.Composable
-import org.evoleq.symbols.BUCKET
-import org.evoleq.symbols.CHECK
-import org.evoleq.symbols.FORBIDDEN
-import org.evoleq.symbols.WARN
+import org.evoleq.symbols.*
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.StyleScope
 import org.jetbrains.compose.web.css.color
@@ -35,12 +32,34 @@ fun ForbiddenLi(
     content: @Composable () -> Unit
 ) = CustomLi("\"$FORBIDDEN  \"", styles, content)
 
+@Composable
+fun InfoLi(
+    styles: LiStyles = LiStyles().modifyTypeStyles {
+        color(Color.blue)
+    },
+    content: @Composable () -> Unit
+) = CustomLi("\"$INFO  \"", styles, content)
+
 data class LiStyles(
     val typeStyles: StyleScope.()->Unit= {
         color(Color.orangered)
     },
     val contentStyles: StyleScope.()->Unit = {}
-)
+) {
+    fun modifyTypeStyles(styles: StyleScope.()->Unit): LiStyles = copy(
+        typeStyles = {
+            typeStyles()
+            styles()
+        }
+    )
+
+    fun modifyContentStyles(styles: StyleScope.()->Unit): LiStyles = copy(
+        typeStyles = {
+            contentStyles()
+            styles()
+        }
+    )
+}
 
 @Composable
 fun CustomLi(

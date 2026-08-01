@@ -57,8 +57,9 @@ fun memberCreateAction(
 
     val importMembers = ImportMembers(providerId.value, listOf(username.value))
 
+
     @Suppress("UseCheckOrError")
-    val userProfile = userProfileChange.new?: when {
+    val userProfile = userProfileChange.new ?: when {
         requirements.profileRequired -> throw IllegalStateException("User Profile is required!")
         else -> null
     }
@@ -77,17 +78,22 @@ fun memberCreateAction(
         else -> CreateAddress.empty
     }
 
-    val importUserProfiles = ImportUserProfiles(listOf(
-        UserProfileToImport(
-            username = username.value,
-            firstName = userProfile!!.firstname,
-            lastName = userProfile.lastname,
-            title = userProfile.title,
-            phoneNumber = userProfile.phoneNumber,
-            phoneNumber1 = userProfile.phoneNumber1,
-            address = address,
+    val importUserProfiles = when(userProfile) {
+        null -> ImportUserProfiles(emptyList())
+        else -> ImportUserProfiles(
+            listOf(
+                UserProfileToImport(
+                    username = username.value,
+                    firstName = userProfile.firstname,
+                    lastName = userProfile.lastname,
+                    title = userProfile.title,
+                    phoneNumber = userProfile.phoneNumber,
+                    phoneNumber1 = userProfile.phoneNumber1,
+                    address = address,
+                )
+            )
         )
-    ))
+    }
     val shareSubscriptionsToImport: List<ImportShareSubscription>? = shareSubscriptionsChange.new?.all?.map {
         ImportShareSubscription(
             shareOfferId = it.shareOfferId,
@@ -122,7 +128,8 @@ fun memberCreateAction(
         ,ActionEnvelope(
             userIso * importUserProfiles(importUserProfiles),
             IMPORT_USER_PROFILES,
-            clearOnFinish = true
+            clearOnFinish = true,
+            run = userProfile != null
         ).next(
             ActionEnvelope(
                 run = shareSubscriptionsToImport != null,
