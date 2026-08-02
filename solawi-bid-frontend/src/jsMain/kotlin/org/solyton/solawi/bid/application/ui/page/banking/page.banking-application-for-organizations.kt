@@ -917,6 +917,11 @@ fun SepaCollections(
             bankingApplicationActions dispatch readPersonalSepaCollections(LegalEntityId(providerId.value))
         }
     }
+    LaunchedEffectOnSource(Read(sepaCollections)) {
+        launch {
+            bankingApplicationActions dispatch readSepaPaymentLInksByLegalEntity(LegalEntityId(providerId.value))
+        }
+    }
 
 
     Wrap(cardStyle) {
