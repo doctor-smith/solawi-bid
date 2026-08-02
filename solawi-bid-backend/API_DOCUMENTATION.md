@@ -62,6 +62,7 @@
 | POST | users/profiles/import | ImportUserProfiles  | ImportUserProfiles | UserProfiles |
 | PATCH | users/profiles/read-by-ids | ReadUserProfiles  | ReadUserProfiles | UserProfiles |
 | PATCH | users/profiles/update | UpdateUserProfile  | UpdateUserProfile | UserProfile |
+| PATCH | users/update | UpdateUser  | UpdateUser | User |
 
 </details>
 <details>
@@ -105,6 +106,7 @@
 | POST | banking/bank-accounts/create | CreateBankAccount  | CreateBankAccount | BankAccount |
 | DELETE | banking/bank-accounts/delete | DeleteBankAccount  | DeleteBankAccount | Boolean |
 | POST | banking/bank-accounts/import | ImportBankAccounts  | ImportBankAccounts | BankAccounts |
+| GET | banking/bank-accounts/personal/all | ReadPersonalBankAccounts  | ReadPersonalBankAccounts | BankAccounts |
 | PATCH | banking/bank-accounts/update | UpdateBankAccount  | UpdateBankAccount | BankAccount |
 | GET | banking/creditors/identifiers/by-legal-entity | ReadCreditorIdentifierByLegalEntity  | ReadCreditorIdentifierByLegalEntity | CreditorIdentifier |
 | GET | banking/fiscal-years/all | ReadFiscalYears  | ReadFiscalYears | FiscalYears |
@@ -121,6 +123,7 @@
 | PATCH | banking/sepa/collections/update | UpdateSepaCollection  | UpdateSepaCollection | SepaCollection |
 | GET | banking/sepa/mandates/by-creditors-legal-entity | ReadSepaMandatesByCreditorsLegalEntity  | ReadSepaMandatesByCreditorsLegalEntity | SepaMandates |
 | POST | banking/sepa/mandates/create | CreateSepaMandate  | CreateSepaMandate | SepaMandate |
+| GET | banking/sepa/mandates/personal/all | ReadPersonalSepaMandates  | ReadPersonalSepaMandates | SepaMandates |
 | PATCH | banking/sepa/mandates/update | UpdateSepaMandate  | UpdateSepaMandate | SepaMandate |
 | GET | banking/sepa/messages/by-legal-entity | ReadSepaMessagesByLegalEntityId  | ReadSepaMessagesByLegalEntityId | SepaMessages |
 | GET | banking/sepa/payment-links/by-legal-entity | ReadSepaPaymentLinksByLegalEntity  | ReadSepaPaymentLinksByLegalEntity | SepaPaymentLinks |
@@ -130,6 +133,7 @@
 | DELETE | banking/sepa/payments/delete-many | DeleteSepaPayments  | DeleteSepaPayments | SepaPaymentIds |
 | PATCH | banking/sepa/payments/update | UpdateSepaPayment  | UpdateSepaPayment | SepaPayment |
 | PATCH | banking/sepa/payments/update-execution-statuses | UpdateSepaPaymentExecutionStatuses  | UpdateSepaPaymentExecutionStatuses | SepaPayments |
+| PATCH | banking/sepa/payments/update-many | UpdateSepaPayments  | UpdateSepaPayments | SepaPayment |
 
 </details>
 <details>
