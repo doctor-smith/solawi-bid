@@ -40,7 +40,6 @@ import org.solyton.solawi.bid.module.banking.component.form.defaultBankAccountIn
 import org.solyton.solawi.bid.module.banking.component.modal.*
 import org.solyton.solawi.bid.module.banking.component.modal.sepa.*
 import org.solyton.solawi.bid.module.banking.data.*
-import org.solyton.solawi.bid.module.banking.data.api.GenerateSepaMessageForCollection
 import org.solyton.solawi.bid.module.banking.data.api.ImportBankAccounts
 import org.solyton.solawi.bid.module.banking.data.api.UpdateSepaMandate
 import org.solyton.solawi.bid.module.banking.data.application.*
@@ -56,8 +55,6 @@ import org.solyton.solawi.bid.module.banking.service.download
 import org.solyton.solawi.bid.module.constants.checkIcon
 import org.solyton.solawi.bid.module.context.data.isEmpty
 import org.solyton.solawi.bid.module.control.button.*
-import org.solyton.solawi.bid.module.dialog.component.WarningSymbol
-import org.solyton.solawi.bid.module.dialog.component.showDialogModal
 import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.page.component.Page
@@ -1010,12 +1007,16 @@ fun SepaCollections(
                                         executionDate = null,
                                         setManageCollectionPayments = {data -> manageCollectionPaymentsState = data}
                                     ) {
+                                        // Action is not necessary anymore
+                                        // TODO Consider Removal after test phase
+                                        /*
                                         bankingApplicationModals.showDialogModal(
                                             texts = dialogModalTexts("Are you sure you want to bulk edit share subscriptions?"),
                                             device = deviceType,
                                             symbol = { WarningSymbol(deviceType = deviceType.emit()) },
                                             onCancel = {}
                                         ) {
+
 
                                             scope.launch {
                                                 when (val state = manageCollectionPaymentsState) {
@@ -1041,6 +1042,7 @@ fun SepaCollections(
                                                 }
                                             }
                                         }
+                                         */
 
                                     } }
                             }
