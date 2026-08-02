@@ -36,6 +36,7 @@ fun MoveFailedPaymentsModal(
     texts: Lang.Block,
     modals: Storage<Modals<Int>>,
     device: Source<DeviceType>,
+    isDataValid:  ()->Boolean,
     data: OverAllActionData,
     setData: (OverAllActionData) -> Unit,
     update: ()->Unit
@@ -53,6 +54,7 @@ fun MoveFailedPaymentsModal(
         width(80.percent)
         marginLeft(5.percent)
     },
+    isOkButtonDisabled = { !isDataValid() }
 ) {
     var dataState by remember { mutableStateOf(data) }
 
@@ -102,6 +104,7 @@ fun Storage<Modals<Int>>.showMoveFailedPaymentsModal(
     parentModalId: Int,
     texts: Lang.Block,
     device: Source<DeviceType>,
+    isDataValid:  ()->Boolean,
     data: OverAllActionData,
     setData: (OverAllActionData) -> Unit,
     update: ()->Unit
@@ -114,6 +117,7 @@ fun Storage<Modals<Int>>.showMoveFailedPaymentsModal(
             texts = texts,
             modals = this@showMoveFailedPaymentsModal,
             device = device,
+            isDataValid = isDataValid,
             data = data,
             setData = setData,
             update = update

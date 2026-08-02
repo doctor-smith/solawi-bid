@@ -1033,10 +1033,19 @@ fun PendingPayments(
                         parentModalId = modalId,
                         texts = dialogModalTexts("Yeeeeeha!"),
                         device = device,
+                        isDataValid = {
+                            val selectedPayments = dataState.selectedVisibleEntries()
+                            val paymentIds = selectedPayments.map { it.key.paymentId }
+                            val failureReasons = selectedPayments
+                                .filter{it.value.payment.failureReason != null}
+                                .map { it.key.paymentId to it.value.payment.failureReason!! }
+                                .toMap()
+                            paymentIds.size == failureReasons.size
+                        },
                         data = dataState,
                         setData = {newData -> dataState = newData},
 
-                        ){
+                    ){
                         scope.launch {
                             val selectedPayments = dataState.selectedVisibleEntries()
                             val paymentIds = selectedPayments.map { it.key.paymentId }
@@ -1108,6 +1117,15 @@ fun ConfirmedPayments(
                     parentModalId = modalId,
                     texts = dialogModalTexts("Yeeeeeha!"),
                     device = device,
+                    isDataValid = {
+                        val selectedPayments = dataState.selectedVisibleEntries()
+                        val paymentIds = selectedPayments.map { it.key.paymentId }
+                        val failureReasons = selectedPayments
+                            .filter{it.value.payment.failureReason != null}
+                            .map { it.key.paymentId to it.value.payment.failureReason!! }
+                            .toMap()
+                        paymentIds.size == failureReasons.size
+                    },
                     data = dataState,
                     setData = {newData -> dataState = newData},
 
