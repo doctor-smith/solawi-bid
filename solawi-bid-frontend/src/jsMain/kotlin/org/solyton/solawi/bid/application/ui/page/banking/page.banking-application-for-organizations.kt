@@ -23,7 +23,6 @@ import org.evoleq.optics.lens.FilterBy
 import org.evoleq.optics.storage.Read
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
-import org.evoleq.optics.storage.write
 import org.evoleq.optics.transform.times
 import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.compose.web.css.*
@@ -80,6 +79,7 @@ import org.solyton.solawi.bid.module.values.AccessorId
 import org.solyton.solawi.bid.module.values.LegalEntityId
 import org.solyton.solawi.bid.module.values.ProviderId
 import org.solyton.solawi.bid.module.values.UserId
+import org.solyton.solawi.bid.module.banking.data.sepa.message.download as downloadLens
 
 @Markup
 @Composable
@@ -901,14 +901,18 @@ fun SepaCollections(
     val sepaMandates = sepaModule * sepaMandates
     val sepaPaymentLinks = sepaModule * sepaPaymentLinks
 
-    LaunchedEffect((sepaModule * sepaMessageString).read()) {
+    LaunchedEffect(
+        (sepaModule * sepaMessageString).read(),
+        (sepaModule * sepaMessageString * downloadLens).read()
+    ) {
         val sepaMessageString = sepaModule * sepaMessageString
-        val downloadStatus = sepaMessageString.read().download
-        if(downloadStatus == Download.Start) {
+        val downloadStatus = sepaMessageString * downloadLens
+        if(downloadStatus.read() == Download.Start) {
+            scope.launch{
+                bankingApplicationActions dispatch readPersonalSepaCollections(LegalEntityId(providerId.value))
+            }.join()
             download((sepaMessageString * message).read(), "PAIN_${now().format(Locale.Iso)}.xml")
-            scope.launch {
-                downloadStatus.write(Download.Done)
-            }
+            downloadStatus.write(Download.None)
         }
     }
     LaunchedEffectOnSource(Read(sepaMandates)) {
