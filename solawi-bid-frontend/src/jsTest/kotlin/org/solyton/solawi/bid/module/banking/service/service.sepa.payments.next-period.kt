@@ -263,7 +263,33 @@ class IsCandidateForNextPeriodPaymentTest {
             expected = false
         ),
         TestCase(
-            name = "Case 9",
+            name = "Case 9 - new",
+            description = """
+                |Non-initial payment 
+                |    status: ............: CONFIRMED (RETRY)
+                |    predecessors .......: { FAILED (RETRY) }  
+                |    successors .........: ∅     
+                |         
+                |Expectation: 🚫 RETRY CANDIDATE         
+                """.trimMargin(),
+            data = Data(
+                payment = base.copy(
+                    nextPeriodSuccessorId = UUID_3.toSepaPaymentId()
+                ),
+                histories = SepaPaymentHistory.Initial(
+                    id = NIL_UUID.toSepaPaymentId(),
+                    links = listOf(
+                        SepaPaymentHistory.Successor.Leaf(
+                            id = base.sepaPaymentId,
+                            kind = SuccessorKind.RETRY,
+                        )
+                    )
+                ).asHistories(),
+            ),
+            expected = false
+        ),
+        TestCase(
+            name = "Case 10",
             description = """
                 |Non-initial payment 
                 |    status: ............: FAILED
@@ -296,7 +322,7 @@ class IsCandidateForNextPeriodPaymentTest {
             expected = true
         ),
         TestCase(
-            name = "Case 10",
+            name = "Case 11",
             description = """
                 |Non-initial payment 
                 |    status: ............: FAILED
@@ -329,7 +355,7 @@ class IsCandidateForNextPeriodPaymentTest {
             expected = false
         ),
         TestCase(
-            name = "Case 11",
+            name = "Case 12",
             description = """
                 |Non-initial payment 
                 |    status: ............: FAILED
@@ -355,7 +381,7 @@ class IsCandidateForNextPeriodPaymentTest {
             expected = false
         ),
         TestCase(
-            name = "Case 12",
+            name = "Case 13",
             description = """
                 |Non-initial payment 
                 |    status: ............: FAILED
