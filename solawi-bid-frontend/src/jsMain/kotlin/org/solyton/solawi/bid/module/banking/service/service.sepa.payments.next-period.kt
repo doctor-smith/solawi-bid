@@ -25,7 +25,9 @@ fun SepaPayment.isCandidateForNextPeriodPayment(history:  SepaPaymentHistories, 
     nextPeriodSuccessorId == null &&
     // if the payment is retried, we can create a new one, if it has no failing predecessors
     when(status){
-        PaymentExecutionStatus.FAILED ->
+        PaymentExecutionStatus.FAILED,
+        PaymentExecutionStatus.PAYED_MANUALLY,
+        PaymentExecutionStatus.CONFIRMED ->
             // Check if the payment has a direct failing predecessor
             history[sepaPaymentId]?.didNotFail()?:false &&
             // Check if the payment has other failing predecessors
