@@ -133,6 +133,8 @@ fun ApiSepaMandate.toDomainType(): SepaMandate = SepaMandate(
     referenceIds = referenceIds
 )
 
+fun ApiSepaPayments.toDomainType(): List<SepaPayment> = all.map { it.toDomainType() }
+
 fun ApiSepaPayment.toDomainType(): SepaPayment = SepaPayment(
     sepaPaymentId = sepaPaymentId,
     sepaMandateId = sepaMandateId,
