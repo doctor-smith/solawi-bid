@@ -18,7 +18,7 @@ import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.ElementScope
-import org.solyton.solawi.bid.module.banking.component.form.UpdateSepaPaymentForm
+import org.solyton.solawi.bid.module.banking.component.form.BulkUpdateSepaPaymentsForm
 import org.solyton.solawi.bid.module.banking.component.form.updateSepaPaymentFormTexts
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.deviceData
@@ -31,15 +31,15 @@ import org.w3c.dom.HTMLElement
 
 @Markup
 @Suppress("FunctionName", "UnusedParameter")
-fun UpdateSepaPaymentModal(
+fun BulkUpdateSepaPaymentsModal(
     id: Int,
     parentModalId: Int? = null,
     texts: Source<Lang.Block>,
     modals: Storage<Modals<Int>>,
     storage: Storage<BankingApplication>,
     device: Source<DeviceType>,
-    sepaPayment: SepaPayment,
-    setSepaPayment: (SepaPayment) -> Unit,
+    sepaPayments: List<SepaPayment>,
+    setSepaPayments: (List<SepaPayment>) -> Unit,
     update: ()->Unit
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
     type = ModalType.Dialog,
@@ -55,22 +55,22 @@ fun UpdateSepaPaymentModal(
 ) {
 
     Wrap {
-        UpdateSepaPaymentForm(
+        BulkUpdateSepaPaymentsForm(
             texts = texts * updateSepaPaymentForm,
-            sepaPayment = sepaPayment,
-            setSepaPayment = setSepaPayment
+            sepaPayments = sepaPayments,
+            setSepaPayments = setSepaPayments
         )
     }
 }
 
 @Markup
-fun Storage<Modals<Int>>.showUpdateSepaPaymentModal(
+fun Storage<Modals<Int>>.showBulkUpdateSepaPaymentsModal(
     parentModalId: Int? = null,
     storage: Storage<BankingApplication>,
     texts: Source<Lang.Block>,
     device: Source<DeviceType>,
-    sepaPayment: SepaPayment,
-    setSepaPayment: (SepaPayment) -> Unit,
+    sepaPayments: List<SepaPayment>,
+    setSepaPayments: (List<SepaPayment>) -> Unit,
     update: ()->Unit
 ) = with(nextId()) {
     put(this to ModalData(this,
@@ -78,24 +78,24 @@ fun Storage<Modals<Int>>.showUpdateSepaPaymentModal(
             null -> ModalType.Dialog
             else -> ModalType.Child<Int>(parentModalId)
         },
-        UpdateSepaPaymentModal(
+        BulkUpdateSepaPaymentsModal(
             this,
             parentModalId,
             texts,
-            this@showUpdateSepaPaymentModal,
+            this@showBulkUpdateSepaPaymentsModal,
             storage,
             device,
-            sepaPayment,
-            setSepaPayment,
+            sepaPayments,
+            setSepaPayments,
             update = update
         )
     ))
 }
 
 
-val updateSepaPaymentModalTexts = Source {
+val bulkUpdateSepaPaymentsModalTexts = Source {
     "dialog" texts {
-        "title" colon "Update SEPA payment"
+        "title" colon "Bulk update SEPA payments"
         "okButton" block {
             "title" colon "Ok"
         }

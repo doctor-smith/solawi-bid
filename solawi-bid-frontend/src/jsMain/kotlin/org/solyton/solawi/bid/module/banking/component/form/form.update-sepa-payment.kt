@@ -1,20 +1,27 @@
 package org.solyton.solawi.bid.module.banking.component.form
 
 import androidx.compose.runtime.*
+import org.evoleq.compose.date.format
+import org.evoleq.compose.date.parse
 import org.evoleq.compose.form.Form
 import org.evoleq.compose.form.field.Field
 import org.evoleq.compose.form.label.Label
 import org.evoleq.language.Lang
+import org.evoleq.language.Locale
 import org.evoleq.language.texts
 import org.evoleq.math.Source
 import org.evoleq.math.times
+import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.attributes.required
+import org.jetbrains.compose.web.dom.Input
 import org.jetbrains.compose.web.dom.TextInput
 import org.solyton.solawi.bid.module.application.i18n.inputs
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
+import org.solyton.solawi.bid.module.banking.i18n.executionDate
 import org.solyton.solawi.bid.module.banking.i18n.label
 import org.solyton.solawi.bid.module.banking.i18n.title
 import org.solyton.solawi.bid.module.banking.i18n.totalAmount
+import org.solyton.solawi.bid.module.style.form.dateInputDesktopStyle
 import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
@@ -28,7 +35,7 @@ fun UpdateSepaPaymentForm(
     formDesktopStyle
 ) {
     var amountState by remember{ mutableStateOf(sepaPayment.amount) }
-
+    var executionDateState by remember{ mutableStateOf(sepaPayment.executionDate) }
     // Fields:
     // amount,
     // execution date: arbitrary date, but with hints on taken dates
@@ -37,7 +44,6 @@ fun UpdateSepaPaymentForm(
     // Failure reason
 
     val formInputs = texts * inputs
-
     Field(fieldDesktopStyle) {
         Label(
             text = formInputs * totalAmount * label * title,
@@ -51,6 +57,26 @@ fun UpdateSepaPaymentForm(
             onInput {
                 amountState = it.value.toDoubleOrNull() ?: 0.0
                 setSepaPayment(sepaPayment.copy(amount = amountState))
+            }
+        }
+    }
+    Field(fieldDesktopStyle) {
+        Label(
+            text = formInputs * executionDate * label * title,
+            id = "label.execution-date",
+            labelStyle = formLabelDesktopStyle,
+            isRequired = true
+        )
+        key(executionDateState) {
+            Input(InputType.Date) {
+                id("input.execution-date")
+                // dataId("sepa.form.input.date.start")
+                value((executionDateState).format(Locale.Iso))
+                style { dateInputDesktopStyle() }
+                onInput {
+                    executionDateState = it.value.parse(Locale.Iso)
+                    setSepaPayment(sepaPayment.copy(executionDate = executionDateState))
+                }
             }
         }
     }
@@ -85,7 +111,6 @@ val updateSepaPaymentFormTexts by lazy {
                         "title" colon "Failure reason"
                     }
                 }
-
             }
         }
     }
