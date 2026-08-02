@@ -796,6 +796,53 @@ fun RecentlyCreatedPayments(
                     )
                 }
             }
+
+            var sepaPaymentsState by remember{mutableStateOf(
+                data.selectedVisibleEntries().map{
+                    it.value.payment
+                }
+            )}
+            BulkEditButton(
+                color = Color.black,
+                bgColor = Color.white,
+                texts = { "Bulk edit selected & visible Payments " },
+                deviceType = device,
+                isDisabled = data.selectedVisiblePaymentIds().isEmpty()
+            ) {
+                (storage * bankingApplicationModals).showBulkUpdateSepaPaymentsModal(
+                    parentModalId = modalId,
+                    storage = storage,
+                    texts = bulkUpdateSepaPaymentsModalTexts,
+                    device = device,
+                    sepaPayments = sepaPaymentsState,
+                    setSepaPayments = {
+                        sepaPaymentsState = it
+                    }
+                ) {
+
+                    scope.launch {val data: UpdateSepaPayments = sepaPaymentsState.map { payment ->
+                        with(payment){
+                            UpdateSepaPayment(
+                                sepaPaymentId,
+                                sepaMandateId,
+                                sepaCollectionId,
+                                amount,
+                                executionDate,
+                                sequenceType.toApiType(),
+                                status.toApiType(),
+                                failureReason,
+                                endToEndId,
+                            )
+                        }
+                    }.let{ UpdateSepaPayments (it)}
+                        (storage * bankingApplicationActions) dispatch updateSepaPayments(
+                            data = data,
+                            targetCollectionId = sepaCollection.sepaCollectionId
+                        )
+                    }
+                }
+            }
+
             val generateSepaMessageButtonText =
                 "Generate Sepa Message from selected & visible Payments. All these payments must be of the same execution date"
 
