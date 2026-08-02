@@ -12,7 +12,9 @@ import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.solyton.solawi.bid.module.banking.data.api.SepaPayment
+import org.solyton.solawi.bid.module.banking.data.api.SepaPayments
 import org.solyton.solawi.bid.module.banking.data.api.UpdateSepaPayment
+import org.solyton.solawi.bid.module.banking.data.api.UpdateSepaPayments
 import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.banking.data.toDomainType
 import org.solyton.solawi.bid.module.banking.repository.updatePayment
@@ -45,6 +47,36 @@ fun UpdateSepaPayment(): KlAction<Result<Contextual<UpdateSepaPayment>>, Result<
         } x database
     }
 }
+
+@MathDsl
+@Suppress("FunctionName")
+fun UpdateSepaPayments(): KlAction<Result<Contextual<UpdateSepaPayments>>, Result<SepaPayments>> = KlAction { result ->
+    DbAction { database ->
+        result bindSuspend { contextual ->
+            resultTransaction(database) {
+                val userId = contextual.userId
+                val data = contextual.data
+
+                val payments = data.all.map { payment ->
+                    updatePayment(
+                        userId,
+                        UUID.fromString(payment.sepaPaymentId.value),
+                        payment.amount,
+                        payment.executionDate.toDateTime().toJoda().toLocalDate(),
+                        payment.sequenceType.toDomainType(),
+                        payment.status.toDomainType(),
+                        today().toDateTime().toJoda(),
+                        payment.failureReason,
+                        payment.endToEndId,
+                        payment.sepaMessageId,
+                    ).toApiType()
+                }
+                SepaPayments(payments)
+            }
+        } x database
+    }
+}
+
 
 /*
 @MathDsl

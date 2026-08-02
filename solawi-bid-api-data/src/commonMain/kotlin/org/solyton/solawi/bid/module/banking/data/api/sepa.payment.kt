@@ -78,6 +78,10 @@ data class ReadSepaPaymentsByLegalEntity(
     override val queryParams: QueryParams
 ) : Parameters()
 
+@Serializable
+data class UpdateSepaPayments(
+    val all: List<UpdateSepaPayment>
+)
 
 @Serializable
 data class UpdateSepaPayment(
