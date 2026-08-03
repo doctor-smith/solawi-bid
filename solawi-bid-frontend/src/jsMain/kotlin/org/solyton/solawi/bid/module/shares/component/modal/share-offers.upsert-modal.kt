@@ -1,23 +1,8 @@
 package org.solyton.solawi.bid.module.shares.component.modal
 
-import org.evoleq.compose.conditional.When
-import org.jetbrains.compose.web.css.marginTop
-import org.jetbrains.compose.web.css.percent
-import org.jetbrains.compose.web.css.px
-import org.jetbrains.compose.web.css.width
-import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
-import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
-import org.solyton.solawi.bid.module.control.dropdown.Dropdown
-import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
-import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
-import org.solyton.solawi.bid.module.shares.data.api.PricingType
-import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.conditional.When
 import org.evoleq.compose.form.field.Field
 import org.evoleq.compose.form.label.Label
 import org.evoleq.compose.modal.Modal
@@ -33,12 +18,23 @@ import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.attributes.required
+import org.jetbrains.compose.web.css.marginTop
+import org.jetbrains.compose.web.css.percent
+import org.jetbrains.compose.web.css.px
+import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.Form
 import org.jetbrains.compose.web.dom.TextInput
+import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
+import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
-import org.solyton.solawi.bid.module.shares.data.management.deviceData
+import org.solyton.solawi.bid.module.control.dropdown.Dropdown
+import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
+import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
+import org.solyton.solawi.bid.module.shares.data.api.PricingType
 import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
+import org.solyton.solawi.bid.module.shares.data.management.deviceData
+import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
 import org.solyton.solawi.bid.module.shares.data.types.ShareType
 import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
@@ -142,7 +138,12 @@ fun UpsertShareOffersModal(
                 iconContent = {expanded -> SimpleUpDown(expanded) }
             ) { (_, value) ->
                 shareOffer = (shareOffer?:ShareOffer.default).copy(
-                    pricingType = value
+                    pricingType = value,
+                    // need to set proper price
+                    price = when(value) {
+                        PricingType.FIXED -> shareOffer?.price
+                        PricingType.FLEXIBLE -> null
+                    }
                 )
                 setShareOffer(shareOffer!!)
             }
