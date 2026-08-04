@@ -18,6 +18,7 @@ suspend infix fun <S: Any,T: Any> Result<S>.mapSuspend(f: suspend (S)->T): Resul
         is Result.Failure -> when(this@mapSuspend){
             is Result.Failure.Message -> Result.Failure.Message(value)
             is Result.Failure.Exception -> Result.Failure.Exception(value)
+            is Result.Failure.HttpStatusMessage -> Result.Failure.HttpStatusMessage(statusCode, value)
         }
     } }
 /**

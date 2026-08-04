@@ -9,4 +9,5 @@ data class Failure(
 fun Result.Failure.accept(): Result.Success<Failure> = when(this){
     is Result.Failure.Message -> Result.Success(Failure(value))
     is Result.Failure.Exception -> Result.Success(Failure(value.message?: "No message provided"))
+    is Result.Failure.HttpStatusMessage -> Result.Success(Failure(value))
 }

@@ -17,6 +17,7 @@ infix fun <S: Any,T: Any> Result<S>.map(f: (S)->T): Result<T> =
         is Result.Failure -> when(this){
             is Result.Failure.Message -> Result.Failure.Message(value)
             is Result.Failure.Exception -> Result.Failure.Exception(value)
+            is Result.Failure.HttpStatusMessage -> Result.Failure.HttpStatusMessage(statusCode, value)
         }
     }
 
