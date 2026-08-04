@@ -20,8 +20,6 @@ import org.solyton.solawi.bid.application.data.Application
 @Suppress("FunctionName")
 fun <S: Any, T : Any> OnError(action: Action<Application, S, T>): KlState<Storage<Application>, Result<Contextual<T>>, Result<Contextual<T>>> = { result ->
     State{ storage ->
-        println(result)
-        println(action.failOnError)
         when(result) {
             is Result.Success<*> -> result
             is Result.Failure -> handleFailure(result, storage, action)

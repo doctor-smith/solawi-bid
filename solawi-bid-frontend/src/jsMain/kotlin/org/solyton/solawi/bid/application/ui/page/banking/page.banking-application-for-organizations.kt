@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.application.ui.page.banking
 
 import androidx.compose.runtime.*
+import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -48,6 +49,8 @@ import org.solyton.solawi.bid.module.banking.data.download.Download
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.FiscalYear
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
 import org.solyton.solawi.bid.module.banking.data.internal.Currency
+import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntity
+import org.solyton.solawi.bid.module.banking.data.legalentity.legalEntityId
 import org.solyton.solawi.bid.module.banking.data.sepa.*
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.message.message
@@ -98,16 +101,21 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
             storage * userIso * userActions dispatch getUsers(providerId.value)
         }
         launch {
-            bankingApplicationActions dispatch readPersonalLegalEntity(providerId.value)
+            bankingApplicationActions dispatch readPersonalLegalEntity(
+                partyId = providerId.value,
+                onError = {(statusCode, _) -> {
+                    when(statusCode) {
+                        HttpStatusCode.NotFound -> it
+                        else -> it
+                    }
+                }},
+            )
         }
         launch {
            bankingApplicationActions dispatch readFiscalYears(providerId.value)
         }
         launch {
             bankingApplicationActions dispatch readBankAccounts(LegalEntityId(providerId.value))
-        }
-        launch{
-            bankingApplicationActions dispatch readPersonalSepaCollections(LegalEntityId(providerId.value))
         }
         launch {
             bankingApplicationActions dispatch readSepaMessagesByLegalEntity(LegalEntityId(providerId.value))
@@ -204,6 +212,7 @@ fun LegalEntity(
     val bankingApplicationModals = bankingApplicationStorage * bankingApplicationModals
 
     val legalEntity = bankingApplicationStorage * legalEntity
+    val isLegalEntityDefined = Read(legalEntity * legalEntityId) map { it.value != NIL_UUID }
     val creditorIdentifier = bankingApplicationStorage * creditorIdentifier
 
 
@@ -216,7 +225,7 @@ fun LegalEntity(
             }) {
                 H3 { Text("Your data as Legal Entity:") }
 
-                var legalEntityState by remember { mutableStateOf(legalEntity.read()) }
+
                 var creditorIdentifierState by remember { mutableStateOf(creditorIdentifier.read()) }
                 ActionsWrapper({
                     with(cardListStyles){actionsWrapper()}
@@ -224,41 +233,100 @@ fun LegalEntity(
                     justifyContent(JustifyContent.End)
                 }) {
                     When(opened) {
-                        EditButton(
-                            color = Color.black,
-                            bgColor = Color.white,
-                            texts = { "Edit " },
-                            deviceType = deviceType
-                        ) {
-                            bankingApplicationModals.showUpsertLegalEntityModal(
-                                bankingApplicationStorage,
-                                dialogModalTexts("Upsert Legal Entity") extend {
-                                    "inputs" block {
-                                        "name" block {
-                                            "title" colon "Name"
-                                        }
-                                        "legalForm" block {
-                                            "title" colon "Legal From"
-                                        }
-                                        "legalEntityType" block {
-                                            "title" colon "Type"
-                                        }
-                                        "creditorId" block {
-                                            "title" colon "Creditor ID"
-                                        }
-                                    }
-                                },
-                                deviceType,
-                                LegalEntityId(providerId.value),
-                                creditorIdentifierState,
-                                legalEntityState,
-                                { l, c ->
-                                    legalEntityState = l
-                                    creditorIdentifierState = c
-                                }
+                        When(isLegalEntityDefined * negate) {
+                            var legalEntityState by remember { mutableStateOf<LegalEntity?>(null) }
+                            PlusButton(
+                                color = Color.black,
+                                bgColor = Color.white,
+                                texts = { "Create " },
+                                deviceType = deviceType
                             ) {
-                                scope.launch {
+                                bankingApplicationModals.showUpsertLegalEntityModal(
+                                    bankingApplicationStorage,
+                                    dialogModalTexts("Create Legal Entity") extend {
+                                        "inputs" block {
+                                            "name" block {
+                                                "title" colon "Name"
+                                            }
+                                            "legalForm" block {
+                                                "title" colon "Legal From"
+                                            }
+                                            "legalEntityType" block {
+                                                "title" colon "Type"
+                                            }
+                                            "creditorId" block {
+                                                "title" colon "Creditor ID"
+                                            }
+                                        }
+                                    },
+                                    deviceType,
+                                    LegalEntityId(providerId.value),
+                                    creditorIdentifierState,
+                                    null,
+                                    { l, c ->
+                                        legalEntityState = l
+                                        creditorIdentifierState = c
+                                    }
+                                ) {
+                                    if(legalEntityState != null  )scope.launch {
+                                        val legalEntity = requireNotNull(legalEntityState) {"legal entity should not be null"}
+                                        bankingApplicationStorage * bankingApplicationActions dispatch createLegalEntity(
+                                            partyId = providerId.value,
+                                            legalEntity.name,
+                                            legalEntity.legalForm!!,
+                                            legalEntity.legalEntityType,
+                                            legalEntity.address,
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        When(isLegalEntityDefined) {
 
+                            var legalEntityState by remember { mutableStateOf(legalEntity.read()) }
+                            EditButton(
+                                color = Color.black,
+                                bgColor = Color.white,
+                                texts = { "Edit " },
+                                deviceType = deviceType
+                            ) {
+                                bankingApplicationModals.showUpsertLegalEntityModal(
+                                    bankingApplicationStorage,
+                                    dialogModalTexts("Upsert Legal Entity") extend {
+                                        "inputs" block {
+                                            "name" block {
+                                                "title" colon "Name"
+                                            }
+                                            "legalForm" block {
+                                                "title" colon "Legal From"
+                                            }
+                                            "legalEntityType" block {
+                                                "title" colon "Type"
+                                            }
+                                            "creditorId" block {
+                                                "title" colon "Creditor ID"
+                                            }
+                                        }
+                                    },
+                                    deviceType,
+                                    LegalEntityId(providerId.value),
+                                    creditorIdentifierState,
+                                    legalEntityState,
+                                    { l, c ->
+                                        legalEntityState = l
+                                        creditorIdentifierState = c
+                                    }
+                                ) {
+                                    scope.launch {
+                                        bankingApplicationStorage * bankingApplicationActions dispatch updateLegalEntity(
+                                            legalEntityId = legalEntityState.legalEntityId,
+                                            partyId = providerId.value,
+                                            name = legalEntityState.name,
+                                            legalForm = legalEntityState.legalForm!!,
+                                            legalEntityType = legalEntityState.legalEntityType,
+                                            address = legalEntityState.address,
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -885,6 +953,9 @@ fun SepaCollections(
     val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
     val bankingApplicationModals = bankingApplicationStorage * bankingApplicationModals
 
+    val legalEntity = bankingApplicationStorage * legalEntity
+    val isLegalEntityDefined = Read(legalEntity * legalEntityId) map { it.value != NIL_UUID }
+
     val creditorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.userId == UserId(providerId.value) }
 
     val sepaModule = bankingApplicationStorage * sepaModule
@@ -913,12 +984,12 @@ fun SepaCollections(
         }
     }
     LaunchedEffectOnSource(Read(sepaMandates)) {
-        launch{
+        if(isLegalEntityDefined.emit()) launch{
             bankingApplicationActions dispatch readPersonalSepaCollections(LegalEntityId(providerId.value))
         }
     }
     LaunchedEffectOnSource(Read(sepaCollections)) {
-        launch {
+        if(isLegalEntityDefined.emit()) launch {
             bankingApplicationActions dispatch readSepaPaymentLInksByLegalEntity(LegalEntityId(providerId.value))
         }
     }
@@ -944,77 +1015,85 @@ fun SepaCollections(
                 }
             }
             When(opened) {
-                HeaderWrapper {
-                    Header(cardListStyles.header) {
-                        HeaderCell("Bank Account") { width(20.percent) }
-                        HeaderCell("CollectionKey"){ width(10.percent) }
-                        HeaderCell("Mandate Ref Prefix"){ width(15.percent) }
-                        HeaderCell("Remittance Info"){ width(20.percent) }
-                        HeaderCell("Active"){ width(5.percent) }
-                        HeaderCell("Seq. Type") { width(10.percent) }
-                        /*
+                When(isLegalEntityDefined) {
+                    HeaderWrapper {
+                        Header(cardListStyles.header) {
+                            HeaderCell("Bank Account") { width(20.percent) }
+                            HeaderCell("CollectionKey") { width(10.percent) }
+                            HeaderCell("Mandate Ref Prefix") { width(15.percent) }
+                            HeaderCell("Remittance Info") { width(20.percent) }
+                            HeaderCell("Active") { width(5.percent) }
+                            HeaderCell("Seq. Type") { width(10.percent) }
+                            /*
                         HeaderCell("L-Time"){ width(5.percent) }
                         HeaderCell("C-Day"){ width(5.percent) }
 
                          */
-                        // HeaderCell("Next Payment"){width(10.percent)}
-                        HeaderCell("Amount"){width(10.percent)}
+                            // HeaderCell("Next Payment"){width(10.percent)}
+                            HeaderCell("Amount") { width(10.percent) }
+                        }
                     }
-                }
 
-                ListItemsIndexed(sepaCollections.read()) { index , collection ->
+                    ListItemsIndexed(sepaCollections.read()) { index, collection ->
 
-                    val bankAccount = collectionToBankAccountMap.emit()[collection.sepaCollectionId]
-                    val latestExecutionDate = collection.sepaPayments.maxOfOrNull{payment -> payment.executionDate}
-                    val cumulatedAmount = collection.sepaPayments
-                        .filter { it.executionDate == latestExecutionDate }
-                        .sumOf { payment -> payment.amount }
-                        .round(2)
+                        val bankAccount = collectionToBankAccountMap.emit()[collection.sepaCollectionId]
+                        val latestExecutionDate =
+                            collection.sepaPayments.maxOfOrNull { payment -> payment.executionDate }
+                        val cumulatedAmount = collection.sepaPayments
+                            .filter { it.executionDate == latestExecutionDate }
+                            .sumOf { payment -> payment.amount }
+                            .round(2)
 
-                    var uiState by remember { mutableStateOf(UIState()) }
-                    ListItemWrapper({listItemWrapperStyle(index)}) {
-                        DataWrapper(cardListStyles.dataWrapper) {
-                            TextCell(bankAccount?.iban?.value?: ""){ width(20.percent) }
-                            TextCell(collection.collectionKey.value){  width(10.percent)}
-                            TextCell(collection.mandateReferencePrefix.value){  width(15.percent)}
-                            TextCell(collection.remittanceInformation.value) { width(20.percent) }
-                            TextCell(collection.isActive.checkIcon("--")){ width(5.percent) }
-                            TextCell(collection.sepaSequenceType.name){  width(10.percent)}
-                            /*
+                        var uiState by remember { mutableStateOf(UIState()) }
+                        ListItemWrapper({ listItemWrapperStyle(index) }) {
+                            DataWrapper(cardListStyles.dataWrapper) {
+                                TextCell(bankAccount?.iban?.value ?: "") { width(20.percent) }
+                                TextCell(collection.collectionKey.value) { width(10.percent) }
+                                TextCell(collection.mandateReferencePrefix.value) { width(15.percent) }
+                                TextCell(collection.remittanceInformation.value) { width(20.percent) }
+                                TextCell(collection.isActive.checkIcon("--")) { width(5.percent) }
+                                TextCell(collection.sepaSequenceType.name) { width(10.percent) }
+                                /*
                             NumberCell(collection.leadTimesDays){  width(5.percent)}
                             NumberCell(collection.requestedCollectionDay?:-1){  width(5.percent)}
 
                              */
-                            PriceCell(cumulatedAmount, Currency.EUR) { width(10.percent) }
-                            // TextCell(collection.){}
-                        }
-                        ActionsWrapper {
+                                PriceCell(cumulatedAmount, Currency.EUR) { width(10.percent) }
+                                // TextCell(collection.){}
+                            }
+                            ActionsWrapper {
 
-                            var manageCollectionPaymentsState by remember() { mutableStateOf<ManageCollectionPayments?>(null)}
-                            key(collection) {
-                                CreditCardButton(
-                                    color = Color.black,
-                                    bgColor = Color.white,
-                                    deviceType = deviceType,
-                                    texts = {"Manage Mandates, Payments and Sepa Messages"},
-                                    isDisabled = collection.sepaMandates.isEmpty()
-                                ) {
-
-                                    bankingApplicationModals.showManagePaymentsOfSepaCollectionModal(
-                                        storage = bankingApplicationStorage,
-                                        texts = dialogModalTexts("hahaha"),
-                                        device = deviceType,
-                                        uiState = uiState,
-                                        setUiState = {data -> uiState = data},
-                                        sepaCollection = sepaCollections * Reader{list: List<SepaCollection> -> list.first { it.sepaCollectionId == collection.sepaCollectionId }},
-                                        sepaMessages = Source { sepaMessages.read() },
-                                        sepaPaymentLinks = Source { sepaPaymentLinks.read() },
-                                        executionDate = null,
-                                        setManageCollectionPayments = {data -> manageCollectionPaymentsState = data}
+                                var manageCollectionPaymentsState by remember() {
+                                    mutableStateOf<ManageCollectionPayments?>(
+                                        null
+                                    )
+                                }
+                                key(collection) {
+                                    CreditCardButton(
+                                        color = Color.black,
+                                        bgColor = Color.white,
+                                        deviceType = deviceType,
+                                        texts = { "Manage Mandates, Payments and Sepa Messages" },
+                                        isDisabled = collection.sepaMandates.isEmpty()
                                     ) {
-                                        // Action is not necessary anymore
-                                        // TODO Consider Removal after test phase
-                                        /*
+
+                                        bankingApplicationModals.showManagePaymentsOfSepaCollectionModal(
+                                            storage = bankingApplicationStorage,
+                                            texts = dialogModalTexts("hahaha"),
+                                            device = deviceType,
+                                            uiState = uiState,
+                                            setUiState = { data -> uiState = data },
+                                            sepaCollection = sepaCollections * Reader { list: List<SepaCollection> -> list.first { it.sepaCollectionId == collection.sepaCollectionId } },
+                                            sepaMessages = Source { sepaMessages.read() },
+                                            sepaPaymentLinks = Source { sepaPaymentLinks.read() },
+                                            executionDate = null,
+                                            setManageCollectionPayments = { data ->
+                                                manageCollectionPaymentsState = data
+                                            }
+                                        ) {
+                                            // Action is not necessary anymore
+                                            // TODO Consider Removal after test phase
+                                            /*
                                         bankingApplicationModals.showDialogModal(
                                             texts = dialogModalTexts("Are you sure you want to bulk edit share subscriptions?"),
                                             device = deviceType,
@@ -1049,19 +1128,24 @@ fun SepaCollections(
                                         }
                                          */
 
-                                    } }
-                            }
-                            EditButton(
-                                color = Color.black,
-                                bgColor = Color.white,
-                                texts = {"Edit Sepa Collection"},
-                                deviceType = deviceType,
-                                isDisabled = true
-                            ) {
+                                        }
+                                    }
+                                }
+                                EditButton(
+                                    color = Color.black,
+                                    bgColor = Color.white,
+                                    texts = { "Edit Sepa Collection" },
+                                    deviceType = deviceType,
+                                    isDisabled = true
+                                ) {
 
+                                }
                             }
                         }
                     }
+                }
+                When(isLegalEntityDefined * negate) {
+                    Text("No legal entity is defined. ")
                 }
             }
         }

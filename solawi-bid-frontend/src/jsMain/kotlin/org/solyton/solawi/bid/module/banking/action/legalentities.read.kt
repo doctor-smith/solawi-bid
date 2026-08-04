@@ -1,6 +1,8 @@
 package org.solyton.solawi.bid.module.banking.action
 
+import io.ktor.http.*
 import org.evoleq.compose.Markup
+import org.evoleq.math.Writer
 import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.storage.suffixed
@@ -20,9 +22,15 @@ const val READ_PERSONAL_LEGAL_ENTITY = "ReadPersonalLegalEntity"
  * @param nameSuffix Optional suffix to append to the action name for identification purposes. Defaults to null.
  */
 @Markup
-fun readPersonalLegalEntity(partyId: String, nameSuffix: String? = null) = Action<BankingApplication, ReadLegalEntity, ApiLegalEntity>(
+fun readPersonalLegalEntity(
+    partyId: String,
+    onError: Writer<BankingApplication, Pair<HttpStatusCode, String>>? = null,
+    nameSuffix: String? = null
+) = Action<BankingApplication, ReadLegalEntity, ApiLegalEntity>(
     name = READ_PERSONAL_LEGAL_ENTITY.suffixed(nameSuffix),
     reader = {_ -> ReadLegalEntity(listOf("party" to partyId))},
     endPoint = ReadLegalEntity::class,
-    writer = legalEntity.set contraMap { legalEntity -> legalEntity.toDomainType() }
+    writer = legalEntity.set contraMap { legalEntity -> legalEntity.toDomainType() },
+    onError = onError,
+    failOnError = onError == null
 )
