@@ -1,8 +1,8 @@
 package org.evoleq.optics.storage
 
+import io.ktor.http.*
 import kotlinx.serialization.KSerializer
 import org.evoleq.ktorx.result.Result
-import org.evoleq.ktorx.result.ResultListSerializer
 import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.ktorx.result.Serializer
 import org.evoleq.math.*
@@ -26,7 +26,9 @@ data class Action<Base: Any, out I : Any, O : Any>(
     val writer: Writer<Base, O>,
 
     val serializer: KSerializer<@UnsafeVariance I>,
-    val deserializer: KSerializer<Result<O>>
+    val deserializer: KSerializer<Result<O>>,
+    val onError: Writer<Base, Pair<HttpStatusCode, String>>? = null,
+    val failOnError: Boolean = onError == null,
 )
 
 
@@ -39,13 +41,17 @@ inline fun <Base: Any, reified I : Any, reified O : Any> Action(
     // key of the needed endpoint EndPoint<I,O>
     endPoint: KClass<*>,
     noinline writer: Writer<Base, O>,
+    noinline onError: Writer<Base, Pair<HttpStatusCode, String>>? = null,
+    failOnError: Boolean = onError == null,
 ): Action<Base, I, O> = Action(
     name,
     reader,
     endPoint,
     writer ,
     Serializer<I>(),
-    ResultSerializer<O>()
+    ResultSerializer<O>(),
+    onError,
+    failOnError
 )
 
 
@@ -77,7 +83,9 @@ inline fun <Base: Any, I : Any, reified J: Any,  reified O : Any> Action<Base, I
     J::class,
     writer,
     Serializer<J>(),
-    ResultSerializer<O>()
+    ResultSerializer<O>(),
+    onError,
+    failOnError
 )
 
 /**
@@ -89,7 +97,9 @@ inline fun <Base: Any, reified I : Any,  reified O : Any, reified P : Any> Actio
     endPoint,
     writer contraMap f,
     Serializer<I>(),
-    ResultSerializer<P>()
+    ResultSerializer<P>(),
+    onError,
+    failOnError
 )
 
 
@@ -102,7 +112,12 @@ operator fun <Whole: Any, Part: Any, I : Any, O :Any>  Lens<Whole, Part>.times(a
     endPoint = action.endPoint,
     writer = {o: O -> {w: Whole -> set(action.writer(o)(get(w)))(w)}},
     serializer = action.serializer,
-    deserializer = action.deserializer
+    deserializer = action.deserializer,
+    onError = when(action.onError) {
+        null -> null
+        else -> {o: Pair<HttpStatusCode, String> ->{w: Whole -> set(action.onError(o)(get(w)))(w)}}
+    },
+    failOnError = action.failOnError
 )
 
 interface ActionType

@@ -4,10 +4,10 @@ import io.ktor.http.*
 import io.ktor.server.response.*
 import io.ktor.util.*
 import kotlinx.serialization.json.Json
+import org.evoleq.ktorx.headers.Header
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.math.x
-import org.evoleq.ktorx.headers.Header
 import org.solyton.solawi.bid.module.application.permission.Context
 
 
@@ -38,6 +38,11 @@ suspend inline fun <reified T : Any>  Respond(
             is Result.Failure.Message -> call.respond(
                 HttpStatusCode.InternalServerError,
                 result
+            )
+
+            is Result.Failure.HttpStatusMessage -> call.respond(
+                result.statusCode,
+                result.value
             )
 
             is Result.Failure.Exception -> with(result.transformException()) {

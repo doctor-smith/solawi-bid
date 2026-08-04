@@ -5,10 +5,10 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
-import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.context.data.Contextual
-import org.evoleq.ktorx.result.map
 import org.evoleq.ktorx.headers.Header
+import org.evoleq.ktorx.result.Result
+import org.evoleq.ktorx.result.map
 import org.evoleq.permission.EmptyContext
 
 
@@ -65,11 +65,16 @@ fun <S: Any,T: Any> HttpClient.delete(url: String, port: Int, serializer: KSeria
     } }
 
 
+/**
+ *  Decode Http Response to generic Result<Contextual<T>>.
+ *  Try to parse body as text and return a Contextual Result object carrying the current context, result and the http status code.
+ */
 suspend fun <T : Any> HttpResponse.decode(deserializer : KSerializer<Result<T>>): Result<Contextual<T>> = try{
     Json.decodeFromString(deserializer, this.bodyAsText())
 } catch(ex: Exception){
-    Json.decodeFromString(Result.Failure.Message.serializer(), this.bodyAsText())
+    val failure = Json.decodeFromString(Result.Failure.Message.serializer(), this.bodyAsText())
+    Result.Failure.HttpStatusMessage(this.status, failure.value)
 } map { value -> Contextual(
     context = headers[Header.CONTEXT]?: EmptyContext.value ,
-    data =  value
+    data =  value,
 ) }

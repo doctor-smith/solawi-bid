@@ -1,5 +1,6 @@
 package org.evoleq.ktorx.result
 
+import io.ktor.http.*
 import kotlinx.serialization.Serializable
 import org.evoleq.math.MathDsl
 
@@ -13,6 +14,10 @@ sealed class Result<out T : Any>{
         @Serializable
         data class Message( val value: String): Failure()
         data class Exception(val value: Throwable): Failure()
+        data class HttpStatusMessage(
+            val statusCode: HttpStatusCode,
+            val value: String,
+        ): Failure()
     }
 }
 

@@ -39,6 +39,10 @@ object ResultSerializer : KSerializer<Result<*>> {
                 compositeEncoder.encodeStringElement(descriptor, 0, "Failure")
                 compositeEncoder.encodeStringElement(descriptor, 3, value.value.message?: "No message provided")
             }
+            is Result.Failure.HttpStatusMessage -> {
+                compositeEncoder.encodeStringElement(descriptor, 0, "Failure")
+                compositeEncoder.encodeStringElement(descriptor, 3, value.value)
+            }
         }
         compositeEncoder.endStructure(descriptor)
     }
