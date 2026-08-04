@@ -22,7 +22,7 @@ fun updateLegalEntity(
     legalEntityId: LegalEntityId,
     partyId: String,
     name: String,
-    legalFrom: String,
+    legalForm: String,
     legalEntityType: LegalEntityType,
     address: Address,
     nameSuffix: String = ""
@@ -32,7 +32,7 @@ fun updateLegalEntity(
         legalEntityId = legalEntityId,
         partyId = LegalEntityId(partyId),
         name = name,
-        legalForm = legalFrom,
+        legalForm = legalForm,
         legalEntityType = legalEntityType.toApiType(),
         address = address.toApiType()
     ) },
