@@ -1,10 +1,12 @@
 package org.solyton.solawi.bid.application.ui.page.shares
 
 import androidx.compose.runtime.*
+import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
+import org.evoleq.compose.effect.LaunchedEffectOnSource
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.routing.navigate
 import org.evoleq.compose.style.data.device.DeviceType
@@ -42,10 +44,12 @@ import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.bankAccounts
 import org.solyton.solawi.bid.module.banking.data.application.creditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.application.fiscalYears
+import org.solyton.solawi.bid.module.banking.data.application.legalEntity
 import org.solyton.solawi.bid.module.banking.data.application.sepaModule
 import org.solyton.solawi.bid.module.banking.data.bankaccount.AccountType
 import org.solyton.solawi.bid.module.banking.data.creditor.identifier.CreditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.fiscalyear.format
+import org.solyton.solawi.bid.module.banking.data.legalentity.legalEntityId
 import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.mandate.SepaMandate
@@ -143,7 +147,8 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
 
     val bankingApplicationStorage = storage * bankingApplicationIso
     val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
-
+    val legalEntityStorage = bankingApplicationStorage * legalEntity
+    val isLegalEntityDefined = Read(legalEntityStorage * legalEntityId) map { it.value != NIL_UUID }
 
     val userStorage = storage * userIso
     val userActions = userStorage * userActions
@@ -171,14 +176,18 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
         launch {
             bankingApplicationActions dispatch readBankAccounts(LegalEntityId(providerId.value))
         }
-        launch{
-            bankingApplicationActions dispatch readPersonalCreditorIdentifier(LegalEntityId(providerId.value))
-        }
         launch {
-            bankingApplicationActions dispatch readPersonalSepaCollections(LegalEntityId(providerId.value))
-        }
-        launch {
-            bankingApplicationActions dispatch readSepaMessagesByLegalEntity(LegalEntityId(providerId.value))
+            bankingApplicationActions dispatch readPersonalCreditorIdentifier(
+                LegalEntityId(providerId.value),
+                onError = { (statusCode, _) ->
+                    {
+                        when (statusCode) {
+                            HttpStatusCode.NotFound -> it
+                            else -> it
+                        }
+                    }
+                }
+            )
         }
         launch {
             userActions dispatch readOrganizations()
@@ -193,6 +202,17 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
     LaunchedEffect(usersStorage.read()) {
         launch {
             userActions dispatch readUserProfiles(memberStorage.read().map { it.memberId })
+        }
+    }
+
+    LaunchedEffectOnSource(isLegalEntityDefined)  {
+        if(isLegalEntityDefined.emit()) {
+            launch {
+                bankingApplicationActions dispatch readPersonalSepaCollections(LegalEntityId(providerId.value))
+            }
+            launch {
+                bankingApplicationActions dispatch readSepaMessagesByLegalEntity(LegalEntityId(providerId.value))
+            }
         }
     }
 
