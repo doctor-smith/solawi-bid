@@ -13,6 +13,7 @@ import org.solyton.solawi.bid.module.banking.data.api.UpdateLegalEntity
 import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.banking.data.toDomainType
 import org.solyton.solawi.bid.module.banking.repository.updateLegalEntity
+import org.solyton.solawi.bid.module.user.data.toInternalType
 import java.util.*
 
 
@@ -30,7 +31,7 @@ fun UpdateLegalEntity(): KlAction<Result<Contextual<UpdateLegalEntity>>, Result<
                     data.name,
                     data.legalForm,
                     data.legalEntityType.toDomainType(),
-                    UUID.fromString(data.address.id),
+                    data.address.toInternalType(),
                     userId
                 ).toApiType()
             }

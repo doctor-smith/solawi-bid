@@ -17,7 +17,9 @@ import org.solyton.solawi.bid.module.banking.permissions.BankAccounts.Rights.DEL
 import org.solyton.solawi.bid.module.banking.permissions.BankAccounts.Rights.IMPORT_BANK_ACCOUNTS
 import org.solyton.solawi.bid.module.banking.permissions.BankAccounts.Rights.READ_BANK_ACCOUNTS
 import org.solyton.solawi.bid.module.banking.permissions.BankAccounts.Rights.UPDATE_BANK_ACCOUNTS
+import org.solyton.solawi.bid.module.banking.permissions.CreditorIdentifiers.Rights.CREATE_CREDITOR_IDENTIFIERS
 import org.solyton.solawi.bid.module.banking.permissions.CreditorIdentifiers.Rights.READ_CREDITOR_IDENTIFIERS
+import org.solyton.solawi.bid.module.banking.permissions.CreditorIdentifiers.Rights.UPDATE_CREDITOR_IDENTIFIERS
 import org.solyton.solawi.bid.module.banking.permissions.FiscalYears.Rights.CREATE_FISCAL_YEARS
 import org.solyton.solawi.bid.module.banking.permissions.FiscalYears.Rights.READ_FISCAL_YEARS
 import org.solyton.solawi.bid.module.banking.permissions.FiscalYears.Rights.UPDATE_FISCAL_YEARS
@@ -159,6 +161,18 @@ fun <BankingEnv> Routing.banking (
                         } *
                         IsGranted(READ_CREDITOR_IDENTIFIERS, no) *
                         ReadCreditorIdentifierByLegalEntity() *
+                        Respond{ transform() } runOn Base(call, environment)
+                    }
+                    post("create") {
+                        ReceiveContextual<CreateCreditorIdentifier>() *
+                        IsGranted(CREATE_CREDITOR_IDENTIFIERS, no) *
+                        CreateCreditorIdentifier() *
+                        Respond{ transform() } runOn Base(call, environment)
+                    }
+                    patch("update") {
+                        ReceiveContextual<UpdateCreditorIdentifier>() *
+                        IsGranted(UPDATE_CREDITOR_IDENTIFIERS, no) *
+                        UpdateCreditorIdentifier() *
                         Respond{ transform() } runOn Base(call, environment)
                     }
                 }

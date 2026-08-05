@@ -9,11 +9,13 @@ import org.solyton.solawi.bid.module.user.data.api.organization.ApiMember
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiOrganization
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ApiAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ApiUserProfile
+import org.solyton.solawi.bid.module.user.data.internal.Address
 import org.solyton.solawi.bid.module.user.schema.AddressEntity
 import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
 import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.repository.getChildren
+import java.util.*
 import org.solyton.solawi.bid.module.user.schema.User as UserEntity
 
 fun UserEntity.toApiType(): UserD = UserD(
@@ -86,4 +88,30 @@ fun AddressEntity.toApiType(): ApiAddress = ApiAddress(
     postalCode = postalCode,
     countryCode = countryCode,
     stateOrProvince = stateOrProvince
+)
+
+fun AddressEntity.toInternalType(): Address = Address(
+    addressId = id.value,
+    userProfileId = null,
+    recipientName = recipientName,
+    organizationName = organizationName,
+    addressLine1 = addressLine1,
+    addressLine2 = addressLine2,
+    city = city,
+    stateOrProvince = stateOrProvince,
+    postalCode = postalCode,
+    countryCode = countryCode
+)
+
+fun ApiAddress.toInternalType(): Address = Address(
+    addressId = UUID.fromString(id),
+    userProfileId = null,
+    recipientName = recipientName,
+    organizationName = organizationName,
+    addressLine1 = addressLine1,
+    addressLine2 = addressLine2,
+    city = city,
+    stateOrProvince = stateOrProvince,
+    postalCode = postalCode,
+    countryCode = countryCode
 )

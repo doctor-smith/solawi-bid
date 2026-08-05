@@ -109,6 +109,8 @@
 | GET | banking/bank-accounts/personal/all | ReadPersonalBankAccounts  | ReadPersonalBankAccounts | BankAccounts |
 | PATCH | banking/bank-accounts/update | UpdateBankAccount  | UpdateBankAccount | BankAccount |
 | GET | banking/creditors/identifiers/by-legal-entity | ReadCreditorIdentifierByLegalEntity  | ReadCreditorIdentifierByLegalEntity | CreditorIdentifier |
+| POST | banking/creditors/identifiers/create | CreateCreditorIdentifier  | CreateCreditorIdentifier | CreditorIdentifier |
+| PATCH | banking/creditors/identifiers/update | UpdateCreditorIdentifier  | UpdateCreditorIdentifier | CreditorIdentifier |
 | GET | banking/fiscal-years/all | ReadFiscalYears  | ReadFiscalYears | FiscalYears |
 | POST | banking/fiscal-years/create | CreateFiscalYear  | CreateFiscalYear | FiscalYear |
 | PATCH | banking/fiscal-years/update | UpdateFiscalYear  | UpdateFiscalYear | FiscalYear |
