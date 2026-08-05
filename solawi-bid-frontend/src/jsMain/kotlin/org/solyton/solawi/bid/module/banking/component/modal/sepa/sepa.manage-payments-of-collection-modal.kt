@@ -102,7 +102,8 @@ sealed class Tabs {
             PAYMENTS_SENT,
             PAYMENTS_PENDING,
             PAYMENTS_FAILED,
-            PAYMENTS_CONFIRMED
+            PAYMENTS_CONFIRMED,
+            PAYMENTS_DROPPED,
         }
     }
     class PaymentHistory : Id {
@@ -264,6 +265,9 @@ fun ManagePaymentsOfSepaCollectionModal(
                     val confirmedPayments =
                         sepaCollection.sepaPayments.filter { payment -> payment.status in listOf( PaymentExecutionStatus.CONFIRMED, PaymentExecutionStatus.PAYED_MANUALLY ) }
 
+                    val droppedPayments =
+                        sepaCollection.sepaPayments.filter {payment -> payment.status == PaymentExecutionStatus.DROPPED }
+
                     val forbiddenSeqTypes = listOf(
                         SepaSequenceType.FNAL,
                         SepaSequenceType.OOFF,
@@ -365,11 +369,17 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     PaymentsProperties(failedPayments.filter { it.retrySuccessorId == null })
                                 }
                                 TabParagraphWrapper(
-                                    isLast = true,
                                     onClick = { paragraphState = Tabs.Payments.Paragraphs.PAYMENTS_CONFIRMED }
                                 ) {
                                     TabParagraph("Confirmed Payments")
                                     PaymentsProperties(confirmedPayments)
+                                }
+                                TabParagraphWrapper(
+                                    isLast = true,
+                                    onClick = { paragraphState = Tabs.Payments.Paragraphs.PAYMENTS_DROPPED }
+                                ) {
+                                    TabParagraph("Dropped Payments")
+                                    PaymentsProperties(droppedPayments)
                                 }
                             }
                         }
@@ -461,6 +471,16 @@ fun ManagePaymentsOfSepaCollectionModal(
                                 FailedPayments(
                                     sepaCollection,
                                     failedPayments,
+                                    listStyles,
+                                    scope,
+                                    storage,
+                                    device,
+                                )
+                            }
+                            When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_DROPPED) {
+                                DroppedPayments(
+                                    sepaCollection,
+                                    droppedPayments,
                                     listStyles,
                                     scope,
                                     storage,
@@ -1275,8 +1295,78 @@ fun FailedPayments(
                     )
                 }
             }
+            SackXMarkButton(
+                color = Color.black,
+                bgColor = Color.white,
+                { "Move selected Payments to the dropped state" },
+                device,
+            ) {
+                scope.launch {
+                    storage.dispatchStatusChange(
+                        newStatus = PaymentExecutionStatus.DROPPED,
+                        paymentIds = data.selectedVisiblePaymentIds(),
+                        targetCollectionId = sepaCollection.sepaCollectionId,
+                    )
+                }
+            }
 
         } }
+    )
+}
+@Markup
+@Composable
+@Suppress("UnusedParameter")
+fun DroppedPayments(
+    sepaCollection: SepaCollection,
+    droppedPayments: List<SepaPayment>,
+    listStyles: ListStyles,
+    scope: CoroutineScope,
+    storage: Storage<BankingApplication>,
+    device: Source<DeviceType>,
+) {
+    TabTitle("Dropped Payments")
+    ListOfPayments(
+        null,
+        sepaCollection.sepaMandates,
+        droppedPayments,
+        listStyles,
+        /*
+        overallActions = { data -> Horizontal {
+            CommentDollarButton(
+                color = Color.black,
+                bgColor = Color.white,
+                texts = { "Move selected Payments to the manually-payed state" },
+                deviceType = device,
+            ) {
+                scope.launch {
+                    storage.dispatchStatusChange(
+                        newStatus = PaymentExecutionStatus.PAYED_MANUALLY,
+                        paymentIds = data.selectedVisiblePaymentIds(),
+                        targetCollectionId = sepaCollection.sepaCollectionId,
+                    )
+                }
+            }
+
+            SackDollarButton(
+                color = Color.black,
+                bgColor = Color.white,
+                { "Move selected Payments to the confirmed state" },
+                device,
+            ) {
+                scope.launch {
+                    storage.dispatchStatusChange(
+                        newStatus = PaymentExecutionStatus.CONFIRMED,
+                        paymentIds = data.selectedVisiblePaymentIds(),
+                        targetCollectionId = sepaCollection.sepaCollectionId,
+                    )
+                }
+            }
+
+
+
+        } }
+
+         */
     )
 }
 
