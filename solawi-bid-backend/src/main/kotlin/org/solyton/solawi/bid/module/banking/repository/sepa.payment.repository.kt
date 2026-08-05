@@ -649,9 +649,10 @@ fun Transaction.updateSepaPaymentExecutionStatuses(
             SepaPaymentEntity.findById(it)?.status in listOf(
                 PaymentExecutionStatus.PENDING,
                 PaymentExecutionStatus.CONFIRMED,
-                PaymentExecutionStatus.PAYED_MANUALLY
+                PaymentExecutionStatus.PAYED_MANUALLY,
+                PaymentExecutionStatus.DROPPED
             )
-        }) { "All payments must be pending, confirmed or payed-manually in order to be set to failed" }
+        }) { "All payments must be pending, confirmed, payed-manually or dropped in order to be set to failed" }
 
         failureReasons.forEach { (paymentId, reason) ->
             SepaPaymentsTable.update({ SepaPayments.id eq paymentId }) {
