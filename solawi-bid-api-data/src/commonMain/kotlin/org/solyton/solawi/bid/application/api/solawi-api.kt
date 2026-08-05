@@ -418,7 +418,14 @@ val solawiApi by lazy {
                 url = "creditors/identifiers/by-legal-entity",
                 parameters = setOf("legal_entity")
             )
-
+            post<CreateCreditorIdentifier, CreditorIdentifier>(
+                key = CreateCreditorIdentifier::class,
+                url = "creditors/identifiers/create"
+            )
+            patch<UpdateCreditorIdentifier, CreditorIdentifier>(
+                key = UpdateCreditorIdentifier::class,
+                url = "creditors/identifiers/update"
+            )
 
             // Banking /SEPA
             get<ReadSepaCollectionsByLegalEntity, SepaCollections> (

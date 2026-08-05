@@ -5,10 +5,12 @@ import org.jetbrains.exposed.sql.Transaction
 import org.solyton.solawi.bid.module.banking.exception.LegalEntityException
 import org.solyton.solawi.bid.module.banking.schema.LegalEntity
 import org.solyton.solawi.bid.module.banking.schema.LegalEntityType
+import org.solyton.solawi.bid.module.user.data.internal.Address
+import org.solyton.solawi.bid.module.user.data.toInternalType
 import org.solyton.solawi.bid.module.user.repository.validatedAddress
 import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
 import org.solyton.solawi.bid.module.user.schema.UserEntity
-import java.util.UUID
+import java.util.*
 
 /**
  * Creates a new legal entity with the specified details in the database.
@@ -65,28 +67,49 @@ fun Transaction.updateLegalEntity(
     name: String,
     legalForm: String,
     legalEntityType: LegalEntityType,
-    addressId: UUID,
+    address: Address,
     modifierId: UUID
 ): LegalEntity {
-    val address = validatedAddress(addressId)
+    val storedAddress = validatedAddress(address.addressId)
 
     val legalEntity = validatedLegalEntity(id)
     validateIsUserOrOrganization(partyId)
-    val changed = legalEntity.name != name
-            || partyId != legalEntity.partyId
-            || legalEntity.legalForm != legalForm
-            || legalEntity.legalEntityType != legalEntityType
-            || legalEntity.address != address
 
-    legalEntity.name = name
-    legalEntity.partyId = partyId
-    legalEntity.legalForm = legalForm
-    legalEntity.legalEntityType = legalEntityType
-    legalEntity.address = address
+    val nameChanged = name != legalEntity.name
+    val partyIdChanged = partyId != legalEntity.partyId
+    val legalFormChanged = legalForm != legalEntity.legalForm
+    val legalEntityTypeChanged = legalEntityType != legalEntity.legalEntityType
+    val addressChanged = storedAddress.toInternalType() != address
+
+    val changed = nameChanged
+            || partyIdChanged
+            || legalFormChanged
+            || legalEntityTypeChanged
+            || addressChanged
+
+    if(nameChanged) legalEntity.name = name
+    if(partyIdChanged) legalEntity.partyId = partyId
+    if(legalFormChanged) legalEntity.legalForm = legalForm
+    if(legalEntityTypeChanged) legalEntity.legalEntityType = legalEntityType
+
+    val now = now()
+
+    if(addressChanged) with(legalEntity.address){
+        modifiedAt = now
+        modifiedBy = modifierId
+        recipientName = address.recipientName
+        organizationName = address.organizationName
+        addressLine1 = address.addressLine1
+        addressLine2 = address.addressLine2
+        city = address.city
+        postalCode = address.postalCode
+        stateOrProvince = address.stateOrProvince
+        countryCode = address.countryCode
+    }
 
     if(changed) {
         legalEntity.modifiedBy = modifierId
-        legalEntity.modifiedAt = now()
+        legalEntity.modifiedAt = now
     }
 
     return legalEntity

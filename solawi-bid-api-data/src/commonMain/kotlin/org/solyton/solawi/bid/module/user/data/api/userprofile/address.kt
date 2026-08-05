@@ -14,7 +14,7 @@ data class Address(
     val city: String,
     val stateOrProvince: String,
     val postalCode: String,
-    val countryCode: String
+    val countryCode: String,
 )
 
 @Serializable
