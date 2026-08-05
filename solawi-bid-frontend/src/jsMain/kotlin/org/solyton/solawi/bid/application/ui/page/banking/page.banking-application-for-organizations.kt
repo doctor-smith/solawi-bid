@@ -227,7 +227,7 @@ fun LegalEntity(
 
     Wrap(cardStyle) {
         var opened by remember { mutableStateOf(true) }
-        key(legalEntity.read()) {
+        key(legalEntity.read(), creditorIdentifier.read() ) {
             Horizontal({
                 width(100.percent)
                 justifyContent(JustifyContent.SpaceBetween)
