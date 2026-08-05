@@ -1,6 +1,8 @@
 package org.solyton.solawi.bid.module.banking.action
 
+import io.ktor.http.*
 import org.evoleq.compose.Markup
+import org.evoleq.math.Writer
 import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.storage.suffixed
@@ -21,9 +23,15 @@ const val READ_PERSONAL_CREDITOR_IDENTIFIER = "ReadPersonalCreditorIdentifier"
  * @param nameSuffix Optional suffix to append to the action name for identification purposes. Defaults to null.
  */
 @Markup
-fun readPersonalCreditorIdentifier(legalEntityId: LegalEntityId, nameSuffix: String? = null) = Action<BankingApplication, ReadCreditorIdentifierByLegalEntity, ApiCreditorIdentifier>(
+fun readPersonalCreditorIdentifier(
+    legalEntityId: LegalEntityId,
+    onError: Writer<BankingApplication, Pair<HttpStatusCode, String>>? = null,
+    nameSuffix: String? = null
+) = Action<BankingApplication, ReadCreditorIdentifierByLegalEntity, ApiCreditorIdentifier>(
     name = READ_PERSONAL_CREDITOR_IDENTIFIER.suffixed(nameSuffix),
     reader = {_ -> ReadCreditorIdentifierByLegalEntity(listOf("legal_entity" to legalEntityId.value))},
     endPoint = ReadCreditorIdentifierByLegalEntity::class,
-    writer = creditorIdentifier.set contraMap { creditorIdentifier -> creditorIdentifier.toDomainType() }
+    writer = creditorIdentifier.set contraMap { creditorIdentifier -> creditorIdentifier.toDomainType() },
+    onError = onError,
+    failOnError = onError == null
 )

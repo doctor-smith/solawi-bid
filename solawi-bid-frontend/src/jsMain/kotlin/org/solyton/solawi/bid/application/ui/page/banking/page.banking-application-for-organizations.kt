@@ -133,7 +133,15 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
         val legalEntityId = legalEntity.read().legalEntityId
         if(legalEntityId.value != NIL_UUID) {
             launch {
-                bankingApplicationActions dispatch readPersonalCreditorIdentifier(legalEntityId)
+                bankingApplicationActions dispatch readPersonalCreditorIdentifier(
+                    legalEntityId,
+                    onError = {(statusCode, _) -> {
+                        when(statusCode) {
+                            HttpStatusCode.NotFound -> it
+                            else -> it
+                        }
+                    }}
+                )
             }
             launch {
                 bankingApplicationActions dispatch readSepaMandatesByCreditorsLegalEntity(LegalEntityId(providerId.value))
@@ -203,6 +211,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
 }
 
 @Composable
+@Suppress("CognitiveComplexMethod")
 fun LegalEntity(
     bankingApplicationStorage: Storage<BankingApplication>,
     providerId: ProviderId,
@@ -225,8 +234,8 @@ fun LegalEntity(
             }) {
                 H3 { Text("Your data as Legal Entity:") }
 
-
-                var creditorIdentifierState by remember { mutableStateOf(creditorIdentifier.read()) }
+                val storedCreditorIdentifier = creditorIdentifier.read()
+                var creditorIdentifierState by remember { mutableStateOf(storedCreditorIdentifier) }
                 ActionsWrapper({
                     with(cardListStyles){actionsWrapper()}
                     flexGrow(1.0)
@@ -268,7 +277,7 @@ fun LegalEntity(
                                         creditorIdentifierState = c
                                     }
                                 ) {
-                                    if(legalEntityState != null  )scope.launch {
+                                    if(legalEntityState != null  ) scope.launch {
                                         val legalEntity = requireNotNull(legalEntityState) {"legal entity should not be null"}
                                         bankingApplicationStorage * bankingApplicationActions dispatch createLegalEntity(
                                             partyId = providerId.value,
@@ -326,6 +335,29 @@ fun LegalEntity(
                                             legalEntityType = legalEntityState.legalEntityType,
                                             address = legalEntityState.address,
                                         )
+                                    }
+                                    if(creditorIdentifierState != null) {
+                                        scope.launch {
+                                            val creditorIdentifier = requireNotNull(creditorIdentifierState) {"creditor identifier state should not be null"}
+                                            val actionDispatcher = bankingApplicationStorage * bankingApplicationActions
+                                            when (storedCreditorIdentifier) {
+                                                null -> actionDispatcher dispatch createCreditorIdentifier(
+                                                    legalEntityId = legalEntityState.legalEntityId,
+                                                    creditorId = creditorIdentifier.creditorId,
+                                                    validFrom = creditorIdentifier.validFrom,
+                                                    validUntil = creditorIdentifier.validUntil,
+                                                    isActive = true
+                                                )
+                                                else -> actionDispatcher dispatch updateCreditorIdentifier(
+                                                    creditorIdentifierId = creditorIdentifier.creditorIdentifierId,
+                                                    legalEntityId = legalEntityState.legalEntityId,
+                                                    creditorId = creditorIdentifier.creditorId,
+                                                    validFrom = creditorIdentifier.validFrom,
+                                                    validUntil = creditorIdentifier.validUntil,
+                                                    isActive = true
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
