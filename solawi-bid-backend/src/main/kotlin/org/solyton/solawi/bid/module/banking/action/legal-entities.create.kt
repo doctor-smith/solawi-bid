@@ -13,6 +13,7 @@ import org.solyton.solawi.bid.module.banking.data.api.LegalEntity
 import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.banking.data.toDomainType
 import org.solyton.solawi.bid.module.banking.repository.createLegalEntity
+import org.solyton.solawi.bid.module.user.repository.createAddress
 import java.util.*
 
 
@@ -24,12 +25,23 @@ fun CreateLegalEntity(): KlAction<Result<Contextual<CreateLegalEntity>>, Result<
             resultTransaction(database) {
                 val data = contextual.data
                 val userId = contextual.userId
+                val address = createAddress(
+                    data.address.recipientName,
+                    data.address.organizationName,
+                    data.address.addressLine1,
+                    data.address.addressLine2,
+                    data.address.city,
+                    data.address.stateOrProvince,
+                    data.address.postalCode,
+                    data.address.countryCode,
+                    userId,
+                )
                 createLegalEntity(
                     UUID.fromString(data.partyId.value),
                     data.name,
                     data.legalForm.orEmpty(),
                     data.legalEntityType.toDomainType(),
-                    UUID.fromString(data.address.id),
+                    address.id.value,
                     userId
                 ).toApiType()
             }
