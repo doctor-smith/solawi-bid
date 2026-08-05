@@ -475,6 +475,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     scope,
                                     storage,
                                     device,
+                                    id
                                 )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_DROPPED) {
@@ -485,6 +486,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     scope,
                                     storage,
                                     device,
+                                    id
                                 )
                             }
                         }
@@ -1259,6 +1261,7 @@ fun FailedPayments(
     scope: CoroutineScope,
     storage: Storage<BankingApplication>,
     device: Source<DeviceType>,
+    modalId: Int,
 ) {
     TabTitle("Failed Payments")
     ListOfPayments(
@@ -1295,6 +1298,7 @@ fun FailedPayments(
                     )
                 }
             }
+            var dataState by remember { mutableStateOf(data) }
             SackXMarkButton(
                 color = Color.black,
                 bgColor = Color.white,
@@ -1302,14 +1306,45 @@ fun FailedPayments(
                 device,
             ) {
                 scope.launch {
-                    storage.dispatchStatusChange(
-                        newStatus = PaymentExecutionStatus.DROPPED,
-                        paymentIds = data.selectedVisiblePaymentIds(),
-                        targetCollectionId = sepaCollection.sepaCollectionId,
-                    )
+                    (storage * bankingApplicationModals).showMoveFailedPaymentsModal(
+                        parentModalId = modalId,
+                        texts = dialogModalTexts("Yeeeeeha!"),
+                        device = device,
+                        isDataValid = {
+                            val selectedPayments = dataState.selectedVisibleEntries()
+                            val paymentIds = selectedPayments.map { it.key.paymentId }
+                            val failureReasons = selectedPayments
+                                .filter{it.value.payment.failureReason != null}
+                                .map { it.key.paymentId to it.value.payment.failureReason!! }
+                                .toMap()
+                            paymentIds.size == failureReasons.size
+                        },
+                        data = dataState,
+                        setData = {newData -> dataState = newData},
+
+                        ){
+                        scope.launch {
+                            val selectedPayments = dataState.selectedVisibleEntries()
+                            val paymentIds = selectedPayments.map { it.key.paymentId }
+                            val failureReasons = selectedPayments
+                                .filter{it.value.payment.failureReason != null}
+                                .map { it.key.paymentId to it.value.payment.failureReason!! }
+                                .toMap()
+                            require(failureReasons.size == selectedPayments.size)   {
+                                "Selected payments and failure reasons count mismatch"
+                            }
+                            (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
+                                data =UpdateSepaPaymentExecutionStatuses(
+                                    newStatus = PaymentExecutionStatus.DROPPED.toApiType(),
+                                    paymentIds = paymentIds,
+                                    failureReasons = failureReasons
+                                ),
+                                sepaCollection.sepaCollectionId
+                            )
+                        }
+                    }
                 }
             }
-
         } }
     )
 }
@@ -1323,6 +1358,7 @@ fun DroppedPayments(
     scope: CoroutineScope,
     storage: Storage<BankingApplication>,
     device: Source<DeviceType>,
+    modalId: Int
 ) {
     TabTitle("Dropped Payments")
     ListOfPayments(
@@ -1330,43 +1366,54 @@ fun DroppedPayments(
         sepaCollection.sepaMandates,
         droppedPayments,
         listStyles,
-        /*
-        overallActions = { data -> Horizontal {
-            CommentDollarButton(
-                color = Color.black,
-                bgColor = Color.white,
-                texts = { "Move selected Payments to the manually-payed state" },
-                deviceType = device,
-            ) {
-                scope.launch {
-                    storage.dispatchStatusChange(
-                        newStatus = PaymentExecutionStatus.PAYED_MANUALLY,
-                        paymentIds = data.selectedVisiblePaymentIds(),
-                        targetCollectionId = sepaCollection.sepaCollectionId,
-                    )
-                }
-            }
 
-            SackDollarButton(
+        overallActions = { data -> Horizontal {
+            var dataState by remember { mutableStateOf(data) }
+            BanButton(
                 color = Color.black,
                 bgColor = Color.white,
-                { "Move selected Payments to the confirmed state" },
+                { "Move selected Payments to the failed state" },
                 device,
             ) {
-                scope.launch {
-                    storage.dispatchStatusChange(
-                        newStatus = PaymentExecutionStatus.CONFIRMED,
-                        paymentIds = data.selectedVisiblePaymentIds(),
-                        targetCollectionId = sepaCollection.sepaCollectionId,
-                    )
+                (storage * bankingApplicationModals).showMoveFailedPaymentsModal(
+                    parentModalId = modalId,
+                    texts = dialogModalTexts("Yeeeeeha!"),
+                    device = device,
+                    isDataValid = {
+                        val selectedPayments = dataState.selectedVisibleEntries()
+                        val paymentIds = selectedPayments.map { it.key.paymentId }
+                        val failureReasons = selectedPayments
+                            .filter{it.value.payment.failureReason != null}
+                            .map { it.key.paymentId to it.value.payment.failureReason!! }
+                            .toMap()
+                        paymentIds.size == failureReasons.size
+                    },
+                    data = dataState,
+                    setData = {newData -> dataState = newData},
+
+                    ){
+                    scope.launch {
+                        val selectedPayments = dataState.selectedVisibleEntries()
+                        val paymentIds = selectedPayments.map { it.key.paymentId }
+                        val failureReasons = selectedPayments
+                            .filter{it.value.payment.failureReason != null}
+                            .map { it.key.paymentId to it.value.payment.failureReason!! }
+                            .toMap()
+                        require(failureReasons.size == selectedPayments.size)   {
+                            "Selected payments and failure reasons count mismatch"
+                        }
+                        (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
+                            data =UpdateSepaPaymentExecutionStatuses(
+                                newStatus = PaymentExecutionStatus.FAILED.toApiType(),
+                                paymentIds = paymentIds,
+                                failureReasons = failureReasons
+                            ),
+                            sepaCollection.sepaCollectionId
+                        )
+                    }
                 }
             }
-
-
-
         } }
-
-         */
     )
 }
 
