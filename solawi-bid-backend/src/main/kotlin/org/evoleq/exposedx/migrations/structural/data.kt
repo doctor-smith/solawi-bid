@@ -49,6 +49,17 @@ sealed class ColumnDef(open val name: String) {
             newDefault,
             nullable
         )
+
+        data class UUID(
+            override val name: String,
+            override val newDefault: UUID? = null,
+            override val nullable: Boolean? = null,
+
+        ) : ModifyProperties<UUID>(
+            name,
+            newDefault,
+            nullable
+        )
     }
 }
 

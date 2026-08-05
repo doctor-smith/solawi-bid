@@ -254,14 +254,12 @@ val columnPropertiesToModify by lazy {
                 newLength = 100,
             )
         ),
-        /*
-        SepaCollectionsTable.modifyColumnProperties(
-            ColumnDef.ModifyProperties.Varchar(
-                "collection_key",
-                newLength = 35,
+        AddressesTable.modifyColumnProperties(
+            ColumnDef.ModifyProperties.UUID(
+                name = "user_profile_id",
+                newDefault = null,
+                nullable = true
             )
-        ),
-
-         */
+        )
     )
 }
