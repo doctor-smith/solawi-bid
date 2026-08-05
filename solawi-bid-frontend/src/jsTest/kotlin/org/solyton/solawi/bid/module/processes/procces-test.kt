@@ -5,23 +5,12 @@ import org.evoleq.math.Get
 import org.evoleq.math.dispatch
 import org.evoleq.math.emit
 import org.evoleq.math.times
-import org.evoleq.optics.transform.*
+import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.testutils.ComposeWebExperimentalTestsApi
 import org.jetbrains.compose.web.testutils.runTest
 import org.solyton.solawi.bid.module.process.data.process.Process
 import org.solyton.solawi.bid.module.process.data.process.ProcessState
-import org.solyton.solawi.bid.module.process.data.processes.IsActive
-import org.solyton.solawi.bid.module.process.data.processes.IsFinished
-import org.solyton.solawi.bid.module.process.data.processes.IsInactive
-import org.solyton.solawi.bid.module.process.data.processes.IsNotActive
-import org.solyton.solawi.bid.module.process.data.processes.IsNotFinished
-import org.solyton.solawi.bid.module.process.data.processes.IsNotRegistered
-import org.solyton.solawi.bid.module.process.data.processes.IsRegistered
-import org.solyton.solawi.bid.module.process.data.processes.Processes
-import org.solyton.solawi.bid.module.process.data.processes.Register
-import org.solyton.solawi.bid.module.process.data.processes.SetStateOf
-import org.solyton.solawi.bid.module.process.data.processes.SetStatesOf
-import org.solyton.solawi.bid.module.process.data.processes.registry
+import org.solyton.solawi.bid.module.process.data.processes.*
 import org.solyton.solawi.bid.test.storage.TestStorage
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -84,13 +73,14 @@ class ProcessesTest {
 
         composition {
             val storage = TestStorage(Processes())
-            (storage * Register dispatch Process("process"))
+            val process = Process("process")
+            (storage * Register dispatch process)
 
             val storedProcess = (storage * registry * Get("process")).emit()
 
             assertNotNull(storedProcess)
             assertEquals(
-                Process("process"),
+                process,
                 storedProcess
             )
         }

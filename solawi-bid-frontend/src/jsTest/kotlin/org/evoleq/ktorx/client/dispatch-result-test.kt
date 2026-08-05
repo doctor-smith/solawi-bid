@@ -53,12 +53,14 @@ class DispatchResultTest {
         val success = {storage: Storage<Whole> -> Result.Return((storage * successWriter).dispatch())}
         val failure = {storage: Storage<Whole> -> Result.Return((storage * failureWriter).dispatch())}
 
+        @Suppress("VariableNaming")
         val DispatchState = KlState<Storage<Whole>,Result<String>, Result<Unit>> {
             r -> State { storage ->
                 when(r) {
                     is Result.Success -> success(storage).apply() on r
                     is Result.Failure.Message -> failure(storage).apply() on Result.Return(r.value)
                     is Result.Failure.Exception -> failure(storage).apply() on Result.Return(r.value.message?: "")
+                    is Result.Failure.HttpStatusMessage -> failure(storage).apply() on Result.Return(r.value)
                 } x storage
             }
         }
