@@ -1,10 +1,6 @@
 package org.solyton.solawi.bid.module.banking.component.form
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import org.evoleq.change.data.Change
 import org.evoleq.change.data.Keep
 import org.evoleq.compose.Markup
@@ -35,6 +31,8 @@ import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
 import org.solyton.solawi.bid.module.style.form.textInputDesktopStyle
+import org.solyton.solawi.bid.module.user.component.form.UpsertAddressForm
+import org.solyton.solawi.bid.module.user.component.form.upsertAddressFormTexts
 import org.solyton.solawi.bid.module.user.data.address.Address
 import org.solyton.solawi.bid.module.values.LegalEntityId
 
@@ -58,6 +56,7 @@ fun LegalEntityForm(
         var addressState by remember { mutableStateOf(legalEntity?.address ?: Address.default()) }
 
         var creditorIdState by remember { mutableStateOf(creditorIdentifier?.creditorId) }
+
 
         Field(fieldDesktopStyle) {
             Label(
@@ -167,6 +166,25 @@ fun LegalEntityForm(
                 }
             }
         }
+
+        UpsertAddressForm(
+            texts = Source{ upsertAddressFormTexts },
+            address = legalEntity?.address,
+            setAddress = { address ->
+                update(LegalEntityChange(
+                    legalEntityId = legalEntity?.legalEntityId ?: LegalEntityId(NIL_UUID),
+                    partyId = partyId,
+                    name = Keep(nameState),
+                    legalForm = Keep(legalFormState),
+                    legalEntityType = Keep(legalEntityTypeState),
+                    address = Change(addressState, address) {
+                        addressState = address
+                    },
+                    creditorIdentifierId = creditorIdentifier?.creditorIdentifierId ?: CreditorIdentifierId(NIL_UUID),
+                    creditorId = Keep(creditorIdState),
+                )) { legalEntity, creditorIdentifier -> setLegalEntity(legalEntity, creditorIdentifier) }
+            }
+        )
 
     }
 }
