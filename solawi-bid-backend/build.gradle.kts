@@ -104,6 +104,7 @@ dependencies {
 }
 
 tasks.register<Test>("dbFunctionalTest"  ) {
+    description = "Run all db functional tests"
     group = "verification"
     useJUnitPlatform() {
         includeTags("dbFunctional")
@@ -117,6 +118,7 @@ tasks.register<Test>("dbFunctionalTest"  ) {
 }
 
 tasks.register<Test>("apiTest") {
+    description = "Run all api tests"
     group = "verification"
     useJUnitPlatform() {
         includeTags("api")
@@ -128,6 +130,7 @@ tasks.register<Test>("apiTest") {
 }
 
 tasks.register<Test>("unitTest") {
+    description = "Run all unit tests"
     group = "verification"
     useJUnitPlatform() {
         includeTags("unit")
@@ -140,6 +143,7 @@ tasks.register<Test>("unitTest") {
 //    finalizedBy(tasks.jacocoTestReport)
 }
 tasks.register<Test>("schemaTest") {
+    description = "Run all schema tests"
     group = "verification"
     useJUnitPlatform() {
         includeTags("schema")
@@ -152,6 +156,7 @@ tasks.register<Test>("schemaTest") {
 //    finalizedBy(tasks.jacocoTestReport)
 }
 tasks.register<Test>("migrationTest") {
+    description = "Run all migration tests"
     group = "verification"
     useJUnitPlatform() {
         includeTags("migration")
@@ -165,6 +170,7 @@ tasks.register<Test>("migrationTest") {
 }
 
 tasks.register<Test>("testFrameworkTest") {
+    description = "Run all test framework tests"
     group = "verification"
     useJUnitPlatform() {
         includeTags("testFramework")
@@ -180,6 +186,25 @@ tasks.register<Test>("testFrameworkTest") {
 tasks.withType<Test>().configureEach {
     // Wenn CI-Property gesetzt ist, ignoriere Failures
     ignoreFailures = project.findProperty("ignoreFailuresInTests")?.toString()?.toBoolean() ?: false
+}
+
+tasks.register<Test>("beTests") {
+    description = "Run all backend tests"
+    group = "verification"
+    useJUnitPlatform() {
+        includeTags(
+            "unitTest",
+            "schemaTest",
+            "migrationTest",
+            "dbFunctionalTest",
+            "apiTest",
+            "testFrameworkTest"
+        )
+    }
+    reports {
+        junitXml.required = true
+        html.required = true
+    }
 }
 
 /*
