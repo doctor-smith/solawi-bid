@@ -19,7 +19,7 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.ElementScope
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
-import org.solyton.solawi.bid.module.banking.component.form.updateSepaMandateFormTexts
+import org.solyton.solawi.bid.module.banking.component.form.sepa.updateSepaMandateFormTexts
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.deviceData
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount

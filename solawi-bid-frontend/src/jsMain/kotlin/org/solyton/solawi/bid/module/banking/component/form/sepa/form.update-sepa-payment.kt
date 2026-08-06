@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.banking.component.form
+package org.solyton.solawi.bid.module.banking.component.form.sepa
 
 import androidx.compose.runtime.*
 import org.evoleq.compose.date.format

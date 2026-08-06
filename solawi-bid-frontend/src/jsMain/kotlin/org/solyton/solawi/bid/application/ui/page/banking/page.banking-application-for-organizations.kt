@@ -37,6 +37,7 @@ import org.solyton.solawi.bid.application.data.transform.banking.bankingApplicat
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.banking.action.*
+import org.solyton.solawi.bid.module.banking.action.sepa.*
 import org.solyton.solawi.bid.module.banking.component.form.defaultBankAccountInputs
 import org.solyton.solawi.bid.module.banking.component.modal.*
 import org.solyton.solawi.bid.module.banking.component.modal.sepa.*

@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.banking.service
+package org.solyton.solawi.bid.module.banking.service.sepa
 
 import org.evoleq.kotlinx.date.now
 import org.evoleq.uuid.NIL_UUID

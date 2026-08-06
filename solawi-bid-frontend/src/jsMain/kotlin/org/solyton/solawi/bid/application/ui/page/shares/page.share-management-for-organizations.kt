@@ -34,8 +34,11 @@ import org.solyton.solawi.bid.application.data.transform.distribution.distributi
 import org.solyton.solawi.bid.application.data.transform.shares.shareManagementIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
-import org.solyton.solawi.bid.module.banking.action.*
-import org.solyton.solawi.bid.module.banking.component.form.PartialSepaCollection
+import org.solyton.solawi.bid.module.banking.action.readBankAccounts
+import org.solyton.solawi.bid.module.banking.action.readFiscalYears
+import org.solyton.solawi.bid.module.banking.action.readPersonalCreditorIdentifier
+import org.solyton.solawi.bid.module.banking.action.sepa.*
+import org.solyton.solawi.bid.module.banking.component.form.sepa.PartialSepaCollection
 import org.solyton.solawi.bid.module.banking.component.modal.sepa.showUpsertSepaMandateModal
 import org.solyton.solawi.bid.module.banking.component.modal.sepa.upsertSepaMandateModalTexts
 import org.solyton.solawi.bid.module.banking.data.*
@@ -54,7 +57,7 @@ import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.mandate.SepaMandate
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaCollections
-import org.solyton.solawi.bid.module.banking.service.generateReference
+import org.solyton.solawi.bid.module.banking.service.sepa.generateReference
 import org.solyton.solawi.bid.module.constants.CHECK_FALSE
 import org.solyton.solawi.bid.module.constants.CHECK_TRUE
 import org.solyton.solawi.bid.module.constants.checkIcon

@@ -18,8 +18,8 @@ import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.ElementScope
-import org.solyton.solawi.bid.module.banking.component.form.BulkUpdateSepaPaymentsForm
-import org.solyton.solawi.bid.module.banking.component.form.updateSepaPaymentFormTexts
+import org.solyton.solawi.bid.module.banking.component.form.sepa.BulkUpdateSepaPaymentsForm
+import org.solyton.solawi.bid.module.banking.component.form.sepa.updateSepaPaymentFormTexts
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.deviceData
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment

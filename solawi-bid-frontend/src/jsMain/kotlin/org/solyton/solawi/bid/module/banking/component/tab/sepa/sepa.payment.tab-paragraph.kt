@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.banking.component.tab
+package org.solyton.solawi.bid.module.banking.component.tab.sepa
 
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
