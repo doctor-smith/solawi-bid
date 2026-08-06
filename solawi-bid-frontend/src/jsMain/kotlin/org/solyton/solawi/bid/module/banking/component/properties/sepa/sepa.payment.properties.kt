@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.banking.component.properties
+package org.solyton.solawi.bid.module.banking.component.properties.sepa
 
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup

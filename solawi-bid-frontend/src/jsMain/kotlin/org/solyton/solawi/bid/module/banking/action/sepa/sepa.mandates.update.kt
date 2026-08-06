@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.banking.action
+package org.solyton.solawi.bid.module.banking.action.sepa
 
 import org.evoleq.math.contraMap
 import org.evoleq.optics.lens.FirstBy
@@ -11,10 +11,10 @@ import org.solyton.solawi.bid.module.banking.data.api.ApiSepaMandate
 import org.solyton.solawi.bid.module.banking.data.api.UpdateSepaMandate
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.sepaModule
-import org.solyton.solawi.bid.module.banking.data.sepa.collection.sepaMandates as sepaMandatesOfCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaCollections
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaMandates
 import org.solyton.solawi.bid.module.banking.data.toDomainType
+import org.solyton.solawi.bid.module.banking.data.sepa.collection.sepaMandates as sepaMandatesOfCollection
 
 
 const val UPDATE_SEPA_MANDATE_IN_SEPA_COLLECTION = "UPDATE_SEPA_MANDATE_IN_SEPA_COLLECTION"

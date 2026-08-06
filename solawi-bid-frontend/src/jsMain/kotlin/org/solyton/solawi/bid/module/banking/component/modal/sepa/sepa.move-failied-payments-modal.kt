@@ -19,8 +19,8 @@ import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.H2
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.ui.page.application.style.listItemWrapperStyle
-import org.solyton.solawi.bid.module.banking.component.list.OverAllActionData
-import org.solyton.solawi.bid.module.banking.component.list.SepaPaymentListItemKey
+import org.solyton.solawi.bid.module.banking.component.list.sepa.OverAllActionData
+import org.solyton.solawi.bid.module.banking.component.list.sepa.SepaPaymentListItemKey
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.scrollable.Scrollable
 import org.solyton.solawi.bid.module.style.modal.commonModalStyles

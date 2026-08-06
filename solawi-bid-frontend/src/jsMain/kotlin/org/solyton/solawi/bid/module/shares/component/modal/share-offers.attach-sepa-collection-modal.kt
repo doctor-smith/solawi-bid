@@ -15,13 +15,12 @@ import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.ElementScope
-import org.solyton.solawi.bid.module.banking.component.form.PartialSepaCollection
-import org.solyton.solawi.bid.module.banking.component.form.SepaCollectionForm
-import org.solyton.solawi.bid.module.banking.component.form.defaultSepaCollectionInputs
+import org.solyton.solawi.bid.module.banking.component.form.sepa.PartialSepaCollection
+import org.solyton.solawi.bid.module.banking.component.form.sepa.SepaCollectionForm
+import org.solyton.solawi.bid.module.banking.component.form.sepa.defaultSepaCollectionInputs
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.deviceData
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
-import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.style.modal.commonModalStyles
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.w3c.dom.HTMLElement

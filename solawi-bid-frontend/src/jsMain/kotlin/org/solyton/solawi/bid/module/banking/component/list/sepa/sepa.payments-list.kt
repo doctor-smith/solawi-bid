@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.banking.component.list
+package org.solyton.solawi.bid.module.banking.component.list.sepa
 
 import androidx.compose.runtime.*
 import kotlinx.datetime.LocalDate

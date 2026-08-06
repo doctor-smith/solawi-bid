@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.banking.action
+package org.solyton.solawi.bid.module.banking.action.sepa
 
 import org.evoleq.math.contraMap
 import org.evoleq.optics.lens.FirstBy

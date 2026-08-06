@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.banking.service
+package org.solyton.solawi.bid.module.banking.service.sepa
 
 import org.solyton.solawi.bid.module.banking.data.MandateReference
 import org.solyton.solawi.bid.module.banking.data.MandateReferencePrefix
