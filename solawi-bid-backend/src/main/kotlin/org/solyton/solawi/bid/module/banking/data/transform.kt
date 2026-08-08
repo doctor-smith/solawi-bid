@@ -11,6 +11,7 @@ import org.solyton.solawi.bid.module.banking.schema.LegalEntity
 import org.solyton.solawi.bid.module.banking.schema.LegalEntityType
 import org.solyton.solawi.bid.module.banking.schema.MandateStatus
 import org.solyton.solawi.bid.module.banking.schema.PaymentExecutionStatus
+import org.solyton.solawi.bid.module.banking.schema.SepaMessageStatus
 import org.solyton.solawi.bid.module.banking.schema.SepaSequenceType
 import org.solyton.solawi.bid.module.banking.schema.SuccessorKind
 import org.solyton.solawi.bid.module.user.data.toApiType
@@ -190,6 +191,8 @@ fun SepaPaymentEntity.toApiType(): ApiSepaPayment = ApiSepaPayment(
     status = status.toApiType(),
     failureReason = failureReason,
     endToEndId = endToEndId,
+    messageIdentifier = message?.let { SepaMessageIdentifier(it.messageId) },
+    sepaMessageId = message?.let { SepaMessageId(it.id.value.toString()) },
 )
 
 data class SepaPaymentLinksHelper(
@@ -216,6 +219,8 @@ fun SepaPaymentEntity.toApiType(
         nextPeriodSuccessorId = links.nextPeriodSuccessor,
         retrySuccessorId = links.retrySuccessor,
         mergeSuccessorId = links.mergeSuccessor,
+        messageIdentifier = message?.let { SepaMessageIdentifier(it.messageId) },
+        sepaMessageId = message?.let { SepaMessageId(it.id.value.toString()) },
     )
 }
 
@@ -265,8 +270,9 @@ fun ApiPaymentExecutionStatus.toDomainType(): PaymentExecutionStatus = when(this
 
 fun SepaMessageEntity.toApiType(): ApiSepaMessage = ApiSepaMessage(
     sepaMessageId = SepaMessageId(id.value.toString()),
-    messageIdentifier = messageId,
+    messageIdentifier = SepaMessageIdentifier(messageId),
     executionDate = executionDate.toKotlinxWithZone().date,
+    status = status.toApiType(),
     totalAmount = totalAmount,
     numberOfPayments = numberOfPayments,
     remittanceInformation = RemittanceInformation(remittanceInformation),
@@ -274,3 +280,19 @@ fun SepaMessageEntity.toApiType(): ApiSepaMessage = ApiSepaMessage(
 )
 
 fun List<SepaMessageEntity>.toApiType(): ApiSepaMessages = ApiSepaMessages(map { it.toApiType() })
+
+fun SepaMessageStatus.toApiType(): ApiSepaMessageStatus = when(this) {
+    SepaMessageStatus.CREATED -> ApiSepaMessageStatus.CREATED
+    SepaMessageStatus.SENT -> ApiSepaMessageStatus.SENT
+    SepaMessageStatus.PENDING -> ApiSepaMessageStatus.PENDING
+    SepaMessageStatus.CONFIRMED -> ApiSepaMessageStatus.CONFIRMED
+    SepaMessageStatus.FAILED -> ApiSepaMessageStatus.FAILED
+}
+
+fun ApiSepaMessageStatus.toDomainType(): SepaMessageStatus = when(this) {
+    ApiSepaMessageStatus.CREATED -> SepaMessageStatus.CREATED
+    ApiSepaMessageStatus.SENT -> SepaMessageStatus.SENT
+    ApiSepaMessageStatus.PENDING -> SepaMessageStatus.PENDING
+    ApiSepaMessageStatus.CONFIRMED -> SepaMessageStatus.CONFIRMED
+    ApiSepaMessageStatus.FAILED -> SepaMessageStatus.FAILED
+}

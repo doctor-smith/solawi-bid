@@ -127,6 +127,7 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
             is SepaException.Payment.NoSuchTemplate -> HttpStatusCode.NotFound
             is SepaException.Message.Locked -> HttpStatusCode.BadRequest
             is SepaException.Message.NoSuchMessage -> HttpStatusCode.NotFound
+            is SepaException.Message.InvalidStatusTransition -> HttpStatusCode.BadRequest
         }
 
         //User

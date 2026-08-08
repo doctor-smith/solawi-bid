@@ -1,5 +1,7 @@
 package org.solyton.solawi.bid.module.banking.exception
 
+import org.solyton.solawi.bid.module.banking.schema.SepaMessageStatus
+
 sealed class SepaException(override val message: String): Exception(message) {
 
     data class MissingXmlSchema(val schema: String): SepaException("Missing xml schema: $schema")
@@ -48,5 +50,7 @@ sealed class SepaException(override val message: String): Exception(message) {
     sealed class Message(override val message: String) : SepaException(message) {
         data class NoSuchMessage(val id: String): Message("No such message; id = $id")
         data class Locked(val id: String): Message("Message is locked; id = $id")
+
+        data class InvalidStatusTransition(val id: String, val status: SepaMessageStatus): Message("Invalid status transition; id = $id; status = ${status.name}")
     }
 }

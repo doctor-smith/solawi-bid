@@ -633,11 +633,27 @@ fun Transaction.generateSepaMessageForCollection(
     return pain008XmlResult
 }
 
+/**
+ * Updates the execution statuses of SEPA payments based on the provided parameters.
+ *
+ * This method validates and transitions payments to the specified status, ensuring consistency
+ * in the state transitions according to the business rules. It also adds history entries
+ * for these transitions and optionally updates related SEPA message statuses.
+ *
+ * @param modifier The unique identifier of the user or system initiating the update.
+ * @param paymentIds A list of UUIDs representing the payments to be updated.
+ * @param newStatus The new execution status to set for the specified payments.
+ * @param failureReasons A mapping of payment IDs to failure reasons, required if the new status is `FAILED`. Defaults to an empty map.
+ * @param updateMessages A flag indicating whether to update the related SEPA message statuses. Defaults to `true`.
+ * @return A list of updated `SepaPaymentEntity` objects reflecting the changes.
+ * @throws IllegalArgumentException if the state transitions do not adhere to the required business rules.
+ */
 fun Transaction.updateSepaPaymentExecutionStatuses(
     modifier: UUID,
     paymentIds: List<UUID>,
     newStatus: PaymentExecutionStatus,
-    failureReasons: Map<UUID, String> = emptyMap()
+    failureReasons: Map<UUID, String> = emptyMap(),
+    updateMessages: Boolean = false
 ): List<SepaPaymentEntity> {
     if(newStatus == PaymentExecutionStatus.FAILED) {
         // there must be a failure reason
@@ -709,9 +725,79 @@ fun Transaction.updateSepaPaymentExecutionStatuses(
             )
         }
     }
-
+    flushCache()
+    if(updateMessages && newStatus in listOf(
+            PaymentExecutionStatus.SENT,
+            PaymentExecutionStatus.PENDING,
+            PaymentExecutionStatus.FAILED,
+            PaymentExecutionStatus.PAYED_MANUALLY,
+            PaymentExecutionStatus.CONFIRMED,
+            PaymentExecutionStatus.DROPPED
+        )) {
+        updateSepaMessageStatus(modifier, paymentIds)
+    }
     return SepaPaymentEntity.find { SepaPayments.id inList paymentIds }.toList()
 }
+
+/**
+ * Updates the status of SEPA messages associated with a list of payment IDs based on the statuses
+ * of the individual payments. If a message's status needs to be updated, this method determines
+ * the appropriate status and applies the change accordingly.
+ *
+ * @param modifierId The unique identifier of the user or process responsible for modifying the status.
+ * @param paymentIds A list of identifiers representing the payments whose associated message statuses
+ *                   need to be evaluated and potentially updated.
+ * @return A list of SEPA payment entities whose associated message statuses were evaluated.
+ */
+fun Transaction.updateSepaMessageStatus(modifierId: UUID, paymentIds: List<UUID>): List<SepaPayment> {
+
+    val payments = SepaPaymentEntity.find { SepaPayments.id inList paymentIds }.toList()
+
+    val messages = payments.mapNotNull { it.message }.distinct()
+
+    messages.forEach {message ->
+        val paymentStatuses = message.payments.map {
+            it.status
+        }.distinct()
+
+        // Cases
+        // All payments have status
+        // 1. message created -> created
+        // 2. sent -> sent (Also, if sepa message is set to sent, all payments need to be set to sent)
+        // 3. pending -> pending (Also, if sepa message is set to pending, all payments need to be set to pending)
+        // 4. Mixture of pending, failed, confirmed, manually_payed, dropped
+        //    If there is one pending payment -> message pending
+        //    Else -> confirmed
+        //
+        // The failed status of messages is reserved for cases, where the bank rejects
+        // the message or some other reason
+        val messageStatus = when {
+            paymentStatuses.size == 1 -> when(paymentStatuses.first()){
+                PaymentExecutionStatus.CREATED -> null
+                PaymentExecutionStatus.MESSAGE_CREATED -> SepaMessageStatus.CREATED
+                PaymentExecutionStatus.PENDING -> SepaMessageStatus.PENDING
+                PaymentExecutionStatus.SENT -> SepaMessageStatus.SENT
+                PaymentExecutionStatus.CONFIRMED -> SepaMessageStatus.CONFIRMED
+                PaymentExecutionStatus.PAYED_MANUALLY -> SepaMessageStatus.CONFIRMED
+                PaymentExecutionStatus.DROPPED -> SepaMessageStatus.CONFIRMED
+                PaymentExecutionStatus.FAILED -> SepaMessageStatus.CONFIRMED
+            }
+            paymentStatuses.contains(PaymentExecutionStatus.PENDING) -> SepaMessageStatus.PENDING
+            paymentStatuses.contains(PaymentExecutionStatus.FAILED) -> SepaMessageStatus.FAILED
+            else -> SepaMessageStatus.CONFIRMED
+        }
+
+        if (messageStatus != null) updateSepaMessageStatus(
+            modifierId,
+            message.id.value,
+            messageStatus,
+            updatePayments = false
+        )
+    }
+
+    return payments
+}
+
 
 /**
  * Read all payments for a given legal entity.
