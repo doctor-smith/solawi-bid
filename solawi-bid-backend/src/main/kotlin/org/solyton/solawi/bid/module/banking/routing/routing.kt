@@ -36,6 +36,7 @@ import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.READ_SEPA_M
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.READ_SEPA_PAYMENTS
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_COLLECTIONS
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_MANDATES
+import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_MESSAGES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_PAYMENTS
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
 import org.solyton.solawi.bid.module.permission.action.db.no
@@ -327,6 +328,12 @@ fun <BankingEnv> Routing.banking (
                         } *
                         IsGranted(READ_SEPA_MESSAGES, no) *
                         ReadSepaMessagesByLegalEntityId() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
+                    patch("update-status") {
+                        ReceiveContextual<UpdateSepaMessageStatus>() *
+                        IsGranted(UPDATE_SEPA_MESSAGES, no) *
+                        UpdateSepaMessageStatus() *
                         Respond { transform() } runOn Base(call, environment)
                     }
                 }

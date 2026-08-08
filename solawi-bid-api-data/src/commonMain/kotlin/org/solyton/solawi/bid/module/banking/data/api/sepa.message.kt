@@ -4,15 +4,13 @@ import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 import org.evoleq.ktorx.client.Parameters
 import org.evoleq.ktorx.client.QueryParams
-import org.solyton.solawi.bid.module.banking.data.RemittanceInformation
-import org.solyton.solawi.bid.module.banking.data.SepaCollectionId
-import org.solyton.solawi.bid.module.banking.data.SepaMessageId
-import org.solyton.solawi.bid.module.banking.data.SepaPaymentId
+import org.solyton.solawi.bid.module.banking.data.*
 
 typealias ApiSepaMessageString = SepaMessageString
 typealias ApiSepaMessageVersion = SepaMessageVersion
 typealias ApiSepaMessages = SepaMessages
 typealias ApiSepaMessage = SepaMessage
+typealias ApiSepaMessageStatus = SepaMessageStatus
 
 @Serializable
 data class SepaMessages(
@@ -22,13 +20,23 @@ data class SepaMessages(
 @Serializable
 data class SepaMessage(
     val sepaMessageId: SepaMessageId,
-    val messageIdentifier: String, // messageId in the message, e.g. MSG-20230101-123456789
+    val messageIdentifier: SepaMessageIdentifier, // messageId in the message, e.g. MSG-20230101-123456789
     val executionDate: LocalDate,
+    val status: SepaMessageStatus,
     val totalAmount: Double?,
     val numberOfPayments: Int,
     val remittanceInformation: RemittanceInformation,
     val paymentIds: List<SepaPaymentId>,
 )
+
+@Serializable
+enum class SepaMessageStatus {
+    CREATED,   // Message prepared but not yet sent
+    SENT,      // Message sent to bank
+    PENDING, // Bank is processing the message
+    CONFIRMED, // Bank confirmed execution
+    FAILED     // Message rejected or failed
+}
 
 @Serializable
 data class GenerateSepaMessageForCollection(
@@ -58,3 +66,9 @@ data class ReadSepaMessagesByLegalEntityId(
      */
     override val queryParams: QueryParams
 ) : Parameters()
+
+@Serializable
+data class UpdateSepaMessageStatus(
+    val sepaMessageId: SepaMessageId,
+    val newStatus: SepaMessageStatus
+)
