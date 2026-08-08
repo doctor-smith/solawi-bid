@@ -402,6 +402,9 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<SepaMessages>(SepaMessages.serializer())
         add<ReadSepaMessagesByLegalEntityId>(ReadSepaMessagesByLegalEntityId.serializer())
         add<SepaMessageId>(SepaMessageId.serializer())
+        add<SepaMessageIdentifier>(SepaMessageIdentifier.serializer())
+        add<SepaMessageStatus>(SepaMessageStatus.serializer())
+        add<UpdateSepaMessageStatus>(UpdateSepaMessageStatus.serializer())
         // Sepa response from bank
     }
 } }
