@@ -79,7 +79,7 @@ kotlin{
         }
         val jsMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-html-js:0.8.0") // Example for JS
+                implementation(libs.kotlinx.html.js) // Example for JS
                 // ktor client
                 implementation(libs.ktor.client.core)
                 implementation(libs.ktor.client.js)
