@@ -775,8 +775,8 @@ fun Transaction.updateSepaMessageStatus(modifierId: UUID, paymentIds: List<UUID>
             paymentStatuses.size == 1 -> when(paymentStatuses.first()){
                 PaymentExecutionStatus.CREATED -> null
                 PaymentExecutionStatus.MESSAGE_CREATED -> SepaMessageStatus.CREATED
-                PaymentExecutionStatus.PENDING -> SepaMessageStatus.PENDING
                 PaymentExecutionStatus.SENT -> SepaMessageStatus.SENT
+                PaymentExecutionStatus.PENDING -> SepaMessageStatus.CONFIRMED
                 PaymentExecutionStatus.CONFIRMED -> SepaMessageStatus.CONFIRMED
                 PaymentExecutionStatus.PAYED_MANUALLY -> SepaMessageStatus.CONFIRMED
                 PaymentExecutionStatus.DROPPED -> SepaMessageStatus.CONFIRMED
