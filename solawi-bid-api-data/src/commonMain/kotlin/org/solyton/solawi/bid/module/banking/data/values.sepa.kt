@@ -111,4 +111,10 @@ value class SepaMessageId(val value: String) {
     }
 }
 
+@Serializable@Value
+@JvmInline
+value class SepaMessageIdentifier(val value: String)
 
+@Serializable@Value
+@JvmInline
+value class EndToEndId(val value: String)

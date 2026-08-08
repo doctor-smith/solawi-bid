@@ -31,6 +31,8 @@ data class SepaPayment(
     val status: PaymentExecutionStatus,
     val failureReason: String? = null,
     val endToEndId: String? = null,
+    val messageIdentifier: SepaMessageIdentifier? = null,
+    val sepaMessageId: SepaMessageId? = null,
     val nextPeriodSuccessorId: SepaPaymentId? = null,
     val retrySuccessorId: SepaPaymentId? = null,
     val mergeSuccessorId: SepaPaymentId? = null,

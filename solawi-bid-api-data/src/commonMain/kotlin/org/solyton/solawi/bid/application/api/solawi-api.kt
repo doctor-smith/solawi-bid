@@ -478,6 +478,10 @@ val solawiApi by lazy {
                 url = "sepa/messages/by-legal-entity",
                 parameters = setOf("legal_entity")
             )
+            patch<UpdateSepaMessageStatus, SepaMessage>(
+                key = UpdateSepaMessageStatus::class,
+                url = "sepa/messages/update-status"
+            )
 
             post<CreateSepaMandate, SepaMandate>(
                 key = CreateSepaMandate::class,
