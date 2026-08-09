@@ -49,6 +49,7 @@ fun Transaction.updateSepaMessageStatus(
             SepaMessageStatus.PENDING -> PaymentExecutionStatus.SENT
             SepaMessageStatus.CONFIRMED -> PaymentExecutionStatus.PENDING
             SepaMessageStatus.FAILED -> PaymentExecutionStatus.CREATED
+            SepaMessageStatus.SETTLED -> PaymentExecutionStatus.MESSAGE_SETTLED
         }
         updateSepaPaymentExecutionStatuses(
             modifier = modifierId,
@@ -65,9 +66,12 @@ val sepaMessageStatusTransitions: Map<SepaMessageStatus, Set<SepaMessageStatus>>
     mapOf(
         SepaMessageStatus.CREATED to setOf(SepaMessageStatus.SENT),
         SepaMessageStatus.SENT to setOf(SepaMessageStatus.PENDING, SepaMessageStatus.FAILED),
-        SepaMessageStatus.PENDING to setOf(SepaMessageStatus.CONFIRMED),
+        SepaMessageStatus.PENDING to setOf(SepaMessageStatus.CONFIRMED, SepaMessageStatus.FAILED),
+        SepaMessageStatus.CONFIRMED to setOf(SepaMessageStatus.SETTLED),
+        SepaMessageStatus.FAILED to setOf(SepaMessageStatus.CREATED),
+        SepaMessageStatus.SETTLED to setOf(),
     )
 }
 
 fun SepaMessageEntity.isTransitionAllowed(newStatus: SepaMessageStatus): Boolean =
-    sepaMessageStatusTransitions[status]?.let{ set -> set.contains(newStatus) }?: false
+    sepaMessageStatusTransitions[status]?.contains(newStatus) ?: false

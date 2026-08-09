@@ -92,6 +92,13 @@ enum class PaymentExecutionStatus {
     SENT,
 
     /**
+     * MESSAGE_SETTLED: Indicates that the SEPA payment message has been settled by the bank.
+     * This status is reached after the SEPA message has been processed and acknowledged
+     * as settled by the banking system. At this stage, the nonfailing payments are considered
+     * finalized from a messaging perspective.
+     */
+    MESSAGE_SETTLED,
+    /**
      * CONFIRMED: Bank confirmed that the payment has been successfully executed.
      */
     CONFIRMED,

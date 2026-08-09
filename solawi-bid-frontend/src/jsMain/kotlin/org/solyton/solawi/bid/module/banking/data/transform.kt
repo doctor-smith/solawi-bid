@@ -18,6 +18,7 @@ import org.solyton.solawi.bid.module.banking.data.sepa.SuccessorKind
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.mandate.SepaMandate
 import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessage
+import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessageStatus
 import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessageString
 import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessageVersion
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
@@ -145,6 +146,8 @@ fun ApiSepaPayment.toDomainType(): SepaPayment = SepaPayment(
     status = status.toDomainType(),
     failureReason = failureReason,
     endToEndId = endToEndId,
+    messageIdentifier = messageIdentifier,
+    sepaMessageId = sepaMessageId,
     nextPeriodSuccessorId = nextPeriodSuccessorId,
     retrySuccessorId = retrySuccessorId,
     mergeSuccessorId = mergeSuccessorId,
@@ -237,6 +240,7 @@ fun ApiPaymentExecutionStatus.toDomainType(): PaymentExecutionStatus = when(this
     FAILED -> PaymentExecutionStatus.FAILED
     PENDING -> PaymentExecutionStatus.PENDING
     DROPPED -> PaymentExecutionStatus.DROPPED
+    MESSAGE_SETTLED -> PaymentExecutionStatus.MESSAGE_SETTLED
 }
 
 fun PaymentExecutionStatus.toApiType(): ApiPaymentExecutionStatus = when(this) {
@@ -248,6 +252,7 @@ fun PaymentExecutionStatus.toApiType(): ApiPaymentExecutionStatus = when(this) {
     PaymentExecutionStatus.FAILED -> FAILED
     PaymentExecutionStatus.PENDING -> PENDING
     PaymentExecutionStatus.DROPPED -> DROPPED
+    PaymentExecutionStatus.MESSAGE_SETTLED -> MESSAGE_SETTLED
 }
 
 fun ApiSepaMessageString.toDomainType(): SepaMessageString = SepaMessageString(
@@ -274,6 +279,29 @@ fun ApiSepaMessage.toDomainType(): SepaMessage = SepaMessage(
     sepaMessageId = sepaMessageId,
     messageIdentifier = messageIdentifier,
     remittanceInformation = remittanceInformation,
+    executionDate = executionDate,
+    status = status.toDomainType(),
+    totalAmount = totalAmount,
+    numberOfPayments = numberOfPayments,
+    paymentIds = paymentIds
 )
 
 fun ApiSepaMessages.toDomainType(): List<SepaMessage> = all.map { it.toDomainType() }
+
+fun ApiSepaMessageStatus.toDomainType(): SepaMessageStatus = when(this) {
+    ApiSepaMessageStatus.CREATED -> SepaMessageStatus.CREATED
+    ApiSepaMessageStatus.SENT -> SepaMessageStatus.SENT
+    ApiSepaMessageStatus.PENDING -> SepaMessageStatus.PENDING
+    ApiSepaMessageStatus.CONFIRMED -> SepaMessageStatus.CONFIRMED
+    ApiSepaMessageStatus.FAILED -> SepaMessageStatus.FAILED
+    ApiSepaMessageStatus.SETTLED -> SepaMessageStatus.SETTLED
+}
+
+fun SepaMessageStatus.toApiType(): ApiSepaMessageStatus = when(this) {
+    SepaMessageStatus.CREATED -> ApiSepaMessageStatus.CREATED
+    SepaMessageStatus.SENT -> ApiSepaMessageStatus.SENT
+    SepaMessageStatus.PENDING -> ApiSepaMessageStatus.PENDING
+    SepaMessageStatus.CONFIRMED -> ApiSepaMessageStatus.CONFIRMED
+    SepaMessageStatus.FAILED -> ApiSepaMessageStatus.FAILED
+    SepaMessageStatus.SETTLED -> ApiSepaMessageStatus.SETTLED
+}

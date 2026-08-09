@@ -10,3 +10,12 @@ data class SepaMessage(
     val messageIdentifier: String,
     val remittanceInformation: RemittanceInformation,
 )
+
+enum class SepaMessageStatus {
+    CREATED,    // Message prepared but not yet sent
+    SENT,       // Message sent to bank
+    PENDING,    // Message accepted/submitted, but execution not yet confirmed
+    CONFIRMED,  // Bank confirmed successful execution
+    SETTLED,    // Payment has settled and funds are considered finally available
+    FAILED      // Message or payment execution failed/rejected
+}
