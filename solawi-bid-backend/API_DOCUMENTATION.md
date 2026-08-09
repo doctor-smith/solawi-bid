@@ -128,6 +128,9 @@
 | GET | banking/sepa/mandates/personal/all | ReadPersonalSepaMandates  | ReadPersonalSepaMandates | SepaMandates |
 | PATCH | banking/sepa/mandates/update | UpdateSepaMandate  | UpdateSepaMandate | SepaMandate |
 | GET | banking/sepa/messages/by-legal-entity | ReadSepaMessagesByLegalEntityId  | ReadSepaMessagesByLegalEntityId | SepaMessages |
+| GET | banking/sepa/messages/download | DownloadSepaMessage  | DownloadSepaMessage | SepaMessageString |
+| POST | banking/sepa/messages/merge | MergeSepaMessages  | MergeSepaMessages | SepaMessages |
+| PATCH | banking/sepa/messages/update-status | UpdateSepaMessageStatus  | UpdateSepaMessageStatus | SepaMessage |
 | GET | banking/sepa/payment-links/by-legal-entity | ReadSepaPaymentLinksByLegalEntity  | ReadSepaPaymentLinksByLegalEntity | SepaPaymentLinks |
 | GET | banking/sepa/payment-links/personal | ReadPersonalSepaPaymentLinks  | ReadPersonalSepaPaymentLinks | SepaPaymentLinks |
 | POST | banking/sepa/payments/create-ad-hoc | CreateAdHocSepaPayment  | CreateAdHocSepaPayment | SepaPayment |

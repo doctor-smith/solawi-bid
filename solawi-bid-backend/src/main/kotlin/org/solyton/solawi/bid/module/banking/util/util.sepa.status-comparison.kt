@@ -6,8 +6,8 @@ import org.solyton.solawi.bid.module.banking.schema.SepaMessageStatus
 
 @Suppress("CyclomaticComplexMethod")
 operator fun SepaMessageStatus.compareTo(other: SepaMessageStatus): Int = when(this) {
-    SepaMessageStatus.CREATED -> when(other) {
-        SepaMessageStatus.CREATED -> 0
+    SepaMessageStatus.CREATED, SepaMessageStatus.MERGED -> when(other) {
+        SepaMessageStatus.CREATED, SepaMessageStatus.MERGED -> 0
         else -> -1
     }
     SepaMessageStatus.SENT -> when(other) {
@@ -29,6 +29,7 @@ operator fun SepaMessageStatus.compareTo(other: SepaMessageStatus): Int = when(t
         SepaMessageStatus.CONFIRMED -> 0
         SepaMessageStatus.FAILED -> 0
         SepaMessageStatus.SETTLED -> -1
+        SepaMessageStatus.MERGED -> 1
     }
 
     SepaMessageStatus.SETTLED -> when(other) {

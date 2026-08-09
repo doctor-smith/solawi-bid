@@ -18,6 +18,7 @@ import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
+import org.solyton.solawi.bid.module.banking.action.sepa.downloadSepaMessage
 import org.solyton.solawi.bid.module.banking.action.sepa.updateSepaMessagesStatus
 import org.solyton.solawi.bid.module.banking.data.SepaMessageId
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
@@ -221,6 +222,20 @@ fun SepaMessageList(
                             }
                         }
                         ActionsWrapper(listStyles.actionsWrapper) {
+                            val deviceType = Read(storage * deviceData * mediaType)
+                            when(item.status) {
+                                SepaMessageStatus.CREATED -> DownloadButton(
+                                    color = Color.black,
+                                    bgColor = Color.white,
+                                    texts = { "Download PAIN Message" },
+                                    deviceType = deviceType,
+                                ) {
+                                    scope.launch {
+                                        storage * bankingApplicationActions dispatch downloadSepaMessage(item.sepaMessageId)
+                                    }
+                                }
+                                else -> Unit
+                            }
                             NextStatusButtons(scope, storage, item)
                         }
                     }
@@ -337,6 +352,7 @@ fun NextStatusButtons(
         }
         SepaMessageStatus.FAILED -> Unit
         SepaMessageStatus.SETTLED -> Unit
+        SepaMessageStatus.MERGED -> Unit
     }
 
 }

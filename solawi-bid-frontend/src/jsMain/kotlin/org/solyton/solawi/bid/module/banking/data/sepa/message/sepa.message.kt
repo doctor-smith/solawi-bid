@@ -27,5 +27,6 @@ enum class SepaMessageStatus {
     PENDING,    // Message accepted/submitted, but execution not yet confirmed
     CONFIRMED,  // Bank confirmed successful execution
     SETTLED,    // Payment has settled and funds are considered finally available
-    FAILED      // Message or payment execution failed/rejected
+    FAILED,     // Message or payment execution failed/rejected
+    MERGED
 }
