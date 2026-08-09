@@ -44,6 +44,8 @@ fun Transaction.updateSepaMessageStatus(
     val sepaMessage = SepaMessageEntity.find{ SepaMessagesTable.id eq sepaMessageId }.firstOrNull()
         ?:throw SepaException.Message.NoSuchMessage(sepaMessageId.toString())
 
+    val statusChanged = sepaMessage.status != status
+    if(!statusChanged) return sepaMessage
     if(!sepaMessage.isTransitionAllowed(status)) throw SepaException.Message.InvalidStatusTransition(sepaMessageId.toString(), status)
 
     if(updatePayments) {
@@ -111,7 +113,7 @@ fun Transaction.mergeSepaMessages(
     val payments = sepaMessages.flatMap { it.payments }.distinct()
     val collections = payments.map { it.collection }
 
-    require(collections.distinctBy{ it.id.value }.size == 1) {
+    require(collections.distinctBy{ it.collectionKey }.size == 1) {
         "All payments must belong to the same collection"
     }
     val collection = collections.first()

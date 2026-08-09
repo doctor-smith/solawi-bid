@@ -495,7 +495,7 @@ fun EnvelopeCircleCheckButton(
 ) = IconButton(
     color,
     bgColor,
-    arrayOf("fa-solid", "envelope-circle-check"),
+    arrayOf("fa-solid", "fa-envelope-circle-check"),
     texts,
     deviceType,
     isDisabled,

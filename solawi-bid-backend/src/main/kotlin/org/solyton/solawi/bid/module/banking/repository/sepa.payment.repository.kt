@@ -671,9 +671,10 @@ fun Transaction.updateSepaPaymentExecutionStatuses(
                 PaymentExecutionStatus.PENDING,
                 PaymentExecutionStatus.CONFIRMED,
                 PaymentExecutionStatus.PAYED_MANUALLY,
-                PaymentExecutionStatus.DROPPED
+                PaymentExecutionStatus.DROPPED,
+                PaymentExecutionStatus.MESSAGE_SETTLED
             )
-        }) { "All payments must be pending, confirmed, payed-manually or dropped in order to be set to failed" }
+        }) { "All payments must be pending, confirmed, payed-manually, dropped or have settled messages in order to be set to failed" }
 
         failureReasons.forEach { (paymentId, reason) ->
             val payment = requireNotNull( SepaPaymentEntity.findById(paymentId) ) { "Payment with id $paymentId not found" }
@@ -762,6 +763,7 @@ fun Transaction.updateSepaPaymentExecutionStatuses(
  *                   need to be evaluated and potentially updated.
  * @return A list of SEPA payment entities whose associated message statuses were evaluated.
  */
+@Suppress("CyclomaticComplexMethod")
 fun Transaction.updateSepaMessageStatus(modifierId: UUID, paymentIds: List<UUID>): List<SepaPayment> {
 
     val payments = SepaPaymentEntity.find { SepaPayments.id inList paymentIds }.toList()
@@ -796,9 +798,15 @@ fun Transaction.updateSepaMessageStatus(modifierId: UUID, paymentIds: List<UUID>
                 PaymentExecutionStatus.FAILED -> SepaMessageStatus.SETTLED
                 PaymentExecutionStatus.MESSAGE_SETTLED -> SepaMessageStatus.SETTLED
             }
-            paymentStatuses.contains(PaymentExecutionStatus.PENDING) -> SepaMessageStatus.PENDING
-            paymentStatuses.contains(PaymentExecutionStatus.FAILED) -> SepaMessageStatus.FAILED
-            else -> SepaMessageStatus.CONFIRMED
+
+            paymentStatuses.contains(PaymentExecutionStatus.MESSAGE_SETTLED) -> SepaMessageStatus.SETTLED
+            paymentStatuses.contains(PaymentExecutionStatus.FAILED) -> SepaMessageStatus.SETTLED
+            paymentStatuses.contains(PaymentExecutionStatus.CONFIRMED) -> SepaMessageStatus.SETTLED
+            paymentStatuses.contains(PaymentExecutionStatus.DROPPED) -> SepaMessageStatus.SETTLED
+            paymentStatuses.contains(PaymentExecutionStatus.PENDING) -> SepaMessageStatus.CONFIRMED
+            paymentStatuses.contains(PaymentExecutionStatus.SENT) -> SepaMessageStatus.SENT
+            paymentStatuses.contains(PaymentExecutionStatus.MESSAGE_CREATED) -> SepaMessageStatus.CREATED
+            else -> null
         }
 
         if (messageStatus != null) updateSepaMessageStatus(

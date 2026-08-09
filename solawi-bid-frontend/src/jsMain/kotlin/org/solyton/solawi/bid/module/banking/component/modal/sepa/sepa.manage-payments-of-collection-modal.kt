@@ -222,19 +222,19 @@ fun ManagePaymentsOfSepaCollectionModal(
                 }
                 TabTrigger(
                     tabStyles.tabTriggerStyles,
-                    id = TabId.PaymentHistories.id,
-                    currentTab = selectedTab,
-                    trigger = { selectedTab = TabId.PaymentHistories.id }
-                ) {
-                    Text("Payment Histories")
-                }
-                TabTrigger(
-                    tabStyles.tabTriggerStyles,
                     id = TabId.Messages.id,
                     currentTab = selectedTab,
                     trigger = { selectedTab = TabId.Messages.id }
                 ) {
                     Text("Messages")
+                }
+                TabTrigger(
+                    tabStyles.tabTriggerStyles,
+                    id = TabId.PaymentHistories.id,
+                    currentTab = selectedTab,
+                    trigger = { selectedTab = TabId.PaymentHistories.id }
+                ) {
+                    Text("Payment Histories")
                 }
             }
             TabContentWrapper(tabStyles.tabContentWrapperStyles) {
@@ -619,7 +619,7 @@ fun CreateNewPayments(
                 listStyles.modifyListWrapper {
                     flexGrow(1)
                     minHeight(computeMinHeight(minOf(mandatesWithoutPayments.size, 60)))
-                    maxHeight(90.percent)
+                    maxHeight(60.vh)
                 },
                 overallActions = { data ->
                     Horizontal {
@@ -656,7 +656,7 @@ fun CreateNewPayments(
                 listStyles.modifyListWrapper {
                     flexGrow(1)
                     minHeight(computeMinHeight(minOf(nextPeriodPaymentCreationCandidates.size, 60)))
-                    maxHeight(90.percent)
+                    maxHeight(60.vh)
                 },
                 overallActions = { data ->
                     Horizontal {
@@ -689,7 +689,7 @@ fun CreateNewPayments(
                 listStyles.modifyListWrapper {
                     flexGrow(1)
                     minHeight(computeMinHeight(minOf(retryPaymentCreationCandidates.size, 60)))
-                    maxHeight(90.percent)
+                    maxHeight(60.vh)
                 },
                 overallActions = { data ->
                     Horizontal {
