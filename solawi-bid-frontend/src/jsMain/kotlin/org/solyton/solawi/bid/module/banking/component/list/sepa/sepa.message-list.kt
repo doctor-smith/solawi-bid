@@ -19,11 +19,16 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.banking.action.sepa.downloadSepaMessage
+import org.solyton.solawi.bid.module.banking.action.sepa.mergeSepaMessages
 import org.solyton.solawi.bid.module.banking.action.sepa.updateSepaMessagesStatus
+import org.solyton.solawi.bid.module.banking.component.form.sepa.MergeSepaMessagesData
+import org.solyton.solawi.bid.module.banking.component.modal.sepa.mergeSepaMessagesModalTexts
+import org.solyton.solawi.bid.module.banking.component.modal.sepa.showMergeSepaMessagesModal
 import org.solyton.solawi.bid.module.banking.data.SepaMessageId
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.deviceData
 import org.solyton.solawi.bid.module.banking.data.bankingApplicationActions
+import org.solyton.solawi.bid.module.banking.data.bankingApplicationModals
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessage
 import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessageStatus
@@ -266,6 +271,14 @@ fun OverAllActionButtons(
 ) {
     val deviceType = Read(storage * deviceData * mediaType)
 
+    var modalDataState by remember(data) {  mutableStateOf(
+        MergeSepaMessagesData(
+            sepaMessages = data.selectedAndVisibleMessages(),
+            executionDate = null,
+            remittanceInformation = null
+        )
+    ) }
+
     CodeMergeButton(
         color = Color.black,
         bgColor = Color.white,
@@ -274,6 +287,31 @@ fun OverAllActionButtons(
         isDisabled = data.selectedAndVisibleMessages().any { it.status != SepaMessageStatus.CREATED }
     ) {
         // Open dialog to set common execution date
+        (storage * bankingApplicationModals).showMergeSepaMessagesModal(
+            parentModalId = modalId,
+            storage = storage,
+            texts = mergeSepaMessagesModalTexts,
+            device = deviceType,
+            isOkButtonDisabled = {
+                modalDataState.executionDate == null ||
+                modalDataState.remittanceInformation == null
+            },
+            data = modalDataState,
+            setData = {
+                modalDataState = it
+            }
+        ) {
+            scope.launch {
+                val executionDate = requireNotNull(modalDataState.executionDate)
+                val remittanceInformation = requireNotNull(modalDataState.remittanceInformation)
+                val sepaMessageIds = modalDataState.sepaMessages.map { it.sepaMessageId }
+                storage * bankingApplicationActions dispatch mergeSepaMessages(
+                    sepaMessageIds,
+                    executionDate,
+                    remittanceInformation
+                )
+            }
+        }
     }
 }
 
