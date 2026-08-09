@@ -1,14 +1,24 @@
 package org.solyton.solawi.bid.module.banking.data.sepa.message
 
+import kotlinx.datetime.LocalDate
 import org.evoleq.axioms.definition.Lensify
+import org.evoleq.axioms.definition.ReadOnly
+import org.evoleq.axioms.definition.ReadWrite
 import org.solyton.solawi.bid.module.banking.data.RemittanceInformation
 import org.solyton.solawi.bid.module.banking.data.SepaMessageId
+import org.solyton.solawi.bid.module.banking.data.SepaMessageIdentifier
+import org.solyton.solawi.bid.module.banking.data.SepaPaymentId
 
 @Lensify
 data class SepaMessage(
-    val sepaMessageId: SepaMessageId,
-    val messageIdentifier: String,
-    val remittanceInformation: RemittanceInformation,
+    @ReadOnly val sepaMessageId: SepaMessageId,
+    @ReadOnly val messageIdentifier: SepaMessageIdentifier,
+    @ReadWrite val remittanceInformation: RemittanceInformation,
+    @ReadWrite val executionDate: LocalDate,
+    @ReadWrite val status: SepaMessageStatus,
+    @ReadWrite val totalAmount: Double?,
+    @ReadWrite val numberOfPayments: Int,
+    @ReadWrite val paymentIds: List<SepaPaymentId>,
 )
 
 enum class SepaMessageStatus {

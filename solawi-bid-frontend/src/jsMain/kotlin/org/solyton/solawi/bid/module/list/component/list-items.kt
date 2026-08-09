@@ -2,6 +2,8 @@ package org.solyton.solawi.bid.module.list.component
 
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
+import org.evoleq.math.Source
+import org.evoleq.math.emit
 import org.evoleq.optics.storage.Storage
 
 
@@ -33,6 +35,14 @@ fun <T> ListItemsIndexed(
     items: Storage<List<T>>,
     item: @Composable (Int, T)->Unit
 ) = ListItemsIndexed(items.read(), item)
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun <T> ListItemsIndexed(
+    items: Source<List<T>>,
+    item: @Composable (Int, T)->Unit
+) = ListItemsIndexed(items.emit(), item)
 
 @Markup
 @Composable

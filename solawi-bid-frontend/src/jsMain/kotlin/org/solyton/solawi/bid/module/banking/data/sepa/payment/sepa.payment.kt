@@ -4,9 +4,7 @@ import kotlinx.datetime.LocalDate
 import org.evoleq.axioms.definition.Lensify
 import org.evoleq.axioms.definition.ReadOnly
 import org.evoleq.axioms.definition.ReadWrite
-import org.solyton.solawi.bid.module.banking.data.SepaCollectionId
-import org.solyton.solawi.bid.module.banking.data.SepaMandateId
-import org.solyton.solawi.bid.module.banking.data.SepaPaymentId
+import org.solyton.solawi.bid.module.banking.data.*
 import org.solyton.solawi.bid.module.banking.data.sepa.PaymentExecutionStatus
 import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
 
@@ -21,6 +19,8 @@ data class SepaPayment(
     @ReadWrite val status: PaymentExecutionStatus,
     @ReadWrite val failureReason: String? = null,
     @ReadOnly val endToEndId: String? = null,
+    @ReadWrite val messageIdentifier: SepaMessageIdentifier? = null,
+    @ReadWrite val sepaMessageId: SepaMessageId? = null,
     @ReadOnly val nextPeriodSuccessorId: SepaPaymentId? = null,
     @ReadOnly val retrySuccessorId: SepaPaymentId? = null,
     @ReadOnly val mergeSuccessorId: SepaPaymentId? = null,
