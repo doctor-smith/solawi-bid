@@ -15,7 +15,7 @@ import org.solyton.solawi.bid.module.banking.util.toSepaMessageStatus
  *
  * Description: Fix the statuses of all sepa messages
  */
-class Migration1786193474639(
+class Migration1786193474640(
     override val database: Database
 ) : Migration {
 
@@ -23,7 +23,7 @@ class Migration1786193474639(
      * Id of the migration, do not change!
      */
     override val id: Long
-        get() = 1786193474639
+        get() = 1786193474640
 
     /**
      * Upwards migration

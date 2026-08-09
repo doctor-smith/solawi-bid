@@ -31,11 +31,12 @@ data class SepaMessage(
 
 @Serializable
 enum class SepaMessageStatus {
-    CREATED,   // Message prepared but not yet sent
-    SENT,      // Message sent to bank
-    PENDING, // Bank is processing the message
-    CONFIRMED, // Bank confirmed execution
-    FAILED     // Message rejected or failed
+    CREATED,    // Message prepared but not yet sent
+    SENT,       // Message sent to bank
+    PENDING,    // Message accepted/submitted, but execution not yet confirmed
+    CONFIRMED,  // Bank confirmed successful execution
+    SETTLED,    // Payment has settled and funds are considered finally available
+    FAILED      // Message or payment execution failed/rejected
 }
 
 @Serializable

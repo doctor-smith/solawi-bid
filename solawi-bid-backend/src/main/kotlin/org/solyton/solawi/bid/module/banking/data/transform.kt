@@ -255,6 +255,7 @@ fun PaymentExecutionStatus.toApiType(): ApiPaymentExecutionStatus = when(this){
     PaymentExecutionStatus.FAILED -> ApiPaymentExecutionStatus.FAILED
     PaymentExecutionStatus.PENDING -> ApiPaymentExecutionStatus.PENDING
     PaymentExecutionStatus.DROPPED -> ApiPaymentExecutionStatus.DROPPED
+    PaymentExecutionStatus.MESSAGE_SETTLED -> ApiPaymentExecutionStatus.MESSAGE_SETTLED
 }
 
 fun ApiPaymentExecutionStatus.toDomainType(): PaymentExecutionStatus = when(this) {
@@ -266,6 +267,7 @@ fun ApiPaymentExecutionStatus.toDomainType(): PaymentExecutionStatus = when(this
     ApiPaymentExecutionStatus.FAILED -> PaymentExecutionStatus.FAILED
     ApiPaymentExecutionStatus.PENDING -> PaymentExecutionStatus.PENDING
     ApiPaymentExecutionStatus.DROPPED -> PaymentExecutionStatus.DROPPED
+    ApiPaymentExecutionStatus.MESSAGE_SETTLED -> PaymentExecutionStatus.MESSAGE_SETTLED
 }
 
 fun SepaMessageEntity.toApiType(): ApiSepaMessage = ApiSepaMessage(
@@ -287,6 +289,7 @@ fun SepaMessageStatus.toApiType(): ApiSepaMessageStatus = when(this) {
     SepaMessageStatus.PENDING -> ApiSepaMessageStatus.PENDING
     SepaMessageStatus.CONFIRMED -> ApiSepaMessageStatus.CONFIRMED
     SepaMessageStatus.FAILED -> ApiSepaMessageStatus.FAILED
+    SepaMessageStatus.SETTLED -> ApiSepaMessageStatus.SETTLED
 }
 
 fun ApiSepaMessageStatus.toDomainType(): SepaMessageStatus = when(this) {
@@ -295,4 +298,5 @@ fun ApiSepaMessageStatus.toDomainType(): SepaMessageStatus = when(this) {
     ApiSepaMessageStatus.PENDING -> SepaMessageStatus.PENDING
     ApiSepaMessageStatus.CONFIRMED -> SepaMessageStatus.CONFIRMED
     ApiSepaMessageStatus.FAILED -> SepaMessageStatus.FAILED
+    ApiSepaMessageStatus.SETTLED -> SepaMessageStatus.SETTLED
 }

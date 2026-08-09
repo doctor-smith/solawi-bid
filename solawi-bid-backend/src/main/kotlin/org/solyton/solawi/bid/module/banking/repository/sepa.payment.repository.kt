@@ -287,6 +287,7 @@ fun Transaction.updatePayment(
         payment.modifiedAt = now()
     }
 
+    val oldStatus = payment.status
     // update message
     if(statusChanged) {
         require(status == PaymentExecutionStatus.CREATED || message != null) { "Message must be provided if status is changed" }
@@ -308,7 +309,7 @@ fun Transaction.updatePayment(
     if(statusChanged) {
         if(changeReportedAt == null) throw SepaException.Payment.ChangeRequiresDateOfReport
 
-        val statusChange = "${payment.status.name} -> ${status.name}"
+        val statusChange = "${oldStatus.name} -> ${status.name}"
 
         val (newBankingStatus, code, reason) = when(status) {
             PaymentExecutionStatus.MESSAGE_CREATED -> Triple(BankStatusCode.PENDING, "MESSAGE_CREATED", "Sepa Message created for Payment")
@@ -317,10 +318,14 @@ fun Transaction.updatePayment(
             PaymentExecutionStatus.FAILED, PaymentExecutionStatus.DROPPED -> Triple(BankStatusCode.FAILED, "FAILED", failureReason?: "Reason unknown")
             PaymentExecutionStatus.CONFIRMED -> Triple(BankStatusCode.SUCCESS, "SUCCESS", statusChange)
             PaymentExecutionStatus.PAYED_MANUALLY -> Triple(BankStatusCode.SUCCESS, "SUCCESS", statusChange)
-            PaymentExecutionStatus.CREATED -> throw SepaException.Payment.StateTransitionForbidden(
-                payment.status.name,
-                status.name
-            )
+            PaymentExecutionStatus.MESSAGE_SETTLED -> Triple(BankStatusCode.SUCCESS, "MESSAGE_SETTLED", statusChange)
+            PaymentExecutionStatus.CREATED -> when(oldStatus) {
+                PaymentExecutionStatus.SENT, PaymentExecutionStatus.PENDING -> Triple(BankStatusCode.FAILED, "RETRY", statusChange)
+                else -> throw SepaException.Payment.StateTransitionForbidden(
+                    payment.status.name,
+                    status.name
+                )
+            }
         }
 
         SepaPaymentStatusHistoryEntity.new {
@@ -671,6 +676,8 @@ fun Transaction.updateSepaPaymentExecutionStatuses(
         }) { "All payments must be pending, confirmed, payed-manually or dropped in order to be set to failed" }
 
         failureReasons.forEach { (paymentId, reason) ->
+            val payment = requireNotNull( SepaPaymentEntity.findById(paymentId) ) { "Payment with id $paymentId not found" }
+            val oldStatus = payment.status
             SepaPaymentsTable.update({ SepaPayments.id eq paymentId }) {
                 it[status] = newStatus
                 it[failureReason] = reason
@@ -681,6 +688,7 @@ fun Transaction.updateSepaPaymentExecutionStatuses(
             addHistoryEntry(
                 modifier,
                 paymentId,
+                oldStatus,
                 newStatus,
                 reason,
                 now()
@@ -702,6 +710,7 @@ fun Transaction.updateSepaPaymentExecutionStatuses(
             addHistoryEntry(
                 modifier,
                 it,
+                PaymentExecutionStatus.FAILED,
                 newStatus,
                 failureReasons[it],
                 now()
@@ -709,18 +718,21 @@ fun Transaction.updateSepaPaymentExecutionStatuses(
         }
     }
     else {
-        SepaPaymentsTable.update({ SepaPayments.id inList paymentIds }) {
-            it[status] = newStatus
-            it[modifiedBy] = modifier
-            it[modifiedAt] = now()
-        }
+        paymentIds.forEach { paymentId ->
+            val payment = requireNotNull( SepaPaymentEntity.findById(paymentId) ) {"Payment with id = $paymentId not found"}
+            val oldStatus = payment.status
+            SepaPaymentsTable.update({ SepaPayments.id eq paymentId }) {
+                it[status] = newStatus
+                it[modifiedBy] = modifier
+                it[modifiedAt] = now()
+            }
 
-        paymentIds.forEach {
             addHistoryEntry(
                 modifier,
-                it,
+                paymentId,
+                oldStatus,
                 newStatus,
-                failureReasons[it],
+                failureReasons[paymentId],
                 now()
             )
         }
@@ -731,6 +743,7 @@ fun Transaction.updateSepaPaymentExecutionStatuses(
             PaymentExecutionStatus.PENDING,
             PaymentExecutionStatus.FAILED,
             PaymentExecutionStatus.PAYED_MANUALLY,
+            PaymentExecutionStatus.MESSAGE_SETTLED,
             PaymentExecutionStatus.CONFIRMED,
             PaymentExecutionStatus.DROPPED
         )) {
@@ -777,10 +790,11 @@ fun Transaction.updateSepaMessageStatus(modifierId: UUID, paymentIds: List<UUID>
                 PaymentExecutionStatus.MESSAGE_CREATED -> SepaMessageStatus.CREATED
                 PaymentExecutionStatus.SENT -> SepaMessageStatus.SENT
                 PaymentExecutionStatus.PENDING -> SepaMessageStatus.CONFIRMED
-                PaymentExecutionStatus.CONFIRMED -> SepaMessageStatus.CONFIRMED
-                PaymentExecutionStatus.PAYED_MANUALLY -> SepaMessageStatus.CONFIRMED
-                PaymentExecutionStatus.DROPPED -> SepaMessageStatus.CONFIRMED
-                PaymentExecutionStatus.FAILED -> SepaMessageStatus.CONFIRMED
+                PaymentExecutionStatus.CONFIRMED -> SepaMessageStatus.SETTLED
+                PaymentExecutionStatus.PAYED_MANUALLY -> SepaMessageStatus.SETTLED
+                PaymentExecutionStatus.DROPPED -> SepaMessageStatus.SETTLED
+                PaymentExecutionStatus.FAILED -> SepaMessageStatus.SETTLED
+                PaymentExecutionStatus.MESSAGE_SETTLED -> SepaMessageStatus.SETTLED
             }
             paymentStatuses.contains(PaymentExecutionStatus.PENDING) -> SepaMessageStatus.PENDING
             paymentStatuses.contains(PaymentExecutionStatus.FAILED) -> SepaMessageStatus.FAILED
@@ -864,26 +878,31 @@ fun Transaction.readSepaPaymentLinksByUser(userId: UUID): List<SepaPaymentLinkEn
 fun Transaction.addHistoryEntry(
     modifier: UUID,
     paymentId: UUID,
-    status: PaymentExecutionStatus,
+    oldStatus: PaymentExecutionStatus,
+    newStatus: PaymentExecutionStatus,
     reasonText: String?,
     reportedAt: DateTime
 ): SepaPaymentStatusHistoryEntity {
     val payment = validatedPayment(paymentId)
     // if(changeReportedAt == null) throw SepaException.Payment.ChangeRequiresDateOfReport
 
-    val statusChange = "${payment.status.name} -> ${status.name}"
+    val statusChange = "${oldStatus.name} -> ${newStatus.name}"
 
-    val (newBankingStatus, code, reason) = when(status) {
+    val (newBankingStatus, code, reason) = when(newStatus) {
         PaymentExecutionStatus.MESSAGE_CREATED -> Triple(BankStatusCode.PENDING, "MESSAGE_CREATED", "Sepa Message created for Payment")
         PaymentExecutionStatus.SENT -> Triple(BankStatusCode.PENDING, "SENT", "Payment request sent")
         PaymentExecutionStatus.PENDING -> Triple(BankStatusCode.PENDING, "PENDING",statusChange )
         PaymentExecutionStatus.FAILED, PaymentExecutionStatus.DROPPED-> Triple(BankStatusCode.FAILED, "FAILED", reasonText?: "Reason unknown")
         PaymentExecutionStatus.CONFIRMED -> Triple(BankStatusCode.SUCCESS, "SUCCESS", statusChange)
         PaymentExecutionStatus.PAYED_MANUALLY -> Triple(BankStatusCode.SUCCESS, "SUCCESS", statusChange)
-        PaymentExecutionStatus.CREATED -> throw SepaException.Payment.StateTransitionForbidden(
-            payment.status.name,
-            status.name
-        )
+        PaymentExecutionStatus.MESSAGE_SETTLED -> Triple(BankStatusCode.SUCCESS, "MESSAGE_SETTLED", statusChange)
+        PaymentExecutionStatus.CREATED -> when(oldStatus) {
+            PaymentExecutionStatus.SENT, PaymentExecutionStatus.PENDING -> Triple(BankStatusCode.FAILED, "RETRY", statusChange)
+            else -> throw SepaException.Payment.StateTransitionForbidden(
+                payment.status.name,
+                newStatus.name
+            )
+        }
     }
 
     return SepaPaymentStatusHistoryEntity.new {
