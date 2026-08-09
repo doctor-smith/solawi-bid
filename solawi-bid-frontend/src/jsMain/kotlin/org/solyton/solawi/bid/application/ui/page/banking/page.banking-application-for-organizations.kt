@@ -1016,7 +1016,7 @@ fun SepaCollections(
             downloadStatus.write(Download.None)
         }
     }
-    LaunchedEffectOnSource(Read(sepaMandates)) {
+    LaunchedEffectOnSource(Read(sepaMandates), Read(sepaMessages)) {
         if(isLegalEntityDefined.emit()) launch{
             bankingApplicationActions dispatch readPersonalSepaCollections(LegalEntityId(providerId.value))
         }
@@ -1026,7 +1026,6 @@ fun SepaCollections(
             bankingApplicationActions dispatch readSepaPaymentLInksByLegalEntity(LegalEntityId(providerId.value))
         }
     }
-
 
     Wrap(cardStyle) {
         ListWrapper(cardListStyles.listWrapper) {

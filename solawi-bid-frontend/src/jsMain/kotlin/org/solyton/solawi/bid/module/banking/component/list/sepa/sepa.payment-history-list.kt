@@ -242,6 +242,7 @@ fun colorOf(data: PaymentExecutionStatus): CSSColorValue = when(data) {
     PaymentExecutionStatus.MESSAGE_CREATED,
     PaymentExecutionStatus.SENT,
     PaymentExecutionStatus.PENDING -> Color.orange
+    PaymentExecutionStatus.MESSAGE_SETTLED -> Color.orangered
     PaymentExecutionStatus.DROPPED -> Color.gray
 }
 

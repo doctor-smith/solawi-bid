@@ -29,9 +29,7 @@ import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.attributes.InputType
-import org.jetbrains.compose.web.attributes.disabled
 import org.jetbrains.compose.web.css.*
-import org.jetbrains.compose.web.dom.Button
 import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.Input
 import org.jetbrains.compose.web.dom.Text
@@ -52,9 +50,6 @@ import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPaymentHistor
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPaymentLink
 import org.solyton.solawi.bid.module.banking.service.sepa.isCandidateForNextPeriodPayment
 import org.solyton.solawi.bid.module.control.button.*
-import org.solyton.solawi.bid.module.control.dropdown.Dropdown
-import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
-import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
 import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
 import org.solyton.solawi.bid.module.list.style.ListStyles
 import org.solyton.solawi.bid.module.list.style.defaultListStyles
@@ -100,6 +95,7 @@ sealed class Tabs {
             PAYMENTS_CREATED,
             PAYMENTS_MESSAGE_CREATED,
             PAYMENTS_SENT,
+            PAYMENTS_MESSAGE_SETTLED,
             PAYMENTS_PENDING,
             PAYMENTS_FAILED,
             PAYMENTS_CONFIRMED,
@@ -195,10 +191,12 @@ fun ManagePaymentsOfSepaCollectionModal(
     val scope = rememberCoroutineScope()
     val sepaCollection = sepaCollectionSource.emit()
     val tabStyles = TabStyles()
+    /*
     val dropdownStyles = DropdownStyles()
         .modifyContainerStyle {
             alignSelf(AlignSelf.Start)
         }
+    */
     val scrollableStyles = ScrollableStyles().modifyContainerStyle {
         //height(100.percent)
 
@@ -258,8 +256,11 @@ fun ManagePaymentsOfSepaCollectionModal(
 
                     val sentPayments =
                         sepaCollection.sepaPayments.filter { payment -> payment.status == PaymentExecutionStatus.SENT }
+
                     val pendingPayments =
                         sepaCollection.sepaPayments.filter { payment -> payment.status == PaymentExecutionStatus.PENDING }
+                    val settledPayments =
+                        sepaCollection.sepaPayments.filter { payment -> payment.status == PaymentExecutionStatus.MESSAGE_SETTLED }
                     val failedPayments =
                         sepaCollection.sepaPayments.filter { payment -> payment.status == PaymentExecutionStatus.FAILED }
                     val confirmedPayments =
@@ -343,23 +344,27 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     TabParagraph("Open Payments / Recurring")
                                     PaymentsProperties(openPayments)
                                 }
-                                TabParagraphWrapper(
-                                    onClick = { paragraphState = Tabs.Payments.Paragraphs.PAYMENTS_MESSAGE_CREATED }
-                                ) {
-                                    TabParagraph("Ready to be sent")
-                                    PaymentsProperties(messageCreatedPayments)
-                                }
+
+                                /*
                                 TabParagraphWrapper(
                                     onClick = { paragraphState = Tabs.Payments.Paragraphs.PAYMENTS_SENT }
                                 ) {
                                     TabParagraph("Sent Payments (Sent to Bank)")
                                     PaymentsProperties(sentPayments)
                                 }
+
+                                 */
                                 TabParagraphWrapper(
                                     onClick = { paragraphState = Tabs.Payments.Paragraphs.PAYMENTS_PENDING }
                                 ) {
                                     TabParagraph("Pending Payments")
                                     PaymentsProperties(pendingPayments)
+                                }
+                                TabParagraphWrapper(
+                                    onClick = { paragraphState = Tabs.Payments.Paragraphs.PAYMENTS_MESSAGE_SETTLED }
+                                ) {
+                                    TabParagraph("Message settled")
+                                    PaymentsProperties(settledPayments)
                                 }
                                 TabParagraphWrapper(
                                     onClick = { paragraphState = Tabs.Payments.Paragraphs.PAYMENTS_FAILED }
@@ -456,6 +461,17 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     id,
                                 )
                             }
+                            When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_MESSAGE_SETTLED) {
+                                SettledPayments(
+                                    sepaCollection,
+                                    settledPayments,
+                                    listStyles,
+                                    scope,
+                                    storage,
+                                    device,
+                                    id,
+                                )
+                            }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_CONFIRMED) {
                                 ConfirmedPayments(
                                     sepaCollection,
@@ -497,80 +513,14 @@ fun ManagePaymentsOfSepaCollectionModal(
                     TabId.Messages.id,
                     selectedTab
                 ) {
-                    val openPayments =
-                        sepaCollection.sepaPayments.filter { it.status == PaymentExecutionStatus.CREATED }
 
-                    val executionDatesOfOpenPayments = openPayments.map { it.executionDate }.sortedBy { it }
-                    /*
-                    val allExecutionDates =
-                        sepaCollection.sepaPayments.filter { it.status != PaymentExecutionStatus.CREATED }
-                            .map { it.executionDate }.distinct().sortedBy { it }
-
-                     */
-                    var executionDateState by remember { mutableStateOf(executionDatesOfOpenPayments.firstOrNull()) }
-
-                    TabTitle("Manage Messages")
-                    Horizontal {
-                        val isValid = executionDatesOfOpenPayments.isNotEmpty()
-                        if (!isValid) Text("No open Payments defined")
-                        Form(formDesktopStyle) {
-
-                            Field(fieldDesktopStyle) {
-
-                                // State
-                                val initDate = (executionDateState ?: today()).format(Locale.Iso)
-                                val dateOptions = executionDatesOfOpenPayments.associateBy { date ->
-                                    date.format(Locale.Iso)
-                                }
-                                Label("Execution Date", id = "date", labelStyle = formLabelDesktopStyle)
-                                Dropdown(
-                                    options = dateOptions,
-                                    selected = initDate,
-                                    styles = dropdownStyles,
-                                    iconContent = { opened -> SimpleUpDown(opened) }
-                                ) { (_, value) ->
-                                    executionDateState = value
-                                }
-                            }
-                        }
-                        Button({
-                            if (executionDateState == null || !isValid) disabled()
-                            onClick {
-                                if (executionDateState == null) return@onClick
-                                setManageCollectionPayments(
-                                    ManageCollectionPayments.CreateMessage(
-                                        executionDateState!!
-                                    )
-                                )
-                            }
-                        }) {
-                            Text("Generate Sepa Message")
-                        }
-                    }
-
-                    TabParagraph("Sepa messages by execution date")
-                    // val messages = sepaMessages.emit()
-
-                    // List<PaymentMessage>
-
-                    /*
-                    allExecutionDates.forEach { date ->
-                        val payments = sepaCollection.sepaPayments.filter { it.executionDate == date }
-                        // distinguish status?
-                        ListOfPayments(
-                            "Message for $date",
-                            sepaCollection.sepaMandates,
-                            payments = payments,
-                            overallActions = {
-
-                            },
-                            actions = {
-
-                            }
-                        )
-                    }
-
-                     */
+                    SepaMessageList(
+                        storage,
+                        Source{sepaCollection},
+                        sepaMessages,
+                        ListStyles(),
+                        id
+                    )
                 }
                 TabContent(
                     tabStyles.tabContentStyles,
@@ -862,6 +812,7 @@ fun RecentlyCreatedPayments(
                                         status.toApiType(),
                                         failureReason,
                                         endToEndId,
+                                        sepaMessageId,
                                     )
                                 }
                             }.let { UpdateSepaPayments(it) }
@@ -1072,7 +1023,9 @@ fun PaymentsSentToTheBank(
     )
 }
 
+@Markup
 @Composable
+@Suppress("UnusedParameter")
 fun PendingPayments(
     sepaCollection: SepaCollection,
     pendingPayments: List<SepaPayment>,
@@ -1088,6 +1041,7 @@ fun PendingPayments(
         sepaCollection.sepaMandates,
         pendingPayments,
         listStyles,
+        /*
         overallActions = { data ->
             Horizontal {
                 AnglesLeftButton(
@@ -1166,9 +1120,96 @@ fun PendingPayments(
                 }
             }
         },
+        */
         actions = {}
     )
 }
+
+
+@Composable
+fun SettledPayments(
+    sepaCollection: SepaCollection,
+    settledPayments: List<SepaPayment>,
+    listStyles: ListStyles,
+    scope: CoroutineScope,
+    storage: Storage<BankingApplication>,
+    device: Source<DeviceType>,
+    modalId: Int,
+) {
+    TabTitle("Settled Payments")
+    ListOfPayments(
+        null,
+        sepaCollection.sepaMandates,
+        settledPayments,
+        listStyles,
+        overallActions = { data ->
+            Horizontal {
+                var dataState by remember { mutableStateOf(data) }
+                BanButton(
+                    color = Color.black,
+                    bgColor = Color.white,
+                    { "Move selected Payments to the failed state" },
+                    device,
+                ) {
+
+                    (storage * bankingApplicationModals).showMoveFailedPaymentsModal(
+                        parentModalId = modalId,
+                        texts = dialogModalTexts("Yeeeeeha!"),
+                        device = device,
+                        isDataValid = {
+                            val selectedPayments = dataState.selectedVisibleEntries()
+                            val paymentIds = selectedPayments.map { it.key.paymentId }
+                            val failureReasons = selectedPayments
+                                .filter { it.value.payment.failureReason != null }
+                                .map { it.key.paymentId to it.value.payment.failureReason!! }
+                                .toMap()
+                            paymentIds.size == failureReasons.size
+                        },
+                        data = dataState,
+                        setData = { newData -> dataState = newData },
+
+                        ) {
+                        scope.launch {
+                            val selectedPayments = dataState.selectedVisibleEntries()
+                            val paymentIds = selectedPayments.map { it.key.paymentId }
+                            val failureReasons = selectedPayments
+                                .filter { it.value.payment.failureReason != null }
+                                .map { it.key.paymentId to it.value.payment.failureReason!! }
+                                .toMap()
+                            require(failureReasons.size == selectedPayments.size) {
+                                "Selected payments and failure reasons count mismatch"
+                            }
+                            (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
+                                data = UpdateSepaPaymentExecutionStatuses(
+                                    newStatus = PaymentExecutionStatus.FAILED.toApiType(),
+                                    paymentIds = paymentIds,
+                                    failureReasons = failureReasons
+                                ),
+                                sepaCollection.sepaCollectionId
+                            )
+                        }
+                    }
+                }
+                SackDollarButton(
+                    color = Color.black,
+                    bgColor = Color.white,
+                    { "Move selected Payments to the confirmed state" },
+                    device,
+                ) {
+                    scope.launch {
+                        storage.dispatchStatusChange(
+                            newStatus = PaymentExecutionStatus.CONFIRMED,
+                            paymentIds = data.selectedVisiblePaymentIds(),
+                            targetCollectionId = sepaCollection.sepaCollectionId,
+                        )
+                    }
+                }
+            }
+        },
+        actions = {}
+    )
+}
+
 
 
 @Composable

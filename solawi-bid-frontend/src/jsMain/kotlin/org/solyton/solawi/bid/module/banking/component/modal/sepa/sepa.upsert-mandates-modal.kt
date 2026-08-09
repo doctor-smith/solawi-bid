@@ -27,6 +27,7 @@ import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.mandate.SepaMandate
 import org.solyton.solawi.bid.module.control.button.EditButton
 import org.solyton.solawi.bid.module.list.component.*
+import org.solyton.solawi.bid.module.list.style.defaultListStyles
 import org.solyton.solawi.bid.module.scrollable.Scrollable
 import org.solyton.solawi.bid.module.scrollable.ScrollableStyles
 import org.solyton.solawi.bid.module.style.modal.commonModalStyles
@@ -60,10 +61,10 @@ fun UpsertSepaMandatesModal(
     styles = commonModalStyles(device),
 ) {
     Wrap {
-
-        ListWrapper {
-            HeaderWrapper {
-                Header{
+        val listStyles = defaultListStyles
+        ListWrapper(listStyles.listWrapper) {
+            HeaderWrapper(listStyles.headerWrapper) {
+                Header(listStyles.header){
                     HeaderCell("Mandate Reference") {width(25.percent)}
                     HeaderCell("Status") {width(10.percent)}
                     HeaderCell("Signed At") {width(10.percent)}
@@ -83,14 +84,14 @@ fun UpsertSepaMandatesModal(
 
                     val collections = sepaCollections.filter { it.sepaMandates.map { mandate -> mandate.sepaMandateId }.any{ id -> id == item.sepaMandateId } }
                     ListItemWrapper(styles = { listItemWrapperStyle(index) }) {
-                        DataWrapper {
+                        DataWrapper(listStyles.dataWrapper) {
                             TextCell(itemState.mandateReference.value) {width(25.percent)}
                             TextCell(itemState.status.name) {width(10.percent)}
                             TextCell(itemState.signedAt.date.toString()) {width(10.percent)}
                             TextCell(amendmentOf) {width(25.percent)}
                             TextCell(collections.joinToString(", ") { "${it.collectionKey.value} / ${it.mandateReferencePrefix.value}" }) {width(30.percent)}
                         }
-                        ActionsWrapper {
+                        ActionsWrapper(listStyles.actionsWrapper) {
                             EditButton(
                                 color = Color.black,
                                 bgColor = Color.white,

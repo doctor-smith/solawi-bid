@@ -149,8 +149,6 @@ fun BulkEditButton(
 ) = IconButton(
     color,
     bgColor,
-    // fa-list-check
-    //"fa-check-square"),
     arrayOf("fa-solid", "fa-list-check"),
     texts,
     deviceType,
@@ -158,6 +156,31 @@ fun BulkEditButton(
     dataId,
     onClick
 )
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun CheckButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    // fa-list-check
+    //"fa-check-square"),
+    arrayOf("fa-solid", "fa-check"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
 
 @Markup
 @Composable
@@ -279,6 +302,29 @@ fun ClockButton(
     dataId,
     onClick
 )
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun CodeMergeButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-code-merge"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
 
 @Markup
 @Composable
@@ -435,6 +481,27 @@ fun EditButton(
     onClick
 )
 
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun EnvelopeCircleCheckButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "envelope-circle-check"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
 @Markup
 @Composable
 @Suppress("FunctionName")
