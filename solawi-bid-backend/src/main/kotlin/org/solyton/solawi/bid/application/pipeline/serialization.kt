@@ -405,6 +405,8 @@ fun installSerializers() {
         add<SepaMessageIdentifier>(SepaMessageIdentifier.serializer())
         add<SepaMessageStatus>(SepaMessageStatus.serializer())
         add<UpdateSepaMessageStatus>(UpdateSepaMessageStatus.serializer())
+        add<MergeSepaMessages>(MergeSepaMessages.serializer())
+        add<DownloadSepaMessage>(DownloadSepaMessage.serializer())
         // Sepa response from bank
     }
 }

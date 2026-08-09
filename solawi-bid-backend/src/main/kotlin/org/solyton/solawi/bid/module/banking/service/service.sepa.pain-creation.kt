@@ -1,8 +1,10 @@
 package org.solyton.solawi.bid.module.banking.service
 
+import org.evoleq.uuid.toUuid
 import org.jetbrains.exposed.sql.Transaction
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
+import org.solyton.solawi.bid.module.banking.data.SepaMessageId
 import org.solyton.solawi.bid.module.banking.data.internal.Pain008GenerationRequest
 import org.solyton.solawi.bid.module.banking.data.internal.Pain008Transaction
 import org.solyton.solawi.bid.module.banking.exception.BankAccountsException
@@ -127,6 +129,38 @@ fun isValidIban(iban: String): Boolean {
 // XML building functions
 // ================================
 
+fun buildPain008Xml(sepaMessageId: SepaMessageId): String {
+    val message = SepaMessageEntity.findById(sepaMessageId.value.toUuid())?: throw SepaException.Message.NoSuchMessage(sepaMessageId.value)
+    return buildPain008Xml(message)
+}
+
+
+fun buildPain008Xml(
+    sepaMessage: SepaMessageEntity
+): String {
+    val creditorIdentifier = sepaMessage.creditorIdentifier
+    val creditorAccount = sepaMessage.creditorAccount
+    val transactions = sepaMessage.payments.map { payment ->
+        val mandate = payment.mandate
+        val sequenceType = payment.sequenceType
+        Pain008Transaction(
+            payment.endToEndId?: generateE2ETransactionId(),
+            payment.amount.toBigDecimal(),
+            mandate.debtorName.let{ when{
+                it.isBlank() -> mandate.debtorBankAccount.accountHolder
+                else -> it
+            } },
+            mandate.debtorBankAccount.iban,
+            mandate.debtorBankAccount.bic,
+            mandate.mandateReference,
+            mandate.signedAt.toLocalDate(),
+            sepaMessage.remittanceInformation,
+            sequenceType
+        )
+    }
+
+    return buildPain008Xml(sepaMessage, creditorIdentifier, creditorAccount, transactions)
+}
 private fun buildPain008Xml(
     sepaMessage: SepaMessageEntity,
     creditorIdentifier: CreditorIdentifierEntity,

@@ -36,7 +36,8 @@ enum class SepaMessageStatus {
     PENDING,    // Message accepted/submitted, but execution not yet confirmed
     CONFIRMED,  // Bank confirmed successful execution
     SETTLED,    // Payment has settled and funds are considered finally available
-    FAILED      // Message or payment execution failed/rejected
+    FAILED,      // Message or payment execution failed/rejected
+    MERGED
 }
 
 @Serializable
@@ -46,6 +47,16 @@ data class GenerateSepaMessageForCollection(
     val sepaPaymentIds: List<SepaPaymentId>? = null,
     val remittanceInformation: RemittanceInformation? = null,
 )
+
+@Serializable
+data class DownloadSepaMessage(
+    /**
+     * takes param
+     * "message_id",
+     * the uuid of the message
+     */
+    override val queryParams: QueryParams
+) : Parameters()
 
 @Serializable
 data class SepaMessageString(
@@ -72,4 +83,11 @@ data class ReadSepaMessagesByLegalEntityId(
 data class UpdateSepaMessageStatus(
     val sepaMessageId: SepaMessageId,
     val newStatus: SepaMessageStatus
+)
+
+@Serializable
+data class MergeSepaMessages(
+    val sepaMessageIds: List<SepaMessageId>,
+    val executionDate: LocalDate,
+    val remittanceInformation: RemittanceInformation
 )

@@ -320,9 +320,19 @@ fun <BankingEnv> Routing.banking (
                     }
                 }
                 route("messages") {
+                    get("download") {
+                        ReceiveContextual<String>{
+                                parameters -> requireNotNull(parameters["message_id"]) {
+                            "Parameter 'message_id' is empty"
+                        }
+                        } *
+                        IsGranted(READ_SEPA_MESSAGES, no) *
+                        DownloadSepaMessage() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
                     get("by-legal-entity") {
                         ReceiveContextual<String>{
-                                parameters -> requireNotNull(parameters["legal_entity"]) {
+                            parameters -> requireNotNull(parameters["legal_entity"]) {
                                 "Parameter 'legal_entity' is empty"
                             }
                         } *
@@ -334,6 +344,12 @@ fun <BankingEnv> Routing.banking (
                         ReceiveContextual<UpdateSepaMessageStatus>() *
                         IsGranted(UPDATE_SEPA_MESSAGES, no) *
                         UpdateSepaMessageStatus() *
+                        Respond { transform() } runOn Base(call, environment)
+                    }
+                    post("merge") {
+                        ReceiveContextual<MergeSepaMessages>() *
+                        IsGranted(UPDATE_SEPA_MESSAGES, no) *
+                        MergeSepaMessages() *
                         Respond { transform() } runOn Base(call, environment)
                     }
                 }

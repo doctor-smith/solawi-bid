@@ -478,11 +478,19 @@ val solawiApi by lazy {
                 url = "sepa/messages/by-legal-entity",
                 parameters = setOf("legal_entity")
             )
+            get<DownloadSepaMessage, SepaMessageString> (
+                key = DownloadSepaMessage::class,
+                url = "sepa/messages/download",
+                parameters = setOf("message_id")
+            )
             patch<UpdateSepaMessageStatus, SepaMessage>(
                 key = UpdateSepaMessageStatus::class,
                 url = "sepa/messages/update-status"
             )
-
+            post<MergeSepaMessages, SepaMessages>(
+                key = MergeSepaMessages::class,
+                url = "sepa/messages/merge"
+            )
             post<CreateSepaMandate, SepaMandate>(
                 key = CreateSepaMandate::class,
                 url = "sepa/mandates/create"

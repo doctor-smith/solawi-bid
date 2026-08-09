@@ -290,6 +290,7 @@ fun SepaMessageStatus.toApiType(): ApiSepaMessageStatus = when(this) {
     SepaMessageStatus.CONFIRMED -> ApiSepaMessageStatus.CONFIRMED
     SepaMessageStatus.FAILED -> ApiSepaMessageStatus.FAILED
     SepaMessageStatus.SETTLED -> ApiSepaMessageStatus.SETTLED
+    SepaMessageStatus.MERGED -> ApiSepaMessageStatus.MERGED
 }
 
 fun ApiSepaMessageStatus.toDomainType(): SepaMessageStatus = when(this) {
@@ -299,4 +300,5 @@ fun ApiSepaMessageStatus.toDomainType(): SepaMessageStatus = when(this) {
     ApiSepaMessageStatus.CONFIRMED -> SepaMessageStatus.CONFIRMED
     ApiSepaMessageStatus.FAILED -> SepaMessageStatus.FAILED
     ApiSepaMessageStatus.SETTLED -> SepaMessageStatus.SETTLED
+    ApiSepaMessageStatus.MERGED -> SepaMessageStatus.MERGED
 }
