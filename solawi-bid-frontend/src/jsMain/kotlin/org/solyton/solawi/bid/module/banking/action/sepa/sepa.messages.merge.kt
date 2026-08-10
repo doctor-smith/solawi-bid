@@ -6,7 +6,7 @@ import org.evoleq.math.contraMap
 import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.storage.suffixed
-import org.evoleq.optics.transform.updateAll
+import org.evoleq.optics.transform.upsertAll
 import org.solyton.solawi.bid.module.banking.data.RemittanceInformation
 import org.solyton.solawi.bid.module.banking.data.SepaMessageId
 import org.solyton.solawi.bid.module.banking.data.api.ApiSepaMessages
@@ -29,7 +29,7 @@ fun mergeSepaMessages(
     name = MERGE_SEPA_MESSAGES.suffixed(nameSuffix),
     reader = {_ -> MergeSepaMessages(sepaMessageIds, executionDate, remittanceInformation)},
     endPoint = MergeSepaMessages::class,
-    writer = (sepaModule * sepaMessages).updateAll{
+    writer = (sepaModule * sepaMessages).upsertAll{
         p,q -> p.sepaMessageId == q.sepaMessageId
     } contraMap { messages -> messages.toDomainType() }
 )

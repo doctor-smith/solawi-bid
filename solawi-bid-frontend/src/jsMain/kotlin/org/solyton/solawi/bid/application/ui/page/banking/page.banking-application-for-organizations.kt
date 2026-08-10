@@ -1022,9 +1022,15 @@ fun SepaCollections(
         }
     }
     LaunchedEffectOnSource(Read(sepaCollections)) {
-        if(isLegalEntityDefined.emit()) launch {
-            bankingApplicationActions dispatch readSepaPaymentLInksByLegalEntity(LegalEntityId(providerId.value))
+        if(isLegalEntityDefined.emit()) {
+            launch {
+                bankingApplicationActions dispatch readSepaPaymentLInksByLegalEntity(LegalEntityId(providerId.value))
+            }
+            launch{
+                bankingApplicationActions dispatch readSepaMessagesByLegalEntity(LegalEntityId(providerId.value))
+            }
         }
+
     }
 
     Wrap(cardStyle) {
