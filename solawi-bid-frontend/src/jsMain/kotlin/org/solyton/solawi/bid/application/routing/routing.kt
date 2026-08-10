@@ -6,14 +6,10 @@ import org.evoleq.device.data.mediaType
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.Text
-import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.application.data.deviceData
+import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.data.env.type
-import org.solyton.solawi.bid.application.data.environment
-import org.solyton.solawi.bid.application.data.processes
 import org.solyton.solawi.bid.application.data.transform.navbar.navBarIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
-import org.solyton.solawi.bid.application.data.userData
 import org.solyton.solawi.bid.application.service.seemsToBeLoggerIn
 import org.solyton.solawi.bid.application.ui.page.application.management.ApplicationManagementPage
 import org.solyton.solawi.bid.application.ui.page.application.management.ApplicationPage
@@ -30,6 +26,7 @@ import org.solyton.solawi.bid.application.ui.page.login.effect.LaunchLogoutEffec
 import org.solyton.solawi.bid.application.ui.page.manual.HowToBidPage
 import org.solyton.solawi.bid.application.ui.page.manual.HowToCarryOutAnAuctionPage
 import org.solyton.solawi.bid.application.ui.page.manual.ManualPage
+import org.solyton.solawi.bid.application.ui.page.manual.banking.BankingManualPage
 import org.solyton.solawi.bid.application.ui.page.sendbid.SendBidPage
 import org.solyton.solawi.bid.application.ui.page.sendbid.ShowQRCodePage
 import org.solyton.solawi.bid.application.ui.page.shares.ShareManagementForOrganizationsPage
@@ -82,6 +79,9 @@ fun Routing(storage: Storage<Application>): Routes = Routing(
 
         route("how-to-bid") {
             component { HowToBidPage(storage) }
+        }
+        route("banking") {
+            component { BankingManualPage(storage) }
         }
         route("how-to-carry-ou-an-auction") {
             component { HowToCarryOutAnAuctionPage(storage) }
