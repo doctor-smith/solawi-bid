@@ -2,28 +2,26 @@ package org.solyton.solawi.bid.application.ui.page.manual
 
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
-import org.evoleq.compose.layout.Horizontal
-import org.evoleq.compose.layout.Vertical
-import org.evoleq.compose.routing.navigate
+import org.evoleq.compose.link.Link
 import org.evoleq.optics.storage.Storage
-import org.jetbrains.compose.web.dom.H1
-import org.jetbrains.compose.web.dom.H2
-import org.jetbrains.compose.web.dom.P
-import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.module.page.component.Page
+import org.solyton.solawi.bid.module.style.page.Headline
+import org.solyton.solawi.bid.module.style.page.PageTitle
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 
 @Composable
 @Markup
 @Suppress("FunctionName", "UNUSED_PARAMETER")
 fun ManualPage(application: Storage<Application>) {
-    Vertical(verticalPageStyle) {
-        H1 { Text("Betriebsanleitung") }
+    Page(verticalPageStyle) {
+        PageTitle("Betriebsanleitung")
 
-        H2 { Text("Inhaltsverzeichnis") }
+        Headline("Inhaltsverzeichnis")
 
-        Horizontal {
-            P({onClick { navigate("/manual/how-to-bid") }}){Text("Wie man bietet")}
-        }
+        Link("Wie man bietet","/manual/how-to-bid")
+
+
+        Link("Banking Application", "/manual/banking")
     }
 }

@@ -90,3 +90,48 @@ fun SubTitleOfH3(
 ){
     Text(text)
 }
+
+
+val defaultHeadlineStyles: StyleScope.()->Unit by lazy { {
+    marginTop(10.px)
+    marginBottom(10.px)
+} }
+
+@Markup
+@Composable
+fun Headline(
+    text: Source<String>,
+    styles: StyleScope.()->Unit = defaultHeadlineStyles
+) = Headline(text.emit(), styles)
+
+@Markup
+@Composable
+fun Headline(
+    text: String,
+    styles: StyleScope.()->Unit = defaultHeadlineStyles
+) {
+    H2({style { styles() }}){ Text(text) }
+}
+
+val defaultParagraphStyles: StyleScope.()->Unit by lazy { {
+    marginTop(10.px)
+    marginBottom(5.px)
+} }
+
+@Markup
+@Composable
+fun Paragraph(
+    text: Source<String>,
+    styles: StyleScope.()->Unit = defaultParagraphStyles
+) = Paragraph(text.emit(), styles)
+
+@Markup
+@Composable
+fun Paragraph(
+
+    text: String,
+    styles: StyleScope.()->Unit = defaultParagraphStyles
+) {
+    H3({style { styles() }}){ Text(text) }
+}
+
