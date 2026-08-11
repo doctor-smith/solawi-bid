@@ -11,6 +11,8 @@ import org.evoleq.compose.conditional.When
 import org.evoleq.compose.date.format
 import org.evoleq.compose.download.downloadCsv
 import org.evoleq.compose.effect.LaunchedEffectOnSource
+import org.evoleq.compose.guard.data.isLoading
+import org.evoleq.compose.guard.data.withLoading
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Property
 import org.evoleq.compose.layout.ReadOnlyProperties
@@ -20,8 +22,7 @@ import org.evoleq.device.data.mediaType
 import org.evoleq.kotlinx.date.days
 import org.evoleq.kotlinx.date.now
 import org.evoleq.kotlinx.date.today
-import org.evoleq.language.Locale
-import org.evoleq.language.extend
+import org.evoleq.language.*
 import org.evoleq.math.*
 import org.evoleq.optics.lens.FilterBy
 import org.evoleq.optics.storage.Read
@@ -39,6 +40,9 @@ import org.solyton.solawi.bid.application.data.context
 import org.solyton.solawi.bid.application.data.managedUsers
 import org.solyton.solawi.bid.application.data.transform.banking.bankingApplicationIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
+import org.solyton.solawi.bid.application.service.useI18nTransform
+import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
+import org.solyton.solawi.bid.application.ui.page.banking.i18n.BankingLangComponent
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.banking.action.*
 import org.solyton.solawi.bid.module.banking.action.sepa.*
@@ -64,7 +68,10 @@ import org.solyton.solawi.bid.module.constants.checkIcon
 import org.solyton.solawi.bid.module.context.data.isEmpty
 import org.solyton.solawi.bid.module.control.button.*
 import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
+import org.solyton.solawi.bid.module.i18n.data.language
+import org.solyton.solawi.bid.module.i18n.guard.onMissing
 import org.solyton.solawi.bid.module.list.component.*
+import org.solyton.solawi.bid.module.loading.component.Loading
 import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.scrollable.Scrollable
 import org.solyton.solawi.bid.module.scrollable.ScrollableStyles
@@ -100,6 +107,24 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
     val deviceType = bankingApplicationStorage * deviceData * mediaType.get
 
     val legalEntity = bankingApplicationStorage * legalEntity
+
+    withLoading(
+        isLoading = isLoading(
+            onMissing(
+                BankingLangComponent.BankingForOrganizationsPage,
+                bankingApplicationStorage * i18N.get
+            ) {
+                LaunchComponentLookup(
+                    langComponent = BankingLangComponent.BankingForOrganizationsPage,
+                    environment = Read(storage) map {it.environment.useI18nTransform()},
+                    i18n = (bankingApplicationStorage * i18N)
+                )
+            }
+        ),
+        onLoading = { Loading() }
+    ) {
+
+    val texts = (bankingApplicationStorage * i18N * language * component(BankingLangComponent.BankingForOrganizationsPage))
 
     LaunchedEffect(providerId) {
         launch {
@@ -161,12 +186,12 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                 alignItems(AlignItems.Center)
                 width(100.percent)
             }) {
-                PageTitle("Banking for Organizations")
+                PageTitle((texts * title).emit())
                 Horizontal {
                     ArrowUpButton(
                         Color.black,
                         Color.white,
-                        { "UP" },
+                        { (texts * subComp("actions") * subComp("navToUp") * tooltip).emit() },
                         deviceType,
                         false,
                     ) {
@@ -174,9 +199,12 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                     }
                 }
             }
-            SubTitle("Manage your banking for Organizations")
+            SubTitle(texts * valueOf("subTitle"))
         }
 
+        // TODO i18n: Untergeordnete Composables (LegalEntity, CreditorBankAccounts, CustomerBankAccounts, FiscalYears, SepaCollections)
+        //           enthalten weiterhin hardcoded Strings. Sie sollen in Folge-Iterationen umverkabelt werden.
+        //           Alle Texte sind bereits in de/en.solyton.banking.bankingForOrganizationsPage angelegt.
         LegalEntity(
             bankingApplicationStorage,
             providerId,
@@ -213,6 +241,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
             deviceType
         )
     }
+    }
 }
 
 @Composable
@@ -229,6 +258,10 @@ fun LegalEntity(
     val isLegalEntityDefined = Read(legalEntity * legalEntityId) map { it.value != NIL_UUID }
     val creditorIdentifier = bankingApplicationStorage * creditorIdentifier
 
+    // i18n
+    val texts = bankingApplicationStorage * i18N * language * component(BankingLangComponent.BankingForOrganizationsPage) * subComp("legalEntity")
+    val actions = texts * subComp("actions")
+    val properties = texts * subComp("properties")
 
     Wrap(cardStyle) {
         var opened by remember { mutableStateOf(true) }
@@ -237,7 +270,7 @@ fun LegalEntity(
                 width(100.percent)
                 justifyContent(JustifyContent.SpaceBetween)
             }) {
-                H3 { Text("Your data as Legal Entity:") }
+                H3 { Text((texts * title).emit()) }
 
                 val storedCreditorIdentifier = creditorIdentifier.read()
                 var creditorIdentifierState by remember { mutableStateOf(storedCreditorIdentifier) }
@@ -252,7 +285,7 @@ fun LegalEntity(
                             PlusButton(
                                 color = Color.black,
                                 bgColor = Color.white,
-                                texts = { "Create " },
+                                texts = actions * subComp("create") * tooltip,
                                 deviceType = deviceType
                             ) {
                                 bankingApplicationModals.showUpsertLegalEntityModal(
@@ -301,7 +334,7 @@ fun LegalEntity(
                             EditButton(
                                 color = Color.black,
                                 bgColor = Color.white,
-                                texts = { "Edit " },
+                                texts = actions * subComp("edit") * tooltip,
                                 deviceType = deviceType
                             ) {
                                 bankingApplicationModals.showUpsertLegalEntityModal(
@@ -380,11 +413,11 @@ fun LegalEntity(
             When(opened) {
                 ReadOnlyProperties(
                     listOf(
-                        Property("Name", legalEntity.read().name) { it.toString() },
-                        Property("Legal Form", legalEntity.read().legalForm) { it?.toString() ?: "" },
-                        Property("Type", legalEntity.read().legalEntityType.name) { it.toString() },
+                        Property((properties * subComp("name") * title).emit(), legalEntity.read().name) { it.toString() },
+                        Property((properties * subComp("legalForm") * title).emit(), legalEntity.read().legalForm) { it?.toString() ?: "" },
+                        Property((properties * subComp("type") * title).emit(), legalEntity.read().legalEntityType.name) { it.toString() },
                         Property(
-                            "Creditor Id",
+                            (properties * subComp("creditorId") * title).emit(),
                             creditorIdentifier.read()?.creditorId?.value ?: "---"
                         ) { it.toString() },
                     )
@@ -407,11 +440,15 @@ fun CreditorBankAccounts(
     val bankingApplicationModals = bankingApplicationStorage * bankingApplicationModals
     val creditorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.userId == UserId(providerId.value) }
 
+    // i18n
+    val texts = bankingApplicationStorage * i18N * language * component(BankingLangComponent.BankingForOrganizationsPage) * subComp("creditorBankAccounts")
+    val headers = texts * subComp("headers")
+
     Wrap(cardStyle) {
         var opened by remember { mutableStateOf(false) }
         ListWrapper(cardListStyles.listWrapper,) {
             TitleWrapper(cardListStyles.titleWrapper,) {
-                Title { H3 { Text("Creditor Bank Accounts") } }
+                Title { H3 { Text((texts * title).emit()) } }
                 ActionsWrapper({
                     with(cardListStyles){actionsWrapper()}
                     flexGrow(1.0)
@@ -467,11 +504,11 @@ fun CreditorBankAccounts(
             When(opened) {
                 HeaderWrapper {
                     Header(cardListStyles.header) {
-                        HeaderCell("Account Holder") { width(30.percent) }
-                        HeaderCell("Description") { width(15.percent) }
-                        HeaderCell("IBAN") { width(30.percent) }
-                        HeaderCell("BIC") { width(20.percent) }
-                        HeaderCell("Active") { width(5.percent) }
+                        HeaderCell((headers * subComp("accountHolder") * title).emit()) { width(30.percent) }
+                        HeaderCell((headers * subComp("description") * title).emit()) { width(15.percent) }
+                        HeaderCell((headers * subComp("iban") * title).emit()) { width(30.percent) }
+                        HeaderCell((headers * subComp("bic") * title).emit()) { width(20.percent) }
+                        HeaderCell((headers * subComp("active") * title).emit()) { width(5.percent) }
                     }
                 }
                 ListItemsIndexed(creditorBankAccounts.read().let {
@@ -558,6 +595,11 @@ fun CustomerBankAccounts(
     val creditorIdentifier = bankingApplicationStorage * creditorIdentifier
     val customerBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.userId != UserId(providerId.value) }
 
+    // i18n
+    val texts = bankingApplicationStorage * i18N * language * component(BankingLangComponent.BankingForOrganizationsPage) * subComp("customerBankAccounts")
+    val headers = texts * subComp("headers")
+    val actions = texts * subComp("actions")
+
     val bankAccountToUserMap: Source<Map<BankAccountId, ManagedUser?>> = bankingApplicationStorage * bankAccounts * Reader{ bankAccounts: List<BankAccount> ->
         bankAccounts.associateBy<BankAccount, BankAccountId, ManagedUser?>({it.bankAccountId}) {
             (managedUsers * FirstOrNull<ManagedUser> { user: ManagedUser -> user.id == it.userId.value }).emit()
@@ -573,7 +615,7 @@ fun CustomerBankAccounts(
         ListWrapper(cardListStyles.listWrapper) {
             var opened by remember { mutableStateOf(false) }
             TitleWrapper(cardListStyles.titleWrapper,) {
-                Title(onClick = { opened = !opened }) { H3 { Text("Customer Bank Accounts") } }
+                Title(onClick = { opened = !opened }) { H3 { Text((texts * title).emit()) } }
                 ActionsWrapper({
                     with(cardListStyles){actionsWrapper()}
                     flexGrow(1.0)
@@ -649,7 +691,7 @@ fun CustomerBankAccounts(
                         DownloadButton(
                             color = Color.black,
                             bgColor = Color.white,
-                            texts = { "Download as CSV" },
+                            texts = actions * subComp("downloadCsv") * tooltip,
                             deviceType = deviceType,
                         ) {
                             val checked = listOf(
@@ -709,7 +751,7 @@ fun CustomerBankAccounts(
                 }
                 HeaderWrapper {
                     Header(cardListStyles.header) {
-                        HeaderCell("Number: ${customerBankAccounts.read().size}") { width(15.percent) }
+                        HeaderCell("${(headers * subComp("number") * title).emit()}: ${customerBankAccounts.read().size}") { width(15.percent) }
                         SearchInput(
                             customerBankAccountsSearchInput,
                             styles = SearchInputStyles()
@@ -722,10 +764,10 @@ fun CustomerBankAccounts(
                     width(98.percent)
                 }) {
                     Header(cardListStyles.header) {
-                        HeaderCell("Account Holder") { width(30.percent) }
-                        HeaderCell("IBAN") { width(30.percent) }
-                        HeaderCell("BIC") { width(20.percent) }
-                        HeaderCell("Active") { width(10.percent) }
+                        HeaderCell((headers * subComp("accountHolder") * title).emit()) { width(30.percent) }
+                        HeaderCell((headers * subComp("iban") * title).emit()) { width(30.percent) }
+                        HeaderCell((headers * subComp("bic") * title).emit()) { width(20.percent) }
+                        HeaderCell((headers * subComp("active") * title).emit()) { width(10.percent) }
                     }
                 }
                 Scrollable(
@@ -800,7 +842,7 @@ fun CustomerBankAccounts(
                                 CreditCardButton(
                                     color = Color.black,
                                     bgColor = Color.white,
-                                    texts = { "Manage SEPA Mandates" },
+                                    texts = actions * subComp("manageSepaMandates") * tooltip,
                                     deviceType = deviceType,
                                     isDisabled = creditorId == null
                                 ) {
@@ -872,12 +914,15 @@ fun FiscalYears(
 
     val fiscalYears = bankingApplicationStorage * fiscalYears
 
+    // i18n
+    val texts = bankingApplicationStorage * i18N * language * component(BankingLangComponent.BankingForOrganizationsPage) * subComp("fiscalYears")
+    val headers = texts * subComp("headers")
 
     Wrap(cardStyle) {
         ListWrapper(cardListStyles.listWrapper) {
             var opened by remember { mutableStateOf(false) }
             TitleWrapper(cardListStyles.titleWrapper) {
-                Title { H3 { Text("Fiscal Years") } }
+                Title { H3 { Text((texts * title).emit()) } }
                 ActionsWrapper({
                     with(cardListStyles) { actionsWrapper() }
                     flexGrow(1.0)
@@ -921,9 +966,9 @@ fun FiscalYears(
             When(opened) {
                 HeaderWrapper {
                     Header(cardListStyles.header) {
-                        HeaderCell("Fiscal Year") { width(10.percent) }
-                        HeaderCell("Start Date") { width(10.percent) }
-                        HeaderCell("End Date") { width(10.percent) }
+                        HeaderCell((headers * subComp("fiscalYear") * title).emit()) { width(10.percent) }
+                        HeaderCell((headers * subComp("startDate") * title).emit()) { width(10.percent) }
+                        HeaderCell((headers * subComp("endDate") * title).emit()) { width(10.percent) }
                     }
                 }
                 ListItemsIndexed(fiscalYears.read().let {
@@ -1006,6 +1051,12 @@ fun SepaCollections(
     val sepaMandates = sepaModule * sepaMandates
     val sepaPaymentLinks = sepaModule * sepaPaymentLinks
 
+    // i18n
+    val texts = bankingApplicationStorage * i18N * language * component(BankingLangComponent.BankingForOrganizationsPage) * subComp("sepaCollections")
+    val headers = texts * subComp("headers")
+    val actions = texts * subComp("actions")
+    val errors = texts * subComp("errors")
+
     LaunchedEffect(
         (sepaModule * sepaMessageString).read(),
         (sepaModule * sepaMessageString * downloadLens).read()
@@ -1041,7 +1092,7 @@ fun SepaCollections(
         ListWrapper(cardListStyles.listWrapper) {
             var opened by remember { mutableStateOf(false) }
             TitleWrapper(cardListStyles.titleWrapper) {
-                Title { H3 { Text("SEPA") } }
+                Title { H3 { Text((texts * title).emit()) } }
                 ActionsWrapper({
                     with(cardListStyles) { actionsWrapper() }
                     flexGrow(1.0)
@@ -1060,22 +1111,22 @@ fun SepaCollections(
                 When(isLegalEntityDefined) {
                     HeaderWrapper {
                         Header(cardListStyles.header) {
-                            HeaderCell("Bank Account") { width(20.percent) }
-                            HeaderCell("Collection Key") { width(10.percent) }
-                            HeaderCell("Mandate Ref Prefix") { width(15.percent) }
-                            HeaderCell("Remittance Info") { width(20.percent) }
-                            HeaderCell("Active") { width(5.percent) }
+                            HeaderCell((headers * subComp("bankAccount") * title).emit()) { width(20.percent) }
+                            HeaderCell((headers * subComp("collectionKey") * title).emit()) { width(10.percent) }
+                            HeaderCell((headers * subComp("mandateRefPrefix") * title).emit()) { width(15.percent) }
+                            HeaderCell((headers * subComp("remittanceInfo") * title).emit()) { width(20.percent) }
+                            HeaderCell((headers * subComp("active") * title).emit()) { width(5.percent) }
                             // HeaderCell("Seq. Type") { width(10.percent) }
 
                             HeaderCell(
-                                "L-Time",
-                                "$INFO Lead Time - Number of days before the collection day when the SEPA direct debit message must be submitted to the bank (typically 5-7 days for B2C, 1-2 days for B2B)"
+                                (headers * subComp("leadTime") * title).emit(),
+                                "$INFO ${(headers * subComp("leadTime") * tooltip).emit()}"
                             ) { width(5.percent) }
 
                             // HeaderCell("C-Day", "$INFO Collection Day - "){ width(5.percent) }
                             
                             // HeaderCell("Next Payment"){width(10.percent)}
-                            HeaderCell("Total Amount", "$INFO Total Amount - Cumulated amount of confirmed payments") { width(10.percent) }
+                            HeaderCell((headers * subComp("totalAmount") * title).emit(), "$INFO ${(headers * subComp("totalAmount") * tooltip).emit()}") { width(10.percent) }
                         }
                     }
 
@@ -1118,7 +1169,7 @@ fun SepaCollections(
                                         color = Color.black,
                                         bgColor = Color.white,
                                         deviceType = deviceType,
-                                        texts = { "Manage Mandates, Payments and Sepa Messages" },
+                                        texts = actions * subComp("manage") * tooltip,
                                         isDisabled = collection.sepaMandates.isEmpty()
                                     ) {
 
@@ -1143,7 +1194,7 @@ fun SepaCollections(
                                 EditButton(
                                     color = Color.black,
                                     bgColor = Color.white,
-                                    texts = { "Edit Sepa Collection" },
+                                    texts = actions * subComp("edit") * tooltip,
                                     deviceType = deviceType,
                                     isDisabled = true
                                 ) {
@@ -1154,7 +1205,7 @@ fun SepaCollections(
                     }
                 }
                 When(isLegalEntityDefined * negate) {
-                    Text("No legal entity is defined. ")
+                    Text((errors * valueOf("noLegalEntity")).emit())
                 }
             }
         }
