@@ -1,0 +1,200 @@
+de {
+    solyton {
+        banking {
+            bankingForOrganizationsPage {
+                title: "Banking für Organisationen"
+                subTitle: "Verwalte die Bankangelegenheiten deiner Organisation"
+                actions {
+                    navToUp {
+                        tooltip: "Nach oben"
+                    }
+                }
+                legalEntity {
+                    title: "Deine Daten als juristische Person:"
+                    actions {
+                        create {
+                            tooltip: "Erstellen "
+                        }
+                        edit {
+                            tooltip: "Bearbeiten "
+                        }
+                    }
+                    properties {
+                        name {
+                            title: "Name"
+                        }
+                        legalForm {
+                            title: "Rechtsform"
+                        }
+                        type {
+                            title: "Typ"
+                        }
+                        creditorId {
+                            title: "Gläubiger-ID"
+                        }
+                    }
+                    dialogs {
+                        create {
+                            title: "Juristische Person erstellen"
+                            inputs {
+                                name {
+                                    title: "Name"
+                                }
+                                legalForm {
+                                    title: "Rechtsform"
+                                }
+                                legalEntityType {
+                                    title: "Typ"
+                                }
+                                creditorId {
+                                    title: "Gläubiger-ID"
+                                }
+                            }
+                        }
+                        upsert {
+                            title: "Juristische Person erstellen oder aktualisieren"
+                            inputs {
+                                name {
+                                    title: "Name"
+                                }
+                                legalForm {
+                                    title: "Rechtsform"
+                                }
+                                legalEntityType {
+                                    title: "Typ"
+                                }
+                                creditorId {
+                                    title: "Gläubiger-ID"
+                                }
+                            }
+                        }
+                    }
+                }
+                creditorBankAccounts {
+                    title: "Gläubiger-Bankkonten"
+                    headers {
+                        accountHolder {
+                            title: "Kontoinhaber"
+                        }
+                        description {
+                            title: "Beschreibung"
+                        }
+                        iban {
+                            title: "IBAN"
+                        }
+                        bic {
+                            title: "BIC"
+                        }
+                        active {
+                            title: "Aktiv"
+                        }
+                    }
+                    dialogs {
+                        bankAccounts {
+                            title: "Bankkonten"
+                        }
+                    }
+                }
+                customerBankAccounts {
+                    title: "Kunden-Bankkonten"
+                    actions {
+                        downloadCsv {
+                            tooltip: "Als CSV herunterladen"
+                        }
+                        manageSepaMandates {
+                            tooltip: "SEPA-Mandate verwalten"
+                        }
+                    }
+                    headers {
+                        number {
+                            title: "Nummer"
+                        }
+                        accountHolder {
+                            title: "Kontoinhaber"
+                        }
+                        iban {
+                            title: "IBAN"
+                        }
+                        bic {
+                            title: "BIC"
+                        }
+                        active {
+                            title: "Aktiv"
+                        }
+                    }
+                    dialogs {
+                        bankAccounts {
+                            title: "Bankkonten"
+                        }
+                        importBankAccounts {
+                            title: "Bankkonten importieren"
+                        }
+                    }
+                }
+                fiscalYears {
+                    title: "Geschäftsjahre"
+                    headers {
+                        fiscalYear {
+                            title: "Geschäftsjahr"
+                        }
+                        startDate {
+                            title: "Startdatum"
+                        }
+                        endDate {
+                            title: "Enddatum"
+                        }
+                    }
+                    dialogs {
+                        message {
+                            title: "Nachricht"
+                        }
+                    }
+                }
+                sepaCollections {
+                    title: "SEPA"
+                    headers {
+                        bankAccount {
+                            title: "Bankkonto"
+                        }
+                        collectionKey {
+                            title: "Einzugsschlüssel"
+                        }
+                        mandateRefPrefix {
+                            title: "Mandatsreferenz-Präfix"
+                        }
+                        remittanceInfo {
+                            title: "Verwendungszweck"
+                        }
+                        active {
+                            title: "Aktiv"
+                        }
+                        leadTime {
+                            title: "Vorlaufzeit"
+                            tooltip: "Vorlaufzeit – Anzahl der Tage vor dem Einzugstag, an denen die SEPA-Lastschrift bei der Bank eingereicht werden muss (typischerweise 5–7 Tage bei B2C, 1–2 Tage bei B2B)"
+                        }
+                        totalAmount {
+                            title: "Gesamtbetrag"
+                            tooltip: "Gesamtbetrag – Kumulierte Summe der bestätigten Zahlungen"
+                        }
+                    }
+                    actions {
+                        manage {
+                            tooltip: "Mandate, Zahlungen und SEPA-Nachrichten verwalten"
+                        }
+                        edit {
+                            tooltip: "SEPA-Einzug bearbeiten"
+                        }
+                    }
+                    errors {
+                        noLegalEntity: "Es ist keine juristische Person definiert. "
+                    }
+                    dialogs {
+                        manage {
+                            title: "hahaha"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

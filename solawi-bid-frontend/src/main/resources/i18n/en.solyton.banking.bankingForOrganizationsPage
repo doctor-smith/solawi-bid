@@ -1,0 +1,200 @@
+en {
+    solyton {
+        banking {
+            bankingForOrganizationsPage {
+                title: "Banking for Organizations"
+                subTitle: "Manage your banking for Organizations"
+                actions {
+                    navToUp {
+                        tooltip: "UP"
+                    }
+                }
+                legalEntity {
+                    title: "Your data as Legal Entity:"
+                    actions {
+                        create {
+                            tooltip: "Create "
+                        }
+                        edit {
+                            tooltip: "Edit "
+                        }
+                    }
+                    properties {
+                        name {
+                            title: "Name"
+                        }
+                        legalForm {
+                            title: "Legal Form"
+                        }
+                        type {
+                            title: "Type"
+                        }
+                        creditorId {
+                            title: "Creditor Id"
+                        }
+                    }
+                    dialogs {
+                        create {
+                            title: "Create Legal Entity"
+                            inputs {
+                                name {
+                                    title: "Name"
+                                }
+                                legalForm {
+                                    title: "Legal From"
+                                }
+                                legalEntityType {
+                                    title: "Type"
+                                }
+                                creditorId {
+                                    title: "Creditor ID"
+                                }
+                            }
+                        }
+                        upsert {
+                            title: "Upsert Legal Entity"
+                            inputs {
+                                name {
+                                    title: "Name"
+                                }
+                                legalForm {
+                                    title: "Legal From"
+                                }
+                                legalEntityType {
+                                    title: "Type"
+                                }
+                                creditorId {
+                                    title: "Creditor ID"
+                                }
+                            }
+                        }
+                    }
+                }
+                creditorBankAccounts {
+                    title: "Creditor Bank Accounts"
+                    headers {
+                        accountHolder {
+                            title: "Account Holder"
+                        }
+                        description {
+                            title: "Description"
+                        }
+                        iban {
+                            title: "IBAN"
+                        }
+                        bic {
+                            title: "BIC"
+                        }
+                        active {
+                            title: "Active"
+                        }
+                    }
+                    dialogs {
+                        bankAccounts {
+                            title: "BankAccounts"
+                        }
+                    }
+                }
+                customerBankAccounts {
+                    title: "Customer Bank Accounts"
+                    actions {
+                        downloadCsv {
+                            tooltip: "Download as CSV"
+                        }
+                        manageSepaMandates {
+                            tooltip: "Manage SEPA Mandates"
+                        }
+                    }
+                    headers {
+                        number {
+                            title: "Number"
+                        }
+                        accountHolder {
+                            title: "Account Holder"
+                        }
+                        iban {
+                            title: "IBAN"
+                        }
+                        bic {
+                            title: "BIC"
+                        }
+                        active {
+                            title: "Active"
+                        }
+                    }
+                    dialogs {
+                        bankAccounts {
+                            title: "BankAccounts"
+                        }
+                        importBankAccounts {
+                            title: "Import Bank Accounts"
+                        }
+                    }
+                }
+                fiscalYears {
+                    title: "Fiscal Years"
+                    headers {
+                        fiscalYear {
+                            title: "Fiscal Year"
+                        }
+                        startDate {
+                            title: "Start Date"
+                        }
+                        endDate {
+                            title: "End Date"
+                        }
+                    }
+                    dialogs {
+                        message {
+                            title: "Message"
+                        }
+                    }
+                }
+                sepaCollections {
+                    title: "SEPA"
+                    headers {
+                        bankAccount {
+                            title: "Bank Account"
+                        }
+                        collectionKey {
+                            title: "Collection Key"
+                        }
+                        mandateRefPrefix {
+                            title: "Mandate Ref Prefix"
+                        }
+                        remittanceInfo {
+                            title: "Remittance Info"
+                        }
+                        active {
+                            title: "Active"
+                        }
+                        leadTime {
+                            title: "L-Time"
+                            tooltip: "Lead Time - Number of days before the collection day when the SEPA direct debit message must be submitted to the bank (typically 5-7 days for B2C, 1-2 days for B2B)"
+                        }
+                        totalAmount {
+                            title: "Total Amount"
+                            tooltip: "Total Amount - Cumulated amount of confirmed payments"
+                        }
+                    }
+                    actions {
+                        manage {
+                            tooltip: "Manage Mandates, Payments and Sepa Messages"
+                        }
+                        edit {
+                            tooltip: "Edit Sepa Collection"
+                        }
+                    }
+                    errors {
+                        noLegalEntity: "No legal entity is defined. "
+                    }
+                    dialogs {
+                        manage {
+                            title: "hahaha"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
