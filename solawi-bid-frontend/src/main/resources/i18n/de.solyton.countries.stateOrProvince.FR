@@ -1,0 +1,28 @@
+de {
+    solyton {
+        countries {
+            stateOrProvince {
+                FR {
+                    FR-ARA: "Auvergne-Rhône-Alpes"
+                    FR-BFC: "Burgund-Franche-Comté"
+                    FR-BRE: "Bretagne"
+                    FR-CVL: "Centre-Val de Loire"
+                    FR-COR: "Korsika"
+                    FR-GES: "Grand Est"
+                    FR-HDF: "Hauts-de-France"
+                    FR-IDF: "Île-de-France"
+                    FR-NOR: "Normandie"
+                    FR-NAQ: "Nouvelle-Aquitaine"
+                    FR-OCC: "Okzitanien"
+                    FR-PDL: "Pays de la Loire"
+                    FR-PAC: "Provence-Alpes-Côte d'Azur"
+                    FR-GUA: "Guadeloupe"
+                    FR-MTQ: "Martinique"
+                    FR-GUF: "Französisch-Guayana"
+                    FR-LRE: "Réunion"
+                    FR-MAY: "Mayotte"
+                }
+            }
+        }
+    }
+}

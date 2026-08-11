@@ -1,0 +1,200 @@
+fr {
+    solyton {
+        user {
+            organization {
+                organizationPage {
+                    title: "Organisation"
+                    subTitle: "trelala"
+                    actions {
+                        navToManagementPage {
+                            tooltip: "Aller à la vue d'ensemble des organisations"
+                        }
+                    }
+                    listOfMembers {
+                        title: "Membres"
+                        headers {
+                            standard {
+                                title: "Standard"
+                                username {
+                                    title: "Nom d'utilisateur"
+                                }
+                                roles {
+                                    title: "Rôles"
+                                }
+                            }
+                            userProfile {
+                                title: "Profil utilisateur"
+                                name {
+                                    title: "Nom"
+                                }
+                                address {
+                                    title: "Adresse"
+                                }
+                            }
+                        }
+                        actions {
+                            create {
+                                tooltip: "Nouveau membre"
+                            }
+                            edit {
+                                tooltip: "Modifier le membre"
+                            }
+                            importMembersToOrganization {
+                                tooltip: "Importer des membres"
+                            }
+                            exportMembersOfOrganization {
+                                tooltip: "Exporter les membres"
+                            }
+                        }
+                    }
+                    listOfConnectedApplications {
+                        title: "Applications liées"
+                        headers {
+                            application {
+                                title: "Application"
+                            }
+                            modules {
+                                title: "Modules"
+                            }
+                        }
+                        actions {
+                            manageUserPermissions {
+                                tooltip: "Gérer les autorisations utilisateur"
+                            }
+                        }
+                    }
+                    dialogs {
+                        importMembersToOrganization {
+                            title: "Importer des membres"
+                            inputs {
+                                name {
+                                    title: "Nom"
+                                }
+                            }
+                            okButton {
+                                title: "Ok"
+                            }
+                            cancelButton {
+                                title: "Annuler"
+                            }
+                            errors {
+
+                            }
+                        }
+                        updateMemberOfOrganization {
+                            title: "Modifier le membre"
+                            inputs {
+                                userProfile {
+                                    formTitle: "Données utilisateur"
+                                    username {
+                                       title: "E-mail"
+                                    }
+                                    firstname {
+                                        title: "Prénom"
+                                    }
+                                    lastname {
+                                        title: "Nom"
+                                    }
+                                    title {
+                                        title: "Titre"
+                                    }
+                                    phoneNumber {
+                                        title: "Téléphone"
+                                    }
+                                    cellPhoneNumber {
+                                        title: "Mobile"
+                                    }
+                                    address {
+                                        title: "Adresse"
+                                        recipientName {
+                                            title: "Nom du destinataire"
+                                        }
+                                        organizationName {
+                                            title: "Société / Organisation"
+                                        }
+                                        addressLine1 {
+                                            title: "Ligne d'adresse 1"
+                                        }
+                                        addressLine2 {
+                                            title: "Ligne d'adresse 2"
+                                        }
+                                        city {
+                                            title: "Ville"
+                                        }
+                                        stateOrProvince {
+                                            title: "État ou province"
+                                        }
+                                        postalCode {
+                                            title: "Code postal"
+                                        }
+                                        countryCode {
+                                            title: "Pays"
+                                        }
+                                     }
+                                }
+                                bankAccount {
+                                    title: "Compte bancaire"
+                                    bankAccountHolder {
+                                        title: "Titulaire"
+                                    }
+                                    iban {
+                                        title: "IBAN"
+                                    }
+                                    bic {
+                                        title: "BIC"
+                                    }
+                                }
+                                listOfShareSubscriptions {
+                                    title: "Parts"
+                                    headers {
+                                        fiscalYear {
+                                            title: "Année"
+                                            tooltip {
+                                                title: "Exercice comptable"
+                                            }
+                                        }
+                                        shareType {
+                                            title: "Type"
+                                        }
+                                        pricingType {
+                                            title: "Type de tarification"
+                                        }
+                                        pricePerShare {
+                                            title: "Prix / part"
+                                        }
+                                        numberOfShares {
+                                            title: "Nombre"
+                                        }
+                                        state {
+                                            title: "Statut"
+                                        }
+                                        ahcAuthorized {
+                                            title: "SEPA"
+                                            true: "☑️"
+                                            false: "❌"
+                                        }
+                                        depository {
+                                            title: "Dépôt"
+                                        }
+                                        coSubscribers {
+                                            title: "Co-souscripteurs"
+                                        }
+                                    }
+                                }
+                            }
+                            okButton {
+                                title: "Ok"
+                            }
+                            cancelButton {
+                                title: "Annuler"
+                            }
+                            errors {
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

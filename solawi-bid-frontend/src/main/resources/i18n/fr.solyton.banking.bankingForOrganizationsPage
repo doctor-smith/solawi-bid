@@ -1,0 +1,200 @@
+fr {
+    solyton {
+        banking {
+            bankingForOrganizationsPage {
+                title: "Banque pour les organisations"
+                subTitle: "Gérer les affaires bancaires des organisations"
+                actions {
+                    navToUp {
+                        tooltip: "HAUT"
+                    }
+                }
+                legalEntity {
+                    title: "Vos données en tant qu'entité juridique :"
+                    actions {
+                        create {
+                            tooltip: "Créer "
+                        }
+                        edit {
+                            tooltip: "Modifier "
+                        }
+                    }
+                    properties {
+                        name {
+                            title: "Nom"
+                        }
+                        legalForm {
+                            title: "Forme juridique"
+                        }
+                        type {
+                            title: "Type"
+                        }
+                        creditorId {
+                            title: "Identifiant créancier"
+                        }
+                    }
+                    dialogs {
+                        create {
+                            title: "Créer une entité juridique"
+                            inputs {
+                                name {
+                                    title: "Nom"
+                                }
+                                legalForm {
+                                    title: "Forme juridique"
+                                }
+                                legalEntityType {
+                                    title: "Type"
+                                }
+                                creditorId {
+                                    title: "Identifiant créancier"
+                                }
+                            }
+                        }
+                        upsert {
+                            title: "Créer/mettre à jour l'entité juridique"
+                            inputs {
+                                name {
+                                    title: "Nom"
+                                }
+                                legalForm {
+                                    title: "Forme juridique"
+                                }
+                                legalEntityType {
+                                    title: "Type"
+                                }
+                                creditorId {
+                                    title: "Identifiant créancier"
+                                }
+                            }
+                        }
+                    }
+                }
+                creditorBankAccounts {
+                    title: "Comptes bancaires créanciers"
+                    headers {
+                        accountHolder {
+                            title: "Titulaire du compte"
+                        }
+                        description {
+                            title: "Description"
+                        }
+                        iban {
+                            title: "IBAN"
+                        }
+                        bic {
+                            title: "BIC"
+                        }
+                        active {
+                            title: "Actif"
+                        }
+                    }
+                    dialogs {
+                        bankAccounts {
+                            title: "Comptes bancaires"
+                        }
+                    }
+                }
+                customerBankAccounts {
+                    title: "Comptes bancaires clients"
+                    actions {
+                        downloadCsv {
+                            tooltip: "Télécharger en CSV"
+                        }
+                        manageSepaMandates {
+                            tooltip: "Gérer les mandats SEPA"
+                        }
+                    }
+                    headers {
+                        number {
+                            title: "Nombre"
+                        }
+                        accountHolder {
+                            title: "Titulaire du compte"
+                        }
+                        iban {
+                            title: "IBAN"
+                        }
+                        bic {
+                            title: "BIC"
+                        }
+                        active {
+                            title: "Actif"
+                        }
+                    }
+                    dialogs {
+                        bankAccounts {
+                            title: "Comptes bancaires"
+                        }
+                        importBankAccounts {
+                            title: "Importer les comptes bancaires"
+                        }
+                    }
+                }
+                fiscalYears {
+                    title: "Exercices comptables"
+                    headers {
+                        fiscalYear {
+                            title: "Exercice comptable"
+                        }
+                        startDate {
+                            title: "Date de début"
+                        }
+                        endDate {
+                            title: "Date de fin"
+                        }
+                    }
+                    dialogs {
+                        message {
+                            title: "Message"
+                        }
+                    }
+                }
+                sepaCollections {
+                    title: "SEPA"
+                    headers {
+                        bankAccount {
+                            title: "Compte bancaire"
+                        }
+                        collectionKey {
+                            title: "Clé de recouvrement"
+                        }
+                        mandateRefPrefix {
+                            title: "Préfixe de référence de mandat"
+                        }
+                        remittanceInfo {
+                            title: "Motif du paiement"
+                        }
+                        active {
+                            title: "Actif"
+                        }
+                        leadTime {
+                            title: "Délai"
+                            tooltip: "Délai - Nombre de jours avant la date de prélèvement où le message SEPA de prélèvement doit être soumis à la banque (typiquement 5-7 jours pour B2C, 1-2 jours pour B2B)"
+                        }
+                        totalAmount {
+                            title: "Montant total"
+                            tooltip: "Montant total - Somme cumulée des paiements confirmés"
+                        }
+                    }
+                    actions {
+                        manage {
+                            tooltip: "Gérer les mandats, paiements et messages SEPA"
+                        }
+                        edit {
+                            tooltip: "Modifier le recouvrement SEPA"
+                        }
+                    }
+                    errors {
+                        noLegalEntity: "Aucune entité juridique n'est définie. "
+                    }
+                    dialogs {
+                        manage {
+                            title: "hahaha"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

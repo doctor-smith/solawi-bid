@@ -1,0 +1,26 @@
+fr {
+    solyton {
+        countries {
+            stateOrProvince {
+                DE {
+                    DE-BW: "Bade-Wurtemberg"
+                    DE-BY: "Bavière"
+                    DE-BE: "Berlin"
+                    DE-BB: "Brandebourg"
+                    DE-HB: "Brême"
+                    DE-HH: "Hambourg"
+                    DE-HE: "Hesse"
+                    DE-MV: "Mecklembourg-Poméranie-Occidentale"
+                    DE-NI: "Basse-Saxe"
+                    DE-NW: "Rhénanie-du-Nord-Westphalie"
+                    DE-RP: "Rhénanie-Palatinat"
+                    DE-SL: "Sarre"
+                    DE-SN: "Saxe"
+                    DE-ST: "Saxe-Anhalt"
+                    DE-SH: "Schleswig-Holstein"
+                    DE-TH: "Thuringe"
+                }
+            }
+        }
+    }
+}

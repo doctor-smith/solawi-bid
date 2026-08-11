@@ -1,0 +1,32 @@
+fr {
+    solyton {
+        application {
+            auctions{
+                title: "Enchères"
+                description: "Réaliser des enchères"
+                modules {
+                    auctionManagement {
+                        title: "Gestion des enchères"
+                        description: "Gérer les enchères"
+                    }
+                    organizationManagement {
+                        title: "Gestion des organisations"
+                        description: "Gérer les organisations, départements ou équipes"
+                    }
+                    financialTooling {
+                        title: "Outils financiers"
+                        description: "Outils financiers"
+                    }
+                    organizationToProsumerCommunication {
+                        title: "Communication organisation vers membres"
+                        description: "Communiquer avec les membres de l'organisation"
+                    }
+                    consensingTools {
+                        title: "Outils de consensus"
+                        description: "Outils de consensus"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -53,6 +53,7 @@ de{
         locales{
             de: "Deutsch"
             en: "Englisch"
+            fr: "Französisch"
         }
     }
 }

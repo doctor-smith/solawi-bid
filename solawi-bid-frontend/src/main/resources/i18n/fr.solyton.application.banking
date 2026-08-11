@@ -1,0 +1,28 @@
+fr {
+    solyton {
+        application {
+            banking {
+                title: "Banque"
+                description: "Gérer les affaires bancaires"
+                modules {
+                    manageBankAccounts {
+                        title: "Gestion des comptes bancaires"
+                        description: "Gérer les comptes bancaires"
+                    }
+                    manageLegalEntities {
+                        title: "Gérer les entités juridiques"
+                        description: "Gérer les affaires liées aux entités juridiques"
+                    }
+                    manageSepa {
+                        title: "SEPA"
+                        description: "Gérer les sujets liés à SEPA : export pain.008, etc."
+                    }
+                    manageDatev {
+                        title: "DATEV"
+                        description: "Export vers DATEV"
+                    }
+                }
+            }
+        }
+    }
+}
