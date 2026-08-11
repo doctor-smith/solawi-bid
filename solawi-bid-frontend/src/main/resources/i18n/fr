@@ -1,15 +1,15 @@
-en{
+fr{
     solyton{
         authentication{
             login{
                 fields{
-                    username: "Username"
-                    password: "Password"
+                    username: "Nom d'utilisateur"
+                    password: "Mot de passe"
                 }
                 buttons{
-                    ok: "Login"
-                    password-reset: "Reset password"
-                    sign-up: "Sign up"
+                    ok: "Connexion"
+                    password-reset: "Réinitialiser le mot de passe"
+                    sign-up: "S'inscrire"
                 }
             }
         }
@@ -19,7 +19,7 @@ en{
             }
         }
         cookieDisclaimer {
-            title: "Cookie Disclaimer"
+            title: "Avis relatif aux cookies"
             content {
                 hint: "bla bla bla ..."
             }
@@ -27,33 +27,33 @@ en{
                 title: "Ok"
             }
             cancelButton {
-                title: "Cancel"
+                title: "Annuler"
             }
         }
         dashboardPage {
-            title: "Welcome to your Dashboard"
+            title: "Bienvenue sur votre tableau de bord"
             auctionsCard {
                 navButton {
-                    title: "Auctions"
+                    title: "Enchères"
                 }
             }
         }
         errors {
-            title: "Error"
+            title: "Erreur"
             okButton {
                 title: "Ok"
             }
             cancelButton {
-                title: "Cancel"
+                title: "Annuler"
             }
             messages {
-                loginFailed: "Login failed"
+                loginFailed: "Échec de la connexion"
             }
         }
         locales {
-            de: "German"
-            en: "English"
-            fr: "French"
+            de: "Allemand"
+            en: "Anglais"
+            fr: "Français"
         }
     }
 }

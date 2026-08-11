@@ -1,0 +1,19 @@
+fr {
+    solyton {
+        countries {
+            stateOrProvince {
+                AT {
+                    AT-B: "Burgenland"
+                    AT-K: "Carinthie"
+                    AT-N: "Basse-Autriche"
+                    AT-OÖ: "Haute-Autriche"
+                    AT-S: "Salzbourg"
+                    AT-ST: "Styrie"
+                    AT-T: "Tyrol"
+                    AT-V: "Vorarlberg"
+                    AT-W: "Vienne"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,38 @@
+fr {
+    solyton {
+        countries {
+            names {
+                AT: "Autriche"
+                BE: "Belgique"
+                BG: "Bulgarie"
+                HR: "Croatie"
+                CH: "Suisse"
+                CY: "Chypre"
+                CZ: "République tchèque"
+                DK: "Danemark"
+                EE: "Estonie"
+                FI: "Finlande"
+                FR: "France"
+                DE: "Allemagne"
+                GR: "Grèce"
+                HU: "Hongrie"
+                IE: "Irlande"
+                IT: "Italie"
+                LV: "Lettonie"
+                LT: "Lituanie"
+                LU: "Luxembourg"
+                MT: "Malte"
+                NL: "Pays-Bas"
+                PL: "Pologne"
+                PT: "Portugal"
+                RO: "Roumanie"
+                SK: "Slovaquie"
+                SI: "Slovénie"
+                ES: "Espagne"
+                SE: "Suède"
+
+                US: "États-Unis"
+            }
+        }
+    }
+}

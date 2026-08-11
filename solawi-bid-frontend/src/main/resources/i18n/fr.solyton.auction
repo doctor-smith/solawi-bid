@@ -1,0 +1,188 @@
+fr{
+    solyton{
+        auction {
+            createDialog {
+                title: "Créer une enchère"
+                inputs {
+                    title: "Nom"
+                    date: "Date"
+                    hostOrganization: "Organisation hôte"
+                }
+                okButton {
+                    title: "Ok"
+                }
+                cancelButton {
+                    title: "Annuler"
+                }
+            }
+            updateDialog {
+                title: "Modifier l'enchère"
+                inputs {
+                    title: "Nom"
+                    date: "Date"
+                    targetAmount: "Montant cible"
+                    solidarityContribution: "Contribution de solidarité"
+                    minimalBid: "Offre minimale"
+                    benchmark: "Référence"
+                    hostOrganization: "Organisation hôte"
+                }
+                okButton {
+                    title: "Ok"
+                }
+                cancelButton {
+                    title: "Annuler"
+                }
+            }
+            importBiddersDialog {
+                title: "Importer des enchérisseurs"
+                okButton {
+                    title: "Ok"
+                }
+                cancelButton {
+                    title: "Annuler"
+                }
+            }
+            round {
+                bidRoundEvaluationModal {
+                    title: "Évaluation"
+                    okButton {
+                        title: "Accepter"
+                    }
+                    cancelButton {
+                        title: "Rejeter"
+                    }
+                }
+                commentOnRoundModal {
+                    title: "Commenter le tour"
+                    okButton {
+                        title: "Ok"
+                    }
+                    cancelButton {
+                        title: "Annuler"
+                    }
+                }
+                successfulBidInformationModal {
+                    title: "Offre transmise avec succès"
+                    message: "Votre offre a été transmise avec succès"
+                    amount: "Montant"
+                    numberOfShares: "Parts"
+                    totalAmountPerMonth: "Montant total par mois"
+                    okButton {
+                        title: "Ok"
+                    }
+                    cancelButton {
+                        title: "Annuler"
+                    }
+                }
+
+                states {
+                    opened: "Ouvert"
+                    started: "Démarré"
+                    stopped: "Arrêté"
+                    evaluated: "Évalué"
+                    closed: "Fermé"
+                    frozen: "Figé"
+                }
+                commands {
+                    start: "Démarrer"
+                    stop: "Arrêter"
+                    evaluate: "Évaluer"
+                    close: "Fermer"
+                    freeze: "Figer"
+                    null: "-"
+                }
+                bidRoundList {
+                    rounds: "Tours"
+                    item {
+                        buttons {
+                            exportResults {
+                                title: "Exporter"
+                                tooltip: "Exporter les résultats du tour d'enchère"
+                            }
+                        }
+                    }
+                }
+            }
+            auctionPage {
+                title: "Enchère"
+                details {
+                    title: "Détails"
+                    targetAmount: "Montant cible"
+                    solidarityContribution: "Contribution de solidarité"
+                    date: "Date"
+                    minimalBid: "Offre minimale"
+                    benchmark: "Référence"
+                    numberOfBidders: "Nombre d'enchérisseurs"
+                    numberOfShares: "Nombre de parts"
+                }
+                buttons {
+                    help {
+                        text: "Aide"
+                        tooltip: "Naviguer vers la page d'aide"
+                    }
+                    updateAuction {
+                        text: "Configurer l'enchère"
+                        tooltip: "Configurer l'enchère"
+                    }
+                    importBidders {
+                        text: "Importer des enchérisseurs"
+                        tooltip: "Importer des enchérisseurs dans l'enchère"
+                    }
+                    createRound {
+                        text: "Créer un nouveau tour"
+                        tooltip: "Créer un nouveau tour d'enchère"
+                    }
+                }
+            }
+            auctionsPage {
+                title: "Enchères"
+                buttons {
+                    createAuction {
+                        title: "Créer une enchère"
+                        tooltip: "Créer une enchère"
+                    }
+                }
+                auctionList {
+                    items {
+                        buttons {
+                            run {
+                                title: "Démarrer l'enchère"
+                                tooltip: "Démarrer l'enchère"
+                            }
+                            details {
+                                title: "Détails"
+                                tooltip: "Afficher les détails de l'enchère"
+                            }
+                            edit {
+                                title: "Modifier"
+                                tooltip: "Modifier l'enchère"
+                            }
+                            delete {
+                                title: "Supprimer"
+                                tooltip: "Supprimer l'enchère"
+                            }
+                        }
+                    }
+                }
+            }
+            searchBiddersPage{
+                title: "Rechercher des enchérisseurs"
+                buttons {
+                    search {
+                        title: "Rechercher"
+                    }
+                }
+                inputs {
+                    firstname: "Prénom"
+                    lastname: "Nom"
+                    emailAddress: "Adresse e-mail"
+                    relatedEmailAddresses: "Adresses e-mail associées"
+                    relatedData: "Données associées"
+                }
+                results {
+                    title: "Adresses e-mail"
+                }
+            }
+        }
+    }
+}

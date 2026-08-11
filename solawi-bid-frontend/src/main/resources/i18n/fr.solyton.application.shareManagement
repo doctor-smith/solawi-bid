@@ -1,0 +1,35 @@
+fr {
+    solyton {
+        application {
+            shareManagement {
+                title: "Gestion des parts"
+                description: "Gérer les sujets liés aux parts"
+                modules {
+                    shareManagement {
+                        title: "Gestion des parts"
+                        description: "Gérer les parts"
+                    }
+                }
+                pricingType {
+                    FIXED: "Prix fixe"
+                    FLEXIBLE: "Ajustable"
+                }
+                shareStatus {
+                    EXTERNAL: "Externe"
+                    SUBSCRIBED: "Souscrite"
+                    PAUSED: "En pause"
+                    SUSPENDED: "Suspendue"
+                    PENDING_ACTIVATION: "En attente d'activation"
+                    CLEARED_FOR_AUCTION: "Autorisée pour enchère"
+                    ACTIVATION_REJECTED: "Activation refusée"
+                    AWAITING_AHC_AUTHORIZATION: "En attente d'autorisation AHC"
+                    PAYMENT_FAILED: "Échec du paiement"
+                    CANCELLED: "Annulée"
+                    EXPIRED: "Expirée"
+                    ROLLED_OVER: "Renouvelée"
+                    ROLLING_OVER: "Renouvellement en cours"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,201 @@
+fr {
+    solyton {
+        application {
+            private {
+                managementPage {
+                    title: "Mes applications"
+                    subTitle: "Gérer les applications personnelles"
+                    listOfApplications {
+                        title: "Applications"
+                        titles {
+                            bookedApplications: "Applications souscrites"
+                            availableApplications: "Applications disponibles"
+                        }
+                        headers {
+                            application {
+                                title: "Application"
+                            }
+                            applicationDescription {
+                                title: "Description"
+                            }
+                            modules {
+                                title: "Modules"
+                            }
+                            linkedOrganizations {
+                                title: "Organisations liées"
+                            }
+                        }
+                        actions {
+                            connectApplication {
+                                tooltip: "Partager l'application avec une organisation"
+                            }
+                            showDetails {
+                                tooltip: "Afficher les détails de l'application"
+                            }
+                            edit {
+                                tooltip: "Modifier l'application"
+                            }
+                            registerForApplication {
+                                tooltip: "Acheter l'application"
+                            }
+                            startTrialOfApplication {
+                                tooltip: "Démarrer l'essai"
+                            }
+                            subscribeApplication{
+                                tooltip: "S'abonner à l'application"
+                            }
+                            cancelApplicationSubscription {
+                                tooltip: "Annuler l'abonnement à l'application"
+                            }
+                        }
+                    }
+                    dialogs {
+                        connectApplicationToOrganization {
+                            title: "Connecter l'application à une organisation"
+                            inputs {
+
+                            }
+                            okButton {
+                                title: "Ok"
+                            }
+                            cancelButton {
+                                title: "Annuler"
+                            }
+                        }
+                    }
+                }
+                applicationOrganizationManagementPage {
+                    title: "${organization} / ${application}"
+                    subTitle: "Gérer l'application au niveau de l'organisation"
+                    actions {
+                        navToOrganizationPage {
+                            tooltip: "Aller à l'organisation ${organizationName}"
+                        }
+                    }
+                    listOfMembers{
+                        title: "Membres"
+                        headers{
+                            username {
+                                title: "Nom d'utilisateur"
+                            }
+                            roles{
+                                title: "Rôles"
+                            }
+                        }
+                        actions {
+                            manageUserPermissions {
+                                tooltip: "Gérer les autorisations pour ${user}"
+                            }
+                        }
+                    }
+                    dialogs {
+                        manageUsersPermissions {
+                            title: "Gérer les autorisations utilisateur"
+                            inputs {
+
+                            }
+                            okButton {
+                                title: "Ok"
+                            }
+                            cancelButton {
+                                title: "Annuler"
+                            }
+                        }
+                    }
+                }
+            }
+            management {
+                applicationManagementPage {
+                    title: "Gérer les applications de la plateforme Solyton"
+                    subTitle: "Gérer tous les aspects techniques de l'application Solyton"
+                    listOfApplications {
+                        title: "Applications"
+                        headers {
+                            application {
+                                title: "Application"
+                            }
+                            modules {
+                                title: "Modules"
+                            }
+                        }
+                        actions {
+                            showDetails {
+                                tooltip: "Afficher les détails de l'application"
+                            }
+                            edit {
+                                tooltip: "Modifier l'application"
+                            }
+                        }
+                    }
+                }
+                applicationPage {
+                    title: "Application"
+                    actions {
+                        navToAppManPage {
+                            tooltip: "Aller à 'Gérer les applications de la plateforme Solyton'"
+                        }
+                    }
+                    listOfModules {
+                        title: "Modules"
+                        headers {
+                            module {
+                                title: "Module"
+                            }
+                        }
+                        actions {
+                            showDetails {
+                                tooltip: "Afficher les détails du module"
+                            }
+                        }
+                    }
+                    defaultContext {
+                        title: "Rôles et droits du contexte par défaut"
+                        headers {
+                            role {
+                                title: "Rôle"
+                            }
+                            rights {
+                                title: "Droits"
+                            }
+                        }
+                        actions {
+                            editContext{
+                                tooltip: "Modifier le contexte par défaut"
+                            }
+                            editRole {
+                                tooltip: "Modifier le rôle et les droits"
+                            }
+                        }
+                    }
+                }
+                modulePage {
+                    title: "Module"
+                    actions {
+                        navToParentApplication {
+                            tooltip: "Aller à l'application parente"
+                        }
+                    }
+                    defaultContext {
+                        title: "Rôles et droits du contexte par défaut"
+                        headers {
+                            role {
+                                title: "Rôle"
+                            }
+                            rights {
+                                title: "Droits"
+                            }
+                        }
+                        actions {
+                            editContext{
+                                tooltip: "Modifier le contexte par défaut"
+                            }
+                            editRole {
+                                tooltip: "Modifier le rôle et les droits"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,71 @@
+fr {
+    solyton {
+        user {
+            organization {
+                managementPage {
+                    title: "Gestion des organisations"
+                    buttons {
+                        createOrganization {
+                            title: "Créer une organisation"
+                            tooltip: "Créer une organisation"
+                        }
+                        createChildOrganization {
+                            title: "Créer une sous-organisation"
+                            tooltip: "Créer une sous-organisation"
+                        }
+                    }
+                    dialogs {
+                        createOrganization {
+                            title: "Créer une organisation"
+                            inputs {
+                                name {
+                                    title: "Nom"
+                                }
+                            }
+                            okButton {
+                                title: "Ok"
+                            }
+                            cancelButton {
+                                title: "Annuler"
+                            }
+                            errors {
+
+                            }
+                        }
+                        updateOrganization {
+                            title: "Modifier l'organisation"
+                            inputs {
+                                name {
+                                    title: "Nom"
+                                }
+                            }
+                            okButton {
+                                title: "Ok"
+                            }
+                            cancelButton {
+                                title: "Annuler"
+                            }
+                            errors {
+
+                            }
+                        }
+                    }
+                    listOfOrganizations {
+                        title: "Liste des organisations"
+                        columns {
+                            organization {
+                                title: "Organisation"
+                            }
+                            actions {
+                                tooltip: "Actions"
+                            }
+                        }
+                    }
+                    errors {
+                        emptyName: "Le nom ne peut pas être vide"
+                    }
+                }
+            }
+        }
+    }
+}
