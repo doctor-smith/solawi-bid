@@ -125,6 +125,7 @@ fun ListOfPayments(
     payments: List<SepaPayment>,
     styles: ListStyles = ListStyles(),
     displayIfEmpty: Boolean = true,
+    isReadOnly: Boolean = false,
     overallActions: @Composable (data: OverAllActionData) -> Unit = {},
     actions: @Composable (data: ActionsData) -> Unit = {}
 ) = When(displayIfEmpty || payments.isNotEmpty()) {
@@ -224,7 +225,7 @@ fun ListOfPayments(
         HeaderWrapper(styles.headerWrapper) {
             Header(styles.header) {
                 val allChecked = filteredList.isNotEmpty() && filteredList.all { checkedMap[it.payment.sepaPaymentId] == true }
-                key(allChecked) {
+                if(!isReadOnly) key(allChecked) {
                     CheckBoxCell({ allChecked }, { width(2.percent) }) {
                         val newCheckedState = !allChecked
                         if (newCheckedState) {
@@ -275,7 +276,7 @@ fun ListOfPayments(
                         listItemWrapperStyle(index)
                     }) {
                         DataWrapper(styles.dataWrapper) {
-                            CheckBoxCell({ isChecked }, { width(2.percent) }) {
+                            if(!isReadOnly) CheckBoxCell({ isChecked }, { width(2.percent) }) {
                                 if (isChecked) {
                                     checkedMap.remove(listItem.payment.sepaPaymentId)
                                 } else {

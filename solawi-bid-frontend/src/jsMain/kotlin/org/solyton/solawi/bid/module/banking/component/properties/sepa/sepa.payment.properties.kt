@@ -14,23 +14,28 @@ import org.solyton.solawi.bid.module.banking.data.internal.toMoney
 import org.solyton.solawi.bid.module.banking.data.sepa.PaymentExecutionStatus
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
 
+val paymentsPropertyStyles by lazy {
+    PropertiesStyles().modifyContainerStyle {
+        flexGrow(1)
+    }.modifyPropertyStyles {
+        modifyKeyStyle {
+            width(50.percent)
+        }.modifyValueStyle {
+            width(50.percent)
+        }
+    }
+}
+
 @Markup
 @Composable
 @Suppress("FunctionName")
 fun PaymentsProperties(payments: List<SepaPayment>) =
-    ReadOnlyProperties(listOf(
-        Property("Number", payments.size),
-        Property("Total Amount", (payments.sumOf { it.amount }).toMoney(Currency.EUR).format()),
-    ),
-        PropertiesStyles().modifyContainerStyle {
-            flexGrow(1)
-        }.modifyPropertyStyles {
-            modifyKeyStyle {
-                width(50.percent)
-            }.modifyValueStyle {
-                width(50.percent)
-            }
-        }
+    ReadOnlyProperties(
+        listOf(
+            Property("Number", payments.size),
+            Property("Total Amount", (payments.sumOf { it.amount }).toMoney(Currency.EUR).format()),
+        ),
+        paymentsPropertyStyles
     )
 
 
@@ -69,4 +74,3 @@ fun PaymentsOverviewProperties(payments: List<SepaPayment>) {
         }
     )
 }
-

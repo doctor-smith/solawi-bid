@@ -8,10 +8,7 @@ import org.evoleq.compose.Markup
 import org.evoleq.compose.date.format
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.Locale
-import org.evoleq.math.Source
-import org.evoleq.math.contains
-import org.evoleq.math.emit
-import org.evoleq.math.map
+import org.evoleq.math.*
 import org.evoleq.optics.storage.Read
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
@@ -29,6 +26,7 @@ import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.deviceData
 import org.solyton.solawi.bid.module.banking.data.bankingApplicationActions
 import org.solyton.solawi.bid.module.banking.data.bankingApplicationModals
+import org.solyton.solawi.bid.module.banking.data.internal.Currency
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessage
 import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessageStatus
@@ -129,15 +127,16 @@ fun SepaMessageList(
         )
     } }
 
-    val listStyles = styles.modifyOverallActions {
+    val listStyles = styles.modifyOverallActionsWrapper {
+        paddingLeft(20.px)
+        justifyContent(JustifyContent.FlexEnd)
+    }.modifyOverallActions {
+        flexGrow(0.0)
         alignSelf(AlignSelf.End)
     }
 
     ListWrapper(listStyles.listWrapper) {
-        OverallActionsWrapper({
-            with(listStyles){overallActionsWrapper()}
-            paddingLeft(20.px)
-        }) {
+        OverallActionsWrapper(listStyles.overallActionsWrapper) {
             OverallActions(listStyles.overallActions) {
                 OverAllActionButtons(
                     scope, storage, overallActionsData, modalId
@@ -221,7 +220,7 @@ fun SepaMessageList(
                             }
                             TextCell(item.status.name) { width(10.percent) }
                             NumberCell(item.numberOfPayments) { width(10.percent) }
-                            NumberCell(item.totalAmount ?: 0.0) { width(10.percent) }
+                            PriceCell((item.totalAmount ?: 0.0).round(2), Currency.EUR) { width(10.percent) }
                             TextCell(item.remittanceInformation.value) {
                                 width(40.percent)
                             }

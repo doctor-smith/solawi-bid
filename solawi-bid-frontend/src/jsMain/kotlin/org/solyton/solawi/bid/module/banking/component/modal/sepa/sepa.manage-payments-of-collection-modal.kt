@@ -11,6 +11,8 @@ import org.evoleq.compose.form.Form
 import org.evoleq.compose.form.field.Field
 import org.evoleq.compose.form.label.Label
 import org.evoleq.compose.layout.Horizontal
+import org.evoleq.compose.layout.Property
+import org.evoleq.compose.layout.ReadOnlyProperties
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.compose.modal.Modal
 import org.evoleq.compose.modal.ModalData
@@ -37,6 +39,7 @@ import org.solyton.solawi.bid.module.banking.action.sepa.*
 import org.solyton.solawi.bid.module.banking.component.list.sepa.*
 import org.solyton.solawi.bid.module.banking.component.properties.sepa.PaymentsOverviewProperties
 import org.solyton.solawi.bid.module.banking.component.properties.sepa.PaymentsProperties
+import org.solyton.solawi.bid.module.banking.component.properties.sepa.paymentsPropertyStyles
 import org.solyton.solawi.bid.module.banking.component.tab.sepa.TabParagraphWrapper
 import org.solyton.solawi.bid.module.banking.data.*
 import org.solyton.solawi.bid.module.banking.data.api.*
@@ -44,6 +47,7 @@ import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.sepa.PaymentExecutionStatus
 import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
+import org.solyton.solawi.bid.module.banking.data.sepa.mandate.SepaMandate
 import org.solyton.solawi.bid.module.banking.data.sepa.message.SepaMessage
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPaymentHistories
@@ -64,7 +68,13 @@ import org.solyton.solawi.bid.module.tabs.component.*
 import org.solyton.solawi.bid.module.tabs.style.TabStyles
 import org.w3c.dom.HTMLElement
 
+data class ManageCollectionPaymentsState(
+    val executionDate: LocalDate? = null
+)
+
+// TODO Remove? Obsolete?
 sealed class ManageCollectionPayments {
+
     data class AttachPayments(
         val executionDate: LocalDate,
         val remittanceInformation: RemittanceInformation? = null
@@ -132,8 +142,8 @@ fun Storage<Modals<Int>>.showManagePaymentsOfSepaCollectionModal(
     sepaCollection: Source<SepaCollection>,
     sepaMessages: Source<List<SepaMessage>>,
     sepaPaymentLinks: Source<List<SepaPaymentLink>>,
-    executionDate: LocalDate?,
-    setManageCollectionPayments: (ManageCollectionPayments) -> Unit,
+    manageCollectionPaymentsState: ManageCollectionPaymentsState,
+    setManageCollectionPaymentsState: (ManageCollectionPaymentsState) -> Unit,
     update: () -> Unit
 ) = with(nextId()) {
     put(
@@ -150,8 +160,8 @@ fun Storage<Modals<Int>>.showManagePaymentsOfSepaCollectionModal(
                 sepaCollection,
                 sepaMessages,
                 sepaPaymentLinks,
-                executionDate,
-                setManageCollectionPayments,
+                manageCollectionPaymentsState,
+                setManageCollectionPaymentsState,
                 update = update
             )
         )
@@ -171,8 +181,8 @@ fun ManagePaymentsOfSepaCollectionModal(
     sepaCollectionSource: Source<SepaCollection>,
     sepaMessages: Source<List<SepaMessage>>,
     sepaPaymentLinks: Source<List<SepaPaymentLink>>,
-    executionDate: LocalDate?,
-    setManageCollectionPayments: (ManageCollectionPayments) -> Unit,
+    manageCollectionPaymentsState: ManageCollectionPaymentsState,
+    setManageCollectionPaymentsState: (ManageCollectionPaymentsState) -> Unit,
     update: ()->Unit
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
     type = ModalType.Dialog,
@@ -191,23 +201,21 @@ fun ManagePaymentsOfSepaCollectionModal(
     val scope = rememberCoroutineScope()
     val sepaCollection = sepaCollectionSource.emit()
     val tabStyles = TabStyles()
-    /*
-    val dropdownStyles = DropdownStyles()
-        .modifyContainerStyle {
-            alignSelf(AlignSelf.Start)
-        }
-    */
-    val scrollableStyles = ScrollableStyles().modifyContainerStyle {
-        //height(100.percent)
-
-        //flexGrow(1)
-    }
+    val scrollableStyles = ScrollableStyles()
 
     var selectedTab by remember { mutableStateOf(uiState.selectedTab) }
     var paragraphState by remember { mutableStateOf(Tabs.Payments.Paragraphs.OVERVIEW) }
     LaunchedEffect(selectedTab, paragraphState) {
         setUiState(UIState(selectedTab, paragraphState))
     }
+
+    var executionDate by remember(manageCollectionPaymentsState) {
+        mutableStateOf(manageCollectionPaymentsState.executionDate)
+    }
+    LaunchedEffect(executionDate) {
+        setManageCollectionPaymentsState(manageCollectionPaymentsState.copy(executionDate = executionDate))
+    }
+
 
     key(sepaCollection) {
         TabsWrapper(tabStyles.tabsWrapperStyles) {
@@ -247,6 +255,12 @@ fun ManagePaymentsOfSepaCollectionModal(
                         sepaCollection.sepaPayments.map{it.sepaPaymentId},
                         sepaPaymentLinks.emit()
                     )
+
+                    val usedMandateIds =
+                        sepaCollection.sepaPayments.map { it.sepaMandateId }.distinct()
+                    val mandatesWithoutPayments = sepaCollection.sepaMandates.filter { mandate ->
+                        usedMandateIds.none { it == mandate.sepaMandateId }
+                    }
 
                     val openPayments =
                         sepaCollection.sepaPayments.filter { payment -> payment.status == PaymentExecutionStatus.CREATED }
@@ -306,36 +320,16 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     onClick = { paragraphState = Tabs.Payments.Paragraphs.CREATE_NEW_PAYMENTS }
                                 ) {
                                     TabParagraph("Create new Payments")
-                                    Form(formDesktopStyle) {
-                                        Field(fieldDesktopStyle) {
-                                            // State
-                                            var executionDateState by remember {
-                                                mutableStateOf(
-                                                    executionDate ?: today()
-                                                )
-                                            }
-                                            val initDate = executionDateState.format(Locale.Iso)
 
-                                            Label("Execution Date", id = "date", labelStyle = formLabelDesktopStyle)
-                                            Input(InputType.Date) {
-                                                id("date")
-                                                // dataId("create-auction.form.input.date")
-                                                value(initDate)
-                                                style {
-                                                    dateInputDesktopStyle()
-                                                    alignSelf(AlignSelf.Start)
-                                                }
-                                                onInput {
-                                                    executionDateState = LocalDate.parse(it.value)
-                                                    setManageCollectionPayments(
-                                                        ManageCollectionPayments.AttachPayments(
-                                                            executionDateState
-                                                        )
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
+                                    ReadOnlyProperties(
+                                        listOf(
+                                            Property("Execution Date", executionDate?.format(Locale.Iso)?: ""),
+                                            Property("New Mandates", mandatesWithoutPayments.size ),
+                                            Property("Next Period", nextPeriodPaymentCreationCandidates.size),
+                                            Property("Retry Candidates", retryPaymentCreationCandidates.size)
+                                        ),
+                                        paymentsPropertyStyles
+                                    )
                                 }
 
                                 TabParagraphWrapper(
@@ -345,7 +339,13 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     PaymentsProperties(openPayments)
                                 }
 
-                                /*
+                                TabParagraphWrapper(
+                                    onClick = { paragraphState = Tabs.Payments.Paragraphs.PAYMENTS_MESSAGE_CREATED }
+                                ) {
+                                    TabParagraph("Ready for Submission to the Bank")
+                                    PaymentsProperties(messageCreatedPayments)
+                                }
+
                                 TabParagraphWrapper(
                                     onClick = { paragraphState = Tabs.Payments.Paragraphs.PAYMENTS_SENT }
                                 ) {
@@ -353,19 +353,20 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     PaymentsProperties(sentPayments)
                                 }
 
-                                 */
                                 TabParagraphWrapper(
                                     onClick = { paragraphState = Tabs.Payments.Paragraphs.PAYMENTS_PENDING }
                                 ) {
                                     TabParagraph("Pending Payments")
                                     PaymentsProperties(pendingPayments)
                                 }
+
                                 TabParagraphWrapper(
                                     onClick = { paragraphState = Tabs.Payments.Paragraphs.PAYMENTS_MESSAGE_SETTLED }
                                 ) {
                                     TabParagraph("Message settled")
                                     PaymentsProperties(settledPayments)
                                 }
+
                                 TabParagraphWrapper(
                                     onClick = { paragraphState = Tabs.Payments.Paragraphs.PAYMENTS_FAILED }
                                 ) {
@@ -373,12 +374,14 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     // We only want to see failed payments that have not been retried
                                     PaymentsProperties(failedPayments.filter { it.retrySuccessorId == null })
                                 }
+
                                 TabParagraphWrapper(
                                     onClick = { paragraphState = Tabs.Payments.Paragraphs.PAYMENTS_CONFIRMED }
                                 ) {
                                     TabParagraph("Confirmed Payments")
                                     PaymentsProperties(confirmedPayments)
                                 }
+
                                 TabParagraphWrapper(
                                     isLast = true,
                                     onClick = { paragraphState = Tabs.Payments.Paragraphs.PAYMENTS_DROPPED }
@@ -409,6 +412,8 @@ fun ManagePaymentsOfSepaCollectionModal(
                                 CreateNewPayments(
                                     sepaCollection,
                                     executionDate,
+                                    {executionDate = it},
+                                    mandatesWithoutPayments,
                                     nextPeriodPaymentCreationCandidates,
                                     retryPaymentCreationCandidates,
                                     listStyles,
@@ -435,9 +440,6 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     sepaCollection,
                                     messageCreatedPayments,
                                     listStyles,
-                                    scope,
-                                    storage,
-                                    device,
                                 )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_SENT) {
@@ -445,9 +447,6 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     sepaCollection,
                                     sentPayments,
                                     listStyles,
-                                    scope,
-                                    storage,
-                                    device,
                                 )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_PENDING) {
@@ -455,10 +454,6 @@ fun ManagePaymentsOfSepaCollectionModal(
                                     sepaCollection,
                                     pendingPayments,
                                     listStyles,
-                                    scope,
-                                    storage,
-                                    device,
-                                    id,
                                 )
                             }
                             When(paragraphState == Tabs.Payments.Paragraphs.PAYMENTS_MESSAGE_SETTLED) {
@@ -513,6 +508,7 @@ fun ManagePaymentsOfSepaCollectionModal(
                     TabId.Messages.id,
                     selectedTab
                 ) {
+                    TabTitle("SEPA Messages")
 
                     SepaMessageList(
                         storage,
@@ -527,9 +523,6 @@ fun ManagePaymentsOfSepaCollectionModal(
                     TabId.PaymentHistories.id,
                     selectedTab
                 ) {
-
-
-
                     TabTitle("Payment Histories")
 
                     SepaPaymentHistoryList(
@@ -537,10 +530,8 @@ fun ManagePaymentsOfSepaCollectionModal(
                         sepaPayments = sepaCollectionSource map { it.sepaPayments },
                         sepaMandates = sepaCollectionSource map { it.sepaMandates }
                     )
-
                 }
             }
-
         }
     }
 }
@@ -564,6 +555,8 @@ fun ManagePaymentsOfSepaCollectionModal(
 fun CreateNewPayments(
     sepaCollection: SepaCollection,
     executionDate: LocalDate?,
+    setExecutionDate: (LocalDate)->Unit,
+    mandatesWithoutPayments: List<SepaMandate>,
     nextPeriodPaymentCreationCandidates: List<SepaPayment>,
     retryPaymentCreationCandidates: List<SepaPayment>,
     listStyles: ListStyles,
@@ -601,16 +594,13 @@ fun CreateNewPayments(
                         }
                         onInput {
                             executionDateState = LocalDate.parse(it.value)
+                            setExecutionDate(executionDateState)
                         }
                     }
                 }
             }
-            val usedMandateIds =
-                sepaCollection.sepaPayments.map { it.sepaMandateId }.distinct()
-            val mandatesWithoutPayments = sepaCollection.sepaMandates.filter { mandate ->
-                usedMandateIds.none { it == mandate.sepaMandateId }
-            }
-            // These are the ids of the mandates which are visible and checked
+
+            // These are the ids of the mandates that are visible and checked
             var chosenMandateIds by remember { mutableStateOf(emptyList<SepaMandateId>()) }
             val computeMinHeight : (number: Int) -> CSSNumeric = { (it * 6 + 25).percent }
             ListOfMandateWithoutPayments(
@@ -932,9 +922,6 @@ fun PaymentsReadyToBeSentToTheBank(
     sepaCollection: SepaCollection,
     messageCreatedPayments: List<SepaPayment>,
     listStyles: ListStyles,
-    scope: CoroutineScope,
-    storage: Storage<BankingApplication>,
-    device: Source<DeviceType>,
 ) {
     TabTitle("Ready to be sent to the bank")
     ListOfPayments(
@@ -942,34 +929,7 @@ fun PaymentsReadyToBeSentToTheBank(
         sepaCollection.sepaMandates,
         messageCreatedPayments,
         listStyles,
-        overallActions = { data ->
-            Horizontal {
-                AnglesLeftButton(
-                    color = Color.black,
-                    bgColor = Color.white,
-                    { "Move selected & visible Payments to the previous state" },
-                    device,
-                    isDisabled = true
-                ) {
-                    // delete all selected payments for their corresponding message.
-                    // If the resulting message becomes empty during this process, delete it
-                }
-                AnglesRightButton(
-                    color = Color.black,
-                    bgColor = Color.white,
-                    { "Move selected & visible Payments to the next state" },
-                    device
-                ) {
-                    scope.launch {
-                        storage.dispatchStatusChange(
-                            newStatus = PaymentExecutionStatus.SENT,
-                            paymentIds = data.selectedVisiblePaymentIds(),
-                            targetCollectionId = sepaCollection.sepaCollectionId,
-                        )
-                    }
-                }
-            }
-        }
+        isReadOnly = true,
     )
 }
 
@@ -978,9 +938,6 @@ fun PaymentsSentToTheBank(
     sepaCollection: SepaCollection,
     sentPayments: List<SepaPayment>,
     listStyles: ListStyles,
-    scope: CoroutineScope,
-    storage: Storage<BankingApplication>,
-    device: Source<DeviceType>,
 ) {
     TabTitle("Payments sent to to the bank")
     ListOfPayments(
@@ -988,38 +945,7 @@ fun PaymentsSentToTheBank(
         sepaCollection.sepaMandates,
         sentPayments,
         listStyles,
-        overallActions = { data ->
-            Horizontal {
-                AnglesLeftButton(
-                    color = Color.black,
-                    bgColor = Color.white,
-                    { "Move selected Payments to the previous state" },
-                    device,
-                ) {
-                    scope.launch {
-                        storage.dispatchStatusChange(
-                            newStatus = PaymentExecutionStatus.MESSAGE_CREATED,
-                            paymentIds = data.selectedVisiblePaymentIds(),
-                            targetCollectionId = sepaCollection.sepaCollectionId,
-                        )
-                    }
-                }
-                AnglesRightButton(
-                    color = Color.black,
-                    bgColor = Color.white,
-                    { "Move selected Payments to the next state" },
-                    device
-                ) {
-                    scope.launch {
-                        storage.dispatchStatusChange(
-                            newStatus = PaymentExecutionStatus.PENDING,
-                            paymentIds = data.selectedVisiblePaymentIds(),
-                            targetCollectionId = sepaCollection.sepaCollectionId,
-                        )
-                    }
-                }
-            }
-        }
+        isReadOnly = true,
     )
 }
 
@@ -1029,11 +955,7 @@ fun PaymentsSentToTheBank(
 fun PendingPayments(
     sepaCollection: SepaCollection,
     pendingPayments: List<SepaPayment>,
-    listStyles: ListStyles,
-    scope: CoroutineScope,
-    storage: Storage<BankingApplication>,
-    device: Source<DeviceType>,
-    modalId: Int,
+    listStyles: ListStyles
 ) {
     TabTitle("Pending Payments")
     ListOfPayments(
@@ -1041,87 +963,7 @@ fun PendingPayments(
         sepaCollection.sepaMandates,
         pendingPayments,
         listStyles,
-        /*
-        overallActions = { data ->
-            Horizontal {
-                AnglesLeftButton(
-                    color = Color.black,
-                    bgColor = Color.white,
-                    { "Move selected Payments to the previous state" },
-                    device,
-                ) {
-                    scope.launch {
-                        storage.dispatchStatusChange(
-                            newStatus = PaymentExecutionStatus.MESSAGE_CREATED,
-                            paymentIds = data.selectedVisiblePaymentIds(),
-                            targetCollectionId = sepaCollection.sepaCollectionId,
-                        )
-                    }
-                }
-                var dataState by remember { mutableStateOf(data) }
-                BanButton(
-                    color = Color.black,
-                    bgColor = Color.white,
-                    { "Move selected Payments to the failed state" },
-                    device,
-                ) {
-
-                    (storage * bankingApplicationModals).showMoveFailedPaymentsModal(
-                        parentModalId = modalId,
-                        texts = dialogModalTexts("Yeeeeeha!"),
-                        device = device,
-                        isDataValid = {
-                            val selectedPayments = dataState.selectedVisibleEntries()
-                            val paymentIds = selectedPayments.map { it.key.paymentId }
-                            val failureReasons = selectedPayments
-                                .filter { it.value.payment.failureReason != null }
-                                .map { it.key.paymentId to it.value.payment.failureReason!! }
-                                .toMap()
-                            paymentIds.size == failureReasons.size
-                        },
-                        data = dataState,
-                        setData = { newData -> dataState = newData },
-
-                        ) {
-                        scope.launch {
-                            val selectedPayments = dataState.selectedVisibleEntries()
-                            val paymentIds = selectedPayments.map { it.key.paymentId }
-                            val failureReasons = selectedPayments
-                                .filter { it.value.payment.failureReason != null }
-                                .map { it.key.paymentId to it.value.payment.failureReason!! }
-                                .toMap()
-                            require(failureReasons.size == selectedPayments.size) {
-                                "Selected payments and failure reasons count mismatch"
-                            }
-                            (storage * bankingApplicationActions) dispatch updateSepaPaymentExecutionStatuses(
-                                data = UpdateSepaPaymentExecutionStatuses(
-                                    newStatus = PaymentExecutionStatus.FAILED.toApiType(),
-                                    paymentIds = paymentIds,
-                                    failureReasons = failureReasons
-                                ),
-                                sepaCollection.sepaCollectionId
-                            )
-                        }
-                    }
-                }
-                SackDollarButton(
-                    color = Color.black,
-                    bgColor = Color.white,
-                    { "Move selected Payments to the confirmed state" },
-                    device,
-                ) {
-                    scope.launch {
-                        storage.dispatchStatusChange(
-                            newStatus = PaymentExecutionStatus.CONFIRMED,
-                            paymentIds = data.selectedVisiblePaymentIds(),
-                            targetCollectionId = sepaCollection.sepaCollectionId,
-                        )
-                    }
-                }
-            }
-        },
-        */
-        actions = {}
+        isReadOnly = true,
     )
 }
 

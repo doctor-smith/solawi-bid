@@ -44,7 +44,10 @@ data class ListStyles (
     val filter: StyleScope.()->Unit = {
 
     },
-    val overallActionsWrapper: StyleScope.()->Unit = {},
+    val overallActionsWrapper: StyleScope.()->Unit = {
+        display(DisplayStyle.Flex)
+        width(100.percent)
+    },
     val overallActions: StyleScope.()->Unit = {},
     val headerWrapper: StyleScope.()->Unit = {
         //justifyContent(JustifyContent.SpaceBetween)

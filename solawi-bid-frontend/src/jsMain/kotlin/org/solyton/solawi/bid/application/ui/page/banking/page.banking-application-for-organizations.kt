@@ -5,6 +5,7 @@ import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.plus
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
 import org.evoleq.compose.date.format
@@ -16,7 +17,9 @@ import org.evoleq.compose.layout.ReadOnlyProperties
 import org.evoleq.compose.routing.navigate
 import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.device.data.mediaType
+import org.evoleq.kotlinx.date.days
 import org.evoleq.kotlinx.date.now
+import org.evoleq.kotlinx.date.today
 import org.evoleq.language.Locale
 import org.evoleq.language.extend
 import org.evoleq.math.*
@@ -25,6 +28,7 @@ import org.evoleq.optics.storage.Read
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.transform.times
+import org.evoleq.symbols.INFO
 import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.H3
@@ -1057,32 +1061,39 @@ fun SepaCollections(
                     HeaderWrapper {
                         Header(cardListStyles.header) {
                             HeaderCell("Bank Account") { width(20.percent) }
-                            HeaderCell("CollectionKey") { width(10.percent) }
+                            HeaderCell("Collection Key") { width(10.percent) }
                             HeaderCell("Mandate Ref Prefix") { width(15.percent) }
                             HeaderCell("Remittance Info") { width(20.percent) }
                             HeaderCell("Active") { width(5.percent) }
-                            HeaderCell("Seq. Type") { width(10.percent) }
-                            /*
-                        HeaderCell("L-Time"){ width(5.percent) }
-                        HeaderCell("C-Day"){ width(5.percent) }
+                            // HeaderCell("Seq. Type") { width(10.percent) }
 
-                         */
+                            HeaderCell(
+                                "L-Time",
+                                "$INFO Lead Time - Number of days before the collection day when the SEPA direct debit message must be submitted to the bank (typically 5-7 days for B2C, 1-2 days for B2B)"
+                            ) { width(5.percent) }
+
+                            // HeaderCell("C-Day", "$INFO Collection Day - "){ width(5.percent) }
+                            
                             // HeaderCell("Next Payment"){width(10.percent)}
-                            HeaderCell("Amount") { width(10.percent) }
+                            HeaderCell("Total Amount", "$INFO Total Amount - Cumulated amount of confirmed payments") { width(10.percent) }
                         }
                     }
 
                     ListItemsIndexed(sepaCollections.read()) { index, collection ->
 
                         val bankAccount = collectionToBankAccountMap.emit()[collection.sepaCollectionId]
-                        val latestExecutionDate =
-                            collection.sepaPayments.maxOfOrNull { payment -> payment.executionDate }
                         val cumulatedAmount = collection.sepaPayments
-                            .filter { it.executionDate == latestExecutionDate }
+                            .filter { it.status in listOf(PaymentExecutionStatus.CONFIRMED, PaymentExecutionStatus.PAYED_MANUALLY) }
                             .sumOf { payment -> payment.amount }
                             .round(2)
 
                         var uiState by remember { mutableStateOf(UIState()) }
+                        var manageCollectionPaymentsState by remember() {
+                            mutableStateOf<ManageCollectionPaymentsState>(
+                                ManageCollectionPaymentsState(today() + collection.leadTimesDays.days(), )
+                            )
+                        }
+
                         ListItemWrapper({ listItemWrapperStyle(index) }) {
                             DataWrapper(cardListStyles.dataWrapper) {
                                 TextCell(bankAccount?.iban?.value ?: "") { width(20.percent) }
@@ -1090,22 +1101,18 @@ fun SepaCollections(
                                 TextCell(collection.mandateReferencePrefix.value) { width(15.percent) }
                                 TextCell(collection.remittanceInformation.value) { width(20.percent) }
                                 TextCell(collection.isActive.checkIcon("--")) { width(5.percent) }
-                                TextCell(collection.sepaSequenceType.name) { width(10.percent) }
-                                /*
-                            NumberCell(collection.leadTimesDays){  width(5.percent)}
-                            NumberCell(collection.requestedCollectionDay?:-1){  width(5.percent)}
+                                // TextCell(collection.sepaSequenceType.name) { width(10.percent) }
 
-                             */
+                                DaysCell(collection.leadTimesDays){  width(5.percent)}
+                            
+                                // NumberCell(collection.requestedCollectionDay?:-1){  width(5.percent)}
+
+                            
                                 PriceCell(cumulatedAmount, Currency.EUR) { width(10.percent) }
                                 // TextCell(collection.){}
                             }
                             ActionsWrapper {
 
-                                var manageCollectionPaymentsState by remember() {
-                                    mutableStateOf<ManageCollectionPayments?>(
-                                        null
-                                    )
-                                }
                                 key(collection) {
                                     CreditCardButton(
                                         color = Color.black,
@@ -1124,48 +1131,12 @@ fun SepaCollections(
                                             sepaCollection = sepaCollections * Reader { list: List<SepaCollection> -> list.first { it.sepaCollectionId == collection.sepaCollectionId } },
                                             sepaMessages = Source { sepaMessages.read() },
                                             sepaPaymentLinks = Source { sepaPaymentLinks.read() },
-                                            executionDate = null,
-                                            setManageCollectionPayments = { data ->
+                                            manageCollectionPaymentsState = manageCollectionPaymentsState,
+                                            setManageCollectionPaymentsState = { data ->
                                                 manageCollectionPaymentsState = data
                                             }
                                         ) {
-                                            // Action is not necessary anymore
-                                            // TODO Consider Removal after test phase
-                                            /*
-                                        bankingApplicationModals.showDialogModal(
-                                            texts = dialogModalTexts("Are you sure you want to bulk edit share subscriptions?"),
-                                            device = deviceType,
-                                            symbol = { WarningSymbol(deviceType = deviceType.emit()) },
-                                            onCancel = {}
-                                        ) {
-
-
-                                            scope.launch {
-                                                when (val state = manageCollectionPaymentsState) {
-                                                    null -> Unit
-                                                    is ManageCollectionPayments.AttachPayments -> Unit
-                                                    /*bankingApplicationActions dispatch createSepaPaymentsForCollection(
-                                                        CreateSepaPaymentsForCollection(
-                                                            collection.sepaCollectionId,
-                                                            state.executionDate,
-                                                            state.remittanceInformation,
-                                                        ),
-                                                        collection.sepaCollectionId
-                                                    )*/
-
-                                                    is ManageCollectionPayments.CreateMessage -> bankingApplicationActions dispatch generateSepaMessageForCollection(
-                                                        GenerateSepaMessageForCollection(
-                                                            collection.sepaCollectionId,
-                                                            state.executionDate,
-                                                            listOf(),
-                                                            state.remittanceInformation
-                                                        )
-                                                    )
-                                                }
-                                            }
-                                        }
-                                         */
-
+                                            // Nothing to do here
                                         }
                                     }
                                 }
