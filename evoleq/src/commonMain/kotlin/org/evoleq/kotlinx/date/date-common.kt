@@ -25,3 +25,7 @@ fun LocalDateTime.toClientTime(clientZone: TimeZone): LocalDateTime = toInstant(
  * Assumes that given local time is expressed w.r.t. the clients time zone
  */
 fun LocalDateTime.toServerTime(clientZone: TimeZone): LocalDateTime = toInstant(clientZone).toLocalDateTime(TimeZone.UTC)
+
+fun LocalDate.plusDays(days: Int): LocalDate = this + DatePeriod(days = days)
+
+fun Int.days(): DatePeriod = DatePeriod(days = this)

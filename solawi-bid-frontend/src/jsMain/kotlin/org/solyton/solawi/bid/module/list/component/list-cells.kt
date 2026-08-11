@@ -102,17 +102,21 @@ fun HeaderCellWithActions(
 @Suppress("FunctionName")
 fun HeaderCell(
     text: Source<String>,
+    tooltip: Source<String>? = null,
     style: StyleScope.()->Unit = {}
-) = HeaderCell(text.emit(), style)
+) = HeaderCell(text.emit(),tooltip?.emit(), style)
 
 @Markup
 @Composable
 @Suppress("FunctionName")
 fun HeaderCell(
     text: String,
+    tooltip: String? = null,
     style: StyleScope.()->Unit = {}
 ){
-    Div({style {
+    Div({
+        if(tooltip != null) title(tooltip)
+        style {
         fontWeight("bold")
         textAlign("left")
         paddingLeft(5.px)
@@ -202,6 +206,23 @@ fun PriceCell(
     val price = number.toMoney(currency).format()
     Text(price)
 }
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun DaysCell(
+    days: Int,
+    style: StyleScope.()->Unit = { }
+) = Div({style {
+    textAlign("right")
+    paddingLeft(5.px)
+    paddingRight(5.px)
+    width(10.percent)
+    style()
+}}){
+    Text("${days}d")
+}
+
 
 @Markup
 @Composable
