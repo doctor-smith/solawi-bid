@@ -64,3 +64,13 @@ infix fun <S, T> Source<S>.x(other: Source<T>): Source<Pair<S, T>> = Source {
 
 operator fun <T> Source<List<T>>.contains(value: T): Boolean =
     emit().contains(value)
+
+@MathDsl
+@Suppress("FunctionName")
+fun <T> Try(source: Source<T>): Source<T?> = Source<T?> { try {source.emit()} catch (_: Exception) { null } }
+
+@MathDsl
+infix fun <T> Source<T?>.onNull(alt: ()->T): Source<T> = Source { emit() ?: alt() }
+
+@MathDsl
+infix fun <T> Source<T>.onError(alt: () -> T): Source<T> = Try(this) onNull alt
