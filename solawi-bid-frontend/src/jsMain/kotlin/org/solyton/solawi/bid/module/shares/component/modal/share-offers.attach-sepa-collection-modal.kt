@@ -16,7 +16,7 @@ import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.ElementScope
 import org.solyton.solawi.bid.module.banking.component.form.sepa.PartialSepaCollection
-import org.solyton.solawi.bid.module.banking.component.form.sepa.SepaCollectionForm
+import org.solyton.solawi.bid.module.banking.component.form.sepa.UpsertSepaCollectionForm
 import org.solyton.solawi.bid.module.banking.component.form.sepa.defaultSepaCollectionInputs
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.deviceData
@@ -53,7 +53,7 @@ fun AttachSepaCollectionModal(
     isOkButtonDisabled = isOkButtonDisabled
 ) {
     Wrap {
-        SepaCollectionForm(
+        UpsertSepaCollectionForm(
             inputs = Source{defaultSepaCollectionInputs()} ,
             bankAccounts =  bankAccounts,
             sepaCollection = sepaCollection,

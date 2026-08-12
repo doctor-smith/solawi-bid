@@ -22,7 +22,7 @@ fun updateSepaCollection(
 ): Action<BankingApplication, UpdateSepaCollection, ApiSepaCollection> = Action(
     name = UPDATE_SEPA_COLLECTION.suffixed(nameSuffix),
     reader = { _ -> data },
-    endPoint = UPDATE_SEPA_COLLECTION::class,
+    endPoint = UpdateSepaCollection::class,
     writer = (sepaModule * sepaCollections).update{
         p, q -> p.sepaCollectionId == q.sepaCollectionId
     } contraMap { collection: ApiSepaCollection -> collection.toDomainType()}

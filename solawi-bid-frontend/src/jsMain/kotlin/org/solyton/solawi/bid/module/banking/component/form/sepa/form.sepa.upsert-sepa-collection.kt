@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import org.evoleq.change.data.Change
 import org.evoleq.change.data.Keep
 import org.evoleq.compose.Markup
+import org.evoleq.compose.conditional.When
 import org.evoleq.compose.form.Form
 import org.evoleq.compose.form.field.Field
 import org.evoleq.compose.form.label.Label
@@ -20,6 +21,7 @@ import org.jetbrains.compose.web.dom.TextInput
 import org.solyton.solawi.bid.module.banking.data.*
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.sepa.SepaSequenceType
+import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
 import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
 import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
@@ -37,6 +39,9 @@ fun defaultSepaCollectionInputs(): Lang.Block = "inputs" texts {
     }
     "remittanceInformation" block {
         "title" colon  "Remittance Information"
+    }
+    "leadTimesDays" block {
+        "title" colon  "Lead Time (Days)"
     }
     "requestedCollectionDay" block {
         "title" colon "Requested Collection Day"
@@ -60,7 +65,51 @@ data class PartialSepaCollection(
     val isActive: Boolean? = null,
     val leadTimesDays: Int? = null,
     val purposeCode: PurposeCode? = null
-)
+) {
+
+    fun toSepaCollection(): SepaCollection? = try {
+        with(this) {
+            SepaCollection(
+                sepaCollectionId!!,
+                creditorIdentifierId!!,
+                creditorBankAccountId!!,
+                mandateReferencePrefix!!,
+                collectionKey!!,
+                remittanceInformation!!,
+                sepaSequenceType!!,
+                localInstrument,
+                chargeBearer!!,
+                requestedCollectionDay,
+                leadTimesDays!!,
+                purposeCode,
+                isActive!!,
+            )
+        }
+    } catch (_: Exception) {null}
+
+    companion object {
+        fun from(collection: SepaCollection): PartialSepaCollection {
+            return with(collection) {
+                PartialSepaCollection(
+                    sepaCollectionId,
+                    creditorBankAccountId,
+                    creditorIdentifierId,
+                    mandateReferencePrefix,
+                    collectionKey,
+                    remittanceInformation,
+                    sepaSequenceType,
+                    localInstrument,
+                    chargeBearer,
+                    requestedCollectionDay,
+                    isActive,
+                    leadTimesDays,
+                    purposeCode
+                )
+            }
+        }
+
+    }
+}
 
 data class SepaCollectionChange(
     val sepaCollectionId: SepaCollectionId?,
@@ -78,11 +127,19 @@ data class SepaCollectionChange(
     val requestedCollectionDay: Change<Int>,
 )
 
+data class FormConfiguration(
+    // Show only when automated bank-account management is enabled (not present yet)
+    val showRequestedCollectionDay: Boolean = false,
+    val showLeadTimesDays: Boolean = true,
+    val showLocalInstrument: Boolean = false,
+)
+
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun SepaCollectionForm(
+fun UpsertSepaCollectionForm(
     inputs: Source<Lang.Block> = Source{defaultSepaCollectionInputs()},
+    configuration: FormConfiguration = FormConfiguration(),
     bankAccounts: List<BankAccount>,
     sepaCollection: PartialSepaCollection?,
     setSepaCollection: (PartialSepaCollection) -> Unit
@@ -104,144 +161,20 @@ fun SepaCollectionForm(
         val bankAccount = sepaCollection?.let{ sC -> bankAccounts.firstOrNull { it.bankAccountId == sC.creditorBankAccountId } }
         var bankAccountState by remember{mutableStateOf<BankAccount?>( bankAccount )}
 
-        Field(fieldDesktopStyle) {
-            Label(
-                (inputs * subComp("collectionKey") * title).emit(),
-                id = "collection-key-label",
-                labelStyle = formLabelDesktopStyle
-            )
-            TextInput(collectionKeyState?.value?: "") {
-                id("collection-key-input")
-                style { textInputDesktopStyle() }
-                onInput {
-                    val newValue = SepaCollectionKey(it.value)
-                    update( SepaCollectionChange(
-                        sepaCollectionId = sepaCollection?.sepaCollectionId,
-                        creditorIdentifierId = Keep(sepaCollection?.creditorIdentifierId),
-                        creditorBankAccountId = Keep(bankAccountState?.bankAccountId),
-                        mandateReferencePrefix = Keep(mandateReferencePrefixState),
-                        collectionKey = Change(collectionKeyState, newValue) {
-                            collectionKeyState = newValue
-                        },
-                        remittanceInformation = Keep(remittanceInformationState),
-                        requestedCollectionDay = Keep(requestedCollectionDayState),
-                        sepaSequenceType = Keep(sepaCollection?.sepaSequenceType),
-                        localInstrument = Keep(sepaCollection?.localInstrument),
-                        chargeBearer = Keep(sepaCollection?.chargeBearer),
-                        isActive = Keep(sepaCollection?.isActive)
-                    ) ){
-                            value -> setSepaCollection(value)
-                    }
-                }
-            }
+        var leadTimesDaysState by remember{
+            mutableStateOf<Int?>(sepaCollection?.leadTimesDays?: 5)
         }
 
 
-        Field(fieldDesktopStyle) {
-            Label(
-                (inputs * subComp("mandateReferencePrefix") * title).emit(),
-                id = "mandate-reference-prefix",
-                labelStyle = formLabelDesktopStyle
-            )
-            TextInput(mandateReferencePrefixState?.value?: "") {
-                id("mandate-reference-prefix")
-                style { textInputDesktopStyle() }
-                onInput {
-                    val newValue = MandateReferencePrefix(it.value)
-                    update( SepaCollectionChange(
-                        sepaCollectionId = sepaCollection?.sepaCollectionId,
-                        creditorIdentifierId = Keep(sepaCollection?.creditorIdentifierId),
-                        creditorBankAccountId = Keep(bankAccountState?.bankAccountId),
-                        mandateReferencePrefix = Change(mandateReferencePrefixState, newValue) {
-                            mandateReferencePrefixState = newValue
-                        }  ,
-                        collectionKey = Keep(collectionKeyState),
-                        remittanceInformation = Keep(remittanceInformationState),
-                        requestedCollectionDay = Keep(requestedCollectionDayState),
-                        sepaSequenceType = Keep(sepaCollection?.sepaSequenceType),
-                        localInstrument = Keep(sepaCollection?.localInstrument),
-                        chargeBearer = Keep(sepaCollection?.chargeBearer),
-                        isActive = Keep(sepaCollection?.isActive)
-                    ) ){
-                        value -> setSepaCollection(value)
-                    }
-                }
-            }
-        }
-
-
-        Field(fieldDesktopStyle) {
-            Label(
-                (inputs * subComp("remittanceInformation") * title).emit(),
-                id = "remittance-information",
-                labelStyle = formLabelDesktopStyle
-            )
-            TextInput(remittanceInformationState?.value?: "") {
-                id("remittance-information")
-                style { textInputDesktopStyle() }
-                onInput {
-                    val newValue = RemittanceInformation(it.value)
-                    update( SepaCollectionChange(
-                        sepaCollectionId = sepaCollection?.sepaCollectionId,
-                        creditorIdentifierId = Keep(sepaCollection?.creditorIdentifierId),
-                        creditorBankAccountId = Keep(bankAccountState?.bankAccountId),
-                        mandateReferencePrefix = Keep(mandateReferencePrefixState),
-                        remittanceInformation = Change(remittanceInformationState, newValue) {
-                            remittanceInformationState = newValue
-                        },
-                        collectionKey = Keep(collectionKeyState),
-                        requestedCollectionDay = Keep(requestedCollectionDayState),
-                        sepaSequenceType = Keep(sepaCollection?.sepaSequenceType),
-                        localInstrument = Keep(sepaCollection?.localInstrument),
-                        chargeBearer = Keep(sepaCollection?.chargeBearer),
-                        isActive = Keep(sepaCollection?.isActive)
-                    ) ){
-                        value -> setSepaCollection(value)
-                    }
-                }
-            }
-        }
-
-
-        Field(fieldDesktopStyle) {
-            Label(
-                (inputs * subComp("requestedCollectionDay") * title).emit(),
-                id = "requested-collection-day",
-                labelStyle = formLabelDesktopStyle
-            )
-            TextInput(requestedCollectionDayState?.toString()?: "") {
-                id("requested-collection-day")
-                style { textInputDesktopStyle() }
-                onInput {
-                    val newValue = it.value.toIntOrNull()
-                    update( SepaCollectionChange(
-                        sepaCollectionId = sepaCollection?.sepaCollectionId,
-                        creditorIdentifierId = Keep(sepaCollection?.creditorIdentifierId),
-                        creditorBankAccountId = Keep(bankAccountState?.bankAccountId),
-                        mandateReferencePrefix = Keep(mandateReferencePrefixState),
-                        remittanceInformation = Keep(remittanceInformationState),
-                        requestedCollectionDay = Change(requestedCollectionDayState, newValue) {
-                            requestedCollectionDayState = newValue
-                        },
-                        collectionKey = Keep(collectionKeyState),
-                        sepaSequenceType = Keep(sepaCollection?.sepaSequenceType),
-                        localInstrument = Keep(sepaCollection?.localInstrument),
-                        chargeBearer = Keep(sepaCollection?.chargeBearer),
-                        isActive = Keep(sepaCollection?.isActive)
-                    ) ){
-                            value -> setSepaCollection(value)
-                    }
-                }
-            }
-        }
         Field(fieldDesktopStyle) {
             Label(
                 (inputs * subComp("bankAccount") * title).emit(),
                 id = "bank-account",
-                labelStyle = formLabelDesktopStyle
+                labelStyle = formLabelDesktopStyle,
+                isRequired = true
             )
             val bankAccountOptions = bankAccounts.associateBy {
-                bankAccount -> "${bankAccount.bankAccountHolder} / ${bankAccount.description}"
+                    bankAccount -> "${bankAccount.bankAccountHolder} / ${bankAccount.description}"
             }
 
             val dropdownStyles = DropdownStyles().modifyContainerStyle { width(100.percent) }
@@ -261,12 +194,192 @@ fun SepaCollectionForm(
                     mandateReferencePrefix = Keep(mandateReferencePrefixState),
                     remittanceInformation = Keep(remittanceInformationState),
                     requestedCollectionDay = Keep(requestedCollectionDayState),
+                    leadTimesDays = Keep(leadTimesDaysState),
                     sepaSequenceType = Keep(sepaCollection?.sepaSequenceType),
                     localInstrument = Keep(sepaCollection?.localInstrument),
                     chargeBearer = Keep(sepaCollection?.chargeBearer),
                     isActive = Keep(sepaCollection?.isActive)
                 ) ){
                         value -> setSepaCollection(value)
+                }
+            }
+        }
+
+        Field(fieldDesktopStyle) {
+            Label(
+                (inputs * subComp("collectionKey") * title).emit(),
+                id = "collection-key-label",
+                labelStyle = formLabelDesktopStyle,
+                isRequired = true
+            )
+            TextInput(collectionKeyState?.value?: "") {
+                id("collection-key-input")
+                style { textInputDesktopStyle() }
+                onInput {
+                    val newValue = SepaCollectionKey(it.value)
+                    update( SepaCollectionChange(
+                        sepaCollectionId = sepaCollection?.sepaCollectionId,
+                        creditorIdentifierId = Keep(sepaCollection?.creditorIdentifierId),
+                        creditorBankAccountId = Keep(bankAccountState?.bankAccountId),
+                        mandateReferencePrefix = Keep(mandateReferencePrefixState),
+                        collectionKey = Change(collectionKeyState, newValue) {
+                            collectionKeyState = newValue
+                        },
+                        remittanceInformation = Keep(remittanceInformationState),
+                        leadTimesDays = Keep(leadTimesDaysState),
+                        requestedCollectionDay = Keep(requestedCollectionDayState),
+                        sepaSequenceType = Keep(sepaCollection?.sepaSequenceType),
+                        localInstrument = Keep(sepaCollection?.localInstrument),
+                        chargeBearer = Keep(sepaCollection?.chargeBearer),
+                        isActive = Keep(sepaCollection?.isActive)
+                    ) ){
+                            value -> setSepaCollection(value)
+                    }
+                }
+            }
+        }
+
+
+        Field(fieldDesktopStyle) {
+            Label(
+                (inputs * subComp("mandateReferencePrefix") * title).emit(),
+                id = "mandate-reference-prefix",
+                labelStyle = formLabelDesktopStyle,
+                isRequired = true
+            )
+            TextInput(mandateReferencePrefixState?.value?: "") {
+                id("mandate-reference-prefix")
+                style { textInputDesktopStyle() }
+                onInput {
+                    val newValue = MandateReferencePrefix(it.value)
+                    update( SepaCollectionChange(
+                        sepaCollectionId = sepaCollection?.sepaCollectionId,
+                        creditorIdentifierId = Keep(sepaCollection?.creditorIdentifierId),
+                        creditorBankAccountId = Keep(bankAccountState?.bankAccountId),
+                        mandateReferencePrefix = Change(mandateReferencePrefixState, newValue) {
+                            mandateReferencePrefixState = newValue
+                        }  ,
+                        collectionKey = Keep(collectionKeyState),
+                        remittanceInformation = Keep(remittanceInformationState),
+                        requestedCollectionDay = Keep(requestedCollectionDayState),
+                        leadTimesDays = Keep(leadTimesDaysState),
+                        sepaSequenceType = Keep(sepaCollection?.sepaSequenceType),
+                        localInstrument = Keep(sepaCollection?.localInstrument),
+                        chargeBearer = Keep(sepaCollection?.chargeBearer),
+                        isActive = Keep(sepaCollection?.isActive)
+                    ) ){
+                        value -> setSepaCollection(value)
+                    }
+                }
+            }
+        }
+
+
+        Field(fieldDesktopStyle) {
+            Label(
+                (inputs * subComp("remittanceInformation") * title).emit(),
+                id = "remittance-information",
+                labelStyle = formLabelDesktopStyle,
+                isRequired = true
+            )
+            TextInput(remittanceInformationState?.value?: "") {
+                id("remittance-information")
+                style { textInputDesktopStyle() }
+                onInput {
+                    val newValue = RemittanceInformation(it.value)
+                    update( SepaCollectionChange(
+                        sepaCollectionId = sepaCollection?.sepaCollectionId,
+                        creditorIdentifierId = Keep(sepaCollection?.creditorIdentifierId),
+                        creditorBankAccountId = Keep(bankAccountState?.bankAccountId),
+                        mandateReferencePrefix = Keep(mandateReferencePrefixState),
+                        remittanceInformation = Change(remittanceInformationState, newValue) {
+                            remittanceInformationState = newValue
+                        },
+                        collectionKey = Keep(collectionKeyState),
+                        requestedCollectionDay = Keep(requestedCollectionDayState),
+                        leadTimesDays = Keep(leadTimesDaysState),
+                        sepaSequenceType = Keep(sepaCollection?.sepaSequenceType),
+                        localInstrument = Keep(sepaCollection?.localInstrument),
+                        chargeBearer = Keep(sepaCollection?.chargeBearer),
+                        isActive = Keep(sepaCollection?.isActive)
+                    ) ){
+                        value -> setSepaCollection(value)
+                    }
+                }
+            }
+        }
+
+        When(configuration.showLeadTimesDays) {
+            Field(fieldDesktopStyle) {
+                Label(
+                    (inputs * subComp("leadTimesDays") * title).emit(),
+                    id = "label.lead-times-days",
+                    labelStyle = formLabelDesktopStyle,
+                    isRequired = true
+                )
+                TextInput(leadTimesDaysState?.toString() ?: "") {
+                    id("input.lead-times-days")
+                    style { textInputDesktopStyle() }
+                    onInput {
+                        val newValue = it.value.toIntOrNull()
+                        update(
+                            SepaCollectionChange(
+                                sepaCollectionId = sepaCollection?.sepaCollectionId,
+                                creditorIdentifierId = Keep(sepaCollection?.creditorIdentifierId),
+                                creditorBankAccountId = Keep(bankAccountState?.bankAccountId),
+                                mandateReferencePrefix = Keep(mandateReferencePrefixState),
+                                remittanceInformation = Keep(remittanceInformationState),
+                                requestedCollectionDay = Keep(requestedCollectionDayState),
+                                leadTimesDays = Change(leadTimesDaysState, newValue) {
+                                    leadTimesDaysState = newValue
+                                },
+                                collectionKey = Keep(collectionKeyState),
+                                sepaSequenceType = Keep(sepaCollection?.sepaSequenceType),
+                                localInstrument = Keep(sepaCollection?.localInstrument),
+                                chargeBearer = Keep(sepaCollection?.chargeBearer),
+                                isActive = Keep(sepaCollection?.isActive)
+                            )
+                        ) { value ->
+                            setSepaCollection(value)
+                        }
+                    }
+                }
+            }
+        }
+
+        When(configuration.showRequestedCollectionDay) {
+            Field(fieldDesktopStyle) {
+                Label(
+                    (inputs * subComp("requestedCollectionDay") * title).emit(),
+                    id = "requested-collection-day",
+                    labelStyle = formLabelDesktopStyle
+                )
+                TextInput(requestedCollectionDayState?.toString() ?: "") {
+                    id("requested-collection-day")
+                    style { textInputDesktopStyle() }
+                    onInput {
+                        val newValue = it.value.toIntOrNull()
+                        update(
+                            SepaCollectionChange(
+                                sepaCollectionId = sepaCollection?.sepaCollectionId,
+                                creditorIdentifierId = Keep(sepaCollection?.creditorIdentifierId),
+                                creditorBankAccountId = Keep(bankAccountState?.bankAccountId),
+                                mandateReferencePrefix = Keep(mandateReferencePrefixState),
+                                remittanceInformation = Keep(remittanceInformationState),
+                                requestedCollectionDay = Change(requestedCollectionDayState, newValue) {
+                                    requestedCollectionDayState = newValue
+                                },
+                                leadTimesDays = Keep(leadTimesDaysState),
+                                collectionKey = Keep(collectionKeyState),
+                                sepaSequenceType = Keep(sepaCollection?.sepaSequenceType),
+                                localInstrument = Keep(sepaCollection?.localInstrument),
+                                chargeBearer = Keep(sepaCollection?.chargeBearer),
+                                isActive = Keep(sepaCollection?.isActive)
+                            )
+                        ) { value ->
+                            setSepaCollection(value)
+                        }
+                    }
                 }
             }
         }
@@ -302,5 +415,6 @@ fun update(change: SepaCollectionChange, onChange: (PartialSepaCollection)-> Uni
         collectionKey.onChange()
         remittanceInformation.onChange()
         requestedCollectionDay.onChange()
+        leadTimesDays.onChange()
     }
 }

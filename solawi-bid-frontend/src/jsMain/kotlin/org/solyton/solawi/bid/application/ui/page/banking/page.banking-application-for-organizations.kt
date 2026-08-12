@@ -47,10 +47,13 @@ import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyl
 import org.solyton.solawi.bid.module.banking.action.*
 import org.solyton.solawi.bid.module.banking.action.sepa.*
 import org.solyton.solawi.bid.module.banking.component.form.defaultBankAccountInputs
+import org.solyton.solawi.bid.module.banking.component.form.sepa.FormConfiguration
+import org.solyton.solawi.bid.module.banking.component.form.sepa.PartialSepaCollection
 import org.solyton.solawi.bid.module.banking.component.modal.*
 import org.solyton.solawi.bid.module.banking.component.modal.sepa.*
 import org.solyton.solawi.bid.module.banking.data.*
 import org.solyton.solawi.bid.module.banking.data.api.ImportBankAccounts
+import org.solyton.solawi.bid.module.banking.data.api.UpdateSepaCollection
 import org.solyton.solawi.bid.module.banking.data.api.UpdateSepaMandate
 import org.solyton.solawi.bid.module.banking.data.application.*
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
@@ -1026,6 +1029,7 @@ fun FiscalYears(
 
 
 @Composable
+@Suppress("CognitiveComplexMethod")
 fun SepaCollections(
     bankingApplicationStorage: Storage<BankingApplication>,
     providerId: ProviderId,
@@ -1191,14 +1195,53 @@ fun SepaCollections(
                                         }
                                     }
                                 }
+                                var partialSepaCollectionState by remember { mutableStateOf(PartialSepaCollection.from(collection)) }
                                 EditButton(
                                     color = Color.black,
                                     bgColor = Color.white,
                                     texts = actions * subComp("edit") * tooltip,
                                     deviceType = deviceType,
-                                    isDisabled = true
+                                    isDisabled = false
                                 ) {
 
+                                    bankingApplicationModals.showUpsertSepaCollectionModal(
+                                        bankingApplicationStorage,
+                                        texts = defaultUpsertSepaCollectionModalTexts,
+                                        device = deviceType,
+                                        configuration = FormConfiguration(),
+                                        creditorBankAccounts = creditorBankAccounts.read(),
+                                        partialSepaCollection = partialSepaCollectionState,
+                                        setPartialSepaCollection = {partialSepaCollectionState = it}
+                                    ) {
+
+
+                                        val collectionData = partialSepaCollectionState.toSepaCollection()
+                                        if (collectionData != null) {
+                                            scope.launch {
+                                                bankingApplicationActions dispatch updateSepaCollection(
+                                                    with(
+                                                        collectionData
+                                                    ) {
+                                                        UpdateSepaCollection(
+                                                            sepaCollectionId,
+                                                            creditorIdentifierId,
+                                                            creditorBankAccountId,
+                                                            mandateReferencePrefix,
+                                                            collectionKey,
+                                                            remittanceInformation,
+                                                            sepaSequenceType.toApiType(),
+                                                            localInstrument,
+                                                            chargeBearer,
+                                                            requestedCollectionDay,
+                                                            leadTimesDays,
+                                                            purposeCode,
+                                                            isActive,
+                                                        )
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
