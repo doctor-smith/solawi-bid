@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.application.pipeline
 
 import kotlinx.serialization.builtins.serializer
+import org.evoleq.iql.data.iqlSerializers
 import org.evoleq.ktorx.client.Parameters
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
@@ -408,5 +409,8 @@ fun installSerializers() {
         add<MergeSepaMessages>(MergeSepaMessages.serializer())
         add<DownloadSepaMessage>(DownloadSepaMessage.serializer())
         // Sepa response from bank
+
+
+        putAll(iqlSerializers())
     }
 }
