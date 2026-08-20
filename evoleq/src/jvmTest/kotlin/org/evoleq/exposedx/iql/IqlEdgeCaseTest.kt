@@ -11,6 +11,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
+@Suppress("LargeClass")
 class IqlEdgeCaseTest {
 
     // -------------------------------------------------------------------------
@@ -736,6 +737,48 @@ class IqlEdgeCaseTest {
                 )
 
             assertFailsWith<Exception> {
+                ExposedCompiler(registry())
+                    .compile(
+                        filter,
+                        Users
+                    )
+            }
+        }
+
+
+    @Test
+    fun `unknown field is rejected by compiler`() =
+        runSimpleH2Test(
+            Users
+        ) {
+
+            val filter =
+                eq(
+                    "User.doesNotExist",
+                    "Alice"
+                )
+
+            assertFailsWith<IllegalStateException> {
+                ExposedCompiler(registry())
+                    .compile(
+                        filter,
+                        Users
+                    )
+            }
+        }
+
+
+    @Test
+    fun `field without entity is rejected by compiler`() =
+        runSimpleH2Test(Users) {
+
+            val filter =
+                eq(
+                    "name",
+                    "Alice"
+                )
+
+            assertFailsWith<IllegalArgumentException> {
                 ExposedCompiler(registry())
                     .compile(
                         filter,
