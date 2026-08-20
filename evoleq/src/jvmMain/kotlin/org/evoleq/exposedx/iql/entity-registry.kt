@@ -1,26 +1,44 @@
 package org.evoleq.exposedx.iql
 
+import kotlinx.serialization.json.*
 import org.evoleq.iql.data.EntityType
 import org.evoleq.iql.data.FieldInfo
+import org.evoleq.iql.data.FieldType
 import org.evoleq.iql.data.RelationInfo
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Table
 
+typealias ValueTranslator = (JsonElement) -> Any
 
 /**
  * Runtime registry.
  *
  * EntityRegistry contains serializable IQL metadata.
- * Registry additionally binds that metadata to actual Exposed Tables/Columns.
+ * Registry additionally binds that metadata to actual
+ * Exposed Tables/Columns and backend-specific field definitions.
  */
+@Suppress("TooManyFunctions")
 class Registry {
 
-    private val entities = mutableMapOf<String, EntityType>()
+    private val entities =
+        mutableMapOf<String, EntityType>()
 
-    private val tables = mutableMapOf<String, Table>()
+    private val tables =
+        mutableMapOf<String, Table>()
 
     private val columns =
         mutableMapOf<String, MutableMap<String, Column<*>>>()
+
+    private val fieldDefinitions =
+        mutableMapOf<FieldType, FieldDefinition>()
+
+    init {
+        registerDefaultFieldDefinitions()
+    }
+
+    // -------------------------------------------------------------------------
+    // Entities
+    // -------------------------------------------------------------------------
 
     fun registerEntity(
         entity: EntityType,
@@ -52,7 +70,13 @@ class Registry {
 
     fun getEntityTable(name: String): Table =
         tables[name]
-            ?: error("No Exposed table registered for entity: $name")
+            ?: error(
+                "No Exposed table registered for entity: $name"
+            )
+
+    // -------------------------------------------------------------------------
+    // Fields
+    // -------------------------------------------------------------------------
 
     fun getField(
         entityName: String,
@@ -73,6 +97,10 @@ class Registry {
             ?: error(
                 "No Exposed column registered for '$entityName.$fieldName'"
             )
+
+    // -------------------------------------------------------------------------
+    // Relations
+    // -------------------------------------------------------------------------
 
     fun getRelation(
         entityName: String,
@@ -101,4 +129,75 @@ class Registry {
             ?.relations
             ?.containsKey(relationName)
             ?: false
+
+    // -------------------------------------------------------------------------
+    // Field definitions / value translators
+    // -------------------------------------------------------------------------
+
+    fun registerFieldDefinition(
+        definition: FieldDefinition
+    ) {
+        fieldDefinitions[definition.type] = definition
+    }
+
+    fun lookup(
+        type: FieldType
+    ): FieldDefinition =
+        fieldDefinitions[type]
+            ?: error(
+                "No field definition registered for $type"
+            )
+
+    fun translator(
+        type: FieldType
+    ): ValueTranslator =
+        lookup(type)::translate
+
+    private fun registerDefaultFieldDefinitions() {
+
+        registerFieldDefinition(
+            PrimitiveFieldDefinition(
+                type = FieldType.STRING,
+                translateValue = {
+                    it.jsonPrimitive.content
+                }
+            )
+        )
+
+        registerFieldDefinition(
+            PrimitiveFieldDefinition(
+                type = FieldType.INTEGER,
+                translateValue = {
+                    it.jsonPrimitive.int
+                }
+            )
+        )
+
+        registerFieldDefinition(
+            PrimitiveFieldDefinition(
+                type = FieldType.LONG,
+                translateValue = {
+                    it.jsonPrimitive.long
+                }
+            )
+        )
+
+        registerFieldDefinition(
+            PrimitiveFieldDefinition(
+                type = FieldType.DOUBLE,
+                translateValue = {
+                    it.jsonPrimitive.double
+                }
+            )
+        )
+
+        registerFieldDefinition(
+            PrimitiveFieldDefinition(
+                type = FieldType.BOOLEAN,
+                translateValue = {
+                    it.jsonPrimitive.boolean
+                }
+            )
+        )
+    }
 }

@@ -1,6 +1,5 @@
 package org.evoleq.language
 
-import org.evoleq.language.get
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -164,11 +163,9 @@ class ParserTest {
 
         // Test component retrieval at various depths
         val level3Component = lang.component("level1.level2.level3")
-        assertTrue { level3Component is Lang.Block }
         assertEquals("level3", (level3Component as Lang.Block).key)
 
         val level6Component = lang.component("level1.level2.level3.level4.level5.level6")
-        assertTrue { level6Component is Lang.Block }
         assertEquals("level6", (level6Component as Lang.Block).key)
     }
 
