@@ -11,16 +11,12 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.module.banking.repository.UUID_ONE
 import org.solyton.solawi.bid.module.banking.repository.createFiscalYear
-import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.shares.data.internal.ChangeReason
 import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
 import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.shares.exception.ShareStatusException
 import org.solyton.solawi.bid.module.shares.processes.ShareManagementProcesses
 import org.solyton.solawi.bid.module.shares.schema.*
-import org.solyton.solawi.bid.module.shares.schema.ShareOfferEntity
-import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionEntity
-import org.solyton.solawi.bid.module.shares.schema.ShareTypeEntity
 import org.solyton.solawi.bid.module.system.repository.createSystemProcess
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfileEntity

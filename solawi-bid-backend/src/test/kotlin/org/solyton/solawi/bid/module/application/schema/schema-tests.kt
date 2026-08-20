@@ -4,10 +4,8 @@ import org.evoleq.exposedx.test.runSimpleH2Test
 import org.evoleq.uuid.UUID_ZERO
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Schema
-import org.solyton.solawi.bid.module.application.schema.ApplicationEntity
-import org.solyton.solawi.bid.module.application.schema.ModuleEntity
-import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.permission.repository.createRootContext
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import kotlin.test.assertEquals
 
 class ApplicationSchemaTests {

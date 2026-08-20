@@ -14,15 +14,8 @@ import org.solyton.solawi.bid.module.banking.repository.createFiscalYear
 import org.solyton.solawi.bid.module.shares.data.internal.ChangeReason
 import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
 import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
-import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.shares.exception.ShareStatusException
-import org.solyton.solawi.bid.module.shares.schema.PricingType
-import org.solyton.solawi.bid.module.shares.schema.ShareOfferEntity
-import org.solyton.solawi.bid.module.shares.schema.ShareSubscription
-import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionEntity
-import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionStatusHistory
-import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionStatusHistoryEntry
-import org.solyton.solawi.bid.module.shares.schema.ShareTypeEntity
+import org.solyton.solawi.bid.module.shares.schema.*
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
 import org.solyton.solawi.bid.module.user.schema.UserStatus
