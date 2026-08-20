@@ -49,24 +49,29 @@ class FilterBuilder {
     // Logical operators
     // -------------------------------------------------------------------------
 
+    /**
+     * Returns the expressions currently collected by this builder.
+     *
+     * Used by explicit logical combinators such as AND and OR.
+     */
+    internal fun buildFilters(): List<Filter> =
+        filters.toList()
+
     fun and(
         block: FilterBuilder.() -> Unit
     ) {
         val nested =
             FilterBuilder()
                 .apply(block)
-                .build()
+
+        require(nested.filters.isNotEmpty()) {
+            "AND requires at least one expression"
+        }
 
         add(
-            when (nested) {
-                is AndFilter ->
-                    nested
-
-                else ->
-                    AndFilter(
-                        listOf(nested)
-                    )
-            }
+            AndFilter(
+                nested.buildFilters()
+            )
         )
     }
 
@@ -76,18 +81,15 @@ class FilterBuilder {
         val nested =
             FilterBuilder()
                 .apply(block)
-                .build()
+
+        require(nested.filters.isNotEmpty()) {
+            "OR requires at least one expression"
+        }
 
         add(
-            when (nested) {
-                is OrFilter ->
-                    nested
-
-                else ->
-                    OrFilter(
-                        listOf(nested)
-                    )
-            }
+            OrFilter(
+                nested.buildFilters()
+            )
         )
     }
 
@@ -97,10 +99,10 @@ class FilterBuilder {
         val nested =
             FilterBuilder()
                 .apply(block)
-                .build()
+
 
         add(
-            NotFilter(nested)
+            NotFilter(nested.build())
         )
     }
 
@@ -174,16 +176,11 @@ class FilterBuilder {
         }
 
         return when (filters.size) {
-
-            1 ->
-                filters.first()
-
-            else ->
-                AndFilter(
-                    filters.toList()
-                )
+            1 -> filters.first()
+            else -> AndFilter( filters.toList()  )
         }
     }
+
 }
 
 /**
