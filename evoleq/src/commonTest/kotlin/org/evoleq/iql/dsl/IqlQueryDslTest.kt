@@ -6,6 +6,7 @@ import org.evoleq.iql.data.Query
 import org.evoleq.iql.data.configure
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class QuerySerializationTest {
 
@@ -48,5 +49,14 @@ class QuerySerializationTest {
             query,
             restored
         )
+    }
+
+    @Test
+    fun `empty where is rejected`() {
+        assertFailsWith<IllegalArgumentException> {
+            query {
+                where { }
+            }
+        }
     }
 }

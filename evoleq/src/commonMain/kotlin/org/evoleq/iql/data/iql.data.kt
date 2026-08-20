@@ -140,7 +140,27 @@ data class RelationInfo(
     val type: RelationType,
     val targetEntity: String,
     val joinColumns: List<String>,
-    val inverseJoinColumn: String?
+    val inverseJoinColumn: String?,
+    /**
+     * Target-side columns corresponding to joinColumns.
+     *
+     * If omitted, inverseJoinColumn is used for the
+     * backwards-compatible single-column case.
+     */
+    val inverseJoinColumns: List<String> = emptyList(),
+
+    val mapping: MappingInfo? = null,
+)
+
+@Serializable
+data class MappingInfo(
+    val table: String,
+
+    val sourceColumns: List<String>,
+    val mappingSourceColumns: List<String>,
+
+    val mappingTargetColumns: List<String>,
+    val targetColumns: List<String>
 )
 
 @Serializable
