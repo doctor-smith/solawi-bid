@@ -13,6 +13,11 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.lessEq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.neq
 
+enum class FieldNameStrategy {
+    EXACT,
+    SNAKE_CASE
+}
+
 
 interface FieldDefinition {
 
