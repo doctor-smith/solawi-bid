@@ -1,16 +1,9 @@
 package org.evoleq.exposedx.iql
 
-import kotlinx.serialization.json.*
 import org.evoleq.iql.data.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.greater
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.greaterEq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.lessEq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.neq
 
 @Suppress("TooManyFunctions")
 class ExposedCompiler(
@@ -19,7 +12,7 @@ class ExposedCompiler(
 
     fun compile(
         filter: Filter,
-        table: Table
+        table: org.jetbrains.exposed.sql.Table
     ): Op<Boolean> =
         when (filter) {
 
@@ -53,7 +46,7 @@ class ExposedCompiler(
 
     private fun compileAnd(
         filter: AndFilter,
-        table: Table
+        table: org.jetbrains.exposed.sql.Table
     ): Op<Boolean> {
 
         require(filter.filters.isNotEmpty()) {
@@ -67,7 +60,7 @@ class ExposedCompiler(
 
     private fun compileOr(
         filter: OrFilter,
-        table: Table
+        table: org.jetbrains.exposed.sql.Table
     ): Op<Boolean> {
 
         require(filter.filters.isNotEmpty()) {
@@ -87,7 +80,8 @@ class ExposedCompiler(
         filter: ComparisonFilter
     ): Op<Boolean> {
 
-        val resolved = resolveField(filter.field)
+        val resolved =
+            resolveField(filter.field)
 
         val column =
             registry.getColumn(
@@ -95,268 +89,13 @@ class ExposedCompiler(
                 resolved.field
             )
 
-        return when (resolved.info.type) {
-
-            FieldType.STRING ->
-                compileStringComparison(
-                    column,
-                    filter.operator,
-                    filter.value
-                )
-
-            FieldType.INTEGER ->
-                compileIntComparison(
-                    column,
-                    filter.operator,
-                    filter.value
-                )
-
-            FieldType.LONG ->
-                compileLongComparison(
-                    column,
-                    filter.operator,
-                    filter.value
-                )
-
-            FieldType.DOUBLE ->
-                compileDoubleComparison(
-                    column,
-                    filter.operator,
-                    filter.value
-                )
-
-            FieldType.BOOLEAN ->
-                compileBooleanComparison(
-                    column,
-                    filter.operator,
-                    filter.value
-                )
-
-            FieldType.UUID,
-            FieldType.DATE,
-            FieldType.DATETIME ->
-                throw IllegalArgumentException(
-                    "Comparison for ${resolved.info.type} is not supported"
-                )
-        }
-    }
-
-    private fun compileStringComparison(
-        column: Column<*>,
-        operator: Operator,
-        value: JsonElement
-    ): Op<Boolean> {
-
-        val typedValue =
-            value.jsonPrimitive.content
-
-        return when (operator) {
-
-            Operator.EQ,
-            Operator.NE ->
-                typedComparison(
-                    column,
-                    operator,
-                    typedValue
-                )
-
-            Operator.GT,
-            Operator.GTE,
-            Operator.LT,
-            Operator.LTE ->
-                typedOrderingComparison(
-                    column,
-                    operator,
-                    typedValue
-                )
-        }
-    }
-
-    private fun compileIntComparison(
-        column: Column<*>,
-        operator: Operator,
-        value: JsonElement
-    ): Op<Boolean> {
-
-        val typedValue =
-            value.jsonPrimitive.int
-
-        return when (operator) {
-
-            Operator.EQ,
-            Operator.NE ->
-                typedComparison(
-                    column,
-                    operator,
-                    typedValue
-                )
-
-            Operator.GT,
-            Operator.GTE,
-            Operator.LT,
-            Operator.LTE ->
-                typedOrderingComparison(
-                    column,
-                    operator,
-                    typedValue
-                )
-        }
-    }
-
-    private fun compileLongComparison(
-        column: Column<*>,
-        operator: Operator,
-        value: JsonElement
-    ): Op<Boolean> {
-
-        val typedValue =
-            value.jsonPrimitive.long
-
-        return when (operator) {
-
-            Operator.EQ,
-            Operator.NE ->
-                typedComparison(
-                    column,
-                    operator,
-                    typedValue
-                )
-
-            Operator.GT,
-            Operator.GTE,
-            Operator.LT,
-            Operator.LTE ->
-                typedOrderingComparison(
-                    column,
-                    operator,
-                    typedValue
-                )
-        }
-    }
-
-    private fun compileDoubleComparison(
-        column: Column<*>,
-        operator: Operator,
-        value: JsonElement
-    ): Op<Boolean> {
-
-        val typedValue =
-            value.jsonPrimitive.double
-
-        return when (operator) {
-
-            Operator.EQ,
-            Operator.NE ->
-                typedComparison(
-                    column,
-                    operator,
-                    typedValue
-                )
-
-            Operator.GT,
-            Operator.GTE,
-            Operator.LT,
-            Operator.LTE ->
-                typedOrderingComparison(
-                    column,
-                    operator,
-                    typedValue
-                )
-        }
-    }
-
-    private fun compileBooleanComparison(
-        column: Column<*>,
-        operator: Operator,
-        value: JsonElement
-    ): Op<Boolean> {
-
-        val typedValue =
-            value.jsonPrimitive.boolean
-
-        return when (operator) {
-
-            Operator.EQ,
-            Operator.NE ->
-                typedComparison(
-                    column,
-                    operator,
-                    typedValue
-                )
-
-            Operator.GT,
-            Operator.GTE,
-            Operator.LT,
-            Operator.LTE ->
-                throw IllegalArgumentException(
-                    "Operator $operator is not supported for BOOLEAN"
-                )
-        }
-    }
-
-    /**
-     * Equality works for arbitrary column types.
-     */
-    @Suppress("UNCHECKED_CAST")
-    private fun <T> typedComparison(
-        column: Column<*>,
-        operator: Operator,
-        value: T
-    ): Op<Boolean> {
-
-        val typedColumn =
-            column as Column<T>
-
-        return when (operator) {
-
-            Operator.EQ ->
-                typedColumn eq value
-
-            Operator.NE ->
-                typedColumn neq value
-
-            else ->
-                throw IllegalArgumentException(
-                    "Operator $operator is not an equality operator"
-                )
-        }
-    }
-
-    /**
-     * Ordering requires T to be Comparable<T>.
-     *
-     * This is deliberately separate from typedComparison(), because
-     * equality does not require Comparable.
-     */
-    @Suppress("UNCHECKED_CAST")
-    private fun <T : Comparable<T>> typedOrderingComparison(
-        column: Column<*>,
-        operator: Operator,
-        value: T
-    ): Op<Boolean> {
-
-        val typedColumn =
-            column as Column<T>
-
-        return when (operator) {
-
-            Operator.GT ->
-                typedColumn greater value
-
-            Operator.GTE ->
-                typedColumn greaterEq value
-
-            Operator.LT ->
-                typedColumn less value
-
-            Operator.LTE ->
-                typedColumn lessEq value
-
-            else ->
-                throw IllegalArgumentException(
-                    "Operator $operator is not an ordering operator"
-                )
-        }
+        return registry
+            .lookup(resolved.info.type)
+            .compileComparison(
+                column = column,
+                operator = filter.operator,
+                value = filter.value
+            )
     }
 
     // -------------------------------------------------------------------------
@@ -376,67 +115,12 @@ class ExposedCompiler(
                 resolved.field
             )
 
-        return when (resolved.info.type) {
-
-            FieldType.STRING ->
-                typedIn(
-                    column,
-                    filter.values.map {
-                        it.jsonPrimitive.content
-                    }
-                )
-
-            FieldType.INTEGER ->
-                typedIn(
-                    column,
-                    filter.values.map {
-                        it.jsonPrimitive.int
-                    }
-                )
-
-            FieldType.LONG ->
-                typedIn(
-                    column,
-                    filter.values.map {
-                        it.jsonPrimitive.long
-                    }
-                )
-
-            FieldType.DOUBLE ->
-                typedIn(
-                    column,
-                    filter.values.map {
-                        it.jsonPrimitive.double
-                    }
-                )
-
-            FieldType.BOOLEAN ->
-                typedIn(
-                    column,
-                    filter.values.map {
-                        it.jsonPrimitive.boolean
-                    }
-                )
-
-            FieldType.UUID,
-            FieldType.DATE,
-            FieldType.DATETIME ->
-                throw IllegalArgumentException(
-                    "IN for ${resolved.info.type} is not supported"
-                )
-        }
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    private fun <T> typedIn(
-        column: Column<*>,
-        values: List<T>
-    ): Op<Boolean> {
-
-        val typedColumn =
-            column as Column<T>
-
-        return typedColumn inList values
+        return registry
+            .lookup(resolved.info.type)
+            .compileIn(
+                column = column,
+                values = filter.values
+            )
     }
 
     // -------------------------------------------------------------------------
@@ -464,7 +148,7 @@ class ExposedCompiler(
 
     private fun compileQuantifier(
         filter: QuantifierFilter,
-        sourceTable: Table
+        sourceTable: org.jetbrains.exposed.sql.Table
     ): Op<Boolean> {
 
         val relation =
@@ -512,8 +196,8 @@ class ExposedCompiler(
 
     private fun compileExists(
         filter: Filter,
-        sourceTable: Table,
-        targetTable: Table,
+        sourceTable: org.jetbrains.exposed.sql.Table,
+        targetTable: org.jetbrains.exposed.sql.Table,
         relation: RelationInfo
     ): Op<Boolean> {
 
@@ -586,8 +270,8 @@ class ExposedCompiler(
     // -------------------------------------------------------------------------
 
     private fun createJoinCondition(
-        sourceTable: Table,
-        targetTable: Table,
+        sourceTable: org.jetbrains.exposed.sql.Table,
+        targetTable: org.jetbrains.exposed.sql.Table,
         relation: RelationInfo
     ): Op<Boolean> {
 

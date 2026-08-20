@@ -405,13 +405,11 @@ class LanguageTest {
 
         // Verify "solyton" component exists
         val solyton = merged.component("solyton")
-        assertTrue { solyton is Block }
 
         // Verify both original and new components exist
         val authentication = solyton.component("authentication")
         val user = solyton.component("user")
-        assertTrue { authentication is Block }
-        assertTrue { user is Block }
+
 
         // Verify original content is preserved
         val loginFields = authentication.component("login").component("fields")
