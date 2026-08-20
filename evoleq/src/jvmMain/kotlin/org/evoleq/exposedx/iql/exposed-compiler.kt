@@ -196,6 +196,31 @@ class ExposedCompiler(
 
     private fun compileExists(
         filter: Filter,
+        sourceTable: Table,
+        targetTable: Table,
+        relation: RelationInfo
+    ): Op<Boolean> {
+
+        return if (relation.mapping != null) {
+            compileManyToManyExists(
+                filter,
+                sourceTable,
+                targetTable,
+                relation
+            )
+        } else {
+            compileDirectExists(
+                filter,
+                sourceTable,
+                targetTable,
+                relation
+            )
+        }
+    }
+
+
+    private fun compileDirectExists(
+        filter: Filter,
         sourceTable: org.jetbrains.exposed.sql.Table,
         targetTable: org.jetbrains.exposed.sql.Table,
         relation: RelationInfo
@@ -219,6 +244,66 @@ class ExposedCompiler(
                 .selectAll()
                 .where {
                     joinCondition and predicate
+                }
+
+        return exists(query)
+    }
+
+    private fun compileManyToManyExists(
+        filter: Filter,
+        sourceTable: Table,
+        targetTable: Table,
+        relation: RelationInfo
+    ): Op<Boolean> {
+
+        val mapping =
+            relation.mapping
+                ?: error("Expected mapping relation")
+
+        val mappingTable =
+            registry.getMappingTable(mapping.table)
+
+        val sourceJoin =
+            createMappingSourceCondition(
+                sourceTable,
+                mappingTable,
+                mapping
+            )
+
+        val targetJoin =
+            createMappingTargetCondition(
+                mappingTable,
+                targetTable,
+                mapping
+            )
+
+        val predicate =
+            compile(
+                filter,
+                targetTable
+            )
+
+        val query =
+            targetTable
+                .join(
+                    mappingTable,
+                    JoinType.INNER,
+                    onColumn =
+                        mappingTable.columns.first {
+                            it.name ==
+                                    mapping.mappingTargetColumns.first()
+                        },
+                    otherColumn =
+                        targetTable.columns.first {
+                            it.name ==
+                                    mapping.targetColumns.first()
+                        }
+                )
+                .selectAll()
+                .where {
+                    sourceJoin and
+                            targetJoin and
+                            predicate
                 }
 
         return exists(query)
@@ -270,8 +355,8 @@ class ExposedCompiler(
     // -------------------------------------------------------------------------
 
     private fun createJoinCondition(
-        sourceTable: org.jetbrains.exposed.sql.Table,
-        targetTable: org.jetbrains.exposed.sql.Table,
+        sourceTable: Table,
+        targetTable: Table,
         relation: RelationInfo
     ): Op<Boolean> {
 
@@ -279,14 +364,42 @@ class ExposedCompiler(
             "Relation '${relation.name}' has no join columns"
         }
 
-        val inverse =
-            relation.inverseJoinColumn
-                ?: error(
-                    "Relation '${relation.name}' has no inverseJoinColumn"
-                )
+        val targetColumns =
+            when {
+                relation.inverseJoinColumns.isNotEmpty() -> {
+                    require(
+                        relation.inverseJoinColumns.size ==
+                                relation.joinColumns.size
+                    ) {
+                        "Relation '${relation.name}' has ${relation.joinColumns.size} " +
+                                "source columns but ${relation.inverseJoinColumns.size} " +
+                                "target columns"
+                    }
+
+                    relation.inverseJoinColumns
+                }
+
+                relation.inverseJoinColumn != null -> {
+                    require(relation.joinColumns.size == 1) {
+                        "Relation '${relation.name}' has multiple source columns. " +
+                                "Use inverseJoinColumns for composite relations."
+                    }
+
+                    listOf(relation.inverseJoinColumn)
+                }
+
+                else -> {
+                    error(
+                        "Relation '${relation.name}' has no target join columns"
+                    )
+                }
+            }
 
         val conditions =
-            relation.joinColumns.map { sourceColumnName ->
+            relation.joinColumns.mapIndexed { index, sourceColumnName ->
+
+                val targetColumnName =
+                    targetColumns[index]
 
                 val sourceColumn =
                     sourceTable.columns.firstOrNull {
@@ -297,13 +410,84 @@ class ExposedCompiler(
 
                 val targetColumn =
                     targetTable.columns.firstOrNull {
-                        it.name == inverse
+                        it.name == targetColumnName
                     } ?: error(
-                        "Target column '$inverse' not found"
+                        "Target column '$targetColumnName' not found"
                     )
 
                 columnEquals(
                     sourceColumn,
+                    targetColumn
+                )
+            }
+
+        return conditions.reduce(Op<Boolean>::and)
+    }
+    private fun createMappingSourceCondition(
+        sourceTable: Table,
+        mappingTable: Table,
+        mapping: MappingInfo
+    ): Op<Boolean> {
+
+        require(
+            mapping.sourceColumns.size ==
+                    mapping.mappingSourceColumns.size
+        )
+
+        val conditions =
+            mapping.sourceColumns.mapIndexed { index, sourceName ->
+
+                val mappingName =
+                    mapping.mappingSourceColumns[index]
+
+                val sourceColumn =
+                    sourceTable.columns.first {
+                        it.name == sourceName
+                    }
+
+                val mappingColumn =
+                    mappingTable.columns.first {
+                        it.name == mappingName
+                    }
+
+                columnEquals(
+                    sourceColumn,
+                    mappingColumn
+                )
+            }
+
+        return conditions.reduce(Op<Boolean>::and)
+    }
+
+    private fun createMappingTargetCondition(
+        mappingTable: Table,
+        targetTable: Table,
+        mapping: MappingInfo
+    ): Op<Boolean> {
+
+        require(
+            mapping.mappingTargetColumns.size ==
+                    mapping.targetColumns.size
+        )
+
+        val conditions =
+            mapping.mappingTargetColumns.mapIndexed { index, mappingName ->
+
+                val targetName =
+                    mapping.targetColumns[index]
+
+                val mappingColumn =
+                    mappingTable.columns.first {
+                        it.name == mappingName
+                    }
+
+                val targetColumn =
+                    targetTable.columns.first {
+                        it.name == targetName
+                    }
+
+                columnEquals(
+                    mappingColumn,
                     targetColumn
                 )
             }

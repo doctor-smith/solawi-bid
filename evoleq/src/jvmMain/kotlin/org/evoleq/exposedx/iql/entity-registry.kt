@@ -29,6 +29,9 @@ class Registry(
     private val tables =
         mutableMapOf<String, Table>()
 
+    private val mappingTables =
+        mutableMapOf<String, Table>()
+
     private val columns =
         mutableMapOf<String, MutableMap<String, Column<*>>>()
 
@@ -81,6 +84,17 @@ class Registry(
             }.toMutableMap()
     }
 
+    fun registerMappingTable(
+        name: String,
+        table: Table
+    ) {
+        require(name !in mappingTables) {
+            "Mapping table already registered: $name"
+        }
+
+        mappingTables[name] = table
+    }
+
     fun getEntity(name: String): EntityType? =
         entities[name]
 
@@ -93,6 +107,10 @@ class Registry(
             ?: error(
                 "No Exposed table registered for entity: $name"
             )
+
+    fun getMappingTable(name: String): Table =
+        mappingTables[name]
+            ?: error("No Exposed mapping table registered: $name")
 
     // -------------------------------------------------------------------------
     // Fields
