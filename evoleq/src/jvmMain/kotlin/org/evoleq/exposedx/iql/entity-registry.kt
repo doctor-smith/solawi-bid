@@ -18,7 +18,10 @@ typealias ValueTranslator = (JsonElement) -> Any
  * Exposed Tables/Columns and backend-specific field definitions.
  */
 @Suppress("TooManyFunctions")
-class Registry {
+class Registry(
+    private val fieldNameStrategy: FieldNameStrategy =
+        FieldNameStrategy.EXACT
+) {
 
     private val entities =
         mutableMapOf<String, EntityType>()
@@ -40,6 +43,18 @@ class Registry {
     // Entities
     // -------------------------------------------------------------------------
 
+    private fun resolveColumnName(
+        fieldName: String
+    ): String =
+        when (fieldNameStrategy) {
+            FieldNameStrategy.EXACT ->
+                fieldName
+
+            FieldNameStrategy.SNAKE_CASE ->
+                fieldName.toSnakeCase()
+        }
+
+
     fun registerEntity(
         entity: EntityType,
         table: Table
@@ -53,10 +68,15 @@ class Registry {
 
         columns[entity.name] =
             entity.fields.keys.associateWith { fieldName ->
+
+                val columnName = resolveColumnName(fieldName)
+
                 table.columns.firstOrNull {
-                    it.name == fieldName
+                    it.name == columnName
                 } ?: error(
-                    "Column '$fieldName' not found in table '${entity.table}'"
+                    "Column '$columnName' for field " +
+                            "'${entity.name}.$fieldName' not found " +
+                            "in table '${entity.table}'"
                 )
             }.toMutableMap()
     }
