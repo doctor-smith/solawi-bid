@@ -26,9 +26,11 @@ fun where(block: FilterBuilder.() -> Unit): Filter {
         .build()
 }
 
+@Suppress("TooManyFunctions")
 class FilterBuilder {
 
-    private val filters = mutableListOf<Filter>()
+    private val filters =
+        mutableListOf<Filter>()
 
     fun p(path: String): FieldPath =
         FieldPath(
@@ -43,8 +45,11 @@ class FilterBuilder {
         filters += filter
     }
 
-    fun any(
-        relation: String,
+    // -------------------------------------------------------------------------
+    // Logical operators
+    // -------------------------------------------------------------------------
+
+    fun and(
         block: FilterBuilder.() -> Unit
     ) {
         val nested =
@@ -53,14 +58,64 @@ class FilterBuilder {
                 .build()
 
         add(
-            QuantifierFilter(
-                quantifier = Quantifier.ANY,
-                relation = RelationRef(
-                    entity = "",
-                    relation = relation
-                ),
-                filter = nested
-            )
+            when (nested) {
+                is AndFilter ->
+                    nested
+
+                else ->
+                    AndFilter(
+                        listOf(nested)
+                    )
+            }
+        )
+    }
+
+    fun or(
+        block: FilterBuilder.() -> Unit
+    ) {
+        val nested =
+            FilterBuilder()
+                .apply(block)
+                .build()
+
+        add(
+            when (nested) {
+                is OrFilter ->
+                    nested
+
+                else ->
+                    OrFilter(
+                        listOf(nested)
+                    )
+            }
+        )
+    }
+
+    fun not(
+        block: FilterBuilder.() -> Unit
+    ) {
+        val nested =
+            FilterBuilder()
+                .apply(block)
+                .build()
+
+        add(
+            NotFilter(nested)
+        )
+    }
+
+    // -------------------------------------------------------------------------
+    // Quantifiers
+    // -------------------------------------------------------------------------
+
+    fun any(
+        relation: String,
+        block: FilterBuilder.() -> Unit
+    ) {
+        addQuantifier(
+            quantifier = Quantifier.ANY,
+            relation = relation,
+            block = block
         )
     }
 
@@ -68,24 +123,26 @@ class FilterBuilder {
         relation: String,
         block: FilterBuilder.() -> Unit
     ) {
-        val nested =
-            FilterBuilder()
-                .apply(block)
-                .build()
-
-        add(
-            QuantifierFilter(
-                quantifier = Quantifier.NONE,
-                relation = RelationRef(
-                    entity = "",
-                    relation = relation
-                ),
-                filter = nested
-            )
+        addQuantifier(
+            quantifier = Quantifier.NONE,
+            relation = relation,
+            block = block
         )
     }
 
     fun all(
+        relation: String,
+        block: FilterBuilder.() -> Unit
+    ) {
+        addQuantifier(
+            quantifier = Quantifier.ALL,
+            relation = relation,
+            block = block
+        )
+    }
+
+    private fun addQuantifier(
+        quantifier: Quantifier,
         relation: String,
         block: FilterBuilder.() -> Unit
     ) {
@@ -96,7 +153,7 @@ class FilterBuilder {
 
         add(
             QuantifierFilter(
-                quantifier = Quantifier.ALL,
+                quantifier = quantifier,
                 relation = RelationRef(
                     entity = "",
                     relation = relation
@@ -106,14 +163,25 @@ class FilterBuilder {
         )
     }
 
+    // -------------------------------------------------------------------------
+    // Build
+    // -------------------------------------------------------------------------
+
     internal fun build(): Filter {
+
         require(filters.isNotEmpty()) {
             "IQL filter must contain at least one expression"
         }
 
         return when (filters.size) {
-            1 -> filters.first()
-            else -> AndFilter(filters.toList())
+
+            1 ->
+                filters.first()
+
+            else ->
+                AndFilter(
+                    filters.toList()
+                )
         }
     }
 }

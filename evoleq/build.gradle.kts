@@ -100,6 +100,7 @@ kotlin{
         val jvmTest by getting {
             dependencies {
                 implementation(libs.ktor.server.tests.jvm)
+                implementation(libs.ktor.serialization.kotlinx.json)
                 implementation(libs.kotlin.test.junit)
                 implementation(libs.junit.jupiter)
                 // h2

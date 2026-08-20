@@ -1,66 +1,74 @@
 package org.evoleq.iql.data
 
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
 @Serializable
 sealed class Filter {
-    abstract val type: String
+    // abstract val type: String
 }
 
 @Serializable
+@SerialName("and")
 data class AndFilter(
     val filters: List<Filter>
 ) : Filter() {
-    override val type = "and"
+   // override val type = "and"
 }
 
 @Serializable
+@SerialName("or")
 data class OrFilter(
     val filters: List<Filter>
 ) : Filter() {
-    override val type = "or"
+  //  override val type = "or"
 }
 
 @Serializable
+@SerialName("not")
 data class NotFilter(
     val filter: Filter
 ) : Filter() {
-    override val type = "not"
+  //  override val type = "not"
 }
 
 @Serializable
+@SerialName("comparison")
 data class ComparisonFilter(
     val field: FieldRef,
     val operator: Operator,
     val value: JsonElement
 ) : Filter() {
-    override val type = "comparison"
+ //   override val type = "comparison"
 }
 
 @Serializable
+@SerialName("in")
 data class InFilter(
     val field: FieldRef,
     val values: List<JsonElement>
 ) : Filter() {
-    override val type = "in"
+  //  override val type = "in"
 }
 
 @Serializable
+@SerialName("is_null")
 data class IsNullFilter(
     val field: FieldRef
 ) : Filter() {
-    override val type = "is_null"
+  //  override val type = "is_null"
 }
 
 @Serializable
+@SerialName("quantifier")
 data class QuantifierFilter(
     val quantifier: Quantifier,
     val relation: RelationRef,
     val filter: Filter
 ) : Filter() {
-    override val type = "quantifier"
+  //  override val type = "quantifier"
 }
 
 @Serializable
