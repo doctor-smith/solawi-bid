@@ -2,9 +2,10 @@ package org.evoleq.iql.data
 
 
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonBuilder
 import org.evoleq.ktorx.result.add
 import kotlin.reflect.KClass
 
@@ -24,18 +25,23 @@ fun iqlSerializers(): Map<KClass<*>, KSerializer<*>> = hashMapOf<KClass<*>, KSer
     add<EntityType>(EntityType.serializer())
     add<FieldInfo>(FieldInfo.serializer())
     add<RelationInfo>(RelationInfo.serializer())
+    add<Query>(Query.serializer())
+    add<Sort>(Sort.serializer())
+    add<SortDirection>(SortDirection.serializer())
 }
 
+@OptIn(ExperimentalSerializationApi::class)
+val IqlJson = Json {
 
-object IQLJson {
-    val serializer = Json {
-        ignoreUnknownKeys = true
-        encodeDefaults = true
-        prettyPrint = true
-    }
+    classDiscriminator = "type"
+    encodeDefaults = true
+    ignoreUnknownKeys = true
+    explicitNulls = false
+    isLenient = false
+    coerceInputValues = false
+    allowStructuredMapKeys = false
 }
-
-@Serializable
-data class FilterJson(
-    val filter: Filter
-)
+fun Json.configure(
+    block: JsonBuilder.() -> Unit
+): Json =
+    Json(this, block)
