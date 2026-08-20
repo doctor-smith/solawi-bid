@@ -85,13 +85,27 @@ kotlin{
         val jvmMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") // Specific for JVM
+                // exposed
                 implementation(libs.exposed.joda.time)
+                implementation(libs.exposed.core)
+                implementation(libs.exposed.dao)
+                implementation(libs.exposed.jdbc)
+                implementation(libs.mysql.connector.java)
+                // h2
+                implementation(libs.h2)
+                // slf4j
+                implementation (libs.slf4j.nop)
             }
         }
         val jvmTest by getting {
             dependencies {
                 implementation(libs.ktor.server.tests.jvm)
                 implementation(libs.kotlin.test.junit)
+                implementation(libs.junit.jupiter)
+                // h2
+                implementation(libs.h2)
+                // slf4j
+                implementation (libs.slf4j.nop)
             }
         }
 

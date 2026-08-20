@@ -6,6 +6,7 @@ import org.jetbrains.exposed.sql.deleteAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.module.bid.data.api.Bid
+import org.solyton.solawi.bid.module.bid.data.api.ChangeRoundState
 import org.solyton.solawi.bid.module.bid.data.api.CreateRound
 import org.solyton.solawi.bid.module.bid.data.api.RoundState
 import org.solyton.solawi.bid.module.bid.data.toApiType
@@ -24,10 +25,12 @@ class BidBests {
         val (_,round,bidder) = setupBidProcess()
         val link = round.link
         // set round state to "STARTED"
-        changeRoundState(org.solyton.solawi.bid.module.bid.data.api.ChangeRoundState(
-            round.id.value.toString(),
-            RoundState.Started.toString()
-        ))
+        changeRoundState(
+            ChangeRoundState(
+                round.id.value.toString(),
+                RoundState.Started.toString()
+            )
+        )
         //round.state = RoundState.Started.toString()
 
         // perform action under consideration

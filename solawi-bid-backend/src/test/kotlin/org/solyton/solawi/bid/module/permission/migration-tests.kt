@@ -23,13 +23,9 @@ import org.solyton.solawi.bid.module.application.permission.ApplicationContext
 import org.solyton.solawi.bid.module.application.permission.Context
 import org.solyton.solawi.bid.module.bid.permission.AuctionContext
 import org.solyton.solawi.bid.module.bid.permission.Value
-import org.solyton.solawi.bid.module.db.schema.*
 import org.solyton.solawi.bid.module.permission.action.db.isGranted
-import org.solyton.solawi.bid.module.permission.schema.*
-import org.solyton.solawi.bid.module.permission.schema.ContextEntity
-import org.solyton.solawi.bid.module.permission.schema.RightEntity
-import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.repository.parent
+import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.user.permission.OrganizationContext
 import org.solyton.solawi.bid.module.user.permission.OrganizationRight
 import org.solyton.solawi.bid.module.user.schema.UserEntity

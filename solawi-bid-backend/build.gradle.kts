@@ -58,9 +58,7 @@ dependencies {
     implementation(libs.ktor.server.auth.jwt)
     implementation(libs.java.jwt)
     implementation(libs.logback)
-    testImplementation(libs.ktor.server.tests.jvm)
-    testImplementation(libs.kotlin.test.junit)
-    testImplementation(libs.junit.jupiter)
+
 
     // bcrypt
     implementation (libs.mindrot.jbcrypt)
@@ -101,6 +99,10 @@ dependencies {
     // mail
     implementation("org.simplejavamail:simple-java-mail:8.0.0")
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.5")
+
+    testImplementation(libs.ktor.server.tests.jvm)
+    testImplementation(libs.kotlin.test.junit)
+    testImplementation(libs.junit.jupiter)
 }
 
 tasks.register<Test>("dbFunctionalTest"  ) {

@@ -2,7 +2,7 @@ package org.evoleq.exposedx.test
 
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.util.UUID
+import java.util.*
 
 interface TestDbConfig {
     val url: String
