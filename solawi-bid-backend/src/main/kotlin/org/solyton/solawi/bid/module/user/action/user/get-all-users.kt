@@ -43,6 +43,3 @@ val GetUserById: suspend (Result<UUID>)->Action<Result<UserEntity>> = {id -> DbA
         }
     } x database
 } }
-
-
-

@@ -26,8 +26,17 @@ fun where(block: FilterBuilder.() -> Unit): Filter {
         .build()
 }
 
+fun where(entity: String,block: FilterBuilder.()-> Unit): Filter {
+    return FilterBuilder(entity)
+        .apply(block)
+        .build()
+}
+
+
 @Suppress("TooManyFunctions")
-class FilterBuilder {
+class FilterBuilder(
+    private val entity: String? = null
+) {
 
     private val filters =
         mutableListOf<Filter>()
@@ -157,7 +166,7 @@ class FilterBuilder {
             QuantifierFilter(
                 quantifier = quantifier,
                 relation = RelationRef(
-                    entity = "",
+                    entity = entity?:"",
                     relation = relation
                 ),
                 filter = nested

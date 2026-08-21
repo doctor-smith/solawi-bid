@@ -140,7 +140,7 @@ data class RelationInfo(
     val type: RelationType,
     val targetEntity: String,
     val joinColumns: List<String>,
-    val inverseJoinColumn: String?,
+    val inverseJoinColumn: String? = null,
     /**
      * Target-side columns corresponding to joinColumns.
      *

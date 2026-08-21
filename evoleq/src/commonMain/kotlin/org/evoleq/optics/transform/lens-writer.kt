@@ -170,6 +170,14 @@ fun <W, P> Lens<W, List<P>>.addList(): Writer<W, List<P>> = Writer{
         ps -> { w -> set(get(w) + ps )(w)}
 }
 
+fun <W, P> Lens<W, List<P>>.addMissing(equal: (old: P, new: P)-> Boolean): Writer<W, List<P>> = Writer{
+        ps -> { w ->
+            val oldItems = get(w)
+            set(oldItems + ps.filter { p -> oldItems.none { equal(it, p) } } )(w)
+        }
+}
+
+
 /**
  * Removes elements from a list within a structure using the provided `removeWhen` predicate.
  * This method operates through the lens, transforming the original structure by removing

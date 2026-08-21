@@ -216,6 +216,10 @@ val solawiApi by lazy {
                 key = CreateUser::class,
                 url = "users/create"
             )
+            post<UserQuery, Users>(
+                key = UserQuery::class,
+                url = "users/query"
+            )
             get<GetUsers, Users>(
                 key = GetUsers::class,
                 url = "users/all"

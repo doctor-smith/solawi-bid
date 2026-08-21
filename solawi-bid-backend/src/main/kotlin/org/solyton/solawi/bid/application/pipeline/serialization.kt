@@ -179,6 +179,7 @@ fun installSerializers() {
         add<UserStatus>(UserStatus.serializer())
         add<Users>(Users.serializer())
         add<GetUsers>(GetUsers.serializer())
+        add<UserQuery>(UserQuery.serializer())
         add<ChangePassword>(ChangePassword.serializer())
         add<UpdateUser>(UpdateUser.serializer())
         add<UserProfile>(UserProfile.serializer())
