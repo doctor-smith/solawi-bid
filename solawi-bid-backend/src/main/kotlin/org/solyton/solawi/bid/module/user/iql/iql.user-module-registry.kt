@@ -10,7 +10,7 @@ import org.solyton.solawi.bid.module.user.schema.UsersTable
 val userModuleRegistry: Registry by lazy { Registry(FieldNameStrategy.SNAKE_CASE).apply {
     registerEntity(
         EntityType(
-            name = "User",
+            name = "user",
             table = "users",
             fields = mapOf(
                 "username" to FieldInfo(
@@ -26,7 +26,7 @@ val userModuleRegistry: Registry by lazy { Registry(FieldNameStrategy.SNAKE_CASE
                 "userProfiles" to RelationInfo(
                     name = "user_profile",
                     type = RelationType.ONE_TO_MANY,
-                    targetEntity = "UserProfile",
+                    targetEntity = "userProfile",
                     joinColumns = listOf("id"),
                     inverseJoinColumns = listOf("user_id")
 
@@ -37,7 +37,7 @@ val userModuleRegistry: Registry by lazy { Registry(FieldNameStrategy.SNAKE_CASE
     )
     registerEntity(
         EntityType(
-            name = "UserProfile",
+            name = "userProfile",
             table = "user_profiles",
             fields = mapOf(
                 "userId" to FieldInfo(
@@ -69,14 +69,14 @@ val userModuleRegistry: Registry by lazy { Registry(FieldNameStrategy.SNAKE_CASE
                 "user" to RelationInfo(
                     name = "user",
                     type = RelationType.MANY_TO_ONE,
-                    targetEntity = "UserProfile",
+                    targetEntity = "userProfile",
                     joinColumns = listOf("user_id"),
                     inverseJoinColumns = listOf("id")
                 ),
                 "addresses" to RelationInfo(
                     name = "address",
                     type = RelationType.ONE_TO_MANY,
-                    targetEntity = "Address",
+                    targetEntity = "address",
                     joinColumns = listOf("id"),
                     inverseJoinColumns = listOf("user_profile_id"),
                 )
@@ -86,7 +86,7 @@ val userModuleRegistry: Registry by lazy { Registry(FieldNameStrategy.SNAKE_CASE
     )
     registerEntity(
         EntityType(
-            name = "Address",
+            name = "address",
             table = "addresses",
             fields = mapOf(
                 "recipientName" to FieldInfo(
@@ -127,7 +127,7 @@ val userModuleRegistry: Registry by lazy { Registry(FieldNameStrategy.SNAKE_CASE
                 "userProfile" to RelationInfo(
                     name = "user_profile",
                     type = RelationType.MANY_TO_ONE,
-                    targetEntity = "UserProfile",
+                    targetEntity = "userProfile",
                     joinColumns = listOf("user_profile_id"),
                     inverseJoinColumns = listOf("id")
                 )

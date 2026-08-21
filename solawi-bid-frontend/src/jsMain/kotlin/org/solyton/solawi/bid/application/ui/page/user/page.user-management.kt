@@ -72,7 +72,7 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
            mutableStateOf<Query>(
             query{
 
-                select("User")
+                select("user")
                 /*
                 where {
                     any("userProfiles") {
@@ -81,7 +81,7 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
                 }
 
                  */
-                asc("User.username")
+                asc("user.username")
                 page(
                     pageSizeState,
                     pageOffsetState
