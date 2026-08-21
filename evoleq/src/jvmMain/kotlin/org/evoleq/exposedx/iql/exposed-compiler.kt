@@ -319,35 +319,72 @@ class ExposedCompiler(
         val info: FieldInfo
     )
 
+    /**
+     * Resolves a field reference against the registry.
+     *
+     * Unqualified field paths (e.g. `firstName`) require `currentEntity`
+     * to determine the entity in which the field is resolved.
+     * Qualified field paths (e.g. `UserProfile.firstName`) contain their
+     * entity explicitly and therefore do not require `currentEntity`.
+     */
     private fun resolveField(
-        field: FieldRef
+        field: FieldRef,
+        currentEntity: String? = null
     ): ResolvedField {
 
-        val parts =
-            field.path.split(".")
+        val parts = field.path.split(".")
 
-        require(parts.size == 2) {
-            "Invalid field path '${field.path}'. " +
-                    "Expected '<entity>.<field>'."
+        return when (parts.size) {
+
+            // p("firstName")
+            1 -> {
+                val entityName = requireNotNull(currentEntity) {
+                    "Cannot resolve relative field '${field.path}' without a current entity"
+                }
+                val fieldName = parts[0]
+
+                val entity =
+                    registry.getEntityOrThrow(entityName)
+
+                val fieldInfo =
+                    entity.fields[fieldName]
+                        ?: error(
+                            "Unknown field '$fieldName' on entity '$entityName'"
+                        )
+
+                ResolvedField(
+                    entity = currentEntity,
+                    field = fieldName,
+                    info = fieldInfo
+                )
+            }
+
+            // p("UserProfile.firstName")
+            2 -> {
+                val entityName = parts[0]
+                val fieldName = parts[1]
+
+                val entity =
+                    registry.getEntityOrThrow(entityName)
+
+                val fieldInfo =
+                    entity.fields[fieldName]
+                        ?: error(
+                            "Unknown field '$fieldName' on entity '$entityName'"
+                        )
+
+                ResolvedField(
+                    entity = entityName,
+                    field = fieldName,
+                    info = fieldInfo
+                )
+            }
+
+            else ->
+                error(
+                    "Invalid field path '${field.path}'"
+                )
         }
-
-        val entity =
-            parts[0]
-
-        val fieldName =
-            parts[1]
-
-        val info =
-            registry.getField(
-                entityName = entity,
-                fieldName = fieldName
-            )
-
-        return ResolvedField(
-            entity = entity,
-            field = fieldName,
-            info = info
-        )
     }
 
     // -------------------------------------------------------------------------

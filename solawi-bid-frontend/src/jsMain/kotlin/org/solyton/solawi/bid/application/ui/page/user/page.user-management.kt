@@ -7,6 +7,8 @@ import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Space
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.device.data.mediaType
+import org.evoleq.iql.data.Query
+import org.evoleq.iql.dsl.query
 import org.evoleq.language.component
 import org.evoleq.language.subComp
 import org.evoleq.language.title
@@ -20,6 +22,8 @@ import org.solyton.solawi.bid.application.ui.page.user.effect.trigger
 import org.solyton.solawi.bid.application.ui.page.user.i18n.UserLangComponent
 import org.solyton.solawi.bid.module.application.permission.AppRight
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
+import org.solyton.solawi.bid.module.control.button.AnglesLeftButton
+import org.solyton.solawi.bid.module.control.button.AnglesRightButton
 import org.solyton.solawi.bid.module.control.button.StdButton
 import org.solyton.solawi.bid.module.i18n.data.componentLoaded
 import org.solyton.solawi.bid.module.i18n.data.language
@@ -28,7 +32,7 @@ import org.solyton.solawi.bid.module.permissions.service.contextFromPath
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.action.user.createUser
-import org.solyton.solawi.bid.module.user.action.user.getUsers
+import org.solyton.solawi.bid.module.user.action.user.userQuery
 import org.solyton.solawi.bid.module.user.component.modal.showCreateUserModal
 import org.solyton.solawi.bid.module.user.data.*
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
@@ -37,7 +41,7 @@ import org.solyton.solawi.bid.module.user.data.reader.isNotGranted
 
 @Markup
 @Composable
-@Suppress("FunctionName")
+@Suppress("FunctionName", "CognitiveComplexMethod")
 fun UserManagementPage(storage: Storage<Application>) = Div {
 
     val scope = rememberCoroutineScope()
@@ -59,12 +63,43 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
         i18n = (storage * i18n)
     )
 
-    LaunchedEffect(Unit) {
+    var pageSizeState by remember { mutableStateOf(20) }
+    var pageOffsetState by remember { mutableStateOf(0L) }
+    var queryState by remember(
+        pageSizeState,
+        pageOffsetState
+    ) {
+           mutableStateOf<Query>(
+            query{
+
+                select("User")
+                /*
+                where {
+                    any("userProfiles") {
+                        p("UserProfile.firstName") eq "Florian"
+                    }
+                }
+
+                 */
+                asc("User.username")
+                page(
+                    pageSizeState,
+                    pageOffsetState
+                )
+            }
+        )
+    }
+
+    LaunchedEffect(queryState) {
         launch {
-            val action = getUsers()
+            val action = userQuery(
+                queryState
+            )
             trigger(action) on storage
         }
     }
+
+
 
     // State
     var useR by remember { mutableStateOf<CreateUser?>(null) }
@@ -76,6 +111,27 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
             Horizontal(styles = { justifyContent(JustifyContent.SpaceBetween); width(100.percent) }) {
                 H1 { Text((texts * title).emit()) }
                 Horizontal {
+                    AnglesLeftButton(
+                        color = Color.black,
+                        bgColor = Color.white,
+                        texts = { "Previous $pageSizeState users" },
+                        deviceType = storage * deviceData * mediaType.get,
+                    ) {
+                        val newOffset = pageOffsetState - pageSizeState
+
+                        pageOffsetState = when{
+                            newOffset > 0 -> newOffset
+                            else -> 0
+                        }
+                    }
+                    AnglesRightButton(
+                        color = Color.black,
+                        bgColor = Color.white,
+                        texts = {"Next $pageSizeState users"},
+                        deviceType = storage * deviceData * mediaType.get,
+                    ) {
+                        pageOffsetState += pageSizeState
+                    }
                     StdButton(
                         buttons * subComp("createUser") * title,
                         (storage * deviceData * mediaType.get),
@@ -107,7 +163,8 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
         }
         Wrap {
             H2{Text((registeredUsers * title).emit())}
-            (storage * managedUsers).read().forEach { user ->
+
+            (storage * managedUsers).read().drop(pageOffsetState.toInt()).take(pageSizeState).forEach { user ->
                 Wrap({marginTop(10.px)}){ Horizontal {
 
                     P { Text(user.username) }

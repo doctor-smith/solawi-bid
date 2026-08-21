@@ -8,14 +8,17 @@ import org.evoleq.iql.data.SortDirection
 import org.evoleq.ktorx.pages.Page
 
 fun query(
+    entity: String? = null,
     block: QueryBuilder.() -> Unit
 ): Query =
-    QueryBuilder()
+    QueryBuilder(entity)
         .apply(block)
         .build()
 
 
-class QueryBuilder {
+class QueryBuilder(private val entity: String? = null) {
+
+    private var _entity: String? = entity
 
     private var filter: Filter? = null
 
@@ -29,8 +32,14 @@ class QueryBuilder {
     fun where(
         block: FilterBuilder.() -> Unit
     ) {
-        filter =
-            org.evoleq.iql.dsl.where(block)
+        filter = when(_entity){
+            null -> org.evoleq.iql.dsl.where( block)
+            else -> org.evoleq.iql.dsl.where(_entity!!, block)
+        }
+    }
+
+    fun select(entity: String) {
+        _entity = entity
     }
 
     fun orderBy(
