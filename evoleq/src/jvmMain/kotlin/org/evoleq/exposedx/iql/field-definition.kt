@@ -3,7 +3,9 @@ package org.evoleq.exposedx.iql
 import kotlinx.serialization.json.JsonElement
 import org.evoleq.iql.data.FieldType
 import org.evoleq.iql.data.Operator
+import org.evoleq.iql.dsl.LIKE_ESCAPE
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.LikePattern
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.greater
@@ -11,7 +13,9 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.greaterEq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.lessEq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.neq
+import org.jetbrains.exposed.sql.lowerCase
 
 enum class FieldNameStrategy {
     EXACT,
@@ -76,6 +80,11 @@ class PrimitiveFieldDefinition(
                     operator,
                     translated
                 )
+            Operator.LIKE -> typedLike(
+                column,
+                translated,
+                false
+            )
         }
     }
 
@@ -159,4 +168,19 @@ class PrimitiveFieldDefinition(
 
         return typedColumn inList values
     }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun typedLike(
+        column: Column<*>,
+        value: Any?,
+        ignoreCase: Boolean
+    ): Op<Boolean> = when(value){
+        is String -> when{
+            ignoreCase -> (column as Column<String>).lowerCase().like(
+                LikePattern(value.lowercase(), LIKE_ESCAPE))
+            else -> (column as Column<String>).like( LikePattern(value,LIKE_ESCAPE))
+        }
+        else -> error("Not a string: $value")
+    }
+
 }
