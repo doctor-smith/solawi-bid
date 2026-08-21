@@ -201,7 +201,7 @@ class FilterBuilder(
  *     p("customer.age")
  *     p("customer.address.country")
  */
-@Suppress("FunctionNaming")
+@Suppress("FunctionNaming", "TooManyFunctions")
 class FieldPath(
     val path: String,
     private val builder: FilterBuilder
@@ -289,8 +289,89 @@ class FieldPath(
                 )
             )
         )
+
+
+
+    infix fun contains(value: String) = add(
+        comparison(
+            operator = Operator.LIKE,
+            value = JsonPrimitive("%${escapeLike(value)}%")
+        )
+    )
+
+    infix fun startsWith(value: String) = add(
+        comparison(
+            operator = Operator.LIKE,
+            value = JsonPrimitive("${escapeLike(value)}%")
+        )
+    )
+
+    infix fun endsWith(value: String) = add(
+        comparison(
+            operator = Operator.LIKE,
+            value = JsonPrimitive("%${escapeLike(value)}")
+        )
+    )
+
+    fun contains(value: String, ignoreCase: Boolean) = add(
+        comparison(
+            operator = Operator.LIKE,
+            value = JsonPrimitive("%${escapeLike(value)}%"),
+            ignoreCase = ignoreCase
+        )
+    )
+    fun startsWith(value: String, ignoreCase: Boolean) = add(
+        comparison(
+            operator = Operator.LIKE,
+            value = JsonPrimitive("${escapeLike(value)}%"),
+            ignoreCase = ignoreCase
+        )
+    )
+
+    fun endsWith(value: String, ignoreCase: Boolean) = add(
+        comparison(
+            operator = Operator.LIKE,
+            value = JsonPrimitive("%${escapeLike(value)}"),
+            ignoreCase = ignoreCase
+        )
+    )
+
+    infix fun containsIgnoreCase(value: String) = contains(value, ignoreCase = true)
+
+    infix fun startsWithIgnoreCase(value: String) = contains(value, ignoreCase = true)
+
+    infix fun endsWithIgnoreCase(value: String) = contains(value, ignoreCase = true)
+
+    infix fun like(pattern: String) = add(
+        comparison(
+            operator = Operator.LIKE,
+            value = JsonPrimitive(pattern),
+            ignoreCase = false
+        )
+    )
+    infix fun likeIgnoreCase(pattern: String) = add(
+        comparison(
+            operator = Operator.LIKE,
+            value = JsonPrimitive(pattern),
+            ignoreCase = true
+        )
+    )
+    fun like(pattern: String, ignoreCase: Boolean) = (
+        comparison(
+            operator = Operator.LIKE,
+            value = JsonPrimitive(pattern),
+            ignoreCase = ignoreCase
+        )
+    )
 }
 
+const val LIKE_ESCAPE = '\\'
+
+private fun escapeLike(value: String): String =
+    value
+        .replace("\\", "\\\\")
+        .replace("%", "\\%")
+        .replace("_", "\\_")
 
 /**
  * Comparison operators.
@@ -497,14 +578,82 @@ infix fun FieldPath.lte(
         JsonPrimitive(value)
     )
 
+infix fun FieldPath.contains(value: String) =
+    comparison(
+        operator = Operator.LIKE,
+        value = JsonPrimitive("%${escapeLike(value)}%")
+    )
+
+infix fun FieldPath.startsWith(value: String) =
+    comparison(
+        operator = Operator.LIKE,
+        value = JsonPrimitive("${escapeLike(value)}%")
+    )
+
+infix fun FieldPath.endsWith(value: String) =
+    comparison(
+        operator = Operator.LIKE,
+        value = JsonPrimitive("%${escapeLike(value)}")
+    )
+
+fun FieldPath.contains(value: String, ignoreCase: Boolean) =
+    comparison(
+        operator = Operator.LIKE,
+        value = JsonPrimitive("%${escapeLike(value)}%"),
+        ignoreCase = ignoreCase
+    )
+
+fun FieldPath.startsWith(value: String, ignoreCase: Boolean) =
+    comparison(
+        operator = Operator.LIKE,
+        value = JsonPrimitive("${escapeLike(value)}%"),
+        ignoreCase = ignoreCase
+    )
+
+fun FieldPath.endsWith(value: String, ignoreCase: Boolean) =
+    comparison(
+        operator = Operator.LIKE,
+        value = JsonPrimitive("%${escapeLike(value)}"),
+        ignoreCase = ignoreCase
+    )
+
+infix fun FieldPath.containsIgnoreCase(value: String) = contains(value, ignoreCase = true)
+
+infix fun FieldPath.startsWithIgnoreCase(value: String) = contains(value, ignoreCase = true)
+
+infix fun FieldPath.endsWithIgnoreCase(value: String) = contains(value, ignoreCase = true)
+
+infix fun FieldPath.like(pattern: String) =
+    comparison(
+        operator = Operator.LIKE,
+        value = JsonPrimitive(pattern),
+        ignoreCase = false
+    )
+
+infix fun FieldPath.likeIgnoreCase(pattern: String) =
+    comparison(
+        operator = Operator.LIKE,
+        value = JsonPrimitive(pattern),
+        ignoreCase = true
+    )
+
+fun FieldPath.like(pattern: String, ignoreCase: Boolean) =
+    comparison(
+        operator = Operator.LIKE,
+        value = JsonPrimitive(pattern),
+        ignoreCase = ignoreCase
+    )
+
 private fun FieldPath.comparison(
     operator: Operator,
-    value: JsonElement
+    value: JsonElement,
+    ignoreCase: Boolean = false
 ): Filter =
     _root_ide_package_.org.evoleq.iql.data.ComparisonFilter(
         field = _root_ide_package_.org.evoleq.iql.data.SimpleFieldRef(path),
         operator = operator,
-        value = value
+        value = value,
+        ignoreCase = ignoreCase
     )
 
 

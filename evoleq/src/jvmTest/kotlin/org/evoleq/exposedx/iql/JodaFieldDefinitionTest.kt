@@ -67,6 +67,8 @@ class JodaDateTimeFieldDefinition : FieldDefinition {
 
             Operator.LTE ->
                 typedColumn lessEq typedValue
+
+            Operator.LIKE -> throw UnsupportedOperationException()
         }
     }
 

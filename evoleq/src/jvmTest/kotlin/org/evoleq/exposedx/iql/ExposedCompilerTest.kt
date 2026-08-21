@@ -433,6 +433,135 @@ class ExposedCompilerTest {
         )
     }
 
+
+
+
+    @Test
+    fun `LIKE contains finds matching users`() =
+        runSimpleH2Test(
+            Users
+        ) {
+            Users.insert {
+                it[id] = 1
+                it[name] = "Florian"
+                it[age] = 10
+                it[active] = true
+            }
+
+            Users.insert {
+                it[id] = 2
+                it[name] = "Alice"
+                it[age] = 10
+                it[active] = true
+            }
+
+            val filter =
+                ComparisonFilter(
+                    field = SimpleFieldRef("user.name"),
+                    operator = Operator.LIKE,
+                    value = JsonPrimitive("%lor%")
+                )
+
+            val result =
+                Users
+                    .selectAll()
+                    .where {
+                        compiler.compile(filter, Users)
+                    }
+                    .map {
+                        it[Users.id]
+                    }
+
+            assertEquals(
+                listOf(1),
+                result
+            )
+        }
+
+    @Test
+    fun `LIKE startsWith finds matching users`() =
+        runSimpleH2Test(
+            Users
+        ) {
+            Users.insert {
+                it[id] = 1
+                it[name] = "Florian"
+                it[age] = 10
+                it[active] = true
+            }
+
+            Users.insert {
+                it[id] = 2
+                it[name] = "Alice"
+                it[age] = 10
+                it[active] = true
+            }
+
+            val filter =
+                ComparisonFilter(
+                    field = SimpleFieldRef("user.name"),
+                    operator = Operator.LIKE,
+                    value = JsonPrimitive("Flo%")
+                )
+
+            val result =
+                Users
+                    .selectAll()
+                    .where {
+                        compiler.compile(filter, Users)
+                    }
+                    .map {
+                        it[Users.id]
+                    }
+
+            assertEquals(
+                listOf(1),
+                result
+            )
+        }
+
+    @Test
+    fun `LIKE endsWith finds matching users`() =
+        runSimpleH2Test(
+            Users
+        ) {
+            Users.insert {
+                it[id] = 1
+                it[name] = "Florian"
+                it[age] = 10
+                it[active] = true
+            }
+
+            Users.insert {
+                it[id] = 2
+                it[name] = "Alice"
+                it[age] = 10
+                it[active] = true
+            }
+
+            val filter =
+                ComparisonFilter(
+                    field = SimpleFieldRef("user.name"),
+                    operator = Operator.LIKE,
+                    value = JsonPrimitive("%ian")
+                )
+
+            val result =
+                Users
+                    .selectAll()
+                    .where {
+                        compiler.compile(filter, Users)
+                    }
+                    .map {
+                        it[Users.id]
+                    }
+
+            assertEquals(
+                listOf(1),
+                result
+            )
+        }
+
     @Test
     fun `compile simple comparison`() = runSimpleH2Test(
         Users,
@@ -453,4 +582,120 @@ class ExposedCompilerTest {
 
         println(expression)
     }
+
+    @Test
+    fun `contains treats underscore as literal`() =
+        runSimpleH2Test(Users) {
+
+            Users.insert {
+                it[id] = 1
+                it[name] = "100_kg"
+                it[age] = 18
+                it[active] = true
+            }
+
+            Users.insert {
+                it[id] = 2
+                it[name] = "100Xkg"
+                it[age] = 18
+                it[active] = true
+            }
+
+            val filter =
+                ComparisonFilter(
+                    field = SimpleFieldRef("user.name"),
+                    operator = Operator.LIKE,
+                    value = JsonPrimitive("%100\\_kg%")
+                )
+
+            val result =
+                Users
+                    .selectAll()
+                    .where {
+                        compiler.compile(filter, Users)
+                    }
+                    .map { it[Users.id] }
+
+            assertEquals(
+                listOf(1),
+                result
+            )
+        }
+    @Test
+    fun `startsWith treats underscore as literal`() =
+        runSimpleH2Test(Users) {
+
+            Users.insert {
+                it[id] = 1
+                it[name] = "100_kg"
+                it[age] = 100
+                it[active] = true
+            }
+
+            Users.insert {
+                it[id] = 2
+                it[name] = "100Xkg"
+                it[age] = 100
+                it[active] = true
+            }
+
+            val filter =
+                ComparisonFilter(
+                    field = SimpleFieldRef("user.name"),
+                    operator = Operator.LIKE,
+                    value = JsonPrimitive("100\\_kg%")
+                )
+
+            val result =
+                Users
+                    .selectAll()
+                    .where {
+                        compiler.compile(filter, Users)
+                    }
+                    .map { it[Users.id] }
+
+            assertEquals(
+                listOf(1),
+                result
+            )
+        }
+
+    @Test
+    fun `endsWith treats underscore as literal`() =
+        runSimpleH2Test(Users) {
+
+            Users.insert {
+                it[id] = 1
+                it[name] = "foo_kg"
+                it[age] = 100
+                it[active] = true
+            }
+
+            Users.insert {
+                it[id] = 2
+                it[name] = "fooXkg"
+                it[age] = 100
+                it[active] = true
+            }
+
+            val filter =
+                ComparisonFilter(
+                    field = SimpleFieldRef("user.name"),
+                    operator = Operator.LIKE,
+                    value = JsonPrimitive("%foo\\_kg")
+                )
+
+            val result =
+                Users
+                    .selectAll()
+                    .where {
+                        compiler.compile(filter, Users)
+                    }
+                    .map { it[Users.id] }
+
+            assertEquals(
+                listOf(1),
+                result
+            )
+        }
 }

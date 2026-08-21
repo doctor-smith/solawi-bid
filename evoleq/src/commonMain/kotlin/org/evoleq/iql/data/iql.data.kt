@@ -39,7 +39,8 @@ data class NotFilter(
 data class ComparisonFilter(
     val field: FieldRef,
     val operator: Operator,
-    val value: JsonElement
+    val value: JsonElement,
+    val ignoreCase: Boolean = false
 ) : Filter() {
  //   override val type = "comparison"
 }
@@ -87,7 +88,9 @@ data class RelationFieldRef(
 
 @Serializable
 enum class Operator {
-    EQ, NE, GT, GTE, LT, LTE
+    EQ, NE,
+    GT, GTE, LT, LTE,
+    LIKE
 }
 
 @Serializable
