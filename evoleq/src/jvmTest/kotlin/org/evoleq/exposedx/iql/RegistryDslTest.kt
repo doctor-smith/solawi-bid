@@ -4,7 +4,9 @@ import junit.framework.TestCase.assertTrue
 import org.evoleq.exposedx.test.runSimpleH2Test
 import org.evoleq.iql.data.FieldType
 import org.evoleq.iql.data.RelationType
-import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.jodatime.datetime
+import org.joda.time.DateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -13,6 +15,7 @@ class RegistryDslTest {
     object UsersTable : Table("users") {
         val id = integer("id")
         val username = varchar("username", 100)
+        val age = integer("age").default(0)
     }
 
     object UserProfilesTable : Table("user_profiles") {
@@ -437,5 +440,178 @@ class RegistryDslTest {
                 }
             }
         }
+    }
+
+    class TestStringColumnType : StringColumnType() {
+        override fun sqlType(): String {
+            return "TEST_STRING_SQL_TYPE"
+        }
+    }
+    class TestIntegerColumnType : ColumnType() {
+        override fun sqlType(): String {
+            return "TEST_INTEGER_SQL_TYPE"
+        }
+    }
+    @Test
+    fun `fieldTypes registers custom column type`() {
+        val registry = registry {
+            fieldTypes(
+                TestStringColumnType::class to FieldType.STRING
+            )
+
+            entity("User", UsersTable) {
+                field(UsersTable.username)
+            }
+        }
+
+        val field =
+            registry
+                .getEntityOrThrow("User")
+                .fields["username"]
+                ?: error("Field not found")
+
+        assertEquals(FieldType.STRING, field.type)
+    }
+
+    @Test
+    fun `fieldTypes registers multiple mappings`() {
+        val registry = registry {
+            fieldTypes(
+                TestStringColumnType::class to FieldType.STRING,
+                TestIntegerColumnType::class to FieldType.INTEGER
+            )
+
+            entity("User", UsersTable) {
+                field(UsersTable.username)
+                field(UsersTable.age)
+            }
+        }
+
+        val entity =
+            registry.getEntityOrThrow("User")
+
+        assertEquals(
+            FieldType.STRING,
+            entity.fields["username"]?.type
+        )
+
+        assertEquals(
+            FieldType.INTEGER,
+            entity.fields["age"]?.type
+        )
+    }
+
+    @Test
+    fun `custom field type mappings do not replace defaults`() {
+        val registry = registry {
+            fieldTypes(
+                TestStringColumnType::class to FieldType.STRING
+            )
+
+            entity("User", UsersTable) {
+                field(UsersTable.username)
+            }
+        }
+
+        val field =
+            registry
+                .getEntityOrThrow("User")
+                .fields["username"]
+                ?: error("Field not found")
+
+        assertEquals(FieldType.STRING, field.type)
+    }
+
+    @Test(expected = IllegalStateException::class)
+    fun `unknown column type is rejected`() {
+        val table = object : Table("test") {
+            val unsupported: Column<DateTime> = datetime("unsupported")
+        }
+
+        registry {
+            entity("User", table) {
+                field(table.unsupported)
+            }
+        }
+    }
+
+    @Test(expected = IllegalStateException::class)
+    fun `unsupported binary column type is rejected`() {
+        val table = object : Table("test") {
+            val data =
+                binary(
+                    "data",
+                    32
+                )
+        }
+
+        registry {
+            entity("User", table) {
+                field(table.data)
+            }
+        }
+    }
+
+    @Test
+    fun `EntityID column type resolves using wrapped column type`() {
+        val registry = registry {
+            entity("User", UsersTable) {
+                field(UsersTable.id)
+            }
+        }
+
+        val field =
+            registry
+                .getEntityOrThrow("User")
+                .fields["id"]
+                ?: error("Field not found")
+
+        assertEquals(FieldType.INTEGER, field.type)
+    }
+
+
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `duplicate field type mapping is rejected`() {
+        registry {
+            fieldTypes(
+                TestStringColumnType::class to FieldType.STRING,
+                TestStringColumnType::class to FieldType.UUID
+            )
+        }
+    }
+
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `duplicate field type registration fails`() {
+        registry {
+            fieldTypes(
+                TestStringColumnType::class to FieldType.STRING,
+                TestStringColumnType::class to FieldType.UUID
+            )
+        }
+    }
+
+    @Test
+    fun `explicit field type override replaces mapping`() {
+        val registry = registry {
+
+
+            overrideFieldTypes(
+                VarCharColumnType::class to FieldType.UUID
+            )
+
+            entity("User", UsersTable) {
+                field(UsersTable.username)
+            }
+        }
+
+        assertEquals(
+            FieldType.UUID,
+            registry
+                .getEntityOrThrow("User")
+                .fields["username"]
+                ?.type
+        )
     }
 }
