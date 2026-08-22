@@ -2,8 +2,8 @@ package org.evoleq.exposedx.iql
 
 import org.evoleq.configuration.Configuration
 import org.evoleq.iql.data.*
-import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.*
+import kotlin.reflect.KClass
 
 @DslMarker
 @Target(AnnotationTarget.CLASS)
@@ -18,6 +18,11 @@ class RegistryConfiguration : Configuration<Registry> {
     
     lateinit var fieldNameStrategy: FieldNameStrategy
     lateinit var entityNameStrategy: EntityNameStrategy
+
+    val fieldTypes =
+        defaultFieldTypeRegistry()
+
+
 
     val configurations: MutableList<Registry.()->Unit> = mutableListOf()
     
@@ -40,6 +45,34 @@ class RegistryConfiguration : Configuration<Registry> {
         }
     }
 
+    fun fieldType(
+        columnType: KClass<out IColumnType>,
+        fieldType: FieldType
+    ) {
+        fieldTypes.register(
+            columnType,
+            fieldType
+        )
+    }
+
+    fun fieldTypes(
+        vararg mappings: Pair<KClass<out IColumnType>, FieldType>
+    ) {
+        mappings.forEach { (columnType, fieldType) ->
+            fieldTypes.register(
+                columnType,
+                fieldType
+            )
+        }
+    }
+
+    fun overrideFieldTypes(
+        vararg mappings: Pair<KClass<out IColumnType>, FieldType>
+    ) {
+        mappings.forEach { (columnType, fieldType) ->
+            fieldTypes.override(columnType, fieldType)
+        }
+    }
 
     fun include(registry: Registry) {
         configurations += {
@@ -68,7 +101,9 @@ class RegistryConfiguration : Configuration<Registry> {
 
         val entityConfig =
             EntityTypeConfiguration().apply {
-
+            this.resolveFieldType = {
+                column: Column<*> -> FieldTypeResolver(this@RegistryConfiguration.fieldTypes).resolve(column)
+            }
             this.name = name
             this.table = table
             entityType()
@@ -92,6 +127,11 @@ class RegistryConfiguration : Configuration<Registry> {
 
 }
 
+infix fun KClass<out IColumnType>.mapsTo(
+    fieldType: FieldType
+): Pair<KClass<out IColumnType>, FieldType> =
+    this to fieldType
+
 internal data class PendingRelation(
     val sourceEntity: String,
     val relationName: String,
@@ -100,6 +140,8 @@ internal data class PendingRelation(
 
 @IqlRegistryDsl
 class EntityTypeConfiguration : Configuration<EntityType> {
+
+    lateinit var resolveFieldType: Column<*>.() -> FieldType
 
     lateinit var name: String
     lateinit var table: Table
@@ -122,7 +164,7 @@ class EntityTypeConfiguration : Configuration<EntityType> {
         }
         fields[column.name] = FieldInfo(
             column.name,
-            column.fieldType(),
+            column.resolveFieldType(),
             column.columnType.nullable
         )
     }
@@ -230,48 +272,75 @@ class EntityTypeConfiguration : Configuration<EntityType> {
         )
     }
 }
-fun Column<*>.fieldType(): FieldType =
-    columnType
-        .sqlType()
-        .sqlBaseType()
-        .let { type ->
-            when (type) {
-                "VARCHAR", "CHAR", "TEXT", "LONGVARCHAR", "CLOB" ->
-                    FieldType.STRING
 
-                "INT", "INTEGER", "SMALLINT", "TINYINT" ->
-                    FieldType.INTEGER
+fun Column<*>.fieldType(): FieldType = try {
+    columnType.fieldType()
+} catch (e: Throwable) {
+    fieldTypeFromSqlType()
+}
 
-                "BIGINT" ->
-                    FieldType.LONG
+fun IColumnType.fieldType(): FieldType =
+    when (this) {
 
-                "DOUBLE", "FLOAT", "REAL", "DECIMAL", "NUMERIC" ->
-                    FieldType.DOUBLE
+        is EntityIDColumnType<*> ->
+            idColumn.fieldType()
 
-                "BOOLEAN", "BIT" ->
-                    FieldType.BOOLEAN
+        is UUIDColumnType ->
+            FieldType.UUID
 
-                "UUID" ->
-                    FieldType.UUID
+        is TextColumnType,
+        is VarCharColumnType,
+        is StringColumnType->
+            FieldType.STRING
 
-                "DATE" ->
-                    FieldType.DATE
+        is IntegerColumnType ->
+            FieldType.INTEGER
 
-                "TIMESTAMP", "DATETIME" ->
-                    FieldType.DATETIME
+        is LongColumnType ->
+            FieldType.LONG
 
-                else ->
-                    error(
-                        "Unsupported SQL type '${columnType.sqlType()}' " +
-                                "for column '$name'"
-                    )
-            }
-        }
+        is DoubleColumnType,
+        is FloatColumnType,
+        is DecimalColumnType ->
+            FieldType.DOUBLE
 
-private fun String.sqlBaseType(): String =
-    substringBefore("(")
-        .trim()
-        .uppercase()
+        is BooleanColumnType ->
+            FieldType.BOOLEAN
+
+        else -> error(
+            "Unsupported Exposed column type " +
+                    "'${this::class.simpleName}' " +
+                    "(SQL type '${sqlType()}')"
+        )
+
+    }
+
+private fun Column<*>.fieldTypeFromSqlType(): FieldType {
+    val sqlType =
+        columnType
+            .sqlType()
+            .substringBefore("(")
+            .trim()
+            .uppercase()
+
+    return when (sqlType) {
+        "DATE" ->
+            FieldType.DATE
+
+        "TIMESTAMP",
+        "DATETIME" ->
+            FieldType.DATETIME
+
+        else -> unsupportedColumnType()
+    }
+}
+private fun Column<*>.unsupportedColumnType(): Nothing =
+    error(
+        "Unsupported Exposed column type " +
+                "'${columnType::class.simpleName}' " +
+                "(SQL type '${columnType.sqlType()}') " +
+                "for column '$name'"
+    )
 
 data class ColumnReference(
     val source: Column<*>,
