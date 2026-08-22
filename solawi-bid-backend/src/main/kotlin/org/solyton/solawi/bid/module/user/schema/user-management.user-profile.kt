@@ -34,7 +34,7 @@ class UserProfile(id: EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
 
     var phoneNumber by UserProfiles.phoneNumber
     var phoneNumber1 by UserProfiles.phoneNumber1
-    val addresses by Address optionalReferrersOn Addresses.userProfile
+    val addresses by Address optionalReferrersOn Addresses.userProfileId
 
     override var createdAt: DateTime by UserProfiles.createdAt
     override var createdBy: UUID by UserProfiles.createdBy

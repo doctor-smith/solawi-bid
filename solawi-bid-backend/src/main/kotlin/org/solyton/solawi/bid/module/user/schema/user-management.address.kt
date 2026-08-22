@@ -14,7 +14,7 @@ typealias AddressEntity = Address
 
 object Addresses : AuditableUUIDTable("addresses") {
 
-    val userProfile = optReference(
+    val userProfileId = optReference(
         "user_profile_id",
         UserProfiles,
         onDelete = ReferenceOption.SET_NULL
@@ -41,7 +41,7 @@ object Addresses : AuditableUUIDTable("addresses") {
 class Address(id : EntityID<UUID>) : UUIDEntity(id), AuditableEntity<UUID> {
     companion object : UUIDEntityClass<Address>(Addresses)
 
-    var userProfile by UserProfile optionalReferencedOn  Addresses.userProfile
+    var userProfile by UserProfile optionalReferencedOn  Addresses.userProfileId
     var recipientName by Addresses.recipientName
     var organizationName by Addresses.organizationName
     var addressLine1 by Addresses.addressLine1
