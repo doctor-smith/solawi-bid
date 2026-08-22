@@ -11,6 +11,7 @@ import org.evoleq.compose.layout.Vertical
 import org.evoleq.device.data.mediaType
 import org.evoleq.iql.data.Query
 import org.evoleq.iql.dsl.FilterBuilder
+import org.evoleq.iql.dsl.QueryBuilder
 import org.evoleq.iql.dsl.query
 import org.evoleq.language.component
 import org.evoleq.language.subComp
@@ -84,6 +85,41 @@ data class UserFilterQuery(
     }
 }
 
+data class UserSortOrder(
+    val username: SortOrder = SortOrder.ASC,
+    val status: SortOrder = SortOrder.NONE,
+    /*
+    val firstName: SortOrder = SortOrder.NONE,
+    val lastName: SortOrder = SortOrder.NONE,
+
+     */
+) {
+    fun asQuerySortOrder(): QueryBuilder.()->Unit = {
+        when(username){
+            SortOrder.ASC -> asc("user.username")
+            SortOrder.DESC -> desc("user.username")
+            SortOrder.NONE -> {}
+        }
+        when(status){
+            SortOrder.ASC -> asc("user.status")
+            SortOrder.DESC -> desc("user.status")
+            SortOrder.NONE -> {}
+        }
+        /*
+        when(firstName){
+            SortOrder.ASC -> asc("userProfile.first_name")
+            SortOrder.DESC -> desc("userProfile.first_name")
+            SortOrder.NONE -> {}
+        }
+        when(lastName) {
+            SortOrder.ASC -> asc("userProfile.last_name")
+            SortOrder.DESC -> desc("userProfile.last_name")
+            SortOrder.NONE -> {}
+        }
+
+         */
+    }
+}
 
 @Markup
 @Composable
@@ -128,13 +164,15 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
 
 
 
-    var filterState by remember{
+    var filterState by remember {
         mutableStateOf(UserFilterQuery())
     }
+    var sortOrderState by remember { mutableStateOf(UserSortOrder() ) }
     var pageSizeState by remember { mutableStateOf(20) }
     var pageOffsetState by remember { mutableStateOf(0L) }
     var queryState by remember(
         filterState,
+        sortOrderState,
         pageSizeState,
         pageOffsetState
     ) {
@@ -145,7 +183,8 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
                 if(query != null ) where{
                     query()
                 }
-                asc("user.username")
+                val sortOrder = sortOrderState.asQuerySortOrder()
+                sortOrder()
                 page(
                     pageSizeState,
                     pageOffsetState
@@ -285,9 +324,17 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
 
             HeaderWrapper(listStyles.headerWrapper) {
                 Header(listStyles.header) {
-                    HeaderCell("username") { width(20.percent) }
-                    HeaderCell("status") { width(10.percent) }
-                    HeaderCell("Name") { width(20.percent) }
+                    HeaderCellWithActions(
+                        text = {"Username"},
+                        styles = HeaderCellStyles().width(20.percent),
+                        ordering = { SortByDrop{ order: SortOrder -> sortOrderState = sortOrderState.copy(username = order) } }
+                    )
+                    HeaderCellWithActions(
+                        text = {"Status"},
+                        styles = HeaderCellStyles().width(10.percent),
+                        ordering = { SortByDrop{ order: SortOrder -> sortOrderState = sortOrderState.copy(status = order) } }
+                    )
+                    HeaderCell("Name"){width(20.percent)}
                 }
             }
 
