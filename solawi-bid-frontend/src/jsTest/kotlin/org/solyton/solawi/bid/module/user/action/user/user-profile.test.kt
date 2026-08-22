@@ -13,6 +13,7 @@ import org.solyton.solawi.bid.module.permissions.data.Permissions
 import org.solyton.solawi.bid.module.user.data.api.userprofile.*
 import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 import org.solyton.solawi.bid.module.user.data.profile.UserProfile
+import org.solyton.solawi.bid.module.user.data.status.UserStatus
 import org.solyton.solawi.bid.module.values.UserId
 import org.solyton.solawi.bid.test.storage.TestStorage
 import kotlin.test.Test
@@ -24,7 +25,7 @@ class UserProfileTest {
     @Test
     fun readUserProfilesTest() = runTest {
         val users = listOf<ManagedUser>(
-            ManagedUser("user-id-1", "", "", Permissions(), null)
+            ManagedUser("user-id-1", "", "", UserStatus.ACTIVE,Permissions(), null)
         )
         val apiUserProfiles = ApiUserProfiles(listOf(
             ApiUserProfile("1", "user-id-1" , "", "", null, "123","123", listOf())
@@ -33,7 +34,7 @@ class UserProfileTest {
         val action = readUserProfiles(listOf("1","2","3"))
 
         val expected = listOf<ManagedUser>(
-            ManagedUser("user-id-1", "", "", Permissions(),
+            ManagedUser("user-id-1", "", "", UserStatus.ACTIVE, Permissions(),
                 UserProfile(
                     UserId(NIL_UUID),"1", "", "", null, "123","123", listOf()
                 ))
@@ -57,7 +58,7 @@ class UserProfileTest {
     @Test
     fun importUserProfilesTest() = runTest {
         val users = listOf<ManagedUser>(
-            ManagedUser("user-id-1", "", "", Permissions(), null)
+            ManagedUser("user-id-1", "", "", UserStatus.ACTIVE, Permissions(), null)
         )
         val apiUserProfiles = ApiUserProfiles(listOf(
             ApiUserProfile("1", "user-id-1" , "", "", null, "123", "123",listOf())
@@ -84,7 +85,7 @@ class UserProfileTest {
         val action = importUserProfiles(userProfilesToImport)
 
         val expected = listOf<ManagedUser>(
-            ManagedUser("user-id-1", "", "", Permissions(),
+            ManagedUser("user-id-1", "", "", UserStatus.ACTIVE, Permissions(),
                 UserProfile(
                     UserId(NIL_UUID),"1", "", "", null, "123", "123",listOf()
                 ))
