@@ -1,20 +1,19 @@
 package org.solyton.solawi.bid.module.user.iql
 
-import org.evoleq.exposedx.iql.FieldNameStrategy
-import org.evoleq.exposedx.iql.Registry
-import org.evoleq.exposedx.iql.mapsTo
-import org.evoleq.exposedx.iql.registry
+import org.evoleq.exposedx.iql.*
 import org.evoleq.iql.data.FieldType
 import org.jetbrains.exposed.sql.jodatime.DateColumnType
 import org.jetbrains.exposed.sql.jodatime.DateTimeWithTimeZoneColumnType
-import org.solyton.solawi.bid.module.user.schema.AddressesTable
-import org.solyton.solawi.bid.module.user.schema.UserProfilesTable
-import org.solyton.solawi.bid.module.user.schema.UsersTable
+import org.solyton.solawi.bid.module.permission.iql.permissionModuleRegistry
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.user.schema.*
 
 
 val userModuleRegistry: Registry by lazy {
     registry {
         fieldNameStrategy = FieldNameStrategy.SNAKE_CASE
+
+        include(permissionModuleRegistry)
 
         fieldTypes(
             DateColumnType::class mapsTo FieldType.DATE,
@@ -27,6 +26,17 @@ val userModuleRegistry: Registry by lazy {
 
             oneToMany("userProfiles", UserProfilesTable) {
                 UsersTable.id references UserProfilesTable.userId
+            }
+
+            manyToMany("organizations", OrganizationsTable, UserOrganization) {
+
+                source(
+                    UsersTable.id references UserOrganization.userId
+                )
+
+                target(
+                    OrganizationsTable.id references UserOrganization.organizationId
+                )
             }
         }
 
@@ -59,6 +69,31 @@ val userModuleRegistry: Registry by lazy {
 
             manyToOne("userProfile", UserProfilesTable) {
                 AddressesTable.userProfileId references UserProfilesTable.id
+            }
+        }
+
+
+        entity("organization", OrganizationsTable) {
+            field(OrganizationsTable.name)
+            field(OrganizationsTable.left)
+            field(OrganizationsTable.right)
+            field(OrganizationsTable.level)
+
+            manyToOne("root", OrganizationsTable) {
+                OrganizationsTable.rootId references OrganizationsTable.id
+            }
+
+            manyToOne("contexts", ContextsTable) {
+                OrganizationsTable.contextId references ContextsTable.id
+            }
+
+            manyToMany("members", UsersTable, UserOrganization) {
+                source(
+                    OrganizationsTable.id references UserOrganization.organizationId
+                )
+                target(
+                    UsersTable.id references UserOrganization.userId
+                )
             }
         }
     }
