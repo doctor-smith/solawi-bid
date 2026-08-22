@@ -19,8 +19,8 @@ typealias ValueTranslator = (JsonElement) -> Any
  */
 @Suppress("TooManyFunctions")
 class Registry(
-    private val fieldNameStrategy: FieldNameStrategy =
-        FieldNameStrategy.EXACT
+    private val fieldNameStrategy: FieldNameStrategy = FieldNameStrategy.EXACT,
+    private val entityNameStrategy: EntityNameStrategy = EntityNameStrategy.EXACT
 ) {
 
     private val entities =
@@ -37,6 +37,8 @@ class Registry(
 
     private val fieldDefinitions =
         mutableMapOf<FieldType, FieldDefinition>()
+    private val pendingRelations =
+        mutableListOf<PendingRelation>()
 
     init {
         registerDefaultFieldDefinitions()
@@ -62,14 +64,18 @@ class Registry(
         entity: EntityType,
         table: Table
     ) {
-        require(entity.name !in entities) {
+        val name = entityNameStrategy.apply(entity.name)
+
+        require(name !in entities) {
             "Entity already registered: ${entity.name}"
         }
 
-        entities[entity.name] = entity
-        tables[entity.name] = table
+        val normalized = entity.copy(name = name)
 
-        columns[entity.name] =
+        entities[name] = normalized
+        tables[name] = table
+
+        columns[name] =
             entity.fields.keys.associateWith { fieldName ->
 
                 val columnName = resolveColumnName(fieldName)
@@ -82,6 +88,21 @@ class Registry(
                             "in table '${entity.table}'"
                 )
             }.toMutableMap()
+    }
+
+    fun merge(other: Registry) {
+
+        other.entities.forEach { (name, entity) ->
+
+            require(!entities.containsKey(name)) {
+                "Entity '$name' is already registered"
+            }
+
+            registerEntity(
+                entity,
+                other.getEntityTable(name)
+            )
+        }
     }
 
     fun registerMappingTable(
@@ -167,6 +188,52 @@ class Registry(
             ?.relations
             ?.containsKey(relationName)
             ?: false
+
+    internal fun registerPendingRelations(
+        relations: Collection<PendingRelation>
+    ) {
+        pendingRelations += relations
+    }
+    internal fun resolvePendingRelations() {
+
+        pendingRelations.forEach { pending ->
+
+            val sourceEntity =
+                getEntityOrThrow(pending.sourceEntity)
+
+            val relation =
+                sourceEntity.relations[pending.relationName]
+                    ?: error(
+                        "Relation '${pending.sourceEntity}.${pending.relationName}' not found"
+                    )
+
+            // If the target table is registered as an entity, use its
+            // logical entity name. Otherwise fall back to the physical
+            // table name.
+            val targetEntityName =
+                entities.values
+                    .firstOrNull { entity ->
+                        getEntityTable(entity.name) == pending.targetTable
+                    }
+                    ?.name
+                    ?: pending.targetTable.tableName
+
+            val updatedEntity =
+                sourceEntity.copy(
+                    relations =
+                        sourceEntity.relations.toMutableMap().apply {
+                            this[pending.relationName] =
+                                relation.copy(
+                                    targetEntity = targetEntityName
+                                )
+                        }
+                )
+
+            entities[sourceEntity.name] = updatedEntity
+        }
+
+        pendingRelations.clear()
+    }
 
     // -------------------------------------------------------------------------
     // Field definitions / value translators

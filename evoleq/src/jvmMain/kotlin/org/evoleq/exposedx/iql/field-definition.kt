@@ -17,11 +17,6 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.neq
 import org.jetbrains.exposed.sql.lowerCase
 
-enum class FieldNameStrategy {
-    EXACT,
-    SNAKE_CASE
-}
-
 
 interface FieldDefinition {
 
