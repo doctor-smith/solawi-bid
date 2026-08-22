@@ -36,7 +36,11 @@ fun <UserEnv> Routing.user(
                 ReceiveContextual<CreateUser>() * CreateNewUser * Respond<User>{ transform() } runOn Base(call, environment)
             }
 
-            post("query") { ReceiveContextual<UserQuery>() * UserQuery * Respond<Users>{ transform() } runOn Base(call, environment) }
+            post("query") {
+                ReceiveContextual<UserQuery>() *
+                IsGranted("MANAGE_USERS") *
+                UserQuery *
+                Respond<Users>{ transform() } runOn Base(call, environment) }
 
             patch("change-password") {
                 ReceiveContextual<ChangePassword>() * ChangePassword * Respond<User>{ transform() } runOn Base(call, environment)
