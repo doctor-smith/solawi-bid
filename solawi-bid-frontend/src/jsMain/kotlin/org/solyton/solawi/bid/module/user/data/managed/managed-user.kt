@@ -10,6 +10,7 @@ import org.evoleq.axioms.definition.Lensify
 import org.evoleq.axioms.definition.ReadWrite
 import org.solyton.solawi.bid.module.permissions.data.Permissions
 import org.solyton.solawi.bid.module.user.data.profile.UserProfile
+import org.solyton.solawi.bid.module.user.data.status.UserStatus
 
 /**
  * Generator class.
@@ -25,6 +26,7 @@ import org.solyton.solawi.bid.module.user.data.profile.UserProfile
     @ReadWrite val id: String,
     @ReadWrite val username: String,
     @ReadWrite val password: String,
+    @ReadWrite val status: UserStatus,
     @ReadWrite val permissions: Permissions,
     @ReadWrite val profile: UserProfile? = null
 )

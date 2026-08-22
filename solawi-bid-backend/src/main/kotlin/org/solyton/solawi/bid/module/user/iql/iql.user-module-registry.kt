@@ -23,6 +23,7 @@ val userModuleRegistry: Registry by lazy {
         entity("user", UsersTable) {
             field(UsersTable.username)
             field(UsersTable.password)
+            field(UsersTable.status)
 
             oneToMany("userProfiles", UserProfilesTable) {
                 UsersTable.id references UserProfilesTable.userId

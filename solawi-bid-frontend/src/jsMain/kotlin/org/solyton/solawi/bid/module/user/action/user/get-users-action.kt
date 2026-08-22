@@ -8,6 +8,7 @@ import org.solyton.solawi.bid.module.user.data.Application
 import org.solyton.solawi.bid.module.user.data.api.GetUsers
 import org.solyton.solawi.bid.module.user.data.api.Users
 import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
+import org.solyton.solawi.bid.module.user.data.transform.toDomainType
 
 const val GET_USERS = "GET_USERS"
 
@@ -20,7 +21,13 @@ fun getUsers(nameSuffix: String = "") = Action<Application, GetUsers, Users>(
         {app: Application ->
             app.copy(managedUsers = users.all.map{ managedUser ->
                 val user = app.managedUsers.firstOrNull{it.id == managedUser.id}
-                user ?: ManagedUser(managedUser.id, managedUser.username, "", Permissions())
+                user ?: ManagedUser(
+                    managedUser.id,
+                    managedUser.username,
+                    "",
+                    managedUser.status.toDomainType(),
+                    Permissions()
+                )
             })}
     }
 )
