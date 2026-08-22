@@ -12,7 +12,7 @@ class ExposedCompiler(
 
     fun compile(
         filter: Filter,
-        table: org.jetbrains.exposed.sql.Table
+        table: Table
     ): Op<Boolean> =
         when (filter) {
 
