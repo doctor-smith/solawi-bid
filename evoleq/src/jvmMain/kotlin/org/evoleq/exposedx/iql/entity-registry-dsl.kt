@@ -112,15 +112,29 @@ class RegistryConfiguration : Configuration<Registry> {
         }
 
         val configuredEntityType = entityConfig.configure()
-
+        entityConfig.pendingRelations.forEach { pending ->
+            pending.mappingTable?.let {
+                registerMappingTable(table)
+            }
+        }
         registerEntity(
             configuredEntityType,
             table
         )
+/*
+        entityConfig.pendingRelations.forEach { pending ->
+            pending.mappingTable?.let {
+                registerMappingTable(table)
+            }
+        }
 
+
+ */
         registerPendingRelations(
             entityConfig.pendingRelations
         )
+
+
     }
         configurations += config
     }
@@ -135,7 +149,8 @@ infix fun KClass<out IColumnType>.mapsTo(
 internal data class PendingRelation(
     val sourceEntity: String,
     val relationName: String,
-    val targetTable: Table
+    val targetTable: Table,
+    val mappingTable: Table? = null
 )
 
 @IqlRegistryDsl
@@ -265,10 +280,12 @@ class EntityTypeConfiguration : Configuration<EntityType> {
                 joinColumns = mapping.sourceColumns,
                 mapping = mapping
             )
+
         pendingRelations += PendingRelation(
             sourceEntity = name,
             relationName = relationName,
-            targetTable = targetTable
+            targetTable = targetTable,
+            mappingTable = mappingTable
         )
     }
 }

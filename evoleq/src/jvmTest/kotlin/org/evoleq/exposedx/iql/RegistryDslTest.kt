@@ -614,4 +614,20 @@ class RegistryDslTest {
                 ?.type
         )
     }
+
+    @Test
+    fun `resolves entity by table`() {
+        val registry = registry {
+            entity("user", UsersTable) {
+                field(UsersTable.id)
+            }
+        }
+
+        val entity =
+            registry.getEntityByTable(UsersTable)
+
+        assertEquals("user", entity.name)
+        assertEquals("users", entity.table)
+    }
+
 }

@@ -648,9 +648,11 @@ class IqlQueryEdgeCaseTest {
             query.sort.size
         )
 
+        val sort =query.sort.first()
+        assertIs<Sort.Field>(sort)
         assertEquals(
             "User.name",
-            query.sort.first().field
+            sort.field.path
         )
     }
 
@@ -666,10 +668,11 @@ class IqlQueryEdgeCaseTest {
             1,
             query.sort.size
         )
-
+        val sort =query.sort.first()
+        assertIs<Sort.Field>(sort)
         assertEquals(
             "User.createdAt",
-            query.sort.first().field
+            sort.field.path
         )
     }
 
@@ -686,9 +689,11 @@ class IqlQueryEdgeCaseTest {
             query.sort.size
         )
 
+        val sort =query.sort.first()
+        assertIs<Sort.Field>(sort)
         assertEquals(
             "User.name",
-            query.sort.first().field
+            sort.field.path
         )
 
         assertEquals(
@@ -711,9 +716,11 @@ class IqlQueryEdgeCaseTest {
             query.sort.size
         )
 
+        val sort =query.sort.first()
+        assertIs<Sort.Field>(sort)
         assertEquals(
             "User.createdAt",
-            query.sort.first().field
+            sort.field.path
         )
 
         assertEquals(
@@ -736,24 +743,27 @@ class IqlQueryEdgeCaseTest {
             query.sort.size
         )
 
+        val sort =query.sort
+        assertIs<List<Sort.Field>>(sort)
+
         assertEquals(
             "User.name",
-            query.sort[0].field
+            sort[0].field.path
         )
 
         assertEquals(
             SortDirection.ASC,
-            query.sort[0].direction
+            sort[0].direction
         )
 
         assertEquals(
             "User.createdAt",
-            query.sort[1].field
+            sort[1].field.path
         )
 
         assertEquals(
             SortDirection.DESC,
-            query.sort[1].direction
+            sort[1].direction
         )
     }
 
