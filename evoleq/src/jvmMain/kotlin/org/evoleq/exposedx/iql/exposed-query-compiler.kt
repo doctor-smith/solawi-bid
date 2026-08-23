@@ -1,5 +1,6 @@
 package org.evoleq.exposedx.iql
 
+import org.evoleq.iql.data.FieldExpression
 import org.evoleq.iql.data.Query
 import org.evoleq.iql.data.Sort
 import org.evoleq.iql.data.SortDirection
@@ -78,25 +79,35 @@ fun CompiledQuery.applyTo(table: Table): org.jetbrains.exposed.sql.Query {
 }
 
 class ExposedQueryCompiler(
-    private val registry: Registry
+    private val registry: Registry,
+    private val expressionCompiler: ExposedExpressionCompiler = ExposedExpressionCompiler(registry)
 ) {
 
     private val filterCompiler =
-        ExposedCompiler(registry)
+        ExposedCompiler(registry, expressionCompiler)
 
     fun compile(
         query: Query,
         table: Table
     ): CompiledQuery {
 
+        val entity = registry.getEntityByTable(table)
+
         val predicate =
             query.filter?.let {
-                filterCompiler.compile(it, table)
+                filterCompiler.compile(
+                    it,
+                    table
+                )
             }
 
         val orderBy =
             query.sort.map { sort ->
-                compileSort(sort)
+                compileSort(
+                    sort = sort,
+                    sourceTable = table,
+                    currentEntity = entity.name
+                )
             }
 
         return CompiledQuery(
@@ -108,20 +119,28 @@ class ExposedQueryCompiler(
     }
 
     private fun compileSort(
-        sort: Sort
-    ): Pair<Expression<*>, SortOrder> {
+        sort: Sort,
+        sourceTable: Table,
+        currentEntity: String
+    ): Pair<org.jetbrains.exposed.sql.Expression<*>, SortOrder> {
 
-        val parts = sort.field.split(".")
+        val compiledExpression =
+            when (sort) {
 
-        require(parts.size == 2) {
-            "Invalid sort field: ${sort.field}"
-        }
+                is Sort.Field ->
+                    expressionCompiler.compile(
+                        FieldExpression(sort.field),
+                        sourceTable,
+                        currentEntity
+                    )
 
-        val entity = parts[0]
-        val field = parts[1]
-
-        val column =
-            registry.getColumn(entity, field)
+                is Sort.Expression ->
+                    expressionCompiler.compile(
+                        sort.expression,
+                        sourceTable,
+                        currentEntity
+                    )
+            }
 
         val direction =
             when (sort.direction) {
@@ -129,6 +148,6 @@ class ExposedQueryCompiler(
                 SortDirection.DESC -> SortOrder.DESC
             }
 
-        return column to direction
+        return compiledExpression.expression to direction
     }
 }

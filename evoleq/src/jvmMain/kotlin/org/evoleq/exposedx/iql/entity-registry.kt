@@ -105,15 +105,20 @@ class Registry(
         }
     }
 
-    fun registerMappingTable(
+    internal fun registerMappingTable(
         name: String,
         table: Table
     ) {
-        require(name !in mappingTables) {
-            "Mapping table already registered: $name"
+        if(mappingTables[name] != null) {
+            assert(mappingTables[name] == table) { "Mapping table already registered: $name" }
+            return
         }
 
         mappingTables[name] = table
+    }
+
+    fun registerMappingTable(table: Table) {
+        registerMappingTable(table.tableName, table)
     }
 
     fun getEntity(name: String): EntityType? =
@@ -128,6 +133,31 @@ class Registry(
             ?: error(
                 "No Exposed table registered for entity: $name"
             )
+
+    fun getEntityByTable(table: Table): EntityType {
+        return entities.values.firstOrNull {
+            it.table == table.tableName
+        } ?: error(
+            "No entity registered for table '${table.tableName}'"
+        )
+    }
+
+    fun getFieldType(
+        table: Table,
+        column: Column<*>
+    ): FieldType {
+
+        val entity =
+            getEntityByTable(table)
+
+        return entity.fields.values
+            .firstOrNull { it.name == column.name }
+            ?.type
+            ?: error(
+                "No field registered for column '${column.name}' " +
+                        "on entity '${entity.name}'"
+            )
+    }
 
     fun getMappingTable(name: String): Table =
         mappingTables[name]
@@ -197,6 +227,10 @@ class Registry(
     internal fun resolvePendingRelations() {
 
         pendingRelations.forEach { pending ->
+
+            pending.mappingTable?.let {
+                registerMappingTable(it)
+            }
 
             val sourceEntity =
                 getEntityOrThrow(pending.sourceEntity)

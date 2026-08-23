@@ -4,10 +4,12 @@ import org.evoleq.iql.data.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
+import org.jetbrains.exposed.sql.Expression as SqlExpression
 
 @Suppress("TooManyFunctions")
 class ExposedCompiler(
-    private val registry: Registry
+    private val registry: Registry,
+    private val expressionCompiler: ExposedExpressionCompiler = ExposedExpressionCompiler(registry)
 ) {
 
     fun compile(
@@ -29,6 +31,25 @@ class ExposedCompiler(
 
             is ComparisonFilter ->
                 compileComparison(filter)
+
+            is ExpressionComparisonFilter -> {
+                val currentEntity = registry.getEntityByTable(table)
+                val left =
+                    expressionCompiler.compile(
+                        expression = filter.expression,
+                        sourceTable = table,
+                        currentEntity = currentEntity.name
+                    )
+
+                registry
+                    .lookup(left.fieldType)
+                    .compileComparison(
+                        expression = left.expression,
+                        operator = filter.operator,
+                        value = filter.value
+                    )
+            }
+
 
             is InFilter ->
                 compileIn(filter)
@@ -309,6 +330,40 @@ class ExposedCompiler(
         return exists(query)
     }
 
+    //--------------------------------------------------------------------------
+    // Compile expression comparison
+    //--------------------------------------------------------------------------
+    /*
+    private fun compileExpressionComparison(
+        expression: SqlExpression<*>,
+        operator: Operator,
+        value: JsonElement
+    ): Op<Boolean> =
+        when (operator) {
+
+            Operator.EQ ->
+                expression eq value
+
+            Operator.NE ->
+                expression neq value
+
+            Operator.GT ->
+                expression greater value
+
+            Operator.GTE ->
+                expression greaterEq value
+
+            Operator.LT ->
+                expression less value
+
+            Operator.LTE ->
+                expression lessEq value
+
+            Operator.LIKE ->
+                expression like value
+        }
+
+     */
     // -------------------------------------------------------------------------
     // Field resolution
     // -------------------------------------------------------------------------
@@ -539,6 +594,6 @@ class ExposedCompiler(
     ): Op<Boolean> {
 
         return (left as Column<Any>) eq
-                (right as Expression<Any>)
+                (right as SqlExpression<Any>)
     }
 }

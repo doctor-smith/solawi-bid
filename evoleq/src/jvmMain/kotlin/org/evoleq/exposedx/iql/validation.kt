@@ -19,6 +19,7 @@ class FilterValidator(private val registry: Registry) {
             is OrFilter -> validateOrFilter(filter)
             is NotFilter -> validateNotFilter(filter)
             is ComparisonFilter -> validateComparisonFilter(filter)
+            is ExpressionComparisonFilter -> TODO()
             is InFilter -> validateInFilter(filter)
             is IsNullFilter -> validateIsNullFilter(filter)
             is QuantifierFilter -> validateQuantifierFilter(filter)

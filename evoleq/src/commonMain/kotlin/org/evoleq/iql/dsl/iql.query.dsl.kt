@@ -1,10 +1,7 @@
 package org.evoleq.iql.dsl
 
 
-import org.evoleq.iql.data.Filter
-import org.evoleq.iql.data.Query
-import org.evoleq.iql.data.Sort
-import org.evoleq.iql.data.SortDirection
+import org.evoleq.iql.data.*
 import org.evoleq.ktorx.pages.Page
 
 fun query(
@@ -46,8 +43,8 @@ class QueryBuilder(private val entity: String? = null) {
         field: String,
         direction: SortDirection = SortDirection.ASC
     ) {
-        sort += Sort(
-            field = field,
+        sort += Sort.Field(
+            field = SimpleFieldRef(field),
             direction = direction
         )
     }
@@ -63,6 +60,32 @@ class QueryBuilder(private val entity: String? = null) {
         orderBy(
             field,
             SortDirection.DESC
+        )
+    }
+
+    fun orderBy(
+        expression: Expression,
+        direction: SortDirection = SortDirection.ASC
+    ) {
+        sort += Sort.Expression(
+            expression = expression,
+            direction = direction
+        )
+    }
+
+
+
+    fun asc(expression: Expression) {
+        orderBy(
+            expression = expression,
+            direction = SortDirection.ASC
+        )
+    }
+
+    fun desc(expression: Expression) {
+        orderBy(
+            expression = expression,
+            direction = SortDirection.DESC
         )
     }
 

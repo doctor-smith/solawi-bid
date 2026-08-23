@@ -46,6 +46,14 @@ data class ComparisonFilter(
 }
 
 @Serializable
+@SerialName("expression_comparison")
+data class ExpressionComparisonFilter(
+    val expression: Expression,
+    val operator: Operator,
+    val value: JsonElement
+) : Filter()
+
+@Serializable
 @SerialName("in")
 data class InFilter(
     val field: FieldRef,
