@@ -9,9 +9,6 @@ import org.evoleq.compose.guard.data.withLoading
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.device.data.mediaType
-import org.evoleq.iql.data.Query
-import org.evoleq.iql.dsl.FilterBuilder
-import org.evoleq.iql.dsl.QueryBuilder
 import org.evoleq.iql.dsl.query
 import org.evoleq.language.component
 import org.evoleq.language.subComp
@@ -27,6 +24,16 @@ import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.H2
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
+import org.solyton.solawi.bid.application.ui.page.user.data.UiState
+import org.solyton.solawi.bid.application.ui.page.user.data.filter
+import org.solyton.solawi.bid.application.ui.page.user.data.filter.firstName
+import org.solyton.solawi.bid.application.ui.page.user.data.filter.lastName
+import org.solyton.solawi.bid.application.ui.page.user.data.filter.status
+import org.solyton.solawi.bid.application.ui.page.user.data.filter.username
+import org.solyton.solawi.bid.application.ui.page.user.data.sort.lastName
+import org.solyton.solawi.bid.application.ui.page.user.data.sort.status
+import org.solyton.solawi.bid.application.ui.page.user.data.sort.username
+import org.solyton.solawi.bid.application.ui.page.user.data.sortOrder
 import org.solyton.solawi.bid.application.ui.page.user.effect.trigger
 import org.solyton.solawi.bid.application.ui.page.user.i18n.UserLangComponent
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
@@ -50,76 +57,7 @@ import org.solyton.solawi.bid.module.user.data.*
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
 import org.solyton.solawi.bid.module.user.data.api.UserStatus
 import org.solyton.solawi.bid.module.user.data.reader.isNotGranted
-import org.solyton.solawi.bid.module.user.service.profile.fullname
 
-
-data class UserFilterQuery(
-    val username: String? = null,
-    val status: String? = null,
-    val firstName: String? = null,
-    val lastName : String? = null,
-) {
-    fun isNotNull() = listOfNotNull(username, status, firstName, lastName).isNotEmpty()
-
-    fun asQuery(): (FilterBuilder.() -> Unit)? = when {
-        isNotNull() -> {
-            {
-                username?.let {
-                    p("user.username") contains it
-                }
-                status?.let { p("user.status") containsIgnoreCase   it }
-                firstName?.let {
-                    any("userProfiles") {
-                        p("userProfile.first_name") containsIgnoreCase   it
-                    }
-                }
-                lastName?.let {
-                    any("userProfiles") {
-                        p("userProfile.last_name") containsIgnoreCase  it
-                    }
-                }
-            }
-        }
-
-        else -> null
-    }
-}
-
-data class UserSortOrder(
-    val username: SortOrder = SortOrder.ASC,
-    val status: SortOrder = SortOrder.NONE,
-    /*
-    val firstName: SortOrder = SortOrder.NONE,
-    val lastName: SortOrder = SortOrder.NONE,
-
-     */
-) {
-    fun asQuerySortOrder(): QueryBuilder.()->Unit = {
-        when(username){
-            SortOrder.ASC -> asc("user.username")
-            SortOrder.DESC -> desc("user.username")
-            SortOrder.NONE -> {}
-        }
-        when(status){
-            SortOrder.ASC -> asc("user.status")
-            SortOrder.DESC -> desc("user.status")
-            SortOrder.NONE -> {}
-        }
-        /*
-        when(firstName){
-            SortOrder.ASC -> asc("userProfile.first_name")
-            SortOrder.DESC -> desc("userProfile.first_name")
-            SortOrder.NONE -> {}
-        }
-        when(lastName) {
-            SortOrder.ASC -> asc("userProfile.last_name")
-            SortOrder.DESC -> desc("userProfile.last_name")
-            SortOrder.NONE -> {}
-        }
-
-         */
-    }
-}
 
 @Markup
 @Composable
@@ -158,51 +96,43 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
     val managedUserIds = Read(storage * managedUsers) map {users -> users.map{ user -> user.id}}
 
     LaunchedEffectOnSource(managedUserIds) {
-
+        if(managedUserIds.emit().isEmpty()) return@LaunchedEffectOnSource
         storage * userActions dispatch readUserProfiles(managedUserIds.emit())
     }
 
-
-
-    var filterState by remember {
-        mutableStateOf(UserFilterQuery())
+    var uiState by remember{
+        mutableStateOf(UiState())
     }
-    var sortOrderState by remember { mutableStateOf(UserSortOrder() ) }
-    var pageSizeState by remember { mutableStateOf(20) }
-    var pageOffsetState by remember { mutableStateOf(0L) }
-    var queryState by remember(
-        filterState,
-        sortOrderState,
-        pageSizeState,
-        pageOffsetState
+
+    val query = remember(
+        uiState.filter,
+        uiState.sortOrder,
+        uiState.pageSize,
+        uiState.pageOffset
     ) {
-           mutableStateOf<Query>(
-            query{
-                select("user")
-                val query = filterState.asQuery()
-                if(query != null ) where{
-                    query()
-                }
-                val sortOrder = sortOrderState.asQuerySortOrder()
-                sortOrder()
-                page(
-                    pageSizeState,
-                    pageOffsetState
-                )
+        query{
+            select("user")
+            val query = uiState.filter.asQuery()
+            if(query != null ) where{
+                query()
             }
-        )
+            val sortOrder = uiState.sortOrder.asQuerySortOrder()
+            sortOrder()
+            page(
+                uiState.pageSize,
+                uiState.pageOffset
+            )
+        }
     }
 
-    LaunchedEffect(queryState) {
+    LaunchedEffect(query) {
         launch {
             val action = userQuery(
-                queryState
+                query
             )
             trigger(action) on storage
         }
     }
-
-
 
     // State
     var useR by remember { mutableStateOf<CreateUser?>(null) }
@@ -213,7 +143,7 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
         }
 
         val listStyles = ListStyles().modifyFilterWrapper{
-            width(80.percent)
+            width(100.percent)
             paddingLeft(20.px)
         }
 
@@ -225,23 +155,25 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
                         AnglesLeftButton(
                             color = Color.black,
                             bgColor = Color.white,
-                            texts = { "Previous $pageSizeState users" },
+                            texts = { "Previous ${uiState.pageSize} users" },
                             deviceType = storage * deviceData * mediaType.get,
                         ) {
-                            val newOffset = pageOffsetState - pageSizeState
+                            val newOffset = uiState.pageOffset - uiState.pageSize
 
-                            pageOffsetState = when{
+                            uiState = uiState.copy(pageOffset = when{
                                 newOffset > 0 -> newOffset
                                 else -> 0
-                            }
+                            })
                         }
                         AnglesRightButton(
                             color = Color.black,
                             bgColor = Color.white,
-                            texts = {"Next $pageSizeState users"},
+                            texts = {"Next ${uiState.pageSize} users"},
                             deviceType = storage * deviceData * mediaType.get,
                         ) {
-                            pageOffsetState += pageSizeState
+                            uiState = uiState.copy(
+                                pageOffset = uiState.pageOffset + uiState.pageSize
+                            )
                         }
                         PlusButton(
                             color = Color.black,
@@ -279,46 +211,50 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
                 Filter(listStyles.modifyFilter { width(20.percent) }.filter) {
                     TextFilter(
                         title = "Username",
-                        state = filterState.username?:"",
+                        state = uiState.filter.username?:"",
                         refreshOnInput = true,
                         ignoreCase = false,
-                    ){ text, bool -> filterState = filterState.copy(username = when{
-                        text.isBlank() -> null
-                        else -> text
-                    }) }
-                }
+                    ){ text, bool -> uiState = uiState.filter{
+                        username {
+                            text.ifBlank { null }
+                        }
+                    }
+                } }
                 Filter(listStyles.modifyFilter { width(10.percent) }.filter) {
                     TextFilter(
                         title = "Status",
-                        state = filterState.status?:"",
+                        state = uiState.filter.status?:"",
                         refreshOnInput = true,
                         ignoreCase = false,
-                    ){ text, bool -> filterState = filterState.copy(status = when{
-                        text.isBlank() -> null
-                        else -> text
-                    }) }
+                    ){ text, bool -> uiState = uiState.filter{
+                        status{
+                            text.ifBlank { null }
+                        }
+                    } }
                 }
                 Filter(listStyles.modifyFilter { width(10.percent) }.filter) {
                     TextFilter(
                         title = "Firstname",
-                        state = filterState.firstName?:"",
+                        state = uiState.filter.firstName?:"",
                         refreshOnInput = true,
                         ignoreCase = false,
-                    ){ text, bool -> filterState = filterState.copy(firstName = when{
-                        text.isBlank() -> null
-                        else -> text
-                    }) }
+                    ){ text, bool -> uiState = uiState.filter{
+                        firstName{
+                            text.ifBlank { null }
+                        }
+                    }}
                 }
                 Filter(listStyles.modifyFilter { width(10.percent) }.filter) {
                     TextFilter(
                         title = "Lastname",
-                        state = filterState.lastName?:"",
+                        state = uiState.filter.lastName?:"",
                         refreshOnInput = true,
                         ignoreCase = false,
-                    ){ text, bool -> filterState = filterState.copy(lastName = when{
-                        text.isBlank() -> null
-                        else -> text
-                    }) }
+                    ){ text, bool -> uiState = uiState.filter{
+                        lastName{
+                            text.ifBlank { null }
+                        }
+                    } }
                 }
             }
 
@@ -327,14 +263,31 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
                     HeaderCellWithActions(
                         text = {"Username"},
                         styles = HeaderCellStyles().width(20.percent),
-                        ordering = { SortByDrop{ order: SortOrder -> sortOrderState = sortOrderState.copy(username = order) } }
+                        ordering = { SortByDrop{ order: SortOrder ->
+                            uiState = uiState.sortOrder {
+                                username { order }
+                            }
+                        } }
                     )
                     HeaderCellWithActions(
                         text = {"Status"},
                         styles = HeaderCellStyles().width(10.percent),
-                        ordering = { SortByDrop{ order: SortOrder -> sortOrderState = sortOrderState.copy(status = order) } }
+                        ordering = { SortByDrop{ order: SortOrder ->
+                            uiState = uiState.sortOrder {
+                                status { order }
+                            }
+                        } }
                     )
-                    HeaderCell("Name"){width(20.percent)}
+                    HeaderCellWithActions(
+                        text = {"Lastname, Firstname"},
+                        styles = HeaderCellStyles().width(10.percent),
+                        ordering = { SortByDrop{ order: SortOrder ->
+                            uiState = uiState.sortOrder {
+                                lastName { order }
+                            }
+                        } }
+                    )
+                    // HeaderCell("Name"){width(20.percent)}
                 }
             }
 
@@ -344,7 +297,7 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
                         TextCell(item.username) { width(20.percent) }
                         TextCell(item.status.name) { width(10.percent) }
                         TextCell(
-                            item.profile?.fullname() ?: ""
+                            item.profile?.let{ "${it.lastname}, ${it.firstname}"}?: ""
                         ) {width(20.percent)}
                     }
                     ActionsWrapper(listStyles.actionsWrapper) {
