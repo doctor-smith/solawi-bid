@@ -144,8 +144,24 @@ class ExposedQueryCompiler(
 
         val direction =
             when (sort.direction) {
-                SortDirection.ASC -> SortOrder.ASC
-                SortDirection.DESC -> SortOrder.DESC
+
+                SortDirection.ASC ->
+                    when (registry.nullSortOrder) {
+                        NullSortOrder.FIRST ->
+                            SortOrder.ASC_NULLS_FIRST
+
+                        NullSortOrder.LAST ->
+                            SortOrder.ASC_NULLS_LAST
+                    }
+
+                SortDirection.DESC ->
+                    when (registry.nullSortOrder) {
+                        NullSortOrder.FIRST ->
+                            SortOrder.DESC_NULLS_FIRST
+
+                        NullSortOrder.LAST ->
+                            SortOrder.DESC_NULLS_LAST
+                    }
             }
 
         return compiledExpression.expression to direction
