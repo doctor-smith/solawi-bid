@@ -19,6 +19,8 @@ class RegistryConfiguration : Configuration<Registry> {
     lateinit var fieldNameStrategy: FieldNameStrategy
     lateinit var entityNameStrategy: EntityNameStrategy
 
+    lateinit var nullSortOrder: NullSortOrder
+
     val fieldTypes =
         defaultFieldTypeRegistry()
 
@@ -36,9 +38,14 @@ class RegistryConfiguration : Configuration<Registry> {
             entityNameStrategy = EntityNameStrategy.EXACT
         }
 
+        if(!::nullSortOrder.isInitialized) {
+            nullSortOrder = NullSortOrder.FIRST
+        }
+
         return Registry(
             fieldNameStrategy,
-            entityNameStrategy
+            entityNameStrategy,
+            nullSortOrder
         ).apply{
             configurations.forEach{it()}
             resolvePendingRelations()
