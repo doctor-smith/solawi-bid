@@ -85,7 +85,7 @@ class ExposedQueryCompilerTest {
         )
 
         assertEquals(
-            SortOrder.ASC,
+            SortOrder.ASC_NULLS_FIRST,
             compiled.orderBy.first().second
         )
     }
@@ -110,7 +110,7 @@ class ExposedQueryCompilerTest {
         )
 
         assertEquals(
-            SortOrder.DESC,
+            SortOrder.DESC_NULLS_FIRST,
             compiled.orderBy.first().second
         )
     }
@@ -136,12 +136,12 @@ class ExposedQueryCompilerTest {
         )
 
         assertEquals(
-            SortOrder.ASC,
+            SortOrder.ASC_NULLS_FIRST,
             compiled.orderBy[0].second
         )
 
         assertEquals(
-            SortOrder.DESC,
+            SortOrder.DESC_NULLS_FIRST,
             compiled.orderBy[1].second
         )
     }
@@ -174,7 +174,7 @@ class ExposedQueryCompilerTest {
         )
 
         assertEquals(
-            SortOrder.DESC,
+            SortOrder.DESC_NULLS_FIRST,
             compiled.orderBy.first().second
         )
     }
