@@ -20,7 +20,8 @@ typealias ValueTranslator = (JsonElement) -> Any
 @Suppress("TooManyFunctions")
 class Registry(
     private val fieldNameStrategy: FieldNameStrategy = FieldNameStrategy.EXACT,
-    private val entityNameStrategy: EntityNameStrategy = EntityNameStrategy.EXACT
+    private val entityNameStrategy: EntityNameStrategy = EntityNameStrategy.EXACT,
+    internal val nullSortOrder: NullSortOrder = NullSortOrder.FIRST,
 ) {
 
     private val entities =

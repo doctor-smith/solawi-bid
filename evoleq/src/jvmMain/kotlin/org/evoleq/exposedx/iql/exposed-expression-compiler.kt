@@ -863,7 +863,7 @@ class ExposedExpressionCompiler(
                 }
 
                 append(" FROM ")
-                append(table)
+                append(table.tableName)
 
                 append(" WHERE ")
                 where.toQueryBuilder(this)

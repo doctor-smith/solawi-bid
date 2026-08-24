@@ -40,7 +40,7 @@ class ExposedExpressionCompilerExecutionTest {
         registry {
 
             fieldType(
-                org.jetbrains.exposed.sql.AutoIncColumnType::class,
+                AutoIncColumnType::class,
                 FieldType.LONG
             )
 
@@ -1106,13 +1106,13 @@ class ExposedExpressionCompilerExecutionTest {
                                                 SimpleFieldRef("amount"),
                                             operator = Operator.GT,
                                             value =
-                                                kotlinx.serialization.json.JsonPrimitive(100.0)
+                                                JsonPrimitive(100.0)
                                         )
                                 ),
                             aggregation = Aggregation.COUNT
                         ),
                     operator = Operator.GT,
-                    value = kotlinx.serialization.json.JsonPrimitive(0)
+                    value = JsonPrimitive(0)
                 )
 
             val result =
@@ -1180,7 +1180,7 @@ class ExposedExpressionCompilerExecutionTest {
                     expression = expression,
                     operator = Operator.GT,
                     value =
-                        kotlinx.serialization.json.JsonPrimitive(100.0)
+                        JsonPrimitive(100.0)
                 )
 
             val result =
@@ -1238,7 +1238,7 @@ class ExposedExpressionCompilerExecutionTest {
                                         SimpleFieldRef("amount"),
                                     operator = Operator.GT,
                                     value =
-                                        kotlinx.serialization.json.JsonPrimitive(100.0)
+                                        JsonPrimitive(100.0)
                                 )
                         ),
                     aggregation = Aggregation.MAX
@@ -1249,7 +1249,7 @@ class ExposedExpressionCompilerExecutionTest {
                     expression = expression,
                     operator = Operator.GT,
                     value =
-                        kotlinx.serialization.json.JsonPrimitive(250.0)
+                        JsonPrimitive(250.0)
                 )
 
             val result =
@@ -1307,7 +1307,7 @@ class ExposedExpressionCompilerExecutionTest {
                                         SimpleFieldRef("amount"),
                                     operator = Operator.GT,
                                     value =
-                                        kotlinx.serialization.json.JsonPrimitive(100.0)
+                                        JsonPrimitive(100.0)
                                 )
                         ),
                     aggregation = Aggregation.SUM
@@ -1318,7 +1318,7 @@ class ExposedExpressionCompilerExecutionTest {
                     expression = expression,
                     operator = Operator.GT,
                     value =
-                        kotlinx.serialization.json.JsonPrimitive(300.0)
+                        JsonPrimitive(300.0)
                 )
 
             val result =
@@ -1371,7 +1371,7 @@ class ExposedExpressionCompilerExecutionTest {
                                         SimpleFieldRef("amount"),
                                     operator = Operator.GT,
                                     value =
-                                        kotlinx.serialization.json.JsonPrimitive(100.0)
+                                        JsonPrimitive(100.0)
                                 )
                         ),
                     aggregation = Aggregation.AVG
@@ -1382,7 +1382,7 @@ class ExposedExpressionCompilerExecutionTest {
                     expression = expression,
                     operator = Operator.GT,
                     value =
-                        kotlinx.serialization.json.JsonPrimitive(200.0)
+                        JsonPrimitive(200.0)
                 )
 
             val result =

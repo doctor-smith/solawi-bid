@@ -46,6 +46,14 @@ infix fun Expression.eq(value: String): Filter =
         value = JsonPrimitive(value)
     )
 
+fun Expression.map(
+    field: String
+): MapExpression =
+    MapExpression(
+        source = this,
+        field = SimpleFieldRef(field)
+    )
+
 infix fun Expression.eq(value: Int): Filter =
     ExpressionComparisonFilter(
         expression = this,
@@ -65,4 +73,34 @@ infix fun Expression.eq(value: Boolean): Filter =
         expression = this,
         operator = Operator.EQ,
         value = JsonPrimitive(value)
+    )
+
+fun Expression.min(): AggregateExpression =
+    AggregateExpression(
+        source = this,
+        aggregation = Aggregation.MIN
+    )
+
+fun Expression.max(): AggregateExpression =
+    AggregateExpression(
+        source = this,
+        aggregation = Aggregation.MAX
+    )
+
+fun Expression.sum(): AggregateExpression =
+    AggregateExpression(
+        source = this,
+        aggregation = Aggregation.SUM
+    )
+
+fun Expression.avg(): AggregateExpression =
+    AggregateExpression(
+        source = this,
+        aggregation = Aggregation.AVG
+    )
+
+fun Expression.count(): AggregateExpression =
+    AggregateExpression(
+        source = this,
+        aggregation = Aggregation.COUNT
     )
