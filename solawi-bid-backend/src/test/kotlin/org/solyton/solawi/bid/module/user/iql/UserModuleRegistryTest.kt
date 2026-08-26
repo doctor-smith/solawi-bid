@@ -1,8 +1,16 @@
 package org.solyton.solawi.bid.module.user.iql
 
+import kotlinx.serialization.json.JsonPrimitive
+import org.evoleq.exposedx.iql.ExposedCompiler
+import org.evoleq.exposedx.test.runSimpleH2Test
+import org.evoleq.iql.data.ComparisonFilter
+import org.evoleq.iql.data.Operator
 import org.evoleq.iql.data.RelationType
+import org.evoleq.iql.data.SimpleFieldRef
+import org.jetbrains.exposed.sql.selectAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.Unit
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import kotlin.test.assertEquals
@@ -102,7 +110,7 @@ class UserModuleRegistryTest {
     val tables = arrayOf(
         UsersTable
     )
-/*
+
     @DbFunctional@Test
     fun `user module registry compiles user profile query`() =
         runSimpleH2Test(*tables) {
@@ -112,9 +120,9 @@ class UserModuleRegistryTest {
 
             val filter =
                 ComparisonFilter(
-                    field = p("user.username"),
+                    field = SimpleFieldRef("user.username"),
                     operator = Operator.EQ,
-                    value = "alice"
+                    value = JsonPrimitive("alice")
                 )
                     val expression =
                 compiler.compile(
@@ -127,18 +135,4 @@ class UserModuleRegistryTest {
                 .where { expression }
                 .toList()
         }
-
-
-    @Test
-    fun `all registered relation targets exist`() {
-        val registry = userModuleRegistry
-
-        registry.entities().values.forEach { entity ->
-            entity.relations.values.forEach { relation ->
-                registry.getEntityOrThrow(relation.targetEntity)
-            }
-        }
-    }
-
- */
 }
