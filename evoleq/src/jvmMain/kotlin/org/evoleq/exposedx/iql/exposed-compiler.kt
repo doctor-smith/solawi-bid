@@ -127,40 +127,13 @@ class ExposedCompiler(
                 )
         }
 
-        return compileRelationComparison(
-            filter = filter,
-            resolved = resolved,
-        )
-    }
-    private fun compileRelationComparison(
-        filter: ComparisonFilter,
-        resolved: ResolvedField
-    ): Op<Boolean> {
-
-        require(resolved.relationPath.isNotEmpty()) {
-            "Relation comparison requires a relation path"
-        }
-
-        val firstStep =
-            resolved.relationPath.first()
-
-        val sourceTable =
-            registry.getEntityTable(
-                firstStep.sourceEntity.name
-            )
-
-        val targetTable =
-            registry.getEntityTable(
-                resolved.entity
-            )
-
         val targetColumn =
             registry.getColumn(
                 resolved.entity,
                 resolved.field
             )
 
-        val valuePredicate =
+        val predicate =
             registry
                 .lookup(resolved.info.type)
                 .compileComparison(
@@ -169,24 +142,27 @@ class ExposedCompiler(
                     value = filter.value
                 )
 
-        // Für den Moment bauen wir den Pfad rückwärts
-        // als verschachtelte EXISTS-Abfragen auf.
         return compileRelationPath(
-            sourceTable = sourceTable,
             steps = resolved.relationPath,
-            predicate = valuePredicate
+            predicate = predicate
         )
     }
     private fun compileRelationPath(
-        sourceTable: Table,
         steps: List<RelationPathStep>,
         predicate: Op<Boolean>
     ): Op<Boolean> {
 
-        require(steps.isNotEmpty())
+        require(steps.isNotEmpty()) {
+            "Relation path must not be empty"
+        }
 
         val step =
             steps.first()
+
+        val sourceTable =
+            registry.getEntityTable(
+                step.sourceEntity.name
+            )
 
         val targetTable =
             registry.getEntityTable(
@@ -198,14 +174,12 @@ class ExposedCompiler(
                 predicate
             } else {
                 compileRelationPath(
-                    sourceTable = targetTable,
                     steps = steps.drop(1),
                     predicate = predicate
                 )
             }
 
         return when {
-
             step.relation.mapping != null ->
                 compileManyToManyRelationPath(
                     sourceTable = sourceTable,
@@ -237,13 +211,14 @@ class ExposedCompiler(
                 relation = relation
             )
 
-        return exists(
+        val query =
             targetTable
                 .selectAll()
                 .where {
                     joinCondition and predicate
                 }
-        )
+
+        return exists(query)
     }
 
     private fun compileManyToManyRelationPath(
@@ -303,86 +278,7 @@ class ExposedCompiler(
 
         return exists(query)
     }
-/*
-    private fun compileRelationComparison(
-        filter: ComparisonFilter,
-        resolved: ResolvedField,
-        currentEntity: EntityType?
-    ): Op<Boolean> {
 
-        val relation =
-            resolved.relationPath.first()
-
-        require(
-            relation.type == RelationType.MANY_TO_ONE
-        ) {
-            "Relation comparison currently supports MANY_TO_ONE only"
-        }
-
-        val sourceEntity =
-            requireNotNull(currentEntity)
-
-        val sourceTable =
-            registry.getEntityTable(
-                sourceEntity.name
-            )
-
-        val targetTable =
-            registry.getEntityTable(
-                resolved.entity
-            )
-
-
-        val sourceColumn =
-            registry.getColumn(
-                sourceEntity.name,
-                relation.joinColumns.first()
-            )
-
-        val targetJoinColumn =
-            registry.getColumn(
-                resolved.entity,
-                relation.inverseJoinColumn
-                    ?: error(
-                        "Missing inverse join column for '${relation.name}'"
-                    )
-            )
-
-        val targetFieldColumn =
-            registry.getColumn(
-                resolved.entity,
-                resolved.field
-            )
-
-        val valuePredicate =
-            registry
-                .lookup(resolved.info.type)
-                .compileComparison(
-                    column = targetFieldColumn,
-                    operator = filter.operator,
-                    value = filter.value
-                )
-
-
-        val join = sourceTable.join(
-            targetTable,
-            JoinType.INNER,
-            sourceColumn,
-            targetJoinColumn
-        )
-
-
-
-
-        return Exists(
-            join
-                .selectAll()
-                .where { valuePredicate }
-        )
-
-
-    }
-    */
     // -------------------------------------------------------------------------
     // IN
     // -------------------------------------------------------------------------
@@ -634,13 +530,13 @@ class ExposedCompiler(
 
 
 
-    private data class ResolvedField(
+    data class ResolvedField(
         val entity: String,
         val field: String,
         val info: FieldInfo,
         val relationPath: List<RelationPathStep> = emptyList()
     )
-    private data class RelationPathStep(
+    data class RelationPathStep(
         val sourceEntity: EntityType,
         val relation: RelationInfo,
         val targetEntity: EntityType
@@ -654,7 +550,8 @@ class ExposedCompiler(
      * Qualified field paths (e.g. `UserProfile.firstName`) contain their
      * entity explicitly and therefore do not require `currentEntity`.
      */
-    private fun resolveField(
+    @JvmOverloads
+    internal fun resolveField(
         field: FieldRef,
         currentEntity: EntityType? = null
     ): ResolvedField {
@@ -673,18 +570,34 @@ class ExposedCompiler(
 
         var index = 0
 
-        // Explicit entity prefix:
-        // User.name
-        if (
-            parts.size > 1 &&
-            registry.getEntity(parts.first()) != null
-        ) {
-            entity =
-                registry.getEntityOrThrow(
-                    parts.first()
-                )
+        val firstPart = parts.first()
+
+        val isRelation =
+            currentEntity != null &&
+                    currentEntity.relations.containsKey(firstPart)
+
+        val isExplicitEntity =
+            registry.getEntity(firstPart) != null
+
+        if (isRelation) {
+            // Resolve relative to the current entity.
+            entity = currentEntity
+            index = 0
+        } else if (isExplicitEntity) {
+            // Explicit entity prefix:
+            // User.name
+            entity = currentEntity?:
+                registry.getEntityOrThrow(firstPart)
 
             index = 1
+        } else {
+            // Resolve relative to the current entity.
+            entity =
+                requireNotNull(currentEntity) {
+                    "Cannot resolve field '${field.path}' without a current entity"
+                }
+
+            index = 0
         }
 
         val relationPath =
@@ -699,11 +612,12 @@ class ExposedCompiler(
                 parts[index]
 
             val relation =
-                sourceEntity.relations[relationName]
-                    ?: error(
-                        "Unknown relation '$relationName' " +
-                                "on entity '${sourceEntity.name}'"
-                    )
+                requireNotNull(
+                    sourceEntity.relations[relationName]
+                ) {
+                    "Unknown relation '$relationName' " +
+                            "on entity '${sourceEntity.name}'"
+                }
 
             val targetEntity =
                 registry.getEntityOrThrow(
@@ -729,11 +643,10 @@ class ExposedCompiler(
             parts.last()
 
         val fieldInfo =
-            entity.fields[fieldName]
-                ?: error(
-                    "Unknown field '$fieldName' " +
-                            "on entity '${entity.name}'"
-                )
+            requireNotNull(entity.fields[fieldName]) {
+                "Unknown field '$fieldName' " +
+                        "on entity '${entity.name}'"
+            }
 
         return ResolvedField(
             entity = entity.name,
