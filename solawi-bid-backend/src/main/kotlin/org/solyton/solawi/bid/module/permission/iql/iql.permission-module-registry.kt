@@ -55,10 +55,34 @@ val permissionModuleRegistry : Registry by lazy {
             }
         }
         entity("context", ContextsTable) {
+            field(ContextsTable.id)
             field( ContextsTable.name)
             field(ContextsTable.left)
             field(ContextsTable.right)
             field(ContextsTable.level)
+
+            manyToOne("root", ContextsTable) {
+                ContextsTable.rootId references ContextsTable.id
+            }
+
+
+            manyToMany("rights", RightsTable, RoleRightContexts) {
+                source(
+                    ContextsTable.id references RoleRightContexts.contextId
+                )
+                target(
+                    RightsTable.id references RoleRightContexts.rightId
+                )
+            }
+
+            manyToMany("roles", RolesTable, RoleRightContexts) {
+                source(
+                    ContextsTable.id references RoleRightContexts.roleId
+                )
+                target(
+                    RolesTable.id references RoleRightContexts.roleId
+                )
+            }
         }
 
         entity("userRoleContext", UserRoleContext) {

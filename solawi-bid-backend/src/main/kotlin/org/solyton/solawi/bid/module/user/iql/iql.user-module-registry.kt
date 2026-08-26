@@ -6,6 +6,8 @@ import org.jetbrains.exposed.sql.jodatime.DateColumnType
 import org.jetbrains.exposed.sql.jodatime.DateTimeWithTimeZoneColumnType
 import org.solyton.solawi.bid.module.permission.iql.permissionModuleRegistry
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.permission.schema.RolesTable
+import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.schema.*
 
 
@@ -38,6 +40,16 @@ val userModuleRegistry: Registry by lazy {
                 target(
                     OrganizationsTable.id references UserOrganization.organizationId
                 )
+            }
+
+            manyToMany("roles", RolesTable, UserRoleContext) {
+                source(UsersTable.id references UserRoleContext.userId)
+                target(RolesTable.id references UserRoleContext.roleId )
+            }
+
+            manyToMany("contexts", ContextsTable, UserRoleContext) {
+                source(UsersTable.id references UserRoleContext.contextId)
+                target(ContextsTable.id references UserRoleContext.contextId)
             }
         }
 
