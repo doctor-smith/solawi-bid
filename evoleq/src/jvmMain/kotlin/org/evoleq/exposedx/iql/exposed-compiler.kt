@@ -551,7 +551,7 @@ class ExposedCompiler(
      * entity explicitly and therefore do not require `currentEntity`.
      */
     @JvmOverloads
-    internal fun resolveField(
+    fun resolveField(
         field: FieldRef,
         currentEntity: EntityType? = null
     ): ResolvedField {
@@ -563,13 +563,8 @@ class ExposedCompiler(
             "Empty field path"
         }
 
-        var entity =
-            requireNotNull(currentEntity?:registry.getEntity(parts[0])) {
-                "Cannot resolve field '${field.path}' without a current entity"
-            }
-
-        var index = 0
-
+        var entity: EntityType
+        var index: Int
         val firstPart = parts.first()
 
         val isRelation =
