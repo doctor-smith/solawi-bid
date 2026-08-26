@@ -6,6 +6,11 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.Expression as SqlExpression
 
+data class CompiledPredicate(
+    val predicate: Op<Boolean>,
+    val relationPath: List<RelationInfo> = emptyList()
+)
+
 @Suppress("TooManyFunctions")
 class ExposedCompiler(
     private val registry: Registry,
@@ -29,9 +34,11 @@ class ExposedCompiler(
                     compile(filter.filter, table)
                 )
 
-            is ComparisonFilter ->
-                compileComparison(filter)
+            is ComparisonFilter -> {
+                val currentEntity = registry.getEntityByTable(table)
 
+                compileComparison(filter, currentEntity)
+            }
             is ExpressionComparisonFilter -> {
                 val currentEntity = registry.getEntityByTable(table)
                 val left =
@@ -98,27 +105,113 @@ class ExposedCompiler(
     // -------------------------------------------------------------------------
 
     private fun compileComparison(
-        filter: ComparisonFilter
+        filter: ComparisonFilter,
+        currentEntity: EntityType? = null
     ): Op<Boolean> {
 
         val resolved =
-            resolveField(filter.field)
+            resolveField(filter.field, currentEntity)
 
-        val column =
+        val isEntityCase = currentEntity == null || currentEntity.name == resolved.entity
+        if(isEntityCase) {
+            val column =
+                registry.getColumn(
+                    resolved.entity,
+                    resolved.field
+                )
+
+            return registry
+                .lookup(resolved.info.type)
+                .compileComparison(
+                    column = column,
+                    operator = filter.operator,
+                    value = filter.value
+                )
+        } else {
+
+            return compileRelationComparison(filter, resolved, currentEntity)
+        }
+    }
+
+
+    private fun compileRelationComparison(
+        filter: ComparisonFilter,
+        resolved: ResolvedField,
+        currentEntity: EntityType?
+    ): Op<Boolean> {
+
+        val relation =
+            resolved.relationPath.first()
+
+        require(
+            relation.type == RelationType.MANY_TO_ONE
+        ) {
+            "Relation comparison currently supports MANY_TO_ONE only"
+        }
+
+        val sourceEntity =
+            requireNotNull(currentEntity)
+
+        val sourceTable =
+            registry.getEntityTable(
+                sourceEntity.name
+            )
+
+        val targetTable =
+            registry.getEntityTable(
+                resolved.entity
+            )
+
+
+        val sourceColumn =
+            registry.getColumn(
+                sourceEntity.name,
+                relation.joinColumns.first()
+            )
+
+        val targetJoinColumn =
+            registry.getColumn(
+                resolved.entity,
+                relation.inverseJoinColumn
+                    ?: error(
+                        "Missing inverse join column for '${relation.name}'"
+                    )
+            )
+
+        val targetFieldColumn =
             registry.getColumn(
                 resolved.entity,
                 resolved.field
             )
 
-        return registry
-            .lookup(resolved.info.type)
-            .compileComparison(
-                column = column,
-                operator = filter.operator,
-                value = filter.value
-            )
-    }
+        val valuePredicate =
+            registry
+                .lookup(resolved.info.type)
+                .compileComparison(
+                    column = targetFieldColumn,
+                    operator = filter.operator,
+                    value = filter.value
+                )
 
+
+        val join = sourceTable.join(
+            targetTable,
+            JoinType.INNER,
+            sourceColumn,
+            targetJoinColumn
+        )
+
+
+
+
+        return Exists(
+            join
+                .selectAll()
+                .where { valuePredicate }
+        )
+
+
+    }
     // -------------------------------------------------------------------------
     // IN
     // -------------------------------------------------------------------------
@@ -371,7 +464,8 @@ class ExposedCompiler(
     private data class ResolvedField(
         val entity: String,
         val field: String,
-        val info: FieldInfo
+        val info: FieldInfo,
+        val relationPath: List<RelationInfo> = emptyList()
     )
 
     /**
@@ -382,9 +476,10 @@ class ExposedCompiler(
      * Qualified field paths (e.g. `UserProfile.firstName`) contain their
      * entity explicitly and therefore do not require `currentEntity`.
      */
+
     private fun resolveField(
         field: FieldRef,
-        currentEntity: String? = null
+        currentEntity: EntityType? = null
     ): ResolvedField {
 
         val parts = field.path.split(".")
@@ -395,20 +490,17 @@ class ExposedCompiler(
             1 -> {
                 val entityName = requireNotNull(currentEntity) {
                     "Cannot resolve relative field '${field.path}' without a current entity"
-                }
+                }.name
                 val fieldName = parts[0]
 
-                val entity =
-                    registry.getEntityOrThrow(entityName)
-
                 val fieldInfo =
-                    entity.fields[fieldName]
+                    currentEntity.fields[fieldName]
                         ?: error(
                             "Unknown field '$fieldName' on entity '$entityName'"
                         )
 
                 ResolvedField(
-                    entity = currentEntity,
+                    entity = currentEntity.name,
                     field = fieldName,
                     info = fieldInfo
                 )
@@ -416,23 +508,41 @@ class ExposedCompiler(
 
             // p("UserProfile.firstName")
             2 -> {
-                val entityName = parts[0]
-                val fieldName = parts[1]
+                val isEntityCase = currentEntity == null || currentEntity.name == parts[0]
 
-                val entity =
-                    registry.getEntityOrThrow(entityName)
+                if(isEntityCase) {
+                    // old branch
+                    val entityName = parts[0]
+                    val fieldName = parts[1]
+                    val entity = registry.getEntityOrThrow(entityName)
 
-                val fieldInfo =
-                    entity.fields[fieldName]
-                        ?: error(
-                            "Unknown field '$fieldName' on entity '$entityName'"
-                        )
+                    val fieldInfo =
+                        entity.fields[fieldName]
+                            ?: error(
+                                "Unknown field '$fieldName' on entity '$entityName'"
+                            )
 
-                ResolvedField(
-                    entity = entityName,
-                    field = fieldName,
-                    info = fieldInfo
-                )
+                    ResolvedField(
+                        entity = entityName,
+                        field = fieldName,
+                        info = fieldInfo
+                    )
+                } else {
+                    val relationName = parts[0]
+                    val fieldName = parts[1]
+                    val relation: RelationInfo = currentEntity.relations[relationName]?: error("no such relation")
+                    val targetEntity = registry.getEntityOrThrow(relation.targetEntity)
+
+                    ResolvedField(
+                        entity = targetEntity.name,
+                        field = fieldName,
+                        info = targetEntity.fields[fieldName]
+                            ?: error(
+                                "Unknown field '$fieldName' on relation '$relationName'"
+                            ),
+                        relationPath = listOf(relation)
+                    )
+                }
             }
 
             else ->
