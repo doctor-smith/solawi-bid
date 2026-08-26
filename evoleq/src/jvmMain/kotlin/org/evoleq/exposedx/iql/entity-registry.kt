@@ -27,6 +27,8 @@ class Registry(
     private val entities =
         mutableMapOf<String, EntityType>()
 
+    fun entities() = entities
+
     private val tables =
         mutableMapOf<String, Table>()
 

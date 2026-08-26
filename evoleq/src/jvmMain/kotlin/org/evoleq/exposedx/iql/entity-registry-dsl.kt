@@ -191,6 +191,9 @@ class EntityTypeConfiguration : Configuration<EntityType> {
         )
     }
 
+    fun fields(vararg columns: Column<*>) {
+        columns.forEach { field(it) }
+    }
 
     fun oneToMany(
         relationName: String,

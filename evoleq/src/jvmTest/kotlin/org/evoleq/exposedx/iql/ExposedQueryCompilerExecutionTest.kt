@@ -2,7 +2,6 @@
 package org.evoleq.exposedx.iql
 
 import org.evoleq.exposedx.test.runSimpleH2Test
-import org.evoleq.iql.data.*
 import org.evoleq.iql.dsl.map
 import org.evoleq.iql.dsl.max
 import org.evoleq.iql.dsl.query
@@ -37,59 +36,22 @@ class ExposedQueryCompilerExecutionTest {
             varchar("last_name", 100)
     }
 
-    private val registry =
-        Registry().apply {
-
-            registerEntity(
-                EntityType(
-                    name = "user",
-                    table = "users",
-                    fields = mapOf(
-                        "id" to FieldInfo(
-                            name = "id",
-                            type = FieldType.INTEGER
-                        ),
-                        "name" to FieldInfo(
-                            name = "name",
-                            type = FieldType.STRING
-                        )
-                    ),
-                    relations = mapOf(
-                        "userProfiles" to RelationInfo(
-                            name = "userProfiles",
-                            type = RelationType.ONE_TO_MANY,
-                            targetEntity = "userProfile",
-                            joinColumns = listOf("id"),
-                            inverseJoinColumn = "user_id"
-                        )
-                    )
-                ),
-                Users
-            )
-
-            registerEntity(
-                EntityType(
-                    name = "userProfile",
-                    table = "user_profiles",
-                    fields = mapOf(
-                        "id" to FieldInfo(
-                            name = "id",
-                            type = FieldType.INTEGER
-                        ),
-                        "user_id" to FieldInfo(
-                            name = "user_id",
-                            type = FieldType.INTEGER
-                        ),
-                        "last_name" to FieldInfo(
-                            name = "last_name",
-                            type = FieldType.STRING
-                        )
-                    ),
-                    relations = emptyMap()
-                ),
-                UserProfiles
-            )
+    private val registry = registry {
+        entity("user", Users) {
+            field(Users.id)
+            field(Users.name)
+            oneToMany("userProfiles", UserProfiles) {
+                Users.id references UserProfiles.userId }
         }
+        entity("userProfile", UserProfiles) {
+            field(UserProfiles.id)
+            field(UserProfiles.userId)
+            field(UserProfiles.lastName)
+            manyToOne("user", Users) {
+                UserProfiles.userId references Users.id
+            }
+        }
+    }
 
     private val compiler =
         ExposedQueryCompiler(registry)
@@ -436,6 +398,127 @@ class ExposedQueryCompilerExecutionTest {
                 result
             )
         }
+
+    @Test
+    fun `many-to-one relation filter returns matching profiles`() =
+        runSimpleH2Test(
+            Users,
+            UserProfiles
+        ) {
+
+            Users.insert {
+                it[id] = 1
+                it[name] = "alice"
+            }
+
+            Users.insert {
+                it[id] = 2
+                it[name] = "bob"
+            }
+
+            UserProfiles.insert {
+                it[id] = 1
+                it[userId] = 1
+                it[lastName] = "Smith"
+            }
+
+            UserProfiles.insert {
+                it[id] = 2
+                it[userId] = 2
+                it[lastName] = "Jones"
+            }
+
+            val query =
+                query("userProfile") {
+                    where {
+                        any("user") {
+                            p("user.name") eq "alice"
+                        }
+                    }
+                }
+
+            val compiled =
+                compiler.compile(
+                    query = query,
+                    table = UserProfiles
+                )
+
+            val result =
+                UserProfiles
+                    .selectAll()
+                    .where {
+                        compiled.predicate!!
+                    }
+                    .map {
+                        it[UserProfiles.lastName]
+                    }
+
+            assertEquals(
+                listOf("Smith"),
+                result
+            )
+        }
+
+    @Test
+    fun `many-to-one relation filter returns matching profiles 2`() =
+        runSimpleH2Test(
+            Users,
+            UserProfiles
+        ) {
+
+            Users.insert {
+                it[id] = 1
+                it[name] = "alice"
+            }
+
+            Users.insert {
+                it[id] = 2
+                it[name] = "bob"
+            }
+
+            UserProfiles.insert {
+                it[id] = 1
+                it[userId] = 1
+                it[lastName] = "Smith"
+            }
+
+            UserProfiles.insert {
+                it[id] = 2
+                it[userId] = 2
+                it[lastName] = "Jones"
+            }
+
+            val query =
+                query("userProfile") {
+                    where {
+                        any("user") {
+                            p("user.name") eq "alice"
+                        }
+                    }
+                }
+
+            val compiled =
+                compiler.compile(
+                    query = query,
+                    table = UserProfiles
+                )
+
+            val result =
+                UserProfiles
+                    .selectAll()
+                    .where {
+                        compiled.predicate!!
+                    }
+                    .map {
+                        it[UserProfiles.lastName]
+                    }
+
+            assertEquals(
+                listOf("Smith"),
+                result
+            )
+        }
+
 
 }
 

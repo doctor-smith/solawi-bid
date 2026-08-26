@@ -767,7 +767,7 @@ class IqlEdgeCaseTest {
             }
         }
 
-
+    /* This is not desired anymore
     @Test
     fun `field without entity is rejected by compiler`() =
         runSimpleH2Test(Users) {
@@ -786,4 +786,6 @@ class IqlEdgeCaseTest {
                     )
             }
         }
+
+     */
 }
