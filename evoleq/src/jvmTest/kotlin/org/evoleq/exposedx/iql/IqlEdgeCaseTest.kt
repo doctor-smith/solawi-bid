@@ -758,7 +758,7 @@ class IqlEdgeCaseTest {
                     "Alice"
                 )
 
-            assertFailsWith<IllegalStateException> {
+            assertFailsWith<IllegalArgumentException> {
                 ExposedCompiler(registry())
                     .compile(
                         filter,
