@@ -444,86 +444,43 @@ class ExposedCompiler(
         val mappingTable =
             registry.getMappingTable(mapping.table)
 
-        val sourceJoin =
+        val sourceCondition =
             createMappingSourceCondition(
-                sourceTable,
-                mappingTable,
-                mapping
+                sourceTable = sourceTable,
+                mappingTable = mappingTable,
+                mapping = mapping
             )
 
-        val targetJoin =
+        val targetCondition =
             createMappingTargetCondition(
-                mappingTable,
-                targetTable,
-                mapping
+                mappingTable = mappingTable,
+                targetTable = targetTable,
+                mapping = mapping
             )
 
         val predicate =
             compile(
-                filter,
-                targetTable
+                filter = filter,
+                table = targetTable
             )
 
         val query =
             targetTable
                 .join(
-                    mappingTable,
-                    JoinType.INNER,
-                    onColumn =
-                        mappingTable.columns.first {
-                            it.name ==
-                                    mapping.mappingTargetColumns.first()
-                        },
-                    otherColumn =
-                        targetTable.columns.first {
-                            it.name ==
-                                    mapping.targetColumns.first()
-                        }
+                    otherTable = mappingTable,
+                    joinType = JoinType.INNER,
+                    additionalConstraint = {
+                        targetCondition
+                    }
                 )
                 .selectAll()
                 .where {
-                    sourceJoin and
-                            targetJoin and
-                            predicate
+                    sourceCondition and predicate
                 }
 
         return exists(query)
     }
 
-    //--------------------------------------------------------------------------
-    // Compile expression comparison
-    //--------------------------------------------------------------------------
-    /*
-    private fun compileExpressionComparison(
-        expression: SqlExpression<*>,
-        operator: Operator,
-        value: JsonElement
-    ): Op<Boolean> =
-        when (operator) {
-
-            Operator.EQ ->
-                expression eq value
-
-            Operator.NE ->
-                expression neq value
-
-            Operator.GT ->
-                expression greater value
-
-            Operator.GTE ->
-                expression greaterEq value
-
-            Operator.LT ->
-                expression less value
-
-            Operator.LTE ->
-                expression lessEq value
-
-            Operator.LIKE ->
-                expression like value
-        }
-
-     */
     // -------------------------------------------------------------------------
     // Field resolution
     // -------------------------------------------------------------------------
