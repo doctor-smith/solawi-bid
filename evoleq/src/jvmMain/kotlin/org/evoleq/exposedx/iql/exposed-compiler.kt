@@ -70,7 +70,7 @@ class ExposedCompiler(
 
     private fun compileAnd(
         filter: AndFilter,
-        table: org.jetbrains.exposed.sql.Table
+        table: Table
     ): Op<Boolean> {
 
         require(filter.filters.isNotEmpty()) {
@@ -84,7 +84,7 @@ class ExposedCompiler(
 
     private fun compileOr(
         filter: OrFilter,
-        table: org.jetbrains.exposed.sql.Table
+        table: Table
     ): Op<Boolean> {
 
         require(filter.filters.isNotEmpty()) {
@@ -329,7 +329,7 @@ class ExposedCompiler(
 
     private fun compileQuantifier(
         filter: QuantifierFilter,
-        sourceTable: org.jetbrains.exposed.sql.Table
+        sourceTable: Table
     ): Op<Boolean> {
 
         val relation =
@@ -402,8 +402,8 @@ class ExposedCompiler(
 
     private fun compileDirectExists(
         filter: Filter,
-        sourceTable: org.jetbrains.exposed.sql.Table,
-        targetTable: org.jetbrains.exposed.sql.Table,
+        sourceTable: Table,
+        targetTable: Table,
         relation: RelationInfo
     ): Op<Boolean> {
 

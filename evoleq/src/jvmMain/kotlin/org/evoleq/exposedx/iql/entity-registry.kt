@@ -106,6 +106,14 @@ class Registry(
                 other.getEntityTable(name)
             )
         }
+
+        other.mappingTables.forEach { (name, table) ->
+            require(name !in mappingTables) {
+                "Mapping table '$name' is already registered"
+            }
+
+            mappingTables[name] = table
+        }
     }
 
     internal fun registerMappingTable(

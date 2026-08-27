@@ -170,6 +170,12 @@ class RegistryConfiguration : Configuration<Registry> {
             put(entity)
 
             registerPendingRelations( configuration.pendingRelations )
+
+            configuration.pendingRelations.forEach { pending ->
+                pending.mappingTable?.let {
+                    registerMappingTable(it)
+                }
+            }
         }
         configurations += config
     }
