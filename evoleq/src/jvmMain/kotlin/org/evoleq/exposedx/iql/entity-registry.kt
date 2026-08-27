@@ -1,10 +1,7 @@
 package org.evoleq.exposedx.iql
 
 import kotlinx.serialization.json.*
-import org.evoleq.iql.data.EntityType
-import org.evoleq.iql.data.FieldInfo
-import org.evoleq.iql.data.FieldType
-import org.evoleq.iql.data.RelationInfo
+import org.evoleq.iql.data.*
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Table
 
@@ -149,6 +146,21 @@ class Registry(
                 "No Exposed table registered for entity: $name"
             )
 
+    /**
+     * Retrieves a table from the registry based on the specified table name.
+     * If no table with the given name exists, an error is thrown.
+     *
+     * @param tableName the name of the table to be retrieved.
+     * @throws IllegalStateException if no table with the given name is registered in the registry.
+     */
+    fun getTable(tableName: String) =
+        tables.values
+            .firstOrNull { it.tableName == tableName }
+            ?: error(
+                "No Exposed table registered for table: $tableName"
+            )
+
+
     fun getEntityByTable(table: Table): EntityType {
         return entities.values.firstOrNull {
             it.table == table.tableName
@@ -267,13 +279,28 @@ class Registry(
                     ?.name
                     ?: pending.targetTable.tableName
 
+            val relationJoins =
+                pending.relationJoins.map { pendingJoin ->
+
+                    // Jetzt sind alle Entities registriert.
+                    val joinEntity = getEntityOrThrow(pendingJoin.entityName)
+                    // val table = getEntityTable(pendingJoin.entityName)
+
+                    RelationJoin(
+                        entity = joinEntity.table,
+                        mappingColumns = pendingJoin.mappingColumns,
+                        targetColumns = pendingJoin.targetColumns
+                    )
+                }
+
             val updatedEntity =
                 sourceEntity.copy(
                     relations =
                         sourceEntity.relations.toMutableMap().apply {
                             this[pending.relationName] =
                                 relation.copy(
-                                    targetEntity = targetEntityName
+                                    targetEntity = targetEntityName,
+                                    relationJoins = relationJoins
                                 )
                         }
                 )

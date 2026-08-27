@@ -7,7 +7,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.Expression as SqlExpression
 
 
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "LargeClass")
 class ExposedCompiler(
     private val registry: Registry,
     private val expressionCompiler: ExposedExpressionCompiler = ExposedExpressionCompiler(registry)
@@ -279,6 +279,50 @@ class ExposedCompiler(
         return exists(query)
     }
 
+
+    private fun createRelationJoinCondition(
+        mappingTable: Table,
+        targetTable: Table,
+        join: RelationJoin
+    ): Op<Boolean> {
+
+        require(
+            join.mappingColumns.size == join.targetColumns.size
+        ) {
+            "Relation join for '${join.entity}' has " +
+                    "${join.mappingColumns.size} mapping columns but " +
+                    "${join.targetColumns.size} target columns"
+        }
+
+        val conditions =
+            join.mappingColumns.mapIndexed { index, mappingName ->
+
+                val targetName =
+                    join.targetColumns[index]
+
+                val mappingColumn =
+                    mappingTable.columns.firstOrNull {
+                        it.name == mappingName
+                    } ?: error(
+                        "Mapping column '$mappingName' not found in '${mappingTable.tableName}'"
+                    )
+
+                val targetColumn =
+                    targetTable.columns.firstOrNull {
+                        it.name == targetName
+                    } ?: error(
+                        "Target column '$targetName' not found in '${targetTable.tableName}'"
+                    )
+
+                columnEquals(
+                    mappingColumn,
+                    targetColumn
+                )
+            }
+
+        return conditions.reduce(Op<Boolean>::and)
+    }
+
     // -------------------------------------------------------------------------
     // IN
     // -------------------------------------------------------------------------
@@ -464,6 +508,98 @@ class ExposedCompiler(
                 table = targetTable
             )
 
+        /*
+         * First join:
+         *
+         * targetTable <-> mappingTable
+         *
+         * The mapping target condition may contain multiple columns.
+         */
+        var query =
+            targetTable
+                .join(
+                    otherTable = mappingTable,
+                    joinType = JoinType.INNER,
+                    additionalConstraint = {
+                        targetCondition
+                    }
+                )
+
+        /*
+         * Additional relation joins.
+         *
+         * Example:
+         *
+         * RoleRightContext.contextId -> Contexts.id
+         *
+         * These joins are defined by RelationInfo.relationJoins.
+         */
+        relation.relationJoins.forEach { relationJoin ->
+
+            val additionalTargetTable = registry.getTable(relationJoin.entity)
+
+            val joinCondition =
+                createRelationJoinCondition(
+                    mappingTable = mappingTable,
+                    targetTable = additionalTargetTable,
+                    join = relationJoin
+                )
+
+            query =
+                query.join(
+                    otherTable = additionalTargetTable,
+                    joinType = JoinType.INNER,
+                    additionalConstraint = {
+                        joinCondition
+                    }
+                )
+        }
+
+        return exists(
+            query
+                .selectAll()
+                .where {
+                    sourceCondition and
+                            predicate
+                }
+        )
+    }
+
+/*
+    private fun compileManyToManyExists(
+        filter: Filter,
+        sourceTable: Table,
+        targetTable: Table,
+        relation: RelationInfo
+    ): Op<Boolean> {
+
+        val mapping =
+            relation.mapping
+                ?: error("Expected mapping relation")
+
+        val mappingTable =
+            registry.getMappingTable(mapping.table)
+
+        val sourceCondition =
+            createMappingSourceCondition(
+                sourceTable = sourceTable,
+                mappingTable = mappingTable,
+                mapping = mapping
+            )
+
+        val targetCondition =
+            createMappingTargetCondition(
+                mappingTable = mappingTable,
+                targetTable = targetTable,
+                mapping = mapping
+            )
+
+        val predicate =
+            compile(
+                filter = filter,
+                table = targetTable
+            )
+
         val query =
             targetTable
                 .join(
@@ -480,7 +616,7 @@ class ExposedCompiler(
 
         return exists(query)
     }
-
+*/
     // -------------------------------------------------------------------------
     // Field resolution
     // -------------------------------------------------------------------------
@@ -505,6 +641,143 @@ class ExposedCompiler(
      * Qualified field paths (e.g. `UserProfile.firstName`) contain their
      * entity explicitly and therefore do not require `currentEntity`.
      */
+    @JvmOverloads
+    fun resolveField(
+        field: FieldRef,
+        currentEntity: EntityType? = null
+    ): ResolvedField {
+
+        val parts =
+            field.path.split(".")
+
+        require(parts.isNotEmpty()) {
+            "Empty field path"
+        }
+
+        var entity: EntityType
+        var index: Int
+        val firstPart = parts.first()
+
+        val isRelation =
+            currentEntity != null &&
+                    currentEntity.relations.containsKey(firstPart)
+
+        val isExplicitEntity =
+            registry.getEntity(firstPart) != null
+
+        if (isRelation) {
+            // Resolve relative to the current entity.
+            entity = currentEntity
+            index = 0
+        } else if (isExplicitEntity) {
+            // Explicit entity prefix:
+            // User.name
+            entity = currentEntity?:
+                    registry.getEntityOrThrow(firstPart)
+
+            index = 1
+        } else {
+            // Resolve relative to the current entity.
+            entity =
+                requireNotNull(currentEntity) {
+                    "Cannot resolve field '${field.path}' without a current entity"
+                }
+
+            index = 0
+        }
+
+        val relationPath =
+            mutableListOf<RelationPathStep>()
+
+        while (index < parts.lastIndex) {
+
+            val sourceEntity =
+                entity
+
+            val relationName =
+                parts[index]
+
+            val relation =
+                sourceEntity.relations[relationName]
+                    ?: relationPath.lastOrNull()
+                        ?.relation
+                        ?.relationJoins
+                        ?.firstOrNull { join ->
+
+                            registry.entities().values.any { candidate ->
+                                candidate.name == relationName &&
+                                        registry.getEntityTable(candidate.name).tableName ==
+                                        join.entity
+                            }
+
+                        }
+                        ?.let { join ->
+
+                            val targetEntity =
+                                registry.entities().values.first { candidate ->
+                                    candidate.name == relationName &&
+                                            registry.getEntityTable(candidate.name).tableName ==
+                                            join.entity
+                                }
+
+                            RelationInfo(
+                                name = relationName,
+                                type = RelationType.MANY_TO_ONE,
+                                targetEntity = targetEntity.name,
+                                joinColumns = join.mappingColumns,
+                                inverseJoinColumn = join.targetColumns.first()
+                            )
+                        }
+                    /*?: error(
+                        "Unknown relation '$relationName' " +
+                                "on entity '${sourceEntity.name}'"
+                    )
+
+                     */
+
+
+            requireNotNull(relation) {
+                "Unknown relation '$relationName' " +
+                        "on entity '${sourceEntity.name}'"
+            }
+
+            val targetEntity =
+                registry.getEntityOrThrow(
+                    relation.targetEntity
+                )
+
+            relationPath +=
+                RelationPathStep(
+                    sourceEntity = sourceEntity,
+                    relation = relation,
+                    targetEntity = targetEntity
+                )
+
+            // The next relation is resolved against
+            // the target entity of the current relation.
+            entity =
+                targetEntity
+
+            index++
+        }
+
+        val fieldName =
+            parts.last()
+
+        val fieldInfo =
+            requireNotNull(entity.fields[fieldName]) {
+                "Unknown field '$fieldName' " +
+                        "on entity '${entity.name}'"
+            }
+
+        return ResolvedField(
+            entity = entity.name,
+            field = fieldName,
+            info = fieldInfo,
+            relationPath = relationPath
+        )
+    }
+    /*
     @JvmOverloads
     fun resolveField(
         field: FieldRef,
@@ -605,6 +878,7 @@ class ExposedCompiler(
             relationPath = relationPath
         )
     }
+    */
 
     // -------------------------------------------------------------------------
     // Relations
