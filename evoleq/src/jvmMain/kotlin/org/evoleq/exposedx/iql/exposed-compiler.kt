@@ -485,8 +485,6 @@ class ExposedCompiler(
     // Field resolution
     // -------------------------------------------------------------------------
 
-
-
     data class ResolvedField(
         val entity: String,
         val field: String,
