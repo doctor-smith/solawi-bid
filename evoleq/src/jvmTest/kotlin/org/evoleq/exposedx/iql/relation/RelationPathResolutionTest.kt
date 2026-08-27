@@ -1,12 +1,10 @@
 package org.evoleq.exposedx.iql.relation
 
 
-import kotlinx.serialization.json.JsonPrimitive
-import org.evoleq.exposedx.iql.ExposedCompiler
-import org.evoleq.exposedx.iql.Registry
-import org.evoleq.exposedx.iql.references
-import org.evoleq.exposedx.iql.registry
-import org.evoleq.iql.data.*
+import org.evoleq.exposedx.iql.*
+import org.evoleq.iql.data.AndFilter
+import org.evoleq.iql.data.NotFilter
+import org.evoleq.iql.data.OrFilter
 import org.evoleq.iql.dsl.query
 import org.jetbrains.exposed.sql.Table
 import kotlin.test.*
@@ -166,15 +164,6 @@ private fun testRegistry(): Registry =
         }
     }
 
-private fun eq(
-    path: String,
-    value: String
-): ComparisonFilter =
-    ComparisonFilter(
-        field = SimpleFieldRef(path),
-        operator = Operator.EQ,
-        value = JsonPrimitive(value)
-    )
 
 // -----------------------------------------------------------------------------
 // Path resolution tests
@@ -712,46 +701,4 @@ class RelationPathResolutionTest {
     }
 
 
-}
-
-internal fun ExposedCompiler.resolveForTest(
-    filter: Filter,
-    currentEntity: EntityType?
-): ExposedCompiler.ResolvedField {
-
-    require(filter is ComparisonFilter) {
-        "resolveForTest currently expects ComparisonFilter"
-    }
-
-    return resolveField(
-        field = filter.field,
-        currentEntity = currentEntity
-    )
-}
-internal data class ResolvedRelationPath(
-    val entity: String,
-    val field: String,
-    val path: List<Triple<String, String, String>>
-)
-
-internal fun ExposedCompiler.resolveRelationPathForTest(
-    field: FieldRef,
-    currentEntity: EntityType
-): ResolvedRelationPath {
-
-    val resolved =
-        resolveField(field, currentEntity)
-
-    return ResolvedRelationPath(
-        entity = resolved.entity,
-        field = resolved.field,
-        path =
-            resolved.relationPath.map {
-                Triple(
-                    it.sourceEntity.name,
-                    it.relation.name,
-                    it.targetEntity.name
-                )
-            }
-    )
 }
