@@ -18,410 +18,13 @@ The resulting `Registry` is used by the IQL compiler to resolve fields, relation
 
 ---
 
-# 1. Basic Registry
-
-The entry point is `registry`:
-
-```kotlin
-val registry =
-    registry {
-
-        entity("user", UsersTable) {
-            field(UsersTable.name)
-        }
-    }
-```
-
-The first argument of `entity()` is the IQL entity name.
-
-The second argument is the corresponding Exposed `Table`.
-
-```kotlin
-entity(
-    "user",
-    UsersTable
-)
-```
-
-The entity name is what is used in IQL queries:
-
-```kotlin
-query("user") {
-    where {
-        p("name") eq "Alice"
-    }
-}
-```
-
----
-
-# 2. Fields
-
-Fields are registered with `field()`:
-
-```kotlin
-entity("user", UsersTable) {
-
-    field(UsersTable.name)
-    field(UsersTable.email)
-    field(UsersTable.active)
-}
-```
-
-The registered field connects the IQL field name with the Exposed column.
-
-For example:
-
-```kotlin
-field(UsersTable.name)
-```
-
-allows:
-
-```kotlin
-p("name") eq "Alice"
-```
-
-The registry also uses the column's type to determine the corresponding IQL `FieldType`.
-
----
-
-# 3. Field Name Strategy
-
-The registry can define how database column names are exposed to IQL.
-
-For example:
-
-```kotlin
-registry {
-    fieldNameStrategy = FieldNameStrategy.SNAKE_CASE
-
-    entity("user", UsersTable) {
-        field(UsersTable.firstName)
-        field(UsersTable.createdAt)
-    }
-}
-```
-
-With a snake-case strategy, database/API naming can be normalized consistently.
-
-This is particularly useful when Kotlin properties use camelCase while database columns use snake_case:
-
-```text
-firstName  -> first_name
-createdAt  -> created_at
-```
-
-The strategy is applied by the registry when resolving fields and columns.
-
----
-
-# 4. Including Another Registry
-
-Larger applications can split their registry into modules.
-
-A registry can include another registry:
-
-```kotlin
-val applicationModuleRegistry =
-    registry {
-
-        include(permissionModuleRegistry)
-
-        entity("application", ApplicationsTable) {
-            ...
-        }
-    }
-```
-
-All entities, fields, and relations from the included registry become available to the resulting registry.
-
-This allows modules to maintain their own registry definitions.
-
-For example:
-
-```text
-permissionModuleRegistry
- ├── context
- ├── role
- ├── right
- └── userRoleContext
-
-applicationModuleRegistry
- ├── application
- ├── module
- ├── userApplicationContext
- └── lifecycleStage
-
-combined registry
- ├── permission entities
- └── application entities
-```
-
----
-
-# 5. Custom Field Types
-
-The registry can explicitly map Exposed column types to IQL `FieldType`s.
-
-Use `mapsTo`:
-
-```kotlin
-fieldTypes(
-    DateColumnType::class mapsTo FieldType.DATE,
-    DateTimeWithTimeZoneColumnType::class mapsTo FieldType.DATETIME,
-    EntityIDColumnType::class mapsTo FieldType.UUID
-)
-```
-
-This is useful when the Exposed type is a wrapper around another value.
-
-For example, an Exposed `EntityIDColumnType` can represent an IQL UUID:
-
-```text
-EntityIDColumnType
-        ↓
-    FieldType.UUID
-```
-
-The mapping is then used when compiling comparisons:
-
-```kotlin
-p("id") eq someUuid
-```
-
-The registry knows which IQL type compiler has to handle the value.
-
----
-
-# 6. Many-to-One Relations
-
-A many-to-one relation is defined with `manyToOne()`:
-
-```kotlin
-entity("module", ModulesTable) {
-
-    manyToOne("application", ApplicationsTable) {
-        ModulesTable.applicationId references ApplicationsTable.id
-    }
-}
-```
-
-Conceptually:
-
-```text
-module
-   |
-   └── application -> application
-```
-
-The relation name is used in IQL paths:
-
-```kotlin
-p("application.name") eq "My Application"
-```
-
-The `references` expression defines how the two tables are joined.
-
-In this example:
-
-```text
-modules.application_id = applications.id
-```
-
----
-
-# 7. One-to-Many Relations
-
-The inverse relation can be registered with `oneToMany()`:
-
-```kotlin
-entity("application", ApplicationsTable) {
-
-    oneToMany("modules", ModulesTable) {
-        ApplicationsTable.id references ModulesTable.applicationId
-    }
-}
-```
-
-This represents:
-
-```text
-application
-   |
-   └── modules -> module
-```
-
-The relation can then be used by quantifiers:
-
-```kotlin
-where {
-    any("modules") {
-        p("name") eq "Billing"
-    }
-}
-```
-
-The same relation can also participate in relation paths where supported by the compiler.
-
----
-
-# 8. Self-Referencing Relations
-
-Relations can target the same entity.
-
-For example:
-
-```kotlin
-entity("context", ContextsTable) {
-
-    field(ContextsTable.name)
-
-    manyToOne("root", ContextsTable) {
-        ContextsTable.rootId references ContextsTable.id
-    }
-}
-```
-
-This produces:
-
-```text
-context
-   |
-   └── root -> context
-```
-
-Self-references can therefore be traversed repeatedly:
-
-```kotlin
-p("root.root.name") eq "GLOBAL"
-```
-
-Each step is resolved against the target entity of the previous relation.
-
----
-
-# 9. Relation Paths
-
-Relation paths can contain multiple relations.
-
-For example:
-
-```kotlin
-entity("employee", EmployeesTable) {
-
-    manyToOne("department", DepartmentsTable) {
-        EmployeesTable.departmentId references DepartmentsTable.id
-    }
-}
-
-entity("department", DepartmentsTable) {
-
-    manyToOne("company", CompaniesTable) {
-        DepartmentsTable.companyId references CompaniesTable.id
-    }
-}
-```
-
-This allows:
-
-```kotlin
-p("department.company.name") eq "Acme"
-```
-
-The registry resolves this step by step:
-
-```text
-employee
-   |
-   └── department
-          |
-          └── company
-                 |
-                 └── name
-```
-
-Importantly, every relation is resolved against the entity reached by the previous relation.
-
-So:
-
-```text
-employee.department
-```
-
-resolves to `department`, and then:
-
-```text
-department.company
-```
-
-is resolved against the `department` entity.
-
-This allows arbitrarily deep relation paths as long as every relation exists in the registry.
-
----
-
-# 10. Many-to-Many Relations
-
-Many-to-many relations require a mapping table.
-
-Use `manyToMany()`:
-
-```kotlin
-entity("project", ProjectsTable) {
-
-    manyToMany(
-        "members",
-        EmployeesTable,
-        ProjectMembers
-    ) {
-
-        source(
-            ProjectsTable.id references ProjectMembers.projectId
-        )
-
-        target(
-            EmployeesTable.id references ProjectMembers.employeeId
-        )
-    }
-}
-```
-
-This represents:
-
-```text
-project
-   |
-   |  project_members
-   |
-   └── members -> employee
-```
-
-The mapping table connects the source and target entities:
-
-```text
-projects.id
-     |
-     v
-project_members.project_id
-
-project_members.employee_id
-     |
-     v
-employees.id
-```
-
-The registry stores this information as a `MappingInfo`.
-
----
-
 # 11. Additional Joins in Many-to-Many Relations
 
 A many-to-many relation can require additional tables to be joined when the mapping table contains a reference to another entity.
 
 This is useful when the mapping itself carries additional context.
 
-For example, consider:
+For example:
 
 ```text
 Users
@@ -476,16 +79,27 @@ entity("user", UsersTable) {
         )
 
         join(
-            ContextsTable,
+            "context",
             ContextsTable.id references UserRoleContext.contextId
         )
     }
 }
 ```
 
-The `target` describes the actual target of the many-to-many relation.
+The first argument of `join()` is the **IQL entity name**:
 
-The `join` describes an additional table that has to be joined through the mapping table.
+```kotlin
+join(
+    "context",
+    ...
+)
+```
+
+It is not the database table name.
+
+The `target` describes the primary target of the many-to-many relation.
+
+The `join` describes an additional entity that is connected through the mapping table.
 
 Conceptually:
 
@@ -507,21 +121,355 @@ Conceptually:
               └──────────────┘
 ```
 
-The additional join does **not** change the target entity of the relation.
+The additional join is part of the metadata of the many-to-many relation.
 
-Instead, it adds another table to the relation query.
+It is used by the compiler both when constructing the SQL join and when resolving fields that belong to the additional entity.
 
-This allows a query to express a condition such as:
+For example:
 
 ```kotlin
 where {
     any("roleContexts") {
-        p("name") eq "TEST_ROLE"
+        p("context.name") eq "production"
     }
 }
 ```
 
-while the generated relation query can additionally join `Contexts` when the relation requires it.
+Here:
+
+```text
+roleContexts
+     ↓
+   Role
+     ↓
+ context
+     ↓
+   name
+```
+
+The `context` part is **not necessarily a normal relation registered on `role`**.
+
+It may instead be resolved through the `relationJoin` declared on `roleContexts`.
+
+---
+
+# 11.1 RelationJoin Field Resolution
+
+Additional joins participate in relation-path resolution.
+
+Consider:
+
+```kotlin
+manyToMany(
+    "roleContexts",
+    RolesTable,
+    UserRoleContext
+) {
+
+    source(
+        UsersTable.id references UserRoleContext.userId
+    )
+
+    target(
+        RolesTable.id references UserRoleContext.roleId
+    )
+
+    join(
+        "context",
+        ContextsTable.id references UserRoleContext.contextId
+    )
+}
+```
+
+The following path:
+
+```kotlin
+p("context.name")
+```
+
+can therefore resolve to:
+
+```text
+role
+  ↓
+context
+  ↓
+name
+```
+
+where `context` is supplied by the many-to-many `relationJoin`.
+
+The compiler then generates the corresponding mapping-table join:
+
+```text
+Roles
+   |
+   | role_id
+   v
+UserRoleContext
+   |
+   | context_id
+   v
+Contexts
+```
+
+This means that a relation join is not merely SQL metadata. It can also provide a path through which fields can be resolved.
+
+---
+
+# 11.2 RelationJoin Priority
+
+When resolving a relation name after entering the target entity of a many-to-many relation, the compiler uses the following priority:
+
+```text
+1. Normal relation on the current entity
+2. Additional relationJoin of the preceding many-to-many relation
+```
+
+A normal relation therefore always wins over a `relationJoin` with the same name.
+
+For example:
+
+```kotlin
+entity("role", RolesTable) {
+
+    manyToOne(
+        "context",
+        ContextsTable
+    ) {
+        RolesTable.contextId references ContextsTable.id
+    }
+}
+```
+
+and:
+
+```kotlin
+manyToMany(
+    "roleContexts",
+    RolesTable,
+    UserRoleContext
+) {
+
+    ...
+
+    join(
+        "context",
+        ContextsTable.id references UserRoleContext.contextId
+    )
+}
+```
+
+Both provide a possible `context` path.
+
+For:
+
+```kotlin
+any("roleContexts") {
+    p("context.name") eq "development"
+}
+```
+
+the normal relation is selected:
+
+```text
+role
+  |
+  └── context
+        |
+        └── name
+```
+
+Only when the target entity has **no normal relation** called `context` does the compiler fall back to the `relationJoin`:
+
+```text
+role
+  |
+  └── relationJoin(context)
+          |
+          └── name
+```
+
+This priority is intentional.
+
+It prevents an additional mapping-table join from unexpectedly shadowing an explicitly registered domain relation.
+
+---
+
+# 11.3 RelationJoin Does Not Become a Normal Relation
+
+A `join()` declaration does **not** add a normal relation to the target entity.
+
+For example:
+
+```kotlin
+join(
+    "context",
+    ContextsTable.id references UserRoleContext.contextId
+)
+```
+
+does not mean that:
+
+```kotlin
+registry
+    .getEntity("role")
+    ?.relations
+    ?.containsKey("context")
+```
+
+must become `true`.
+
+Instead, the join belongs to the many-to-many relation:
+
+```text
+user
+  |
+  └── roleContexts
+        |
+        ├── role
+        |
+        └── context   <- relationJoin
+```
+
+This distinction is important because relation joins are scoped to the many-to-many relation through which they were declared.
+
+---
+
+# 11.4 RelationJoin and SQL Generation
+
+For a many-to-many relation with an additional join, the compiler generates an `EXISTS` query containing:
+
+```text
+source
+   ↕
+mapping table
+   ↕
+target
+
+mapping table
+   ↕
+additional joined entity
+```
+
+For example:
+
+```text
+Users
+  |
+  | Users.id = UserRoleContext.userId
+  v
+UserRoleContext
+  |
+  +---- role_id ------> Roles.id
+  |
+  +---- context_id ---> Contexts.id
+```
+
+The additional join is correlated through the mapping table.
+
+Conceptually the generated query is:
+
+```sql
+EXISTS (
+    SELECT ...
+    FROM Roles
+    INNER JOIN UserRoleContext
+        ON UserRoleContext.role_id = Roles.id
+    INNER JOIN Contexts
+        ON UserRoleContext.context_id = Contexts.id
+    WHERE
+        Users.id = UserRoleContext.user_id
+        AND ...
+)
+```
+
+The additional join therefore remains tied to the specific many-to-many mapping row.
+
+This is important for correctness.
+
+For example, if a user has:
+
+```text
+role = admin
+context = production
+```
+
+then:
+
+```kotlin
+p("context.name") eq "production"
+```
+
+must match that mapping row.
+
+It must not accidentally match an unrelated context belonging to another mapping row.
+
+---
+
+# 11.5 Multiple Additional Joins
+
+A many-to-many relation can define multiple additional joins:
+
+```kotlin
+manyToMany(
+    "roleContexts",
+    RolesTable,
+    UserRoleContext
+) {
+
+    source(
+        UsersTable.id references UserRoleContext.userId
+    )
+
+    target(
+        RolesTable.id references UserRoleContext.roleId
+    )
+
+    join(
+        "context",
+        ContextsTable.id references UserRoleContext.contextId
+    )
+
+    join(
+        "tenant",
+        TenantsTable.id references UserRoleContext.tenantId
+    )
+}
+```
+
+This produces:
+
+```text
+User
+  |
+  v
+UserRoleContext
+  |
+  +----> Role
+  |
+  +----> Context
+  |
+  +----> Tenant
+```
+
+Each additional join can participate in field resolution:
+
+```kotlin
+any("roleContexts") {
+    p("context.name") eq "production"
+}
+```
+
+or:
+
+```kotlin
+any("roleContexts") {
+    p("tenant.name") eq "acme"
+}
+```
+
+The compiler resolves each path against the current relation context.
 
 ---
 
@@ -564,7 +512,7 @@ Additional joins work the same way:
 
 ```kotlin
 join(
-    ContextsTable,
+    "context",
     ContextsTable.tenantId references UserRoleContext.tenantId,
     ContextsTable.id references UserRoleContext.contextId
 )
@@ -578,92 +526,7 @@ AND
 Contexts.id = UserRoleContext.context_id
 ```
 
----
-
-# 13. Many-to-Many on the Inverse Side
-
-The inverse side can also define the same mapping:
-
-```kotlin
-entity("employee", EmployeesTable) {
-
-    manyToMany(
-        "projects",
-        ProjectsTable,
-        ProjectMembers
-    ) {
-
-        source(
-            EmployeesTable.id references ProjectMembers.employeeId
-        )
-
-        target(
-            ProjectsTable.id references ProjectMembers.projectId
-        )
-    }
-}
-```
-
-This allows relation traversal in both directions.
-
-Additional joins can also be defined independently on the inverse relation if the inverse query requires additional tables.
-
----
-
-# 14. Mapping Tables
-
-A many-to-many mapping contains four important pieces of information:
-
-```text
-source entity column
-        ↓
-mapping source column
-
-mapping target column
-        ↓
-target entity column
-```
-
-For:
-
-```kotlin
-source(
-    ProjectsTable.id references ProjectMembers.projectId
-)
-
-target(
-    EmployeesTable.id references ProjectMembers.employeeId
-)
-```
-
-the mapping is effectively:
-
-```text
-projects.id
-    =
-project_members.project_id
-
-project_members.employee_id
-    =
-employees.id
-```
-
-The compiler can use this information to construct an `EXISTS` query for relation filters.
-
-An additional `join()` extends this mapping query with another table:
-
-```text
-source
-  |
-  v
-mapping
-  |
-  +----> target
-  |
-  +----> additional joined entity
-```
-
-The additional entity is joined through the mapping table and does not become the primary target of the many-to-many relation.
+The same column ordering is used by the compiler when constructing the join condition.
 
 ---
 
@@ -700,49 +563,36 @@ p("context.name")
 
 when the current entity has a relation called `defaultContext`.
 
-This distinction is important for resolving relation paths.
+The same distinction applies to many-to-many `join()` declarations.
 
----
-
-# 16. Entity Prefixes
-
-An IQL field can explicitly specify an entity:
+For:
 
 ```kotlin
-p("User.name")
+join(
+    "context",
+    ContextsTable.id references UserRoleContext.contextId
+)
 ```
 
-The registry can resolve `User` directly as an entity.
+`context` is the IQL entity name used for resolving the additional join.
 
-An explicit entity prefix is particularly useful when there is no current entity context.
-
-For example:
-
-```kotlin
-query {
-    where {
-        p("user.name") eq "Alice"
-    }
-}
-```
-
-The registry/compiler can resolve `user` as an entity.
-
-When a current entity exists, however, the first path component can also be interpreted as a relation if it matches a relation on that entity.
-
-For example, given:
+The database table might have a completely different name:
 
 ```text
-application.defaultContext
+JOIN_TEST_CONTEXTS
 ```
 
-the path:
+The compiler resolves:
 
-```kotlin
-p("defaultContext.name")
+```text
+IQL entity name
+       ↓
+Registry entity
+       ↓
+Exposed table
 ```
 
-is resolved as a relation path when `defaultContext` is a relation of `application`.
+Therefore registry code should consistently use the **IQL entity name** when referring to an entity.
 
 ---
 
@@ -785,141 +635,47 @@ p(
 
 is resolved one relation at a time.
 
----
+The important rule is that every step is resolved against the entity reached by the previous step.
 
-# 18. Complete Example
-
-A small registry might look like this:
-
-```kotlin
-val registry =
-    registry {
-
-        entity("company", Companies) {
-
-            field(Companies.name)
-
-            oneToMany("departments", Departments) {
-                Companies.id references Departments.companyId
-            }
-        }
-
-        entity("department", Departments) {
-
-            field(Departments.name)
-
-            manyToOne("company", Companies) {
-                Departments.companyId references Companies.id
-            }
-
-            oneToMany("employees", Employees) {
-                Departments.id references Employees.departmentId
-            }
-        }
-
-        entity("employee", Employees) {
-
-            field(Employees.name)
-
-            manyToOne("department", Departments) {
-                Employees.departmentId references Departments.id
-            }
-        }
-    }
-```
-
-This describes:
+For normal relations:
 
 ```text
-company
-   |
-   └── departments -> department
-                         |
-                         ├── company -> company
-                         |
-                         └── employees -> employee
-                                              |
-                                              └── department -> department
+entity
+  ↓
+normal relation
+  ↓
+target entity
 ```
 
----
-
-# 19. Application-Style Example
-
-A modular registry can look like this:
-
-```kotlin
-val applicationModuleRegistry: Registry by lazy {
-
-    registry {
-
-        fieldNameStrategy =
-            FieldNameStrategy.SNAKE_CASE
-
-        include(permissionModuleRegistry)
-
-        fieldTypes(
-            DateColumnType::class mapsTo FieldType.DATE,
-            DateTimeWithTimeZoneColumnType::class mapsTo FieldType.DATETIME,
-            EntityIDColumnType::class mapsTo FieldType.UUID
-        )
-
-        entity("application", ApplicationsTable) {
-
-            field(ApplicationsTable.name)
-            field(ApplicationsTable.description)
-            field(ApplicationsTable.isMandatory)
-            field(ApplicationsTable.defaultContextId)
-
-            oneToMany("modules", ModulesTable) {
-                ApplicationsTable.id references ModulesTable.applicationId
-            }
-
-            manyToOne("defaultContext", ContextsTable) {
-                ApplicationsTable.defaultContextId references ContextsTable.id
-            }
-        }
-
-        entity("module", ModulesTable) {
-
-            field(ModulesTable.name)
-            field(ModulesTable.description)
-            field(ModulesTable.isMandatory)
-
-            manyToOne("application", ApplicationsTable) {
-                ModulesTable.applicationId references ApplicationsTable.id
-            }
-
-            manyToOne("defaultContext", ContextsTable) {
-                ModulesTable.defaultContextId references ContextsTable.id
-            }
-        }
-    }
-}
-```
-
-This allows paths such as:
-
-```kotlin
-p("defaultContext.name") eq "TEST"
-```
-
-and:
-
-```kotlin
-p("modules.defaultContext.name") eq "TEST"
-```
-
-The second path is resolved as:
+For a many-to-many relation with additional joins:
 
 ```text
-application
-    ↓ modules
-module
-    ↓ defaultContext
+source entity
+  ↓
+many-to-many relation
+  ↓
+target entity
+  ↓
+normal relation
+     OR
+relationJoin
+```
+
+The normal relation has priority if both have the same name.
+
+For example:
+
+```text
+user
+  ↓ roleContexts
+role
+  ↓ context
 context
-    ↓ name
 ```
+
+If `role.context` is registered as a normal relation, that relation wins.
+
+If it is not registered, the compiler can resolve `context` through the `roleContexts` relation's `relationJoin`.
 
 ---
 
@@ -991,31 +747,7 @@ It tells the compiler:
 * which columns connect the entities
 * which mapping table is required for many-to-many relations
 * which additional tables have to be joined for a many-to-many relation
-
----
-
-# 21. Recommended Registry Structure
-
-For a larger application, keep registry definitions close to their module:
-
-```text
-permission
- └── permissionModuleRegistry
-
-application
- └── applicationModuleRegistry
-```
-
-Then compose them:
-
-```kotlin
-registry {
-    include(permissionModuleRegistry)
-    include(applicationModuleRegistry)
-}
-```
-
-Each module owns its entities and relations while the application-level registry provides the complete model.
+* which additional entities may be addressed through those joins during path resolution
 
 ---
 
@@ -1063,11 +795,16 @@ Many-to-many relations can additionally describe context or other related entiti
 user
   └── roleContexts
         ├── role
-        └── context
+        ├── context
+        └── tenant
 ```
 
-The key principle is:
+The key principles are:
 
 > **Every relation path is resolved one step at a time, with each relation being resolved against the entity reached by the previous step.**
 
-For many-to-many relations, the mapping table defines the primary source-to-target relationship, while additional `join()` declarations describe tables that are also connected through the mapping table.
+> **For a many-to-many relation, a normal relation on the current target entity has priority over an additional `relationJoin` with the same name.**
+
+> **A `relationJoin` is scoped to the many-to-many relation that declares it; it does not become a normal relation of the target entity.**
+
+> **The mapping table defines the primary source-to-target relationship, while additional `join()` declarations describe entities that are also connected through the mapping table.**
