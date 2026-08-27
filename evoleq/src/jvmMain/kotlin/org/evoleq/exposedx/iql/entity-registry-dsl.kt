@@ -106,8 +106,8 @@ class RegistryConfiguration : Configuration<Registry> {
     ) {
         val config: Registry.()->Unit  =  {
 
-        val entityConfig =
-            EntityTypeConfiguration().apply {
+        val entityConfig = EntityTypeConfiguration().apply {
+            this.resolveTable = {entityName -> getEntityTable(entityName)}
             this.resolveFieldType = {
                 column: Column<*> -> FieldTypeResolver(this@RegistryConfiguration.fieldTypes).resolve(column)
             }
@@ -163,7 +163,10 @@ class RegistryConfiguration : Configuration<Registry> {
                 ) {
                     FieldTypeResolver(this@RegistryConfiguration.fieldTypes).resolve(this)
                 }
-            configuration.apply(block)
+            configuration.apply{
+                this.resolveTable = {entityName -> getEntityTable(entityName)}
+                block()
+            }
 
             val entity = configuration.configure()
 
@@ -191,11 +194,20 @@ internal data class PendingRelation(
     val sourceEntity: String,
     val relationName: String,
     val targetTable: Table,
-    val mappingTable: Table? = null
+    val mappingTable: Table? = null,
+    val relationJoins: List<PendingRelationJoin> = emptyList()
+)
+
+data class PendingRelationJoin(
+    val entityName: String,
+    val mappingColumns: List<String>,
+    val targetColumns: List<String>
 )
 
 @IqlRegistryDsl
 class EntityTypeConfiguration : Configuration<EntityType> {
+
+    lateinit var resolveTable: (entityName: String) -> Table
 
     lateinit var resolveFieldType: Column<*>.() -> FieldType
 
@@ -341,7 +353,8 @@ class EntityTypeConfiguration : Configuration<EntityType> {
                 name = relationName,
                 sourceTable = table,
                 targetTable = targetTable,
-                mappingTable = mappingTable
+                mappingTable = mappingTable,
+                resolveTable = resolveTable
             )
                 .apply(block)
                 .configure()
@@ -351,15 +364,16 @@ class EntityTypeConfiguration : Configuration<EntityType> {
                 name = relationName,
                 type = RelationType.MANY_TO_MANY,
                 targetEntity = targetTable.tableName,
-                joinColumns = mapping.sourceColumns,
-                mapping = mapping
+                joinColumns = mapping.mapping.sourceColumns,
+                mapping = mapping.mapping,
             )
 
         pendingRelations += PendingRelation(
             sourceEntity = name,
             relationName = relationName,
             targetTable = targetTable,
-            mappingTable = mappingTable
+            mappingTable = mappingTable,
+            relationJoins = mapping.relationJoins
         )
     }
 
@@ -481,16 +495,29 @@ class ColumnReferenceConfiguration(
         }
 }
 
+data class ManyToManyRelationInfo(
+    val mapping: MappingInfo,
+    val relationJoins: List<RelationJoin> = emptyList()
+)
+
+data class PendingManyToManyRelationInfo(
+    val mapping: MappingInfo,
+    val relationJoins: List<PendingRelationJoin> = emptyList()
+)
+
 @IqlRegistryDsl
 class ManyToManyConfiguration(
     val name: String,
     val sourceTable: Table,
     val targetTable: Table,
-    val mappingTable: Table
-) : Configuration<MappingInfo> {
+    val mappingTable: Table,
+    val resolveTable: (entityName: String) -> Table
+) : Configuration<PendingManyToManyRelationInfo> {
 
     private var sourceReferences: List<ColumnReference> = emptyList()
     private var targetReferences: List<ColumnReference> = emptyList()
+
+    private val relationJoins: MutableList<PendingRelationJoin> = mutableListOf()
 
     fun source(vararg references: () -> ColumnReference) {
         sourceReferences = references.map { it() }
@@ -500,7 +527,35 @@ class ManyToManyConfiguration(
         targetReferences = references.map { it() }
     }
 
-    override fun configure(): MappingInfo {
+    fun join(
+        targetEntity: String,
+        vararg references: () -> ColumnReference
+    ) {
+        val resolved = references.map { it() }
+
+
+
+        require(resolved.isNotEmpty()) {
+            "Relation '$name' requires at least one join reference"
+        }
+
+        resolved.forEach { reference ->
+
+
+            require(reference.target.table == mappingTable) {
+                "Join mapping column '${reference.target.name}' " +
+                        "must be from the mapping table"
+            }
+        }
+
+        relationJoins += PendingRelationJoin(
+            entityName = targetEntity,
+            mappingColumns = resolved.map { it.target.name },
+            targetColumns = resolved.map { it.source.name }
+        )
+    }
+
+    override fun configure(): PendingManyToManyRelationInfo {
 
         require(sourceReferences.isNotEmpty()) {
             "Relation '$name' requires at least one source mapping reference"
@@ -535,7 +590,7 @@ class ManyToManyConfiguration(
             }
         }
 
-        return MappingInfo(
+        val mappingInfo =  MappingInfo(
             table = mappingTable.tableName,
 
             sourceColumns =
@@ -549,6 +604,11 @@ class ManyToManyConfiguration(
 
             targetColumns =
                 targetReferences.map { it.source.name }
+        )
+
+        return PendingManyToManyRelationInfo(
+            mapping = mappingInfo,
+            relationJoins = relationJoins.toList()
         )
     }
 }

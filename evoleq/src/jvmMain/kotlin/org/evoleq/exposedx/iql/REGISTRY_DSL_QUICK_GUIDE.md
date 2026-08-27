@@ -9,6 +9,7 @@ It registers:
 * fields
 * relations
 * many-to-many mapping tables
+* additional joins for many-to-many relations
 * custom field-type mappings
 * field-name strategies
 * other module registries
@@ -414,7 +415,172 @@ The registry stores this information as a `MappingInfo`.
 
 ---
 
-# 11. Many-to-Many on the Inverse Side
+# 11. Additional Joins in Many-to-Many Relations
+
+A many-to-many relation can require additional tables to be joined when the mapping table contains a reference to another entity.
+
+This is useful when the mapping itself carries additional context.
+
+For example, consider:
+
+```text
+Users
+   |
+   v
+UserRoleContext
+   |
+   ├── roleId
+   └── contextId
+          |
+          v
+      Contexts
+```
+
+The actual role relation is:
+
+```text
+Users.id
+    =
+UserRoleContext.userId
+
+UserRoleContext.roleId
+    =
+Roles.id
+```
+
+But the mapping also references `Contexts`:
+
+```text
+UserRoleContext.contextId
+    =
+Contexts.id
+```
+
+The additional relation can be declared with `join()`:
+
+```kotlin
+entity("user", UsersTable) {
+
+    manyToMany(
+        "roleContexts",
+        RolesTable,
+        UserRoleContext
+    ) {
+
+        source(
+            UsersTable.id references UserRoleContext.userId
+        )
+
+        target(
+            RolesTable.id references UserRoleContext.roleId
+        )
+
+        join(
+            ContextsTable,
+            ContextsTable.id references UserRoleContext.contextId
+        )
+    }
+}
+```
+
+The `target` describes the actual target of the many-to-many relation.
+
+The `join` describes an additional table that has to be joined through the mapping table.
+
+Conceptually:
+
+```text
+             ┌──────────────┐
+             │     Role     │
+             └──────▲───────┘
+                    │ roleId
+                    │
+┌──────┐      ┌─────┴────────────┐
+│ User │─────►│ UserRoleContext  │
+└──────┘ user │                  │
+              │ contextId        │
+              └──────┬───────────┘
+                     │
+                     ▼
+              ┌──────────────┐
+              │   Context    │
+              └──────────────┘
+```
+
+The additional join does **not** change the target entity of the relation.
+
+Instead, it adds another table to the relation query.
+
+This allows a query to express a condition such as:
+
+```kotlin
+where {
+    any("roleContexts") {
+        p("name") eq "TEST_ROLE"
+    }
+}
+```
+
+while the generated relation query can additionally join `Contexts` when the relation requires it.
+
+---
+
+# 12. Multiple Columns in Many-to-Many Joins
+
+Both `source()` and `target()` can contain multiple column references.
+
+For example:
+
+```kotlin
+manyToMany(
+    "members",
+    EmployeesTable,
+    ProjectMembers
+) {
+
+    source(
+        ProjectsTable.companyId references ProjectMembers.companyId,
+        ProjectsTable.id references ProjectMembers.projectId
+    )
+
+    target(
+        EmployeesTable.companyId references ProjectMembers.companyId,
+        EmployeesTable.id references ProjectMembers.employeeId
+    )
+}
+```
+
+The references are matched by position:
+
+```text
+source[0] -> mappingSource[0]
+source[1] -> mappingSource[1]
+
+target[0] -> mappingTarget[0]
+target[1] -> mappingTarget[1]
+```
+
+Additional joins work the same way:
+
+```kotlin
+join(
+    ContextsTable,
+    ContextsTable.tenantId references UserRoleContext.tenantId,
+    ContextsTable.id references UserRoleContext.contextId
+)
+```
+
+This represents a composite join:
+
+```text
+Contexts.tenant_id = UserRoleContext.tenant_id
+AND
+Contexts.id = UserRoleContext.context_id
+```
+
+---
+
+# 13. Many-to-Many on the Inverse Side
 
 The inverse side can also define the same mapping:
 
@@ -440,9 +606,11 @@ entity("employee", EmployeesTable) {
 
 This allows relation traversal in both directions.
 
+Additional joins can also be defined independently on the inverse relation if the inverse query requires additional tables.
+
 ---
 
-# 12. Mapping Tables
+# 14. Mapping Tables
 
 A many-to-many mapping contains four important pieces of information:
 
@@ -482,9 +650,24 @@ employees.id
 
 The compiler can use this information to construct an `EXISTS` query for relation filters.
 
+An additional `join()` extends this mapping query with another table:
+
+```text
+source
+  |
+  v
+mapping
+  |
+  +----> target
+  |
+  +----> additional joined entity
+```
+
+The additional entity is joined through the mapping table and does not become the primary target of the many-to-many relation.
+
 ---
 
-# 13. Relation Names vs Entity Names
+# 15. Relation Names vs Entity Names
 
 The relation name and target entity name are separate concepts.
 
@@ -521,7 +704,7 @@ This distinction is important for resolving relation paths.
 
 ---
 
-# 14. Entity Prefixes
+# 16. Entity Prefixes
 
 An IQL field can explicitly specify an entity:
 
@@ -563,7 +746,7 @@ is resolved as a relation path when `defaultContext` is a relation of `applicati
 
 ---
 
-# 15. Combining Relations
+# 17. Combining Relations
 
 Relations can be mixed freely in a path.
 
@@ -604,16 +787,13 @@ is resolved one relation at a time.
 
 ---
 
-# 16. Complete Example
+# 18. Complete Example
 
 A small registry might look like this:
 
 ```kotlin
 val registry =
     registry {
-
-        fieldNameStrategy =
-            FieldNameStrategy.SNAKE_CASE
 
         entity("company", Companies) {
 
@@ -664,7 +844,7 @@ company
 
 ---
 
-# 17. Application-Style Example
+# 19. Application-Style Example
 
 A modular registry can look like this:
 
@@ -743,7 +923,7 @@ context
 
 ---
 
-# 18. Registry and Compiler
+# 20. Registry and Compiler
 
 The registry is the metadata layer used by the compiler.
 
@@ -772,6 +952,31 @@ ExposedCompiler
 SQL
 ```
 
+For many-to-many relations with additional joins, the registry also provides the information required to construct the complete relation query:
+
+```text
+IQL
+ │
+ │ relation
+ ▼
+Registry
+ │
+ ├── source relation
+ ├── mapping table
+ ├── target relation
+ └── additional relation joins
+ │
+ ▼
+ExposedCompiler
+ │
+ ▼
+EXISTS
+ │
+ ├── source ↔ mapping
+ ├── mapping ↔ target
+ └── mapping ↔ additional tables
+```
+
 The registry therefore does not execute queries itself.
 
 It tells the compiler:
@@ -785,10 +990,11 @@ It tells the compiler:
 * which entity a relation targets
 * which columns connect the entities
 * which mapping table is required for many-to-many relations
+* which additional tables have to be joined for a many-to-many relation
 
 ---
 
-# 19. Recommended Registry Structure
+# 21. Recommended Registry Structure
 
 For a larger application, keep registry definitions close to their module:
 
@@ -813,7 +1019,7 @@ Each module owns its entities and relations while the application-level registry
 
 ---
 
-# 20. Registry DSL Overview
+# 22. Registry DSL Overview
 
 The main building blocks are:
 
@@ -837,7 +1043,8 @@ registry
        │
        └── manyToMany
              ├── source
-             └── target
+             ├── target
+             └── join
 ```
 
 The resulting registry provides the metadata required to resolve paths such as:
@@ -850,8 +1057,17 @@ modules.defaultContext.root.name
 projects.members.name
 ```
 
+Many-to-many relations can additionally describe context or other related entities through `join()`:
+
+```text
+user
+  └── roleContexts
+        ├── role
+        └── context
+```
+
 The key principle is:
 
 > **Every relation path is resolved one step at a time, with each relation being resolved against the entity reached by the previous step.**
 
-This makes the registry the central description of the navigable domain graph used by the IQL compiler.
+For many-to-many relations, the mapping table defines the primary source-to-target relationship, while additional `join()` declarations describe tables that are also connected through the mapping table.
