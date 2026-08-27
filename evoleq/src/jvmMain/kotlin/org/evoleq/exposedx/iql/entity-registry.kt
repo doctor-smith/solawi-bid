@@ -95,7 +95,7 @@ class Registry(
 
     fun merge(other: Registry) {
 
-        other.entities.forEach { (name, entity) ->
+        other.entities.filter{(name, _) -> !entities.containsKey(name)}.forEach { (name, entity) ->
 
             require(!entities.containsKey(name)) {
                 "Entity '$name' is already registered"
@@ -130,6 +130,10 @@ class Registry(
     fun getEntityOrThrow(name: String): EntityType =
         getEntity(name)
             ?: error("Unknown entity: $name")
+
+    fun put(entity: EntityType) {
+        entities[entity.name] = entity
+    }
 
     fun getEntityTable(name: String): Table =
         tables[name]

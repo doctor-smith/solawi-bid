@@ -146,6 +146,34 @@ class RegistryConfiguration : Configuration<Registry> {
         configurations += config
     }
 
+    fun extend(
+        entityName: String,
+        block: EntityTypeConfiguration.() -> Unit
+    ) {
+        val config: Registry.() -> Unit = {
+
+            val existing = getEntity(entityName)?: throw IllegalArgumentException(
+                "Unknown entity: \$entityName",
+            )
+
+            val configuration =
+                EntityTypeConfiguration(
+                    existing,
+                    getEntityTable(entityName)
+                ) {
+                    FieldTypeResolver(this@RegistryConfiguration.fieldTypes).resolve(this)
+                }
+            configuration.apply(block)
+
+            val entity = configuration.configure()
+
+            put(entity)
+
+            registerPendingRelations( configuration.pendingRelations )
+        }
+        configurations += config
+    }
+
 }
 
 infix fun KClass<out IColumnType>.mapsTo(
@@ -170,7 +198,22 @@ class EntityTypeConfiguration : Configuration<EntityType> {
     private val fields: MutableMap<String, FieldInfo> = mutableMapOf()
     private val relations: MutableMap<String, RelationInfo> = mutableMapOf()
     internal val pendingRelations: MutableList<PendingRelation> = mutableListOf()
-    
+
+    constructor()
+
+    internal constructor(
+        entity: EntityType,
+        table: Table,
+        resolveFieldType: Column<*>.() -> FieldType
+    ) {
+        name = entity.name
+        this.table = table
+        this.resolveFieldType = resolveFieldType
+
+        fields.putAll(entity.fields)
+        relations.putAll(entity.relations)
+    }
+
     override fun configure(): EntityType {
         return EntityType(
             name,
@@ -184,6 +227,15 @@ class EntityTypeConfiguration : Configuration<EntityType> {
         require(column.table == table) {
             "Wrong table"
         }
+
+        require(column.name !in fields) {
+            "Field '${column.name}' is already registered on entity '$name'"
+        }
+
+        require(column.name !in relations) {
+            "Field '${column.name}' conflicts with relation '${column.name}' on entity '$name'"
+        }
+
         fields[column.name] = FieldInfo(
             column.name,
             column.resolveFieldType(),
@@ -200,6 +252,8 @@ class EntityTypeConfiguration : Configuration<EntityType> {
         targetTable: Table,
         block: ColumnReferenceConfiguration.() -> Unit
     ) {
+        requireRelationNameAvailable(relationName)
+
         val reference =
             ColumnReferenceConfiguration(
                 relationName,
@@ -236,6 +290,8 @@ class EntityTypeConfiguration : Configuration<EntityType> {
         targetTable: Table,
         block: ColumnReferenceConfiguration.() -> Unit
     ) {
+        requireRelationNameAvailable(relationName)
+
         val reference =
             ColumnReferenceConfiguration(
                 relationName,
@@ -272,6 +328,8 @@ class EntityTypeConfiguration : Configuration<EntityType> {
         mappingTable: Table,
         block: ManyToManyConfiguration.() -> Unit
     ) {
+        requireRelationNameAvailable(relationName)
+
         val mapping =
             ManyToManyConfiguration(
                 name = relationName,
@@ -297,6 +355,18 @@ class EntityTypeConfiguration : Configuration<EntityType> {
             targetTable = targetTable,
             mappingTable = mappingTable
         )
+    }
+
+    private fun requireRelationNameAvailable(
+        relationName: String
+    ) {
+        require(relationName !in relations) {
+            "Relation '$relationName' is already registered on entity '$name'"
+        }
+
+        require(relationName !in fields) {
+            "Relation '$relationName' conflicts with field '$relationName' on entity '$name'"
+        }
     }
 }
 
