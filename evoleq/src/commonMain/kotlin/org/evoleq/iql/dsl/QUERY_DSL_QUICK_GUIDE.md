@@ -1,75 +1,6 @@
-# IQL Query DSL
+# Ergänzung: Relation Paths and Many-to-Many Relation Joins
 
-The IQL Query DSL is a Kotlin DSL for building query objects that can be compiled by an IQL query compiler.
-
-It supports:
-
-* field filters
-* nested relation-path filters
-* relation quantifiers
-* expression filters
-* sorting
-* expression-based sorting
-* pagination
-
-A query can be serialized independently of the database implementation and passed to an IQL query compiler.
-
----
-
-## 1. Basic Query
-
-The entry point is `query`:
-
-```kotlin
-val query =
-    query("user") {
-        // query configuration
-    }
-```
-
-The entity passed to `query` is the **root entity** of the query.
-
-It provides the context used for resolving relative field and relation paths.
-
-An entity can alternatively be selected inside the builder:
-
-```kotlin
-val query =
-    query {
-        select("user")
-    }
-```
-
----
-
-# 2. Filtering
-
-Filters are defined with `where`:
-
-```kotlin
-val query =
-    query("user") {
-        where {
-            p("username") eq "alice"
-        }
-    }
-```
-
-`p()` creates a field path.
-
-`field()` is an equivalent spelling:
-
-```kotlin
-p("username") eq "alice"
-```
-
-```kotlin
-field("username") eq "alice"
-```
-
----
-
-# 3. Field Paths
+## 3. Field Paths
 
 A field can be referenced relative to the current entity:
 
@@ -98,7 +29,9 @@ query("application") {
 This means:
 
 ```text
-application.defaultContext.name
+application
+    → defaultContext
+    → name
 ```
 
 The path may contain multiple relation levels:
@@ -111,340 +44,29 @@ query("application") {
 }
 ```
 
-The compiler resolves every relation against the entity reached by the previous relation:
+The compiler resolves every relation **one step at a time**.
+
+For each step:
+
+1. The current entity is inspected.
+2. A normal registered relation with that name is preferred.
+3. If no normal relation exists, a matching `relationJoin` of the previously resolved many-to-many relation may be used.
+4. The resolved target entity becomes the current entity for the next path component.
+
+Conceptually:
 
 ```text
 application
-    → modules
-    → module
-    → defaultContext
-    → context
-    → root
-    → context
-    → name
+    ↓ modules
+module
+    ↓ defaultContext
+context
+    ↓ root
+context
+    ↓ name
 ```
 
-Relation paths can therefore mix different relation types, for example:
-
-```text
-1:N → N:1 → N:M → N:M → N:1
-```
-
-The path is resolved from the registry rather than from the database schema directly.
-
----
-
-# 4. Explicit Entity Paths
-
-An entity can be referenced explicitly when there is no current entity context:
-
-```kotlin
-p("User.name")
-```
-
-For example:
-
-```kotlin
-val filter =
-    eq(
-        "User.name",
-        "Alice"
-    )
-```
-
-When a current entity exists, the first path component is interpreted as a relation if such a relation exists.
-
-For example, with:
-
-```text
-application
-└── defaultContext → context
-```
-
-this:
-
-```kotlin
-p("defaultContext.name")
-```
-
-means a relation path.
-
-The explicit entity form is primarily useful when no current entity is available.
-
----
-
-# 5. Comparison Operators
-
-The DSL supports:
-
-| Operator | Example           |
-| -------- | ----------------- |
-| `eq`     | `p("age") eq 18`  |
-| `neq`    | `p("age") neq 18` |
-| `gt`     | `p("age") gt 18`  |
-| `gte`    | `p("age") gte 18` |
-| `lt`     | `p("age") lt 18`  |
-| `lte`    | `p("age") lte 18` |
-
-Example:
-
-```kotlin
-where {
-    p("age") gt 18
-    p("status") eq "ACTIVE"
-    p("enabled") eq true
-}
-```
-
-Multiple filters in the same `where` block are combined with `AND`.
-
-```kotlin
-query("user") {
-    where {
-        p("age") gte 18
-        p("status") eq "ACTIVE"
-    }
-}
-```
-
-Conceptually:
-
-```text
-age >= 18 AND status = 'ACTIVE'
-```
-
----
-
-# 6. `IN`
-
-Use `in` to compare a field against multiple values:
-
-```kotlin
-where {
-    p("status") `in` listOf(
-        "ACTIVE",
-        "PENDING"
-    )
-}
-```
-
-This corresponds to an SQL `IN` condition.
-
-`IN` also works with relation paths:
-
-```kotlin
-where {
-    p("defaultContext.name") `in` listOf(
-        "TEST",
-        "PRODUCTION"
-    )
-}
-```
-
----
-
-# 7. NULL Checks
-
-Use `isNull()`:
-
-```kotlin
-where {
-    p("deletedAt").isNull()
-}
-```
-
-Use `isNotNull()`:
-
-```kotlin
-where {
-    p("deletedAt").isNotNull()
-}
-```
-
-Relation paths can also be used:
-
-```kotlin
-where {
-    p("defaultContext.name").isNotNull()
-}
-```
-
----
-
-# 8. String Matching
-
-The DSL provides helpers for SQL `LIKE` expressions.
-
-## Contains
-
-```kotlin
-where {
-    p("username") contains "alice"
-}
-```
-
-Conceptually:
-
-```text
-%alice%
-```
-
-## Starts with
-
-```kotlin
-where {
-    p("username") startsWith "ali"
-}
-```
-
-Conceptually:
-
-```text
-ali%
-```
-
-## Ends with
-
-```kotlin
-where {
-    p("username") endsWith "son"
-}
-```
-
-Conceptually:
-
-```text
-%son
-```
-
-These helpers can also be used with relation paths:
-
-```kotlin
-where {
-    p("defaultContext.name") startsWith "TEST"
-}
-```
-
----
-
-# 9. Case-Insensitive Matching
-
-Case-insensitive variants are available:
-
-```kotlin
-where {
-    p("username") containsIgnoreCase "alice"
-}
-```
-
-```kotlin
-where {
-    p("username") startsWithIgnoreCase "ali"
-}
-```
-
-```kotlin
-where {
-    p("username") endsWithIgnoreCase "son"
-}
-```
-
-The explicit form is also available:
-
-```kotlin
-where {
-    p("username").contains(
-        "alice",
-        ignoreCase = true
-    )
-}
-```
-
----
-
-# 10. Custom `LIKE` Patterns
-
-Use `like` when the complete pattern should be supplied:
-
-```kotlin
-where {
-    p("username") like "ali%"
-}
-```
-
-Case-insensitive:
-
-```kotlin
-where {
-    p("username") likeIgnoreCase "ali%"
-}
-```
-
-Or:
-
-```kotlin
-where {
-    p("username").like(
-        "ali%",
-        ignoreCase = true
-    )
-}
-```
-
-The convenience helpers such as `contains`, `startsWith`, and `endsWith` escape `%`, `_`, and `\` automatically.
-
----
-
-# 11. Logical Operators
-
-## AND
-
-Multiple filters in a `where` block are implicitly combined with `AND`:
-
-```kotlin
-where {
-    p("active") eq true
-    p("age") gte 18
-}
-```
-
-Explicit `AND` is also available:
-
-```kotlin
-where {
-    and {
-        p("active") eq true
-        p("age") gte 18
-    }
-}
-```
-
-## OR
-
-Use `or` for alternatives:
-
-```kotlin
-where {
-    or {
-        p("status") eq "ACTIVE"
-        p("status") eq "PENDING"
-    }
-}
-```
-
-## NOT
-
-Use `not` to negate a filter:
-
-```kotlin
-where {
-    not {
-        p("active") eq false
-    }
-}
-```
-
-Logical operators can be combined with relation filters and nested relation paths.
+This is important because relation names are always interpreted relative to the entity currently being resolved.
 
 ---
 
@@ -464,7 +86,7 @@ query("application") {
 
 This is a **relation-path filter**.
 
-It does not require an explicit `query("defaultContext")` or a separate nested query.
+It does not require an explicit nested query.
 
 Multiple relation levels are supported:
 
@@ -487,28 +109,13 @@ application
     → name
 ```
 
-Relation paths may mix relation types:
-
-```kotlin
-query("application") {
-    where {
-        p("modules.defaultContext.roles.rights.name") eq "READ"
-    }
-}
-```
-
-Conceptually:
+Relation paths can mix relation types:
 
 ```text
-application
-    → modules          (1:N)
-    → defaultContext   (N:1)
-    → roles            (N:M)
-    → rights           (N:M)
-    → name
+1:N → N:1 → N:M → N:M → N:1
 ```
 
-The compiler builds the required SQL correlation from the complete relation path.
+provided every step can be resolved from the current entity.
 
 ---
 
@@ -522,25 +129,23 @@ The available quantifiers are:
 * `all`
 * `none`
 
-For example, given:
-
-```text
-user → orders
-```
-
-use:
+For example:
 
 ```kotlin
-where {
-    any("orders") {
-        p("amount") gt 100
+query("user") {
+    where {
+        any("orders") {
+            p("amount") gt 100
+        }
     }
 }
 ```
 
 This means:
 
-> Select users having at least one order whose amount is greater than 100.
+> Select users having at least one related order whose amount is greater than 100.
+
+Quantifiers are especially important for collection relations such as `1:N` and `N:M`.
 
 ---
 
@@ -574,13 +179,11 @@ This means:
 
 > Select users for which all related orders satisfy the condition.
 
-Quantifiers are particularly useful for `1:N` and `N:M` relationships.
-
 ---
 
 # 14. Nested Relation Paths Inside Quantifiers
 
-Quantifiers can themselves contain relation paths.
+A quantifier can contain a complete relation path.
 
 For example:
 
@@ -615,412 +218,354 @@ query("application") {
 }
 ```
 
-This allows quantifiers and relation-path resolution to be combined.
+The path inside the quantifier is resolved relative to the entity represented by the quantifier relation.
+
+So inside:
+
+```kotlin
+any("modules") {
+    ...
+}
+```
+
+the current entity is `module`.
+
+Therefore:
+
+```kotlin
+p("defaultContext.name")
+```
+
+is resolved against `module`, not against `application`.
 
 ---
 
-# 15. Expressions
+# 14a. Many-to-Many Relation Joins Inside Quantifiers
 
-Expressions represent values that are derived from fields or relations.
+A many-to-many relation can define additional joined entities.
 
-A field expression can be created with:
+For example:
 
-```kotlin
-expression("username")
+```text
+user
+   │
+   │ rolesWithContext
+   ▼
+user_role_context
+   │
+   ├── role_id ─────→ role
+   │
+   └── context_id ──→ context
 ```
 
-A relation expression can be created with:
+The registry may define:
 
 ```kotlin
-relation("orders")
+entity("user", UsersTable) {
+
+    manyToMany(
+        "rolesWithContext",
+        RolesTable,
+        UserRoleContext
+    ) {
+
+        source(
+            UsersTable.id references UserRoleContext.userId
+        )
+
+        target(
+            RolesTable.id references UserRoleContext.roleId
+        )
+
+        join(
+            "context",
+            ContextsTable.id references UserRoleContext.contextId
+        )
+    }
+}
 ```
 
-A relation can optionally specify an explicit entity:
+The primary target of the relation is still:
+
+```text
+role
+```
+
+The `context` entity is an additional relation join.
+
+It can nevertheless be addressed inside the relation filter:
 
 ```kotlin
-relation(
-    relation = "orders",
-    entity = "order"
+query("user") {
+    where {
+        any("rolesWithContext") {
+            p("context.name") eq "production"
+        }
+    }
+}
+```
+
+The compiler generates the relation query conceptually as:
+
+```text
+user
+ │
+ └── EXISTS
+      │
+      ├── user → user_role_context
+      ├── user_role_context → role
+      └── user_role_context → context
+                                  │
+                                  └── name = 'production'
+```
+
+The important distinction is:
+
+```text
+rolesWithContext
+    ↓
+primary target = role
+
+context
+    ↓
+additional joined entity
+```
+
+The additional join does **not** change the primary target entity of the many-to-many relation.
+
+---
+
+# 14b. Relation Join Resolution
+
+A `relationJoin` is only a fallback during path resolution.
+
+Suppose the many-to-many relation declares:
+
+```kotlin
+join(
+    "context",
+    ContextsTable.id references UserRoleContext.contextId
 )
 ```
 
-Expressions can then be transformed or aggregated.
+and the target entity `role` does **not** have a normal relation named `context`.
 
----
-
-# 16. Mapping a Relation to a Field
-
-Use `map()` to select a field from a relation:
+Then:
 
 ```kotlin
-relation("orders")
-    .map("amount")
+any("rolesWithContext") {
+    p("context.name") eq "production"
+}
 ```
 
-This represents the concept:
+can resolve:
 
 ```text
-user.orders.amount
+role
+   ↓ relationJoin
+context
+   ↓
+name
 ```
 
-The mapped expression can then be aggregated.
-
-For example:
+However, if `role` has a normal relation named `context`:
 
 ```kotlin
-relation("orders")
-    .map("amount")
-    .max()
-```
+entity("role", RolesTable) {
 
----
-
-# 17. Aggregations
-
-The available aggregation functions are:
-
-* `min()`
-* `max()`
-* `sum()`
-* `avg()`
-* `count()`
-
-Examples:
-
-```kotlin
-relation("orders")
-    .map("amount")
-    .min()
-```
-
-```kotlin
-relation("orders")
-    .map("amount")
-    .max()
-```
-
-```kotlin
-relation("orders")
-    .map("amount")
-    .sum()
-```
-
-```kotlin
-relation("orders")
-    .map("amount")
-    .avg()
-```
-
-Count related elements:
-
-```kotlin
-relation("orders")
-    .count()
-```
-
----
-
-# 18. Comparing Expressions
-
-Expressions can be compared with values:
-
-```kotlin
-expression("age") eq 18
-```
-
-Aggregated relation expressions can also be compared:
-
-```kotlin
-relation("orders")
-    .map("amount")
-    .max() eq 100
-```
-
-For example:
-
-```kotlin
-where {
-    relation("orders")
-        .map("amount")
-        .max() eq 500
-}
-```
-
-Expression comparisons currently support `eq` overloads for values such as:
-
-* `JsonElement`
-* `String`
-* `Int`
-* `Long`
-* `Boolean`
-
----
-
-# 19. Sorting by Fields
-
-Ascending:
-
-```kotlin
-query("user") {
-    asc("username")
-}
-```
-
-Descending:
-
-```kotlin
-query("user") {
-    desc("username")
-}
-```
-
-The generic form is:
-
-```kotlin
-query("user") {
-    orderBy(
-        "username",
-        SortDirection.ASC
-    )
-}
-```
-
-or:
-
-```kotlin
-query("user") {
-    orderBy(
-        "username",
-        SortDirection.DESC
-    )
-}
-```
-
-Relation paths can also be used as sort fields where supported:
-
-```kotlin
-query("application") {
-    asc("defaultContext.name")
-}
-```
-
-Multiple sort fields are preserved in declaration order:
-
-```kotlin
-query("user") {
-    asc("last_name")
-    asc("first_name")
-}
-```
-
----
-
-# 20. Sorting by Expressions
-
-Expressions can be used as sort keys.
-
-For example:
-
-```kotlin
-query("user") {
-    asc(
-        relation("userProfiles")
-            .map("last_name")
-            .max()
-    )
-}
-```
-
-Descending:
-
-```kotlin
-query("user") {
-    desc(
-        relation("userProfiles")
-            .map("last_name")
-            .max()
-    )
-}
-```
-
-The generic form is:
-
-```kotlin
-query("user") {
-    orderBy(
-        relation("userProfiles")
-            .map("last_name")
-            .max(),
-        SortDirection.ASC
-    )
-}
-```
-
----
-
-# 21. Combining Relation Filters and Expression Sorting
-
-Filtering and expression sorting can be combined:
-
-```kotlin
-val query =
-    query("user") {
-
-        where {
-            p("active") eq true
-
-            any("orders") {
-                p("amount") gt 100
-            }
-        }
-
-        desc(
-            relation("orders")
-                .map("amount")
-                .max()
-        )
+    manyToOne("context", ContextsTable) {
+        RolesTable.contextId references ContextsTable.id
     }
+}
+```
+
+then the normal relation wins.
+
+The resolution priority is therefore:
+
+```text
+1. Normal relation on current entity
+2. Matching relationJoin of the previously resolved M:N relation
+3. Unknown relation → error
+```
+
+This rule is intentional.
+
+It prevents an additional join from unexpectedly overriding an explicitly registered domain relation.
+
+For example:
+
+```text
+role
+ ├── context        ← normal relation
+ │
+ └── relationJoin
+      └── context   ← fallback only
+```
+
+In this situation:
+
+```kotlin
+p("context.name")
+```
+
+always resolves through the normal `role.context` relation.
+
+---
+
+# 14c. Relation Joins Are Not Normal Relations
+
+A `join()` declaration does not register a normal relation on the target entity.
+
+For example:
+
+```kotlin
+manyToMany(
+    "rolesWithContext",
+    RolesTable,
+    UserRoleContext
+) {
+    ...
+    join(
+        "context",
+        ContextsTable.id references UserRoleContext.contextId
+    )
+}
+```
+
+does **not** mean that:
+
+```kotlin
+role.relations["context"]
+```
+
+exists.
+
+Instead, the join is metadata belonging to:
+
+```text
+user.rolesWithContext
+```
+
+and is available while resolving the path below that many-to-many relation.
+
+Conceptually:
+
+```text
+user
+ └── rolesWithContext
+       ├── role
+       └── context   ← additional join, not a normal role relation
+```
+
+This distinction is important when defining registry relations.
+
+---
+
+# 14d. Relation Join Correlation
+
+An additional relation join is correlated through the many-to-many mapping table.
+
+For example:
+
+```kotlin
+join(
+    "context",
+    ContextsTable.id references UserRoleContext.contextId
+)
+```
+
+means conceptually:
+
+```text
+UserRoleContext.context_id = Contexts.id
+```
+
+Together with the normal many-to-many mapping:
+
+```text
+Users.id = UserRoleContext.user_id
+
+UserRoleContext.role_id = Roles.id
+
+UserRoleContext.context_id = Contexts.id
+```
+
+the generated `EXISTS` query can therefore test conditions on both the target and the additional entity.
+
+For example:
+
+```kotlin
+any("rolesWithContext") {
+    p("name") eq "admin"
+    p("context.name") eq "production"
+}
 ```
 
 Conceptually:
 
 ```text
-WHERE active = true
-  AND EXISTS (
-      order.amount > 100
-  )
-ORDER BY MAX(order.amount) DESC
-```
+EXISTS (
+    role
+    JOIN user_role_context
+    JOIN context
 
-The exact SQL representation depends on the compiler and relation type.
-
----
-
-# 22. Pagination
-
-Pagination is configured with `page()`:
-
-```kotlin
-query("user") {
-    page(
-        size = 20,
-        offset = 0
-    )
-}
-```
-
-The default page size is `50`.
-
-The default offset is `0`.
-
-For example:
-
-```kotlin
-query("user") {
-    page(
-        size = 20,
-        offset = 40
-    )
-}
-```
-
-means:
-
-```text
-page size = 20
-offset = 40
-```
-
-Invalid pagination values are rejected:
-
-```kotlin
-page(size = 0)
-```
-
-and:
-
-```kotlin
-page(
-    size = 20,
-    offset = -1
+    WHERE
+        user.id = user_role_context.user_id
+        AND
+        user_role_context.role_id = role.id
+        AND
+        user_role_context.context_id = context.id
+        AND
+        role.name = 'admin'
+        AND
+        context.name = 'production'
 )
 ```
 
----
-
-# 23. Complete Example
-
-A query can combine ordinary fields, relation paths, quantifiers, sorting, expressions, and pagination:
-
-```kotlin
-val query =
-    query("application") {
-
-        where {
-
-            p("name") startsWithIgnoreCase "solawi"
-
-            p("defaultContext.name") eq "TEST"
-
-            any("modules") {
-                p("defaultContext.name") eq "PRODUCTION"
-            }
-
-            any("defaultContext.roles") {
-                p("rights.name") eq "READ"
-            }
-
-            none("modules") {
-                p("name") eq "DEPRECATED"
-            }
-        }
-
-        asc("name")
-
-        page(
-            size = 20,
-            offset = 0
-        )
-    }
-```
-
-This expresses:
-
-1. Select applications.
-2. The application name starts with `solawi`, ignoring case.
-3. The application's default context is `TEST`.
-4. At least one module has `PRODUCTION` as its default context.
-5. At least one role of the default context has the `READ` right.
-6. No module is named `DEPRECATED`.
-7. Sort by application name.
-8. Return the first 20 results.
+The exact SQL representation depends on the compiler implementation, but the semantic relationship is the same.
 
 ---
 
-# 24. Query Construction Without an Explicit Entity
+# 14e. Multiple Additional Relation Joins
 
-The root entity can be supplied later:
+A many-to-many relation can define more than one additional joined entity.
 
-```kotlin
-val query =
-    query {
-        select("user")
+For example:
 
-        where {
-            p("active") eq true
-        }
-
-        asc("username")
-    }
+```text
+user
+ └── assignments
+       ├── role
+       ├── context
+       └── application
 ```
 
-The selected entity becomes the context for resolving relative fields and relation paths.
-
-When no entity context exists, explicit entity-qualified fields can be used:
+The query can then address fields from the additional entities:
 
 ```kotlin
-p("User.name")
+any("assignments") {
+    p("context.name") eq "production"
+    p("application.name") eq "billing"
+}
 ```
+
+Each additional join is resolved against the relation's mapping metadata.
+
+The primary target remains unchanged:
+
+```text
+assignments → role
+```
+
+while:
+
+```text
+context
+application
+```
+
+are additional joined entities.
 
 ---
 
@@ -1064,7 +609,9 @@ all("modules") {
 }
 ```
 
-They can be combined:
+### Quantifier + relation path
+
+Both can be combined:
 
 ```kotlin
 any("modules") {
@@ -1072,151 +619,284 @@ any("modules") {
 }
 ```
 
----
+### Quantifier + many-to-many relation join
 
-# 26. Recommended Style
-
-For simple fields, use `p()`:
+A many-to-many relation can additionally expose joined entities:
 
 ```kotlin
-query("user") {
-    where {
-        p("username") eq "alice"
-    }
+any("rolesWithContext") {
+    p("name") eq "admin"
+    p("context.name") eq "production"
 }
 ```
 
-For a field reached through one or more relations, use a relation path:
+This allows a single relation condition to constrain both:
 
-```kotlin
-query("application") {
-    where {
-        p("defaultContext.root.name") eq "GLOBAL"
-    }
-}
-```
+```text
+primary target
+    role.name
 
-For existence conditions over collections, use quantifiers:
-
-```kotlin
-query("application") {
-    where {
-        any("modules") {
-            p("name") eq "API"
-        }
-    }
-}
-```
-
-For nested relation conditions, combine both:
-
-```kotlin
-query("application") {
-    where {
-        any("modules") {
-            p("defaultContext.roles.rights.name") eq "READ"
-        }
-    }
-}
-```
-
-For derived values, use expressions:
-
-```kotlin
-relation("orders")
-    .map("amount")
-    .max()
-```
-
-For simple sorting, prefer:
-
-```kotlin
-asc("last_name")
-desc("created_at")
-```
-
-For complex sorting, use an expression:
-
-```kotlin
-desc(
-    relation("orders")
-        .map("amount")
-        .max()
-)
+additional joined entity
+    context.name
 ```
 
 ---
 
-# 27. DSL Overview
+# 26. Relation Resolution Rules
 
-The main query structure is:
+When resolving a relation path, the compiler follows these rules:
 
-```text
-query
- ├── select
- ├── where
- │    ├── p / field
- │    │    ├── relation paths
- │    │    ├── eq
- │    │    ├── neq
- │    │    ├── gt / gte
- │    │    ├── lt / lte
- │    │    ├── in
- │    │    ├── isNull / isNotNull
- │    │    ├── contains
- │    │    ├── startsWith
- │    │    ├── endsWith
- │    │    └── like
- │    │
- │    ├── and
- │    ├── or
- │    ├── not
- │    ├── any
- │    ├── all
- │    └── none
- │
- ├── asc / desc
- │    ├── field
- │    └── expression
- │
- ├── orderBy
- │    ├── field
- │    └── expression
- │
- └── page
+### Rule 1 — Start at the current entity
+
+For:
+
+```kotlin
+query("application") {
+    where {
+        p("modules.defaultContext.name") eq "TEST"
+    }
+}
 ```
 
-Expressions provide a second part of the DSL:
-
-```text
-expression("field")
-
-relation("relation")
-    └── map("field")
-          ├── min()
-          ├── max()
-          ├── sum()
-          ├── avg()
-          └── count()
-```
-
-Relation paths provide direct traversal:
+resolution starts at:
 
 ```text
 application
-    └── modules
-          └── defaultContext
-                └── roles
-                      └── rights
-                            └── name
 ```
 
-A relation path may contain arbitrary supported relation types:
+### Rule 2 — Prefer normal relations
+
+If the current entity contains a relation with the requested name, that relation is used.
 
 ```text
-1:N → N:1 → N:M → N:M → N:1
+currentEntity.relations[relationName]
 ```
 
-The registry resolves each step and provides the compiler with the complete path from the root entity to the final field.
+has priority.
 
-Together, these APIs allow IQL to represent simple field queries as well as deeply nested relation filtering, quantified relation conditions, aggregation, expression comparison, sorting, and pagination.
+### Rule 3 — Fall back to relationJoin
+
+If no normal relation exists, the compiler may look at the `relationJoins` of the previously resolved many-to-many relation.
+
+This allows:
+
+```kotlin
+any("rolesWithContext") {
+    p("context.name") eq "production"
+}
+```
+
+even when `role` itself has no registered `context` relation.
+
+### Rule 4 — Move to the resolved target entity
+
+After resolving a relation:
+
+```text
+source → relation → target
+```
+
+the target becomes the current entity for the next path component.
+
+### Rule 5 — Unknown relations fail
+
+If neither a normal relation nor an applicable relation join exists, the path is rejected.
+
+For example:
+
+```kotlin
+p("modules.doesNotExist.name")
+```
+
+results in an unknown-relation error.
+
+---
+
+# 27. Complete Relation Example
+
+The following example demonstrates all three cases:
+
+```text
+user
+ └── rolesWithContext
+       │
+       ├── role
+       │    └── context       ← normal relation
+       │
+       └── context             ← relationJoin
+```
+
+The registry contains:
+
+```kotlin
+entity("user", UsersTable) {
+
+    manyToMany(
+        "rolesWithContext",
+        RolesTable,
+        UserRoleContext
+    ) {
+
+        source(
+            UsersTable.id references UserRoleContext.userId
+        )
+
+        target(
+            RolesTable.id references UserRoleContext.roleId
+        )
+
+        join(
+            "context",
+            ContextsTable.id references UserRoleContext.contextId
+        )
+    }
+}
+
+entity("role", RolesTable) {
+
+    field(RolesTable.name)
+
+    manyToOne("context", ContextsTable) {
+        RolesTable.contextId references ContextsTable.id
+    }
+}
+```
+
+Now:
+
+```kotlin
+any("rolesWithContext") {
+    p("name") eq "admin"
+}
+```
+
+resolves `name` on the primary target:
+
+```text
+role.name
+```
+
+while:
+
+```kotlin
+any("rolesWithContext") {
+    p("context.name") eq "development"
+}
+```
+
+resolves `context` as the **normal relation of `role`**, because normal relations have priority.
+
+If the normal `role.context` relation does not exist, the same path can instead resolve through the many-to-many `relationJoin`:
+
+```text
+role
+  ↓
+relationJoin
+  ↓
+context
+  ↓
+name
+```
+
+This priority rule makes relation resolution deterministic and prevents relation joins from shadowing normal domain relations.
+
+---
+
+# 28. Recommended Style for Relation Joins
+
+Use a normal relation when the relationship is a genuine domain relationship of the entity:
+
+```kotlin
+entity("role", RolesTable) {
+
+    manyToOne("context", ContextsTable) {
+        RolesTable.contextId references ContextsTable.id
+    }
+}
+```
+
+Use `join()` when the entity is only reachable as additional context of a many-to-many mapping:
+
+```kotlin
+manyToMany(
+    "rolesWithContext",
+    RolesTable,
+    UserRoleContext
+) {
+    ...
+    join(
+        "context",
+        ContextsTable.id references UserRoleContext.contextId
+    )
+}
+```
+
+A useful mental model is:
+
+```text
+normal relation
+    = part of the target entity's domain model
+
+relationJoin
+    = additional table needed by a specific M:N relation
+```
+
+---
+
+# 29. DSL Overview
+
+The relation-related part of the DSL can therefore be understood as:
+
+```text
+query
+ │
+ └── where
+      │
+      ├── p("field")
+      │
+      ├── p("relation.field")
+      │
+      ├── p("relation.relation.field")
+      │
+      ├── any("relation")
+      │     │
+      │     └── p("field")
+      │
+      ├── any("manyToManyRelation")
+      │     │
+      │     ├── p("targetField")
+      │     │
+      │     └── p("additionalJoin.field")
+      │
+      ├── all("relation")
+      │
+      └── none("relation")
+```
+
+For a many-to-many relation:
+
+```text
+source
+   │
+   ▼
+mapping table
+   ├──────────► target
+   │
+   ├──────────► additional join
+   │
+   └──────────► additional join
+```
+
+Path resolution follows:
+
+```text
+normal relation
+       ↓
+relationJoin fallback
+       ↓
+unknown relation
+```
+
+The key principle is:
+
+> **Every relation path is resolved one step at a time. A normal relation on the current entity always has priority. A `relationJoin` is only used as a fallback for additional entities connected through the previously resolved many-to-many mapping.**

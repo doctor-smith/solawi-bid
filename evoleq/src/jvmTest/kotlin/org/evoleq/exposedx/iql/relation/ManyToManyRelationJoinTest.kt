@@ -42,6 +42,7 @@ object JoinTestUsers : Table("join_test_users") {
 object JoinTestRoles : Table("join_test_roles") {
     val id = integer("id")
     val name = varchar("name", 100)
+    val contextId = integer("context_id").default(0)
 
     override val primaryKey = PrimaryKey(id)
 }
