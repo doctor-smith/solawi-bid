@@ -10,14 +10,14 @@ import org.jetbrains.exposed.sql.jodatime.DateColumnType
 import org.jetbrains.exposed.sql.jodatime.DateTimeWithTimeZoneColumnType
 import org.solyton.solawi.bid.module.application.schema.*
 import org.solyton.solawi.bid.module.auditable.iql.auditableFields
-import org.solyton.solawi.bid.module.permission.iql.permissionModuleRegistry
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.user.iql.userModuleRegistry
 
 val applicationModuleRegistry: Registry by lazy {
     registry {
         fieldNameStrategy = FieldNameStrategy.SNAKE_CASE
 
-        include(permissionModuleRegistry)
+        include(userModuleRegistry)
 
         fieldTypes(
             DateColumnType::class mapsTo FieldType.DATE,

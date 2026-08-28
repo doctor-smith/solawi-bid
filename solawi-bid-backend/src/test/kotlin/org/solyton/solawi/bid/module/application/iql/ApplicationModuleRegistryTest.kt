@@ -3,6 +3,7 @@ package org.solyton.solawi.bid.module.application.iql
 import kotlinx.serialization.json.JsonPrimitive
 import org.evoleq.exposedx.iql.ExposedCompiler
 import org.evoleq.exposedx.iql.ExposedQueryCompiler
+import org.evoleq.exposedx.iql.FieldNameStrategy
 import org.evoleq.exposedx.test.runSimpleH2Test
 import org.evoleq.iql.data.*
 import org.evoleq.iql.dsl.query
@@ -15,8 +16,12 @@ import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.module.application.schema.*
 import org.solyton.solawi.bid.module.permission.iql.permissionModuleRegistry
-import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.shares.service.UUID_1
+import org.solyton.solawi.bid.module.user.iql.userModuleRegistry
+import org.solyton.solawi.bid.module.user.schema.UserStatus
+import org.solyton.solawi.bid.module.user.schema.Users
+import org.solyton.solawi.bid.module.user.schema.UsersTable
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -30,11 +35,24 @@ class ApplicationModuleRegistryTest {
         UserModulesTable,
         LifecycleStagesTable,
 
+        UsersTable,
+
         ContextsTable,
+        RightsTable,
+        RolesTable,
+        RoleRightContexts,
+        UserRoleContext
     )
 
     @DbFunctional@Test
     fun `registry setup is valid`() {
+        val registry = applicationModuleRegistry
+
+        assertEquals(FieldNameStrategy.SNAKE_CASE, registry.fieldNameStrategy())
+    }
+
+    @DbFunctional@Test
+    fun `application module registry includes permission module registry` () {
         val registry = applicationModuleRegistry
 
         val permissionEntities = permissionModuleRegistry.entities().keys
@@ -42,6 +60,17 @@ class ApplicationModuleRegistryTest {
         assertTrue { registry.entities().keys.containsAll(permissionEntities) }
 
     }
+
+    @DbFunctional@Test
+    fun `application module registry includes user module registry` () {
+        val registry = applicationModuleRegistry
+
+        val userEntities = userModuleRegistry.entities().keys
+
+        assertTrue { registry.entities().keys.containsAll(userEntities) }
+
+    }
+
 
     @DbFunctional@Test
     fun `application is found by name of default context`() = runSimpleH2Test(*tables) {
@@ -67,7 +96,6 @@ class ApplicationModuleRegistryTest {
 
         val query = query{
             where {
-
                p("defaultContext.name") eq "TEST_CONTEXT"
             }
         }
@@ -157,6 +185,89 @@ class ApplicationModuleRegistryTest {
         }
 
 
+    @DbFunctional@Test
+    fun `filter roles `() = runSimpleH2Test(*tables) {
+
+        val compiler = ExposedCompiler(applicationModuleRegistry)
+
+        val testUserId = UsersTable.insertAndGetId {
+            it[username] = "username"
+            it[password] = "password"
+            it[status] = UserStatus.ACTIVE
+            it[createdBy] = UUID_1
+            it[createdAt] = DateTime.now()
+        }.value
+
+        val testContextId = ContextsTable.insertAndGetId {
+            it[name] = "TEST_CONTEXT"
+            it[this.level] = 0
+            it[left] = 0
+            it[right] = 1
+            it[createdBy] = UUID_1
+            it[createdAt] = DateTime.now()
+        }
+
+
+        // val testAppId =
+        ApplicationsTable.insertAndGetId {
+            it[name] = "TEST_APP"
+            it[defaultContextId] = testContextId
+            it[description] = "TEST_APP_DESCRIPTION"
+            it[createdBy] = UUID_1
+            it[createdAt] = DateTime.now()
+        }
+
+        val testRoleId = RolesTable.insertAndGetId {
+            it[name] = "TEST_ROLE"
+            it[description] = "TEST_ROLE_DESCRIPTION"
+            it[createdBy] = UUID_1
+            it[createdAt] = DateTime.now()
+        }
+
+        val testRightId = RightsTable.insertAndGetId {
+            it[name] = "TEST_RIGHT"
+            it[description] = "TEST_RIGHT_DESCRIPTION"
+            it[createdBy] = UUID_1
+            it[createdAt] = DateTime.now()
+        }
+
+        RoleRightContexts.insert {
+            it[roleId] = testRoleId
+            it[rightId] = testRightId
+            it[contextId] = testContextId
+        }
+
+        UserRoleContext.insert {
+            it[userId] = testUserId
+            it[roleId] = testRoleId
+            it[contextId] = testContextId
+        }
+
+
+
+        val query = query {
+            select("user")
+            where {
+                p("username") eq "username"
+                any("roleContexts") {
+                    and {
+                        p("role.name") eq "TEST_ROLE"
+                        p("context.name") eq "TEST_CONTEXT"
+                    }
+                }
+            }
+        }
+        val compiledQuery = compiler.compile(query.filter!!, Users)
+
+        val users =
+            Users
+                .selectAll()
+                .where { compiledQuery }
+                .toList()
+
+        assertEquals(1, users.size)
+        assertEquals(testUserId, users.single()[Users.id].value)
+    }
 
 
 
