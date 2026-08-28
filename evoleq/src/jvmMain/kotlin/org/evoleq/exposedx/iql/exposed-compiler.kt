@@ -683,7 +683,7 @@ class ExposedCompiler(
         } else if (isExplicitEntity) {
             // Explicit entity prefix:
             // User.name
-            entity = currentEntity?:
+            entity = // currentEntity?:
                     registry.getEntityOrThrow(firstPart)
 
             index = 1

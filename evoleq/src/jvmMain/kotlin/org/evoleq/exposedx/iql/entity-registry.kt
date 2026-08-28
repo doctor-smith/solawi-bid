@@ -21,6 +21,8 @@ class Registry(
     internal val nullSortOrder: NullSortOrder = NullSortOrder.FIRST,
 ) {
 
+    fun fieldNameStrategy() = fieldNameStrategy
+
     private val entities =
         mutableMapOf<String, EntityType>()
 
