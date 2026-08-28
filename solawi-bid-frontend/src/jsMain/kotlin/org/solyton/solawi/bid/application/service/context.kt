@@ -49,13 +49,26 @@ fun Storage<Application>.setContextByName(contextName: String) {
     (this * context * current).write(contextId)
 }
 
-fun organizationApplicationContextId(applicationName: String, organizationId: String): Reader<ApplicationManagement, String?> = Reader{applicationManagement ->
+/**
+ * Retrieves the context ID associated with a specified application and organization.
+ *
+ * @param applicationName The name of the application to locate.
+ * @param organizationId The ID of the organization for which the application context ID is being retrieved.
+ * @return A Reader that, when executed with an ApplicationManagement instance, provides the context ID
+ *         associated with the specified application and organization, or null if no matching context ID is found.
+ */
+fun organizationApplicationContextId(
+    applicationName: String,
+    organizationId: String
+): Reader<ApplicationManagement, String?> = Reader{ applicationManagement ->
     // find application by name
     val application = applicationManagement.availableApplications.firstOrNull{
-            application -> application.name == applicationName
+            application -> application.name.equals(applicationName, ignoreCase = true)
     }
     if(application == null) {  null }
-    requireNotNull(application) { "Application with name $applicationName not found" }
+    requireNotNull(application) {
+        "Application with name $applicationName not found"
+    }
     // find corresponding application-context-relations
     val contextId = applicationManagement.applicationOrganizationRelations.firstOrNull {
             (applicationId, orgId, _, _) -> applicationId == application.id && orgId == organizationId
