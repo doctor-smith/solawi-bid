@@ -6,6 +6,7 @@ import org.jetbrains.exposed.sql.jodatime.DateColumnType
 import org.jetbrains.exposed.sql.jodatime.DateTimeWithTimeZoneColumnType
 import org.solyton.solawi.bid.module.permission.iql.permissionModuleRegistry
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
 import org.solyton.solawi.bid.module.permission.schema.RolesTable
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.schema.*
@@ -21,6 +22,12 @@ val userModuleRegistry: Registry by lazy {
             DateColumnType::class mapsTo FieldType.DATE,
             DateTimeWithTimeZoneColumnType::class mapsTo FieldType.DATETIME
         )
+
+        extend("userRoleContext") {
+            manyToOne("user", UsersTable) {
+                UserRoleContext.userId references UsersTable.id
+            }
+        }
 
         entity("user", UsersTable) {
             field(UsersTable.username)
@@ -48,9 +55,26 @@ val userModuleRegistry: Registry by lazy {
             }
 
             manyToMany("contexts", ContextsTable, UserRoleContext) {
-                source(UsersTable.id references UserRoleContext.contextId)
+                source(UsersTable.id references UserRoleContext.userId)
                 target(ContextsTable.id references UserRoleContext.contextId)
             }
+
+            manyToMany("roleContexts", RolesTable, UserRoleContext) {
+                source(UsersTable.id references UserRoleContext.userId)
+                target(RolesTable.id references UserRoleContext.roleId)
+
+                join(
+                    "context",
+                    ContextsTable.id references UserRoleContext.contextId
+                )
+
+
+                join("roleRightContext",
+                    RoleRightContexts.roleId references UserRoleContext.roleId,
+                    RoleRightContexts.contextId references UserRoleContext.contextId
+                )
+            }
+
         }
 
         entity("userProfile", UserProfilesTable) {

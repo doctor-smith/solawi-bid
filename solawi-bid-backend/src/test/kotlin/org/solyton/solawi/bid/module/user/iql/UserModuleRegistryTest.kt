@@ -12,8 +12,10 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.Unit
+import org.solyton.solawi.bid.module.permission.iql.permissionModuleRegistry
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class UserModuleRegistryTest {
     @Unit@Test
@@ -135,4 +137,33 @@ class UserModuleRegistryTest {
                 .where { expression }
                 .toList()
         }
+
+
+    @DbFunctional@Test
+    fun `user module registry includes permission registry`() = runSimpleH2Test(*tables) {
+        val permissionEntities = permissionModuleRegistry.entities()
+        permissionEntities.map { (string,_ ) -> userModuleRegistry.entities().containsKey(string) }
+            .all{ it }
+    }
+
+    @DbFunctional@Test
+    fun `user module registry extends userRoleContext`() = runSimpleH2Test(*tables) {
+        // val compiler = ExposedCompiler(userModuleRegistry)
+
+        val userRoleContext = userModuleRegistry.getEntity("userRoleContext")
+
+        assertNotNull(userRoleContext) {
+            "user role context is null"
+        }
+
+        val userRelation = userRoleContext.relations["user"]
+
+        assertNotNull(userRelation) {
+            "user relation is null"
+        }
+
+        assertEquals(RelationType.MANY_TO_ONE, userRelation.type)
+
+    }
+
 }
