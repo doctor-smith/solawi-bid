@@ -51,6 +51,8 @@ import org.solyton.solawi.bid.module.application.i18n.module
 import org.solyton.solawi.bid.module.control.button.ArrowUpButton
 import org.solyton.solawi.bid.module.control.button.DetailsButton
 import org.solyton.solawi.bid.module.control.button.EditButton
+import org.solyton.solawi.bid.module.dialog.component.showDialogModal
+import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
 import org.solyton.solawi.bid.module.list.component.*
@@ -211,7 +213,15 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
                             Color.white,
                             defaultContextTexts * Component.actions * editContext * tooltip,
                             device,
-                        ) {}
+                        ) {
+                            (storage * modals).showDialogModal(
+                                texts = dialogModalTexts("Not Implemented: Manage Standard Context"),
+                                device = device,
+                                dataId = "application.page.edit-standard-context.not-implemented",
+                            ) {
+                                CoroutineScope(Job()).launch {}
+                            }
+                        }
                     }
                 }
                 HeaderWrapper {
@@ -251,7 +261,15 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
                                     Color.white,
                                     defaultContextTexts * Component.actions * Component.editRole * tooltip,
                                     device,
-                                ) {}
+                                ) {
+                                    (storage * modals).showDialogModal(
+                                        texts = dialogModalTexts("Not Implemented: Manage Associated Rights"),
+                                        device = device,
+                                        dataId = "application.page.edit-rights.not-implemented",
+                                    ) {
+                                        CoroutineScope(Job()).launch {}
+                                    }
+                                }
                             }
                         }
                     }
