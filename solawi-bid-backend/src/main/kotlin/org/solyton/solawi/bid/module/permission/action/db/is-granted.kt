@@ -4,18 +4,20 @@ import org.evoleq.exposedx.transaction.resultTransaction
 import org.evoleq.ktorx.Contextual
 import org.evoleq.ktorx.DbAction
 import org.evoleq.ktorx.KlAction
-import org.evoleq.ktorx.result.*
+import org.evoleq.ktorx.result.Result
+import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.evoleq.value.StringValueWithDescription
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
+import org.jetbrains.exposed.sql.Transaction
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.selectAll
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.data.api.ContextId
 import org.solyton.solawi.bid.module.permission.schema.*
-import org.solyton.solawi.bid.module.permission.schema.ContextEntity
-import org.solyton.solawi.bid.module.permission.schema.RightEntity
 import java.util.*
 
 @MathDsl
@@ -198,6 +200,8 @@ fun Transaction.isGrantedOneOf(userId: UUID, contextIds: List<UUID>, rightIds: L
 }
 
 fun rights (vararg rights: String): Set<String> = setOf(*rights)
+
+fun isUser(id: UUID): (Contextual<*>) -> Boolean =  {context -> context.userId != id}
 
 val no: (Contextual<*>)-> Boolean = {false}
 val yes:(Contextual<*>)-> Boolean = {true}

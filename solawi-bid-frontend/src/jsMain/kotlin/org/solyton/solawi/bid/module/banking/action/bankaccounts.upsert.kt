@@ -4,11 +4,13 @@ import org.evoleq.optics.storage.ActionEnvelope
 import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccount
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
+import org.solyton.solawi.bid.module.permission.data.ContextId
 
-fun upsertBankAccount(givenBankAccount: BankAccount?, bankAccount: BankAccount): ActionEnvelope<BankingApplication, Any, ApiBankAccount> =
+fun upsertBankAccount(contextId: String, givenBankAccount: BankAccount?, bankAccount: BankAccount): ActionEnvelope<BankingApplication, Any, ApiBankAccount> =
     when(givenBankAccount) {
         null  -> ActionEnvelope(
             action = createBankAccount(
+                contextId,
                 bankAccount.userId,
                 bankAccount.iban,
                 bankAccount.bic
@@ -17,6 +19,7 @@ fun upsertBankAccount(givenBankAccount: BankAccount?, bankAccount: BankAccount):
         )
         else -> ActionEnvelope(
             action = updateBankAccount(
+                ContextId(contextId),
                 givenBankAccount.bankAccountId,
                 givenBankAccount.userId,
                 givenBankAccount.iban,

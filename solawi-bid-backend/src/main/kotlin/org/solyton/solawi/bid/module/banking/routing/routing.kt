@@ -42,10 +42,8 @@ import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_MANDATES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_MESSAGES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_PAYMENTS
-import org.solyton.solawi.bid.module.permission.action.db.IsGranted
-import org.solyton.solawi.bid.module.permission.action.db.IsGrantedInDerivedContext
-import org.solyton.solawi.bid.module.permission.action.db.no
-import org.solyton.solawi.bid.module.permission.action.db.yes
+import org.solyton.solawi.bid.module.permission.action.db.*
+import org.solyton.solawil.bid.module.bid.data.api.toUUID
 
 fun <BankingEnv> Routing.banking (
     environment: BankingEnv,
@@ -169,17 +167,19 @@ fun <BankingEnv> Routing.banking (
                     ReadBankAccountsByLegalEntity() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
-                // TODO(correct context needs to be provided)
                 post("create") {
                     ReceiveContextual<CreateBankAccount>() *
-                    IsGranted(CREATE_BANK_ACCOUNTS, no) *
+                    IsGrantedInSpecialContext(CREATE_BANK_ACCOUNTS) {
+                        contextual -> contextual.userId != contextual.data.userId.toUUID()
+                    } *
                     CreateBankAccount() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
-                // TODO(correct context needs to be provided)
                 patch("update") {
                     ReceiveContextual<UpdateBankAccount>() *
-                    IsGranted(UPDATE_BANK_ACCOUNTS, no) *
+                    IsGrantedInSpecialContext(UPDATE_BANK_ACCOUNTS) {
+                        contextual -> contextual.userId != contextual.data.userId.toUUID()
+                    } *
                     UpdateBankAccount() *
                     Respond{ transform() } runOn Base(call, environment)
                 }

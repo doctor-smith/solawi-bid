@@ -28,6 +28,7 @@ const val CREATE_BANK_ACCOUNT = "CreateBankAccount"
  * @return An `Action` object that defines the creation process for the bank account within the `BankingApplication` context.
  */
 fun createBankAccount(
+    contextId: String,
     userId: UserId,
     iban: IBAN,
     bic: BIC,
@@ -40,6 +41,7 @@ fun createBankAccount(
 ): Action<BankingApplication, CreateBankAccount, ApiBankAccount> = Action(
     name = CREATE_BANK_ACCOUNT.suffixed(nameSuffix),
     reader = {_ -> CreateBankAccount(
+        contextId,
         userId,
         bic,
         iban,
