@@ -13,6 +13,7 @@ import org.solyton.solawi.bid.application.data.actions
 import org.solyton.solawi.bid.application.data.env.Environment
 import org.solyton.solawi.bid.application.storage.event.*
 import org.solyton.solawi.bid.application.storage.middleware.ProcessAction
+import org.solyton.solawi.bid.module.context.data.Context
 import org.solyton.solawi.bid.module.process.data.processes.Processes
 import org.solyton.solawi.bid.module.user.data.user.User
 
@@ -26,13 +27,24 @@ fun Storage(): Storage<Application> {
         userData = User()
     ))}
 
+    // store context outside the rendering loops
+    var context: Context = Context()
+
     // Keep processes separate - changes shall not trigger rendering
     val processes = Processes()
 
     return Storage<Application>(
-        read = { application.copy(processes = processes) },
+        read = { application.copy(
+            context = context,
+            processes = processes
+        ) },
         write = {
             newApplication -> when{
+                newApplication.context !== context -> {
+                    context = newApplication.context
+
+                    // println("Context changed to ${newApplication.getContextById(context.current)?.contextName}")
+                }
                 newApplication.processes !== processes -> {
                     processes.registry.clear()
                     processes.registry.putAll(newApplication.processes.registry)

@@ -280,6 +280,7 @@ fun installSerializers() {
         // Organizations
         add<Organizations>(Organizations.serializer())
         add<Organization>(Organization.serializer())
+        add<OrganizationId>(OrganizationId.serializer())
         add<Member>(Member.serializer())
         add<CreateOrganization>(CreateOrganization.serializer())
         add<CreateChildOrganization>(CreateChildOrganization.serializer())
