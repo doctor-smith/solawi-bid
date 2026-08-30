@@ -278,6 +278,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         // Organizations
         add<Organizations>(Organizations.serializer())
         add<Organization>(Organization.serializer())
+        add<OrganizationId>(OrganizationId.serializer())
         add<Member>(Member.serializer())
 
         add<CreateOrganization>(CreateOrganization.serializer())
