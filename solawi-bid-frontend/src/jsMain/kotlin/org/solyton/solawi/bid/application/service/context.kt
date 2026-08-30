@@ -4,6 +4,7 @@ import org.evoleq.math.Reader
 import org.evoleq.math.emit
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
+import org.evoleq.permission.EmptyContext
 import org.evoleq.value.StringValueWithDescription
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.context
@@ -36,6 +37,12 @@ fun Storage<Application>.setContext(contextIdentifier: String) {
 
 fun Storage<Application>.setContext(context: StringValueWithDescription) {
     setContextByName(context.value)
+}
+
+fun Storage<Application>.setContextIfEmpty(contextIdentifier: String) {
+    if((this * context * current).read() == EmptyContext.value) {
+        setContextByName(contextIdentifier)
+    }
 }
 
 @OptIn(ExperimentalUuidApi::class)
@@ -103,8 +110,6 @@ fun Storage<Application>.dispatchContextOf(applicationName: ApplicationName, org
         console.warn("Context id not found for application $applicationName and organization $organizationId")
         return
     }
-
-    // println("Context id found for application $applicationName and organization $organizationId: $contextId")
 
     setContext(contextId)
 }

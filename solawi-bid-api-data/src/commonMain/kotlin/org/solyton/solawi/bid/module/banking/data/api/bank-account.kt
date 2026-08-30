@@ -6,6 +6,7 @@ import org.evoleq.ktorx.client.QueryParams
 import org.solyton.solawi.bid.module.banking.data.BIC
 import org.solyton.solawi.bid.module.banking.data.BankAccountId
 import org.solyton.solawi.bid.module.banking.data.IBAN
+import org.solyton.solawi.bid.module.permission.data.api.ContextId
 import org.solyton.solawi.bid.module.values.AccessorId
 import org.solyton.solawi.bid.module.values.UserId
 import org.solyton.solawi.bid.module.values.Username
@@ -59,6 +60,7 @@ data class ReadPersonalBankAccounts(
 ) : Parameters()
 @Serializable
 data class CreateBankAccount(
+    override val contextId: String,
     val userId: UserId,
     val bic: BIC,
     val iban: IBAN,
@@ -67,10 +69,11 @@ data class CreateBankAccount(
     val accessType: AccountType = AccountType.DEBTOR,
     val accessors: List<AccessorId> = emptyList(),
     val description: String? = null,
-)
+): ContextId
 
 @Serializable
 data class UpdateBankAccount(
+    override val contextId: String,
     val id: BankAccountId,
     val userId: UserId,
     val bic: BIC,
@@ -79,7 +82,7 @@ data class UpdateBankAccount(
     val isActive: Boolean = true,
     val accountType: AccountType = AccountType.DEBTOR,
     val description: String? = null,
-)
+) : ContextId
 
 @Serializable
 data class ImportBankAccounts(

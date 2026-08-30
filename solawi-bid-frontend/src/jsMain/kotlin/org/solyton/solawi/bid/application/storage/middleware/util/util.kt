@@ -19,7 +19,7 @@ import org.solyton.solawi.bid.application.data.deviceData
 import org.solyton.solawi.bid.application.data.failure.Failure
 import org.solyton.solawi.bid.application.data.failure.accept
 import org.solyton.solawi.bid.application.data.modals
-import org.solyton.solawi.bid.application.service.setContext
+import org.solyton.solawi.bid.application.service.setContextIfEmpty
 import org.solyton.solawi.bid.module.error.component.ErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
 
@@ -44,7 +44,7 @@ fun <T: Any> Dispatch(writer: Writer<Application, T>): KlState<Storage<Applicati
     result -> State { storage ->
         // todo:dev do it more functional - maybe using apply
         val newResult = result map { contextual ->
-            storage.setContext(contextual.context)
+            storage.setContextIfEmpty(contextual.context)
             contextual.data
         }
         when(newResult) {

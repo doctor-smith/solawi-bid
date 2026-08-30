@@ -27,6 +27,7 @@ import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
+import org.jetbrains.letsPlot.commons.intern.filterNotNullValues
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.context
 import org.solyton.solawi.bid.application.data.env.i18nEnvironment
@@ -142,6 +143,7 @@ import kotlin.text.isNotBlank
 import kotlin.text.lowercase
 import kotlin.text.trim
 import org.solyton.solawi.bid.application.data.environment as appEnv
+import org.solyton.solawi.bid.module.application.data.application.Application as App
 
 
 @Markup
@@ -238,7 +240,11 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
         val connectedApplications = availableApplications * FilterBy { app ->
             applicationOrganizationRelations.read().any { it.applicationId == app.id && it.organizationId == organizationId }
         }
-
+        val applicationContextMap: Source<Map<String, String>> = Read(connectedApplications) map {
+            apps: List<App> -> apps.associateBy({ it.name }) {
+                (applicationManagementStorage  * organizationApplicationContextId(it.name, organizationId)).emit()
+            }.filterNotNullValues()
+        }
 
         // Determine which applications are available to the organization
         val usesShareManagement = connectedApplications.read().any { it.name in setOf("SHARE_MANAGEMENT", "AUCTIONS", ) }
@@ -747,6 +753,7 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                                 }
                                             ) {
                                                 val actions = applicationStorage.memberUpdateAction(
+                                                    contextMap = applicationContextMap,
                                                     providerId = ProviderId(organizationId),
                                                     member = { member },
                                                     usernameChange = Change(Username(member.username), usernameState),
