@@ -38,14 +38,17 @@ import org.jetbrains.letsPlot.commons.intern.filterNotNullValues
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.context
 import org.solyton.solawi.bid.application.data.managedUsers
+import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
 import org.solyton.solawi.bid.application.data.transform.banking.bankingApplicationIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
+import org.solyton.solawi.bid.application.service.organizationApplicationContextId
 import org.solyton.solawi.bid.application.service.useI18nTransform
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.banking.i18n.BankingLangComponent
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.banking.action.*
 import org.solyton.solawi.bid.module.banking.action.sepa.*
+import org.solyton.solawi.bid.module.banking.application.BANKING_APPLICATION_NAME
 import org.solyton.solawi.bid.module.banking.component.form.defaultBankAccountInputs
 import org.solyton.solawi.bid.module.banking.component.form.sepa.FormConfiguration
 import org.solyton.solawi.bid.module.banking.component.form.sepa.PartialSepaCollection
@@ -76,6 +79,7 @@ import org.solyton.solawi.bid.module.i18n.guard.onMissing
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.loading.component.Loading
 import org.solyton.solawi.bid.module.page.component.Page
+import org.solyton.solawi.bid.module.permission.data.ContextId
 import org.solyton.solawi.bid.module.scrollable.Scrollable
 import org.solyton.solawi.bid.module.scrollable.ScrollableStyles
 import org.solyton.solawi.bid.module.search.component.SearchInput
@@ -104,6 +108,12 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
     if((storage * context * isEmpty()).emit() ) return@BankingApplicationForOrganizationsPage
 
     val scope = rememberCoroutineScope()
+
+    val bankingApplicationContextId = storage * applicationManagementModule * organizationApplicationContextId(
+        BANKING_APPLICATION_NAME,
+        providerId.value
+    )
+
     val managedUsers = storage * managedUsers
     val bankingApplicationStorage = storage * bankingApplicationIso
     val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
@@ -216,6 +226,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
         )
 
         CreditorBankAccounts(
+            bankingApplicationContextId * assureValue("id of banking context should not be null"),
             bankingApplicationStorage,
             providerId,
             scope,
@@ -223,6 +234,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
         )
 
         CustomerBankAccounts(
+            bankingApplicationContextId * assureValue("id of banking context should not be null"),
             bankingApplicationStorage,
             managedUsers,
             providerId,
@@ -434,11 +446,13 @@ fun LegalEntity(
 @Composable
 @Suppress("CognitiveComplexMethod")
 fun CreditorBankAccounts(
+    contextId: Source<String>,
     bankingApplicationStorage: Storage<BankingApplication>,
     providerId: ProviderId,
     scope: CoroutineScope,
     deviceType: Source<DeviceType>
 ) {
+
     val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
     val bankingApplicationModals = bankingApplicationStorage * bankingApplicationModals
     val creditorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.userId == UserId(providerId.value) }
@@ -481,6 +495,7 @@ fun CreditorBankAccounts(
                                     val newBankAccount = requireNotNull(bankAccountState)
                                     scope.launch {
                                         bankingApplicationActions dispatch createBankAccount(
+                                            contextId.emit(),
                                             newBankAccount.userId,
                                             newBankAccount.iban,
                                             newBankAccount.bic,
@@ -551,6 +566,7 @@ fun CreditorBankAccounts(
                                         val newBankAccount = requireNotNull(bankAccountState)
                                         scope.launch {
                                             bankingApplicationActions dispatch updateBankAccount(
+                                                ContextId(contextId.emit()),
                                                 bankAccount.bankAccountId,
                                                 newBankAccount.userId,
                                                 newBankAccount.iban,
@@ -586,6 +602,7 @@ fun CreditorBankAccounts(
 @Composable
 @Suppress("CognitiveComplexMethod")
 fun CustomerBankAccounts(
+    contextId: Source<String>,
     bankingApplicationStorage: Storage<BankingApplication>,
     managedUsers: Storage<List<ManagedUser>>,
     providerId: ProviderId,
@@ -650,6 +667,7 @@ fun CustomerBankAccounts(
                                     val newBankAccount = requireNotNull(bankAccountState)
                                     scope.launch {
                                         bankingApplicationActions dispatch createBankAccount(
+                                            contextId.emit(),
                                             newBankAccount.userId,
                                             newBankAccount.iban,
                                             newBankAccount.bic,
@@ -818,6 +836,7 @@ fun CustomerBankAccounts(
                                             val newBankAccount = requireNotNull(bankAccountState)
                                             scope.launch {
                                                 bankingApplicationActions dispatch updateBankAccount(
+                                                    ContextId(contextId.emit()),
                                                     bankAccount.bankAccountId,
                                                     newBankAccount.userId,
                                                     newBankAccount.iban,

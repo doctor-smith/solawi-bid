@@ -160,7 +160,18 @@ data class RelationInfo(
      */
     val inverseJoinColumns: List<String> = emptyList(),
 
+    // Many-to-many mapping
     val mapping: MappingInfo? = null,
+
+    // Additional joins required to reach the actual target
+    val relationJoins: List<RelationJoin> = emptyList()
+)
+
+@Serializable
+data class RelationJoin(
+    val entity: String,
+    val mappingColumns: List<String>,
+    val targetColumns: List<String>
 )
 
 @Serializable

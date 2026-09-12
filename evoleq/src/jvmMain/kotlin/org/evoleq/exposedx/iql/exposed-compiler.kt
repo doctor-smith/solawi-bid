@@ -7,7 +7,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.Expression as SqlExpression
 
 
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "LargeClass")
 class ExposedCompiler(
     private val registry: Registry,
     private val expressionCompiler: ExposedExpressionCompiler = ExposedExpressionCompiler(registry)
@@ -70,7 +70,7 @@ class ExposedCompiler(
 
     private fun compileAnd(
         filter: AndFilter,
-        table: org.jetbrains.exposed.sql.Table
+        table: Table
     ): Op<Boolean> {
 
         require(filter.filters.isNotEmpty()) {
@@ -84,7 +84,7 @@ class ExposedCompiler(
 
     private fun compileOr(
         filter: OrFilter,
-        table: org.jetbrains.exposed.sql.Table
+        table: Table
     ): Op<Boolean> {
 
         require(filter.filters.isNotEmpty()) {
@@ -279,6 +279,50 @@ class ExposedCompiler(
         return exists(query)
     }
 
+
+    private fun createRelationJoinCondition(
+        mappingTable: Table,
+        targetTable: Table,
+        join: RelationJoin
+    ): Op<Boolean> {
+
+        require(
+            join.mappingColumns.size == join.targetColumns.size
+        ) {
+            "Relation join for '${join.entity}' has " +
+                    "${join.mappingColumns.size} mapping columns but " +
+                    "${join.targetColumns.size} target columns"
+        }
+
+        val conditions =
+            join.mappingColumns.mapIndexed { index, mappingName ->
+
+                val targetName =
+                    join.targetColumns[index]
+
+                val mappingColumn =
+                    mappingTable.columns.firstOrNull {
+                        it.name == mappingName
+                    } ?: error(
+                        "Mapping column '$mappingName' not found in '${mappingTable.tableName}'"
+                    )
+
+                val targetColumn =
+                    targetTable.columns.firstOrNull {
+                        it.name == targetName
+                    } ?: error(
+                        "Target column '$targetName' not found in '${targetTable.tableName}'"
+                    )
+
+                columnEquals(
+                    mappingColumn,
+                    targetColumn
+                )
+            }
+
+        return conditions.reduce(Op<Boolean>::and)
+    }
+
     // -------------------------------------------------------------------------
     // IN
     // -------------------------------------------------------------------------
@@ -329,7 +373,7 @@ class ExposedCompiler(
 
     private fun compileQuantifier(
         filter: QuantifierFilter,
-        sourceTable: org.jetbrains.exposed.sql.Table
+        sourceTable: Table
     ): Op<Boolean> {
 
         val relation =
@@ -402,8 +446,8 @@ class ExposedCompiler(
 
     private fun compileDirectExists(
         filter: Filter,
-        sourceTable: org.jetbrains.exposed.sql.Table,
-        targetTable: org.jetbrains.exposed.sql.Table,
+        sourceTable: Table,
+        targetTable: Table,
         relation: RelationInfo
     ): Op<Boolean> {
 
@@ -444,97 +488,154 @@ class ExposedCompiler(
         val mappingTable =
             registry.getMappingTable(mapping.table)
 
-        val sourceJoin =
+        val sourceCondition =
             createMappingSourceCondition(
-                sourceTable,
-                mappingTable,
-                mapping
+                sourceTable = sourceTable,
+                mappingTable = mappingTable,
+                mapping = mapping
             )
 
-        val targetJoin =
+        val targetCondition =
             createMappingTargetCondition(
-                mappingTable,
-                targetTable,
-                mapping
+                mappingTable = mappingTable,
+                targetTable = targetTable,
+                mapping = mapping
             )
 
         val predicate =
-            compile(
-                filter,
-                targetTable
-            )
+            if (filter is ComparisonFilter) {
 
-        val query =
-            targetTable
-                .join(
-                    mappingTable,
-                    JoinType.INNER,
-                    onColumn =
-                        mappingTable.columns.first {
-                            it.name ==
-                                    mapping.mappingTargetColumns.first()
-                        },
-                    otherColumn =
-                        targetTable.columns.first {
-                            it.name ==
-                                    mapping.targetColumns.first()
-                        }
-                )
-                .selectAll()
-                .where {
-                    sourceJoin and
-                            targetJoin and
-                            predicate
+                val parts =
+                    filter.field.path.split(".")
+
+                val firstPart =
+                    parts.first()
+
+                val normalRelationExists =
+                    targetTable.let {
+                        registry
+                            .getEntityByTable(it)
+                            .relations
+                            .containsKey(firstPart)
+                    }
+
+                if (!normalRelationExists) {
+
+                    val resolvedJoinField =
+                        resolveRelationJoinField(
+                            fieldName = filter.field.path,
+                            relation = relation
+                        )
+
+                    if (resolvedJoinField != null) {
+
+                        val column =
+                            registry.getColumn(
+                                resolvedJoinField.entity.name,
+                                resolvedJoinField.field
+                            )
+
+                        registry
+                            .lookup(resolvedJoinField.info.type)
+                            .compileComparison(
+                                column = column,
+                                operator = filter.operator,
+                                value = filter.value
+                            )
+
+                    } else {
+                        compile(
+                            filter = filter,
+                            table = targetTable
+                        )
+                    }
+
+                } else {
+
+                    // A normal relation on the M:N target entity
+                    // always has priority over a relationJoin
+                    // with the same name.
+                    compile(
+                        filter = filter,
+                        table = targetTable
+                    )
                 }
 
-        return exists(query)
-    }
+            } else {
+                compile(
+                    filter = filter,
+                    table = targetTable
+                )
+            }
 
-    //--------------------------------------------------------------------------
-    // Compile expression comparison
-    //--------------------------------------------------------------------------
-    /*
-    private fun compileExpressionComparison(
-        expression: SqlExpression<*>,
-        operator: Operator,
-        value: JsonElement
-    ): Op<Boolean> =
-        when (operator) {
 
-            Operator.EQ ->
-                expression eq value
+        /*
+         * First join:
+         *
+         * targetTable <-> mappingTable
+         *
+         * The mapping target condition may contain multiple columns.
+         */
+        var query =
+            targetTable
+                .join(
+                    otherTable = mappingTable,
+                    joinType = JoinType.INNER,
+                    additionalConstraint = {
+                        targetCondition
+                    }
+                )
 
-            Operator.NE ->
-                expression neq value
+        /*
+         * Additional relation joins.
+         *
+         * Example:
+         *
+         * RoleRightContext.contextId -> Contexts.id
+         *
+         * These joins are defined by RelationInfo.relationJoins.
+         */
+        relation.relationJoins.forEach { relationJoin ->
 
-            Operator.GT ->
-                expression greater value
+            val additionalTargetTable = registry.getTable(relationJoin.entity)
 
-            Operator.GTE ->
-                expression greaterEq value
+            val joinCondition =
+                createRelationJoinCondition(
+                    mappingTable = mappingTable,
+                    targetTable = additionalTargetTable,
+                    join = relationJoin
+                )
 
-            Operator.LT ->
-                expression less value
-
-            Operator.LTE ->
-                expression lessEq value
-
-            Operator.LIKE ->
-                expression like value
+            query =
+                query.join(
+                    otherTable = additionalTargetTable,
+                    joinType = JoinType.INNER,
+                    additionalConstraint = {
+                        joinCondition
+                    }
+                )
         }
 
-     */
+        return exists(
+            query
+                .selectAll()
+                .where {
+                    sourceCondition and
+                            predicate
+                }
+        )
+    }
+
     // -------------------------------------------------------------------------
     // Field resolution
     // -------------------------------------------------------------------------
-
-
 
     data class ResolvedField(
         val entity: String,
         val field: String,
         val info: FieldInfo,
-        val relationPath: List<RelationPathStep> = emptyList()
+        val relationPath: List<RelationPathStep> = emptyList(),
+        val relationJoinPath: List<RelationJoin> = emptyList()
     )
     data class RelationPathStep(
         val sourceEntity: EntityType,
@@ -550,6 +651,155 @@ class ExposedCompiler(
      * Qualified field paths (e.g. `UserProfile.firstName`) contain their
      * entity explicitly and therefore do not require `currentEntity`.
      */
+
+    @JvmOverloads
+    fun resolveField(
+        field: FieldRef,
+        currentEntity: EntityType? = null
+    ): ResolvedField {
+
+        val parts =
+            field.path.split(".")
+
+        require(parts.isNotEmpty()) {
+            "Empty field path"
+        }
+
+        var entity: EntityType
+        var index: Int
+        val firstPart = parts.first()
+
+        val isRelation =
+            currentEntity != null &&
+                    currentEntity.relations.containsKey(firstPart)
+
+        val isExplicitEntity =
+            registry.getEntity(firstPart) != null
+
+        if (isRelation) {
+            // Resolve relative to the current entity.
+            entity = currentEntity
+            index = 0
+        } else if (isExplicitEntity) {
+            // Explicit entity prefix:
+            // User.name
+            entity = // currentEntity?:
+                    registry.getEntityOrThrow(firstPart)
+
+            index = 1
+        } else {
+            // Resolve relative to the current entity.
+            entity =
+                requireNotNull(currentEntity) {
+                    "Cannot resolve field '${field.path}' without a current entity"
+                }
+
+            index = 0
+        }
+
+        val relationPath =
+            mutableListOf<RelationPathStep>()
+
+        while (index < parts.lastIndex) {
+
+            val sourceEntity =
+                entity
+
+            val relationName =
+                parts[index]
+
+            /*
+             * Priority:
+             *
+             * 1. Normal relation of the current entity
+             * 2. Additional relationJoin of the previously resolved M:N relation
+             *
+             * This is important because relationJoins are not actual
+             * relations registered on the current entity.
+             */
+            val relation =
+                sourceEntity.relations[relationName]
+                    ?: relationPath.lastOrNull()
+                        ?.relation
+                        ?.relationJoins
+                        ?.firstOrNull { join ->
+
+                            registry.entities().values.any { candidate ->
+
+                                candidate.name == relationName &&
+                                        registry
+                                            .getEntityTable(candidate.name)
+                                            .tableName == join.entity
+                            }
+
+                        }
+                        ?.let { join ->
+
+                            val targetEntity =
+                                registry.entities().values.first { candidate ->
+
+                                    candidate.name == relationName &&
+                                            registry
+                                                .getEntityTable(candidate.name)
+                                                .tableName == join.entity
+                                }
+
+                            RelationInfo(
+                                name = relationName,
+                                type = RelationType.MANY_TO_ONE,
+                                targetEntity = targetEntity.name,
+                                joinColumns = join.mappingColumns,
+                                inverseJoinColumn = join.targetColumns.first()
+                            )
+                        }
+
+            requireNotNull(relation) {
+                "Unknown relation '$relationName' " +
+                        "on entity '${sourceEntity.name}'"
+            }
+
+            val targetEntity =
+                registry.getEntityOrThrow(
+                    relation.targetEntity
+                )
+
+            relationPath +=
+                RelationPathStep(
+                    sourceEntity = sourceEntity,
+                    relation = relation,
+                    targetEntity = targetEntity
+                )
+
+            /*
+             * The next relation is always resolved against
+             * the target entity of the current relation.
+             *
+             * For a relationJoin this is the additional joined entity.
+             */
+            entity =
+                targetEntity
+
+            index++
+        }
+
+        val fieldName =
+            parts.last()
+
+        val fieldInfo =
+            requireNotNull(entity.fields[fieldName]) {
+                "Unknown field '$fieldName' " +
+                        "on entity '${entity.name}'"
+            }
+
+        return ResolvedField(
+            entity = entity.name,
+            field = fieldName,
+            info = fieldInfo,
+            relationPath = relationPath
+        )
+    }
+
+    /*
     @JvmOverloads
     fun resolveField(
         field: FieldRef,
@@ -582,7 +832,7 @@ class ExposedCompiler(
             // Explicit entity prefix:
             // User.name
             entity = currentEntity?:
-                registry.getEntityOrThrow(firstPart)
+                    registry.getEntityOrThrow(firstPart)
 
             index = 1
         } else {
@@ -607,12 +857,48 @@ class ExposedCompiler(
                 parts[index]
 
             val relation =
-                requireNotNull(
-                    sourceEntity.relations[relationName]
-                ) {
-                    "Unknown relation '$relationName' " +
-                            "on entity '${sourceEntity.name}'"
-                }
+                sourceEntity.relations[relationName]
+                    ?: relationPath.lastOrNull()
+                        ?.relation
+                        ?.relationJoins
+                        ?.firstOrNull { join ->
+
+                            registry.entities().values.any { candidate ->
+                                candidate.name == relationName &&
+                                        registry.getEntityTable(candidate.name).tableName ==
+                                        join.entity
+                            }
+
+                        }
+                        ?.let { join ->
+
+                            val targetEntity =
+                                registry.entities().values.first { candidate ->
+                                    candidate.name == relationName &&
+                                            registry.getEntityTable(candidate.name).tableName ==
+                                            join.entity
+                                }
+
+                            RelationInfo(
+                                name = relationName,
+                                type = RelationType.MANY_TO_ONE,
+                                targetEntity = targetEntity.name,
+                                joinColumns = join.mappingColumns,
+                                inverseJoinColumn = join.targetColumns.first()
+                            )
+                        }
+                    /*?: error(
+                        "Unknown relation '$relationName' " +
+                                "on entity '${sourceEntity.name}'"
+                    )
+
+                     */
+
+
+            requireNotNull(relation) {
+                "Unknown relation '$relationName' " +
+                        "on entity '${sourceEntity.name}'"
+            }
 
             val targetEntity =
                 registry.getEntityOrThrow(
@@ -650,7 +936,133 @@ class ExposedCompiler(
             relationPath = relationPath
         )
     }
+*/
+    data class ResolvedRelationJoin(
+        val entity: EntityType,
+        val field: String,
+        val info: FieldInfo,
+        val relationJoin: RelationJoin?
+    )
 
+    @Suppress("ReturnCount")
+    private fun resolveRelationJoinField(
+        fieldName: String,
+        relation: RelationInfo
+    ): ResolvedRelationJoin? {
+
+        val joins =
+            relation.relationJoins
+
+        if (joins.isEmpty()) {
+            return null
+        }
+
+        /*
+         * Only relation-join qualified fields are handled here.
+         *
+         * Example:
+         *
+         *     context.name
+         *
+         * The first part ("context") is an IQL entity name.
+         *
+         * RelationJoin.entity, however, contains the physical table name.
+         * Therefore we resolve the entity first and compare its table.
+         */
+        if (!fieldName.contains(".")) {
+            return null
+        }
+
+        val parts =
+            fieldName.split(".", limit = 2)
+
+        val entityName =
+            parts[0]
+
+        val nestedField =
+            parts[1]
+
+        val entity =
+            registry.getEntity(entityName)
+                ?: return null
+
+        val tableName =
+            registry
+                .getEntityTable(entity.name)
+                .tableName
+
+        val join =
+            joins.firstOrNull {
+                it.entity == tableName
+            }
+                ?: return null
+
+        val info =
+            entity.fields[nestedField]
+                ?: throw IllegalArgumentException(
+                    "Unknown field '$nestedField' " +
+                            "on entity '${entity.name}'"
+                )
+
+        return ResolvedRelationJoin(
+            entity = entity,
+            field = nestedField,
+            info = info,
+            relationJoin = join
+        )
+    }
+
+    /*
+        private fun resolveRelationJoinField(
+            fieldName: String,
+            relation: RelationInfo
+        ): ResolvedRelationJoin? {
+
+            val joins =
+                relation.relationJoins
+
+            if (joins.isEmpty()) {
+                return null
+            }
+
+            // 1. Explicitly qualified:
+            // context.name
+            if (fieldName.contains(".")) {
+                val parts = fieldName.split(".", limit = 2)
+                val entityName = parts[0]
+                val nestedField = parts[1]
+
+                val join =
+                    joins.firstOrNull {
+                        it.entity == entityName ||
+                                registry.getEntity(entityName)?.table == it.entity
+                    }
+
+                if (join != null) {
+                    val entity =
+                        registry.entities().values.firstOrNull {
+                            it.table == join.entity
+                        } ?: return null
+
+                    val info =
+                        entity.fields[nestedField]
+                            ?: throw IllegalArgumentException(
+                                "Unknown field '$nestedField' " +
+                                        "on entity '${entity.name}'"
+                            )
+
+                    return ResolvedRelationJoin(
+                        entity = entity,
+                        field = nestedField,
+                        info = info,
+                        relationJoin = join
+                    )
+                }
+            }
+
+            return null
+        }
+    */
     // -------------------------------------------------------------------------
     // Relations
     // -------------------------------------------------------------------------

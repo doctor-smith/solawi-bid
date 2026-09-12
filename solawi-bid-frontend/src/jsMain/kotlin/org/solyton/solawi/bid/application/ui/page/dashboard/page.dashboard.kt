@@ -98,13 +98,13 @@ fun DashboardPage(storage: Storage<Application>) {
                  */
                 }
 
-
+/*
                 Card({
                     navigate("/app/auctions/search-bidders")
                 }) {
                     Wrap { H3 { Text("Bieter Suche") } }
                 }
-
+*/
                 Card({
                     navigate("/manual")
                 }) {

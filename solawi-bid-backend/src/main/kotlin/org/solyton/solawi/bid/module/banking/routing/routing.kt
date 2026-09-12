@@ -10,7 +10,10 @@ import org.evoleq.ktorx.Respond
 import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
+import org.evoleq.uuid.toUuid
+import org.solyton.solawi.bid.module.application.repository.contextIdOf
 import org.solyton.solawi.bid.module.banking.action.*
+import org.solyton.solawi.bid.module.banking.application.BANKING_APPLICATION_NAME
 import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.banking.permissions.BankAccounts.Rights.CREATE_BANK_ACCOUNTS
 import org.solyton.solawi.bid.module.banking.permissions.BankAccounts.Rights.DELETE_BANK_ACCOUNTS
@@ -25,6 +28,7 @@ import org.solyton.solawi.bid.module.banking.permissions.FiscalYears.Rights.READ
 import org.solyton.solawi.bid.module.banking.permissions.FiscalYears.Rights.UPDATE_FISCAL_YEARS
 import org.solyton.solawi.bid.module.banking.permissions.LegalEntities.Rights.CREATE_LEGAL_ENTITIES
 import org.solyton.solawi.bid.module.banking.permissions.LegalEntities.Rights.READ_LEGAL_ENTITIES
+import org.solyton.solawi.bid.module.banking.permissions.LegalEntities.Rights.UPDATE_LEGAL_ENTITIES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.CREATE_SEPA_COLLECTIONS
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.CREATE_SEPA_MANDATES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.CREATE_SEPA_MESSAGES
@@ -38,8 +42,8 @@ import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_MANDATES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_MESSAGES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_PAYMENTS
-import org.solyton.solawi.bid.module.permission.action.db.IsGranted
-import org.solyton.solawi.bid.module.permission.action.db.no
+import org.solyton.solawi.bid.module.permission.action.db.*
+import org.solyton.solawil.bid.module.bid.data.api.toUUID
 
 fun <BankingEnv> Routing.banking (
     environment: BankingEnv,
@@ -55,19 +59,46 @@ fun <BankingEnv> Routing.banking (
                         ReceiveContextual<String> { parameters ->
                             parameters["party"]!!
                         } *
-                        IsGranted(READ_LEGAL_ENTITIES, no) *
+                        IsGrantedInDerivedContext(
+                            READ_LEGAL_ENTITIES,
+                            yes
+                        ){
+                            contextIdOf(
+                                BANKING_APPLICATION_NAME
+                            ) {
+                                it.data.toUuid()
+                            }
+                        } *
                         ReadLegalEntity() *
                         Respond { transform() } runOn Base(call, environment)
                     }
                     post("create") {
                         ReceiveContextual<CreateLegalEntity>() *
-                        IsGranted(CREATE_LEGAL_ENTITIES, no) *
+                        IsGrantedInDerivedContext(
+                            CREATE_LEGAL_ENTITIES,
+                            yes
+                        ){
+                            contextIdOf(
+                                BANKING_APPLICATION_NAME
+                            ) {
+                                it.data.partyId.value.toUuid()
+                            }
+                        } *
                         CreateLegalEntity() *
                         Respond { transform() } runOn Base(call, environment)
                     }
                     patch("update") {
                         ReceiveContextual<UpdateLegalEntity>() *
-                        IsGranted(CREATE_LEGAL_ENTITIES, no) *
+                        IsGrantedInDerivedContext(
+                            UPDATE_LEGAL_ENTITIES,
+                            yes
+                        ){
+                            contextIdOf(
+                                BANKING_APPLICATION_NAME
+                            ) {
+                                it.data.partyId.value.toUuid()
+                            }
+                        } *
                         UpdateLegalEntity() *
                         Respond { transform() } runOn Base(call, environment)
                     }
@@ -82,19 +113,39 @@ fun <BankingEnv> Routing.banking (
                     ReceiveContextual<String>{
                         parameters -> parameters["legal_entity"]!!
                     } *
-                    IsGranted(READ_FISCAL_YEARS, no) *
+                    IsGrantedInDerivedContext(
+                        READ_FISCAL_YEARS, yes
+                    ) {
+                        contextIdOf(BANKING_APPLICATION_NAME) {
+                            it.data.toUuid()
+                        }
+                    } *
                     ReadFiscalYearsByLegalEntity() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
                 post("create") {
                     ReceiveContextual<CreateFiscalYear>() *
-                    IsGranted(CREATE_FISCAL_YEARS, no) *
+                    IsGrantedInDerivedContext(
+                        CREATE_FISCAL_YEARS, yes
+                    ) {
+                        contextIdOf(
+                            BANKING_APPLICATION_NAME
+                        ) {
+                            it.data.legalEntityId.toUuid()
+                        }
+                    } *
                     CreateFiscalYear() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
                 patch("update") {
                     ReceiveContextual<UpdateFiscalYear>() *
-                    IsGranted(UPDATE_FISCAL_YEARS, no) *
+                    IsGrantedInDerivedContext(
+                        UPDATE_FISCAL_YEARS, yes
+                    ) {
+                        contextIdOf(BANKING_APPLICATION_NAME) {
+                            it.data.legalEntityId.toUuid()
+                        }
+                    } *
                     UpdateFiscalYear() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
@@ -105,28 +156,47 @@ fun <BankingEnv> Routing.banking (
                     ReceiveContextual<String>{
                         parameters -> parameters["legal_entity"]!!
                     } *
-                    IsGranted(READ_BANK_ACCOUNTS, no) *
+                    IsGrantedInDerivedContext(
+                        READ_BANK_ACCOUNTS,
+                        yes
+                    ) {
+                        contextIdOf(BANKING_APPLICATION_NAME) {
+                            it.data.toUuid()
+                        }
+                    } *
                     ReadBankAccountsByLegalEntity() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
                 post("create") {
                     ReceiveContextual<CreateBankAccount>() *
-                    IsGranted(CREATE_BANK_ACCOUNTS, no) *
+                    IsGrantedInSpecialContext(CREATE_BANK_ACCOUNTS) {
+                        contextual -> contextual.userId != contextual.data.userId.toUUID()
+                    } *
                     CreateBankAccount() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
                 patch("update") {
                     ReceiveContextual<UpdateBankAccount>() *
-                    IsGranted(UPDATE_BANK_ACCOUNTS, no) *
+                    IsGrantedInSpecialContext(UPDATE_BANK_ACCOUNTS) {
+                        contextual -> contextual.userId != contextual.data.userId.toUUID()
+                    } *
                     UpdateBankAccount() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
                 post("import") {
                     ReceiveContextual<ImportBankAccounts>() *
-                    IsGranted(IMPORT_BANK_ACCOUNTS, no) *
+                    IsGrantedInDerivedContext(
+                        IMPORT_BANK_ACCOUNTS,
+                        yes
+                    ) {
+                        contextIdOf(BANKING_APPLICATION_NAME){
+                            it.data.accessorId.value.toUuid()
+                        }
+                    } *
                     ImportBankAccounts() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
+                // TODO(correct context needs to be provided)
                 delete("delete") {
                     ReceiveContextual<DeleteBankAccount>() *
                     IsGranted(DELETE_BANK_ACCOUNTS, no) *
@@ -134,10 +204,12 @@ fun <BankingEnv> Routing.banking (
                     Respond{ transform() } runOn Base(call, environment)
                 }
                 route("personal") {
+                    // TODO(correct context needs to be provided)
                     get("/all") {
                         ReceiveContextual<String>{
                             _ -> ""
                         } *
+                        IsGranted(READ_BANK_ACCOUNTS, no) *
                         ReadPersonalBankAccounts() *
                         Respond { transform() } runOn Base(call, environment)
                     }
@@ -160,19 +232,40 @@ fun <BankingEnv> Routing.banking (
                                 "Parameter 'legal_entity' is empty"
                             }
                         } *
-                        IsGranted(READ_CREDITOR_IDENTIFIERS, no) *
+                        IsGrantedInDerivedContext(
+                            READ_CREDITOR_IDENTIFIERS,
+                            yes
+                        ) {
+                            contextIdOf(BANKING_APPLICATION_NAME) {
+                                it.data.toUuid()
+                            }
+                        } *
                         ReadCreditorIdentifierByLegalEntity() *
                         Respond{ transform() } runOn Base(call, environment)
                     }
                     post("create") {
                         ReceiveContextual<CreateCreditorIdentifier>() *
-                        IsGranted(CREATE_CREDITOR_IDENTIFIERS, no) *
+                        IsGrantedInDerivedContext(
+                            CREATE_CREDITOR_IDENTIFIERS,
+                            yes
+                        ) {
+                            contextIdOf(BANKING_APPLICATION_NAME) {
+                                it.data.legalEntityId.value.toUuid()
+                            }
+                        } *
                         CreateCreditorIdentifier() *
                         Respond{ transform() } runOn Base(call, environment)
                     }
                     patch("update") {
                         ReceiveContextual<UpdateCreditorIdentifier>() *
-                        IsGranted(UPDATE_CREDITOR_IDENTIFIERS, no) *
+                        IsGrantedInDerivedContext(
+                            UPDATE_CREDITOR_IDENTIFIERS,
+                            yes
+                        ) {
+                            contextIdOf(BANKING_APPLICATION_NAME) {
+                                it.data.legalEntityId.value.toUuid()
+                            }
+                        } *
                         UpdateCreditorIdentifier() *
                         Respond{ transform() } runOn Base(call, environment)
                     }
@@ -181,6 +274,7 @@ fun <BankingEnv> Routing.banking (
 
             route("sepa") {
                 route("mandates") {
+                    // TODO(correct context needs to be provided)
                     post("create") {
                         ReceiveContextual<CreateSepaMandate>() *
                         IsGranted(CREATE_SEPA_MANDATES, no) *
@@ -197,6 +291,7 @@ fun <BankingEnv> Routing.banking (
                         ReadSepaMandatesByCreditorsLegalEntity() *
                         Respond { transform() } runOn Base(call, environment)
                     }
+                    // TODO(correct context needs to be provided)
                     patch("update") {
                         ReceiveContextual<UpdateSepaMandate>() *
                         IsGranted(UPDATE_SEPA_MANDATES, no) *
@@ -205,6 +300,7 @@ fun <BankingEnv> Routing.banking (
 
                     }
                     route("personal") {
+                        // TODO(correct context needs to be provided)
                         get("all") {
                             ReceiveContextual<String>{
                                 _-> ""
@@ -225,30 +321,35 @@ fun <BankingEnv> Routing.banking (
                         ReadSepaCollectionsByLegalEntity() *
                         Respond { transform() } runOn Base(call, environment)
                     }
+                    // TODO(correct context needs to be provided)
                     post("create") {
                         ReceiveContextual<CreateSepaCollection>() *
                         IsGranted(CREATE_SEPA_COLLECTIONS, no) *
                         CreateSepaCollection() *
                         Respond { transform() } runOn Base(call, environment)
                     }
+                    // TODO(correct context needs to be provided)
                     post("create-payments"){
                         ReceiveContextual<CreateSepaPaymentsForCollection>() *
                         IsGranted(CREATE_SEPA_PAYMENTS, no) *
                         CreateSepaPaymentsForCollection() *
                         Respond { transform() } runOn Base(call, environment)
                     }
+                    // TODO(correct context needs to be provided)
                     post("create-payment-successors") {
                         ReceiveContextual<CreateSepaPaymentSuccessors>() *
                         IsGranted(CREATE_SEPA_PAYMENTS, no) *
                         CreateSepaPaymentSuccessors() *
                         Respond { transform() } runOn Base(call, environment)
                     }
+                    // TODO(correct context needs to be provided)
                     post("generate-sepa-message") {
                         ReceiveContextual<GenerateSepaMessageForCollection>() *
                         IsGranted(CREATE_SEPA_MESSAGES, no) *
                         GenerateSepaMessageForCollection() *
                         Respond { transform() } runOn Base(call, environment)
                     }
+                    // TODO(correct context needs to be provided)
                     patch("update") {
                         ReceiveContextual<UpdateSepaCollection>() *
                         IsGranted(UPDATE_SEPA_COLLECTIONS, no) *
@@ -260,6 +361,7 @@ fun <BankingEnv> Routing.banking (
                     }
 
                 }
+                // TODO(correct context needs to be provided)
                 route("payments"){
                     post("create") {
                         NotImplemented("Sepa collection creation is not implemented yet")
@@ -301,6 +403,7 @@ fun <BankingEnv> Routing.banking (
                         Respond { transform() } runOn Base(call, environment)
                     }
                 }
+                // TODO(correct context needs to be provided)
                 route("payment-links") {
                     get("by-legal-entity") {
                         ReceiveContextual<String>{
@@ -319,6 +422,7 @@ fun <BankingEnv> Routing.banking (
                         Respond { transform() } runOn Base(call, environment)
                     }
                 }
+                // TODO(correct context needs to be provided)
                 route("messages") {
                     get("download") {
                         ReceiveContextual<String>{

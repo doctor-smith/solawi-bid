@@ -7,10 +7,6 @@ import org.solyton.solawi.bid.module.application.data.ApplicationOrganizationRel
 import org.solyton.solawi.bid.module.application.data.ApplicationOrganizationRelations
 import org.solyton.solawi.bid.module.application.exception.ApplicationException
 import org.solyton.solawi.bid.module.application.schema.*
-import org.solyton.solawi.bid.module.application.schema.ApplicationEntity
-import org.solyton.solawi.bid.module.application.schema.LifecycleStageEntity
-import org.solyton.solawi.bid.module.application.schema.OrganizationApplicationContextEntity
-import org.solyton.solawi.bid.module.application.schema.OrganizationModuleContextEntity
 import org.solyton.solawi.bid.module.permission.exception.ContextException
 import org.solyton.solawi.bid.module.permission.repository.cloneRightRoleContext
 import org.solyton.solawi.bid.module.permission.repository.createRootContext
@@ -130,4 +126,9 @@ fun Transaction.contextIdOf(organizationId: UUID, applicationName: String): UUID
         "with app=$application, org = $organizationId"
     )
 }
+
+fun Transaction.contextIdOf(applicationName: String, organizationId: () -> UUID): UUID {
+    return contextIdOf(organizationId(), applicationName)
+}
+
 

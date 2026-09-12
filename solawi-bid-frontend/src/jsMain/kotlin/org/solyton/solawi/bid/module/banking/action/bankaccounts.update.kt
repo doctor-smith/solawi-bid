@@ -10,6 +10,7 @@ import org.solyton.solawi.bid.module.banking.data.api.UpdateBankAccount
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.bankAccounts
 import org.solyton.solawi.bid.module.banking.data.bankaccount.AccountType
+import org.solyton.solawi.bid.module.permission.data.ContextId
 import org.solyton.solawi.bid.module.values.UserId
 
 const val UPDATE_BANK_ACCOUNT = "UpdateBankAccount"
@@ -24,6 +25,7 @@ const val UPDATE_BANK_ACCOUNT = "UpdateBankAccount"
  * @return An `Action` object that performs the update operation within the `BankingApplication` context, modifying the state with the provided bank account details.
  */
 fun updateBankAccount(
+    contextId: ContextId,
     bankAccountId: BankAccountId,
     userId: UserId,
     iban: IBAN,
@@ -36,6 +38,7 @@ fun updateBankAccount(
 ): Action<BankingApplication, UpdateBankAccount, ApiBankAccount> = Action(
     name = UPDATE_BANK_ACCOUNT.suffixed(nameSuffix),
     reader = { _ -> UpdateBankAccount(
+        contextId = contextId.value,
         id = bankAccountId,
         userId = userId,
         bic = bic,

@@ -1,7 +1,9 @@
 package org.solyton.solawi.bid.application.ui.page.user.action
 
 import org.evoleq.math.Reader
+import org.evoleq.math.Source
 import org.evoleq.math.emit
+import org.evoleq.math.map
 import org.evoleq.optics.storage.ActionEnvelope
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.times
@@ -14,9 +16,11 @@ import org.solyton.solawi.bid.module.banking.action.IMPORT_BANK_ACCOUNTS
 import org.solyton.solawi.bid.module.banking.action.UPDATE_BANK_ACCOUNT
 import org.solyton.solawi.bid.module.banking.action.importBankAccounts
 import org.solyton.solawi.bid.module.banking.action.updateBankAccount
+import org.solyton.solawi.bid.module.banking.application.BANKING_APPLICATION_NAME
 import org.solyton.solawi.bid.module.banking.data.api.ImportBankAccount
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.toApiType
+import org.solyton.solawi.bid.module.permission.data.ContextId
 import org.solyton.solawi.bid.module.shares.action.CREATE_SHARE_SUBSCRIPTION
 import org.solyton.solawi.bid.module.shares.action.UPDATE_SHARE_SUBSCRIPTION
 import org.solyton.solawi.bid.module.shares.action.createShareSubscription
@@ -41,6 +45,7 @@ data class Change<T>(
 
 @Suppress("CognitiveComplexMethod","CyclomaticComplexMethod", "UnusedParameter")
 fun Storage<Application>.memberUpdateAction(
+    contextMap: Source<Map<String, String>>,
     providerId: ProviderId,
     member: Reader<Application, Member>,
     usernameChange: Change<Username>,
@@ -179,6 +184,7 @@ fun Storage<Application>.memberUpdateAction(
         } else {
             ActionEnvelope(
                 action = bankingApplicationIso * updateBankAccount(
+                    contextId = (contextMap map { map -> ContextId(map[BANKING_APPLICATION_NAME]!!) }).emit(),
                     bankAccountId = bankAccount.bankAccountId,
                     userId = UserId(userId),
                     iban = bankAccountState.iban,

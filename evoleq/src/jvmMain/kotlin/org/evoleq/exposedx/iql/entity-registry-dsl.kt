@@ -106,8 +106,8 @@ class RegistryConfiguration : Configuration<Registry> {
     ) {
         val config: Registry.()->Unit  =  {
 
-        val entityConfig =
-            EntityTypeConfiguration().apply {
+        val entityConfig = EntityTypeConfiguration().apply {
+            this.resolveTable = {entityName -> getEntityTable(entityName)}
             this.resolveFieldType = {
                 column: Column<*> -> FieldTypeResolver(this@RegistryConfiguration.fieldTypes).resolve(column)
             }
@@ -146,6 +146,43 @@ class RegistryConfiguration : Configuration<Registry> {
         configurations += config
     }
 
+    fun extend(
+        entityName: String,
+        block: EntityTypeConfiguration.() -> Unit
+    ) {
+        val config: Registry.() -> Unit = {
+
+            val existing = getEntity(entityName)?: throw IllegalArgumentException(
+                "Unknown entity: \$entityName",
+            )
+
+            val configuration =
+                EntityTypeConfiguration(
+                    existing,
+                    getEntityTable(entityName)
+                ) {
+                    FieldTypeResolver(this@RegistryConfiguration.fieldTypes).resolve(this)
+                }
+            configuration.apply{
+                this.resolveTable = {entityName -> getEntityTable(entityName)}
+                block()
+            }
+
+            val entity = configuration.configure()
+
+            put(entity)
+
+            registerPendingRelations( configuration.pendingRelations )
+
+            configuration.pendingRelations.forEach { pending ->
+                pending.mappingTable?.let {
+                    registerMappingTable(it)
+                }
+            }
+        }
+        configurations += config
+    }
+
 }
 
 infix fun KClass<out IColumnType>.mapsTo(
@@ -157,11 +194,20 @@ internal data class PendingRelation(
     val sourceEntity: String,
     val relationName: String,
     val targetTable: Table,
-    val mappingTable: Table? = null
+    val mappingTable: Table? = null,
+    val relationJoins: List<PendingRelationJoin> = emptyList()
+)
+
+data class PendingRelationJoin(
+    val entityName: String,
+    val mappingColumns: List<String>,
+    val targetColumns: List<String>
 )
 
 @IqlRegistryDsl
 class EntityTypeConfiguration : Configuration<EntityType> {
+
+    lateinit var resolveTable: (entityName: String) -> Table
 
     lateinit var resolveFieldType: Column<*>.() -> FieldType
 
@@ -170,7 +216,22 @@ class EntityTypeConfiguration : Configuration<EntityType> {
     private val fields: MutableMap<String, FieldInfo> = mutableMapOf()
     private val relations: MutableMap<String, RelationInfo> = mutableMapOf()
     internal val pendingRelations: MutableList<PendingRelation> = mutableListOf()
-    
+
+    constructor()
+
+    internal constructor(
+        entity: EntityType,
+        table: Table,
+        resolveFieldType: Column<*>.() -> FieldType
+    ) {
+        name = entity.name
+        this.table = table
+        this.resolveFieldType = resolveFieldType
+
+        fields.putAll(entity.fields)
+        relations.putAll(entity.relations)
+    }
+
     override fun configure(): EntityType {
         return EntityType(
             name,
@@ -184,6 +245,15 @@ class EntityTypeConfiguration : Configuration<EntityType> {
         require(column.table == table) {
             "Wrong table"
         }
+
+        require(column.name !in fields) {
+            "Field '${column.name}' is already registered on entity '$name'"
+        }
+
+        require(column.name !in relations) {
+            "Field '${column.name}' conflicts with relation '${column.name}' on entity '$name'"
+        }
+
         fields[column.name] = FieldInfo(
             column.name,
             column.resolveFieldType(),
@@ -200,6 +270,8 @@ class EntityTypeConfiguration : Configuration<EntityType> {
         targetTable: Table,
         block: ColumnReferenceConfiguration.() -> Unit
     ) {
+        requireRelationNameAvailable(relationName)
+
         val reference =
             ColumnReferenceConfiguration(
                 relationName,
@@ -236,6 +308,8 @@ class EntityTypeConfiguration : Configuration<EntityType> {
         targetTable: Table,
         block: ColumnReferenceConfiguration.() -> Unit
     ) {
+        requireRelationNameAvailable(relationName)
+
         val reference =
             ColumnReferenceConfiguration(
                 relationName,
@@ -272,12 +346,15 @@ class EntityTypeConfiguration : Configuration<EntityType> {
         mappingTable: Table,
         block: ManyToManyConfiguration.() -> Unit
     ) {
+        requireRelationNameAvailable(relationName)
+
         val mapping =
             ManyToManyConfiguration(
                 name = relationName,
                 sourceTable = table,
                 targetTable = targetTable,
-                mappingTable = mappingTable
+                mappingTable = mappingTable,
+                resolveTable = resolveTable
             )
                 .apply(block)
                 .configure()
@@ -287,16 +364,29 @@ class EntityTypeConfiguration : Configuration<EntityType> {
                 name = relationName,
                 type = RelationType.MANY_TO_MANY,
                 targetEntity = targetTable.tableName,
-                joinColumns = mapping.sourceColumns,
-                mapping = mapping
+                joinColumns = mapping.mapping.sourceColumns,
+                mapping = mapping.mapping,
             )
 
         pendingRelations += PendingRelation(
             sourceEntity = name,
             relationName = relationName,
             targetTable = targetTable,
-            mappingTable = mappingTable
+            mappingTable = mappingTable,
+            relationJoins = mapping.relationJoins
         )
+    }
+
+    private fun requireRelationNameAvailable(
+        relationName: String
+    ) {
+        require(relationName !in relations) {
+            "Relation '$relationName' is already registered on entity '$name'"
+        }
+
+        require(relationName !in fields) {
+            "Relation '$relationName' conflicts with field '$relationName' on entity '$name'"
+        }
     }
 }
 
@@ -405,16 +495,29 @@ class ColumnReferenceConfiguration(
         }
 }
 
+data class ManyToManyRelationInfo(
+    val mapping: MappingInfo,
+    val relationJoins: List<RelationJoin> = emptyList()
+)
+
+data class PendingManyToManyRelationInfo(
+    val mapping: MappingInfo,
+    val relationJoins: List<PendingRelationJoin> = emptyList()
+)
+
 @IqlRegistryDsl
 class ManyToManyConfiguration(
     val name: String,
     val sourceTable: Table,
     val targetTable: Table,
-    val mappingTable: Table
-) : Configuration<MappingInfo> {
+    val mappingTable: Table,
+    val resolveTable: (entityName: String) -> Table
+) : Configuration<PendingManyToManyRelationInfo> {
 
     private var sourceReferences: List<ColumnReference> = emptyList()
     private var targetReferences: List<ColumnReference> = emptyList()
+
+    private val relationJoins: MutableList<PendingRelationJoin> = mutableListOf()
 
     fun source(vararg references: () -> ColumnReference) {
         sourceReferences = references.map { it() }
@@ -424,7 +527,35 @@ class ManyToManyConfiguration(
         targetReferences = references.map { it() }
     }
 
-    override fun configure(): MappingInfo {
+    fun join(
+        targetEntity: String,
+        vararg references: () -> ColumnReference
+    ) {
+        val resolved = references.map { it() }
+
+
+
+        require(resolved.isNotEmpty()) {
+            "Relation '$name' requires at least one join reference"
+        }
+
+        resolved.forEach { reference ->
+
+
+            require(reference.target.table == mappingTable) {
+                "Join mapping column '${reference.target.name}' " +
+                        "must be from the mapping table"
+            }
+        }
+
+        relationJoins += PendingRelationJoin(
+            entityName = targetEntity,
+            mappingColumns = resolved.map { it.target.name },
+            targetColumns = resolved.map { it.source.name }
+        )
+    }
+
+    override fun configure(): PendingManyToManyRelationInfo {
 
         require(sourceReferences.isNotEmpty()) {
             "Relation '$name' requires at least one source mapping reference"
@@ -459,7 +590,7 @@ class ManyToManyConfiguration(
             }
         }
 
-        return MappingInfo(
+        val mappingInfo =  MappingInfo(
             table = mappingTable.tableName,
 
             sourceColumns =
@@ -473,6 +604,11 @@ class ManyToManyConfiguration(
 
             targetColumns =
                 targetReferences.map { it.source.name }
+        )
+
+        return PendingManyToManyRelationInfo(
+            mapping = mappingInfo,
+            relationJoins = relationJoins.toList()
         )
     }
 }

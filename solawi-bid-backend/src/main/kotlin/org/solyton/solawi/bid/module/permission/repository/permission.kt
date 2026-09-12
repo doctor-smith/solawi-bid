@@ -1,11 +1,7 @@
 package org.solyton.solawi.bid.module.permission.repository
 
 import org.jetbrains.exposed.sql.*
-import org.solyton.solawi.bid.module.permission.schema.ContextEntity
-import org.solyton.solawi.bid.module.permission.schema.RightEntity
-import org.solyton.solawi.bid.module.permission.schema.RoleEntity
-import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
-import org.solyton.solawi.bid.module.permission.schema.RolesTable
+import org.solyton.solawi.bid.module.permission.schema.*
 import java.util.*
 
 fun grant(
@@ -13,11 +9,15 @@ fun grant(
     role: RoleEntity,
     vararg rights: RightEntity
 ) {
-    rights.forEach { right ->
+    val existingRights = RoleRightContexts.selectAll().where{
+        RoleRightContexts.roleId eq role.id and (RoleRightContexts.contextId eq context.id) and (RoleRightContexts.rightId inList rights.map { it.id })
+    }.map { it[RoleRightContexts.rightId] }
+    val newRights = rights.filterNot { it.id in existingRights }
+    newRights.forEach { right ->
         RoleRightContexts.insert {
             it[contextId] = context.id
             it[roleId] = role.id
-            it[rightId] = right.id
+            it[rightId] = right.id.value
         }
     }
 }

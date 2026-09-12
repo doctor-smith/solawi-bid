@@ -89,6 +89,37 @@ val permissionModuleRegistry : Registry by lazy {
             field(UserRoleContext.userId)
             field(UserRoleContext.contextId)
             field(UserRoleContext.roleId)
+
+            /*
+            override / extend from the outside
+            manyToOne("user, UsersTable) {
+                UserRoleContext.userId references UsersTable.id
+            }
+            */
+
+            manyToOne("role", RolesTable) {
+                UserRoleContext.roleId references RolesTable.id
+            }
+
+            manyToOne("context", ContextsTable) {
+                UserRoleContext.contextId references ContextsTable.id
+            }
+        }
+
+        entity("roleRightContext", RoleRightContexts) {
+            field(RoleRightContexts.rightId)
+            field(RoleRightContexts.contextId)
+            field(RoleRightContexts.roleId)
+
+            manyToOne("right", RightsTable) {
+                RoleRightContexts.rightId references RightsTable.id
+            }
+            manyToOne("role", RolesTable) {
+                RoleRightContexts.roleId references RolesTable.id
+            }
+            manyToOne("context", ContextsTable) {
+                RoleRightContexts.contextId references ContextsTable.id
+            }
         }
     }
 }
