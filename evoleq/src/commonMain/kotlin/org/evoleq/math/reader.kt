@@ -38,7 +38,7 @@ fun <T> Size(): Reader<List<T>, Int> = Reader{
 }
 
 @MathDsl
-fun <T> assureValue(): Reader<T?, T> = Reader{value -> require(value != null); value}
+fun <T> assureValue(message: String? = null): Reader<T?, T> = Reader{value -> require(value != null){ message?: "value is null" }; value}
 
 @MathDsl
 fun <T> not(reader: Reader<T, Boolean>): Reader<T, Boolean> = {t: T -> !reader(t)}

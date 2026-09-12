@@ -81,10 +81,8 @@ fun organizationApplicationContextId(
     val application = applicationManagement.availableApplications.firstOrNull{
             application -> application.name.equals(applicationName, ignoreCase = true)
     }
-    if(application == null) {  null }
-    requireNotNull(application) {
-        "Application with name $applicationName not found"
-    }
+    if(application == null) return@Reader null
+
     // find corresponding application-context-relations
     val contextId = applicationManagement.applicationOrganizationRelations.firstOrNull {
             (applicationId, orgId, _, _) -> applicationId == application.id && orgId == organizationId

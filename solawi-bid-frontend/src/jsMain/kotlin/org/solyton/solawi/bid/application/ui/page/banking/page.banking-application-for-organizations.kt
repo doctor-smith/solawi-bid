@@ -41,13 +41,11 @@ import org.solyton.solawi.bid.application.data.managedUsers
 import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
 import org.solyton.solawi.bid.application.data.transform.banking.bankingApplicationIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
-import org.solyton.solawi.bid.application.effect.ForceContext
 import org.solyton.solawi.bid.application.service.organizationApplicationContextId
 import org.solyton.solawi.bid.application.service.useI18nTransform
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.banking.i18n.BankingLangComponent
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
-import org.solyton.solawi.bid.module.application.data.ApplicationName
 import org.solyton.solawi.bid.module.banking.action.*
 import org.solyton.solawi.bid.module.banking.action.sepa.*
 import org.solyton.solawi.bid.module.banking.application.BANKING_APPLICATION_NAME
@@ -94,7 +92,6 @@ import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.action.user.getUsers
 import org.solyton.solawi.bid.module.user.action.user.readUserProfiles
-import org.solyton.solawi.bid.module.user.data.api.OrganizationId
 import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 import org.solyton.solawi.bid.module.user.data.userActions
 import org.solyton.solawi.bid.module.values.AccessorId
@@ -107,10 +104,6 @@ import org.solyton.solawi.bid.module.banking.data.sepa.message.download as downl
 @Composable
 @Suppress("FunctionName","CognitiveComplexMethod", "CyclomaticComplexMethod")
 fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, providerId: ProviderId, up: String) {
-    storage.ForceContext(
-        ApplicationName(BANKING_APPLICATION_NAME),
-        OrganizationId(providerId.value)
-    )
 
     if((storage * context * isEmpty()).emit() ) return@BankingApplicationForOrganizationsPage
 
@@ -119,9 +112,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
     val bankingApplicationContextId = storage * applicationManagementModule * organizationApplicationContextId(
         BANKING_APPLICATION_NAME,
         providerId.value
-    ) map { id -> requireNotNull(id) {
-        error("Banking application context id is null")
-    } }
+    )
 
     val managedUsers = storage * managedUsers
     val bankingApplicationStorage = storage * bankingApplicationIso
@@ -235,7 +226,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
         )
 
         CreditorBankAccounts(
-            bankingApplicationContextId,
+            bankingApplicationContextId * assureValue("id of banking context should not be null"),
             bankingApplicationStorage,
             providerId,
             scope,
@@ -243,7 +234,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
         )
 
         CustomerBankAccounts(
-            bankingApplicationContextId,
+            bankingApplicationContextId * assureValue("id of banking context should not be null"),
             bankingApplicationStorage,
             managedUsers,
             providerId,
