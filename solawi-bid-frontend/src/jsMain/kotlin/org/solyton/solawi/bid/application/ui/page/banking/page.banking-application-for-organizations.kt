@@ -78,6 +78,7 @@ import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.loading.component.Loading
+import org.solyton.solawi.bid.module.modal.i18n.ModalLangComponent
 import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.permission.data.ContextId
 import org.solyton.solawi.bid.module.scrollable.Scrollable
@@ -277,6 +278,11 @@ fun LegalEntity(
     val texts = bankingApplicationStorage * i18N * language * component(BankingLangComponent.BankingForOrganizationsPage) * subComp("legalEntity")
     val actions = texts * subComp("actions")
     val properties = texts * subComp("properties")
+    val dialogs = texts * subComp("dialogs")
+    val createDialog = dialogs * subComp("create")
+    val upsertDialog = dialogs * subComp("upsert")
+    val modalTexts = bankingApplicationStorage * i18N * language * component(ModalLangComponent.Default)
+
 
     Wrap(cardStyle) {
         var opened by remember { mutableStateOf(true) }
@@ -305,22 +311,12 @@ fun LegalEntity(
                             ) {
                                 bankingApplicationModals.showUpsertLegalEntityModal(
                                     bankingApplicationStorage,
-                                    dialogModalTexts("Create Legal Entity") extend {
-                                        "inputs" block {
-                                            "name" block {
-                                                "title" colon "Name"
-                                            }
-                                            "legalForm" block {
-                                                "title" colon "Legal From"
-                                            }
-                                            "legalEntityType" block {
-                                                "title" colon "Type"
-                                            }
-                                            "creditorId" block {
-                                                "title" colon "Creditor ID"
-                                            }
-                                        }
-                                    },
+                                    (modalTexts map {
+                                        it .override (
+                                            (createDialog * subComp("inputs")).emit(),
+                                                (createDialog * subComp("create") * variable("title")).emit()
+                                        )
+                                    }).emit() ,
                                     deviceType,
                                     LegalEntityId(providerId.value),
                                     creditorIdentifierState,
@@ -354,22 +350,12 @@ fun LegalEntity(
                             ) {
                                 bankingApplicationModals.showUpsertLegalEntityModal(
                                     bankingApplicationStorage,
-                                    dialogModalTexts("Upsert Legal Entity") extend {
-                                        "inputs" block {
-                                            "name" block {
-                                                "title" colon "Name"
-                                            }
-                                            "legalForm" block {
-                                                "title" colon "Legal From"
-                                            }
-                                            "legalEntityType" block {
-                                                "title" colon "Type"
-                                            }
-                                            "creditorId" block {
-                                                "title" colon "Creditor ID"
-                                            }
-                                        }
-                                    },
+                                    (modalTexts map {
+                                        it.override (
+                                            (upsertDialog * subComp("inputs")).emit(),
+                                            (upsertDialog * variable("title")).emit()
+                                        )
+                                    }).emit() ,
                                     deviceType,
                                     LegalEntityId(providerId.value),
                                     creditorIdentifierState,

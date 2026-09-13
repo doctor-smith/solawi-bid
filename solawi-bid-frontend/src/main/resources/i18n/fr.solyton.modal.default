@@ -1,0 +1,18 @@
+fr {
+    solyton {
+        modal {
+            default {
+                title: "Fenêtre modale standard"
+                inputs {
+                    _placeholder: ""
+                }
+                okButton {
+                    title: "Ok"
+                }
+                cancelButton {
+                    title: "Annuler"
+                }
+            }
+        }
+    }
+}

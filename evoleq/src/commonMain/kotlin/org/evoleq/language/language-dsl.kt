@@ -77,3 +77,11 @@ infix fun Lang.Block.extend(configuration: BlockConfiguration.()->Unit): Block =
     add(*this@extend.value.toTypedArray())
     configuration()
 }
+
+fun Lang.Block.override(vararg langs: Lang): Block = texts {
+    val langKeys = langs.map { it.key }
+    key = this@override.key
+    add(*this@override.value.filterNot{ it.key in langKeys }.toTypedArray())
+    add(*langs)
+}
+
