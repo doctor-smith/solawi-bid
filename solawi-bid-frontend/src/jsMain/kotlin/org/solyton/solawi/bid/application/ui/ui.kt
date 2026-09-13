@@ -10,18 +10,17 @@ import org.evoleq.language.Block
 import org.evoleq.language.component
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
-import org.solyton.solawi.bid.module.modal.constants.MODAL_LAYER_INDEX
 import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.routing.Routing
 import org.solyton.solawi.bid.module.cookie.component.CookieDisclaimer
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.logo.TopLogo
+import org.solyton.solawi.bid.module.modal.constants.MODAL_LAYER_INDEX
 import org.solyton.solawi.bid.module.style.topLogoHeight
 
 @Markup
 @Suppress("FunctionName")
 @Composable fun UI(storage: Storage<Application>) {
-
     val texts = (storage * i18N * language).read() as Block
     // The whole UI needs to be wrapped in a component
     // which is able to handle the interactive control flow of the application,

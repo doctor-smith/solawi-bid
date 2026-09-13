@@ -7,17 +7,23 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.language.Lang
 import org.evoleq.language.LanguageP
+import org.evoleq.math.map
+import org.evoleq.optics.storage.Read
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.environment
 import org.solyton.solawi.bid.application.data.i18N
 import org.solyton.solawi.bid.application.service.useI18nTransform
+import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
+import org.solyton.solawi.bid.application.ui.effect.TriggerComponentLookup
 import org.solyton.solawi.bid.module.cookie.api.writeLang
 import org.solyton.solawi.bid.module.i18n.api.i18n
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.data.locale
 import org.solyton.solawi.bid.module.i18n.data.locales
+import org.solyton.solawi.bid.module.i18n.guard.onMissing
+import org.solyton.solawi.bid.module.modal.i18n.ModalLangComponent
 
 
 fun Storage<Application>.langLoaded (): Boolean  {
@@ -35,7 +41,8 @@ fun Storage<Application>.onLocaleChanged(oldApplication: Application, newApplica
     if (newApplication.i18N.locale != oldApplication.i18N.locale) {
         CoroutineScope(Job()).launch {
             val app = read()
-            val environment = (this@onLocaleChanged * environment).read()
+            val envSource = (this@onLocaleChanged * environment)
+            val environment = envSource.read()
             try {
                 with(LanguageP().run(environment.useI18nTransform().i18n(newApplication.i18N.locale)).result) {
                     if (this != null) {
@@ -47,6 +54,13 @@ fun Storage<Application>.onLocaleChanged(oldApplication: Application, newApplica
                             )
                         ) )
                         writeLang(newApplication.i18N.locale)
+                        // Load defaults
+                        // Modals
+                        TriggerComponentLookup(
+                            ModalLangComponent.Default,
+                            Read(envSource) map { it.useI18nTransform() },
+                            this@onLocaleChanged * i18N
+                        )
                     }
                 }
             } catch (exception: Exception) {
@@ -84,6 +98,18 @@ fun Storage<Application>.loadLanguage() {
                     localesStorage.write((this as Lang.Block).value.map { it.key })
                 }
             }
+        }
+
+    } else {
+        onMissing(
+            ModalLangComponent.Default,
+            this@loadLanguage * i18N.get
+        ) {
+            LaunchComponentLookup(
+                ModalLangComponent.Default,
+                Read(environment) map { it.useI18nTransform() },
+                this@loadLanguage * i18N
+            )
         }
     }
 }

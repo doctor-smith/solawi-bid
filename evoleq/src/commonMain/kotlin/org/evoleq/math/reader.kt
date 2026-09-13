@@ -17,6 +17,8 @@ fun <T> Reader<Unit, T>.read(): T = this(Unit)
 @MathDsl
 fun <T> Source<T>.emit(): T = this(Unit)
 
+fun <T> List<Source<T>>.emit(): List<T> = this.map { it(Unit) }
+
 @MathDsl
 fun <T> Source(emit: ()->T): Source<T> = Reader { emit() }
 

@@ -48,5 +48,5 @@ fun Lang.merge(lang: Lang): Lang = when{
         }
         else -> lang
     }
-    else -> throw LanguageException.CannotMergeLangs
+    else -> throw LanguageException.CannotMergeLangs("key mismatch: key = $key; other = ${lang.key}")
 }

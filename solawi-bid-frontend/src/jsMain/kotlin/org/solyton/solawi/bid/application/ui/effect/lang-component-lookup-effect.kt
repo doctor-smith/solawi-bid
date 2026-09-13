@@ -2,7 +2,6 @@ package org.solyton.solawi.bid.application.ui.effect
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.snapshotFlow
 import org.evoleq.compose.Markup
 import org.evoleq.language.Lang
 import org.evoleq.language.LangComponent
@@ -11,7 +10,6 @@ import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.addToSet
-import org.evoleq.optics.storage.removeFromSet
 import org.evoleq.optics.transform.times
 import org.solyton.solawi.bid.module.i18n.data.*
 import org.solyton.solawi.bid.module.i18n.service.componentOnDemand
@@ -73,3 +71,28 @@ fun LaunchComponentLookup(
  * @param other The language component to be merged with the stored language.
  */
 fun Storage<Lang>.merge(other: Lang) = write(read().merge(other))
+
+@Markup
+@Suppress("FunctionName")
+suspend fun TriggerComponentLookup(
+    langComponent: LangComponent,
+    environment: Source<Environment>,
+    i18n: Storage<I18N>,
+) {
+
+    // if component is loaded return
+    val loaded = (i18n * componentLoaded(langComponent)).emit()
+    if (loaded) return
+
+    val delta = environment.emit().componentOnDemand(
+        langComponent,
+        (i18n * language.get).emit(),
+        (i18n * locale.get).emit()
+    )
+    // 2) merge delta
+    if (delta.mergeNeeded) {
+        (i18n * language).merge(delta.language)
+    }
+    // 3) Mark as loaded
+    (i18n * loadedComponents).addToSet(langComponent)
+}

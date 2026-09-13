@@ -13,3 +13,6 @@ val title: Reader<Lang.Block, String> = Reader { lang -> lang["title"] }
 val text: Reader<Lang.Block, String> = Reader { lang -> lang["text"] }
 @I18N
 val tooltip: Reader<Lang.Block, String> = Reader{ lang -> lang["tooltip"]}
+
+@I18N
+val variable: (name: String) -> Reader<Lang.Block, Lang.Variable> = {name -> Reader { lang -> lang.variable(name) } }
