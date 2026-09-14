@@ -72,6 +72,7 @@ fr {
                     changeUsername {
                         title: "Modifier le nom d'utilisateur"
                     }
+                }
                 personalData {
                     title: "Vos données"
                     properties {
