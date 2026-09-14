@@ -19,7 +19,6 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
-import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.H2
 import org.jetbrains.compose.web.dom.Text
@@ -62,10 +61,12 @@ import org.solyton.solawi.bid.module.user.data.reader.isNotGranted
 @Markup
 @Composable
 @Suppress("FunctionName", "CognitiveComplexMethod")
-fun UserManagementPage(storage: Storage<Application>) = Div {
+fun UserManagementPage(storage: Storage<Application>) {
+    val applicationContext = storage * availablePermissions * contextFromPath("APPLICATION")
+    if(applicationContext.emit() == null) return
 
     val scope = rememberCoroutineScope()
-// Data
+    // Data
     val environment = storage * environment
     withLoading(
         isLoading = isLoading(
@@ -85,8 +86,6 @@ fun UserManagementPage(storage: Storage<Application>) = Div {
     ) {
 
         // Data
-        val applicationContext = storage * availablePermissions * contextFromPath("APPLICATION")
-        if(applicationContext.emit() == null) return@withLoading
         val applicationContextId = applicationContext * assureValue() * contextId.get
 
         // Data / I18N
