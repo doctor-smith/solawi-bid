@@ -16,7 +16,6 @@ import org.solyton.solawi.bid.application.data.environment
 import org.solyton.solawi.bid.application.data.i18N
 import org.solyton.solawi.bid.application.service.useI18nTransform
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
-import org.solyton.solawi.bid.application.ui.effect.TriggerComponentLookup
 import org.solyton.solawi.bid.module.cookie.api.writeLang
 import org.solyton.solawi.bid.module.i18n.api.i18n
 import org.solyton.solawi.bid.module.i18n.data.language
@@ -54,17 +53,10 @@ fun Storage<Application>.onLocaleChanged(oldApplication: Application, newApplica
                             )
                         ) )
                         writeLang(newApplication.i18N.locale)
-                        // Load defaults
-                        // Modals
-                        TriggerComponentLookup(
-                            ModalLangComponent.Default,
-                            Read(envSource) map { it.useI18nTransform() },
-                            this@onLocaleChanged * i18N
-                        )
                     }
                 }
             } catch (exception: Exception) {
-                console.log(exception)
+                console.log(exception.message?: "Storage.onLocaleChanged: No message provided")
             }
         }
     }
