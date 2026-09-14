@@ -40,10 +40,8 @@ fun Storage(): Storage<Application> {
         ) },
         write = {
             newApplication -> when{
-                newApplication.context !== context -> {
+                newApplication.context != context -> {
                     context = newApplication.context
-
-                    // println("Context changed to ${newApplication.getContextById(context.current)?.contextName}")
                 }
                 newApplication.processes !== processes -> {
                     processes.registry.clear()
