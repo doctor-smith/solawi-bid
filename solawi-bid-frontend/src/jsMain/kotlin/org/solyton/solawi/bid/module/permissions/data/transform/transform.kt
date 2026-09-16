@@ -37,6 +37,15 @@ fun ApiRole.toDomainType(): Role = Role(
     }
 )
 
+fun Role.toApiType(): ApiRole = ApiRole(
+    id = roleId,
+    name = roleName,
+    description = roleDescription,
+    rights = rights.map {
+        right -> right.toApiType()
+    }
+)
+
 /**
  * Converts an instance of [ApiRight] to its domain representation `Right`.
  *
@@ -47,6 +56,12 @@ fun ApiRight.toDomainType(): Right = Right(
     rightId = id,
     rightName = name,
     rightDescription = description
+)
+
+fun Right.toApiType(): ApiRight = ApiRight(
+    id = rightId,
+    name = rightName,
+    description = rightDescription
 )
 
 /**

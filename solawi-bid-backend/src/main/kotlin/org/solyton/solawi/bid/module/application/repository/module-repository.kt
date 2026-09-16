@@ -91,3 +91,6 @@ fun ModuleEntity.hasDuplicateModuleName(newName: String, newApplicationId: UUID)
     }.empty()
 }
 
+fun validatedModule(moduleId: UUID): ModuleEntity =
+    ModuleEntity.find { ModulesTable.id eq moduleId }.firstOrNull()
+        ?:throw ApplicationException.NoSuchModule(moduleId.toString())

@@ -275,6 +275,10 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<ModuleId>(ModuleId.serializer())
         add<ApplicationName>(ApplicationName.serializer())
         add<ModuleName>(ModuleName.serializer())
+
+        add<UpdateStandardApplicationContext>(UpdateStandardApplicationContext.serializer())
+        add<UpdateStandardModuleContext>(UpdateStandardModuleContext.serializer())
+
         // Organizations
         add<Organizations>(Organizations.serializer())
         add<Organization>(Organization.serializer())

@@ -3,7 +3,7 @@ package org.solyton.solawi.bid.module.application.service
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
-import org.solyton.solawi.bid.module.application.exception.ApplicationException
+import org.solyton.solawi.bid.module.application.repository.validatedApplication
 import org.solyton.solawi.bid.module.application.schema.*
 import org.solyton.solawi.bid.module.permission.schema.RoleRightContexts
 import java.util.*
@@ -28,22 +28,51 @@ fun Transaction.fixApplicationContexts(): List<ApplicationEntity> {
         fixContext(organizationApplication.application.defaultContext.id.value, organizationApplication.context.id.value)
     }
 
-    val organizationModules = OrganizationApplicationContextEntity.all()
+    val organizationModules = OrganizationModuleContextEntity.all()
 
     organizationModules.forEach { organizationModule ->
-        fixContext(organizationModule.application.defaultContext.id.value, organizationModule.context.id.value)
+        fixContext(organizationModule.module.defaultContext.id.value, organizationModule.context.id.value)
     }
 
     return ApplicationEntity.all().toList()
 }
 
 fun Transaction.fixContexts(applicationId: UUID): ApplicationEntity {
-    val application = ApplicationEntity.findById(applicationId) ?: throw ApplicationException.NoSuchApplication(applicationId.toString())
+    val application = validatedApplication(applicationId)
+
     val userApplications = UserApplicationEntity.find{
         UserApplicationsTable.applicationId eq applicationId
     }.toList()
 
-    // ...
+    userApplications.forEach { userApplication ->
+        fixContext(userApplication.application.defaultContext.id.value, userApplication.context.id.value)
+    }
+
+    val moduleIds = application.modules.map { it.id.value }
+
+
+    val userModules = UserModuleEntity.find{
+        UserModulesTable.moduleId inList moduleIds
+    }.toList()
+
+    userModules.forEach { userModule ->
+        fixContext(userModule.module.defaultContext.id.value, userModule.context.id.value)
+    }
+
+
+    val organizationApplications = OrganizationApplicationContextEntity.find{
+        OrganizationApplicationContextsTable.applicationId eq applicationId
+    }
+
+    organizationApplications.forEach { organizationApplication ->
+        fixContext(organizationApplication.application.defaultContext.id.value, organizationApplication.context.id.value)
+    }
+
+    val organizationModules = OrganizationModuleContextEntity.all()
+
+    organizationModules.forEach { organizationModule ->
+        fixContext(organizationModule.module.defaultContext.id.value, organizationModule.context.id.value)
+    }
 
     return application
 }

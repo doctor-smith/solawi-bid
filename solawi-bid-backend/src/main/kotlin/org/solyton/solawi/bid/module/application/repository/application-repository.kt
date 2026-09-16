@@ -66,3 +66,7 @@ fun Transaction.updateApplication(
 
 fun ApplicationEntity.hasDuplicateApplicationName(newName: String): Boolean =
     !ApplicationEntity.find { ApplicationsTable.id neq id and (ApplicationsTable.name eq newName)}.empty()
+
+fun Transaction.validatedApplication(applicationId: UUID) =
+    ApplicationEntity.find { ApplicationsTable.id eq applicationId }.firstOrNull()
+        ?:throw ApplicationException.NoSuchApplication(applicationId.toString())

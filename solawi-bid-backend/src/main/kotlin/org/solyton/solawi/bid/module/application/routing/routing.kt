@@ -10,6 +10,7 @@ import org.evoleq.math.state.times
 import org.solyton.solawi.bid.module.application.action.*
 import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
+import org.solyton.solawi.bid.module.permission.data.api.Context
 
 fun <ApplicationEnv> Routing.application(
     environment: ApplicationEnv,
@@ -109,6 +110,17 @@ fun <ApplicationEnv> Routing.application(
                     IsGranted("MANAGE_ACCESS_TO_APPS") *
                     ReadApplicationsOfUsers() *
                     Respond<ApiUserApplications> { transform() } runOn Base(call, environment)
+                }
+                route("tech") {
+                    patch("update-standard-application-context") {
+                        ReceiveContextual<UpdateStandardApplicationContext>() *
+                        IsGranted("MANAGE_APPLICATIONS") *
+                        UpdateStandardApplicationContext() *
+                        Respond<Context> { transform() } runOn Base(call, environment)
+                    }
+                    patch("update-standard-module-context") {
+                        NotImplemented("Updates of standard module contexts is no implemented yet") * Respond<Unit> { transform() } runOn Base(call, environment)
+                    }
                 }
             }
         }

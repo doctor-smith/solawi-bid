@@ -319,10 +319,6 @@ val solawiApi by lazy {
                     key = ReadPersonalModuleContextRelations::class,
                     url = "modules/personal/module-context-relations"
                 )
-                patch<ReadUserApplications, UserApplications>(
-                    key = ReadUserApplications::class,
-                    url = "management/users"
-                )
                 patch<RegisterForApplications, ApiApplications>(
                     key = RegisterForApplications::class,
                     url = "personal/register"
@@ -358,6 +354,20 @@ val solawiApi by lazy {
                 get<ReadApplicationOrganizationContextRelations, ApplicationOrganizationRelations>(
                     key = ReadApplicationOrganizationContextRelations::class,
                     url = "personal/organization-context-relations"
+                )
+
+
+                patch<ReadUserApplications, UserApplications>(
+                    key = ReadUserApplications::class,
+                    url = "management/users"
+                )
+                patch<UpdateStandardApplicationContext, Contexts>(
+                    key = UpdateStandardApplicationContext::class,
+                    url = "management/tech/update-standard-application-context"
+                )
+                patch<UpdateStandardModuleContext, Contexts>(
+                    key = UpdateStandardModuleContext::class,
+                    url = "management/tech/update-standard-module-context"
                 )
             }
         }
