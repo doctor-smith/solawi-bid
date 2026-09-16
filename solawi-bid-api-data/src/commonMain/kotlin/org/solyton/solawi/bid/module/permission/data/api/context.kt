@@ -9,6 +9,7 @@ typealias ApiContexts = Contexts
 typealias ApiRole = Role
 typealias ApiRight = Right
 typealias ContextIdValue = org.solyton.solawi.bid.module.permission.data.ContextId
+typealias IContextId = ContextId
 
 interface ContextId {
     val contextId: String
