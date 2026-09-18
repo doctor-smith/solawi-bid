@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.application.ui.page.application.management
 
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -38,19 +39,23 @@ import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
 import org.solyton.solawi.bid.application.ui.page.application.style.actionsWrapperStyle
 import org.solyton.solawi.bid.application.ui.page.application.style.listItemWrapperStyle
+import org.solyton.solawi.bid.module.application.action.fixApplicationRelatedContexts
 import org.solyton.solawi.bid.module.application.action.readApplications
 import org.solyton.solawi.bid.module.application.action.readPersonalApplicationContextRelations
+import org.solyton.solawi.bid.module.application.data.ApplicationId
 import org.solyton.solawi.bid.module.application.data.application.modules
 import org.solyton.solawi.bid.module.application.data.management.applicationManagementActions
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
 import org.solyton.solawi.bid.module.application.data.management.personalApplicationContextRelations
 import org.solyton.solawi.bid.module.application.i18n.Component
 import org.solyton.solawi.bid.module.application.i18n.Component.editContext
+import org.solyton.solawi.bid.module.application.i18n.Component.fixApplicationContext
 import org.solyton.solawi.bid.module.application.i18n.application
 import org.solyton.solawi.bid.module.application.i18n.module
 import org.solyton.solawi.bid.module.control.button.ArrowUpButton
 import org.solyton.solawi.bid.module.control.button.DetailsButton
 import org.solyton.solawi.bid.module.control.button.EditButton
+import org.solyton.solawi.bid.module.control.button.ScrewDriverWrenchButton
 import org.solyton.solawi.bid.module.dialog.component.showDialogModal
 import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
 import org.solyton.solawi.bid.module.i18n.data.language
@@ -137,6 +142,9 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
     val listOfModules = texts * Component.listOfModules
     val defaultContextTexts = texts * Component.defaultContext
 
+
+    val scope = rememberCoroutineScope()
+
     Page({verticalPageStyle() }) {
         Wrap {
             Horizontal(styles = {
@@ -208,6 +216,20 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
                 }) {
                     Title { H3{ Text((defaultContextTexts * title).emit()) } }
                     Horizontal {
+
+                        ScrewDriverWrenchButton(
+                            Color.black,
+                            Color.white,
+                            defaultContextTexts * Component.actions * fixApplicationContext * tooltip,
+                            device,
+                        ){
+                            scope.launch {
+                                storage * applicationManagementModule * applicationManagementActions dispatch fixApplicationRelatedContexts(
+                                    ApplicationId(applicationId)
+                                )
+                            }
+                        }
+
                         EditButton(
                             Color.black,
                             Color.white,

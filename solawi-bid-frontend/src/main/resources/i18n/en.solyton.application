@@ -159,6 +159,9 @@ en {
                             }
                         }
                         actions {
+                            fixApplicationContext {
+                                tooltip: "Fix Standard Kontext"
+                            }
                             editContext{
                                 tooltip: "Edit Default Context"
                             }

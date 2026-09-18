@@ -114,12 +114,24 @@ fun <ApplicationEnv> Routing.application(
                 route("tech") {
                     patch("update-standard-application-context") {
                         ReceiveContextual<UpdateStandardApplicationContext>() *
-                        IsGranted("MANAGE_APPLICATIONS") *
+                        IsGranted("UPDATE_APPLICATION") *
                         UpdateStandardApplicationContext() *
                         Respond<Context> { transform() } runOn Base(call, environment)
                     }
+                    patch("fix-application-related-contexts") {
+                        ReceiveContextual<FixApplicationRelatedContexts>() *
+                        IsGranted("UPDATE_APPLICATION") *
+                        FixApplicationRelatedContexts() *
+                        Respond<Unit> { transform() } runOn Base(call, environment)
+                    }
                     patch("update-standard-module-context") {
                         NotImplemented("Updates of standard module contexts is no implemented yet") * Respond<Unit> { transform() } runOn Base(call, environment)
+                    }
+                    patch("fix-module-related-contextas") {
+                        ReceiveContextual<FixModuleRelatedContexts>() *
+                        IsGranted("UPDATE_APPLICATION") *
+                        FixModuleRelatedContexts() *
+                        Respond<Unit> { transform() } runOn Base(call, environment)
                     }
                 }
             }

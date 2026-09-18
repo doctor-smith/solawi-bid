@@ -46,6 +46,7 @@ object Component {
     val editRole: Reader<Lang.Block, Lang.Block> = subComp("editRole")
     val editRight: Reader<Lang.Block, Lang.Block> = subComp("editRight")
     val editContext: Reader<Lang.Block, Lang.Block> = subComp("editContext")
+    val fixApplicationContext : Reader<Lang.Block, Lang.Block> = subComp("fixApplicationContext")
 
     val registerForApplication: Reader<Lang.Block, Lang.Block> = subComp("registerForApplication")
     fun applicationName(texts: Source<Lang.Block>): Reader<String, Lang.Block> =

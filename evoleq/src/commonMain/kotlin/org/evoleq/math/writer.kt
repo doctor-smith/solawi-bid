@@ -30,3 +30,7 @@ fun <T> Append(): Writer<List<T>, T> = { t:T -> { list ->
         this
     }
 }}
+
+@MathDsl
+@Suppress("FunctionName")
+fun <W, P> DropInput(): Writer<W, P> = {_->{w: W -> w}}
