@@ -160,6 +160,9 @@ de {
                             }
                         }
                         actions {
+                            fixApplicationContext {
+                                tooltip: "Repariere Standard Kontext"
+                            }
                             editContext{
                                 tooltip: "Standard Kontext bearbeiten"
                             }

@@ -365,9 +365,17 @@ val solawiApi by lazy {
                     key = UpdateStandardApplicationContext::class,
                     url = "management/tech/update-standard-application-context"
                 )
+                patch<FixApplicationRelatedContexts, Unit>(
+                    key = FixApplicationRelatedContexts::class,
+                    url = "management/tech/fix-application-related-contexts"
+                )
                 patch<UpdateStandardModuleContext, Contexts>(
                     key = UpdateStandardModuleContext::class,
                     url = "management/tech/update-standard-module-context"
+                )
+                patch<FixModuleRelatedContexts, Unit>(
+                    key = FixModuleRelatedContexts::class,
+                    url = "management/tech/fix-module-related-contexts"
                 )
             }
         }

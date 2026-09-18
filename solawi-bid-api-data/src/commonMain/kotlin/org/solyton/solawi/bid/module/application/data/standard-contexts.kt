@@ -15,3 +15,12 @@ data class UpdateStandardModuleContext(
     val roles: List<Role>
 )
 
+@Serializable
+data class FixApplicationRelatedContexts(
+    val applicationId: ApplicationId,
+)
+
+@Serializable
+data class FixModuleRelatedContexts(
+    val moduleId: ModuleId,
+)

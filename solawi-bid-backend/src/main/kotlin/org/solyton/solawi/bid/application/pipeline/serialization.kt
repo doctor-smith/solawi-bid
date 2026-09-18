@@ -281,6 +281,9 @@ fun installSerializers() {
         add<UpdateStandardApplicationContext>(UpdateStandardApplicationContext.serializer())
         add<UpdateStandardModuleContext>(UpdateStandardModuleContext.serializer())
 
+        add<FixApplicationRelatedContexts>(FixApplicationRelatedContexts.serializer())
+        add<FixModuleRelatedContexts>(FixModuleRelatedContexts.serializer())
+
         // Organizations
         add<Organizations>(Organizations.serializer())
         add<Organization>(Organization.serializer())
