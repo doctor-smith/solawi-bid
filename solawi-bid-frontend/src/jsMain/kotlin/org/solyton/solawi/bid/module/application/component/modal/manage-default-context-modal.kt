@@ -1,6 +1,6 @@
 package org.solyton.solawi.bid.module.application.component.modal
 
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
 import org.evoleq.compose.modal.*
 import org.evoleq.compose.style.data.device.DeviceType
@@ -11,6 +11,11 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.jetbrains.compose.web.dom.ElementScope
+import org.solyton.solawi.bid.module.application.component.rrc.RoleRightTransfer
+import org.solyton.solawi.bid.module.application.component.rrc.RoleRightTransferData
+import org.solyton.solawi.bid.module.application.component.rrc.RoleRightTransferStyles
+import org.solyton.solawi.bid.module.application.data.management.ApplicationManagement
+import org.solyton.solawi.bid.module.permission.data.ContextId
 import org.w3c.dom.HTMLElement
 
 
@@ -22,6 +27,8 @@ fun ManageDefaultContextModal(
     modals: Storage<Modals<Int>>,
     device: Source<DeviceType>,
     styles: (Source<DeviceType>)-> ModalStyles,
+    storage: Storage<ApplicationManagement>,
+    contextId: ContextId,
     cancel: ()->Unit,
     update: ()->Unit,
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
@@ -40,6 +47,18 @@ fun ManageDefaultContextModal(
     styles = styles(device),
 ) {
 
+    var state by remember{ mutableStateOf(RoleRightTransferData() ) }
+
+    val styles = RoleRightTransferStyles()
+
+    RoleRightTransfer(
+        storage = storage,
+        contextId = contextId,
+        styles = styles,
+        deviceType = device,
+        data = state,
+        setData = {data -> state = data}
+    )
 }
 
 @Markup
@@ -47,6 +66,8 @@ fun Storage<Modals<Int>>.showManageDefaultContextModal(
     texts: Source<Lang.Block>,
     device: Source<DeviceType>,
     styles: (Source<DeviceType>)-> ModalStyles,
+    storage: Storage<ApplicationManagement>,
+    contextId: ContextId,
     cancel: ()->Unit,
     update: ()->Unit,
 ) = with(nextId()) {
@@ -58,7 +79,8 @@ fun Storage<Modals<Int>>.showManageDefaultContextModal(
             this@showManageDefaultContextModal,
             device,
             styles,
-
+            storage,
+            contextId,
             cancel,
             update,
         )
