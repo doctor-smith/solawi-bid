@@ -21,8 +21,10 @@ import org.evoleq.language.tooltip
 import org.evoleq.math.emit
 import org.evoleq.math.map
 import org.evoleq.math.times
+import org.evoleq.optics.lens.DeepSearch
 import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.prism.Either
+import org.evoleq.optics.storage.Read
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
 import org.evoleq.optics.transform.firstByOrNull
@@ -42,10 +44,13 @@ import org.solyton.solawi.bid.application.ui.page.application.style.listItemWrap
 import org.solyton.solawi.bid.module.application.action.fixApplicationRelatedContexts
 import org.solyton.solawi.bid.module.application.action.readApplications
 import org.solyton.solawi.bid.module.application.action.readPersonalApplicationContextRelations
+import org.solyton.solawi.bid.module.application.action.updateStandardApplicationContext
+import org.solyton.solawi.bid.module.application.component.modal.showManageDefaultContextModal
 import org.solyton.solawi.bid.module.application.data.ApplicationId
 import org.solyton.solawi.bid.module.application.data.application.modules
 import org.solyton.solawi.bid.module.application.data.management.applicationManagementActions
 import org.solyton.solawi.bid.module.application.data.management.availableApplications
+// import org.solyton.solawi.bid.module.application.data.management.availablePermissions
 import org.solyton.solawi.bid.module.application.data.management.personalApplicationContextRelations
 import org.solyton.solawi.bid.module.application.i18n.Component
 import org.solyton.solawi.bid.module.application.i18n.Component.editContext
@@ -56,6 +61,7 @@ import org.solyton.solawi.bid.module.control.button.ArrowUpButton
 import org.solyton.solawi.bid.module.control.button.DetailsButton
 import org.solyton.solawi.bid.module.control.button.EditButton
 import org.solyton.solawi.bid.module.control.button.ScrewDriverWrenchButton
+import org.solyton.solawi.bid.module.dialog.component.WarningSymbol
 import org.solyton.solawi.bid.module.dialog.component.showDialogModal
 import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
 import org.solyton.solawi.bid.module.i18n.data.language
@@ -64,8 +70,10 @@ import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.defaultListStyles
 import org.solyton.solawi.bid.module.loading.component.Loading
 import org.solyton.solawi.bid.module.page.component.Page
+import org.solyton.solawi.bid.module.permission.data.ContextId
 import org.solyton.solawi.bid.module.permissions.data.contexts
 import org.solyton.solawi.bid.module.permissions.service.contextFromPath
+import org.solyton.solawi.bid.module.style.modal.commonModalStyles
 import org.solyton.solawi.bid.module.style.page.PageTitle
 import org.solyton.solawi.bid.module.style.page.SubTitle
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
@@ -76,7 +84,7 @@ import org.solyton.solawi.bid.module.user.data.userActions
 
 @Markup
 @Composable
-@Suppress("FunctionName")
+@Suppress("FunctionName", "CognitiveComplexMethod")
 fun ApplicationPage(storage: Storage<Application>, applicationId: String) = withLoading(
     isLoading = isLoading(
         onEmpty(storage * applicationManagementModule * availableApplications.get) {
@@ -236,12 +244,39 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
                             defaultContextTexts * Component.actions * editContext * tooltip,
                             device,
                         ) {
-                            (storage * modals).showDialogModal(
-                                texts = dialogModalTexts("Not Implemented: Manage Standard Context"),
-                                device = device,
-                                dataId = "application.page.edit-standard-context.not-implemented",
-                            ) {
-                                CoroutineScope(Job()).launch {}
+                            defaultContext mapRight { context ->
+
+                                (storage * modals).showManageDefaultContextModal(
+                                    texts = { dialogModalTexts("message") },
+                                    device = device,
+                                    styles = { commonModalStyles(device) },
+                                    storage = storage * applicationManagementModule,
+                                    contextId = ContextId(context.contextId),
+                                    cancel = {},
+                                ) {
+                                    (storage * modals).showDialogModal(
+                                        texts = dialogModalTexts("Confirm"),
+                                        device = device,
+                                        symbol = {WarningSymbol(deviceType = device.emit())},
+                                        onCancel = {},
+                                    ) {
+                                        val modifiedContext = Read(storage * availablePermissions * contexts * DeepSearch { it.contextId == context.contextId }).emit()
+                                        val oldRoles = context.roles.associateBy({ it.roleName }) {
+                                            it.rights.map { r -> r.rightName }.toSet()
+                                        }
+                                        val newRoles = modifiedContext.roles.associateBy({ it.roleName }) {
+                                            it.rights.map { r -> r.rightName }.toSet()
+                                        }
+                                        val changed = oldRoles != newRoles
+                                        if (changed) scope.launch {
+                                            (storage * applicationManagementModule * applicationManagementActions) dispatch updateStandardApplicationContext(
+                                                applicationId = ApplicationId(applicationId),
+                                                defaultContextId = ContextId(context.contextId),
+                                                roles = modifiedContext.roles,
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -253,7 +288,7 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
                     }
                 }
                 if(defaultContext is Either.Right) {
-                    ListItemsIndexed(defaultContext.value.roles) { index, role ->
+                    ListItemsIndexed(defaultContext.value.roles.sortedBy { it.roleName }) { index, role ->
                         ListItemWrapper({
                             listItemWrapperStyle(this, index)
                         }) {
@@ -265,7 +300,7 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
                                     flexWrap(FlexWrap.Wrap)
                                     width(60.percent)
                                     flexShrink(0)
-                                }}) { role.rights.forEach { right ->
+                                }}) { role.rights.sortedBy { it.rightName }.forEach { right ->
                                     TextCell(right.rightName,right.rightName){
                                         flexWrap(FlexWrap.Wrap)
                                         width(31.percent)

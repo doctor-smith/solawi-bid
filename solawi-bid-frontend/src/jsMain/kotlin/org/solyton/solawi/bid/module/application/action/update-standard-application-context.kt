@@ -26,7 +26,7 @@ fun updateStandardApplicationContext(
     applicationId: ApplicationId,
     defaultContextId: ContextIdValue,
     roles: List<Role>,
-    nameSuffix: String?
+    nameSuffix: String? = null
 ) : Action<ApplicationManagement, UpdateStandardApplicationContext, ApiContext> = Action(
     name = UPDATE_STANDARD_APPLICATION_CONTEXT.suffixed(nameSuffix),
     reader = Reader { UpdateStandardApplicationContext(applicationId, roles.map { it.toApiType() }) },
@@ -38,6 +38,6 @@ fun updateStandardApplicationContext(
             } *
             rolesLens.set
             contraMap {
-                context: ApiContext ->context.roles.map{role -> role.toDomainType()}
+                context: ApiContext -> context.roles.map{ role -> role.toDomainType() }
             }
 )
