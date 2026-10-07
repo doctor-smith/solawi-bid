@@ -66,21 +66,32 @@ fun LocaleDropdown(
                 style {
                     position(Position.Absolute)
                     top(100.percent)
+                    marginTop(4.px)
                     left(0.px)
                     width(100.percent)
                     backgroundColor(Color.white)
-                    border(1.px, LineStyle.Solid, Color.black)
-                    borderRadius(4.px)
+                    border(1.px, LineStyle.Solid, Color("#e2e8f0"))
+                    borderRadius(8.px)
+                    property("box-shadow", "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05)")
                     property("z-index", 500)
+                    padding(4.px)
                 }
             }) {
                 locales.forEach { s ->
+                    var hovered by remember { mutableStateOf(false) }
                     Div(attrs = {
                         style {
                             display(DisplayStyle.Flex)
                             alignItems(AlignItems.Center)
-                            padding(4.px)
+                            padding(6.px, 8.px)
+                            borderRadius(4.px)
+                            when(hovered) {
+                                true -> backgroundColor(Color("#f1f5f9"))
+                                false -> backgroundColor(Color.transparent)
+                            }
                         }
+                        onMouseEnter { hovered = true }
+                        onMouseOut { hovered = false }
                         onClick { event ->
                             scope.launch {  (i18n * locale).write(s) }
                         }

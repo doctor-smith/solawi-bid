@@ -5,58 +5,64 @@ import org.jetbrains.compose.web.css.rgb
 
 val StdMobileFonts : Fonts by lazy {
     object : Fonts {
+        private val sansFont = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+        private val monoFont = "'JetBrains Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', monospace"
+
         // Headings
-        override val h1 = Font(size = 28.px, weight = "bold", family = "Arial, sans-serif")
-        override val h2 = Font(size = 24.px, weight = "bold")
-        override val h3 = Font(size = 22.px, weight = "bold")
-        override val h4 = Font(size = 20.px)
-        override val h5 = Font(size = 18.px)
-        override val h6 = Font(size = 16.px)
+        override val h1 = Font(size = 26.px, weight = "700", family = sansFont, color = rgb(15, 23, 42))
+        override val h2 = Font(size = 22.px, weight = "600", family = sansFont, color = rgb(30, 41, 59))
+        override val h3 = Font(size = 19.px, weight = "600", family = sansFont, color = rgb(30, 41, 59))
+        override val h4 = Font(size = 17.px, weight = "600", family = sansFont, color = rgb(51, 65, 85))
+        override val h5 = Font(size = 15.px, weight = "600", family = sansFont, color = rgb(51, 65, 85))
+        override val h6 = Font(size = 14.px, weight = "600", family = sansFont, color = rgb(71, 85, 105))
 
         // Text Elements
-        override val body = Font(size = 16.px)
-        override val paragraph = Font(size = 16.px, family = "Georgia, serif")
-        override val smallText = Font(size = 12.px, color = rgb(128, 128, 128))
-        override val caption = Font(size = 10.px, color = rgb(169, 169, 169))
-        override val quote = Font(size = 18.px, style = "italic")
-        override val code = Font(size = 14.px, family = "monospace", color = rgb(139, 0, 0))
+        override val body = Font(size = 15.px, family = sansFont, color = rgb(30, 41, 59))
+        override val paragraph = Font(size = 15.px, family = sansFont, color = rgb(51, 65, 85))
+        override val smallText = Font(size = 13.px, family = sansFont, color = rgb(100, 116, 139))
+        override val caption = Font(size = 11.px, family = sansFont, color = rgb(148, 163, 184))
+        override val quote = Font(size = 16.px, style = "italic", family = sansFont, color = rgb(71, 85, 105))
+        override val code = Font(size = 13.px, family = monoFont, color = rgb(194, 65, 12))
 
         // Interactive Elements
-        override val button = Font(size = 16.px, weight = "bold")
-        override val link = Font(size = 14.px, color = rgb(0, 0, 255))
+        override val button = Font(size = 15.px, weight = "600", family = sansFont)
+        override val link = Font(size = 15.px, weight = "500", color = rgb(2, 132, 199), family = sansFont)
 
         // Form Elements
-        override val input = Font(size = 14.px, color = rgb(0, 0, 0))
-        override val select = Font(size = 14.px)
-        override val textarea = Font(size = 14.px, family = "Verdana, sans-serif")
-        override val label = Font(size = 14.px, weight = "bold")
-        override val placeholder = Font(size = 14.px, color = rgb(128, 128, 128))
+        override val input = Font(size = 15.px, color = rgb(15, 23, 42), family = sansFont)
+        override val select = Font(size = 15.px, color = rgb(15, 23, 42), family = sansFont)
+        override val textarea = Font(size = 15.px, color = rgb(15, 23, 42), family = sansFont)
+        override val label = Font(size = 14.px, weight = "500", color = rgb(51, 65, 85), family = sansFont)
+        override val placeholder = Font(size = 14.px, color = rgb(148, 163, 184), family = sansFont)
     }
 }
 
 val LargeMobileFonts : Fonts by lazy {
     object : Fonts {
-        override val h1 = Font(size = 38.px, weight = "bold", family = "Arial, sans-serif")
-        override val h2 = Font(size = 34.px, weight = "bold")
-        override val h3 = Font(size = 30.px, weight = "bold")
-        override val h4 = Font(size = 26.px)
-        override val h5 = Font(size = 22.px)
-        override val h6 = Font(size = 20.px)
+        private val sansFont = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+        private val monoFont = "'JetBrains Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', monospace"
 
-        override val body = Font(size = 18.px)
-        override val paragraph = Font(size = 18.px, family = "Georgia, serif")
-        override val smallText = Font(size = 16.px, color = rgb(128, 128, 128))
-        override val caption = Font(size = 14.px, color = rgb(169, 169, 169))
-        override val quote = Font(size = 22.px, style = "italic")
-        override val code = Font(size = 18.px, family = "monospace", color = rgb(139, 0, 0))
+        override val h1 = Font(size = 32.px, weight = "700", family = sansFont, color = rgb(15, 23, 42))
+        override val h2 = Font(size = 28.px, weight = "600", family = sansFont, color = rgb(30, 41, 59))
+        override val h3 = Font(size = 24.px, weight = "600", family = sansFont, color = rgb(30, 41, 59))
+        override val h4 = Font(size = 20.px, weight = "600", family = sansFont, color = rgb(51, 65, 85))
+        override val h5 = Font(size = 18.px, weight = "600", family = sansFont, color = rgb(51, 65, 85))
+        override val h6 = Font(size = 16.px, weight = "600", family = sansFont, color = rgb(71, 85, 105))
 
-        override val button = Font(size = 20.px, weight = "bold")
-        override val link = Font(size = 18.px, color = rgb(0, 0, 255))
+        override val body = Font(size = 16.px, family = sansFont, color = rgb(30, 41, 59))
+        override val paragraph = Font(size = 16.px, family = sansFont, color = rgb(51, 65, 85))
+        override val smallText = Font(size = 14.px, family = sansFont, color = rgb(100, 116, 139))
+        override val caption = Font(size = 12.px, family = sansFont, color = rgb(148, 163, 184))
+        override val quote = Font(size = 18.px, style = "italic", family = sansFont, color = rgb(71, 85, 105))
+        override val code = Font(size = 15.px, family = monoFont, color = rgb(194, 65, 12))
 
-        override val input = Font(size = 18.px, color = rgb(0, 0, 0))
-        override val select = Font(size = 18.px)
-        override val textarea = Font(size = 18.px, family = "Verdana, sans-serif")
-        override val label = Font(size = 18.px, weight = "bold")
-        override val placeholder = Font(size = 18.px, color = rgb(128, 128, 128))
+        override val button = Font(size = 16.px, weight = "600", family = sansFont)
+        override val link = Font(size = 16.px, weight = "500", color = rgb(2, 132, 199), family = sansFont)
+
+        override val input = Font(size = 16.px, color = rgb(15, 23, 42), family = sansFont)
+        override val select = Font(size = 16.px, color = rgb(15, 23, 42), family = sansFont)
+        override val textarea = Font(size = 16.px, color = rgb(15, 23, 42), family = sansFont)
+        override val label = Font(size = 15.px, weight = "500", color = rgb(51, 65, 85), family = sansFont)
+        override val placeholder = Font(size = 15.px, color = rgb(148, 163, 184), family = sansFont)
     }
 }

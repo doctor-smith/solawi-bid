@@ -55,8 +55,9 @@ fun SubTitle(
 ) = H2(
     attrs = {
         style{
-            color(Color.gray)
-            fontSize(1.2.em)
+            color(Color("#64748b"))
+            fontSize(1.1.em)
+            fontWeight("normal")
             styles()
         }
     }
@@ -82,8 +83,9 @@ fun SubTitleOfH3(
 ) = H3(
     attrs = {
         style{
-            color(Color.gray)
+            color(Color("#64748b"))
             fontSize(0.9.em)
+            fontWeight("normal")
             styles()
         }
     }

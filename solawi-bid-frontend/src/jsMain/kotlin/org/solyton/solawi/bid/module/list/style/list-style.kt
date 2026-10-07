@@ -50,44 +50,54 @@ data class ListStyles (
     },
     val overallActions: StyleScope.()->Unit = {},
     val headerWrapper: StyleScope.()->Unit = {
-        //justifyContent(JustifyContent.SpaceBetween)
         display(DisplayStyle.Flex)
         flexDirection(FlexDirection.Row)
         alignItems(AlignItems.Center)
         width(100.percent)
+        backgroundColor(Color("#f8fafc"))
+        property("border-bottom", "1px solid #e2e8f0")
+        borderRadius(6.px)
     },
     val header: StyleScope.()->Unit = {
         display(DisplayStyle.Flex)
         flexDirection(FlexDirection.Row)
         alignItems(AlignItems.FlexStart)
         width(80.percent)
-
-        paddingLeft(20.px)
+        paddingLeft(16.px)
+        paddingRight(16.px)
         paddingTop(10.px)
         paddingBottom(10.px)
-
+        fontSize(13.px)
+        color(Color("#475569"))
+        fontWeight("600")
     },
     val listItemWrapper: StyleScope.()->Unit = {
         display(DisplayStyle.Flex)
         flexDirection(FlexDirection.Row)
         alignItems(AlignItems.Center)
         width(100.percent)
+        borderRadius(6.px)
+        property("border", "1px solid #f1f5f9")
     },
     val dataWrapper: StyleScope.()-> Unit = {
         display(DisplayStyle.Flex)
         flexDirection(FlexDirection.Row)
         width(80.percent)
-
-        paddingLeft(20.px)
+        paddingLeft(16.px)
+        paddingRight(16.px)
         paddingTop(10.px)
         paddingBottom(10.px)
+        fontSize(14.px)
+        color(Color("#1e293b"))
     },
     val actionsWrapper: StyleScope.()->Unit = {
         display(DisplayStyle.Flex)
         flexDirection(FlexDirection.Row)
         justifyContent(JustifyContent.End)
+        alignItems(AlignItems.Center)
         width(20.percent)
-        gap(2.px)
+        paddingRight(12.px)
+        gap(4.px)
     }
 )  {
     fun modify(

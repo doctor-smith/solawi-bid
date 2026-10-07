@@ -130,7 +130,7 @@ fun ColoredButton(color: CSSColorValue, texts: Source<String>, deviceType: Devic
 
 @Markup
 @Composable
-@Suppress("FunctionName")
+@Suppress("FunctionName", "CognitiveComplexMethod")
 fun IconButton(
     color: CSSColorValue,
     bgColor: CSSColorValue = Color.transparent,
@@ -146,9 +146,16 @@ fun IconButton(
         if(dataId != null) dataId(dataId)
         style {
             symbolicButtonStyle(deviceType.emit())()
-            color(color)
-            property("border-color", color)
-            backgroundColor(bgColor)
+            val effectiveColor = if (color == Color.black) Color("#334155") else color
+            color(effectiveColor)
+            if (bgColor == Color.transparent) {
+                backgroundColor(Color.transparent)
+                property("border-color", "transparent")
+                property("box-shadow", "none")
+            } else {
+                backgroundColor(bgColor)
+                property("border-color", effectiveColor)
+            }
             if(isDisabled) {
                 property("opacity", 0.5)
                 cursor("not-allowed")
@@ -188,9 +195,16 @@ fun IconButtonWithText(
         if(dataId != null) dataId(dataId)
         style {
             symbolicButtonStyle(deviceType.emit())()
-            color(color)
-            property("border-color", color)
-            backgroundColor(bgColor)
+            val effectiveColor = if (color == Color.black) Color("#334155") else color
+            color(effectiveColor)
+            if (bgColor == Color.transparent) {
+                backgroundColor(Color.transparent)
+                property("border-color", "transparent")
+                property("box-shadow", "none")
+            } else {
+                backgroundColor(bgColor)
+                property("border-color", effectiveColor)
+            }
             if(isDisabled) {
                 property("opacity", 0.5)
                 cursor("not-allowed")

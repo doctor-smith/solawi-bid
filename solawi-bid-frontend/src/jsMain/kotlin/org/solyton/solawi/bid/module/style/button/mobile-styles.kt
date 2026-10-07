@@ -6,6 +6,6 @@ import org.solyton.solawi.bid.module.style.font.setFont
 
 val submitButtonMobileStyle: StyleScope.()->Unit = {
     width(100.percent)
-    height(50.px)
+    height(44.px)
     setFont(LargeMobileFonts.button)
 }

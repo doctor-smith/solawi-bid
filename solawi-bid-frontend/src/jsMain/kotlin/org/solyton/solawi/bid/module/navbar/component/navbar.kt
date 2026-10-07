@@ -30,16 +30,21 @@ fun NavBar(
 ) = Div({
     style {
         paddingTop(10.px)
+        paddingBottom(10.px)
+        paddingRight(16.px)
         display(DisplayStyle.Flex)
+        alignItems(AlignItems.Center)
         justifyContent(JustifyContent.FlexEnd)
+        gap(8.px)
     }
 }) {
     val i18n = navBar * i18n
     val scope = rememberCoroutineScope()
+    val navIconColor = Color("#334155")
 
     // todo:i18n
     HomeButton(
-        Color.black,
+        navIconColor,
         Color.transparent,
         {"Home"},
         device,
@@ -50,7 +55,7 @@ fun NavBar(
 
     // todo:i18n
     AppsButton(
-        Color.black,
+        navIconColor,
         Color.transparent,
         {"Dashboard"},
         device,
@@ -59,7 +64,7 @@ fun NavBar(
     }
     // todo:i18n
     HelpButton(
-        Color.black,
+        navIconColor,
         Color.transparent,
         {"Help"},
         device
@@ -68,7 +73,7 @@ fun NavBar(
     }
 
     SupportButton(
-        Color.black,
+        navIconColor,
         Color.transparent,
         {"Support"},
         device
@@ -77,7 +82,7 @@ fun NavBar(
         openUrlInNewTab("https://solawi-management.atlassian.net/servicedesk/customer/portal/1")
     }
 
-    Div({style { width(50.px) }}) {  }
+    Div({style { width(20.px) }}) {  }
 
     LocaleDropdown(
         i18n,

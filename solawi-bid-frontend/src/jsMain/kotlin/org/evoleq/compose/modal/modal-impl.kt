@@ -75,17 +75,17 @@ fun ModalContainer(
     content: @Composable ElementScope<HTMLElement>.()->Unit
 )  = Div({
     style {
-        // minHeight("300px")
         border {
             style = LineStyle.Solid
-            color = Color("black")
+            color = Color("#e2e8f0")
             width = 1.px
         }
-        borderRadius(10.px)
+        borderRadius(12.px)
         backgroundColor(Color.white)
+        property("box-shadow", "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05)")
         width(90.percent)
         marginLeft(5.percent)
-        padding(10.px)
+        padding(20.px)
         display(DisplayStyle.Flex)
         flexDirection(FlexDirection.Column)
         styles()
@@ -183,11 +183,13 @@ fun <Id> ModalFooter(
     isOkButtonDisabled: ()->Boolean = {false},
 ) = Div({
     style {
-        height(30.px)
-        marginBottom(0.px)
+        marginTop(16.px)
+        paddingTop(12.px)
+        property("border-top", "1px solid #f1f5f9")
         display(DisplayStyle.Flex)
         justifyContent(JustifyContent.FlexEnd)
-        alignSelf(AlignSelf.FlexEnd)
+        alignItems(AlignItems.Center)
+        gap(10.px)
         with(styles) {
             footerWrapperStyle()
         }

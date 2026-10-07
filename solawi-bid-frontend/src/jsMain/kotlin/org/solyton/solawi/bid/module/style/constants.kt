@@ -1,28 +1,23 @@
 package org.solyton.solawi.bid.module.style
 
 import org.jetbrains.compose.web.css.CSSColorValue
+import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.hsl
 import org.jetbrains.compose.web.css.px
-
-// val formTop = 10.px
-// val formVertSpace = 5.px
 
 // logo
 val topLogoHeight = 50.px
 
-// Lists
-// colors
-val forestGreen = hsl(120, 61, 34)
-val forestGreenLite = hsl(120, 61, 80)
+// Lists & Brand colors
+val forestGreen: CSSColorValue = hsl(152, 60, 36)
+val forestGreenLite: CSSColorValue = hsl(152, 35, 96)
 @Suppress("UNUSED_VARIABLE")
-val forestGreenUltraLite = hsl(120, 61,90)
+val forestGreenUltraLite: CSSColorValue = hsl(152, 30, 98)
 
 val verticalAccentBar: CSSColorValue = forestGreen
 
-val listEven: CSSColorValue = forestGreenLite
-val listOdd: CSSColorValue = forestGreenLite //Color.ghostwhite
+val listEven: CSSColorValue = Color.white
+val listOdd: CSSColorValue = hsl(210, 20, 98)
 
 // item gap
-val listItemGap = 5.px
-
-// val itemBorder =
+val listItemGap = 8.px
