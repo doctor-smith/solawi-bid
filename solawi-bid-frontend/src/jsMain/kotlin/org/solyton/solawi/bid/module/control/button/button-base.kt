@@ -13,6 +13,7 @@ import org.jetbrains.compose.web.dom.Button
 import org.jetbrains.compose.web.dom.I
 import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Text
+import org.solyton.solawi.bid.module.control.tooltip.Tooltip
 import org.solyton.solawi.bid.module.style.button.buttonStyle
 import org.solyton.solawi.bid.module.style.button.cancelButtonStyle
 import org.solyton.solawi.bid.module.style.button.submitButtonStyle
@@ -139,37 +140,38 @@ fun IconButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit) = Button(
-    attrs = {
-        if(texts.emit() != null) title(texts.emit()!!)
-        if(isDisabled) disabled()
-        if(dataId != null) dataId(dataId)
-        style {
-            symbolicButtonStyle(deviceType.emit())()
-            val effectiveColor = if (color == Color.black) Color("#334155") else color
-            color(effectiveColor)
-            if (bgColor == Color.transparent) {
-                backgroundColor(Color.transparent)
-                property("border-color", "transparent")
-                property("box-shadow", "none")
-            } else {
-                backgroundColor(bgColor)
-                property("border-color", effectiveColor)
+    onClick: ()->Unit) = Tooltip(texts) {
+    Button(
+        attrs = {
+            if(isDisabled) disabled()
+            if(dataId != null) dataId(dataId)
+            style {
+                symbolicButtonStyle(deviceType.emit())()
+                val effectiveColor = if (color == Color.black) Color("#334155") else color
+                color(effectiveColor)
+                if (bgColor == Color.transparent) {
+                    backgroundColor(Color.transparent)
+                    property("border-color", "transparent")
+                    property("box-shadow", "none")
+                } else {
+                    backgroundColor(bgColor)
+                    property("border-color", effectiveColor)
+                }
+                if(isDisabled) {
+                    property("opacity", 0.5)
+                    cursor("not-allowed")
+                }
             }
-            if(isDisabled) {
-                property("opacity", 0.5)
-                cursor("not-allowed")
+            onClick {
+                if(isDisabled) return@onClick
+                onClick()
             }
         }
-        onClick {
-            if(isDisabled) return@onClick
-            onClick()
-        }
+    ) {
+        I({
+            classes(*classes)
+        })
     }
-) {
-    I({
-        classes(*classes)
-    })
 }
 
 /**
@@ -188,51 +190,52 @@ fun IconButtonWithText(
     iconSide: Side = Side.Left,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit) = Button(
-    attrs = {
-        if(tooltip.emit() != null) title(tooltip.emit()!!)
-        if(isDisabled) disabled()
-        if(dataId != null) dataId(dataId)
-        style {
-            symbolicButtonStyle(deviceType.emit())()
-            val effectiveColor = if (color == Color.black) Color("#334155") else color
-            color(effectiveColor)
-            if (bgColor == Color.transparent) {
-                backgroundColor(Color.transparent)
-                property("border-color", "transparent")
-                property("box-shadow", "none")
-            } else {
-                backgroundColor(bgColor)
-                property("border-color", effectiveColor)
-            }
-            if(isDisabled) {
-                property("opacity", 0.5)
-                cursor("not-allowed")
-            }
-            display(DisplayStyle.Flex)
-            alignItems(AlignItems.Center)
-            gap(0.5.em)
-            if(iconSide is Side.Right) flexDirection(FlexDirection.RowReverse)
-        }
-        onClick {
-            if(isDisabled) return@onClick
-            onClick()
-        }
-    }
-) {
-    Span({style {
-        width(2.em)
-        height(auto)
-        flexShrink(0)
-    }}){
-        I({
-            classes(*classes)
+    onClick: ()->Unit) = Tooltip(tooltip) {
+    Button(
+        attrs = {
+            if(isDisabled) disabled()
+            if(dataId != null) dataId(dataId)
             style {
-                width(2.em)
-                height(auto)
-                flexShrink(0)
+                symbolicButtonStyle(deviceType.emit())()
+                val effectiveColor = if (color == Color.black) Color("#334155") else color
+                color(effectiveColor)
+                if (bgColor == Color.transparent) {
+                    backgroundColor(Color.transparent)
+                    property("border-color", "transparent")
+                    property("box-shadow", "none")
+                } else {
+                    backgroundColor(bgColor)
+                    property("border-color", effectiveColor)
+                }
+                if(isDisabled) {
+                    property("opacity", 0.5)
+                    cursor("not-allowed")
+                }
+                display(DisplayStyle.Flex)
+                alignItems(AlignItems.Center)
+                gap(0.5.em)
+                if(iconSide is Side.Right) flexDirection(FlexDirection.RowReverse)
             }
-        })
+            onClick {
+                if(isDisabled) return@onClick
+                onClick()
+            }
+        }
+    ) {
+        Span({style {
+            width(2.em)
+            height(auto)
+            flexShrink(0)
+        }}){
+            I({
+                classes(*classes)
+                style {
+                    width(2.em)
+                    height(auto)
+                    flexShrink(0)
+                }
+            })
+        }
+        Span{ Text(text.emit()) }
     }
-    Span{ Text(text.emit()) }
 }

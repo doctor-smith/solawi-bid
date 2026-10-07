@@ -20,6 +20,7 @@ import org.solyton.solawi.bid.module.bid.data.api.RoundState
 import org.solyton.solawi.bid.module.bid.data.bidround.Round
 import org.solyton.solawi.bid.module.control.button.ColoredButton
 import org.solyton.solawi.bid.module.control.button.StdButton
+import org.solyton.solawi.bid.module.control.tooltip.Tooltip
 
 
 @Markup
@@ -143,47 +144,48 @@ fun BidProcessButton(
     val stroke: Int = 2
     val tipLength: Int = 20
 
-    Button ({
-        if(isDisabled) disabled()
-        title(tooltip.emit())
-        style {
-            background("transparent")
-            if(isDisabled) {
-                // property("opacity", 0.5)
-                cursor("not-allowed")
-            } else {
-                cursor("pointer")
-            }
-            color(color)
-            //backgroundColor(bgColor)
-            property("border", "none")
+    Tooltip(tooltip) {
+        Button ({
+            if(isDisabled) disabled()
+            style {
+                background("transparent")
+                if(isDisabled) {
+                    // property("opacity", 0.5)
+                    cursor("not-allowed")
+                } else {
+                    cursor("pointer")
+                }
+                color(color)
+                //backgroundColor(bgColor)
+                property("border", "none")
 
-            position(Position.Relative)
-            width(width.px)
-            height(height.px)
-            backgroundImage("""url("data:image/svg+xml;utf8,
-                <svg xmlns='http://www.w3.org/2000/svg' width='$width' height='$height'>
-                    <polygon points='0,$stroke 
-                        ${width-stroke-tipLength},2
-                        ${width-stroke},${height / 2} 
-                        ${width-stroke-tipLength},${height - stroke} 
-                        0,${height - stroke} 
-                        $tipLength,${height / 2}'
-                        fill='$bgColor' stroke='$borderColor' stroke-width='$stroke'
-                    />
-                </svg>")""".trimIndent()
-                .replace("\n", "")
-                .replace("  ", " ")
-            )
-            backgroundSize("100% 100%")
-            backgroundRepeat("no-repeat")
-            display(DisplayStyle.Flex)
-            justifyContent(JustifyContent.Center)
-            alignItems(AlignItems.Center)
+                position(Position.Relative)
+                width(width.px)
+                height(height.px)
+                backgroundImage("""url("data:image/svg+xml;utf8,
+                    <svg xmlns='http://www.w3.org/2000/svg' width='$width' height='$height'>
+                        <polygon points='0,$stroke 
+                            ${width-stroke-tipLength},2
+                            ${width-stroke},${height / 2} 
+                            ${width-stroke-tipLength},${height - stroke} 
+                            0,${height - stroke} 
+                            $tipLength,${height / 2}'
+                            fill='$bgColor' stroke='$borderColor' stroke-width='$stroke'
+                        />
+                    </svg>")""".trimIndent()
+                    .replace("\n", "")
+                    .replace("  ", " ")
+                )
+                backgroundSize("100% 100%")
+                backgroundRepeat("no-repeat")
+                display(DisplayStyle.Flex)
+                justifyContent(JustifyContent.Center)
+                alignItems(AlignItems.Center)
+            }
+            onClick { event -> action(event) }
+        }) {
+            Text(title.emit())
         }
-        onClick { event -> action(event) }
-    }) {
-        Text(title.emit())
     }
 }
 
@@ -238,40 +240,38 @@ fun BidArrow(
                      stroke-linejoin='round'
                      role='img'
                      aria-hidden='false'>
-                    <title>${tooltip.emit()}</title>
                     <polygon points='40,148 320,148 320,64 480,256 320,448 320,364 40,364' />
                 </svg>""".trimIndent()
         .replace("\n", "")
         .replace(Regex("\\s+"), " ")
 
     console.log(svg)
-    Div({
+    Tooltip(tooltip) {
+        Div({
+            style {
+                // background("transparent")
 
+                color(color)
+                //backgroundColor(bgColor)
+                property("border", "none")
+                opacity(0.5)
+                position(Position.Relative)
+                width(width.px)
+                height(height.px)
+                backgroundImage(
+                    """url("data:image/svg+xml;utf8,$svg")""".trimIndent()
+                    //.replace("\"", "'")
+                    .replace("\n", "")
+                    .replace("  ", " ")
+                )
+                backgroundSize("100% 100%")
+                backgroundRepeat("no-repeat")
+                display(DisplayStyle.Flex)
+                justifyContent(JustifyContent.Center)
+                alignItems(AlignItems.Center)
+            }
+        }) {
 
-        title(tooltip.emit())
-        style {
-            // background("transparent")
-
-            color(color)
-            //backgroundColor(bgColor)
-            property("border", "none")
-            opacity(0.5)
-            position(Position.Relative)
-            width(width.px)
-            height(height.px)
-            backgroundImage(
-                """url("data:image/svg+xml;utf8,$svg")""".trimIndent()
-                //.replace("\"", "'")
-                .replace("\n", "")
-                .replace("  ", " ")
-            )
-            backgroundSize("100% 100%")
-            backgroundRepeat("no-repeat")
-            display(DisplayStyle.Flex)
-            justifyContent(JustifyContent.Center)
-            alignItems(AlignItems.Center)
         }
-    }) {
-
     }
 }
