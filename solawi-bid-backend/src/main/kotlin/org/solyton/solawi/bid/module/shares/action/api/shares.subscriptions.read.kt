@@ -8,9 +8,12 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
+import org.solyton.solawi.bid.module.shares.data.api.ReadPersonalShareSubscriptions
 import org.solyton.solawi.bid.module.shares.data.api.ShareSubscriptions
 import org.solyton.solawi.bid.module.shares.data.toApiType
+import org.solyton.solawi.bid.module.shares.repository.readPersonalShareSubscriptions
 import org.solyton.solawi.bid.module.shares.repository.readShareSubscriptionsOfProvider
+import org.solyton.solawi.bid.module.values.UserId
 import java.util.*
 
 data class ReadShareSubscriptionsByProvider(
@@ -30,3 +33,14 @@ fun ReadShareShareSubscriptionsByProvider() = KlAction<Result<Contextual<ReadSha
         ).toApiType()
     } }  x database
 } }
+
+@MathDsl
+@Suppress("FunctionName")
+fun ReadPersonalShareSubscriptions() = KlAction<Result<Contextual<ReadPersonalShareSubscriptions>>, Result<ShareSubscriptions>> { result -> DbAction {
+    database -> result bindSuspend  { contextual -> resultTransaction(database) {
+        val userId = contextual.userId
+        // val data = contextual.data
+        readPersonalShareSubscriptions(UserId(userId.toString())).toApiType()
+    } }  x database
+} }
+

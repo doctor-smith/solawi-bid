@@ -66,6 +66,9 @@ data class CreateShareSubscription(
 data class ReadShareSubscriptions(override val queryParams: QueryParams): Parameters()
 
 @Serializable
+data class ReadPersonalShareSubscriptions( override val queryParams: QueryParams): Parameters()
+
+@Serializable
 data class UpdateShareSubscription(
     val id: String,
     val providerId: String,

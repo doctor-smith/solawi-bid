@@ -13,6 +13,7 @@ import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
 import org.evoleq.uuid.toUuid
 import org.solyton.solawi.bid.module.application.repository.contextIdOf
+import org.solyton.solawi.bid.module.permission.action.db.IsGranted
 import org.solyton.solawi.bid.module.permission.action.db.IsGrantedOneOf
 import org.solyton.solawi.bid.module.permission.action.db.no
 import org.solyton.solawi.bid.module.permission.action.db.rights
@@ -220,6 +221,15 @@ authenticate {
                     contextIdOf(providerId, SHARE_APPLICATION)
                 } *
                 ReadShareShareSubscriptionsByProvider() * Respond<ShareSubscriptions> { transform() } runOn Base(call, environment)
+            }
+            get("personal") {
+                ReceiveContextual{ params ->
+                    ReadPersonalShareSubscriptions(listOf())
+                } *
+                IsGranted("", no) *
+                ReadPersonalShareSubscriptions() *
+                Respond<ShareSubscriptions> { transform() } runOn Base(call,environment)
+
             }
             delete {
                 NotImplemented() * Respond<Unit> { transform() } runOn Base(call, environment)

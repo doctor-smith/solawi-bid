@@ -20,6 +20,7 @@ import org.evoleq.optics.prism.Either
 import org.evoleq.optics.storage.Read
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
+import org.evoleq.optics.storage.isEmpty
 import org.evoleq.optics.transform.asPrism
 import org.evoleq.optics.transform.firstByOrNull
 import org.evoleq.optics.transform.times
@@ -31,6 +32,7 @@ import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.data.env.i18nEnvironment
 import org.solyton.solawi.bid.application.data.transform.banking.bankingApplicationIso
+import org.solyton.solawi.bid.application.data.transform.shares.shareManagementIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.user.i18n.UserLangComponent
@@ -57,6 +59,11 @@ import org.solyton.solawi.bid.module.i18n.guard.onMissing
 import org.solyton.solawi.bid.module.loading.component.Loading
 import org.solyton.solawi.bid.module.permission.data.ContextId
 import org.solyton.solawi.bid.module.permissions.service.contextFromPath
+import org.solyton.solawi.bid.module.shares.action.readPersonalShareSubscriptions
+import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
+import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
+import org.solyton.solawi.bid.module.shares.data.management.shareSubscriptions
+import org.solyton.solawi.bid.module.shares.data.shareManagementActions
 import org.solyton.solawi.bid.module.style.card.cardStyle
 import org.solyton.solawi.bid.module.style.modal.commonModalStyles
 import org.solyton.solawi.bid.module.style.page.PageTitle
@@ -204,7 +211,7 @@ fun PrivateUserPage(storage: Storage<Application>) = withLoading(
             deviceData = deviceData,
         )
 
-        /*
+
         ShareManagement(
             userDataStorage = userDataStorage,
             shareManagementStorage = storage * shareManagementIso,
@@ -213,7 +220,6 @@ fun PrivateUserPage(storage: Storage<Application>) = withLoading(
             deviceData = deviceData,
         )
 
-         */
 
         // User permissions
         When(false) {
@@ -685,10 +691,14 @@ fun Banking(
 @Composable
 fun ShareManagement(
     userDataStorage: Storage<User>,
-    // shareManagementStorage: Storage<ShareManagement>,
+    shareManagementStorage: Storage<ShareManagement>,
     bankingStorage: Storage<BankingApplication>,
     deviceData: Source<DeviceType>,
 ) {
+    val scope = rememberCoroutineScope()
+
+
+
 
     // Banking
     Wrap(cardStyle) {
@@ -699,6 +709,13 @@ fun ShareManagement(
         val bA = bankAccountPrism.match{ it.userId == UserId(userId) }
 
         var opened by remember { mutableStateOf(false) }
+
+        LaunchedEffect(opened) {
+            if(opened) scope.launch {
+                shareManagementStorage * shareManagementActions dispatch readPersonalShareSubscriptions()
+            }
+        }
+
         Horizontal({
             justifyContent(JustifyContent.SpaceBetween);
             width(100.percent);
@@ -718,8 +735,23 @@ fun ShareManagement(
             }
         }
         When(opened ) {
+            val subscriptions = shareManagementStorage * shareSubscriptions
 
-            Text("Content TBD")
+            val requestStatuses = listOf(
+                ShareStatus.RollingOver,
+                ShareStatus.PaymentFailed,
+                ShareStatus.ActivationRejected
+            )
+
+            val subscriptionsWithOpenRequests = subscriptions * FilterBy { it.status in requestStatuses }
+
+            When(subscriptionsWithOpenRequests.isEmpty()) {
+                // TODO open subscription dialog
+            }
+
+            //
+
+
 
         }
     }
