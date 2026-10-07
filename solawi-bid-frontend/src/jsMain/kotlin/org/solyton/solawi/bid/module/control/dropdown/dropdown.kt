@@ -157,12 +157,15 @@ data class DropdownStyles(
     },
     val triggerStyle: StyleScope.()->Unit = {
         display(DisplayStyle.Flex)
+        alignItems(AlignItems.Center)
         justifyContent(JustifyContent.SpaceBetween)
-        paddingTop(2.px)
-        paddingBottom(2.px)
-        paddingLeft(5.px)
-        border(2.px, LineStyle.Solid, Color.gray)
-        borderRadius(5.px)
+        padding(6.px, 10.px)
+        backgroundColor(Color.white)
+        color(Color("#1e293b"))
+        property("border", "1px solid #cbd5e1")
+        property("box-shadow", "0 1px 2px 0 rgba(0, 0, 0, 0.05)")
+        borderRadius(6.px)
+        fontSize(14.px)
         cursor(Cursor.Pointer)
         userSelect(UserSelect.None)
     },
@@ -170,26 +173,30 @@ data class DropdownStyles(
     val triggerIconStyle: StyleScope.()->Unit = {
         marginLeft(8.px)
         marginRight(2.px)
-        fontWeight("bold")
-        color(Color.black)
+        color(Color("#64748b"))
         right(0.px)
     },
-
 
     val dropdownContentStyle: StyleScope.()->Unit = {
         position(Position.Absolute)
         top(100.percent)
+        marginTop(4.px)
         left(0.px)
         right(0.px)
         backgroundColor(Color.white)
-        border(2.px, LineStyle.Solid, Color.gray)
-        borderRadius(5.px)
+        property("border", "1px solid #e2e8f0")
+        borderRadius(8.px)
+        property("box-shadow", "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05)")
         maxHeight(300.px)
         overflowY(Overflow.Auto)
         zIndex(100)
+        padding(4.px)
     },
     val dropdownItemStyle: StyleScope.()->Unit = {
-        padding(8.px)
+        padding(6.px, 10.px)
+        borderRadius(4.px)
+        fontSize(14.px)
+        color(Color("#1e293b"))
         cursor(Cursor.Pointer)
     },
 ) {

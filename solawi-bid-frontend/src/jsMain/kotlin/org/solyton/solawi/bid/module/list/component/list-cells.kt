@@ -21,7 +21,9 @@ data class HeaderCellStyles(
         flexDirection(FlexDirection.Row)
         alignItems(AlignItems.Center)
         justifyContent(JustifyContent.SpaceBetween)
-        fontWeight("bold")
+        fontWeight("600")
+        fontSize(13.px)
+        color(Color("#475569"))
         textAlign("left")
         paddingLeft(5.px)
         paddingRight(5.px)
@@ -117,7 +119,9 @@ fun HeaderCell(
     Div({
         if(tooltip != null) title(tooltip)
         style {
-        fontWeight("bold")
+        fontWeight("600")
+        fontSize(13.px)
+        color(Color("#475569"))
         textAlign("left")
         paddingLeft(5.px)
         paddingRight(5.px)

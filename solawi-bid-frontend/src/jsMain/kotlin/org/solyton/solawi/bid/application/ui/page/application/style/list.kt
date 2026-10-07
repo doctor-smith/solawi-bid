@@ -1,13 +1,6 @@
 package org.solyton.solawi.bid.application.ui.page.application.style
 
-import org.jetbrains.compose.web.css.AlignSelf
-import org.jetbrains.compose.web.css.Color
-import org.jetbrains.compose.web.css.StyleScope
-import org.jetbrains.compose.web.css.alignSelf
-import org.jetbrains.compose.web.css.backgroundColor
-import org.jetbrains.compose.web.css.paddingRight
-import org.jetbrains.compose.web.css.paddingTop
-import org.jetbrains.compose.web.css.px
+import org.jetbrains.compose.web.css.*
 import org.solyton.solawi.bid.module.list.style.defaultListStyles
 
 /**
@@ -44,7 +37,7 @@ val liteListItemStyle: StyleScope.() ->Unit = {
  */
 val darkListItemStyle: StyleScope.() ->Unit = {
     defaultListStyles.listItemWrapper(this)
-    backgroundColor(Color.ghostwhite)
+    backgroundColor(Color("#f8fafc"))
 }
 
 /**

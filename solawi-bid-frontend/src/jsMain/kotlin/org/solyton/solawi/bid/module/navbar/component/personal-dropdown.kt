@@ -50,14 +50,15 @@ fun PersonalDropdown(
             style {
                 display(DisplayStyle.Flex)
                 alignItems(AlignItems.Center)
-                justifyContent(JustifyContent.FlexEnd) // ?
-                padding(4.px)
-                gap(5.px)
+                justifyContent(JustifyContent.FlexEnd)
+                padding(4.px, 8.px)
+                borderRadius(6.px)
+                gap(6.px)
             }
         }) {
             Div({
                 style {
-                    color(Color.black)
+                    color(Color("#334155"))
                     backgroundColor(Color.transparent)
                     overflow("visible")
 
@@ -81,12 +82,14 @@ fun PersonalDropdown(
                 style {
                     position(Position.Absolute)
                     top(100.percent)
+                    marginTop(4.px)
                     right(0.px)
-                    width(150.px)
+                    width(160.px)
                     backgroundColor(Color.white)
-                    border(1.px, LineStyle.Solid, Color.black)
-                    borderRadius(4.px)
-                    // boxShadow // ?
+                    border(1.px, LineStyle.Solid, Color("#e2e8f0"))
+                    borderRadius(8.px)
+                    property("box-shadow", "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05)")
+                    padding(4.px)
                     property("z-index", 500)
                 }
             }) {
@@ -119,9 +122,12 @@ private fun Option(
         style {
             display(DisplayStyle.Flex)
             alignItems(AlignItems.Center)
-            padding(4.px)
+            padding(8.px, 12.px)
+            borderRadius(4.px)
+            fontSize(14.px)
+            color(Color("#1e293b"))
             when(hovered){
-                true -> backgroundColor(Color.lightgray)
+                true -> backgroundColor(Color("#f1f5f9"))
                 false -> backgroundColor(Color.transparent)
             }
         }
