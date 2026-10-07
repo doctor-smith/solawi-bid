@@ -67,8 +67,17 @@ Input[type="date"], input[type="date"] {
     background-color: #ffffff;
     color: var(--text-primary);
     font-size: 0.95rem;
+    line-height: 1.5;
     outline: none;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+Input[type="number"]:hover, input[type="number"]:hover,
+Input[type="text"]:hover, input[type="text"]:hover,
+Input[type="password"]:hover, input[type="password"]:hover,
+Input[type="email"]:hover, input[type="email"]:hover,
+Input[type="date"]:hover, input[type="date"]:hover {
+    border-color: #94a3b8;
 }
 
 Input[type="number"]:focus, input[type="number"]:focus,
@@ -78,6 +87,29 @@ Input[type="email"]:focus, input[type="email"]:focus,
 Input[type="date"]:focus, input[type="date"]:focus {
     border-color: var(--input-focus-border);
     box-shadow: 0 0 0 3px rgba(35, 149, 94, 0.15);
+}
+
+::placeholder {
+    color: #94a3b8;
+    opacity: 1;
+}
+
+button {
+    font-family: inherit;
+}
+
+button:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+button:hover:not(:disabled) {
+    filter: brightness(0.97);
+}
+
+button:active:not(:disabled) {
+    filter: brightness(0.93);
+    transform: translateY(1px);
 }
 
 .loading-page {

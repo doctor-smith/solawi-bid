@@ -4,16 +4,16 @@ import org.jetbrains.compose.web.css.*
 
 
 val formPageMobileStyle: StyleScope.()->Unit by lazy { {
-    width(94.percent)
-    property("margin-left", "auto")
-    property("margin-right", "auto")
+    padding(16.px)
 } }
 
 val formMobileStyle: StyleScope.()->Unit by lazy {{
     width(100.percent)
-    padding(16.px)
+    maxWidth(400.px)
+    padding(20.px)
     borderRadius(12.px)
     backgroundColor(Color.white)
+    boxSizing("border-box")
 }}
 
 val fieldMobileStyle: StyleScope.()->Unit by lazy {{
@@ -22,19 +22,20 @@ val fieldMobileStyle: StyleScope.()->Unit by lazy {{
     flexDirection(FlexDirection.Column)
     alignItems(AlignItems.FlexStart)
     justifyContent(JustifyContent.Center)
-    marginBottom(12.px)
+    marginBottom(14.px)
 }}
 
 val formLabelMobileStyle: StyleScope.()->Unit by lazy { {
-    marginTop(10.px)
-    marginBottom(4.px)
+    marginTop(0.px)
+    marginBottom(6.px)
     width(100.percent)
     fontWeight("500")
+    fontSize(14.px)
     color(Color("#334155"))
 } }
 
 val formControlBarMobileStyle: StyleScope.()->Unit by lazy { {
-    marginTop(16.px)
+    marginTop(8.px)
     width(100.percent)
     display(DisplayStyle.Flex)
     flexDirection(FlexDirection.Column)
@@ -42,8 +43,8 @@ val formControlBarMobileStyle: StyleScope.()->Unit by lazy { {
 } }
 
 val textInputMobileStyle: StyleScope.()->Unit by lazy {{
-    marginTop(4.px)
     width(100.percent)
+    boxSizing("border-box")
 }}
 
 val numberInputMobileStyle: StyleScope.()->Unit by lazy {{

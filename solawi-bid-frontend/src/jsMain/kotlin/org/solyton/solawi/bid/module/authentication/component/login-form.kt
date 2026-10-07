@@ -50,7 +50,7 @@ fun LoginForm(storage: Storage<LoginForm>, login: ()->Unit) {
             }
         }
 
-        Div(attrs = {style { formControlBarStyle(device) }}) {
+        Div(attrs = {style { formControlBarStyle(device)() }}) {
             val buttonTexts = texts.component("solyton.authentication.login.buttons")
 
             SubmitButton(
