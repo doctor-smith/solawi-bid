@@ -11,7 +11,9 @@ fun formPageStyle(device: DeviceType): StyleScope.()->Unit = {
     alignItems(AlignItems.Center)
     justifyContent(JustifyContent.Center)
     backgroundColor(Color("#f8fafc"))
-    height(100.vh) // Full viewport height
+    minHeight(100.vh)
+    width(100.percent)
+    boxSizing("border-box")
     when{
         device > DeviceType.Tablet -> formPageDesktopStyle()
         else -> formPageMobileStyle()
@@ -19,13 +21,9 @@ fun formPageStyle(device: DeviceType): StyleScope.()->Unit = {
 }
 
 @Style
-@Suppress("UNUSED_PARAMETER")
-fun fieldStyle(device: DeviceType): StyleScope.()->Unit = {
-    width(100.percent)
-    display(DisplayStyle.Flex)
-    flexDirection(FlexDirection.Column)
-    alignItems(AlignItems.FlexStart)
-    justifyContent(JustifyContent.Center)
+fun fieldStyle(device: DeviceType): StyleScope.()->Unit = when {
+    device > DeviceType.Tablet -> fieldDesktopStyle
+    else -> fieldMobileStyle
 }
 
 @Style

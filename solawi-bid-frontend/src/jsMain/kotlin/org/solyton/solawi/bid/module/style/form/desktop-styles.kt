@@ -3,17 +3,16 @@ package org.solyton.solawi.bid.module.style.form
 import org.jetbrains.compose.web.css.*
 
 val formPageDesktopStyle: StyleScope.()->Unit by lazy { {
-    width(100.percent)
-    maxWidth(480.px)
-    property("margin-left", "auto")
-    property("margin-right", "auto")
+    padding(24.px)
 } }
 
 val formDesktopStyle: StyleScope.()->Unit by lazy { {
     width(100.percent)
-    padding(28.px)
+    maxWidth(400.px)
+    padding(32.px)
     borderRadius(12.px)
     backgroundColor(Color.white)
+    boxSizing("border-box")
 } }
 
 val fieldDesktopStyle: StyleScope.()->Unit by lazy {{
@@ -26,15 +25,16 @@ val fieldDesktopStyle: StyleScope.()->Unit by lazy {{
 }}
 
 val formLabelDesktopStyle: StyleScope.()->Unit by lazy {{
-    marginTop(10.px)
-    marginBottom(4.px)
+    marginTop(0.px)
+    marginBottom(6.px)
     width(100.percent)
     fontWeight("500")
+    fontSize(14.px)
     color(Color("#334155"))
 }}
 
 val formControlBarDesktopStyle: StyleScope.()->Unit by lazy { {
-    marginTop(20.px)
+    marginTop(8.px)
     width(100.percent)
     display(DisplayStyle.Flex)
     flexDirection(FlexDirection.Row)
@@ -43,17 +43,19 @@ val formControlBarDesktopStyle: StyleScope.()->Unit by lazy { {
 } }
 
 val textInputDesktopStyle: StyleScope.()->Unit by lazy {{
-    marginTop(4.px)
     width(100.percent)
+    boxSizing("border-box")
 }}
 
 val numberInputDesktopStyle: StyleScope.()->Unit by lazy {{
-    marginTop(4.px)
     width(100.percent)
+    boxSizing("border-box")
 }}
 
 val dateInputDesktopStyle: StyleScope.()->Unit by lazy {{
     backgroundColor(Color.white)
+    width(100.percent)
+    boxSizing("border-box")
 }}
 
 val formButtonDesktopStyle: StyleScope.()->Unit by lazy {{
