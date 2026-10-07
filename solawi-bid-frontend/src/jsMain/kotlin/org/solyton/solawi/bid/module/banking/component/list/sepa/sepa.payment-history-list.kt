@@ -21,6 +21,7 @@ import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPayment
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPaymentHistories
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPaymentHistory
 import org.solyton.solawi.bid.module.banking.data.sepa.payment.SepaPaymentLink
+import org.solyton.solawi.bid.module.control.tooltip.Tooltip
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.ListStyles
 import org.solyton.solawi.bid.module.scrollable.Scrollable
@@ -208,29 +209,29 @@ fun PaymentItem(
     }
     val retryStatusColor = currentRetry?.let{ colorOf(it.status )}?: statusColor
 
-    Div({
-        title( data.executionDate.format(Locale.Iso))
-        style {
-            color(statusColor)
-            border {
-                style(LineStyle.Solid)
-                width(1.px)
-                borderRadius(5.px)
-                color(retryStatusColor)
+    Tooltip(data.executionDate.format(Locale.Iso)) {
+        Div({
+            style {
+                color(statusColor)
+                border {
+                    style(LineStyle.Solid)
+                    width(1.px)
+                    borderRadius(5.px)
+                    color(retryStatusColor)
+                }
+                display(DisplayStyle.Flex)
+                flexDirection(FlexDirection.Column)
+                justifyContent(JustifyContent.Center)
+                alignItems(AlignItems.Center)
+                overflow(Overflow.Hidden)
+                // fontSize(80.percent)
             }
-            display(DisplayStyle.Flex)
-            flexDirection(FlexDirection.Column)
-            justifyContent(JustifyContent.Center)
-            alignItems(AlignItems.Center)
-            overflow(Overflow.Hidden)
-            // fontSize(80.percent)
+            if(data is VisualPayment.Periodic) {
+                onClick { handleClick() }
+            }
+        }) {
+            Text(data.status.name)
         }
-        if(data is VisualPayment.Periodic) {
-            onClick { handleClick() }
-        }
-    }) {
-        Text(data.status.name)
-
     }
 }
 

@@ -12,6 +12,7 @@ import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.banking.data.internal.Currency
 import org.solyton.solawi.bid.module.banking.data.internal.format
 import org.solyton.solawi.bid.module.banking.data.internal.toMoney
+import org.solyton.solawi.bid.module.control.tooltip.Tooltip
 import kotlin.js.Date
 
 
@@ -116,18 +117,20 @@ fun HeaderCell(
     tooltip: String? = null,
     style: StyleScope.()->Unit = {}
 ){
-    Div({
-        if(tooltip != null) title(tooltip)
-        style {
-        fontWeight("600")
-        fontSize(13.px)
-        color(Color("#475569"))
-        textAlign("left")
-        paddingLeft(5.px)
-        paddingRight(5.px)
-        width(10.percent)
-        style()
-    }}){Text(text)}
+    Tooltip(tooltip) {
+        Div({
+            style {
+                fontWeight("600")
+                fontSize(13.px)
+                color(Color("#475569"))
+                textAlign("left")
+                paddingLeft(5.px)
+                paddingRight(5.px)
+                width(10.percent)
+                style()
+            }
+        }){Text(text)}
+    }
 }
 
 @Markup
@@ -149,24 +152,25 @@ fun TextCell(
     style: StyleScope.()->Unit = {
     }
 ){
-    Div({
-        if(tooltip != null) title(tooltip)
-        style {
-            textAlign("left")
-            paddingLeft(5.px)
-            paddingRight(5.px)
-            width(10.percent)
-            /*
-            flexGrow(0)
-            flexShrink(0)
-            whiteSpace(WhiteSpace.NoWrap)
-            overflow(Overflow.Hidden)
-            textOverflow(TextOverflow.Ellipsis)
+    Tooltip(tooltip) {
+        Div({
+            style {
+                textAlign("left")
+                paddingLeft(5.px)
+                paddingRight(5.px)
+                width(10.percent)
+                /*
+                flexGrow(0)
+                flexShrink(0)
+                whiteSpace(WhiteSpace.NoWrap)
+                overflow(Overflow.Hidden)
+                textOverflow(TextOverflow.Ellipsis)
 
-             */
-            style()
-        }
-    }){Text(text)}
+                 */
+                style()
+            }
+        }){Text(text)}
+    }
 }
 
 @Markup

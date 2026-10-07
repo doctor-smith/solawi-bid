@@ -13,6 +13,7 @@ import org.jetbrains.compose.web.dom.I
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.module.authentication.data.api.Logout
 import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
+import org.solyton.solawi.bid.module.control.tooltip.Tooltip
 import org.solyton.solawi.bid.module.i18n.data.I18N
 import org.solyton.solawi.bid.module.navbar.data.navbar.NavBar
 import org.solyton.solawi.bid.module.navbar.effect.TriggerLogoutEffect
@@ -44,31 +45,32 @@ fun PersonalDropdown(
         onClick { open = !open }
     }) {
         // Display UserIcon
-        Div(
-            attrs = {
-                title("User related actions")
-            style {
-                display(DisplayStyle.Flex)
-                alignItems(AlignItems.Center)
-                justifyContent(JustifyContent.FlexEnd)
-                padding(4.px, 8.px)
-                borderRadius(6.px)
-                gap(6.px)
-            }
-        }) {
-            Div({
-                style {
-                    color(Color("#334155"))
-                    backgroundColor(Color.transparent)
-                    overflow("visible")
-
+        Tooltip("User related actions") {
+            Div(
+                attrs = {
+                    style {
+                        display(DisplayStyle.Flex)
+                        alignItems(AlignItems.Center)
+                        justifyContent(JustifyContent.FlexEnd)
+                        padding(4.px, 8.px)
+                        borderRadius(6.px)
+                        gap(6.px)
+                    }
                 }
-            }) {
-                I({
-                    classes("fa-solid", "fa-user-large")
-                })
+            ) {
+                Div({
+                    style {
+                        color(Color("#334155"))
+                        backgroundColor(Color.transparent)
+                        overflow("visible")
+                    }
+                }) {
+                    I({
+                        classes("fa-solid", "fa-user-large")
+                    })
+                }
+                SimpleUpDown(open)
             }
-            SimpleUpDown(open)
         }
 
         // Dropdown-List

@@ -9,6 +9,7 @@ import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Input
 import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Text
+import org.solyton.solawi.bid.module.control.tooltip.Tooltip
 import org.solyton.solawi.bid.module.shares.component.dropdown.zIndex
 import org.solyton.solawi.bid.module.style.cursor.Cursor
 import org.solyton.solawi.bid.module.style.cursor.cursor
@@ -36,64 +37,64 @@ fun EditableTextCell(
     var isEditing by remember { mutableStateOf(false) }
     var editText by remember(text) { mutableStateOf(text) }
 
-    Div({
-        if (tooltip != null) title(tooltip)
-
-        style {
-            textAlign("left")
-            width(10.percent)
-            when{
-                disabled -> cursor(Cursor.NotAllowed)
-                else -> cursor(Cursor.Pointer)
+    Tooltip(tooltip) {
+        Div({
+            style {
+                textAlign("left")
+                width(10.percent)
+                when{
+                    disabled -> cursor(Cursor.NotAllowed)
+                    else -> cursor(Cursor.Pointer)
+                }
+                style()
             }
-            style()
-        }
 
-        if (!isEditing && !disabled) {
-            onClick {
-                isEditing = true
+            if (!isEditing && !disabled) {
+                onClick {
+                    isEditing = true
+                }
             }
-        }
-    }) {
+        }) {
 
-        if (isEditing && !disabled) {
+            if (isEditing && !disabled) {
 
-            Input(type = InputType.Text) {
-                value(editText)
+                Input(type = InputType.Text) {
+                    value(editText)
 
-                style {
-                    width(100.percent)
-                }
+                    style {
+                        width(100.percent)
+                    }
 
-                onInput {
-                    editText = it.value
-                }
+                    onInput {
+                        editText = it.value
+                    }
 
-                onBlur {
-                    isEditing = false
-                    onValueChange(editText)
-                }
+                    onBlur {
+                        isEditing = false
+                        onValueChange(editText)
+                    }
 
-                onKeyDown { event ->
-                    when (event.key) {
-                        "Enter" -> {
-                            isEditing = false
-                            onValueChange(editText)
-                        }
-                        "Escape" -> {
-                            isEditing = false
-                            editText = text // revert
+                    onKeyDown { event ->
+                        when (event.key) {
+                            "Enter" -> {
+                                isEditing = false
+                                onValueChange(editText)
+                            }
+                            "Escape" -> {
+                                isEditing = false
+                                editText = text // revert
+                            }
                         }
                     }
                 }
+            } else {
+                Span({
+                    style {
+                        minWidth(0.px)
+                        whiteSpace("normal")
+                    }
+                }) { Text(text) }
             }
-        } else {
-            Span({
-                style {
-                    minWidth(0.px)
-                    whiteSpace("normal")
-                }
-            }) { Text(text) }
         }
     }
 }
@@ -115,61 +116,61 @@ fun <T> EditableCell(
     var isEditing by remember { mutableStateOf(false) }
     var editText by remember(initValue){ mutableStateOf<String>(format(initValue)) }
 
-    Div({
-        if (tooltip != null) title(tooltip)
-
-        style {
-            textAlign("left")
-            width(10.percent)
-            paddingLeft(5.px)
-            paddingRight(5.px)
-            when{
-                disabled -> cursor(Cursor.NotAllowed)
-                else -> cursor(Cursor.Pointer)
+    Tooltip(tooltip) {
+        Div({
+            style {
+                textAlign("left")
+                width(10.percent)
+                paddingLeft(5.px)
+                paddingRight(5.px)
+                when{
+                    disabled -> cursor(Cursor.NotAllowed)
+                    else -> cursor(Cursor.Pointer)
+                }
+                style()
             }
-            style()
-        }
 
-        if (!isEditing && !disabled) {
-            onClick {
-                isEditing = true
+            if (!isEditing && !disabled) {
+                onClick {
+                    isEditing = true
+                }
             }
-        }
-    }) {
+        }) {
 
-        if (isEditing && !disabled) {
+            if (isEditing && !disabled) {
 
-            Input(type = InputType.Text) {
-                value(editText)
+                Input(type = InputType.Text) {
+                    value(editText)
 
-                style {
-                    width(100.percent)
-                }
+                    style {
+                        width(100.percent)
+                    }
 
-                onInput {
-                    editText = it.value
-                }
+                    onInput {
+                        editText = it.value
+                    }
 
-                onBlur {
-                    isEditing = false
-                    onValueChange(fromText(editText))
-                }
+                    onBlur {
+                        isEditing = false
+                        onValueChange(fromText(editText))
+                    }
 
-                onKeyDown { event ->
-                    when (event.key) {
-                        "Enter" -> {
-                            isEditing = false
-                            onValueChange(fromText(editText))
-                        }
-                        "Escape" -> {
-                            isEditing = false
-                            editText = format(initValue) // revert
+                    onKeyDown { event ->
+                        when (event.key) {
+                            "Enter" -> {
+                                isEditing = false
+                                onValueChange(fromText(editText))
+                            }
+                            "Escape" -> {
+                                isEditing = false
+                                editText = format(initValue) // revert
+                            }
                         }
                     }
                 }
+            } else {
+                Text(format(initValue))
             }
-        } else {
-            Text(format(initValue))
         }
     }
 }
@@ -385,12 +386,13 @@ fun <T> EditableSelectCell(
         }
     }) {
         // Label
-        Span(attrs = {
-            title(selectedLabel ?: placeholder)
-            style {
-                with(styles) { labelStyle() }
-            }
-        }) { Text(selectedLabel ?: placeholder) }
+        Tooltip(selectedLabel ?: placeholder) {
+            Span(attrs = {
+                style {
+                    with(styles) { labelStyle() }
+                }
+            }) { Text(selectedLabel ?: placeholder) }
+        }
 
         // Icon
         Span({
@@ -407,17 +409,18 @@ fun <T> EditableSelectCell(
                 onClick { it.stopPropagation() }
             }) {
                 options.filterKeys { it != selectedLabel  }.forEach { (label, value) ->
-                    Div({
-                        title(label)
-                        style { with(styles) { itemStyle() } }
-                        onClick { evt ->
-                            evt.stopPropagation()
-                            onSelected(value)
-                            selectedLabel = label
-                            if (closeOnSelect) expanded = false
+                    Tooltip(label) {
+                        Div({
+                            style { with(styles) { itemStyle() } }
+                            onClick { evt ->
+                                evt.stopPropagation()
+                                onSelected(value)
+                                selectedLabel = label
+                                if (closeOnSelect) expanded = false
+                            }
+                        }) {
+                            Text(label)
                         }
-                    }) {
-                        Text(label)
                     }
                 }
             }
