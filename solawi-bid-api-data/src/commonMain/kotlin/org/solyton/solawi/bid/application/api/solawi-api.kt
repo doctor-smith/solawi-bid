@@ -197,6 +197,10 @@ val solawiApi by lazy {
                 key = ReadShareSubscriptions::class,
                 url = "shares/subscriptions/all"
             )
+            get<ReadPersonalShareSubscriptions, ShareSubscriptions> (
+                key = ReadPersonalShareSubscriptions::class,
+                url = "shares/subscriptions/personal"
+            )
             patch<UpdateShareSubscription, ShareSubscription>(
                 key = UpdateShareSubscription::class,
                 url = "shares/subscriptions/update"

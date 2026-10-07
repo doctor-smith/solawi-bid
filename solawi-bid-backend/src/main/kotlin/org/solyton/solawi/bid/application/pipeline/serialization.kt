@@ -144,6 +144,7 @@ fun installSerializers() {
         add<ShareSubscriptions>(ShareSubscriptions.serializer())
         add<CreateShareSubscription>(CreateShareSubscription.serializer())
         add<ReadShareSubscriptions>(ReadShareSubscriptions.serializer())
+        add<ReadPersonalShareSubscriptions>(ReadPersonalShareSubscriptions.serializer())
         add<UpdateShareSubscription>(UpdateShareSubscription.serializer())
         add<ImportShareSubscription>(ImportShareSubscription.serializer())
         add<ImportShareSubscriptions>(ImportShareSubscriptions.serializer())

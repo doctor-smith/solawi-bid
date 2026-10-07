@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.module.shares.repository
 
 import org.evoleq.exposedx.NO_MESSAGE_PROVIDED
+import org.evoleq.uuid.toUuid
 import org.jetbrains.exposed.dao.flushCache
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.Transaction
@@ -20,8 +21,10 @@ import org.solyton.solawi.bid.module.user.data.api.CreateUser
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
+import org.solyton.solawi.bid.module.user.schema.UserProfilesTable
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.user.service.user.createUserEntity
+import org.solyton.solawi.bid.module.values.UserId
 import org.solyton.solawi.bid.module.values.Username
 import java.util.*
 import org.evoleq.math.or as hasChanges
@@ -393,7 +396,7 @@ fun Transaction.readPersonalShareSubscriptions(
 }
 
 /**
- * Read ShareOffers by providerId and filter by fiscal years.
+ * Read ShareSubscriptions by providerId and filter by fiscal years.
  * If the list of provided filterYearIds is empty, no filter will be applied
  */
 fun Transaction.readShareSubscriptionsOfProvider(
@@ -404,6 +407,21 @@ fun Transaction.readShareSubscriptionsOfProvider(
     val shareOffers = readShareOffersByProvider(providerId, fiscalYearIds)
     val allShareSubscriptions = shareOffers.flatMap { it.shareSubscriptions }
     return allShareSubscriptions
+}
+
+/**
+ * Read personal share subscriptions
+ */
+fun Transaction.readPersonalShareSubscriptions(
+    userId: UserId,
+): List<ShareSubscription> {
+    val userProfileIds = UserProfileEntity.find {
+        UserProfilesTable.userId eq userId.value.toUuid()
+    }.map { it.id }
+    val shareSubscriptions = ShareSubscriptionEntity.find {
+        ShareSubscriptionsTable.userProfileId inList userProfileIds
+    }.toList()
+    return shareSubscriptions
 }
 
 @Suppress("UNUSED_PARAMETER")
