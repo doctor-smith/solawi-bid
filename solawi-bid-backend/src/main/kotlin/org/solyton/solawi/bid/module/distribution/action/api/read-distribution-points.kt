@@ -11,6 +11,7 @@ import org.evoleq.math.x
 import org.solyton.solawi.bid.module.distribution.data.api.DistributionPoints
 import org.solyton.solawi.bid.module.distribution.data.toApiType
 import org.solyton.solawi.bid.module.distribution.repository.readDistributionPointsByOrganization
+import org.solyton.solawi.bid.module.distribution.repository.readPersonalDistributionPoints
 import java.util.*
 
 @MathDsl
@@ -21,6 +22,17 @@ fun ReadDistributionPoints() = KlAction<Result<Contextual<String>>, Result<Distr
             val data = contextual.data
 
             readDistributionPointsByOrganization(UUID.fromString(data)).toApiType(this)
+        } }  x database
+    }
+}
+
+
+@MathDsl
+@Suppress("FunctionName")
+fun ReadPersonalDistributionPoints() = KlAction<Result<Contextual<Unit>>, Result<DistributionPoints>> {
+    result: Result<Contextual<Unit>> -> DbAction {
+        database -> result bindSuspend  { contextual -> resultTransaction(database) {
+           readPersonalDistributionPoints(contextual.userId).toApiType(this)
         } }  x database
     }
 }

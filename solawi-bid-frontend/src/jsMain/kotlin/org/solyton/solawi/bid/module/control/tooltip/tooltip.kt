@@ -54,3 +54,10 @@ fun Tooltip(
     wrapperStyle: StyleScope.() -> Unit = {},
     content: @Composable () -> Unit
 ) = Tooltip({ text }, position, wrapperStyle, content)
+
+@Composable
+fun (@Composable ()->Unit).useTooltip(
+    text: Source<String?>,
+    position: TooltipPosition = TooltipPosition.Top,
+    wrapperStyle: StyleScope.() -> Unit = {}
+) = Tooltip(text, position, wrapperStyle, this)

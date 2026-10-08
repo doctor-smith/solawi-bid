@@ -13,6 +13,8 @@ import org.solyton.solawi.bid.module.banking.data.internal.Currency
 import org.solyton.solawi.bid.module.banking.data.internal.format
 import org.solyton.solawi.bid.module.banking.data.internal.toMoney
 import org.solyton.solawi.bid.module.control.tooltip.Tooltip
+import org.solyton.solawi.bid.module.style.text.TextOverflow
+import org.solyton.solawi.bid.module.style.text.textOverflow
 import kotlin.js.Date
 
 
@@ -117,16 +119,25 @@ fun HeaderCell(
     tooltip: String? = null,
     style: StyleScope.()->Unit = {}
 ){
-    Tooltip(tooltip) {
-        Div({
+    val defaultStyles: StyleScope.()-> Unit = {
+        fontWeight("600")
+        fontSize(13.px)
+        color(Color("#475569"))
+        textAlign("left")
+        paddingLeft(5.px)
+        paddingRight(5.px)
+        width(10.percent)
+    }
+    when {
+        tooltip != null -> Tooltip(tooltip, wrapperStyle = {
+            defaultStyles()
+            style()
+        }) {
+            Text(text)
+        }
+        else -> Div({
             style {
-                fontWeight("600")
-                fontSize(13.px)
-                color(Color("#475569"))
-                textAlign("left")
-                paddingLeft(5.px)
-                paddingRight(5.px)
-                width(10.percent)
+                defaultStyles()
                 style()
             }
         }){Text(text)}
@@ -139,9 +150,10 @@ fun HeaderCell(
 fun TextCell(
     text: Source<String>,
     tooltip: String? = null,
+    useTextForTooltip: Boolean = false,
     style: StyleScope.()->Unit = {
     }
-) = TextCell(text.emit(), tooltip, style)
+) = TextCell(text.emit(), tooltip,useTextForTooltip, style)
 
 @Markup
 @Composable
@@ -149,27 +161,30 @@ fun TextCell(
 fun TextCell(
     text: String,
     tooltip: String? = null,
-    style: StyleScope.()->Unit = {
-    }
+    useTextForTooltip: Boolean = false,
+    style: StyleScope.()->Unit = {}
 ){
-    Tooltip(tooltip) {
-        Div({
+    when{
+        tooltip != null || useTextForTooltip -> Tooltip({tooltip?:text}, wrapperStyle = {
+            textAlign("left")
+            paddingLeft(5.px)
+            paddingRight(5.px)
+            width(10.percent)
+            textOverflow(TextOverflow.Ellipsis)
+            style()
+        }) {
+            Text(text)
+        }
+        else -> Div({
             style {
                 textAlign("left")
                 paddingLeft(5.px)
                 paddingRight(5.px)
                 width(10.percent)
-                /*
-                flexGrow(0)
-                flexShrink(0)
-                whiteSpace(WhiteSpace.NoWrap)
-                overflow(Overflow.Hidden)
                 textOverflow(TextOverflow.Ellipsis)
-
-                 */
                 style()
             }
-        }){Text(text)}
+        }) { Text(text) }
     }
 }
 

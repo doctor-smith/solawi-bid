@@ -21,7 +21,6 @@ import org.evoleq.optics.prism.Either
 import org.evoleq.optics.storage.Read
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
-import org.evoleq.optics.storage.isEmpty
 import org.evoleq.optics.transform.asPrism
 import org.evoleq.optics.transform.firstByOrNull
 import org.evoleq.optics.transform.times
@@ -33,10 +32,10 @@ import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.data.env.i18nEnvironment
 import org.solyton.solawi.bid.application.data.transform.banking.bankingApplicationIso
+import org.solyton.solawi.bid.application.data.transform.distribution.distributionManagementIso
 import org.solyton.solawi.bid.application.data.transform.shares.shareManagementIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
-import org.solyton.solawi.bid.application.ui.page.application.style.listItemWrapperStyle
 import org.solyton.solawi.bid.application.ui.page.user.i18n.UserLangComponent
 import org.solyton.solawi.bid.module.banking.action.createBankAccount
 import org.solyton.solawi.bid.module.banking.action.readPersonalBankAccounts
@@ -56,18 +55,19 @@ import org.solyton.solawi.bid.module.control.button.EditButton
 import org.solyton.solawi.bid.module.control.button.PlusButton
 import org.solyton.solawi.bid.module.country.i18n.CountryLangComponent
 import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
+import org.solyton.solawi.bid.module.distribution.action.readPersonalDistributionPoints
+import org.solyton.solawi.bid.module.distribution.data.distributionManagementActions
+import org.solyton.solawi.bid.module.distribution.data.management.DistributionManagement
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
-import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.ListStyles
 import org.solyton.solawi.bid.module.loading.component.Loading
 import org.solyton.solawi.bid.module.permission.data.ContextId
 import org.solyton.solawi.bid.module.permissions.service.contextFromPath
 import org.solyton.solawi.bid.module.shares.action.readPersonalShareOffers
 import org.solyton.solawi.bid.module.shares.action.readPersonalShareSubscriptions
-import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
+import org.solyton.solawi.bid.module.shares.component.list.ShareSubscriptionsPersonalList
 import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
-import org.solyton.solawi.bid.module.shares.data.management.shareSubscriptions
 import org.solyton.solawi.bid.module.shares.data.shareManagementActions
 import org.solyton.solawi.bid.module.style.card.cardStyle
 import org.solyton.solawi.bid.module.style.modal.commonModalStyles
@@ -108,7 +108,6 @@ import org.solyton.solawi.bid.module.user.data.userActions
 import org.solyton.solawi.bid.module.user.data.userModals
 import org.solyton.solawi.bid.module.user.service.user.userIdFromToken
 import org.solyton.solawi.bid.module.values.*
-import org.solyton.solawi.bid.module.list.component.Title as ListTitle
 import org.solyton.solawi.bid.module.user.data.profile.title as userTitle
 
 @Markup
@@ -223,7 +222,7 @@ fun PrivateUserPage(storage: Storage<Application>) = withLoading(
             userDataStorage = userDataStorage,
             shareManagementStorage = storage * shareManagementIso,
             bankingStorage = storage * bankingApplicationIso,
-
+            distributionManagementStorage = storage * distributionManagementIso,
             deviceData = deviceData,
         )
 
@@ -699,6 +698,7 @@ fun Banking(
 fun ShareManagement(
     userDataStorage: Storage<User>,
     shareManagementStorage: Storage<ShareManagement>,
+    distributionManagementStorage: Storage< DistributionManagement>,
     bankingStorage: Storage<BankingApplication>,
     deviceData: Source<DeviceType>,
 ) {
@@ -711,6 +711,9 @@ fun ShareManagement(
         }
         scope.launch {
             shareManagementStorage * shareManagementActions dispatch readPersonalShareSubscriptions()
+        }
+        scope.launch {
+            distributionManagementStorage * distributionManagementActions dispatch readPersonalDistributionPoints()
         }
     }
 
@@ -743,7 +746,6 @@ fun ShareManagement(
                 justifyContent(JustifyContent.FlexEnd)
             }) {
                 When(opened) {
-                    Text("Actions TBD")
                 }
                 CardChevrons(
                     deviceType = deviceData,
@@ -753,61 +755,13 @@ fun ShareManagement(
             }
         }
         When(opened ) {
-            val subscriptions = shareManagementStorage * shareSubscriptions
-
-            val requestStatuses = listOf(
-                ShareStatus.RollingOver,
-                ShareStatus.PaymentFailed,
-                ShareStatus.ActivationRejected
+            ShareSubscriptionsPersonalList(
+                userDataStorage = userDataStorage,
+                shareManagementStorage = shareManagementStorage,
+                distributionManagementStorage = distributionManagementStorage,
+                deviceData = deviceData,
+                listStyles = ListStyles()
             )
-
-            val subscriptionsWithOpenRequests = subscriptions * FilterBy { it.status in requestStatuses }
-
-            When(subscriptionsWithOpenRequests.isEmpty()) {
-                // TODO open subscription dialog
-            }
-
-
-            val listStyles = ListStyles()
-
-            ListWrapper(listStyles.listWrapper) {
-                TitleWrapper(listStyles.titleWrapper) {
-                    ListTitle(listStyles.title){
-                        Text("Subscriptions")
-                    }
-                }
-
-                HeaderWrapper(listStyles.headerWrapper) {
-                    Header(listStyles.header) {
-                        HeaderCell("Year") { }
-                        HeaderCell("Name") { }
-                        HeaderCell("no shares") { }
-                        HeaderCell("Price per share") { }
-                        HeaderCell("Status") { }
-                        HeaderCell("Depot")
-                        HeaderCell("Organization")
-                    }
-                }
-
-                ListItemsIndexed(Read(subscriptions) ) { index, subscription ->
-                    ListItemWrapper({listItemWrapperStyle(index)}) {
-                        DataWrapper(listStyles.dataWrapper) {
-
-                        }
-                        ActionsWrapper(listStyles.actionsWrapper) {
-                            /*
-                            EditButton(
-                                color = Color.black,
-                                bgColor = Color.white,
-                                texts = { "" },
-                                deviceType =
-                            )
-
-                             */
-                        }
-                    }
-                }
-            }
         }
     }
 }

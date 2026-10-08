@@ -13,6 +13,7 @@ import org.solyton.solawi.bid.module.user.exception.OrganizationException
 import org.solyton.solawi.bid.module.user.schema.AddressEntity
 import org.solyton.solawi.bid.module.user.schema.AddressesTable
 import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
+import org.solyton.solawi.bid.module.user.schema.UserOrganization
 import java.util.*
 
 fun Transaction.createDistributionPoint(
@@ -38,6 +39,17 @@ fun Transaction.createDistributionPoint(
 fun Transaction.readDistributionPointsByOrganization(organizationId: UUID): List<DistributionPointEntity> {
     return DistributionPointEntity.find {
         DistributionPointsTable.organisationId eq organizationId
+    }.toList()
+}
+
+fun Transaction.readPersonalDistributionPoints(userId: UUID): List<DistributionPointEntity> {
+    val organizationIds = UserOrganization.select(UserOrganization.organizationId).where {
+        UserOrganization.userId eq userId
+
+    }.toList().map { it[UserOrganization.organizationId].value }
+
+    return DistributionPointEntity.find {
+        DistributionPointsTable.organisationId inList organizationIds
     }.toList()
 }
 

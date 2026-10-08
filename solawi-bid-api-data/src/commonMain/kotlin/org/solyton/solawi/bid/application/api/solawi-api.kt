@@ -151,6 +151,10 @@ val solawiApi by lazy {
                 key = ReadDistributionPoints::class,
                 url = "distribution-points/all"
             )
+            get<ReadPersonalDistributionPoints, DistributionPoints> (
+                key = ReadPersonalDistributionPoints::class,
+                url = "distribution-points/personal"
+            )
             post<CreateDistributionPoint, DistributionPoint> (
                 key = CreateDistributionPoint::class,
                 url = "distribution-points/create"

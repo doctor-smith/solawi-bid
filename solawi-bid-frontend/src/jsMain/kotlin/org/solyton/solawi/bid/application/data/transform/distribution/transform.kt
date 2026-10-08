@@ -44,13 +44,15 @@ private val preDistributionManagementIso: Lens<Application, DistributionManageme
             modals = whole.modals,
             i18n = whole.i18N,
             environment = whole.environment.useI18nTransform(),
-            distributionPoints = whole.distributionPoints
+            distributionPoints = whole.distributionPoints,
+            personalDistributionPoints = whole.personalDistributionPoints
         ) },
         set = { part -> { whole -> whole.copy(
             context = part.context,
             modals = part.modals,
             i18N = part.i18n,
-            distributionPoints = part.distributionPoints
+            distributionPoints = part.distributionPoints,
+            personalDistributionPoints = part.personalDistributionPoints
         ) } }
     )
 }
