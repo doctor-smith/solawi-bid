@@ -56,7 +56,8 @@ fun UserProfileForm(
     var userProfileState by remember { mutableStateOf(userProfile) }
     Form(formDesktopStyle) {
         val horizontalFieldsStyle: StyleScope.() -> Unit = {
-            width(98.percent)
+            width(100.percent)
+            gap(16.px)
         }
 
         // User Profile is used everywhere
@@ -74,9 +75,15 @@ fun UserProfileForm(
             }
         }
 
-        Horizontal {
+        Horizontal({
+            width(100.percent)
+            gap(32.px)
+        }) {
 
-            Vertical({ width(50.percent) }) {
+            Vertical({
+                width(50.percent)
+                minWidth(0.px)
+            }) {
                 H3{Text((userProfileInputs * Reader{lang ->lang["formTitle"]}).emit())}
                 Field(fieldDesktopStyle) {
                     Label(
@@ -196,7 +203,10 @@ fun UserProfileForm(
                 }
             }
 
-            Vertical({width(50.percent)}) {
+            Vertical({
+                width(50.percent)
+                minWidth(0.px)
+            }) {
                 // Address
                 val addressInputs = userProfileInputs * subComp("address")
                 val address = userProfileState?.addresses?.firstOrNull()

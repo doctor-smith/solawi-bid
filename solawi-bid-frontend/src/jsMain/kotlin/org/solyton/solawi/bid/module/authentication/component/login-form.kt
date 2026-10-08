@@ -4,17 +4,23 @@ import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
 import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.form.label.Label
+import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.language.Lang
 import org.evoleq.language.component
 import org.evoleq.language.get
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
+import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.PasswordInput
 import org.jetbrains.compose.web.dom.TextInput
 import org.solyton.solawi.bid.module.authentication.data.*
 import org.solyton.solawi.bid.module.control.button.SubmitButton
-import org.solyton.solawi.bid.module.style.form.*
+import org.solyton.solawi.bid.module.style.card.cardStyle
+import org.solyton.solawi.bid.module.style.form.fieldStyle
+import org.solyton.solawi.bid.module.style.form.formControlBarStyle
+import org.solyton.solawi.bid.module.style.form.formLabelStyle
+import org.solyton.solawi.bid.module.style.form.textInputStyle
 
 @Markup
 @Composable
@@ -26,7 +32,16 @@ fun LoginForm(storage: Storage<LoginForm>, login: ()->Unit) {
     val device = (storage * deviceType).read()
 
     Div(attrs = {
-        style { formStyle(device)() }
+        style {
+            cardStyle()
+            maxWidth(400.px)
+            width(100.percent)
+            boxSizing("border-box")
+            padding(if (device > DeviceType.Tablet) 32.px else 20.px)
+            borderRadius(12.px)
+            display(DisplayStyle.Flex)
+            flexDirection(FlexDirection.Column)
+        }
     }) {
         Div(attrs = { style { fieldStyle(device)() } }) {
             Label(loginFields["username"], id = "username", labelStyle = formLabelStyle(device))
