@@ -19,10 +19,7 @@ import org.solyton.solawi.bid.module.shares.schema.*
 import org.solyton.solawi.bid.module.user.data.api.ApiUserStatus
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
-import org.solyton.solawi.bid.module.user.schema.UserEntity
-import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
-import org.solyton.solawi.bid.module.user.schema.UserProfilesTable
-import org.solyton.solawi.bid.module.user.schema.UsersTable
+import org.solyton.solawi.bid.module.user.schema.*
 import org.solyton.solawi.bid.module.user.service.user.createUserEntity
 import org.solyton.solawi.bid.module.values.UserId
 import org.solyton.solawi.bid.module.values.Username
@@ -210,6 +207,17 @@ fun Transaction.readShareOffersByProvider(
         fiscalYearIds.isEmpty() -> allShareOffers
         else -> allShareOffers.filterNot{ offer -> offer.fiscalYear.id.value in fiscalYearIds }
     }
+}
+
+fun Transaction.readPersonalShareOffers(userId: UUID) : List<ShareOfferEntity> {
+    val providerIds = UserOrganization.select(UserOrganization.organizationId)
+        .where { UserOrganization.userId eq userId }
+        .toList()
+        .map{ it[UserOrganization.organizationId].value }
+    val shareTypeIds = ShareTypeEntity.find { ShareTypesTable.providerId inList providerIds }.map{it.id.value}
+    return ShareOfferEntity.find {
+        ShareOffersTable.shareTypeId inList shareTypeIds
+    }.toList()
 }
 
 fun Transaction.deleteShareOffer(shareOfferId: UUID): UUID {

@@ -6,6 +6,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
+import org.evoleq.compose.effect.LaunchedEffectOnSource
 import org.evoleq.compose.guard.data.isLoading
 import org.evoleq.compose.guard.data.onNullLaunch
 import org.evoleq.compose.guard.data.withLoading
@@ -35,6 +36,7 @@ import org.solyton.solawi.bid.application.data.transform.banking.bankingApplicat
 import org.solyton.solawi.bid.application.data.transform.shares.shareManagementIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
+import org.solyton.solawi.bid.application.ui.page.application.style.listItemWrapperStyle
 import org.solyton.solawi.bid.application.ui.page.user.i18n.UserLangComponent
 import org.solyton.solawi.bid.module.banking.action.createBankAccount
 import org.solyton.solawi.bid.module.banking.action.readPersonalBankAccounts
@@ -56,9 +58,12 @@ import org.solyton.solawi.bid.module.country.i18n.CountryLangComponent
 import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
+import org.solyton.solawi.bid.module.list.component.*
+import org.solyton.solawi.bid.module.list.style.ListStyles
 import org.solyton.solawi.bid.module.loading.component.Loading
 import org.solyton.solawi.bid.module.permission.data.ContextId
 import org.solyton.solawi.bid.module.permissions.service.contextFromPath
+import org.solyton.solawi.bid.module.shares.action.readPersonalShareOffers
 import org.solyton.solawi.bid.module.shares.action.readPersonalShareSubscriptions
 import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
@@ -96,12 +101,14 @@ import org.solyton.solawi.bid.module.user.data.reader.table
 import org.solyton.solawi.bid.module.user.data.reader.value
 import org.solyton.solawi.bid.module.user.data.user
 import org.solyton.solawi.bid.module.user.data.user.User
+import org.solyton.solawi.bid.module.user.data.user.organizations
 import org.solyton.solawi.bid.module.user.data.user.profile
 import org.solyton.solawi.bid.module.user.data.user.username
 import org.solyton.solawi.bid.module.user.data.userActions
 import org.solyton.solawi.bid.module.user.data.userModals
 import org.solyton.solawi.bid.module.user.service.user.userIdFromToken
 import org.solyton.solawi.bid.module.values.*
+import org.solyton.solawi.bid.module.list.component.Title as ListTitle
 import org.solyton.solawi.bid.module.user.data.profile.title as userTitle
 
 @Markup
@@ -697,6 +704,16 @@ fun ShareManagement(
 ) {
     val scope = rememberCoroutineScope()
 
+    LaunchedEffectOnSource(Read(userDataStorage * organizations) map {it.map { org -> org.name }}) {
+        // if the organizations change we have to reload all offers of all organizations the current user is a member of
+        scope.launch {
+            shareManagementStorage * shareManagementActions dispatch readPersonalShareOffers()
+        }
+        scope.launch {
+            shareManagementStorage * shareManagementActions dispatch readPersonalShareSubscriptions()
+        }
+    }
+
 
 
 
@@ -711,9 +728,10 @@ fun ShareManagement(
         var opened by remember { mutableStateOf(false) }
 
         LaunchedEffect(opened) {
-            if(opened) scope.launch {
-                shareManagementStorage * shareManagementActions dispatch readPersonalShareSubscriptions()
-            }
+            // if(opened) scope.launch {
+            //    shareManagementStorage * shareManagementActions dispatch readPersonalShareSubscriptions()
+                // shareManagementStorage * shareManagementActions dispatch readPersonalShareSubscriptions()
+            // }
         }
 
         Horizontal({
@@ -749,10 +767,47 @@ fun ShareManagement(
                 // TODO open subscription dialog
             }
 
-            //
 
+            val listStyles = ListStyles()
 
+            ListWrapper(listStyles.listWrapper) {
+                TitleWrapper(listStyles.titleWrapper) {
+                    ListTitle(listStyles.title){
+                        Text("Subscriptions")
+                    }
+                }
 
+                HeaderWrapper(listStyles.headerWrapper) {
+                    Header(listStyles.header) {
+                        HeaderCell("Year") { }
+                        HeaderCell("Name") { }
+                        HeaderCell("no shares") { }
+                        HeaderCell("Price per share") { }
+                        HeaderCell("Status") { }
+                        HeaderCell("Depot")
+                        HeaderCell("Organization")
+                    }
+                }
+
+                ListItemsIndexed(Read(subscriptions) ) { index, subscription ->
+                    ListItemWrapper({listItemWrapperStyle(index)}) {
+                        DataWrapper(listStyles.dataWrapper) {
+
+                        }
+                        ActionsWrapper(listStyles.actionsWrapper) {
+                            /*
+                            EditButton(
+                                color = Color.black,
+                                bgColor = Color.white,
+                                texts = { "" },
+                                deviceType =
+                            )
+
+                             */
+                        }
+                    }
+                }
+            }
         }
     }
 }
