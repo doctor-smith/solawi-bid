@@ -1,22 +1,20 @@
 package org.solyton.solawi.bid.application.ui.component.organization
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
 import org.evoleq.compose.form.Form
 import org.evoleq.compose.form.field.Field
 import org.evoleq.compose.form.label.Label
+import org.evoleq.compose.layout.Horizontal
+import org.evoleq.compose.layout.Vertical
 import org.evoleq.language.Lang
 import org.evoleq.language.subComp
 import org.evoleq.language.title
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.times
-import org.evoleq.serializationx.ZeroUUID
 import org.evoleq.uuid.NIL_UUID
+import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.dom.TextInput
@@ -24,7 +22,6 @@ import org.solyton.solawi.bid.module.banking.data.BIC
 import org.solyton.solawi.bid.module.banking.data.BankAccountId
 import org.solyton.solawi.bid.module.banking.data.IBAN
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
-import org.solyton.solawi.bid.module.banking.data.bankaccount.bankAccountHolder
 import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
@@ -49,86 +46,104 @@ fun BankAccountForm(
         var bankAccountHolderState by remember { mutableStateOf(bankAccount?.bankAccountHolder?: "") }
 
         H3{Text((bankAccountInputs * title).emit())}
-        Field(fieldDesktopStyle) {
-
-            Label(
-                (bankAccountInputs * subComp("bankAccountHolder") * title).emit(),
-                id = "bank-account-holder",
-                labelStyle = formLabelDesktopStyle
-            )
-            TextInput(bankAccountHolderState ) {
-                id("bank-account-holder")
-                style { textInputDesktopStyle() }
-                onInput {
-                    try {
-                        val newBankAccount = bankAccount?.copy(bankAccountHolder = it.value)?: BankAccount(
-                            userId = userId,
-                            bankAccountId = BankAccountId(NIL_UUID),
-                            bankAccountHolder = it.value,
-                            iban = IBAN(ibanState?:""),
-                            bic = BIC(bicState?:""),
-                        )
-                        setBankAccount(newBankAccount)
-                    } catch (exception: Exception) {
-                        // validation stuff
-                    } finally {
-                        bankAccountHolderState = it.value
+        Horizontal({
+            width(100.percent)
+            gap(32.px)
+        }) {
+            Vertical({
+                width(50.percent)
+                minWidth(0.px)
+            }) {
+                Field(fieldDesktopStyle) {
+                    Label(
+                        (bankAccountInputs * subComp("bankAccountHolder") * title).emit(),
+                        id = "bank-account-holder",
+                        labelStyle = formLabelDesktopStyle
+                    )
+                    TextInput(bankAccountHolderState) {
+                        id("bank-account-holder")
+                        style { textInputDesktopStyle() }
+                        onInput {
+                            try {
+                                val newBankAccount = bankAccount?.copy(bankAccountHolder = it.value)?: BankAccount(
+                                    userId = userId,
+                                    bankAccountId = BankAccountId(NIL_UUID),
+                                    bankAccountHolder = it.value,
+                                    iban = IBAN(ibanState?:""),
+                                    bic = BIC(bicState?:""),
+                                )
+                                setBankAccount(newBankAccount)
+                            } catch (exception: Exception) {
+                                // validation stuff
+                            } finally {
+                                bankAccountHolderState = it.value
+                            }
+                        }
                     }
                 }
             }
-        }
-        Field(fieldDesktopStyle) {
-
-            Label(
-                (bankAccountInputs * subComp("iban") * title).emit(),
-                id = "iban",
-                labelStyle = formLabelDesktopStyle
-            )
-            TextInput(ibanState ?: "") {
-                id("iban")
-                style { textInputDesktopStyle() }
-                onInput {
-                    try {
-                        val newBankAccount = bankAccount?.copy(iban = IBAN(it.value))?: BankAccount(
-                            userId = userId,
-                            bankAccountId = BankAccountId(NIL_UUID),
-                            bankAccountHolder = bankAccountHolderState,
-                            iban = IBAN(it.value),
-                            bic = BIC(bicState?:""),
+            Vertical({
+                width(50.percent)
+                minWidth(0.px)
+            }) {
+                Horizontal({
+                    width(100.percent)
+                    gap(16.px)
+                }) {
+                    Field(fieldDesktopStyle) {
+                        Label(
+                            (bankAccountInputs * subComp("iban") * title).emit(),
+                            id = "iban",
+                            labelStyle = formLabelDesktopStyle
                         )
-                        setBankAccount(newBankAccount)
-                    } catch (exception: Exception) {
-                        // validation stuff
-                    } finally {
-                        ibanState = it.value
+                        TextInput(ibanState ?: "") {
+                            id("iban")
+                            style { textInputDesktopStyle() }
+                            onInput {
+                                try {
+                                    val newBankAccount = bankAccount?.copy(iban = IBAN(it.value))?: BankAccount(
+                                        userId = userId,
+                                        bankAccountId = BankAccountId(NIL_UUID),
+                                        bankAccountHolder = bankAccountHolderState,
+                                        iban = IBAN(it.value),
+                                        bic = BIC(bicState?:""),
+                                    )
+                                    setBankAccount(newBankAccount)
+                                } catch (exception: Exception) {
+                                    // validation stuff
+                                } finally {
+                                    ibanState = it.value
+                                }
+                            }
+                        }
                     }
-                }
-            }
-        }
 
-        Field(fieldDesktopStyle) {
-            Label(
-                (bankAccountInputs * subComp("bic") * title).emit(),
-                id = "bic",
-                labelStyle = formLabelDesktopStyle
-            )
-            TextInput(bicState ?: "") {
-                id("bic")
-                style { textInputDesktopStyle() }
-                onInput {
-                    try {
-                        val newBankAccount = bankAccount?.copy(bic = BIC(it.value))?: BankAccount(
-                            userId = userId,
-                            bankAccountId = BankAccountId(NIL_UUID),
-                            bankAccountHolder = bankAccountHolderState,
-                            iban = IBAN(ibanState?:""),
-                            bic = BIC(it.value),
+                    Field(fieldDesktopStyle) {
+                        Label(
+                            (bankAccountInputs * subComp("bic") * title).emit(),
+                            id = "bic",
+                            labelStyle = formLabelDesktopStyle
                         )
-                        setBankAccount(newBankAccount)
-                    } catch (exception: Exception) {
-                        // validation stuff
-                    } finally {
-                        bicState = it.value
+                        TextInput(bicState ?: "") {
+                            id("bic")
+                            style { textInputDesktopStyle() }
+                            onInput {
+                                try {
+                                    val newBankAccount = bankAccount?.copy(bic = BIC(it.value))?: BankAccount(
+                                        userId = userId,
+                                        bankAccountId = BankAccountId(NIL_UUID),
+                                        bankAccountHolder = bankAccountHolderState,
+                                        iban = IBAN(ibanState?:""),
+                                        bic = BIC(it.value),
+                                    )
+                                    setBankAccount(newBankAccount)
+                                } catch (exception: Exception) {
+                                    // validation stuff
+                                } finally {
+                                    bicState = it.value
+                                }
+                            }
+                        }
                     }
                 }
             }

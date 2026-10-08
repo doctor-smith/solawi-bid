@@ -9,20 +9,18 @@ val formPageMobileStyle: StyleScope.()->Unit by lazy { {
 
 val formMobileStyle: StyleScope.()->Unit by lazy {{
     width(100.percent)
-    maxWidth(400.px)
-    padding(20.px)
-    borderRadius(12.px)
-    backgroundColor(Color.white)
     boxSizing("border-box")
 }}
 
 val fieldMobileStyle: StyleScope.()->Unit by lazy {{
     width(100.percent)
+    minWidth(0.px)
     display(DisplayStyle.Flex)
     flexDirection(FlexDirection.Column)
     alignItems(AlignItems.FlexStart)
     justifyContent(JustifyContent.Center)
     marginBottom(14.px)
+    boxSizing("border-box")
 }}
 
 val formLabelMobileStyle: StyleScope.()->Unit by lazy { {

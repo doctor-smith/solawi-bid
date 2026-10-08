@@ -30,9 +30,8 @@ fun fieldStyle(device: DeviceType): StyleScope.()->Unit = when {
 fun formStyle(device: DeviceType): StyleScope.()->Unit = {
     display(DisplayStyle.Flex)
     flexDirection(FlexDirection.Column)
-    backgroundColor(Color.white)
-    property("border", "1px solid #e2e8f0")
-    property("box-shadow", "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05)")
+    width(100.percent)
+    boxSizing("border-box")
     when{
         device > DeviceType.Tablet -> formDesktopStyle()
         else -> formMobileStyle()

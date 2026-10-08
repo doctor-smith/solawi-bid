@@ -8,20 +8,18 @@ val formPageDesktopStyle: StyleScope.()->Unit by lazy { {
 
 val formDesktopStyle: StyleScope.()->Unit by lazy { {
     width(100.percent)
-    maxWidth(400.px)
-    padding(32.px)
-    borderRadius(12.px)
-    backgroundColor(Color.white)
     boxSizing("border-box")
 } }
 
 val fieldDesktopStyle: StyleScope.()->Unit by lazy {{
     width(100.percent)
+    minWidth(0.px)
     display(DisplayStyle.Flex)
     flexDirection(FlexDirection.Column)
     alignItems(AlignItems.FlexStart)
     justifyContent(JustifyContent.Center)
     marginBottom(16.px)
+    boxSizing("border-box")
 }}
 
 val formLabelDesktopStyle: StyleScope.()->Unit by lazy {{
