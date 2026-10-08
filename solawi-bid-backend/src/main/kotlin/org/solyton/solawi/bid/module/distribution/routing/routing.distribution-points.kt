@@ -12,6 +12,7 @@ import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
 import org.solyton.solawi.bid.module.distribution.action.api.CreateDistributionPoint
 import org.solyton.solawi.bid.module.distribution.action.api.ReadDistributionPoints
+import org.solyton.solawi.bid.module.distribution.action.api.ReadPersonalDistributionPoints
 import org.solyton.solawi.bid.module.distribution.action.api.UpdateDistributionPoint
 import org.solyton.solawi.bid.module.distribution.data.api.CreateDistributionPoint
 import org.solyton.solawi.bid.module.distribution.data.api.DistributionPoint
@@ -34,6 +35,12 @@ fun <DistributionPointsEnv> Routing.distributionPoints(
                 ReceiveContextual<String>(provider) *
                 IsGranted("READ_DISTRIBUTION_POINTS", no) *
                 ReadDistributionPoints() *
+                Respond<DistributionPoints> { transform() } runOn Base(call, environment)
+            }
+            get("personal") {
+                ReceiveContextual {} *
+                IsGranted("READ_DISTRIBUTION_POINTS", no) *
+                ReadPersonalDistributionPoints() *
                 Respond<DistributionPoints> { transform() } runOn Base(call, environment)
             }
             post("create") {

@@ -60,6 +60,7 @@ import org.solyton.solawi.bid.module.user.data.user.User
     @ReadWrite val personalShareOffers: List<ShareOffer> = emptyList(),
     // Distribution
     @ReadWrite val distributionPoints: List<DistributionPoint> = emptyList(),
+    @ReadWrite val personalDistributionPoints: List<DistributionPoint> = emptyList(),
 
     // Banking
     @ReadWrite val bankAccounts: List<BankAccount> = emptyList(),

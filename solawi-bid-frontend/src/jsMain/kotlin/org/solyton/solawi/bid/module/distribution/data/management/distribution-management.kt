@@ -19,5 +19,6 @@ data class DistributionManagement(
     @ReadWrite val deviceData: Device,
     @ReadWrite val modals: Modals<Int>,
     @ReadWrite val i18n: I18N,
-    @ReadWrite val distributionPoints: List<DistributionPoint>
+    @ReadWrite val distributionPoints: List<DistributionPoint>,
+    @ReadWrite val personalDistributionPoints: List<DistributionPoint> = listOf()
 )
