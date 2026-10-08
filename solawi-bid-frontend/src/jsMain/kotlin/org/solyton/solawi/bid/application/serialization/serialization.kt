@@ -136,6 +136,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<ShareOffers>(ShareOffers.serializer())
         add<CreateShareOffer>(CreateShareOffer.serializer())
         add<ReadShareOffers>(ReadShareOffers.serializer())
+        add<ReadPersonalShareOffers>(ReadPersonalShareOffers.serializer())
         add<UpdateShareOffer>(UpdateShareOffer.serializer())
 
         // ShareSubscription

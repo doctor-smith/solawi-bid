@@ -7,6 +7,7 @@ import org.solyton.solawi.bid.module.shares.data.api.ApiShareSubscriptions
 import org.solyton.solawi.bid.module.shares.data.api.ReadPersonalShareSubscriptions
 import org.solyton.solawi.bid.module.shares.data.api.ReadShareSubscriptions
 import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
+import org.solyton.solawi.bid.module.shares.data.management.personalShareSubscriptions
 import org.solyton.solawi.bid.module.shares.data.management.shareSubscriptions
 import org.solyton.solawi.bid.module.shares.data.toDomainType
 
@@ -31,5 +32,5 @@ fun readPersonalShareSubscriptions(
     name = READ_PERSONAL_SHARE_SUBSCRIPTIONS.suffixed(nameSuffix),
     reader = { ReadPersonalShareSubscriptions(listOf()) },
     endPoint = ReadPersonalShareSubscriptions::class,
-    writer = shareSubscriptions.set contraMap {sT -> sT.toDomainType()}
+    writer = personalShareSubscriptions.set contraMap {sT -> sT.toDomainType()}
 )

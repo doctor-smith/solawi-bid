@@ -3,9 +3,9 @@ package org.solyton.solawi.bid.module.bid.data.api
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 import org.evoleq.ktorx.client.EmptyParams
-import org.evoleq.ktorx.client.Parameters
 import org.solyton.solawi.bid.module.bid.data.validation.ValidationException
 import org.solyton.solawi.bid.module.permission.data.api.ContextId
+import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
 
 typealias ApiBid = Bid
 typealias ApiNewBidder = NewBidder
@@ -40,7 +40,8 @@ data class BidInfo(
 data class NewBidder(
     val username: String,
     val weblingId: Int,
-    val numberOfShares: Int
+    val numberOfShares: Int,
+    val shareSubscriptionId: ShareSubscriptionId? = null
 ) {
     init {
        // if(numberOfParts < 0) throw BidRoundException.IllegalNumberOfParts(numberOfParts)
@@ -54,6 +55,7 @@ data class Bidder(
     val username: String,
     val weblingId: Int,
     val numberOfParts: Int,
+    val shareSubscriptionId: ShareSubscriptionId? = null,
     val bidRounds: List<BidRound> = listOf()
 ) {
     init {

@@ -146,6 +146,13 @@ authenticate {
                 ReadShareOffersByProvider() *
                 Respond<ShareOffers> { transform() } runOn Base(call, environment)
             }
+            get("personal") {
+                ReceiveContextual {
+                    Unit
+                } *
+                ReadPersonalShareOffers() *
+                Respond<ShareOffers> { transform() } runOn Base(call, environment)
+            }
             delete {
                 NotImplemented() * Respond<Unit> { transform() } runOn Base(call, environment)
             }
