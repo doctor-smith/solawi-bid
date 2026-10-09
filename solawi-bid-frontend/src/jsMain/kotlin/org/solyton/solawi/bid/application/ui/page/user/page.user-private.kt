@@ -6,6 +6,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
+import org.evoleq.compose.effect.LaunchedEffectOnSource
 import org.evoleq.compose.guard.data.isLoading
 import org.evoleq.compose.guard.data.onNullLaunch
 import org.evoleq.compose.guard.data.withLoading
@@ -31,6 +32,8 @@ import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.data.env.i18nEnvironment
 import org.solyton.solawi.bid.application.data.transform.banking.bankingApplicationIso
+import org.solyton.solawi.bid.application.data.transform.distribution.distributionManagementIso
+import org.solyton.solawi.bid.application.data.transform.shares.shareManagementIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.user.i18n.UserLangComponent
@@ -52,11 +55,20 @@ import org.solyton.solawi.bid.module.control.button.EditButton
 import org.solyton.solawi.bid.module.control.button.PlusButton
 import org.solyton.solawi.bid.module.country.i18n.CountryLangComponent
 import org.solyton.solawi.bid.module.dialog.i18n.dialogModalTexts
+import org.solyton.solawi.bid.module.distribution.action.readPersonalDistributionPoints
+import org.solyton.solawi.bid.module.distribution.data.distributionManagementActions
+import org.solyton.solawi.bid.module.distribution.data.management.DistributionManagement
 import org.solyton.solawi.bid.module.i18n.data.language
 import org.solyton.solawi.bid.module.i18n.guard.onMissing
+import org.solyton.solawi.bid.module.list.style.ListStyles
 import org.solyton.solawi.bid.module.loading.component.Loading
 import org.solyton.solawi.bid.module.permission.data.ContextId
 import org.solyton.solawi.bid.module.permissions.service.contextFromPath
+import org.solyton.solawi.bid.module.shares.action.readPersonalShareOffers
+import org.solyton.solawi.bid.module.shares.action.readPersonalShareSubscriptions
+import org.solyton.solawi.bid.module.shares.component.list.ShareSubscriptionsPersonalList
+import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
+import org.solyton.solawi.bid.module.shares.data.shareManagementActions
 import org.solyton.solawi.bid.module.style.card.cardStyle
 import org.solyton.solawi.bid.module.style.modal.commonModalStyles
 import org.solyton.solawi.bid.module.style.page.PageTitle
@@ -89,6 +101,7 @@ import org.solyton.solawi.bid.module.user.data.reader.table
 import org.solyton.solawi.bid.module.user.data.reader.value
 import org.solyton.solawi.bid.module.user.data.user
 import org.solyton.solawi.bid.module.user.data.user.User
+import org.solyton.solawi.bid.module.user.data.user.organizations
 import org.solyton.solawi.bid.module.user.data.user.profile
 import org.solyton.solawi.bid.module.user.data.user.username
 import org.solyton.solawi.bid.module.user.data.userActions
@@ -204,16 +217,15 @@ fun PrivateUserPage(storage: Storage<Application>) = withLoading(
             deviceData = deviceData,
         )
 
-        /*
+
         ShareManagement(
             userDataStorage = userDataStorage,
             shareManagementStorage = storage * shareManagementIso,
             bankingStorage = storage * bankingApplicationIso,
-
+            distributionManagementStorage = storage * distributionManagementIso,
             deviceData = deviceData,
         )
 
-         */
 
         // User permissions
         When(false) {
@@ -685,10 +697,28 @@ fun Banking(
 @Composable
 fun ShareManagement(
     userDataStorage: Storage<User>,
-    // shareManagementStorage: Storage<ShareManagement>,
+    shareManagementStorage: Storage<ShareManagement>,
+    distributionManagementStorage: Storage< DistributionManagement>,
     bankingStorage: Storage<BankingApplication>,
     deviceData: Source<DeviceType>,
 ) {
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffectOnSource(Read(userDataStorage * organizations) map {it.map { org -> org.name }}) {
+        // if the organizations change we have to reload all offers of all organizations the current user is a member of
+        scope.launch {
+            shareManagementStorage * shareManagementActions dispatch readPersonalShareOffers()
+        }
+        scope.launch {
+            shareManagementStorage * shareManagementActions dispatch readPersonalShareSubscriptions()
+        }
+        scope.launch {
+            distributionManagementStorage * distributionManagementActions dispatch readPersonalDistributionPoints()
+        }
+    }
+
+
+
 
     // Banking
     Wrap(cardStyle) {
@@ -699,6 +729,14 @@ fun ShareManagement(
         val bA = bankAccountPrism.match{ it.userId == UserId(userId) }
 
         var opened by remember { mutableStateOf(false) }
+
+        LaunchedEffect(opened) {
+            // if(opened) scope.launch {
+            //    shareManagementStorage * shareManagementActions dispatch readPersonalShareSubscriptions()
+                // shareManagementStorage * shareManagementActions dispatch readPersonalShareSubscriptions()
+            // }
+        }
+
         Horizontal({
             justifyContent(JustifyContent.SpaceBetween);
             width(100.percent);
@@ -708,7 +746,6 @@ fun ShareManagement(
                 justifyContent(JustifyContent.FlexEnd)
             }) {
                 When(opened) {
-                    Text("Actions TBD")
                 }
                 CardChevrons(
                     deviceType = deviceData,
@@ -718,9 +755,13 @@ fun ShareManagement(
             }
         }
         When(opened ) {
-
-            Text("Content TBD")
-
+            ShareSubscriptionsPersonalList(
+                userDataStorage = userDataStorage,
+                shareManagementStorage = shareManagementStorage,
+                distributionManagementStorage = distributionManagementStorage,
+                deviceData = deviceData,
+                listStyles = ListStyles()
+            )
         }
     }
 }

@@ -32,6 +32,7 @@
 | GET | shares/subscriptions/all | ReadShareSubscriptions  | ReadShareSubscriptions | ShareSubscriptions |
 | POST | shares/subscriptions/create | CreateShareSubscription  | CreateShareSubscription | ShareSubscription |
 | POST | shares/subscriptions/import | ImportShareSubscriptions  | ImportShareSubscriptions | ShareSubscriptions |
+| GET | shares/subscriptions/personal | ReadPersonalShareSubscriptions  | ReadPersonalShareSubscriptions | ShareSubscriptions |
 | PATCH | shares/subscriptions/update | UpdateShareSubscription  | UpdateShareSubscription | ShareSubscription |
 | PATCH | shares/subscriptions/update-status | UpdateShareStatus  | UpdateShareStatus | ShareSubscription |
 | GET | shares/types/all | ReadShareTypes  | ReadShareTypes | ShareTypes |
@@ -62,6 +63,7 @@
 | POST | users/profiles/import | ImportUserProfiles  | ImportUserProfiles | UserProfiles |
 | PATCH | users/profiles/read-by-ids | ReadUserProfiles  | ReadUserProfiles | UserProfiles |
 | PATCH | users/profiles/update | UpdateUserProfile  | UpdateUserProfile | UserProfile |
+| POST | users/query | UserQuery  | UserQuery | Users |
 | PATCH | users/update | UpdateUser  | UpdateUser | User |
 
 </details>
@@ -71,6 +73,10 @@
 | Methode | URL | Key | Request Type | Response Type |
 | :--- | :--- | :--- | :--- | :--- |
 | GET | applications/all | ReadApplications  | ReadApplications | Applications |
+| PATCH | applications/management/tech/fix-application-related-contexts | FixApplicationRelatedContexts  | FixApplicationRelatedContexts | Unit |
+| PATCH | applications/management/tech/fix-module-related-contexts | FixModuleRelatedContexts  | FixModuleRelatedContexts | Unit |
+| PATCH | applications/management/tech/update-standard-application-context | UpdateStandardApplicationContext  | UpdateStandardApplicationContext | Contexts |
+| PATCH | applications/management/tech/update-standard-module-context | UpdateStandardModuleContext  | UpdateStandardModuleContext | Contexts |
 | PATCH | applications/management/users | ReadUserApplications  | ReadUserApplications | UserApplications |
 | GET | applications/modules/personal/module-context-relations | ReadPersonalModuleContextRelations  | ReadPersonalModuleContextRelations | ModuleContextRelations |
 | PATCH | applications/modules/personal/register | RegisterForModules  | RegisterForModules | Applications |

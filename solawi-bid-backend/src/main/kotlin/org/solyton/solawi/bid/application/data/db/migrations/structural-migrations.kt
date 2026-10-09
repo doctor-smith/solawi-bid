@@ -157,6 +157,7 @@ val columnsToAdd: List<AddMissingColumns> by lazy {
             ColumnDef.Missing<DateTime>("created_at", DateTime.now()),
             ColumnDef.Missing<UUID?>("modified_by",null),
             ColumnDef.Missing<DateTime?>("modified_at", null),
+            ColumnDef.Missing<UUID?>("share_subscription_id", null),
         ),
         ContextsTable.addColumnsIfMissing(
   

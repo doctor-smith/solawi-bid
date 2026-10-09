@@ -151,6 +151,10 @@ val solawiApi by lazy {
                 key = ReadDistributionPoints::class,
                 url = "distribution-points/all"
             )
+            get<ReadPersonalDistributionPoints, DistributionPoints> (
+                key = ReadPersonalDistributionPoints::class,
+                url = "distribution-points/personal"
+            )
             post<CreateDistributionPoint, DistributionPoint> (
                 key = CreateDistributionPoint::class,
                 url = "distribution-points/create"
@@ -184,6 +188,10 @@ val solawiApi by lazy {
                 key = ReadShareOffers::class,
                 url = "shares/offers/all"
             )
+            get<ReadPersonalShareOffers, ShareOffers> (
+                key = ReadPersonalShareOffers::class,
+                url = "shares/offers/personal"
+            )
             patch<UpdateShareOffer, ShareOffer>(
                 key = UpdateShareOffer::class,
                 url = "shares/offers/update"
@@ -197,6 +205,10 @@ val solawiApi by lazy {
                 key = ReadShareSubscriptions::class,
                 url = "shares/subscriptions/all"
             )
+            get<ReadPersonalShareSubscriptions, ShareSubscriptions> (
+                key = ReadPersonalShareSubscriptions::class,
+                url = "shares/subscriptions/personal"
+            )
             patch<UpdateShareSubscription, ShareSubscription>(
                 key = UpdateShareSubscription::class,
                 url = "shares/subscriptions/update"
@@ -208,6 +220,12 @@ val solawiApi by lazy {
             patch<UpdateShareStatus, ShareSubscription>(
                 key = UpdateShareStatus::class,
                 url = "shares/subscriptions/update-status"
+            )
+
+            // History
+            get<ReadShareSubscriptionStatusHistory, ShareSubscriptionStatusHistories>(
+                key = ReadShareSubscriptionStatusHistory::class,
+                url = "shares/subscriptions/history"
             )
         }
         // User Management and Organizations

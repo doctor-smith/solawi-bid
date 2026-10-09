@@ -6,6 +6,8 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.auditable.AuditableEntity
 import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
+import org.solyton.solawi.bid.module.shares.schema.ShareSubscription
+import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionsTable
 import java.util.*
 
 typealias BidderDetailsSolawiTuebingenEntity = BidderDetailsSolawiTuebingen
@@ -19,6 +21,8 @@ object BidderDetailsSolawiTuebingenTable : AuditableUUIDTable("bidder_details_so
 
     // number of parts the prosumer wants to buy
     val numberOfShares = integer("number_of_shares")
+
+    val shareSubscriptionId = optReference("share_subscription_id", ShareSubscriptionsTable)
 }
 
 class BidderDetailsSolawiTuebingen (id: EntityID<UUID>) : UUIDEntity(id), BidderDetails.SolawiTuebingen, AuditableEntity<UUID> {
@@ -27,6 +31,8 @@ class BidderDetailsSolawiTuebingen (id: EntityID<UUID>) : UUIDEntity(id), Bidder
     //var bidderId by BidderDetailsSolawiTuebingenTable.bidderId
     var weblingId by BidderDetailsSolawiTuebingenTable.weblingId
     override var numberOfShares by BidderDetailsSolawiTuebingenTable.numberOfShares
+
+    var subscription by ShareSubscription optionalReferencedOn BidderDetailsSolawiTuebingenTable.shareSubscriptionId
 
     override var bidder by Bidder referencedOn BidderDetailsSolawiTuebingenTable.bidderId
 

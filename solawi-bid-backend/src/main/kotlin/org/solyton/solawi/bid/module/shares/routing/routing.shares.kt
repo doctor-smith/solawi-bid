@@ -13,11 +13,13 @@ import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
 import org.evoleq.uuid.toUuid
 import org.solyton.solawi.bid.module.application.repository.contextIdOf
+import org.solyton.solawi.bid.module.permission.action.db.IsGranted
 import org.solyton.solawi.bid.module.permission.action.db.IsGrantedOneOf
 import org.solyton.solawi.bid.module.permission.action.db.no
 import org.solyton.solawi.bid.module.permission.action.db.rights
 import org.solyton.solawi.bid.module.shares.action.api.*
 import org.solyton.solawi.bid.module.shares.data.api.*
+import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
 import org.solyton.solawil.bid.module.user.data.toUUID
 import java.util.*
 
@@ -145,6 +147,13 @@ authenticate {
                 ReadShareOffersByProvider() *
                 Respond<ShareOffers> { transform() } runOn Base(call, environment)
             }
+            get("personal") {
+                ReceiveContextual {
+                    Unit
+                } *
+                ReadPersonalShareOffers() *
+                Respond<ShareOffers> { transform() } runOn Base(call, environment)
+            }
             delete {
                 NotImplemented() * Respond<Unit> { transform() } runOn Base(call, environment)
             }
@@ -220,6 +229,23 @@ authenticate {
                     contextIdOf(providerId, SHARE_APPLICATION)
                 } *
                 ReadShareShareSubscriptionsByProvider() * Respond<ShareSubscriptions> { transform() } runOn Base(call, environment)
+            }
+            get("history") {
+                ReceiveContextual { params ->
+                    val ids = (params.getAll("share_subscription_id").orEmpty()).map{ ShareSubscriptionId(it) }
+                    ReadShareSubscriptionStatusHistories(ids)
+                } *
+                ReadShareSubscriptionStatusHistories() *
+                Respond< ShareSubscriptionStatusHistories> { transform() } runOn Base(call, environment)
+            }
+            get("personal") {
+                ReceiveContextual{ params ->
+                    ReadPersonalShareSubscriptions(listOf())
+                } *
+                IsGranted("", no) *
+                ReadPersonalShareSubscriptions() *
+                Respond<ShareSubscriptions> { transform() } runOn Base(call,environment)
+
             }
             delete {
                 NotImplemented() * Respond<Unit> { transform() } runOn Base(call, environment)

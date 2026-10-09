@@ -10,6 +10,7 @@ import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.solyton.solawi.bid.module.shares.data.api.ShareOffers
 import org.solyton.solawi.bid.module.shares.data.toApiType
+import org.solyton.solawi.bid.module.shares.repository.readPersonalShareOffers
 import org.solyton.solawi.bid.module.shares.repository.readShareOffersByProvider
 import java.util.*
 
@@ -31,3 +32,14 @@ fun ReadShareOffersByProvider() = KlAction<Result<Contextual<ReadShareOffersByPr
         ).toApiType()
     } } x database
 } }
+
+@MathDsl
+@Suppress("FunctionName")
+fun ReadPersonalShareOffers() = KlAction<Result<Contextual<Unit>>, Result<ShareOffers>> { result -> DbAction {
+    database -> result bindSuspend  { contextual -> resultTransaction(database) {
+        val userId = contextual.userId
+        readPersonalShareOffers(userId).toApiType()
+    } } x database
+} }
+
+

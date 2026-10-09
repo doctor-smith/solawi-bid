@@ -136,6 +136,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<ShareOffers>(ShareOffers.serializer())
         add<CreateShareOffer>(CreateShareOffer.serializer())
         add<ReadShareOffers>(ReadShareOffers.serializer())
+        add<ReadPersonalShareOffers>(ReadPersonalShareOffers.serializer())
         add<UpdateShareOffer>(UpdateShareOffer.serializer())
 
         // ShareSubscription
@@ -143,9 +144,17 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<ShareSubscriptions>(ShareSubscriptions.serializer())
         add<CreateShareSubscription>(CreateShareSubscription.serializer())
         add<ReadShareSubscriptions>(ReadShareSubscriptions.serializer())
+        add<ReadPersonalShareSubscriptions>(ReadPersonalShareSubscriptions.serializer())
         add<UpdateShareSubscription>(UpdateShareSubscription.serializer())
         add<ImportShareSubscription>(ImportShareSubscription.serializer())
         add<ImportShareSubscriptions>(ImportShareSubscriptions.serializer())
+
+        // History
+        add<ShareSubscriptionStatusHistories>(ShareSubscriptionStatusHistories.serializer())
+        add<ShareSubscriptionStatusHistory>(ShareSubscriptionStatusHistory.serializer())
+        add<ShareSubscriptionStatusHistoryEntry>(ShareSubscriptionStatusHistoryEntry.serializer())
+        add<ReadShareSubscriptionStatusHistory>(ReadShareSubscriptionStatusHistory.serializer())
+
         // ShareStatus
         add<ShareStatus>(ShareStatus.serializer())
         add<UpdateShareStatus>(UpdateShareStatus.serializer())
@@ -167,6 +176,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<UpdateDistributionPoint>(UpdateDistributionPoint.serializer())
         add<DeleteDistributionPoint>(DeleteDistributionPoint.serializer())
         add<ReadDistributionPoint>(ReadDistributionPoint.serializer())
+        add<ReadPersonalDistributionPoints>(ReadPersonalDistributionPoints.serializer())
         add<ReadDistributionPoints>(ReadDistributionPoints.serializer())
         add<CreateOrUseAddress>(CreateOrUseAddress.serializer())
         add<CreateOrUseAddress.Create>(CreateOrUseAddress.Create.serializer())

@@ -56,8 +56,11 @@ import org.solyton.solawi.bid.module.user.data.user.User
     @ReadWrite val shareSubscriptions: List<ShareSubscription> = emptyList(),
     @ReadWrite val shareOffers: List<ShareOffer> = emptyList(),
     @ReadWrite val shareTypes: List<ShareType> = emptyList(),
+    @ReadWrite val personalShareSubscriptions: List<ShareSubscription> = emptyList(),
+    @ReadWrite val personalShareOffers: List<ShareOffer> = emptyList(),
     // Distribution
     @ReadWrite val distributionPoints: List<DistributionPoint> = emptyList(),
+    @ReadWrite val personalDistributionPoints: List<DistributionPoint> = emptyList(),
 
     // Banking
     @ReadWrite val bankAccounts: List<BankAccount> = emptyList(),

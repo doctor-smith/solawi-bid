@@ -23,5 +23,7 @@ data class ShareManagement(
     @ReadWrite val i18n: I18N,
     @ReadWrite val shareSubscriptions: List<ShareSubscription> = emptyList(),
     @ReadWrite val shareOffers: List<ShareOffer> = emptyList(),
-    @ReadWrite val shareTypes: List<ShareType> = emptyList()
+    @ReadWrite val shareTypes: List<ShareType> = emptyList(),
+    @ReadWrite val personalShareSubscriptions: List<ShareSubscription> = emptyList(),
+    @ReadWrite val personalShareOffers: List<ShareOffer> = emptyList()
 )

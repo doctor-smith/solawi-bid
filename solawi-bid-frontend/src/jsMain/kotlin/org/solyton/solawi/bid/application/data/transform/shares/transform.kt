@@ -58,7 +58,9 @@ private val preShareManagementIso: Lens<Application, ShareManagement> by lazy {
             environment = whole.environment.useI18nTransform(),
             shareTypes = whole.shareTypes,
             shareOffers = whole.shareOffers,
-            shareSubscriptions = whole.shareSubscriptions
+            shareSubscriptions = whole.shareSubscriptions,
+            personalShareSubscriptions = whole.personalShareSubscriptions,
+            personalShareOffers = whole.personalShareOffers
         ) },
         set = { part -> { whole -> whole.copy(
             context = part.context,
@@ -66,7 +68,9 @@ private val preShareManagementIso: Lens<Application, ShareManagement> by lazy {
             i18N = part.i18n,
             shareTypes = part.shareTypes,
             shareOffers = part.shareOffers,
-            shareSubscriptions = part.shareSubscriptions
+            shareSubscriptions = part.shareSubscriptions,
+            personalShareSubscriptions = part.personalShareSubscriptions,
+            personalShareOffers = part.personalShareOffers
         ) } }
     )
 }

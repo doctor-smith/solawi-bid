@@ -19,8 +19,10 @@ import org.solyton.solawi.bid.application.ui.page.application.private.PrivateApp
 import org.solyton.solawi.bid.application.ui.page.application.private.PrivateApplicationOrganizationManagementPage
 import org.solyton.solawi.bid.application.ui.page.auction.*
 import org.solyton.solawi.bid.application.ui.page.banking.BankingApplicationForOrganizationsPage
+import org.solyton.solawi.bid.application.ui.page.banking.OrganizationsWithBankingPage
 import org.solyton.solawi.bid.application.ui.page.dashboard.DashboardPage
 import org.solyton.solawi.bid.application.ui.page.distribution.DistributionManagementForOrganizationsPage
+import org.solyton.solawi.bid.application.ui.page.distribution.OrganizationsWithDistributionPage
 import org.solyton.solawi.bid.application.ui.page.login.LoginPage
 import org.solyton.solawi.bid.application.ui.page.login.effect.LaunchLogoutEffect
 import org.solyton.solawi.bid.application.ui.page.manual.HowToBidPage
@@ -29,6 +31,8 @@ import org.solyton.solawi.bid.application.ui.page.manual.ManualPage
 import org.solyton.solawi.bid.application.ui.page.manual.banking.BankingManualPage
 import org.solyton.solawi.bid.application.ui.page.sendbid.SendBidPage
 import org.solyton.solawi.bid.application.ui.page.sendbid.ShowQRCodePage
+import org.solyton.solawi.bid.application.ui.page.shares.OrganizationsWithShareManagementPage
+import org.solyton.solawi.bid.application.ui.page.shares.PersonalShareManagementPage
 import org.solyton.solawi.bid.application.ui.page.shares.ShareManagementForOrganizationsPage
 import org.solyton.solawi.bid.application.ui.page.test.FontsPage
 import org.solyton.solawi.bid.application.ui.page.test.MobileTestPage
@@ -161,7 +165,13 @@ fun Routing(storage: Storage<Application>): Routes = Routing(
                             }
                         }
                     }
+                    route("shares") {
+                        component{
+                            PersonalShareManagementPage(storage)
+                        }
+                    }
                 }
+
                 route("users") {
                     component {
                         UserManagementPage(
@@ -174,6 +184,28 @@ fun Routing(storage: Storage<Application>): Routes = Routing(
                         OrganizationManagementPage(
                             storage * userIso
                         )
+                    }
+                    route("with") {
+                        route("shares") {
+                            component{
+                                OrganizationsWithShareManagementPage(storage)
+                            }
+                        }
+                        route("auctions") {
+                            component{
+                                OrganizationsWithAuctionsPage(storage)
+                            }
+                        }
+                        route("banking") {
+                            component {
+                                OrganizationsWithBankingPage(storage)
+                            }
+                        }
+                        route("distribution"){
+                            component {
+                                OrganizationsWithDistributionPage(storage)
+                            }
+                        }
                     }
                     route(":organizationId") {
                         component {

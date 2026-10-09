@@ -2,7 +2,7 @@ package org.evoleq.math
 
 @MathDsl
 @Suppress("FunctionName")
-fun <K, V> Get(key: K): Reader<Map<K, V>, V?> = Reader{map -> map[key]}
+fun <K, V> Get(key: K?): Reader<Map<K, V>, V?> = Reader{map -> key?.let{map[key]}}
 
 
 @MathDsl

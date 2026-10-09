@@ -76,3 +76,15 @@ infix fun <T> Source<T?>.onNull(alt: ()->T): Source<T> = Source { emit() ?: alt(
 
 @MathDsl
 infix fun <T> Source<T>.onError(alt: () -> T): Source<T> = Try(this) onNull alt
+
+typealias Emit = Unit
+operator fun <T> Source<T>.times(emit: Emit): T = emit()
+
+object IsTrue
+object IsFalse
+
+operator fun Source<Boolean>.times(isTrue: IsTrue): Boolean = emit()
+operator fun Source<Boolean>.times(isFalse: IsFalse): Boolean = !emit()
+
+object IsNotEmpty
+operator fun <T> Source<List<T>>.times(isNotEmpty: IsNotEmpty): Boolean = emit().isNotEmpty()
