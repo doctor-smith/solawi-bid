@@ -221,6 +221,12 @@ val solawiApi by lazy {
                 key = UpdateShareStatus::class,
                 url = "shares/subscriptions/update-status"
             )
+
+            // History
+            get<ReadShareSubscriptionStatusHistory, ShareSubscriptionStatusHistories>(
+                key = ReadShareSubscriptionStatusHistory::class,
+                url = "shares/subscriptions/history"
+            )
         }
         // User Management and Organizations
         group("User management and organizations") {
