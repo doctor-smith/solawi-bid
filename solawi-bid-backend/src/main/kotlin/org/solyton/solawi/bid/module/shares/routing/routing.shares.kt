@@ -19,6 +19,7 @@ import org.solyton.solawi.bid.module.permission.action.db.no
 import org.solyton.solawi.bid.module.permission.action.db.rights
 import org.solyton.solawi.bid.module.shares.action.api.*
 import org.solyton.solawi.bid.module.shares.data.api.*
+import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
 import org.solyton.solawil.bid.module.user.data.toUUID
 import java.util.*
 
@@ -228,6 +229,14 @@ authenticate {
                     contextIdOf(providerId, SHARE_APPLICATION)
                 } *
                 ReadShareShareSubscriptionsByProvider() * Respond<ShareSubscriptions> { transform() } runOn Base(call, environment)
+            }
+            get("history") {
+                ReceiveContextual { params ->
+                    val ids = (params.getAll("share_subscription_id").orEmpty()).map{ ShareSubscriptionId(it) }
+                    ReadShareSubscriptionStatusHistories(ids)
+                } *
+                ReadShareSubscriptionStatusHistories() *
+                Respond< ShareSubscriptionStatusHistories> { transform() } runOn Base(call, environment)
             }
             get("personal") {
                 ReceiveContextual{ params ->
