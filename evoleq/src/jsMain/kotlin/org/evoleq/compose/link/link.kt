@@ -15,9 +15,12 @@ import org.jetbrains.compose.web.dom.Text
 fun Link(
     text: String,
     target: String,
-    styles: StyleScope.()->Unit = defaultLinkStyles
+    styles: StyleScope.()->Unit = {}
 ) = Span({
-    style{styles()}
+    style{
+        defaultLinkStyles()
+        styles()
+    }
     onClick {
         it.stopPropagation()
         navigate(target)
