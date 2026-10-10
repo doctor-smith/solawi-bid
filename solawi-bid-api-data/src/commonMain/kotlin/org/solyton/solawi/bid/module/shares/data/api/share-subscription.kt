@@ -4,9 +4,10 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 import org.evoleq.ktorx.client.Parameters
 import org.evoleq.ktorx.client.QueryParams
-import org.solyton.solawi.bid.module.values.Username
-import org.solyton.solawi.bid.module.values.isValidEmail
-import org.solyton.solawi.bid.module.values.isValidUUID
+import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
+import org.solyton.solawi.bid.module.shares.data.values.ShareOfferId
+import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
+import org.solyton.solawi.bid.module.values.*
 
 typealias ApiShareSubscription = ShareSubscription
 typealias ApiShareSubscriptions = ShareSubscriptions
@@ -102,4 +103,13 @@ data class ImportShareSubscription(
     val ahcAuthorized: Boolean?,
     val status: ShareStatus,
     val coSubscribers: List<String> = emptyList()
+)
+
+@Serializable
+data class Rollover(
+    val providerId: ProviderId,
+    val shareSubscriptionIds: List<ShareSubscriptionId>,
+    val toShareOfferId: ShareOfferId,
+    val changedBy: ChangedBy,
+    val modifiedBy: UserId,
 )

@@ -118,13 +118,16 @@ class ShareStatusRolloverTests {
     companion object {
 
         fun Transaction.rolloverAndAssert(testCase: TestCase): ShareSubscriptionEntity {
-            val rolledOver = rollover(
+            val (current, rolledOver) = rollover(
                 testCase.shareSubscription!!.id.value,
                 testCase.nextShareOffer!!.id.value,
                 testCase.modifier,
                 testCase.humanModifierId,
             )
 
+            assertEquals(testCase.shareSubscription.id.value, current.id.value)
+
+            assertEquals(ShareStatus.RollingOver, ShareStatus.from(current.status.name))
             assertEquals(ShareStatus.RollingOver, ShareStatus.from(rolledOver.status.name))
             assertEquals(testCase.nextShareOffer, rolledOver.shareOffer)
 
