@@ -13,8 +13,8 @@ import org.solyton.solawi.bid.module.banking.data.internal.Currency
 import org.solyton.solawi.bid.module.banking.data.internal.format
 import org.solyton.solawi.bid.module.banking.data.internal.toMoney
 import org.solyton.solawi.bid.module.control.tooltip.Tooltip
-import org.solyton.solawi.bid.module.style.text.TextOverflow
-import org.solyton.solawi.bid.module.style.text.textOverflow
+import org.solyton.solawi.bid.module.style.overflow.Overflow
+import org.solyton.solawi.bid.module.style.overflow.overflowX
 import kotlin.js.Date
 
 
@@ -170,10 +170,16 @@ fun TextCell(
             paddingLeft(5.px)
             paddingRight(5.px)
             width(10.percent)
-            textOverflow(TextOverflow.Ellipsis)
             style()
         }) {
-            Text(text)
+            Div({
+                style{
+                    width(100.percent)
+                    overflowX(Overflow.Hidden)
+                }
+            }) {
+                Text(text)
+            }
         }
         else -> Div({
             style {
@@ -181,7 +187,8 @@ fun TextCell(
                 paddingLeft(5.px)
                 paddingRight(5.px)
                 width(10.percent)
-                textOverflow(TextOverflow.Ellipsis)
+     //           textOverflow(TextOverflow.Ellipsis)
+                overflowX(Overflow.Hidden)
                 style()
             }
         }) { Text(text) }
