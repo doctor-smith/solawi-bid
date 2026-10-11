@@ -219,6 +219,20 @@ fun <W, P> Lens<W, List<P>>.update(compare: (updatedData: P, listItem: P) -> Boo
     }
 }
 
+/**
+ * Updates all elements of a list within a structure using specific comparison logic.
+ *
+ * This method retrieves the current list from the structure, compares each item
+ * in the list with the provided set of updated items using the given comparison function,
+ * and replaces matching items in the list with their updated versions. If no matches are found
+ * for a given item, the original item is retained in the list. The new list is then stored
+ * back into the structure, returning the updated structure along with the modified list.
+ *
+ * @param compare A function that determines whether an updated item matches an existing item in the list.
+ *                It takes two parameters: the updated item and the existing list item.
+ * @return A `Writer` that, when provided with a collection of updated items and a structure,
+ *         returns the updated structure and the new list of items.
+ */
 fun <W, P> Lens<W, List<P>>.updateAll(compare: (updatedData: P, listItem: P) -> Boolean): Writer<W, List<P>> = Writer { updatedItems -> { w ->
     val storedList = get(w)
     val updatedList = mutableListOf<P>()
@@ -229,6 +243,25 @@ fun <W, P> Lens<W, List<P>>.updateAll(compare: (updatedData: P, listItem: P) -> 
     set( updatedList ) (w)
 } }
 
+/**
+ * Updates or inserts a collection of elements (`List<P>`) into an existing list within a
+ * larger structure `W`, based on a comparison function.
+ *
+ * This method ensures that:
+ * 1. Elements in the existing list are replaced if they satisfy the comparison function
+ *    with any of the provided updated elements.
+ * 2. Updated elements that do not already exist in the stored list (based on the comparison function)
+ *    are appended to the list.
+ *
+ * The operation is performed immutably within the context of the `Lens`,
+ * leveraging functional programming constructs.
+ *
+ * @param compare A lambda function that determines if an updated element matches an element
+ *                in the existing list. Should return `true` if the two elements match,
+ *                and `false` otherwise.
+ * @return A `Writer` that, when applied, produces an updated list (`List<P>`) within the context
+ *         of the larger structure `W`.
+ */
 fun <W, P> Lens<W, List<P>>.upsertAll(compare: (updatedData: P, listItem: P) -> Boolean): Writer<W, List<P>> = Writer { updatedItems -> { w ->
     val storedList = get(w)
     val updatedList = mutableListOf<P>()
