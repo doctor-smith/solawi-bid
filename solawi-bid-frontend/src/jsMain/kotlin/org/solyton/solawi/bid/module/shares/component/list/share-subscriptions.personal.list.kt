@@ -161,7 +161,7 @@ fun ShareSubscriptionsPersonalList(
                     EditButton(
                         color = Color.black,
                         bgColor = Color.white,
-                        texts = { "not implemented yet!" },
+                        texts = { "Edit" },
                         deviceType = deviceData,
                         isDisabled = isEditButtonDisabled
                     ) {
