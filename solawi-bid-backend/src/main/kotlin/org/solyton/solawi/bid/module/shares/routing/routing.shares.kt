@@ -176,7 +176,7 @@ authenticate {
                 Respond<ShareSubscription> { transform() } runOn Base(call, environment)
             }
             post("rollover"){
-                ReceiveContextual<Rollover>() *
+                ReceiveContextual<RolloverShareSubscriptions>() *
                 IsGrantedOneOf(
                     rights(
                         "CREATE_SHARE_SUBSCRIPTIONS",
