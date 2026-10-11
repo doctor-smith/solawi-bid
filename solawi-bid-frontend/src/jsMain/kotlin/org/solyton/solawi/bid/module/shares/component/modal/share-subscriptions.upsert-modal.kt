@@ -7,7 +7,6 @@ import kotlinx.coroutines.launch
 import org.evoleq.change.data.Change
 import org.evoleq.change.data.Keep
 import org.evoleq.compose.Markup
-import org.evoleq.compose.attribute.disabled
 import org.evoleq.compose.conditional.When
 import org.evoleq.compose.form.Form
 import org.evoleq.compose.form.field.Field
@@ -29,6 +28,7 @@ import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
 import org.evoleq.uuid.NIL_UUID
+import org.jetbrains.compose.web.attributes.disabled
 import org.jetbrains.compose.web.attributes.placeholder
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -69,12 +69,97 @@ import org.solyton.solawi.bid.module.values.ProviderId
 import org.w3c.dom.HTMLElement
 import kotlin.time.Duration.Companion.milliseconds
 
+data class EnabledShareSubscriptionInputs(
+    val user: Boolean = false,
+    val fiscalYear: Boolean = false,
+    val distributionPoint: Boolean = false,
+    val shareOffer: Boolean = false,
+    val shareStatus: Boolean = false,
+    val pricePerShare: Boolean = false,
+    val numberOfShares: Boolean = false,
+    val sepaMandateSigned: Boolean = false,
+    val coSubscribers: Boolean = false,
+    val ahcAuthorized: Boolean = false
+) {
+    companion object {
+        fun enableAll() = EnabledShareSubscriptionInputs(
+            user = true,
+            fiscalYear = true,
+            distributionPoint = true,
+            shareOffer = true,
+            shareStatus = true,
+            pricePerShare = true,
+            numberOfShares = true,
+            sepaMandateSigned = true,
+            coSubscribers = true,
+            ahcAuthorized = true
+        )
+
+        fun disableAll(): EnabledShareSubscriptionInputs = EnabledShareSubscriptionInputs()
+
+        fun enableForUser(shareSubscription: ShareSubscription?): EnabledShareSubscriptionInputs {
+            val baseConfig = enableAll().copy(
+                user = false,
+                fiscalYear = false,
+                shareStatus = false,
+                pricePerShare = false,
+                sepaMandateSigned = false,
+                ahcAuthorized = false
+            )
+
+
+            if(shareSubscription == null) return baseConfig
+            return when (shareSubscription.status) {
+                ShareStatus.Expired -> disableAll()
+                ShareStatus.ActivationRejected -> disableAll()
+                ShareStatus.AwaitingAhcAuthorization -> disableAll()
+                ShareStatus.Cancelled -> disableAll()
+                ShareStatus.ClearedForAuction -> disableAll()
+                ShareStatus.External -> disableAll()
+                ShareStatus.Paused -> disableAll()
+                ShareStatus.PaymentFailed -> disableAll()
+                ShareStatus.PendingActivation -> baseConfig.copy(
+                    shareOffer = false,
+                    shareStatus = true
+                )
+                ShareStatus.RolledOver -> disableAll()
+                ShareStatus.RollingOver -> disableAll()
+                ShareStatus.Subscribed -> disableAll()
+                ShareStatus.Suspended -> disableAll()
+            }
+        }
+
+        fun enable(
+            subscription: ShareSubscription?,
+            changedBy: ChangedBy
+        ): EnabledShareSubscriptionInputs =
+            when(changedBy) {
+                ChangedBy.SYSTEM -> enableAll()
+                ChangedBy.PROVIDER -> enableAll()
+                ChangedBy.USER -> enableForUser(subscription)
+            }
+    }
+}
+
+data class UpsertShareSubscriptionModalConfiguration(
+    val enabledInputs: EnabledShareSubscriptionInputs
+) {
+    companion object {
+        fun configure(
+            subscription: ShareSubscription?,
+            changedBy: ChangedBy
+        ): UpsertShareSubscriptionModalConfiguration = UpsertShareSubscriptionModalConfiguration(
+            enabledInputs = EnabledShareSubscriptionInputs.enable(subscription, changedBy)
+        )
+    }
+}
 
 @Markup
 fun Storage<Modals<Int>>.showUpsertShareSubscriptionModal(
     storage: Storage<ShareManagement>,
     texts: Lang.Block = upsertShareSubscriptionModalTexts.emit(),
     device: Source<DeviceType>,
+    configuration: UpsertShareSubscriptionModalConfiguration,
     fiscalYears: Source<List<FiscalYear>>,
     distributionPoints: Source<List<DistributionPoint>>,
     shareOffers: Source<List<ShareOffer>>,
@@ -95,6 +180,7 @@ fun Storage<Modals<Int>>.showUpsertShareSubscriptionModal(
                 texts,
                 this@showUpsertShareSubscriptionModal,
                 device,
+                configuration,
                 storage,
                 fiscalYears,
                 distributionPoints,
@@ -118,6 +204,7 @@ fun UpsertShareSubscriptionModal(
     texts: Lang.Block = upsertShareSubscriptionModalTexts.emit(),
     modals: Storage<Modals<Int>>,
     device: Source<DeviceType>,
+    configuration: UpsertShareSubscriptionModalConfiguration,
     // Data
     storage: Storage<ShareManagement>,
     fiscalYears: Source<List<FiscalYear>>,
@@ -155,14 +242,27 @@ fun UpsertShareSubscriptionModal(
 
     // user state
     val initialUser = shareSubscription?.userProfileId?.let { userProfileId ->
-        users.first { it.profile?.userProfileId == userProfileId }
+        requireNotNull(users.firstOrNull { it.profile?.userProfileId == userProfileId }) {
+            "user is null"
+        }
     }
+
+
+    /*
+    val initialUser = requireNotNull(shareSubscription?.userProfileId?.let { userProfileId ->
+        users.firstOrNull { it.profile?.userProfileId == userProfileId }
+    }) {
+        "initial user is null"
+    }
+     */
     var userState by remember { mutableStateOf(initialUser) }
 
     // share offer state
     val initialShareOffer = shareSubscription?.shareOfferId?.let { shareOfferId ->
-        shareOffers.emit().first { it.shareOfferId == shareOfferId }
-    }
+        requireNotNull(shareOffers.emit().firstOrNull { it.shareOfferId == shareOfferId }
+    ) {
+        "initial share offer is null"
+    }}
     var shareOfferState by remember { mutableStateOf(initialShareOffer) }
 
     // fiscal year state
@@ -173,12 +273,15 @@ fun UpsertShareSubscriptionModal(
     // - If the share subscription is has status other then EXTERNAL or PENDING_ACTIVATION, the fiscal year is not to be edited at all!
     // - The set of available share offers varies with fiscal year
     val today = now()
-    val currentFiscalYear = fiscalYears.emit().first {
+    val currentFiscalYear = fiscalYears.emit().firstOrNull {
         today.year in it.start.year..it.end.year
     }
     val initialFiscalYear = shareSubscription?.fiscalYearId?.let { fiscalYearId ->
-        fiscalYears.emit().first { it.fiscalYearId == fiscalYearId }
-    } ?: currentFiscalYear
+        requireNotNull(fiscalYears.emit().firstOrNull { it.fiscalYearId == fiscalYearId }) {
+            "initial fiscal year is null"
+        }
+    } ?: currentFiscalYear ?: fiscalYears.emit().first()
+
     var fiscalYearState by remember { mutableStateOf(initialFiscalYear) }
 
     // Price per Share
@@ -201,8 +304,10 @@ fun UpsertShareSubscriptionModal(
 
     // distribution point state
     val initialDistributionPoint = shareSubscription?.distributionPointId?.let { distributionPointId ->
-        distributionPoints.emit().first { it.distributionPointId == distributionPointId }
-    }
+        requireNotNull(distributionPoints.emit().firstOrNull { it.distributionPointId == distributionPointId }
+    ) {
+        "initial distribution point is null"
+    }}
 
     // initial distribution point state
     var distributionPointState by remember { mutableStateOf(initialDistributionPoint) }
@@ -296,7 +401,8 @@ fun UpsertShareSubscriptionModal(
                         SearchInputStyles().modifyContainerStyle {
                             width(100.percent)
                         },
-                        true
+                        true,
+                        isDisabled = {!configuration.enabledInputs.user}
                     ) {
                         scope.launch {
                             searchUsersResult = users.filter { user ->
@@ -370,7 +476,8 @@ fun UpsertShareSubscriptionModal(
                     options = options,
                     selected = fiscalYearState.format(),
                     styles = dropdownStyles,
-                    iconContent = { expanded -> SimpleUpDown(expanded) }
+                    iconContent = { expanded -> SimpleUpDown(expanded) },
+                    isDisabled = {!configuration.enabledInputs.fiscalYear}
                 ) { (_, value) ->
                     update(
                         ShareSubscriptionChange(
@@ -414,7 +521,8 @@ fun UpsertShareSubscriptionModal(
                     selected = shareOfferState?.let { it.shareType.name + " - " + it.fiscalYear.format() }
                         ?: (shareOfferField * LangField.placeholder).emit(),
                     styles = dropdownStyles,
-                    iconContent = { expanded -> SimpleUpDown(expanded) }
+                    iconContent = { expanded -> SimpleUpDown(expanded) },
+                    isDisabled = {!configuration.enabledInputs.shareOffer}
                 ) { (_, value) ->
                     update(
                         ShareSubscriptionChange(
@@ -454,7 +562,8 @@ fun UpsertShareSubscriptionModal(
                     options = options,
                     selected = distributionPointState?.name ?: "Select distribution point",
                     styles = dropdownStyles,
-                    iconContent = { expanded -> SimpleUpDown(expanded) }
+                    iconContent = { expanded -> SimpleUpDown(expanded) },
+                    isDisabled = {!configuration.enabledInputs.distributionPoint}
                 ) { (_, value) ->
                     update(
                         ShareSubscriptionChange(
@@ -487,8 +596,11 @@ fun UpsertShareSubscriptionModal(
                     labelStyle = formLabelDesktopStyle,
                     isRequired = true
                 )
+                // States related to rollover are set in a different use case
+                val generallyForbiddenTargets = setOf(ShareStatus.RolledOver, ShareStatus.RollingOver)
+
                 val allowedShareStatusTransitionTargets = requireNotNull(
-                    shareStatusTransitionsWithPermissions[statusState]
+                    shareStatusTransitionsWithPermissions[statusState]?.filter { it.shareStatus !in generallyForbiddenTargets }
                 ) {
                     "Share status transition not found for status $statusState"
                 }.filter { it.permissions[changesDoneBy] != null }.associateBy({ it.shareStatus.value }) {
@@ -507,7 +619,8 @@ fun UpsertShareSubscriptionModal(
                     options = allowedShareStatusTransitionTargets,
                     selected = statusState.value,
                     styles = dropdownStyles,
-                    iconContent = { expanded -> SimpleUpDown(expanded) }
+                    iconContent = { expanded -> SimpleUpDown(expanded) },
+                    isDisabled = {!configuration.enabledInputs.shareStatus}
                 ) {
                     (_, value) ->
                     update(ShareSubscriptionChange(
@@ -539,6 +652,7 @@ fun UpsertShareSubscriptionModal(
                 TextInput(
                     pricePerShareState.toString(),
                 ) {
+                    if(!configuration.enabledInputs.pricePerShare) disabled()
                     style{width(100.percent)}
                     onInput {
                         event ->
@@ -579,6 +693,7 @@ fun UpsertShareSubscriptionModal(
                 TextInput(
                     numberOfSharesState.toString(),
                 ) {
+                    if(!configuration.enabledInputs.numberOfShares) disabled()
                     style{width(100.percent)}
                     onInput { event ->
                             val value = event.value.toIntOrNull() ?: 0
@@ -633,7 +748,8 @@ fun UpsertShareSubscriptionModal(
                     options = options,
                     selected = check(ahcAuthorizedState),
                     styles = dropdownStyles,
-                    iconContent = { expanded -> SimpleUpDown(expanded) }
+                    iconContent = { expanded -> SimpleUpDown(expanded) },
+                    isDisabled = {!configuration.enabledInputs.ahcAuthorized},
                 ) {
                     (_, checked) ->
                     update(
@@ -669,6 +785,7 @@ fun UpsertShareSubscriptionModal(
                     isRequired = true
                 )
                 TextArea(coSubscribersState.joinToString(",\n")) {
+                    if(!configuration.enabledInputs.coSubscribers)
                     style{
                         width(100.percent)
                         height(150.px)

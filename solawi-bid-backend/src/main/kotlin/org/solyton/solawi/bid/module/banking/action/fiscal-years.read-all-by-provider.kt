@@ -8,19 +8,19 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
+import org.evoleq.uuid.toUuid
 import org.solyton.solawi.bid.module.banking.data.api.FiscalYears
 import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.banking.repository.readFiscalYears
-import java.util.*
 
 @MathDsl
 @Suppress("FunctionName")
-fun ReadFiscalYearsByLegalEntity(): KlAction<Result<Contextual<String>>, Result<FiscalYears>> = KlAction { result ->
+fun ReadFiscalYearsByLegalEntity(): KlAction<Result<Contextual<List<String>>>, Result<FiscalYears>> = KlAction { result ->
     DbAction { database ->
         result bindSuspend { contextual ->
             resultTransaction(database) {
-                val legalEntityId = UUID.fromString(contextual.data)
-                readFiscalYears(legalEntityId).toApiType()
+                val legalEntityIds = contextual.data.map{it.toUuid()}
+                readFiscalYears(legalEntityIds).toApiType()
             }
         } x database
     }

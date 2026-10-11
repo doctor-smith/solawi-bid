@@ -10,7 +10,7 @@ import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.module.banking.exception.FiscalYearException
 import org.solyton.solawi.bid.module.banking.schema.FiscalYearEntity
 import org.solyton.solawi.bid.module.banking.schema.FiscalYears
-import java.util.UUID
+import java.util.*
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 

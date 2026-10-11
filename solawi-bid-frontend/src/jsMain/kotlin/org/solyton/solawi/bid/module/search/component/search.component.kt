@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.search.component
 
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.disabled
 import org.jetbrains.compose.web.ExperimentalComposeWebApi
 import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.css.*
@@ -39,6 +40,7 @@ fun SearchInput(
     initialText: String,
     styles: SearchInputStyles,
     searchOnEnter: Boolean = true,
+    isDisabled: ()-> Boolean = {false},
     onInput: (String)->Unit
 ) {
     var searchText by remember { mutableStateOf(initialText) }
@@ -55,6 +57,7 @@ fun SearchInput(
     }) {
 
         Input(type = InputType.Text) {
+            if(isDisabled()) disabled()
             style {
                 paddingLeft(30.px)
                 width(100.percent)

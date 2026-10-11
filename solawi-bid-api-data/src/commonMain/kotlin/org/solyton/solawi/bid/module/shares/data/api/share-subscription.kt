@@ -30,7 +30,7 @@ data class ShareSubscription(
     val ahcAuthorized: Boolean?,
     val status: ShareStatus,
     val coSubscribers: /*list of usernames */ List<String> = emptyList(),
-    val statusUpdatedAt: LocalDateTime
+    val statusUpdatedAt: LocalDateTime,
 )
 
 @Serializable

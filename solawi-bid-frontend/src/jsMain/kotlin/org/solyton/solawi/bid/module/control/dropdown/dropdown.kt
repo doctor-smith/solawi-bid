@@ -3,6 +3,7 @@ package org.solyton.solawi.bid.module.control.dropdown
 
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.disabled
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Span
@@ -15,7 +16,7 @@ import org.solyton.solawi.bid.module.style.overflow.Overflow
 import org.solyton.solawi.bid.module.style.overflow.overflowY
 
 @Markup
-@Suppress("FunctionName")
+@Suppress("FunctionName", "CognitiveComplexMethod")
 @Composable
 fun <T> Dropdown(
     options: Map<String, T>,
@@ -23,6 +24,7 @@ fun <T> Dropdown(
     closeOnSelect: Boolean = true,
     styles: DropdownStyles = DropdownStyles(),
     iconContent: @Composable ((expanded: Boolean) -> Unit)? = null, // Optional custom icon
+    isDisabled: ()-> Boolean = {false},
     onSelected: (Map.Entry<String, T>) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -35,8 +37,18 @@ fun <T> Dropdown(
 
             // Trigger
             Div({
-                style { with(styles) { triggerStyle() } }
-                onClick { expanded = !expanded }
+                if(isDisabled()) disabled()
+                style { with(styles) {
+                    triggerStyle()
+                    if(isDisabled()) cursor(Cursor.NotAllowed)
+                } }
+                onClick {
+                    if(isDisabled()) {
+                        expanded = false
+                        return@onClick
+                    }
+                    expanded = !expanded
+                }
             }) {
                 Text(selected ?: "Select ...")
                 // Icon span

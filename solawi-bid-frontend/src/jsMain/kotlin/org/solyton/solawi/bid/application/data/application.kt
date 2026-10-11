@@ -29,6 +29,7 @@ import org.solyton.solawi.bid.module.permissions.data.Permissions
 import org.solyton.solawi.bid.module.permissions.data.relations.ContextRelation
 import org.solyton.solawi.bid.module.process.data.processes.ProcessManager
 import org.solyton.solawi.bid.module.process.data.processes.Processes
+import org.solyton.solawi.bid.module.shares.data.history.ShareSubscriptionStatusHistories
 import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscription
 import org.solyton.solawi.bid.module.shares.data.types.ShareType
@@ -58,6 +59,7 @@ import org.solyton.solawi.bid.module.user.data.user.User
     @ReadWrite val shareTypes: List<ShareType> = emptyList(),
     @ReadWrite val personalShareSubscriptions: List<ShareSubscription> = emptyList(),
     @ReadWrite val personalShareOffers: List<ShareOffer> = emptyList(),
+    @ReadWrite val shareSubscriptionStatusHistories: ShareSubscriptionStatusHistories = ShareSubscriptionStatusHistories(),
     // Distribution
     @ReadWrite val distributionPoints: List<DistributionPoint> = emptyList(),
     @ReadWrite val personalDistributionPoints: List<DistributionPoint> = emptyList(),

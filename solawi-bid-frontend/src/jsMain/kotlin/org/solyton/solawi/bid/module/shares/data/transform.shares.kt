@@ -1,8 +1,11 @@
 package org.solyton.solawi.bid.module.shares.data
 
 import org.solyton.solawi.bid.module.banking.data.toDomainType
-import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.shares.data.api.*
+import org.solyton.solawi.bid.module.shares.data.history.ShareSubscriptionStatusHistories
+import org.solyton.solawi.bid.module.shares.data.history.ShareSubscriptionStatusHistory
+import org.solyton.solawi.bid.module.shares.data.history.ShareSubscriptionStatusHistoryEntry
+import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscription
 import org.solyton.solawi.bid.module.shares.data.types.ShareType
@@ -90,3 +93,22 @@ fun ApiShareStatus.toDomainType(): ShareStatus = when(this) {
     org.solyton.solawi.bid.module.shares.data.api.ShareStatus.Subscribed -> ShareStatus.Subscribed
     org.solyton.solawi.bid.module.shares.data.api.ShareStatus.Suspended -> ShareStatus.Suspended
 }
+
+fun ApiShareSubscriptionStatusHistories.toDomainType(): ShareSubscriptionStatusHistories = ShareSubscriptionStatusHistories(
+    all = all.map { it.toDomainType() }
+)
+
+fun ApiShareSubscriptionStatusHistory.toDomainType(): ShareSubscriptionStatusHistory = ShareSubscriptionStatusHistory(
+    shareSubscriptionId = shareSubscriptionId,
+    entries = entries.map { it.toDomainType() }
+)
+
+fun ApiShareSubscriptionStatusHistoryEntry.toDomainType(): ShareSubscriptionStatusHistoryEntry = ShareSubscriptionStatusHistoryEntry(
+    rollingOverFromShareSubscriptionId = rollingOverFromShareSubscriptionId,
+    fromStatus = fromStatus?.toInternalType(),
+    toStatus = toStatus.toInternalType(),
+    reason = reason.toDomainType(),
+    changedBy = changedBy.toDomainType(),
+    comment = comment,
+    humanModifierId = humanModifierId,
+)
