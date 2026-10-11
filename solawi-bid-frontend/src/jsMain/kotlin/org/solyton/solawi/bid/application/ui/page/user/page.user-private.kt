@@ -66,9 +66,12 @@ import org.solyton.solawi.bid.module.permission.data.ContextId
 import org.solyton.solawi.bid.module.permissions.service.contextFromPath
 import org.solyton.solawi.bid.module.shares.action.readPersonalShareOffers
 import org.solyton.solawi.bid.module.shares.action.readPersonalShareSubscriptions
+import org.solyton.solawi.bid.module.shares.action.readShareSubscriptionStatusHistories
 import org.solyton.solawi.bid.module.shares.component.list.ShareSubscriptionsPersonalList
 import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
+import org.solyton.solawi.bid.module.shares.data.management.personalShareSubscriptions
 import org.solyton.solawi.bid.module.shares.data.shareManagementActions
+import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
 import org.solyton.solawi.bid.module.style.card.cardStyle
 import org.solyton.solawi.bid.module.style.modal.commonModalStyles
 import org.solyton.solawi.bid.module.style.page.PageTitle
@@ -91,6 +94,7 @@ import org.solyton.solawi.bid.module.user.data.api.userprofile.UpdateAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UpdateUserProfile
 import org.solyton.solawi.bid.module.user.data.deviceData
 import org.solyton.solawi.bid.module.user.data.i18n
+import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 import org.solyton.solawi.bid.module.user.data.profile.FullNameOrBlank
 import org.solyton.solawi.bid.module.user.data.profile.addresses
 import org.solyton.solawi.bid.module.user.data.profile.phoneNumber
@@ -161,6 +165,7 @@ fun PrivateUserPage(storage: Storage<Application>) = withLoading(
     // Data
     val deviceData = storage * userIso * deviceData * mediaType.get
     val userDataStorage = storage * userData
+    val managedUsersStorage = storage * managedUsers
 
     // Data / I18N
     val texts = storage * i18N * language * component(UserLangComponent.UserPrivatePage)
@@ -220,6 +225,7 @@ fun PrivateUserPage(storage: Storage<Application>) = withLoading(
 
         ShareManagement(
             userDataStorage = userDataStorage,
+            managedUsersStorage = managedUsersStorage,
             shareManagementStorage = storage * shareManagementIso,
             bankingStorage = storage * bankingApplicationIso,
             distributionManagementStorage = storage * distributionManagementIso,
@@ -697,6 +703,7 @@ fun Banking(
 @Composable
 fun ShareManagement(
     userDataStorage: Storage<User>,
+    managedUsersStorage: Storage<List<ManagedUser>>,
     shareManagementStorage: Storage<ShareManagement>,
     distributionManagementStorage: Storage< DistributionManagement>,
     bankingStorage: Storage<BankingApplication>,
@@ -717,6 +724,15 @@ fun ShareManagement(
         }
     }
 
+    val shareSubscriptionIds = Read(shareManagementStorage * personalShareSubscriptions) map {
+            subs -> subs.map{ ShareSubscriptionId(it.shareSubscriptionId)}
+    }
+
+    LaunchedEffectOnSource(shareSubscriptionIds) {
+        shareManagementStorage * shareManagementActions dispatch readShareSubscriptionStatusHistories(
+            shareSubscriptionIds * Emit
+        )
+    }
 
 
 
@@ -757,8 +773,10 @@ fun ShareManagement(
         When(opened ) {
             ShareSubscriptionsPersonalList(
                 userDataStorage = userDataStorage,
+                managedUsersStorage = managedUsersStorage,
                 shareManagementStorage = shareManagementStorage,
                 distributionManagementStorage = distributionManagementStorage,
+                bankingApplicationStorage = bankingStorage,
                 deviceData = deviceData,
                 listStyles = ListStyles()
             )

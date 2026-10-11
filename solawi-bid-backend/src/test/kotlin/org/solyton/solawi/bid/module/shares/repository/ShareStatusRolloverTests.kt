@@ -128,7 +128,7 @@ class ShareStatusRolloverTests {
             assertEquals(testCase.shareSubscription.id.value, current.id.value)
 
             assertEquals(ShareStatus.RollingOver, ShareStatus.from(current.status.name))
-            assertEquals(ShareStatus.RollingOver, ShareStatus.from(rolledOver.status.name))
+            assertEquals(ShareStatus.PendingActivation, ShareStatus.from(rolledOver.status.name))
             assertEquals(testCase.nextShareOffer, rolledOver.shareOffer)
 
             val entry1 = ShareSubscriptionStatusHistoryEntry.find {

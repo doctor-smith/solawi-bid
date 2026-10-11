@@ -9,6 +9,7 @@ import org.evoleq.optics.storage.ActionDispatcher
 import org.solyton.solawi.bid.module.context.data.Context
 import org.solyton.solawi.bid.module.i18n.data.Environment
 import org.solyton.solawi.bid.module.i18n.data.I18N
+import org.solyton.solawi.bid.module.shares.data.history.ShareSubscriptionStatusHistories
 import org.solyton.solawi.bid.module.shares.data.offers.ShareOffer
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscription
 import org.solyton.solawi.bid.module.shares.data.types.ShareType
@@ -25,5 +26,6 @@ data class ShareManagement(
     @ReadWrite val shareOffers: List<ShareOffer> = emptyList(),
     @ReadWrite val shareTypes: List<ShareType> = emptyList(),
     @ReadWrite val personalShareSubscriptions: List<ShareSubscription> = emptyList(),
-    @ReadWrite val personalShareOffers: List<ShareOffer> = emptyList()
+    @ReadWrite val personalShareOffers: List<ShareOffer> = emptyList(),
+    @ReadWrite val shareSubscriptionStatusHistories: ShareSubscriptionStatusHistories = ShareSubscriptionStatusHistories()
 )

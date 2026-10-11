@@ -60,7 +60,8 @@ private val preShareManagementIso: Lens<Application, ShareManagement> by lazy {
             shareOffers = whole.shareOffers,
             shareSubscriptions = whole.shareSubscriptions,
             personalShareSubscriptions = whole.personalShareSubscriptions,
-            personalShareOffers = whole.personalShareOffers
+            personalShareOffers = whole.personalShareOffers,
+            shareSubscriptionStatusHistories = whole.shareSubscriptionStatusHistories
         ) },
         set = { part -> { whole -> whole.copy(
             context = part.context,
@@ -70,7 +71,8 @@ private val preShareManagementIso: Lens<Application, ShareManagement> by lazy {
             shareOffers = part.shareOffers,
             shareSubscriptions = part.shareSubscriptions,
             personalShareSubscriptions = part.personalShareSubscriptions,
-            personalShareOffers = part.personalShareOffers
+            personalShareOffers = part.personalShareOffers,
+            shareSubscriptionStatusHistories = part.shareSubscriptionStatusHistories
         ) } }
     )
 }

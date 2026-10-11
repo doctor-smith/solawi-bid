@@ -175,6 +175,21 @@ authenticate {
                 CreateShareSubscription() *
                 Respond<ShareSubscription> { transform() } runOn Base(call, environment)
             }
+            post("rollover"){
+                ReceiveContextual<Rollover>() *
+                IsGrantedOneOf(
+                    rights(
+                        "CREATE_SHARE_SUBSCRIPTIONS",
+                        "MANAGE_SHARE_SUBSCRIPTIONS",
+                        "MANAGE_SHARES"
+                    ), no
+                ) { contextual ->
+                    val providerId = UUID.fromString(contextual.data.providerId.value)
+                    contextIdOf(providerId, SHARE_APPLICATION)
+                } *
+                RolloverShareSubscription() *
+                Respond<ShareSubscriptions> { transform() } runOn Base(call, environment)
+            }
             patch("update"){
                 ReceiveContextual<UpdateShareSubscription>() *
                 IsGrantedOneOf(

@@ -11,11 +11,7 @@ import org.solyton.solawi.bid.module.shares.data.internal.shareStatusTransitions
 import org.solyton.solawi.bid.module.shares.exception.ShareException
 import org.solyton.solawi.bid.module.shares.exception.ShareStatusException
 import org.solyton.solawi.bid.module.shares.processes.ShareManagementProcesses
-import org.solyton.solawi.bid.module.shares.schema.ShareStatusEntity
-import org.solyton.solawi.bid.module.shares.schema.ShareStatusTable
-import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionEntity
-import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionStatusHistory
-import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionStatusHistoryEntry
+import org.solyton.solawi.bid.module.shares.schema.*
 import org.solyton.solawi.bid.module.system.repository.validatedSystemProcess
 import java.util.*
 
@@ -124,6 +120,22 @@ fun Transaction.next(
     return shareSubscription
 }
 
+fun Transaction.rollover(
+    shareSubscriptionIds: List<UUID>,
+    toShareOfferId: UUID,
+    changedBy: ChangedBy,
+    modifiedBy: UUID?
+): List<ShareSubscriptionEntity> {
+    return shareSubscriptionIds.flatMap { shareSubscriptionId ->
+        rollover(
+            shareSubscriptionId,
+            toShareOfferId,
+            changedBy,
+            modifiedBy
+        )
+    }
+}
+
 /**
  * Rollover [org.solyton.solawi.bid.module.shares.schema.ShareSubscription] to the next period
  */
@@ -132,7 +144,7 @@ fun Transaction.rollover(
     toShareOfferId: UUID,
     changedBy: ChangedBy,
     modifiedBy: UUID?
-): ShareSubscriptionEntity {
+): List<ShareSubscriptionEntity> {
     val shareSubscription = ShareSubscriptionEntity.findById(shareSubscriptionId)
         ?: throw ShareException.NoSuchShareSubscription(shareSubscriptionId.toString())
 
@@ -145,7 +157,7 @@ fun Transaction.rollover(
 
     val rollingOverStatus = statusEntity(ShareStatus.RollingOver)
 
-    next(
+    val currentSubscription = next(
         shareSubscription.id.value,
         ShareStatus.RollingOver,
         ChangeReason.NEW_PERIOD,
@@ -160,7 +172,7 @@ fun Transaction.rollover(
     val changesDoneBy = modifiedBy?: validatedSystemProcess(ShareManagementProcesses.SHARE_MANAGEMENT).id.value
     val rolledOverShareSubscription = ShareSubscriptionEntity.new {
         createdBy = changesDoneBy
-        this.status = rollingOverStatus
+        this.status = statusEntity(ShareStatus.PendingActivation)
         shareOffer = toShareOffer
         fiscalYear = toShareOffer.fiscalYear
         userProfile = shareSubscription.userProfile
@@ -187,7 +199,7 @@ fun Transaction.rollover(
         throw ShareStatusException.InvalidHistoryEntry(exception.message?: "No message provided")
     }
 
-    return rolledOverShareSubscription
+    return listOf(currentSubscription, rolledOverShareSubscription)
 }
 
 /**

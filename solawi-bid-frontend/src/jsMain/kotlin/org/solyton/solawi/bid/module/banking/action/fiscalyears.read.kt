@@ -25,3 +25,11 @@ fun readFiscalYears(legalEntityId: String, nameSuffix: String? = null) = Action<
     endPoint = ReadFiscalYears::class,
     writer = fiscalYears.set contraMap { fiscalYears -> fiscalYears.toDomainType() }
 )
+
+@Markup
+fun readFiscalYears(legalEntityIds: List<String>, nameSuffix: String? = null) = Action<BankingApplication, ReadFiscalYears, ApiFiscalYears>(
+    name = READ_FISCAL_YEARS.suffixed(nameSuffix),
+    reader = {_ -> ReadFiscalYears(legalEntityIds.map {id -> "legal_entity" to id} )},
+    endPoint = ReadFiscalYears::class,
+    writer = fiscalYears.set contraMap { fiscalYears -> fiscalYears.toDomainType() }
+)

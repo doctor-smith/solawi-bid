@@ -12,7 +12,6 @@ import org.solyton.solawi.bid.module.banking.exception.FiscalYearException
 import org.solyton.solawi.bid.module.banking.schema.FiscalYearEntity
 import org.solyton.solawi.bid.module.banking.schema.FiscalYearsTable
 import java.util.*
-import kotlin.time.Duration
 
 /**
  * Create a fiscal year
@@ -47,10 +46,14 @@ fun Transaction.createFiscalYear(
  * Read all fiscal years on a legal entity
  */
 fun Transaction.readFiscalYears(
-    legalEntityId: UUID
+    legalEntityIds: List<UUID>
 ): List<FiscalYearEntity> = FiscalYearEntity.find {
-    FiscalYearsTable.legalEntityId eq legalEntityId
+    FiscalYearsTable.legalEntityId inList legalEntityIds
 }.toList()
+
+fun Transaction.readFiscalYears(
+    legalEntityId: UUID
+): List<FiscalYearEntity> = readFiscalYears(listOf(legalEntityId))
 
 /**
  * Update fiscal year

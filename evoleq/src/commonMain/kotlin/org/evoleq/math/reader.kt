@@ -88,3 +88,7 @@ operator fun Source<Boolean>.times(isFalse: IsFalse): Boolean = !emit()
 
 object IsNotEmpty
 operator fun <T> Source<List<T>>.times(isNotEmpty: IsNotEmpty): Boolean = emit().isNotEmpty()
+
+object IsEmpty
+operator fun <T> Source<List<T>>.times(isEmpty: IsEmpty): Boolean = emit().isEmpty()
+
