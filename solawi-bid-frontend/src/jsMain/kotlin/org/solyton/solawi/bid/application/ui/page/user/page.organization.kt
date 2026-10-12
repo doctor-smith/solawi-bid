@@ -3,6 +3,7 @@ package org.solyton.solawi.bid.application.ui.page.user
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
+import org.evoleq.compose.effect.LaunchedEffectOnSource
 import org.evoleq.compose.guard.data.isLoading
 import org.evoleq.compose.guard.data.withLoading
 import org.evoleq.compose.layout.Horizontal
@@ -137,6 +138,7 @@ import org.solyton.solawi.bid.module.values.ProviderId
 import org.solyton.solawi.bid.module.values.UserId
 import org.solyton.solawi.bid.module.values.Username
 import kotlin.collections.firstOrNull
+import kotlin.collections.map
 import kotlin.text.contains
 import kotlin.text.isBlank
 import kotlin.text.isNotBlank
@@ -252,8 +254,12 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
         val usesDistributionManagement = connectedApplications.read().any { it.name in setOf("DISTRIBUTION","AUCTIONS", "SHARE_MANAGEMENT") }
         // val usesAuctions = connectedApplications.read().any { it.name == "AUCTIONS" }
 
+        LaunchedEffectOnSource(Read(userModuleStorage * managedUsers) map {users -> users.map{it.username}} ) {
+            applicationStorage.runProcesses(scope, *basicDataActions())
+        }
+
         // Now load special data based on which applications are used
-        LaunchedEffect(connectedApplications.read()) {
+        LaunchedEffectOnSource(Read(connectedApplications)) {
             applicationStorage.runProcesses(
                 scope,
                 *conditionalActions(

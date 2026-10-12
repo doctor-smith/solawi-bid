@@ -254,6 +254,10 @@ val solawiApi by lazy {
                 key = UpdateUser::class,
                 url = "users/update"
             )
+            patch<UpdateUsername, User>(
+                key = UpdateUsername::class,
+                url = "users/update-username"
+            )
 
             post<RegisterUser, UserRegistered>(
                 key = RegisterUser::class,

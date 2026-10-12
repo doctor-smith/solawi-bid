@@ -12,6 +12,7 @@ import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.user.data.api.ApiUser
 import org.solyton.solawi.bid.module.user.data.api.UpdateUser
+import org.solyton.solawi.bid.module.user.data.api.UpdateUsername
 import org.solyton.solawi.bid.module.user.data.api.User
 import org.solyton.solawi.bid.module.user.data.toApiType
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
@@ -59,4 +60,28 @@ val UpdateUser: KlAction<Result<Contextual<UpdateUser>>, Result<User>> = KlActio
 
         ApiUser(user.id.value.toString(), user.username, user.status.toApiType())
     } } x database
-    } }
+} }
+
+@MathDsl
+@Suppress("FunctionName")
+val UpdateUsername: KlAction<Result<Contextual<UpdateUsername>>, Result<User>> = KlAction{ result ->
+    DbAction { database -> result bindSuspend {contextual -> resultTransaction(database) {
+        val modifierId = contextual.userId
+        val data = contextual.data
+
+        val user = UserEntity.find { UsersTable.username eq data.oldUsername.value }.firstOrNull()
+            ?:throw UserManagementException.UserDoesNotExist.Username(data.oldUsername.value)
+
+        val usernameChanged = user.username != data.newUsername.value.lowercase().trim()
+
+        if(usernameChanged) {
+            user.username = data.newUsername.value.lowercase().trim()
+
+            user.modifiedBy = modifierId
+            user.modifiedAt = DateTime.now()
+        }
+
+        ApiUser(user.id.value.toString(), user.username, user.status.toApiType())
+    } } x database
+} }
+
