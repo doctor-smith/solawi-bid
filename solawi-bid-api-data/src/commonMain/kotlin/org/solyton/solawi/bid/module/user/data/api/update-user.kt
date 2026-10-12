@@ -11,3 +11,10 @@ data class UpdateUser(
     val oldPassword: Password,
     val newPassword: Password,
 )
+
+@Serializable
+data class UpdateUsername(
+    val oldUsername: Username,
+    val newUsername: Username,
+)
+

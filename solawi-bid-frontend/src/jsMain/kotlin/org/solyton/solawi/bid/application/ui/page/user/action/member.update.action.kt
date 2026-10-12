@@ -26,10 +26,8 @@ import org.solyton.solawi.bid.module.shares.action.UPDATE_SHARE_SUBSCRIPTION
 import org.solyton.solawi.bid.module.shares.action.createShareSubscription
 import org.solyton.solawi.bid.module.shares.action.updateShareSubscription
 import org.solyton.solawi.bid.module.shares.data.subscriptions.ShareSubscriptions
-import org.solyton.solawi.bid.module.user.action.user.CREATE_USER_PROFILE
-import org.solyton.solawi.bid.module.user.action.user.UPDATE_USER_PROFILE
-import org.solyton.solawi.bid.module.user.action.user.createUserProfile
-import org.solyton.solawi.bid.module.user.action.user.updateUserProfile
+import org.solyton.solawi.bid.module.user.action.user.*
+import org.solyton.solawi.bid.module.user.data.api.UpdateUsername
 import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateUserProfile
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UpdateAddress
@@ -55,7 +53,8 @@ fun Storage<Application>.memberUpdateAction(
     ): Array<ActionEnvelope<Application, *, *>> {
 
     val userId = (this * member).emit().memberId
-    val username = (this * member).emit().username
+    val oldUsername = (this * member).emit().username
+    val username = usernameChange.new?:Username(oldUsername)
     // Update UserProfile (todo:dev endpoints and actions for user profiles)
     val (userProfile, userProfileState) = userProfileChange
     val userProfileAction = if(userProfileState != null) {
@@ -168,7 +167,7 @@ fun Storage<Application>.memberUpdateAction(
                     accessorId = AccessorId(providerId.value),
                     bankAccountsToImport = listOf(
                         ImportBankAccount(
-                            username = Username(username),
+                            username = username,
                             bic = bankAccountState.bic,
                             iban = bankAccountState.iban,
                             bankAccountHolder = bankAccountState.bankAccountHolder,
@@ -254,10 +253,27 @@ fun Storage<Application>.memberUpdateAction(
         ).flatten().toTypedArray()
     } else {emptyArray()}
 
+    val updateUsernameAction = if(username.value != oldUsername) {
+            ActionEnvelope(
+                action = userIso * updateUsername(
+                    UpdateUsername(
+                        Username(oldUsername),
+                        username
+                    )
+                ),
+                id = UPDATE_USER_NAME,
+                clearOnFinish = true
+            )
+
+    } else {
+        null
+    }
+
     @Suppress("UNCHECKED_CAST")
     return listOfNotNull(
         userProfileAction,
         bankAccountAction,
-        *shareSubscriptionsActions
+        *shareSubscriptionsActions,
+        updateUsernameAction
     ).toTypedArray<ActionEnvelope<Application, *, *>>()
 }

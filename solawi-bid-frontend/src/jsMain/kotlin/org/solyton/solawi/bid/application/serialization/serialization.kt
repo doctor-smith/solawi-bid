@@ -191,6 +191,7 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<UserQuery>(UserQuery.serializer())
         add<ChangePassword>(ChangePassword.serializer())
         add<UpdateUser>(UpdateUser.serializer())
+        add<UpdateUsername>(UpdateUsername.serializer())
         add<UserProfile>(UserProfile.serializer())
         add<UserProfiles>(UserProfiles.serializer())
         add<ReadUserProfile>(ReadUserProfile.serializer())
