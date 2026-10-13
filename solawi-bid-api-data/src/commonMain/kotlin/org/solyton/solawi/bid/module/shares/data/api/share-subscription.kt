@@ -113,3 +113,12 @@ data class Rollover(
     val changedBy: ChangedBy,
     val modifiedBy: UserId,
 )
+
+@Serializable
+data class TransferOwnership(
+    val providerId: ProviderId,
+    val shareSubscriptionId: ShareSubscriptionId,
+    val newOwnerId: UserProfileId,
+    val changedBy: ChangedBy = ChangedBy.PROVIDER
+)
+

@@ -14,8 +14,6 @@ import org.solyton.solawi.bid.module.shares.data.api.ShareSubscriptions
 import org.solyton.solawi.bid.module.shares.data.toApiType
 import org.solyton.solawi.bid.module.shares.repository.rollover
 
-// RolloverShareSubscription
-
 
 @MathDsl
 @Suppress("FunctionName")

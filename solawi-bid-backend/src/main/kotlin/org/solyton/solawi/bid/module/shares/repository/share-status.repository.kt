@@ -1,6 +1,8 @@
 package org.solyton.solawi.bid.module.shares.repository
 
 import eq
+import org.evoleq.uuid.toUuid
+import org.jetbrains.exposed.dao.flushCache
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.joda.time.DateTime
@@ -8,11 +10,14 @@ import org.solyton.solawi.bid.module.shares.data.internal.ChangeReason
 import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
 import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.shares.data.internal.shareStatusTransitionsWithPermissions
+import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
 import org.solyton.solawi.bid.module.shares.exception.ShareException
 import org.solyton.solawi.bid.module.shares.exception.ShareStatusException
 import org.solyton.solawi.bid.module.shares.processes.ShareManagementProcesses
 import org.solyton.solawi.bid.module.shares.schema.*
 import org.solyton.solawi.bid.module.system.repository.validatedSystemProcess
+import org.solyton.solawi.bid.module.values.UserId
+import org.solyton.solawi.bid.module.values.UserProfileId
 import java.util.*
 
 /**
@@ -200,6 +205,81 @@ fun Transaction.rollover(
     }
 
     return listOf(currentSubscription, rolledOverShareSubscription)
+}
+
+
+/**
+ * Transfers the ownership of a share subscription from the current owner to a new owner.
+ * The method performs necessary validations and updates the status history of the subscription.
+ *
+ * @param modifier The ID of the user modifying the transfer.
+ * @param shareSubscriptionId The ID of the share subscription to be transferred.
+ * @param newOwnerId The ID of the new owner of the share subscription.
+ * @param changedBy The entity responsible for the change. Defaults to `ChangedBy.PROVIDER`.
+ * @return The updated `ShareSubscription` instance after the ownership transfer.
+ * @throws ShareStatusException.MissingTransitionPermission If the transition is not allowed for the specified modifier or entity.
+ */
+fun Transaction.transfer(
+    modifier: UserId,
+    shareSubscriptionId: ShareSubscriptionId,
+    newOwnerId: UserProfileId,
+    changedBy: ChangedBy = ChangedBy.PROVIDER,
+): ShareSubscription  {
+    if(changedBy != ChangedBy.PROVIDER)
+        throw ShareStatusException.MissingTransitionPermission(
+            "---", "TRANSFER", "$changedBy", "${ChangeReason.TRANSFER_OWNERSHIP}"
+        )
+
+    // Get current subscription
+    val subscription = validatedShareSubscription(shareSubscriptionId.value.toUuid())
+
+    validateTransition(
+        ShareStatus.from(subscription.status.name),
+        ShareStatus.Transfer,
+        ChangeReason.TRANSFER_OWNERSHIP,
+        ChangedBy.PROVIDER,
+    )
+
+    // collect and setup other data
+    val modifierId = modifier.value.toUuid()
+    val newOwnerProfile = validatedUserProfile(newOwnerId.value.toUuid())
+
+    val currentStatus = subscription.status
+    val transferStatus = statusEntity(ShareStatus.Transfer)
+
+    // Start Transfer
+    subscription.status = transferStatus
+    subscription.modifiedBy = modifierId
+    subscription.modifiedAt = DateTime.now()
+
+    ShareSubscriptionStatusHistoryEntry.new {
+        this.shareSubscription = subscription
+        this.fromStatus = currentStatus
+        this.toStatus = transferStatus
+        this.reason = ChangeReason.TRANSFER_OWNERSHIP
+        this.changedBy = changedBy
+        this.humanModifierId = modifierId
+        this.comment = "Transfer started"
+    }
+    flushCache()
+
+    // Complete Transfer
+    subscription.userProfile = newOwnerProfile
+    subscription.status = currentStatus
+    subscription.modifiedBy = modifierId
+    subscription.modifiedAt = DateTime.now()
+
+    ShareSubscriptionStatusHistoryEntry.new {
+        this.shareSubscription = subscription
+        this.fromStatus = transferStatus
+        this.toStatus = currentStatus
+        this.reason = ChangeReason.TRANSFER_OWNERSHIP
+        this.changedBy = changedBy
+        this.humanModifierId = modifierId
+        this.comment = "Transfer completed"
+    }
+
+    return subscription
 }
 
 /**
