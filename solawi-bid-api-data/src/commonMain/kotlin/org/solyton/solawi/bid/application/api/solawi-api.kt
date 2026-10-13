@@ -217,6 +217,10 @@ val solawiApi by lazy {
                 key = Rollover::class,
                 url = "shares/subscriptions/rollover"
             )
+            patch<TransferOwnership, ShareSubscription>(
+                key = TransferOwnership::class,
+                url = "shares/subscriptions/transfer-ownership"
+            )
             post<ImportShareSubscriptions, ShareSubscriptions>(
                 key = ImportShareSubscriptions::class,
                 url = "shares/subscriptions/import"

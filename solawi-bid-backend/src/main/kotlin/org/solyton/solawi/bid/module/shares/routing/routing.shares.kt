@@ -190,6 +190,20 @@ authenticate {
                 RolloverShareSubscription() *
                 Respond<ShareSubscriptions> { transform() } runOn Base(call, environment)
             }
+            patch("transfer-ownership") {
+                ReceiveContextual<TransferOwnership>() *
+                IsGrantedOneOf(
+                    rights(
+                        "MANAGE_SHARE_SUBSCRIPTIONS",
+                        "MANAGE_SHARES"
+                    ), no
+                ) { contextual ->
+                    val providerId = contextual.data.providerId.value.toUuid()
+                    contextIdOf(providerId, SHARE_APPLICATION)
+                } *
+                TransferOwnership() *
+                Respond { transform() } runOn Base(call, environment)
+            }
             patch("update"){
                 ReceiveContextual<UpdateShareSubscription>() *
                 IsGrantedOneOf(
