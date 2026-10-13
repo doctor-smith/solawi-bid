@@ -26,6 +26,9 @@ val shareStatusTransitionsWithPermissions: Map<ShareStatus, Set<ShareStatusPermi
                 ChangedBy.PROVIDER to setOf(ChangeReason.NO_PAYMENT_MANDATE_REQUIRED, ChangeReason.SUBSCRIPTION_APPROVED),
                 ChangedBy.SYSTEM to setOf(ChangeReason.NO_PAYMENT_MANDATE_REQUIRED, ChangeReason.PAYMENT_MANDATE_APPROVED)
             ),
+            ShareStatus.Transfer permit mapOf(
+                ChangedBy.PROVIDER to setOf(ChangeReason.TRANSFER_OWNERSHIP),
+            ),
             ShareStatus.Cancelled permit mapOf(
                 ChangedBy.PROVIDER to setOf(ChangeReason.PROVIDER_CANCELLED_BEFORE_ACTIVATION),
                 ChangedBy.USER to setOf(ChangeReason.USER_CANCELLED_BEFORE_ACTIVATION)
@@ -85,6 +88,9 @@ val shareStatusTransitionsWithPermissions: Map<ShareStatus, Set<ShareStatusPermi
             ShareStatus.PaymentFailed permit mapOf(
                 ChangedBy.PROVIDER to setOf(ChangeReason.PAYMENT_FAILED),
                 ChangedBy.SYSTEM to setOf(ChangeReason.PAYMENT_FAILED)
+            ),
+            ShareStatus.Transfer permit mapOf(
+                ChangedBy.PROVIDER to setOf(ChangeReason.TRANSFER_OWNERSHIP),
             ),
             ShareStatus.Suspended permit mapOf(
                 ChangedBy.PROVIDER to setOf(ChangeReason.AUTO_SUSPENSION),
@@ -162,6 +168,14 @@ val shareStatusTransitionsWithPermissions: Map<ShareStatus, Set<ShareStatusPermi
                 ChangedBy.SYSTEM to setOf(ChangeReason.ROLLED_OVER)
             ),
         ),
+        ShareStatus.Transfer to setOf(
+            ShareStatus.PendingActivation permit mapOf(
+                ChangedBy.PROVIDER to setOf(ChangeReason.TRANSFER_OWNERSHIP),
+            ),
+            ShareStatus.Subscribed permit mapOf(
+                ChangedBy.PROVIDER to setOf(ChangeReason.TRANSFER_OWNERSHIP),
+            ),
+        ),
 
         // === Terminal states ===
         // =======================
@@ -183,5 +197,6 @@ val internalStatuses: Set<ShareStatus> by lazy { setOf(
     ShareStatus.Cancelled,
     ShareStatus.Expired,
     ShareStatus.RolledOver,
-    ShareStatus.RollingOver
+    ShareStatus.RollingOver,
+    ShareStatus.Transfer,
 ) }

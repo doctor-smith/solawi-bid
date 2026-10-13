@@ -10,6 +10,7 @@ sealed class ShareStatus(open val value: String) {
     // Temporary states
     data object Paused : ShareStatus("PAUSED")
     data object Suspended : ShareStatus("SUSPENDED")
+    data object Transfer: ShareStatus("TRANSFER")
 
     // flow
     data object PendingActivation : ShareStatus("PENDING_ACTIVATION")
@@ -42,6 +43,7 @@ sealed class ShareStatus(open val value: String) {
                 "$Cancelled", "CANCELLED" -> Cancelled
                 "$RolledOver", "ROLLED_OVER" -> RolledOver
                 "$RollingOver", "ROLLING_OVER" -> RollingOver
+                "$Transfer", "TRANSFER" -> Transfer
                 else -> error("Unknown ShareStatus: $state")
             }
     }

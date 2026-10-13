@@ -48,6 +48,9 @@ sealed class ShareStatus(protected open val value: String) {
     @Serializable
     data object RollingOver: ShareStatus( "ROLLING_OVER")
 
+    @Serializable
+    data object Transfer: ShareStatus("TRANSFER")
+
     override fun toString(): String = value
 }
 
@@ -71,6 +74,7 @@ enum class ChangeReason {
     ROLLED_OVER,            // Completed rollover at end of season
     NEW_PERIOD,             // Start of a new subscription/fiscal period
     IMPORT,                 // Import share subscriptions
+    TRANSFER_OWNERSHIP,     // Transfer ownership of share subscription
 
     // === USER ACTIONS ===
     USER_ACTION,                   // Generic user action (pause, cancel, resume)
