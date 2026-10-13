@@ -126,6 +126,7 @@ data class EnabledShareSubscriptionInputs(
                 ShareStatus.RollingOver -> disableAll()
                 ShareStatus.Subscribed -> disableAll()
                 ShareStatus.Suspended -> disableAll()
+                ShareStatus.Transfer -> disableAll()
             }
         }
 

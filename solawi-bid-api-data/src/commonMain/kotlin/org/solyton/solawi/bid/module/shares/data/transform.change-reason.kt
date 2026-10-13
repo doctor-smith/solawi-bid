@@ -41,6 +41,7 @@ fun ApiChangeReason.toDomainType() = when(this) {
     ApiChangeReason.REJECTION_NOT_RESOLVED -> ChangeReason.REJECTION_NOT_RESOLVED
     ApiChangeReason.REQUIREMENTS_NOT_MET -> ChangeReason.REQUIREMENTS_NOT_MET
     ApiChangeReason.NEW_REQUIREMENTS -> ChangeReason.NEW_REQUIREMENTS
+    ApiChangeReason.TRANSFER_OWNERSHIP -> ChangeReason.TRANSFER_OWNERSHIP
 }
 
 @Suppress("CyclomaticComplexMethod")
@@ -81,4 +82,5 @@ fun ChangeReason.toApiType() = when(this) {
     ChangeReason.REJECTION_NOT_RESOLVED -> ApiChangeReason.REJECTION_NOT_RESOLVED
     ChangeReason.REQUIREMENTS_NOT_MET -> ApiChangeReason.REQUIREMENTS_NOT_MET
     ChangeReason.NEW_REQUIREMENTS -> ApiChangeReason.NEW_REQUIREMENTS
+    ChangeReason.TRANSFER_OWNERSHIP -> ApiChangeReason.TRANSFER_OWNERSHIP
 }

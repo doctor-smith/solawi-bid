@@ -1,7 +1,7 @@
 package org.solyton.solawi.bid.module.shares.data
 
-import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus as InternalShareStatus
 import org.solyton.solawi.bid.module.shares.data.api.ShareStatus as ApiShareStatus
+import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus as InternalShareStatus
 
 fun InternalShareStatus.toApiType() : ApiShareStatus = when(this) {
     InternalShareStatus.ActivationRejected -> ApiShareStatus.ActivationRejected
@@ -17,6 +17,7 @@ fun InternalShareStatus.toApiType() : ApiShareStatus = when(this) {
     InternalShareStatus.RollingOver -> ApiShareStatus.RollingOver
     InternalShareStatus.Subscribed -> ApiShareStatus.Subscribed
     InternalShareStatus.Suspended -> ApiShareStatus.Suspended
+    InternalShareStatus.Transfer -> ApiShareStatus.Transfer
 }
 
 fun ApiShareStatus.toInternalType(): InternalShareStatus = when (this) {
@@ -33,5 +34,6 @@ fun ApiShareStatus.toInternalType(): InternalShareStatus = when (this) {
     ApiShareStatus.RollingOver -> InternalShareStatus.RollingOver
     ApiShareStatus.Subscribed -> InternalShareStatus.Subscribed
     ApiShareStatus.Suspended -> InternalShareStatus.Suspended
+    ApiShareStatus.Transfer -> InternalShareStatus.Transfer
 }
 

@@ -92,6 +92,7 @@ fun ApiShareStatus.toDomainType(): ShareStatus = when(this) {
     org.solyton.solawi.bid.module.shares.data.api.ShareStatus.RollingOver -> ShareStatus.RollingOver
     org.solyton.solawi.bid.module.shares.data.api.ShareStatus.Subscribed -> ShareStatus.Subscribed
     org.solyton.solawi.bid.module.shares.data.api.ShareStatus.Suspended -> ShareStatus.Suspended
+    org.solyton.solawi.bid.module.shares.data.api.ShareStatus.Transfer -> ShareStatus.Transfer
 }
 
 fun ApiShareSubscriptionStatusHistories.toDomainType(): ShareSubscriptionStatusHistories = ShareSubscriptionStatusHistories(

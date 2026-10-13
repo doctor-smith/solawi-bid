@@ -28,6 +28,7 @@ fun Transaction.createTestShareStatuses() {
     createTestShareStatus(ShareStatus.Cancelled)
     createTestShareStatus(ShareStatus.Expired)
     createTestShareStatus(ShareStatus.AwaitingAhcAuthorization)
+    createTestShareStatus(ShareStatus.Transfer)
 }
 
 
