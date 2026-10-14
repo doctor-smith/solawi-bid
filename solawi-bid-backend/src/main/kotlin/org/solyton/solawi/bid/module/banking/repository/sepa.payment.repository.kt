@@ -446,7 +446,7 @@ fun Transaction.createSuccessorOfPayment(
 }
 
 /**
- * Create a SEPA payment template.
+ * Create or update a SEPA payment template.
  */
 fun Transaction.createSepaPaymentTemplate(
     creator: UUID,
@@ -454,6 +454,22 @@ fun Transaction.createSepaPaymentTemplate(
     amount: Double,
     collection: SepaCollectionEntity,
 ): SepaPaymentTemplateEntity {
+    val existingTemplate = SepaPaymentTemplateEntity.find{
+        SepaPaymentTemplates.mandateId eq mandate.id and
+        (SepaPaymentTemplates.collectionId eq collection.id)
+    }.firstOrNull()
+
+    if (existingTemplate != null) {
+        val changed = existingTemplate.amount != amount
+        if (changed) {
+            existingTemplate.amount = amount
+            existingTemplate.modifiedAt = now()
+            existingTemplate.modifiedBy = creator
+        }
+
+        return existingTemplate
+    }
+
     val template = SepaPaymentTemplateEntity.new {
         this.createdBy = creator
         this.createdAt = now()
@@ -463,6 +479,59 @@ fun Transaction.createSepaPaymentTemplate(
         this.initialSequenceType = initialSequenceType(collection.sequenceType)
     }
     return template
+}
+
+/**
+ * Synchronizes the payment template for a given mandate and collection.
+ * Sums up all mappings for this mandate and collection.
+ * Cleans up unused templates if the total amount drops to 0.
+ */
+fun Transaction.syncSepaPaymentTemplate(
+    modifierId: UUID,
+    mandate: SepaMandateEntity,
+    collection: SepaCollectionEntity
+): SepaPaymentTemplateEntity? {
+    val totalAmount = SepaMandateDataMapping.find {
+        (SepaMandateDataMappings.sepaMandateId eq mandate.id) and
+        (SepaMandateDataMappings.collectionId eq collection.id)
+    }.sumOf { it.amount }
+
+    val existingTemplate = SepaPaymentTemplateEntity.find {
+        (SepaPaymentTemplates.mandateId eq mandate.id) and
+        (SepaPaymentTemplates.collectionId eq collection.id)
+    }.firstOrNull()
+
+    return when {
+        totalAmount > 0.0 -> {
+            if (existingTemplate != null) {
+                if (existingTemplate.amount != totalAmount) {
+                    existingTemplate.amount = totalAmount
+                    existingTemplate.modifiedAt = now()
+                    existingTemplate.modifiedBy = modifierId
+                }
+                existingTemplate
+            } else {
+                createSepaPaymentTemplate(
+                    creator = modifierId,
+                    mandate = mandate,
+                    amount = totalAmount,
+                    collection = collection
+                )
+            }
+        }
+        existingTemplate != null -> {
+            if (existingTemplate.payments.empty()) {
+                existingTemplate.delete()
+                null
+            } else {
+                existingTemplate.amount = 0.0
+                existingTemplate.modifiedAt = now()
+                existingTemplate.modifiedBy = modifierId
+                existingTemplate
+            }
+        }
+        else -> null
+    }
 }
 
 /**

@@ -4,7 +4,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 import org.evoleq.ktorx.client.Parameters
 import org.evoleq.ktorx.client.QueryParams
-import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
+// import org.solyton.solawi.bid.module.shares.data.api.ChangedBy
 import org.solyton.solawi.bid.module.shares.data.values.ShareOfferId
 import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
 import org.solyton.solawi.bid.module.values.*

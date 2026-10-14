@@ -53,7 +53,8 @@ data class SepaMandateReferenceData(
 data class AttachSepaMandateReferenceData(
     val sepaMandateId: SepaMandateId,
     val referenceId: SepaMandateReferenceId,
-    val amount: Double
+    val amount: Double,
+    val collectionId: SepaCollectionId? = null
 )
 
 @Serializable
@@ -61,7 +62,7 @@ data class CreateSepaMandate(
     val creditorId: CreditorId,
     val debtorBankAccountId: BankAccountId,
     val debtorName: String,
-    val mandateReference: MandateReference,
+    val mandateReference: MandateReference?,
     val mandateReferencePrefix: MandateReferencePrefix?,
     val signedAt: LocalDateTime,
     val validFrom: LocalDateTime,

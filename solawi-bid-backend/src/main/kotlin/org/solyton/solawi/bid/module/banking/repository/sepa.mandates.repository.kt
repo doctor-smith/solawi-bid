@@ -1,8 +1,10 @@
 package org.solyton.solawi.bid.module.banking.repository
 
 import org.jetbrains.exposed.exceptions.ExposedSQLException
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.deleteWhere
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import org.solyton.solawi.bid.module.banking.data.MandateReference
@@ -58,11 +60,11 @@ fun Transaction.createSepaMandateWithRetry(
     val debtorBankAccount = validatedBankAccount(debtorBankAccountId)
 
     repeat(maxRetries) {
-        val mandateReference = mandateReference?.value?: when(mandateReferencePrefix) {
+        val mandateReference = mandateReference?.value ?: when(mandateReferencePrefix) {
             null -> generateMandateReference(creditorIdentifierId)
             else -> generateMandateReference(creditorIdentifierId, 3, mandateReferencePrefix)
         }
-        val collection  = if(collectionId != null) {
+        val collection = if (collectionId != null) {
             validatedSepaCollection(collectionId)
         } else null
 
@@ -81,7 +83,7 @@ fun Transaction.createSepaMandateWithRetry(
         val createNewMandate = !reUseActiveMandate || reUsedMandate == null
 
         try {
-            val sepaMandate =  when(createNewMandate) {
+            val sepaMandate = when (createNewMandate) {
                 true -> SepaMandateEntity.new {
                     this.createdBy = creatorId
                     this.creditorIdentifier = creditor
@@ -98,24 +100,33 @@ fun Transaction.createSepaMandateWithRetry(
                 false -> reUsedMandate
             }
             // Add the collection to the mandate
-            if(!(collection == null || collection.sepaMandates.contains(sepaMandate))) {
-                SepaMandateCollectionEntity.new {
-                    this.sepaMandate = sepaMandate
-                    this.sepaCollection = collection
+            if (collectionId != null)  {
+                val collection = validatedSepaCollection(collectionId)
+                if (!collection.sepaMandates.contains(sepaMandate)) {
+                    SepaMandateCollectionEntity.new {
+                        this.sepaMandate = sepaMandate
+                        this.sepaCollection = collection
+                    }
                 }
+
+                syncSepaPaymentTemplate(
+                    modifierId = creatorId,
+                    mandate = sepaMandate,
+                    collection = collection,
+                )
             }
 
-            if(referenceData != null) {
+            if (referenceData != null) {
                 SepaMandateDataMapping.new {
                     this.createdBy = creatorId
                     this.mandate = sepaMandate
                     this.referenceId = UUID.fromString(referenceData.referenceId.value)
                     this.amount = referenceData.amount
+                    this.collection = collection
                 }
-                if (collection != null) createSepaPaymentTemplate(
+                if (collection != null) syncSepaPaymentTemplate(
                     creatorId,
                     sepaMandate,
-                    referenceData.amount,
                     collection,
                 )
             }
@@ -134,6 +145,47 @@ fun Transaction.createSepaMandateWithRetry(
     throw BankAccountsException.CannotCreateMandateReference("Could not generate unique mandate reference after $maxRetries retries")
 }
 
+fun Transaction.attachSepaMandate(
+    modifierId: UUID,
+    sepaMandateId: UUID,
+    mandateReferenceId: UUID,
+    amount: Double,
+    collectionId: UUID? = null,
+) : SepaMandateEntity {
+    val sepaMandate = validatedSepaMandate(sepaMandateId)
+    val collection = collectionId?.let { validatedSepaCollection(it) }
+
+    SepaMandateDataMappings.deleteWhere {
+        SepaMandateDataMappings.referenceId eq mandateReferenceId
+    }
+
+    SepaMandateDataMapping.new {
+        this.createdBy = modifierId
+        this.mandate = sepaMandate
+        this.referenceId = mandateReferenceId
+        this.amount = amount
+        this.collection = collection
+    }
+
+    // Add the collection to the mandate
+    if (collection != null)  {
+        if (!collection.sepaMandates.contains(sepaMandate)) {
+            SepaMandateCollectionEntity.new {
+                this.sepaMandate = sepaMandate
+                this.sepaCollection = collection
+            }
+        }
+
+        syncSepaPaymentTemplate(
+            modifierId = modifierId,
+            mandate = sepaMandate,
+            collection = collection,
+        )
+    }
+
+    return sepaMandate
+}
+
 /**
  * Validates a given creditor ID by attempting to find a corresponding `CreditorIdentifierEntity` in the database.
  * If no matching entity is found, a `BankAccountsException.NoSuchCreditorId` exception is thrown.
@@ -144,7 +196,7 @@ fun Transaction.createSepaMandateWithRetry(
  */
 fun Transaction.validatedCreditor(creditorIdentifierId: UUID): CreditorIdentifierEntity =
     CreditorIdentifierEntity.find { CreditorIdentifiers.id eq creditorIdentifierId }.firstOrNull()
-        ?:throw BankAccountsException.NoSuchCreditorId(creditorIdentifierId.toString())
+        ?: throw BankAccountsException.NoSuchCreditorId(creditorIdentifierId.toString())
 
 /**
  * Generates a unique mandate reference for a given creditor identifier.
@@ -180,10 +232,10 @@ fun Transaction.generateMandateReference(
 
 fun Transaction.readSepaMandatesByCreditorsLegalEntity(legalEntityId: UUID): ApiSepaMandates {
 
-    val creditorIdentifiers = CreditorIdentifierEntity.find{
+    val creditorIdentifiers = CreditorIdentifierEntity.find {
         CreditorIdentifiersTable.legalEntityId eq legalEntityId
     }.toList()
-    val creditorIdentifierIds = creditorIdentifiers.map{it.id.value}
+    val creditorIdentifierIds = creditorIdentifiers.map { it.id.value }
     val mandates = SepaMandateEntity.find {
         SepaMandatesTable.creditorIdentifierId inList creditorIdentifierIds
     }
@@ -197,7 +249,7 @@ fun Transaction.readSepaMandatesOfUser(userId: UUID): List<SepaMandateEntity> {
     val bankAccounts = BankAccountEntity.find {
         BankAccountsTable.userId eq userId
     }.toList()
-    if(bankAccounts.isEmpty()) {
+    if (bankAccounts.isEmpty()) {
         return emptyList()
     }
 
@@ -247,16 +299,16 @@ fun Transaction.updateSepaMandate(
     val statusChanged = status != sepaMandate.status
     val isActiveChanged = isActive != sepaMandate.isActive
 
-    if(creditorChanged) sepaMandate.creditorIdentifier = creditor
-    if(debtorBackAccountChanged) sepaMandate.debtorBankAccount = debtorBankAccount
-    if(mandateReferenceChanged) sepaMandate.mandateReference = mandateReference.orEmpty()
-    if(debtorNameChanged) sepaMandate.debtorName = debtorName
-    if(signedAtChanged) sepaMandate.signedAt = signedAt
-    if(validFromChanged) sepaMandate.validFrom = validFrom
-    if(validUntilChanged) sepaMandate.validUntil = validUntil
-    if(lastUsedAtChanged) sepaMandate.lastUsedAt = lastUsedAt
-    if(statusChanged) sepaMandate.status = status
-    if(isActiveChanged) sepaMandate.isActive = isActive
+    if (creditorChanged) sepaMandate.creditorIdentifier = creditor
+    if (debtorBackAccountChanged) sepaMandate.debtorBankAccount = debtorBankAccount
+    if (mandateReferenceChanged) sepaMandate.mandateReference = mandateReference.orEmpty()
+    if (debtorNameChanged) sepaMandate.debtorName = debtorName
+    if (signedAtChanged) sepaMandate.signedAt = signedAt
+    if (validFromChanged) sepaMandate.validFrom = validFrom
+    if (validUntilChanged) sepaMandate.validUntil = validUntil
+    if (lastUsedAtChanged) sepaMandate.lastUsedAt = lastUsedAt
+    if (statusChanged) sepaMandate.status = status
+    if (isActiveChanged) sepaMandate.isActive = isActive
 
     val changed = creditorChanged
             || debtorBackAccountChanged
@@ -268,7 +320,7 @@ fun Transaction.updateSepaMandate(
             || lastUsedAtChanged
             || isActiveChanged
 
-    if(changed) {
+    if (changed) {
         sepaMandate.modifiedBy = modifierId
         sepaMandate.modifiedAt = DateTime.now()
     }

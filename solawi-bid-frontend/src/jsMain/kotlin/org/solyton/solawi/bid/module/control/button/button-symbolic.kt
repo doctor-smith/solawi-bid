@@ -898,6 +898,29 @@ fun UserLockButton(
     onClick
 )
 
+
+@Markup
+@Composable
+@Suppress("FunctionName")
+fun UserGearButton(
+    color: CSSColorValue,
+    bgColor: CSSColorValue = Color.transparent,
+    texts: Source<String?> = {null},
+    deviceType: Source<DeviceType>,
+    isDisabled: Boolean = false,
+    dataId: String? = null,
+    onClick: ()->Unit
+) = IconButton(
+    color,
+    bgColor,
+    arrayOf("fa-solid", "fa-user-gear"),
+    texts,
+    deviceType,
+    isDisabled,
+    dataId,
+    onClick
+)
+
 @Markup
 @Composable
 @Suppress("FunctionName")

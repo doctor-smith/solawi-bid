@@ -6,7 +6,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.joda.time.DateTime
 import org.solyton.solawi.bid.module.auditable.AuditableEntity
 import org.solyton.solawi.bid.module.auditable.AuditableUUIDTable
-import java.util.UUID
+import java.util.*
 
 typealias SepaMandateDataMappingsTable = SepaMandateDataMappings
 typealias SepaMandateDataMappingEntity = SepaMandateDataMapping
@@ -14,6 +14,7 @@ typealias SepaMandateDataMappingEntity = SepaMandateDataMapping
 object SepaMandateDataMappings: AuditableUUIDTable("sepa_mandate_data_mappings") {
     val sepaMandateId = reference("sepa_mandate_id", SepaMandates)
     val referenceId = uuid("reference_id")
+    val collectionId = optReference("collection_id", SepaCollectionsTable)
     // Deprecated
     val amount = double("amount")
 }
@@ -23,6 +24,7 @@ class SepaMandateDataMapping(id: EntityID<UUID>) : UUIDEntity(id), AuditableEnti
 
     var mandate by SepaMandate referencedOn SepaMandateDataMappings.sepaMandateId
     var referenceId by SepaMandateDataMappings.referenceId
+    var collection by SepaCollection optionalReferencedOn SepaMandateDataMappings.collectionId
     var amount by SepaMandateDataMappings.amount
 
     override var createdAt: DateTime by SepaMandateDataMappings.createdAt

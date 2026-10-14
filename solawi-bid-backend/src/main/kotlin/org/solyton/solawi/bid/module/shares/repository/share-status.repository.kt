@@ -3,9 +3,14 @@ package org.solyton.solawi.bid.module.shares.repository
 import eq
 import org.evoleq.uuid.toUuid
 import org.jetbrains.exposed.dao.flushCache
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.deleteWhere
 import org.joda.time.DateTime
+import org.solyton.solawi.bid.module.banking.repository.syncSepaPaymentTemplate
+import org.solyton.solawi.bid.module.banking.schema.SepaMandateDataMapping
+import org.solyton.solawi.bid.module.banking.schema.SepaMandateDataMappings
 import org.solyton.solawi.bid.module.shares.data.internal.ChangeReason
 import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
 import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
@@ -266,8 +271,31 @@ fun Transaction.transfer(
     // Complete Transfer
     subscription.userProfile = newOwnerProfile
     subscription.status = currentStatus
+    subscription.ahcAuthorized = false
     subscription.modifiedBy = modifierId
     subscription.modifiedAt = DateTime.now()
+
+    // Find affected mandate before deleting mapping to sync its template
+    val affectedMapping = SepaMandateDataMapping.find {
+        SepaMandateDataMappings.referenceId eq UUID.fromString(shareSubscriptionId.value)
+    }.firstOrNull()
+    val oldMandate = affectedMapping?.mandate
+
+    // delete mandate references
+    SepaMandateDataMappings.deleteWhere {
+        SepaMandateDataMappings.referenceId eq UUID.fromString(shareSubscriptionId.value)
+    }
+
+    // Sync payment templates for the old mandate across its collections
+    if (oldMandate != null) {
+        oldMandate.collections.forEach { collection ->
+            syncSepaPaymentTemplate(
+                modifierId = modifierId,
+                mandate = oldMandate,
+                collection = collection
+            )
+        }
+    }
 
     ShareSubscriptionStatusHistoryEntry.new {
         this.shareSubscription = subscription

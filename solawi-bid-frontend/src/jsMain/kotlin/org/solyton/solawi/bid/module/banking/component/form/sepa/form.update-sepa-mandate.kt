@@ -68,7 +68,9 @@ fun UpsertSepaMandateForm(
     var lastUsedAtState by remember { mutableStateOf(sepaMandate?.lastUsedAt) }
     var isActiveState by remember { mutableStateOf(sepaMandate?.isActive ?: true) }
     var amendmentOfState by remember { mutableStateOf(sepaMandate?.amendmentOf) }
-    var collectionIdState by remember { mutableStateOf(sepaMandate?.collectionId) }
+    var collectionIdState by remember { 
+        mutableStateOf(sepaMandate?.collectionId ?: collections.firstOrNull()?.sepaCollectionId) 
+    }
 
     // Debtor name
     Field(fieldDesktopStyle) {
@@ -287,15 +289,27 @@ data class SepaMandateChange(
 fun update(sepaMandateChange: SepaMandateChange, onChange: (SepaMandate) -> Unit) = try{
     val sepaMandate = SepaMandate(
         sepaMandateId = sepaMandateChange.sepaMandateId?: SepaMandateId(NIL_UUID),
-        debtorBankAccountId = sepaMandateChange.debtorBankAccountId.new!!,
-        debtorName = sepaMandateChange.debtorName.new!!,
+        debtorBankAccountId = requireNotNull(sepaMandateChange.debtorBankAccountId.new) {
+            "debtor bank account id is null"
+        },
+        debtorName = requireNotNull(sepaMandateChange.debtorName.new) {
+            "debtor name is null"
+        },
         mandateReference = sepaMandateChange.mandateReference.new?: MandateReference("NOT_SET"),
-        signedAt = sepaMandateChange.signedAt.new!!,
-        status = sepaMandateChange.status.new!!,
-        validFrom = sepaMandateChange.validFrom.new?: sepaMandateChange.signedAt.new!!,
+        signedAt = requireNotNull(sepaMandateChange.signedAt.new) {
+            "signed at is null"
+        },
+        status = requireNotNull(sepaMandateChange.status.new) {
+            "status is null"
+        },
+        validFrom = requireNotNull(sepaMandateChange.validFrom.new?: sepaMandateChange.signedAt.new!!) {
+            "valid from is null"
+        },
         validUntil = sepaMandateChange.validUntil.new,
         lastUsedAt = sepaMandateChange.lastUsedAt.new,
-        isActive = sepaMandateChange.isActive.new!!,
+        isActive = requireNotNull(sepaMandateChange.isActive.new) {
+            "is active is null"
+        },
         amendmentOf = sepaMandateChange.amendmentOf.new,
         collectionId = sepaMandateChange.collectionId.new
     )
