@@ -55,6 +55,11 @@ val uniqueIndexes: List<TableDef.UniqueIndex> by lazy {
         )
 
          */
+        TableDef.UniqueIndex.Update(
+            "collection_key",
+            SepaMandateDataMappings,
+            listOf("mandate_id", "collection_id")
+        )
     )
 }
 
@@ -222,7 +227,9 @@ val columnsToAdd: List<AddMissingColumns> by lazy {
         SepaCollectionsTable.addColumnsIfMissing(
             ColumnDef.Missing<String>("collection_key", ""),
         ),
-
+        SepaMandateDataMappings.addColumnsIfMissing(
+            ColumnDef.Missing<UUID?>("collection_id", null)
+        )
     )
 }
 

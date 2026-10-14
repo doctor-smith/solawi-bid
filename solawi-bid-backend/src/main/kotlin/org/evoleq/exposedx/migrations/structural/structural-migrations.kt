@@ -10,14 +10,7 @@ import org.evoleq.exposedx.migrations.structural.mysql.alterVarcharLength
 import org.evoleq.exposedx.migrations.structural.postresql.alterDefault
 import org.evoleq.exposedx.migrations.structural.postresql.alterNullability
 import org.evoleq.exposedx.migrations.structural.postresql.alterVarcharLength
-import org.evoleq.ktorx.result.Result
-import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.StdOutSqlLogger
-import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.Transaction
-import org.jetbrains.exposed.sql.addLogger
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.vendors.H2Dialect
 import org.jetbrains.exposed.sql.vendors.MysqlDialect
@@ -231,17 +224,18 @@ fun Database.modifyCheckConstraints(vararg dataSets: TableDef.CheckConstraint) {
     }
 }
 
+@Suppress("CognitiveComplexMethod")
 fun Database.modifyTableUniques(vararg dataSets : TableDef.UniqueIndex) {
     val database = this
     val existingTables = transaction(database) {
         SchemaUtils.listTables().map { it.substringAfterLast(".") }
     }
-    val relevantDataSets = dataSets.filter { it.table.tableName in existingTables }
+    val relevantDataSets = dataSets.filter { it.table.tableName.lowercase() in existingTables }
     transaction(database) {
         // Enable SQL logging
         addLogger(StdOutSqlLogger)
         relevantDataSets.filterIsInstance<TableDef.UniqueIndex.Update>().forEach { def ->
-            
+
             // Check if all columns exist. If not => continue
             val tableColumns = def.table.columns.map { it.name.lowercase() }
             if (!def.columns.all { it.lowercase() in tableColumns }) {
@@ -252,7 +246,7 @@ fun Database.modifyTableUniques(vararg dataSets : TableDef.UniqueIndex) {
             val indexName = "ux_${def.indexName}"
             val columns = def.columns.joinToString(", ") { it.fixColumnName() }
 
-            val firstColumn = def.columns.firstOrNull()
+            val firstColumn = def.columns.firstOrNull() ?: return@forEach
             val otherColumns = def.columns.drop(1)
             val isPossibleStatement = """
                 SELECT 1
@@ -264,23 +258,46 @@ fun Database.modifyTableUniques(vararg dataSets : TableDef.UniqueIndex) {
                 LIMIT 1;
             """.trimIndent()
 
-            val dropStatement = """
-                |ALTER TABLE $tableName DROP INDEX uk_$tableName;
-            """.trimMargin()
+            val isNotPossible = exec(isPossibleStatement) { rs: ResultSet ->
+                rs.next()
+            } ?: false
+
+            if (isNotPossible) return@forEach
+
+            // 1. Existing index names to try dropping:
+            // - Target new name ("ux_${def.indexName}")
+            // - Base name ("${def.indexName}")
+            // - Legacy names ("uk_$tableName", "uk_${def.indexName}")
+            val potentialIndexNames = listOf(
+                indexName,
+                def.indexName,
+                "uk_$tableName",
+                "uk_${def.indexName}"
+            ).distinct()
+
+            for (oldIndex in potentialIndexNames) {
+                // Try MySQL syntax first
+                try {
+                    exec("ALTER TABLE $tableName DROP INDEX $oldIndex;")
+                } catch (_: Exception) {
+                    // Try H2 / Postgres constraint syntax
+                    try {
+                        exec("ALTER TABLE $tableName DROP CONSTRAINT $oldIndex;")
+                    } catch (_: Exception) {
+                        try {
+                            exec("DROP INDEX IF EXISTS $oldIndex;")
+                        } catch (_: Exception) {}
+                    }
+                }
+            }
+
+            // 2. Create the unique index
             val createStatement = """
                 CREATE UNIQUE INDEX $indexName ON $tableName ($columns);
             """.trimIndent()
 
-            val isNotPossible = exec(isPossibleStatement) {
-                rs: ResultSet -> rs.next()
-            } ?: false
-
-            if(isNotPossible) return@forEach
-
-            try{exec(dropStatement)}catch(_: Exception){}
             exec(createStatement)
         }
-
     }
 }
 

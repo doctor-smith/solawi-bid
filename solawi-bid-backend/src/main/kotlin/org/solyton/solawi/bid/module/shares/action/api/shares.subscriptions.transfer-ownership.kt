@@ -11,6 +11,7 @@ import org.evoleq.math.x
 import org.solyton.solawi.bid.module.shares.data.api.ShareSubscription
 import org.solyton.solawi.bid.module.shares.data.api.TransferOwnership
 import org.solyton.solawi.bid.module.shares.data.toApiType
+import org.solyton.solawi.bid.module.shares.data.toDomainType
 import org.solyton.solawi.bid.module.shares.repository.transfer
 import org.solyton.solawi.bid.module.values.UserId
 
@@ -24,7 +25,7 @@ fun TransferOwnership() = KlAction<Result<Contextual<TransferOwnership>>, Result
             modifier = modifierId,
             shareSubscriptionId = data.shareSubscriptionId,
             newOwnerId = data.newOwnerId,
-            changedBy = data.changedBy,
+            changedBy = data.changedBy.toDomainType(),
         ).toApiType()
     } }  x database
 } }

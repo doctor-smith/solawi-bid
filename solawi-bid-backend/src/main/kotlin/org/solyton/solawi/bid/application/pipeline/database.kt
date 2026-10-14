@@ -12,14 +12,7 @@ import org.solyton.solawi.bid.application.environment.Environment
 @OptIn(ExperimentalDatabaseMigrationApi::class)
 fun Application.installDatabase(environment: Environment, migrations: ArrayList<Database.()-> Migration> = arrayListOf()): Database = runBlocking {
     val database = environment.connectToDatabase()
-    /*
-    val tables = listOf(
-        AddMissingColumns(
-            UsersTable, listOf(ColumnDef<UUID>("CREATED_BY", UUID(0L,0L)))
-        )
-    )
-    database.addMissingColumns(*tables.toTypedArray())
-*/
+
     structuralMigrations.runOn(database)
     migrations.runOn(database)
     database

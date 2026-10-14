@@ -1,11 +1,7 @@
 package org.solyton.solawi.bid.module.shares.component.modal
 
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
 import org.evoleq.compose.form.field.Field
 import org.evoleq.compose.form.label.Label
@@ -26,8 +22,8 @@ import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.Form
 import org.jetbrains.compose.web.dom.TextInput
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
-import org.solyton.solawi.bid.module.shares.data.management.deviceData
 import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
+import org.solyton.solawi.bid.module.shares.data.management.deviceData
 import org.solyton.solawi.bid.module.shares.data.types.ShareType
 import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle

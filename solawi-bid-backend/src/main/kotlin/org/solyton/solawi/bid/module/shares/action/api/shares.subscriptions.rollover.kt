@@ -12,6 +12,7 @@ import org.evoleq.uuid.toUuid
 import org.solyton.solawi.bid.module.shares.data.api.Rollover
 import org.solyton.solawi.bid.module.shares.data.api.ShareSubscriptions
 import org.solyton.solawi.bid.module.shares.data.toApiType
+import org.solyton.solawi.bid.module.shares.data.toDomainType
 import org.solyton.solawi.bid.module.shares.repository.rollover
 
 
@@ -24,7 +25,7 @@ fun RolloverShareSubscription() = KlAction<Result<Contextual<Rollover>>, Result<
         rollover(
             shareSubscriptionIds = shareSubscriptionIds,
             toShareOfferId = data.toShareOfferId.value.toUuid(),
-            changedBy = data.changedBy,
+            changedBy = data.changedBy.toDomainType(),
             modifiedBy = data.modifiedBy.value.toUuid()
         ).toApiType()
     } }  x database

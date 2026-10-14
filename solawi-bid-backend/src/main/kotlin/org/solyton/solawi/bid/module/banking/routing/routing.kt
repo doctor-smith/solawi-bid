@@ -298,6 +298,12 @@ fun <BankingEnv> Routing.banking (
                         Respond{ transform() } runOn Base(call, environment)
 
                     }
+                    patch("attach-reference-data") {
+                        ReceiveContextual<AttachSepaMandateReferenceData>() *
+                        IsGranted(UPDATE_SEPA_MANDATES, no) *
+                        AttachSepaMandateReferenceData() *
+                        Respond<SepaMandate>{ transform() } runOn Base(call, environment)
+                    }
                     route("personal") {
                         // TODO(correct context needs to be provided)
                         get("all") {

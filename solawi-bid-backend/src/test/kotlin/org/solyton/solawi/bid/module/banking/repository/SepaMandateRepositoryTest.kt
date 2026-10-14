@@ -284,6 +284,209 @@ class SepaMandateRepositoryTest {
         assertTrue{ SepaMandateCollectionEntity.all().count() == 2L }
 
     }
+
+    @DbFunctional@Test
+    fun `attach sepa mandate with collection and data mapping` () = runSimpleH2Test(*tables) {
+        val context = createRootContext("APPLICATION")
+        context.createChild("ORGANIZATION")
+
+        val creditorId = "DE98ZZZ12345678901"
+        val creditorName = "Kreditinstitut Mustermann"
+        val creditorBic = BIC("COBADEFFXXX")
+        val creditorIban = IBAN("DE89370400440532013000")
+        val user = UserEntity.new {
+            username = "testuser"
+            password = "password"
+            status = UserStatus.ACTIVE
+            createdBy = UUID_ZERO
+        }
+
+        val userProfile = createUserProfile(
+            CreateUserProfile(
+                UserId(user.id.value.toString()),
+                Firstname("Max"),
+                Lastname("Mustermann"),
+                null,
+                phoneNumber = null,
+                phoneNumber1 = PhoneNumber("123456"),
+                CreateAddress.empty,
+            ),
+            creatorId = UUID_ZERO,
+        )
+        val address = userProfile.addresses.first()
+
+        val legalEntity = createLegalEntity(
+            user.id.value,
+            creditorName,
+            "LF",
+            LegalEntityType.HUMAN,
+            address.id.value,
+            UUID_ZERO
+        )
+
+        val bankAccount = createBankAccount(
+            user.id.value,
+            creditorIban,
+            creditorBic,
+            creditorName,
+            true,
+            AccountType.CREDITOR,
+            emptyList(),
+            "Bank Account",
+            UUID_ZERO
+        )
+
+        val creditorIdentifier = CreditorIdentifier.new {
+            createdBy = UUID_ZERO
+            this.creditorId = creditorId
+            this.legalEntity = legalEntity
+            isActive = true
+            validUntil = DateTime.now().plusYears(1)
+            validFrom = DateTime.now().minusYears(1)
+        }
+
+        val collection = createSepaCollection(
+            UUID_ZERO,
+            CreditorIdentifierId(creditorIdentifier.id.value.toString()),
+            BankAccountId(bankAccount.id.value.toString()),
+            MandateReferencePrefix("MANDATE"),
+            SepaCollectionKey("KEY1"),
+            RemittanceInformation("REMITTANCE"),
+            SepaSequenceType.FRST,
+            null,
+        )
+
+        val mandate = createSepaMandateWithRetry(
+            creatorId = UUID_ZERO,
+            creditorIdentifierId = creditorIdentifier.id.value,
+            debtorBankAccountId = bankAccount.id.value,
+            debtorName = "DEBTOR NAME",
+            signedAt = DateTime.now(),
+            validFrom = DateTime.now(),
+            validUntil = null,
+        )
+
+        val referenceId = UUID.randomUUID()
+        val amount = 150.0
+
+        val result = attachSepaMandate(
+            modifierId = UUID_ZERO,
+            sepaMandateId = mandate.id.value,
+            mandateReferenceId = referenceId,
+            amount = amount,
+            collectionId = collection.id.value
+        )
+
+        flushCache()
+
+        assertEquals(mandate.id.value, result.id.value)
+
+        val mapping = SepaMandateDataMapping.find {
+            SepaMandateDataMappings.referenceId eq referenceId
+        }.firstOrNull()
+        assertNotNull("", mapping)
+        assertEquals(mandate.id.value, mapping?.mandate?.id?.value)
+        assertEquals(collection.id.value, mapping?.collection?.id?.value)
+        assertEquals(amount, mapping?.amount)
+
+        assertNotNull("", getSepaMandateCollectionEntity(mandate.id.value, collection.id.value))
+    }
+
+    @DbFunctional@Test
+    fun `attach sepa mandate replaces existing reference mapping` () = runSimpleH2Test(*tables) {
+        val context = createRootContext("APPLICATION")
+        context.createChild("ORGANIZATION")
+
+        val user = UserEntity.new {
+            username = "testuser2"
+            password = "password"
+            status = UserStatus.ACTIVE
+            createdBy = UUID_ZERO
+        }
+        val userProfile = createUserProfile(
+            CreateUserProfile(
+                UserId(user.id.value.toString()),
+                Firstname("Anna"),
+                Lastname("Muster"),
+                null,
+                phoneNumber = null,
+                phoneNumber1 = PhoneNumber("123456"),
+                CreateAddress.empty,
+            ),
+            creatorId = UUID_ZERO,
+        )
+        val address = userProfile.addresses.first()
+        val legalEntity = createLegalEntity(
+            user.id.value,
+            "Kreditinstitut",
+            "LF",
+            LegalEntityType.HUMAN,
+            address.id.value,
+            UUID_ZERO
+        )
+        val bankAccount = createBankAccount(
+            user.id.value,
+            IBAN("DE89370400440532013000"),
+            BIC("COBADEFFXXX"),
+            "Kreditinstitut",
+            true,
+            AccountType.CREDITOR,
+            emptyList(),
+            "Account",
+            UUID_ZERO
+        )
+        val creditorIdentifier = CreditorIdentifier.new {
+            createdBy = UUID_ZERO
+            this.creditorId = "DE98ZZZ12345678902"
+            this.legalEntity = legalEntity
+            isActive = true
+            validUntil = DateTime.now().plusYears(1)
+            validFrom = DateTime.now().minusYears(1)
+        }
+
+        val mandate1 = createSepaMandateWithRetry(
+            creatorId = UUID_ZERO,
+            creditorIdentifierId = creditorIdentifier.id.value,
+            debtorBankAccountId = bankAccount.id.value,
+            debtorName = "DEBTOR 1",
+            signedAt = DateTime.now(),
+            validFrom = DateTime.now(),
+            validUntil = null,
+        )
+        val mandate2 = createSepaMandateWithRetry(
+            creatorId = UUID_ZERO,
+            creditorIdentifierId = creditorIdentifier.id.value,
+            debtorBankAccountId = bankAccount.id.value,
+            debtorName = "DEBTOR 2",
+            signedAt = DateTime.now(),
+            validFrom = DateTime.now(),
+            validUntil = null,
+        )
+
+        val referenceId = UUID.randomUUID()
+
+        attachSepaMandate(
+            modifierId = UUID_ZERO,
+            sepaMandateId = mandate1.id.value,
+            mandateReferenceId = referenceId,
+            amount = 50.0,
+        )
+        flushCache()
+        assertEquals(mandate1.id.value, SepaMandateDataMapping.find { SepaMandateDataMappings.referenceId eq referenceId }.first().mandate.id.value)
+
+        attachSepaMandate(
+            modifierId = UUID_ZERO,
+            sepaMandateId = mandate2.id.value,
+            mandateReferenceId = referenceId,
+            amount = 75.0,
+        )
+        flushCache()
+
+        val mappings = SepaMandateDataMapping.find { SepaMandateDataMappings.referenceId eq referenceId }.toList()
+        assertEquals(1, mappings.size)
+        assertEquals(mandate2.id.value, mappings.first().mandate.id.value)
+        assertEquals(75.0, mappings.first().amount)
+    }
 }
 
 fun getSepaMandateCollectionEntity(sepaMandateId: UUID, sepaCollectionId: UUID): SepaMandateCollectionEntity? {

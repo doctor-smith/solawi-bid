@@ -37,9 +37,9 @@ import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyl
 import org.solyton.solawi.bid.module.banking.action.readBankAccounts
 import org.solyton.solawi.bid.module.banking.action.readFiscalYears
 import org.solyton.solawi.bid.module.banking.action.readPersonalCreditorIdentifier
+import org.solyton.solawi.bid.module.banking.action.readPersonalLegalEntity
 import org.solyton.solawi.bid.module.banking.action.sepa.*
 import org.solyton.solawi.bid.module.banking.component.form.sepa.PartialSepaCollection
-import org.solyton.solawi.bid.module.banking.component.modal.sepa.showUpsertSepaMandateModal
 import org.solyton.solawi.bid.module.banking.component.modal.sepa.upsertSepaMandateModalTexts
 import org.solyton.solawi.bid.module.banking.data.*
 import org.solyton.solawi.bid.module.banking.data.api.*
@@ -97,6 +97,7 @@ import org.solyton.solawi.bid.module.shares.data.toApiType
 import org.solyton.solawi.bid.module.shares.data.types.ShareType
 import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
 import org.solyton.solawi.bid.module.shares.data.values.ShareTypeId
+import org.solyton.solawi.bid.module.shares.service.hasAssociatedSepaMandate
 import org.solyton.solawi.bid.module.shares.service.refersTo
 import org.solyton.solawi.bid.module.shares.service.relatedBankAccountExists
 import org.solyton.solawi.bid.module.style.card.cardStyle
@@ -115,15 +116,13 @@ import org.solyton.solawi.bid.module.user.data.UserApplication
 import org.solyton.solawi.bid.module.user.data.managed.id
 import org.solyton.solawi.bid.module.user.data.managedUsers
 import org.solyton.solawi.bid.module.user.data.organization.members
+import org.solyton.solawi.bid.module.user.data.profile.UserProfile
 import org.solyton.solawi.bid.module.user.data.user
 import org.solyton.solawi.bid.module.user.data.user.organizations
 import org.solyton.solawi.bid.module.user.data.user.username
 import org.solyton.solawi.bid.module.user.data.userActions
 import org.solyton.solawi.bid.module.user.service.profile.fullname
-import org.solyton.solawi.bid.module.values.LegalEntityId
-import org.solyton.solawi.bid.module.values.ModifierId
-import org.solyton.solawi.bid.module.values.ProviderId
-import org.solyton.solawi.bid.module.values.Username
+import org.solyton.solawi.bid.module.values.*
 
 data class CheckedShareSubscription(val checked: Boolean, val shareSubscription: ShareSubscription)
 data class ShareSubscriptionFilter(
@@ -208,6 +207,22 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
         }
     }
 
+    LaunchedEffect(providerId) {
+        launch {
+            bankingApplicationActions dispatch readPersonalLegalEntity(
+                partyId = providerId.value,
+                onError = { (statusCode, _) ->
+                    {
+                        when (statusCode) {
+                            HttpStatusCode.NotFound -> it
+                            else -> it
+                        }
+                    }
+                },
+            )
+        }
+    }
+
     LaunchedEffectOnSource(isLegalEntityDefined)  {
         if(isLegalEntityDefined.emit()) {
             launch {
@@ -215,6 +230,9 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
             }
             launch {
                 bankingApplicationActions dispatch readSepaMessagesByLegalEntity(LegalEntityId(providerId.value))
+            }
+            launch {
+                bankingApplicationActions dispatch readSepaMandatesByCreditorsLegalEntity(LegalEntityId(providerId.value))
             }
         }
     }
@@ -1465,82 +1483,152 @@ fun ShareSubscriptionManagement(
                                         userProfilesMap[subscription.userProfileId]?.fullname() ?: ""
                                     ) { width(20.percent) }
                                     TextCell(subscription.ahcAuthorized.checkIcon("--")) { width(5.percent) }
+                                    /*
+                                    TextCell(
+                                        associatedCollection?.let { sC ->
+                                            "${sC.collectionKey.value} / ${sC.mandateReferencePrefix.value}"
+                                        } ?: "--"
+                                    ) {
+                                        width(20.percent)
+                                        overflow(Overflow.Hidden)
+                                    }
+
+                                     */
+
                                     TextCell(sepaCollections.read().filter { coll ->
                                         coll.refersTo(subscription) && subscription.relatedBankAccountExists(
                                             coll,
                                             userProfileToBankAccountMap
-                                        )
+                                        ) && subscription.hasAssociatedSepaMandate(shareSubscriptionIdToMandateMap.emit())
                                     }.joinToString(", ") { sC ->
                                         "${sC.collectionKey.value} / ${sC.mandateReferencePrefix.value}"
                                     }) {
                                         width(20.percent)
                                         overflow(Overflow.Hidden)
                                     }
+
+
                                 }
                                 ActionsWrapper {
+
+                                    val allowedTransferStatuses = listOf(
+                                        ShareStatus.PendingActivation,
+                                        ShareStatus.Subscribed
+                                    )
+
+                                    var newOwnerState by remember { mutableStateOf<UserProfile?>(null) }
+
+                                    UserGearButton(
+                                        texts = {"Transfer subscription to other member"},
+                                        color = Color.black,
+                                        bgColor = Color.white,
+                                        deviceType = deviceType,
+                                        isDisabled = subscription.status !in allowedTransferStatuses
+                                    ) {
+
+                                        shareManagementModals.showTransferOwnershipOfShareSubscriptionModal(
+                                            storage = shareManagementStore,
+                                            texts = transferOwnershipOfShareSubscriptionModalTexts.emit(),
+                                            device = deviceType,
+                                            providerId = providerId,
+                                            users = Read(membersAsUsers),
+                                            changesDoneBy = ChangedBy.PROVIDER,
+                                            shareSubscription = subscription,
+                                            isOkButtonDisabled = {
+                                                newOwnerState == null
+                                            },
+                                            newOwner = newOwnerState,
+                                            setNewOwner = { newOwnerState = it }
+                                        ) {
+                                            val newOwnerId =
+                                                requireNotNull(newOwnerState) { "Owner id must not be null" }.userProfileId
+
+                                            scope.launch {
+                                                shareManagementActions dispatch transferOwnership(
+                                                    providerId,
+                                                    ShareSubscriptionId(subscription.shareSubscriptionId),
+                                                    UserProfileId(newOwnerId),
+                                                )
+                                            }
+                                        }
+
+                                    }
+
+
+                                    val associatedCollections = shareSubscriptionToCollectionsMap.emit()[ShareSubscriptionId(subscription.shareSubscriptionId)]
+                                    val availableCollections = Read(sepaCollections * FilterBy { subscription.shareOfferId in it.referenceIds.map { ref -> ref.value } }) * Emit
+
+                                    val collections = associatedCollections ?: availableCollections
+
                                     var sepaMandateState by remember {
                                         mutableStateOf<SepaMandate?>(
-                                            shareSubscriptionIdToMandateMap.emit()[ShareSubscriptionId(subscription.shareSubscriptionId)]
+                                            when{
+                                                associatedCollections != null -> shareSubscriptionIdToMandateMap.emit()[ShareSubscriptionId(subscription.shareSubscriptionId)]
+                                                else -> null
+                                            }
                                         )
                                     }
-                                    val collections = shareSubscriptionToCollectionsMap.emit()[ShareSubscriptionId(subscription.shareSubscriptionId)] ?: listOf()
+                                    var mandateToBeAttached by remember{ mutableStateOf<SepaMandate?>(null) }
+
                                     val creditorId = creditorIdentifier.read()?.creditorId
                                     val bankAccount = userProfileToBankAccountMap[subscription.userProfileId]
+                                    val usersSepaMandates = sepaMandates map { mandates -> mandates.filter { it.debtorBankAccountId == bankAccount?.bankAccountId } }
+
+                                    var modeState by remember{ mutableStateOf<AttachOrUpsertSepaMandateModalMode>(AttachOrUpsertSepaMandateModalMode.Upsert) }
+
                                     CreditCardButton(
                                         color = Color.black,
                                         bgColor = Color.white,
                                         deviceType = deviceType,
-                                        isDisabled = bankAccount == null || collections.isEmpty() || creditorId == null
+                                        isDisabled = bankAccount == null ||  collections.isEmpty() || creditorId == null
                                     ) {
-                                        shareManagementModals.showUpsertSepaMandateModal(
+                                        shareManagementModals.showAttachOrUpsertSepaMandateModal(
                                             storage = bankingApplicationStorage,
                                             device = deviceType,
                                             bankAccount = bankAccount,
                                             collections = collections,
+                                            usersSepaMandates = usersSepaMandates.emit(),
+                                            mode = modeState,
+                                            setMode = { modeState = it },
                                             sepaMandate = sepaMandateState,
-                                            setSepaMandate = { sepaMandateState = it },
+                                            setSepaMandate = {
+                                                when(modeState){
+                                                    is AttachOrUpsertSepaMandateModalMode.Upsert -> {
+                                                        sepaMandateState = it
+                                                        mandateToBeAttached = null
+                                                    }
+                                                    is AttachOrUpsertSepaMandateModalMode.Attach -> {
+                                                        mandateToBeAttached = it
+                                                    }
+                                                }
+                                            },
+                                            // isOkbuttonDisabled = {},
                                             texts = upsertSepaMandateModalTexts
                                         ) {
-                                            scope.launch {
-                                                if (sepaMandateState != null && creditorId != null && bankAccount != null) {
-                                                    val sepaMandate = sepaMandateState
-                                                    requireNotNull(sepaMandate)
-                                                    val isNewSepaMandate = sepaMandate.sepaMandateId.value == NIL_UUID
-                                                    when(isNewSepaMandate) {
-                                                        true -> {
-                                                            println("""Creating new SEPA mandate:
-                                                                |$sepaMandate
-                                                                |
-                                                                |
-                                                            """.trimMargin())
-                                                            requireNotNull(sepaMandate.collectionId)
-                                                            val mandateReferencePrefix = collections
-                                                                .first { it.sepaCollectionId == sepaMandate.collectionId }
-                                                                .mandateReferencePrefix
-                                                            bankingApplicationActions dispatch createSepaMandate(
-                                                                CreateSepaMandate(
-                                                                    debtorBankAccountId = sepaMandate.debtorBankAccountId,
-                                                                    debtorName = sepaMandate.debtorName,
-                                                                    mandateReference = sepaMandate.mandateReference,
-                                                                    signedAt = sepaMandate.signedAt,
-                                                                    validFrom = sepaMandate.validFrom,
-                                                                    validUntil = sepaMandate.validUntil,
-                                                                    status = sepaMandate.status.toApyType(),
-                                                                    isActive = sepaMandate.isActive,
-                                                                    amendmentOf = sepaMandate.amendmentOf,
-                                                                    creditorId = creditorId,
-                                                                    mandateReferencePrefix = mandateReferencePrefix
-                                                                ),
-                                                                sepaMandate.collectionId,
-                                                            )
-                                                        }
-
-                                                        else -> bankingApplicationActions dispatch updateSepaMandateInSepaCollection(
-                                                            UpdateSepaMandate(
-                                                                sepaMandateId = sepaMandate.sepaMandateId,
+                                        scope.launch {
+                                            @Suppress("ComplexCondition")
+                                            if (modeState is AttachOrUpsertSepaMandateModalMode.Upsert && sepaMandateState != null && creditorId != null && bankAccount != null) {
+                                                val sepaMandate = sepaMandateState
+                                                requireNotNull(sepaMandate)
+                                                val isNewSepaMandate = sepaMandate.sepaMandateId.value == NIL_UUID
+                                                when (isNewSepaMandate) {
+                                                    true -> {
+                                                        println(
+                                                            """Creating new SEPA mandate:
+                                                    |$sepaMandate
+                                                    |
+                                                    |
+                                                """.trimMargin()
+                                                        )
+                                                        requireNotNull(sepaMandate.collectionId) { "Collection of mandate must not be null" }
+                                                        val mandateReferencePrefix = collections
+                                                            .first { it.sepaCollectionId == sepaMandate.collectionId }
+                                                            .mandateReferencePrefix
+                                                        bankingApplicationActions dispatch createSepaMandate(
+                                                            CreateSepaMandate(
                                                                 debtorBankAccountId = sepaMandate.debtorBankAccountId,
                                                                 debtorName = sepaMandate.debtorName,
-                                                                mandateReference = sepaMandate.mandateReference,
+                                                                mandateReference = null,// sepaMandate.mandateReference,
                                                                 signedAt = sepaMandate.signedAt,
                                                                 validFrom = sepaMandate.validFrom,
                                                                 validUntil = sepaMandate.validUntil,
@@ -1548,16 +1636,50 @@ fun ShareSubscriptionManagement(
                                                                 isActive = sepaMandate.isActive,
                                                                 amendmentOf = sepaMandate.amendmentOf,
                                                                 creditorId = creditorId,
-                                                                lastUsedAt = sepaMandate.lastUsedAt,
                                                                 collectionId = sepaMandate.collectionId,
+                                                                mandateReferencePrefix = mandateReferencePrefix,
+                                                                sepaMandateReferenceData = CreateSepaMandateReferenceData(
+                                                                    referenceId = SepaMandateReferenceId(subscription.shareSubscriptionId),
+                                                                    amount = (subscription.pricePerShare ?: 0.0) * subscription.numberOfShares
+                                                                ),
                                                             ),
-                                                            targetCollectionId = sepaMandate.collectionId!!
+                                                            sepaMandate.collectionId,
                                                         )
                                                     }
+
+                                                    else -> bankingApplicationActions dispatch updateSepaMandateInSepaCollection(
+                                                        UpdateSepaMandate(
+                                                            sepaMandateId = sepaMandate.sepaMandateId,
+                                                            debtorBankAccountId = sepaMandate.debtorBankAccountId,
+                                                            debtorName = sepaMandate.debtorName,
+                                                            mandateReference = sepaMandate.mandateReference,
+                                                            signedAt = sepaMandate.signedAt,
+                                                            validFrom = sepaMandate.validFrom,
+                                                            validUntil = sepaMandate.validUntil,
+                                                            status = sepaMandate.status.toApyType(),
+                                                            isActive = sepaMandate.isActive,
+                                                            amendmentOf = sepaMandate.amendmentOf,
+                                                            creditorId = creditorId,
+                                                            lastUsedAt = sepaMandate.lastUsedAt,
+                                                            collectionId = sepaMandate.collectionId,
+                                                        ),
+                                                        targetCollectionId = sepaMandate.collectionId!!
+                                                    )
+                                                }
+                                            }
+                                            if (modeState is AttachOrUpsertSepaMandateModalMode.Attach && mandateToBeAttached != null) {
+                                                scope.launch {
+                                                    bankingApplicationActions dispatch attachSepaMandateReferenceData(
+                                                        AttachSepaMandateReferenceData(
+                                                            sepaMandateId = mandateToBeAttached!!.sepaMandateId,
+                                                            referenceId = SepaMandateReferenceId(subscription.shareSubscriptionId),
+                                                            amount = (subscription.pricePerShare ?: 0.0) * subscription.numberOfShares
+                                                        )
+                                                    )
                                                 }
                                             }
                                         }
-                                    }
+                                    } }
 
                                     var newShareSubscriptionState by remember { mutableStateOf(subscription) }
                                     EditButton(
