@@ -5,6 +5,8 @@ package org.solyton.solawi.bid.module.shares.component.modal
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
+import org.evoleq.compose.form.field.Field
+import org.evoleq.compose.form.label.Label
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.modal.Modal
 import org.evoleq.compose.modal.ModalData
@@ -20,8 +22,8 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
-import org.jetbrains.compose.web.css.padding
-import org.jetbrains.compose.web.css.px
+import org.evoleq.uuid.NIL_UUID
+import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.ElementScope
 import org.jetbrains.compose.web.dom.RadioInput
 import org.jetbrains.compose.web.dom.Text
@@ -33,13 +35,23 @@ import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.sepa.collection.SepaCollection
 import org.solyton.solawi.bid.module.banking.data.sepa.mandate.SepaMandate
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
+import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
+import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
+import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
+import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
 import org.solyton.solawi.bid.module.style.modal.commonModalStyles
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.w3c.dom.HTMLElement
 
 sealed class AttachOrUpsertSepaMandateModalMode {
-    object Attach : AttachOrUpsertSepaMandateModalMode()
-    object Upsert : AttachOrUpsertSepaMandateModalMode()
+    data object Attach : AttachOrUpsertSepaMandateModalMode()
+    data object Upsert : AttachOrUpsertSepaMandateModalMode()
+}
+
+enum class MandateDialogAction {
+    ATTACH_EXISTING,
+    EDIT_EXISTING,
+    CREATE_NEW
 }
 
 data class AttachOrUpsertSepaMandateModalConfiguration(
@@ -61,8 +73,8 @@ fun AttachOrUpsertSepaMandateModal(
     mode: AttachOrUpsertSepaMandateModalMode = AttachOrUpsertSepaMandateModalMode.Upsert,
     setMode: (AttachOrUpsertSepaMandateModalMode) -> Unit,
     sepaMandate: SepaMandate?,
-    setSepaMandate: (SepaMandate) -> Unit,
-    update: ()->Unit
+    setSepaMandate: (SepaMandate?) -> Unit,
+    update: () -> Unit
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
     type = ModalType.Dialog,
     id = id,
@@ -76,59 +88,103 @@ fun AttachOrUpsertSepaMandateModal(
     styles = commonModalStyles(device).compact(),
 ) {
     Wrap {
-        var modeState by remember {mutableStateOf(mode)}
+        val options = remember(usersSepaMandates) {
+            usersSepaMandates.associateBy { it.mandateReference.value }
+        }
+        var selectedRef by remember {
+            mutableStateOf(sepaMandate?.mandateReference?.value ?: options.keys.firstOrNull())
+        }
+
+        val initialAction = when {
+            usersSepaMandates.isEmpty() -> MandateDialogAction.CREATE_NEW
+            mode is AttachOrUpsertSepaMandateModalMode.Attach -> MandateDialogAction.ATTACH_EXISTING
+            sepaMandate != null && sepaMandate.sepaMandateId.value != NIL_UUID -> MandateDialogAction.EDIT_EXISTING
+            else -> MandateDialogAction.CREATE_NEW
+        }
+        var selectedAction by remember { mutableStateOf(initialAction) }
+
         When(usersSepaMandates.isNotEmpty()) {
+            Field(fieldDesktopStyle) {
+                Label(
+                    text = "Mode",
+                    id = "mode",
+                    labelStyle = formLabelDesktopStyle,
+                    isRequired = false
+                )
+                Horizontal({ padding(10.px); gap(10.px) }) {
+                    RadioInput(selectedAction == MandateDialogAction.ATTACH_EXISTING) {
+                        onClick {
+                            selectedAction = MandateDialogAction.ATTACH_EXISTING
+                            setMode(AttachOrUpsertSepaMandateModalMode.Attach)
+                            setSepaMandate(options[selectedRef])
+                        }
+                    }
+                    Text("Attach existing")
 
-            val options = usersSepaMandates.associateBy { it.mandateReference.value }
-            var selected by remember{ mutableStateOf(sepaMandate?.mandateReference?.value?: options.keys.firstOrNull()) }
-            Text("The user has the following sepa mandates:")
-            Dropdown(
-                options = options,
-                selected = selected
+                    RadioInput(selectedAction == MandateDialogAction.EDIT_EXISTING) {
+                        onClick {
+                            selectedAction = MandateDialogAction.EDIT_EXISTING
+                            setMode(AttachOrUpsertSepaMandateModalMode.Upsert)
+                            setSepaMandate(options[selectedRef])
+                        }
+                    }
+                    Text("Edit existing")
 
-            ) {
-                (_, value) -> selected = value.mandateReference.value
+                    RadioInput(selectedAction == MandateDialogAction.CREATE_NEW) {
+                        onClick {
+                            selectedAction = MandateDialogAction.CREATE_NEW
+                            setMode(AttachOrUpsertSepaMandateModalMode.Upsert)
+                            setSepaMandate(null)
+                        }
+                    }
+                    Text("Create new")
+                }
             }
-            Horizontal({
-                padding(10.px)
-            }) {
-                RadioInput(modeState is AttachOrUpsertSepaMandateModalMode.Attach) {
-                    onClick{
-                        modeState = AttachOrUpsertSepaMandateModalMode.Attach
-                        setMode(AttachOrUpsertSepaMandateModalMode.Attach)
+
+            When(selectedAction in listOf(MandateDialogAction.ATTACH_EXISTING, MandateDialogAction.EDIT_EXISTING)) {
+                Field(fieldDesktopStyle) {
+                    Label(
+                        text = "Selected SEPA mandate",
+                        id = "selected-sepa-mandate",
+                        labelStyle = formLabelDesktopStyle,
+                        isRequired = true
+                    )
+                    Dropdown(
+                        options = options,
+                        selected = selectedRef,
+                        styles = DropdownStyles().modifyContainerStyle {
+                            width(100.percent)
+                        },
+                        iconContent = { open -> SimpleUpDown(open) }
+                    ) { (_, value) ->
+                        selectedRef = value.mandateReference.value
+                        setSepaMandate(value)
                     }
                 }
-                Text("Attach existing sepa mandate")
             }
-            Horizontal({
-                padding(10.px)
-            }) {
-                RadioInput(modeState is AttachOrUpsertSepaMandateModalMode.Upsert) {
-                    onClick {
-                        modeState = AttachOrUpsertSepaMandateModalMode.Upsert
-                        setMode(AttachOrUpsertSepaMandateModalMode.Upsert)
-                    }
-                }
-                Text("Create or update sepa mandate")
-            }
-
-
         }
+
         When(usersSepaMandates.isEmpty()) {
-            Text("The user has no associated sepa mandates")
+            Text("The user has no associated sepa mandates. Please create a new one:")
         }
 
-        When(modeState is AttachOrUpsertSepaMandateModalMode.Upsert) {
-            UpsertSepaMandateForm(
-                texts = texts,
-                bankAccount = bankAccount,
-                collections = collections,
-                sepaMandate = sepaMandate,
-                setSepaMandate = setSepaMandate
-            )
+        val isReadOnly = selectedAction == MandateDialogAction.ATTACH_EXISTING
+        val currentMandate = when (selectedAction) {
+            MandateDialogAction.ATTACH_EXISTING, MandateDialogAction.EDIT_EXISTING -> options[selectedRef] ?: sepaMandate
+            MandateDialogAction.CREATE_NEW -> null
         }
+
+        UpsertSepaMandateForm(
+            texts = texts,
+            bankAccount = bankAccount,
+            collections = collections,
+            sepaMandate = currentMandate,
+            isReadOnly = isReadOnly,
+            setSepaMandate = { updated -> setSepaMandate(updated) }
+        )
     }
 }
+
 
 @Markup
 fun Storage<Modals<Int>>.showAttachOrUpsertSepaMandateModal(
@@ -142,8 +198,8 @@ fun Storage<Modals<Int>>.showAttachOrUpsertSepaMandateModal(
     mode: AttachOrUpsertSepaMandateModalMode = AttachOrUpsertSepaMandateModalMode.Upsert,
     setMode: (AttachOrUpsertSepaMandateModalMode) -> Unit,
     sepaMandate: SepaMandate?,
-    setSepaMandate: (SepaMandate) -> Unit,
-    update: ()->Unit
+    setSepaMandate: (SepaMandate?) -> Unit,
+    update: () -> Unit
 ) = with(nextId()) {
     put(this to ModalData(this,
         when (parentModalId) {
@@ -170,7 +226,7 @@ fun Storage<Modals<Int>>.showAttachOrUpsertSepaMandateModal(
 }
 
 
-val upsertSepaMandateModalTexts = Source {
+val attachOrUpsertSepaMandateModalTexts = Source {
     "dialog" texts {
         "title" colon "Attach, Create or Update SEPA mandate"
         "okButton" block {

@@ -21,7 +21,8 @@ import org.evoleq.math.emit
 import org.evoleq.math.times
 import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.compose.web.attributes.InputType
-import org.jetbrains.compose.web.css.px
+import org.jetbrains.compose.web.css.StyleScope
+import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.width
 import org.jetbrains.compose.web.dom.Input
 import org.jetbrains.compose.web.dom.TextInput
@@ -43,17 +44,20 @@ import org.solyton.solawi.bid.module.style.form.formDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
 import org.solyton.solawi.bid.module.user.component.dropdown.dropdownStyles
 
+
 @Composable
+@Suppress("CyclomaticComplexMethod")
 fun UpsertSepaMandateForm(
     texts: Source<Lang.Block> = updateSepaMandateFormTexts,
     collections: List<SepaCollection>,
     bankAccount: BankAccount?,
     sepaMandate: SepaMandate?,
+    isReadOnly: Boolean = false,
     setSepaMandate: (SepaMandate) -> Unit,
 ) = Form(formDesktopStyle){
 
     val dropdownStyles = dropdownStyles.modifyContainerStyle {
-        width(200.px)
+        width(100.percent)
     }
 
     val inputs = texts * inputs
@@ -68,8 +72,26 @@ fun UpsertSepaMandateForm(
     var lastUsedAtState by remember { mutableStateOf(sepaMandate?.lastUsedAt) }
     var isActiveState by remember { mutableStateOf(sepaMandate?.isActive ?: true) }
     var amendmentOfState by remember { mutableStateOf(sepaMandate?.amendmentOf) }
-    var collectionIdState by remember { 
-        mutableStateOf(sepaMandate?.collectionId ?: collections.firstOrNull()?.sepaCollectionId) 
+    var collectionIdState by remember {
+        mutableStateOf(sepaMandate?.collectionId ?: collections.firstOrNull()?.sepaCollectionId)
+    }
+
+    LaunchedEffect(sepaMandate) {
+        debtorNameState = sepaMandate?.debtorName ?: bankAccount?.bankAccountHolder
+        mandateReferenceState = sepaMandate?.mandateReference
+        statusState = sepaMandate?.status ?: MandateStatus.ACTIVE
+        signedAtState = sepaMandate?.signedAt
+        validFromState = sepaMandate?.validFrom
+        validUntilState = sepaMandate?.validUntil
+        lastUsedAtState = sepaMandate?.lastUsedAt
+        isActiveState = sepaMandate?.isActive ?: true
+        amendmentOfState = sepaMandate?.amendmentOf
+        collectionIdState = sepaMandate?.collectionId ?: collections.firstOrNull()?.sepaCollectionId
+    }
+
+    val fieldDesktopStyle: StyleScope.() -> Unit = {
+        fieldDesktopStyle()
+        width(100.percent)
     }
 
     // Debtor name
@@ -81,8 +103,10 @@ fun UpsertSepaMandateForm(
             isRequired = true
         )
         TextInput(debtorNameState?: "") {
+            style { width(100.percent) }
             disabled()
             onInput { event ->
+                if (isReadOnly) return@onInput
                 val newState = event.value
                 update(SepaMandateChange(
                     sepaMandateId = sepaMandate?.sepaMandateId,
@@ -100,7 +124,7 @@ fun UpsertSepaMandateForm(
                     amendmentOf = Keep(amendmentOfState),
                     collectionId = Keep(collectionIdState)
                 )) {
-                    sepaMandate -> setSepaMandate(sepaMandate)
+                        sepaMandate -> setSepaMandate(sepaMandate)
                 }
             }
         }
@@ -115,8 +139,10 @@ fun UpsertSepaMandateForm(
                 isRequired = true
             )
             TextInput(mandateReferenceState?.value?: "") {
-                if(sepaMandate != null) disabled()
+                style { width(100.percent) }
+                disabled()
                 onInput { event ->
+                    if (isReadOnly) return@onInput
                     update(SepaMandateChange(
                         sepaMandateId = sepaMandate?.sepaMandateId,
                         debtorBankAccountId = Keep(bankAccountId),
@@ -133,7 +159,7 @@ fun UpsertSepaMandateForm(
                         amendmentOf = Keep(amendmentOfState),
                         collectionId = Keep(collectionIdState)
                     )) {
-                        sepaMandate -> setSepaMandate(sepaMandate)
+                            sepaMandate -> setSepaMandate(sepaMandate)
                     }
                 }
             }
@@ -150,32 +176,37 @@ fun UpsertSepaMandateForm(
             )
 
             val options = collections.associateBy({"${it.collectionKey.value} / ${it.mandateReferencePrefix.value}"}) {it}
+            val selectedOption = collections.firstOrNull { it.sepaCollectionId == collectionIdState }?.let {
+                "${it.collectionKey.value} / ${it.mandateReferencePrefix.value}"
+            } ?: options.keys.firstOrNull() ?: ""
             Dropdown(
                 options = options,
-                selected = options.keys.firstOrNull() ?: "",
+                selected = selectedOption,
+                isDisabled = { isReadOnly },
                 iconContent = { open -> SimpleUpDown(open) },
                 styles = dropdownStyles,
             ) { (_, value) ->
+                if (isReadOnly) return@Dropdown
                 update(
                     SepaMandateChange(
-                    sepaMandateId = sepaMandate?.sepaMandateId,
-                    debtorBankAccountId = Keep(bankAccountId),
-                    debtorName = Keep(debtorNameState),
-                    mandateReference = Keep(mandateReferenceState),
-                    signedAt = Keep(signedAtState),
-                    status = Keep(statusState),
-                    validFrom = Keep(validFromState),
-                    validUntil = Keep(validUntilState),
-                    lastUsedAt = Keep(lastUsedAtState),
-                    isActive = Keep(isActiveState),
-                    amendmentOf = Keep(amendmentOfState),
-                    collectionId = Change(
-                        collectionIdState,
-                        value.sepaCollectionId
-                    ) {
-                        collectionIdState = value.sepaCollectionId
-                    }
-                )) { sepaMandate ->
+                        sepaMandateId = sepaMandate?.sepaMandateId,
+                        debtorBankAccountId = Keep(bankAccountId),
+                        debtorName = Keep(debtorNameState),
+                        mandateReference = Keep(mandateReferenceState),
+                        signedAt = Keep(signedAtState),
+                        status = Keep(statusState),
+                        validFrom = Keep(validFromState),
+                        validUntil = Keep(validUntilState),
+                        lastUsedAt = Keep(lastUsedAtState),
+                        isActive = Keep(isActiveState),
+                        amendmentOf = Keep(amendmentOfState),
+                        collectionId = Change(
+                            collectionIdState,
+                            value.sepaCollectionId
+                        ) {
+                            collectionIdState = value.sepaCollectionId
+                        }
+                    )) { sepaMandate ->
                     setSepaMandate(sepaMandate)
                 }
             }
@@ -189,13 +220,14 @@ fun UpsertSepaMandateForm(
             labelStyle = formLabelDesktopStyle,
             isRequired = true
         )
-        key(signedAtState) {
+        key(signedAtState, isReadOnly) {
             Input(InputType.Date) {
                 id("signed-at")
-                // dataId("sepa.form.input.date.start")
+                if (isReadOnly) disabled()
                 value((signedAtState?:now()).date.format(Locale.Iso))
                 style { dateInputDesktopStyle() }
                 onInput {
+                    if (isReadOnly) return@onInput
                     update(SepaMandateChange(
                         sepaMandateId = sepaMandate?.sepaMandateId,
                         debtorBankAccountId = Keep(bankAccountId),
@@ -215,7 +247,7 @@ fun UpsertSepaMandateForm(
                         amendmentOf = Keep(amendmentOfState),
                         collectionId = Keep(collectionIdState)
                     )) {
-                        sepaMandate -> setSepaMandate(sepaMandate)
+                            sepaMandate -> setSepaMandate(sepaMandate)
                     }
                 }
             }
@@ -238,10 +270,12 @@ fun UpsertSepaMandateForm(
         Dropdown(
             options = statusOptions,
             selected = statusState.name,
+            isDisabled = { isReadOnly },
             iconContent = {open -> SimpleUpDown(open) },
             styles = dropdownStyles,
         ) {
-            (_, value) ->
+                (_, value) ->
+            if (isReadOnly) return@Dropdown
             val newState = value
             update(SepaMandateChange(
                 sepaMandateId = sepaMandate?.sepaMandateId,
@@ -262,15 +296,13 @@ fun UpsertSepaMandateForm(
                 isActive = Keep(isActiveState),
                 amendmentOf = Keep(amendmentOfState),
                 collectionId = Keep(collectionIdState)
-
-
             )){
-                sepaMandate -> setSepaMandate(sepaMandate)
+                    sepaMandate -> setSepaMandate(sepaMandate)
             }
         }
     }
 }
-
+// ... existing code ...
 data class SepaMandateChange(
     val sepaMandateId: SepaMandateId? = null,
     val debtorBankAccountId: Change<BankAccountId>,
