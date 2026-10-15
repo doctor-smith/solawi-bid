@@ -53,6 +53,10 @@ class SepaMandateRepositoryTest {
         SepaPaymentTemplatesTable
     )
 
+    // Checks that creating a SEPA mandate via the "with retry" creation path succeeds end-to-end:
+    // it sets up a creditor (legal entity, bank account, creditor identifier), a SEPA collection,
+    // and then creates a mandate linked to that collection, verifying the mandate-collection
+    // association is persisted correctly.
     @DbFunctional@Test
     fun `create sepa mandate with retry` () = runSimpleH2Test(*tables) {
         val context = createRootContext("APPLICATION")
@@ -145,6 +149,11 @@ class SepaMandateRepositoryTest {
         assertNotNull("",getSepaMandateCollectionEntity(sepaMandate.id.value, collection.id.value))
     }
 
+    // Checks the mandate reuse behavior: SEPA mandates are tied to a debtor/creditor combination,
+    // and once an active mandate exists with a given mandate reference prefix, a subsequent request
+    // with `reUseActiveMandate = true` for a different collection must reuse the same mandate
+    // (same mandate id, status ACTIVE, reference starting with the configured prefix) instead of
+    // creating a new one, while still creating a second mandate-collection link for the new collection.
     @DbFunctional@Test
     fun `create sepa mandate with retry and reuse sepa mandate` () = runSimpleH2Test(*tables) {
         val context = createRootContext("APPLICATION")
@@ -285,6 +294,10 @@ class SepaMandateRepositoryTest {
 
     }
 
+    // Checks that attaching an already existing SEPA mandate to a collection and an external
+    // product/payment reference (via `attachSepaMandate`) both links the mandate to the collection
+    // (SepaMandateCollectionEntity) and records the reference-to-mandate data mapping
+    // (SepaMandateDataMapping) with the correct mandate, collection and amount.
     @DbFunctional@Test
     fun `attach sepa mandate with collection and data mapping` () = runSimpleH2Test(*tables) {
         val context = createRootContext("APPLICATION")
@@ -392,6 +405,10 @@ class SepaMandateRepositoryTest {
         assertNotNull("", getSepaMandateCollectionEntity(mandate.id.value, collection.id.value))
     }
 
+    // Checks that a reference (e.g. a product/payment reference) can only be mapped to a single SEPA
+    // mandate at a time: attaching the same reference id to a second mandate must replace the previous
+    // data mapping rather than creating an additional one, so that exactly one mapping remains and it
+    // points to the newer mandate with the updated amount.
     @DbFunctional@Test
     fun `attach sepa mandate replaces existing reference mapping` () = runSimpleH2Test(*tables) {
         val context = createRootContext("APPLICATION")

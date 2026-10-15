@@ -145,6 +145,19 @@ fun Transaction.createSepaMandateWithRetry(
     throw BankAccountsException.CannotCreateMandateReference("Could not generate unique mandate reference after $maxRetries retries")
 }
 
+/**
+ * Attaches a SEPA mandate to a reference and optionally associates it with a SEPA collection.
+ * This establishes a mapping between the mandate and a specific reference, ensuring that
+ * each reference is linked to exactly one mandate. If a collection is provided, the association
+ * is extended to the collection and the relevant payment template is synchronized.
+ *
+ * @param modifierId The identifier of the user or system that is making the modification.
+ * @param sepaMandateId The unique ID of the SEPA mandate to be attached.
+ * @param mandateReferenceId The unique reference ID associated with the mandate.
+ * @param amount The payment amount to be associated with the reference.
+ * @param collectionId The optional unique ID of the SEPA collection to associate with the mandate.
+ * @return The SEPA mandate entity that has been linked to the reference.
+ */
 fun Transaction.attachSepaMandate(
     modifierId: UUID,
     sepaMandateId: UUID,
@@ -155,10 +168,16 @@ fun Transaction.attachSepaMandate(
     val sepaMandate = validatedSepaMandate(sepaMandateId)
     val collection = collectionId?.let { validatedSepaCollection(it) }
 
+    // Remove all existing mandate data mappings for this reference.
+    // This ensures that each reference (e.g., bid/subscription) is associated with exactly one mandate
+    // at a time, preventing duplicate or conflicting mappings that could lead to payment processing errors.
+    // When a reference is re-attached to a different mandate or collection, the old mapping is cleared
+    // to maintain data integrity and avoid ambiguity in the financial relationship.
     SepaMandateDataMappings.deleteWhere {
         SepaMandateDataMappings.referenceId eq mandateReferenceId
     }
 
+    // Create new mapping entry
     SepaMandateDataMapping.new {
         this.createdBy = modifierId
         this.mandate = sepaMandate
@@ -167,7 +186,12 @@ fun Transaction.attachSepaMandate(
         this.collection = collection
     }
 
-    // Add the collection to the mandate
+    // Link the collection to the mandate and synchronize the payment template.
+    // This creates the many-to-many relationship between mandate and collection,
+    // enabling the collection to track associated mandates for batch payments.
+    // Payment template synchronization updates recurring payment instructions
+    // with the correct mandate-collection pairing and amount, ensuring proper
+    // automated SEPA direct debit processing.
     if (collection != null)  {
         if (!collection.sepaMandates.contains(sepaMandate)) {
             SepaMandateCollectionEntity.new {
