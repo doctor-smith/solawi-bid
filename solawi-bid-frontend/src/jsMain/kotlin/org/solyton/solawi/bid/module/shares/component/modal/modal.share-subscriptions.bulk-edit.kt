@@ -514,7 +514,7 @@ fun BulkEditShareShareSubscriptionsModal(
                 CheckBox(checked == Checked.ROLLOVER) { status ->
                     if(status)  checked = Checked.ROLLOVER
                 }
-                Text("Edit status")
+                Text("Roll over to next season")
             }
             When(checked == Checked.ROLLOVER) {
                 require(shareOffers.isNotEmpty())
