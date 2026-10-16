@@ -598,7 +598,11 @@ fun UpsertShareSubscriptionModal(
                     isRequired = true
                 )
                 // States related to rollover are set in a different use case
-                val generallyForbiddenTargets = setOf(ShareStatus.RolledOver, ShareStatus.RollingOver)
+                val generallyForbiddenTargets = setOf(
+                    ShareStatus.RolledOver,
+                    ShareStatus.RollingOver,
+                    ShareStatus.Transfer
+                )
 
                 val allowedShareStatusTransitionTargets = requireNotNull(
                     shareStatusTransitionsWithPermissions[statusState]?.filter { it.shareStatus !in generallyForbiddenTargets }
