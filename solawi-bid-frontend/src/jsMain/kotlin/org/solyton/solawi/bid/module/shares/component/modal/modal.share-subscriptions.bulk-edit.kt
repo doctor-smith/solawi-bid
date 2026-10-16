@@ -56,6 +56,11 @@ sealed class BulkEditShareSubscriptionChanges {
         val modifier: ModifierId,
         val comment: String? = null
     ): BulkEditShareSubscriptionChanges()
+    data class Rollover(
+        val shareOfferId: ShareOfferId,
+        val modifier: ModifierId,
+        val comment: String? = null
+    ): BulkEditShareSubscriptionChanges()
     data class AddShareOffer(
         val shareOfferId: String,
         val fiscalYearId: String,
@@ -86,6 +91,7 @@ enum class Checked {
     CHANGE_NUMBER_OF_SHARES,
     CHANGE_PRICE_PER_SHARE,
     CHANGE_SHARE_STATUS,
+    ROLLOVER,
     CHANGE_AHC_AUTHORIZED,
     ADD_SHARE_SUBSCRIPTION,
     ADD_SEPA_MANDATE
@@ -336,9 +342,10 @@ fun BulkEditShareShareSubscriptionsModal(
             val collectionsDefined = sepaCollections.isNotEmpty()
             val offersDefined = shareOffers.isNotEmpty()
             val ahcAuthorizationsProvided = shareSubscriptions.none { it.ahcAuthorized != true }
-            val pricesPerShareProvided = shareSubscriptions.none{it.pricePerShare == null}
+            val pricesPerShareProvided = shareSubscriptions.none { it.pricePerShare == null }
 
-            val active = creditorDefined && collectionsDefined && offersDefined && ahcAuthorizationsProvided && pricesPerShareProvided
+            val active =
+                creditorDefined && collectionsDefined && offersDefined && ahcAuthorizationsProvided && pricesPerShareProvided
             When(!active) {
                 val texts = listOf(
                     !creditorDefined to "No creditor defined",
@@ -346,13 +353,17 @@ fun BulkEditShareShareSubscriptionsModal(
                     !offersDefined to "No offers defined",
                     !ahcAuthorizationsProvided to "Missing Sepa Authorizations",
                     !pricesPerShareProvided to "Missing prices pre share"
-                ).filter{it.first}.map { it.second }
+                ).filter { it.first }.map { it.second }
 
-                Ul { texts.forEach {
-                   Li { Span({ style { color(Color.red) } }) {
-                       Text(it)
-                   } }
-                } }
+                Ul {
+                    texts.forEach {
+                        Li {
+                            Span({ style { color(Color.red) } }) {
+                                Text(it)
+                            }
+                        }
+                    }
+                }
             }
             When(checked == Checked.ADD_SEPA_MANDATE && active) {
                 requireNotNull(creditorIdentifier)
@@ -360,35 +371,37 @@ fun BulkEditShareShareSubscriptionsModal(
                 require(shareOffers.isNotEmpty())
 
                 var selectedShareOffer by remember { mutableStateOf<String>("Select Share Offer") }
-                var selectedSepaCollection by remember { mutableStateOf("Select Sepa Collection")}
-                var selectedMandateStatus by remember { mutableStateOf(MandateStatus.ACTIVE)}
+                var selectedSepaCollection by remember { mutableStateOf("Select Sepa Collection") }
+                var selectedMandateStatus by remember { mutableStateOf(MandateStatus.ACTIVE) }
 
                 // Restrict choices of share offers to those that are associated with a sepa collection
                 val referenceIds = sepaCollections.flatMap { it.referenceIds.map { id -> id.value } }.distinct()
                 val allowedShareOffers = shareOffers.filter { it.shareOfferId in referenceIds }.distinct()
                 val shareOffersOptions = allowedShareOffers
-                        .sortedByDescending { it.fiscalYear.start }
-                        .associateBy { "${it.fiscalYear.format()} - ${it.shareType.name}" }
-                        .let {
-                            it.toMutableMap<String, ShareOffer?>().apply {
-                                this["Select Share Offer"] = null
-                            }
+                    .sortedByDescending { it.fiscalYear.start }
+                    .associateBy { "${it.fiscalYear.format()} - ${it.shareType.name}" }
+                    .let {
+                        it.toMutableMap<String, ShareOffer?>().apply {
+                            this["Select Share Offer"] = null
                         }
+                    }
 
 
                 var sepaCollectionOptions by remember(selectedShareOffer) {
                     val shareOffer = shareOffersOptions[selectedShareOffer]
-                    val allowedCollections = when{
-                        shareOffer != null -> sepaCollections.filter {
-                            collection -> shareOffer.shareOfferId in collection.referenceIds.map { id -> id.value }
+                    val allowedCollections = when {
+                        shareOffer != null -> sepaCollections.filter { collection ->
+                            shareOffer.shareOfferId in collection.referenceIds.map { id -> id.value }
                         }
+
                         else -> sepaCollections
                     }
-                    mutableStateOf(allowedCollections.associateBy { "${it.collectionKey.value} / ${it.mandateReferencePrefix.value}" }.let {
-                        it.toMutableMap<String, SepaCollection?>().apply {
-                            this["Select Sepa Collection"] = null
-                        }
-                    })
+                    mutableStateOf(allowedCollections.associateBy { "${it.collectionKey.value} / ${it.mandateReferencePrefix.value}" }
+                        .let {
+                            it.toMutableMap<String, SepaCollection?>().apply {
+                                this["Select Sepa Collection"] = null
+                            }
+                        })
                 }
 
                 val mandateStatusOptions = mapOf(
@@ -410,8 +423,8 @@ fun BulkEditShareShareSubscriptionsModal(
                             else -> {
                                 val sepaCollection = sepaCollectionOptions[key]
                                 if (sepaCollection != null) {
-                                val minimalMandateNumber = sepaCollection.sepaMandates.size
-                                val mandateReferencePadStart = 4
+                                    val minimalMandateNumber = sepaCollection.sepaMandates.size
+                                    val mandateReferencePadStart = 4
 
                                     setChanges(
                                         BulkEditShareSubscriptionChanges.AddSepaMandate(
@@ -440,21 +453,22 @@ fun BulkEditShareShareSubscriptionsModal(
                             else -> {
                                 val shareOffer = shareOffersOptions[key]
                                 if (shareOffer != null) {
-                                val minimalMandateNumber = value.sepaMandates.size
-                                val mandateReferencePadStart = 4
+                                    val minimalMandateNumber = value.sepaMandates.size
+                                    val mandateReferencePadStart = 4
 
-                                setChanges(
-                                    BulkEditShareSubscriptionChanges.AddSepaMandate(
-                                        shareOfferId = ShareOfferId(shareOffer.shareOfferId),
-                                        creditorIdentifier = creditorIdentifier,
-                                        sepaCollection = value,
-                                        status = selectedMandateStatus,
-                                        isActive = selectedMandateStatus in activeMandateStatuses,
-                                        mandateReferencePadStart = mandateReferencePadStart,
-                                        minimalMandateNumber = minimalMandateNumber,
+                                    setChanges(
+                                        BulkEditShareSubscriptionChanges.AddSepaMandate(
+                                            shareOfferId = ShareOfferId(shareOffer.shareOfferId),
+                                            creditorIdentifier = creditorIdentifier,
+                                            sepaCollection = value,
+                                            status = selectedMandateStatus,
+                                            isActive = selectedMandateStatus in activeMandateStatuses,
+                                            mandateReferencePadStart = mandateReferencePadStart,
+                                            minimalMandateNumber = minimalMandateNumber,
+                                        )
                                     )
-                                )
-                            }}
+                                }
+                            }
                         }
                         selectedSepaCollection = key
                     }
@@ -467,29 +481,82 @@ fun BulkEditShareShareSubscriptionsModal(
                     ) { (_, value) ->
                         selectedMandateStatus = value
                         // when (value) {
-                            // null -> setChanges(BulkEditShareSubscriptionChanges.None)
-                            // else -> {
-                                val sepaCollection = sepaCollectionOptions[selectedSepaCollection]!!
-                                val shareOffer = shareOffersOptions[selectedShareOffer]!!
-                                val minimalMandateNumber = sepaCollection.sepaMandates.size
-                                val mandateReferencePadStart = 4
+                        // null -> setChanges(BulkEditShareSubscriptionChanges.None)
+                        // else -> {
+                        val sepaCollection = sepaCollectionOptions[selectedSepaCollection]!!
+                        val shareOffer = shareOffersOptions[selectedShareOffer]!!
+                        val minimalMandateNumber = sepaCollection.sepaMandates.size
+                        val mandateReferencePadStart = 4
 
-                                setChanges(
-                                    BulkEditShareSubscriptionChanges.AddSepaMandate(
-                                        shareOfferId = ShareOfferId(shareOffer.shareOfferId),
-                                        creditorIdentifier = creditorIdentifier,
-                                        sepaCollection = sepaCollection,
-                                        status = selectedMandateStatus,
-                                        isActive = selectedMandateStatus in activeMandateStatuses,
-                                        mandateReferencePadStart = mandateReferencePadStart,
-                                        minimalMandateNumber = minimalMandateNumber,
-                                    )
-                                )
-                            //}
+                        setChanges(
+                            BulkEditShareSubscriptionChanges.AddSepaMandate(
+                                shareOfferId = ShareOfferId(shareOffer.shareOfferId),
+                                creditorIdentifier = creditorIdentifier,
+                                sepaCollection = sepaCollection,
+                                status = selectedMandateStatus,
+                                isActive = selectedMandateStatus in activeMandateStatuses,
+                                mandateReferencePadStart = mandateReferencePadStart,
+                                minimalMandateNumber = minimalMandateNumber,
+                            )
+                        )
+                        //}
                         //}
                     }
                 }
 
+            }
+        }
+        Wrap {
+            Horizontal({
+                gap(2.px)
+                width(100.percent)
+            }) {
+                CheckBox(checked == Checked.ROLLOVER) { status ->
+                    if(status)  checked = Checked.ROLLOVER
+                }
+                Text("Edit status")
+            }
+            When(checked == Checked.ROLLOVER) {
+                require(shareOffers.isNotEmpty())
+
+                var selectedShareOffer by remember { mutableStateOf<String>("Select Share Offer") }
+
+                // Restrict choices of share offers to those that are associated with a sepa collection
+                val referenceIds = sepaCollections.flatMap { it.referenceIds.map { id -> id.value } }.distinct()
+                val allowedShareOffers = shareOffers.filter { it.shareOfferId in referenceIds }.distinct()
+                val shareOffersOptions = allowedShareOffers
+                    .sortedByDescending { it.fiscalYear.start }
+                    .associateBy { "${it.fiscalYear.format()} - ${it.shareType.name}" }
+                    .let {
+                        it.toMutableMap<String, ShareOffer?>().apply {
+                            this["Select Share Offer"] = null
+                        }
+                    }
+                Horizontal {
+                    Dropdown(
+                        shareOffersOptions,
+                        selected = selectedShareOffer,
+                        iconContent = { opened -> SimpleUpDown(opened) },
+                    ) { (key, value) ->
+
+                        when (value) {
+                            null -> setChanges(BulkEditShareSubscriptionChanges.None)
+                            else -> {
+
+
+                                    setChanges(
+                                        BulkEditShareSubscriptionChanges.Rollover(
+                                            shareOfferId = ShareOfferId(value.shareOfferId),
+                                            modifier = modifier,
+                                            "Rollover",
+                                        )
+                                    )
+
+                            }
+                        }
+                        selectedShareOffer = key
+                    }
+                }
             }
         } }
     }

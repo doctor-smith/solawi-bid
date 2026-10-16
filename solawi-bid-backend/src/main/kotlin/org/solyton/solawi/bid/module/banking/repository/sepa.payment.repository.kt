@@ -60,20 +60,12 @@ fun Transaction.createPaymentsForCollection(
     )
     return activeMandates.flatMap {  mandate ->
         // Note that there are no payments at all if there are only payments with associated successors.
+        // At least if we restrict the mandate to only payments that are in the sepaCollection
         val relevantPayments = mandate.payments.filter {
-            it.nextPeriodSuccessor == null
+            it.nextPeriodSuccessor == null && it in sepaCollection.sepaPayments
         }
-        when{
-            relevantPayments.isNotEmpty() ->
-                relevantPayments.filter{ it.status in allowedStatuses }
-                    .map { payment -> createSuccessorOfPayment(
-                        creator,
-                        executionDate,
-                        payment,
-                        SuccessorKind.NEXT_PERIOD
-                    )}
-
-            else ->  {
+        when {
+            relevantPayments.isEmpty() -> {
                 val mandateId = mandate.id.value
                 val amount = requireNotNull(map[mandateId]) {
                     "Entry must not be null! You need to add a product reference to the mandate-data-mappings!"
@@ -87,6 +79,25 @@ fun Transaction.createPaymentsForCollection(
                     executionDate,
                     ignoreOldPayments = true
                 ))
+            }
+
+            else -> {
+                val eligiblePayments = relevantPayments.filter { it.status in allowedStatuses }
+                if (eligiblePayments.isEmpty()) {
+                    throw SepaException.Payment.CannotCreate(
+                        "Mandate ${mandate.id.value} has existing payment(s) without a next-period-successor, " +
+                                "but none of them are in one of the following states: ${allowedStatuses.joinToString()}. " +
+                                "Found statuses: ${relevantPayments.map { it.status }.distinct()}"
+                    )
+                }
+                eligiblePayments.map { payment ->
+                    createSuccessorOfPayment(
+                        creator,
+                        executionDate,
+                        payment,
+                        SuccessorKind.NEXT_PERIOD
+                    )
+                }
             }
         }
     }

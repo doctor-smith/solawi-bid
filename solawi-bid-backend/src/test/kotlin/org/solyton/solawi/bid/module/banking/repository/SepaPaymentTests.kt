@@ -936,15 +936,17 @@ class SepaPaymentTests {
         assertEquals(existingPayment.id.value, payments.first().predecessors.first().id.value)
     }
 
-    // Checks that `createPaymentsForCollection` filters out mandates whose only payment is already
-    // in a disallowed status (e.g. still CREATED), so no successor nor new payment is created for
-    // such a mandate, avoiding duplicate collections while the previous one is still pending.
+    // Checks that `createPaymentsForCollection` throws a CannotCreate exception when a mandate has
+    // existing payments (without a next-period successor) but none of them are in an allowed status
+    // (CONFIRMED, PAYED_MANUALLY, or FAILED) - e.g. still CREATED - because the outcome of the
+    // current collection attempt is not yet known and creating a successor would risk duplicate
+    // collections.
     @DbFunctional@Test
-    fun `create payments for collection skips mandate with payment in disallowed status` () = runSimpleH2Test(*tables) {
+    fun `create payments for collection throws when mandate has payment in disallowed status` () = runSimpleH2Test(*tables) {
         createRootContext("APPLICATION").createChild("ORGANIZATION")
         val (mandate, collection) = setupMandateAndCollection()
 
-        createPayment(
+        val existingPayment = createPayment(
             UUID_ZERO,
             mandate.id.value,
             collection.id.value,
@@ -953,13 +955,19 @@ class SepaPaymentTests {
         )
         flushCache()
 
-        val payments = createPaymentsForCollection(
-            UUID_ZERO,
-            collection.id.value,
-            LocalDate.now().plusMonths(1),
-        )
+        assertEquals(PaymentExecutionStatus.CREATED, existingPayment.status)
 
-        assertEquals(0, payments.size)
+        assertFailsWith<SepaException.Payment.CannotCreate> {
+            createPaymentsForCollection(
+                UUID_ZERO,
+                collection.id.value,
+                LocalDate.now().plusMonths(1),
+            )
+        }
+        assertNotNull(
+            "The existing payment in CREATED status must not be deleted",
+            SepaPaymentEntity.findById(existingPayment.id.value)
+        )
     }
 
     // Checks that `createPaymentsForCollection` respects the optional `mandateIds` filter: when
