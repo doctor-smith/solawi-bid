@@ -251,7 +251,78 @@ class ShareStatusRolloverTests {
                             true
                         )
                     }
+            },TestCase(
+                testId = "${UUID.randomUUID()}",
+                description = """
+                    1. Rollover to new period; triggered by PROVIDER
+                    2. User cancels the new subscription directly: PendingActivation -> Cancelled
+                """.trimIndent(),
+                status = ShareStatus.Subscribed,
+                modifier = ChangedBy.PROVIDER,
+                humanModifierId = UUID_ONE,
+                comment = "Rolling over and user cancels subscription directly"
+            ) { testCase ->
+                val rollingOver = rolloverAndAssert(testCase)
+                next(
+                    rollingOver.id.value,
+                    ShareStatus.Cancelled,
+                    ChangeReason.USER_CANCELLED_BEFORE_ACTIVATION,
+                    ChangedBy.USER,
+                    UUID_ONE,
+                    "Do not want the share in the next period"
+                )
+                assertEquals(ShareStatus.Cancelled, ShareStatus.from(rollingOver.status.name))
             },
+            TestCase(
+                testId = "${UUID.randomUUID()}",
+                description = """
+                    Rollover from Cancelled status fails
+                """.trimIndent(),
+                status = ShareStatus.Cancelled,
+                modifier = ChangedBy.PROVIDER,
+                humanModifierId = UUID_ONE,
+                comment = "Attempt rollover from cancelled status"
+            ) { testCase ->
+                assertThrows<ShareStatusException> {
+                    rolloverAndAssert(testCase)
+                }
+            },
+            /*
+            TestCase(
+                testId = "${UUID.randomUUID()}",
+                description = """
+                    1. Rollover to new period; triggered by PROVIDER
+                    2. User requests activation: RollingOver -> PendingActivation
+                    3. Provider rejects activation: PendingActivation -> Rejected
+                """.trimIndent(),
+                status = ShareStatus.Subscribed,
+                modifier = ChangedBy.PROVIDER,
+                humanModifierId = UUID_ONE,
+                comment = "Rolling over and activation rejected by provider"
+            ) { testCase ->
+                val rollingOver = rolloverAndAssert(testCase)
+                next(
+                    rollingOver.id.value,
+                    ShareStatus.PendingActivation,
+                    ChangeReason.NEW_PERIOD,
+                    ChangedBy.USER,
+                    UUID_ONE,
+                    "Request activation for next period"
+                )
+                assertEquals(ShareStatus.PendingActivation, ShareStatus.from(rollingOver.status.name))
+
+                next(
+                    rollingOver.id.value,
+                    ShareStatus.ActivationRejected,
+                    ChangeReason.NEW_PERIOD,
+                    ChangedBy.PROVIDER,
+                    UUID_ONE,
+                    "Provider rejects subscription renewal"
+                )
+                assertEquals(ShareStatus.ActivationRejected, ShareStatus.from(rollingOver.status.name))
+            },
+            */
+
         )
     }
 }
