@@ -1229,7 +1229,14 @@ fun ShareSubscriptionManagement(
                                                         ),
                                                     )
                                                 }
-
+                                            is BulkEditShareSubscriptionChanges.Rollover ->
+                                                shareManagementActions dispatch rolloverShareSubscriptions(
+                                                    providerId = providerId,
+                                                    shareSubscriptionIds = shareSubscriptionsState.map { ShareSubscriptionId( it.shareSubscriptionId) },
+                                                    toShareOfferId = changes.shareOfferId,
+                                                    changedBy = ChangedBy.PROVIDER,
+                                                    modifiedBy = UserId(changes.modifier.value)
+                                                )
                                             is BulkEditShareSubscriptionChanges.AddShareOffer ->
                                                 shareSubscriptionsState.forEach { shareSubscription ->
                                                     shareManagementActions dispatch createShareSubscription(

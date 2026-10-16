@@ -405,12 +405,11 @@ class SepaMandateRepositoryTest {
         assertNotNull("", getSepaMandateCollectionEntity(mandate.id.value, collection.id.value))
     }
 
-    // Checks that a reference (e.g. a product/payment reference) can only be mapped to a single SEPA
-    // mandate at a time: attaching the same reference id to a second mandate must replace the previous
-    // data mapping rather than creating an additional one, so that exactly one mapping remains and it
-    // points to the newer mandate with the updated amount.
+    // Checks that attaching the same reference id to a second mandate does NOT replace the
+    // existing mapping: both mappings are kept, so that the history of mandate assignments
+    // is preserved. Removing a mapping is an explicit separate use case (detach).
     @DbFunctional@Test
-    fun `attach sepa mandate replaces existing reference mapping` () = runSimpleH2Test(*tables) {
+    fun `attach sepa mandate keeps existing reference mapping` () = runSimpleH2Test(*tables) {
         val context = createRootContext("APPLICATION")
         context.createChild("ORGANIZATION")
 
@@ -500,9 +499,9 @@ class SepaMandateRepositoryTest {
         flushCache()
 
         val mappings = SepaMandateDataMapping.find { SepaMandateDataMappings.referenceId eq referenceId }.toList()
-        assertEquals(1, mappings.size)
-        assertEquals(mandate2.id.value, mappings.first().mandate.id.value)
-        assertEquals(75.0, mappings.first().amount)
+        assertEquals(2, mappings.size)
+        assertTrue(mappings.any { it.mandate.id.value == mandate1.id.value && it.amount == 50.0 })
+        assertTrue(mappings.any { it.mandate.id.value == mandate2.id.value && it.amount == 75.0 })
     }
 }
 

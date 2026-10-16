@@ -1,10 +1,8 @@
 package org.solyton.solawi.bid.module.banking.repository
 
 import org.jetbrains.exposed.exceptions.ExposedSQLException
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.deleteWhere
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import org.solyton.solawi.bid.module.banking.data.MandateReference
@@ -147,9 +145,11 @@ fun Transaction.createSepaMandateWithRetry(
 
 /**
  * Attaches a SEPA mandate to a reference and optionally associates it with a SEPA collection.
- * This establishes a mapping between the mandate and a specific reference, ensuring that
- * each reference is linked to exactly one mandate. If a collection is provided, the association
- * is extended to the collection and the relevant payment template is synchronized.
+ * This establishes a mapping between the mandate and a specific reference. Existing mappings
+ * for the same reference are intentionally kept: a reference may accumulate multiple mandate
+ * mappings over time (e.g. when a mistake is corrected). Removing a mapping is an explicit
+ * separate operation (detach). If a collection is provided, the association is extended to
+ * the collection and the relevant payment template is synchronized.
  *
  * @param modifierId The identifier of the user or system that is making the modification.
  * @param sepaMandateId The unique ID of the SEPA mandate to be attached.
@@ -168,14 +168,8 @@ fun Transaction.attachSepaMandate(
     val sepaMandate = validatedSepaMandate(sepaMandateId)
     val collection = collectionId?.let { validatedSepaCollection(it) }
 
-    // Remove all existing mandate data mappings for this reference.
-    // This ensures that each reference (e.g., bid/subscription) is associated with exactly one mandate
-    // at a time, preventing duplicate or conflicting mappings that could lead to payment processing errors.
-    // When a reference is re-attached to a different mandate or collection, the old mapping is cleared
-    // to maintain data integrity and avoid ambiguity in the financial relationship.
-    SepaMandateDataMappings.deleteWhere {
-        SepaMandateDataMappings.referenceId eq mandateReferenceId
-    }
+    // Existing mappings for the same referenceId are intentionally preserved.
+    // Removing a mapping requires an explicit detach operation.
 
     // Create new mapping entry
     SepaMandateDataMapping.new {
