@@ -41,7 +41,7 @@ class SepaPaymentTests {
         UserRoleContext,
         BankAccountsTable,
         BankAccountAccessorsTable,
-        org.solyton.solawi.bid.module.banking.schema.SepaMandates,
+        SepaMandates,
         SepaMessages,
         LegalEntitiesTable,
         UsersTable,
