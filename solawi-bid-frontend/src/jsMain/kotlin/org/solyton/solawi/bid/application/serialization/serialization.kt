@@ -149,7 +149,6 @@ fun installSerializers() { if(serializers.isEmpty()) {
         add<ImportShareSubscription>(ImportShareSubscription.serializer())
         add<ImportShareSubscriptions>(ImportShareSubscriptions.serializer())
         add<RolloverShareSubscriptions>(RolloverShareSubscriptions.serializer())
-        add<Rollover>(Rollover.serializer())
         add<TransferOwnership>(TransferOwnership.serializer())
 
         // History
