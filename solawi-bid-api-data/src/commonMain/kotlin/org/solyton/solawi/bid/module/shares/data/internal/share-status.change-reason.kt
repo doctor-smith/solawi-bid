@@ -52,8 +52,8 @@ enum class ChangeReason(val value: Int) {
     NEW_REQUIREMENTS(35)                // New requirements from user
 }
 
-enum class ChangedBy {
-    USER,
-    PROVIDER,
-    SYSTEM
+enum class ChangedBy(val value: Int) {
+    USER(0),
+    PROVIDER(1),
+    SYSTEM(2)
 }
