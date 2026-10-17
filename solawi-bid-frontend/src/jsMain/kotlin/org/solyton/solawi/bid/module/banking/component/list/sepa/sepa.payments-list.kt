@@ -19,6 +19,7 @@ import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.list.style.ListStyles
 import org.solyton.solawi.bid.module.scrollable.Scrollable
 import org.solyton.solawi.bid.module.scrollable.ScrollableStyles
+import org.solyton.solawi.bid.module.scrollable.VirtualScrollableList
 import org.solyton.solawi.bid.module.style.overflow.Overflow
 import org.solyton.solawi.bid.module.style.overflow.overflow
 import org.solyton.solawi.bid.module.style.text.TextOverflow
@@ -268,45 +269,46 @@ fun ListOfPayments(
                 HeaderCell("Failure Reason") {width(20.percent)}
             }
         }
-        Scrollable {
-            ListItemsIndexed(filteredList) { index, listItem ->
-                val isChecked = checkedMap[listItem.payment.sepaPaymentId] == true
-                key(listItem.payment.sepaPaymentId, isChecked) {
-                    ListItemWrapper({
-                        listItemWrapperStyle(index)
-                    }) {
-                        DataWrapper(styles.dataWrapper) {
-                            if(!isReadOnly) CheckBoxCell({ isChecked }, { width(2.percent) }) {
-                                if (isChecked) {
-                                    checkedMap.remove(listItem.payment.sepaPaymentId)
-                                } else {
-                                    checkedMap[listItem.payment.sepaPaymentId] = true
-                                }
-                            }
-                            TextCell(listItem.payment.status.name) { width(15.percent) }
-                            TextCell(listItem.mandate.debtorName) { width(25.percent) }
-                            TextCell(listItem.payment.executionDate.format(Locale.Iso)) { width(15.percent) }
-                            TextCell("${listItem.payment.amount}") { width(10.percent) }
-                            TextCell(listItem.payment.sequenceType.name) { width(10.percent) }
-                            TextCell(
-                                text = listItem.payment.failureReason ?: "--",
-                                tooltip = listItem.payment.failureReason
-                            ) {
-                                minWidth(0.px)
-                                width(20.percent)
 
-                                flexGrow(0)
-                                flexShrink(0)
-                                whiteSpace(WhiteSpace.NoWrap)
-                                overflow(Overflow.Hidden)
-                                textOverflow(TextOverflow.Ellipsis)
+        VirtualScrollableList(
+            filteredList,
+            44.0
+        ) { index, listItem ->
+            val isChecked = checkedMap[listItem.payment.sepaPaymentId] == true
+            key(listItem.payment.sepaPaymentId, isChecked) {
+                ListItemWrapper({
+                    listItemWrapperStyle(index)
+                }) {
+                    DataWrapper(styles.dataWrapper) {
+                        if(!isReadOnly) CheckBoxCell({ isChecked }, { width(2.percent) }) {
+                            if (isChecked) {
+                                checkedMap.remove(listItem.payment.sepaPaymentId)
+                            } else {
+                                checkedMap[listItem.payment.sepaPaymentId] = true
                             }
                         }
-                        ActionsWrapper(styles.actionsWrapper) {
-                            actions(ActionsData(listItem))
+                        TextCell(listItem.payment.status.name) { width(15.percent) }
+                        TextCell(listItem.mandate.debtorName) { width(25.percent) }
+                        TextCell(listItem.payment.executionDate.format(Locale.Iso)) { width(15.percent) }
+                        TextCell("${listItem.payment.amount}") { width(10.percent) }
+                        TextCell(listItem.payment.sequenceType.name) { width(10.percent) }
+                        TextCell(
+                            text = listItem.payment.failureReason ?: "--",
+                            tooltip = listItem.payment.failureReason
+                        ) {
+                            minWidth(0.px)
+                            width(20.percent)
+
+                            flexGrow(0)
+                            flexShrink(0)
+                            whiteSpace(WhiteSpace.NoWrap)
+                            overflow(Overflow.Hidden)
+                            textOverflow(TextOverflow.Ellipsis)
                         }
                     }
-
+                    ActionsWrapper(styles.actionsWrapper) {
+                        actions(ActionsData(listItem))
+                    }
                 }
             }
         } }
