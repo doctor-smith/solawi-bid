@@ -182,7 +182,8 @@ fun UserManagementPage(storage: Storage<Application>) {
                                 bgColor = Color.white,
                                 buttons * subComp("createUser") * title,
                                 (storage * deviceData * mediaType.get),
-                                (storage * isNotGranted(AppRight.Application.Users.manage, applicationContextId)).emit()
+                                (storage * isNotGranted(AppRight.Application.Users.manage, applicationContextId)).emit(),
+                                dataId = "user-management.create-user-button",
                             ) {
                                 (storage * modals).showCreateUserModal(
                                     texts = dialogs * subComp("createUser"),

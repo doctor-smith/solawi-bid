@@ -276,6 +276,7 @@ fun UserData(
                         bgColor = Color.white,
                         texts = { "Edit" },
                         deviceType = deviceData,
+                        dataId = "user-private.edit-user-button",
                     ) {
                         (storage * modals).showUpdateUserModal(
                             texts = dialogs * subComp("updateUser"),

@@ -73,11 +73,13 @@ fun UpdateUserModal(
     },
     texts = texts.emit(),
     styles = styles(device),
+    dataId = "update-user-modal",
     isOkButtonDisabled = isOkButtonDisabled,
 ) {
     UpdateUserForm(
         texts,
-        user
+        user,
+        dataId = "update-user-modal",
     ) {
         setUser(it)
     }

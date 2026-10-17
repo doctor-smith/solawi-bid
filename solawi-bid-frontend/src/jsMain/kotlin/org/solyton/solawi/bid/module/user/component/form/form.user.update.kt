@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.module.user.component.form
 
 import androidx.compose.runtime.*
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.form.label.Label
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.compose.symbols.WarnLi
@@ -34,6 +35,7 @@ import org.solyton.solawi.bid.module.user.data.reader.username as usernameReader
 fun UpdateUserForm(
     texts: Source<Lang.Block>,
     user: User,
+    dataId: String? = null,
     setUser: (user: UpdateUser) -> Unit,
 ) {
     var username by remember{ mutableStateOf(user.username) }
@@ -71,6 +73,7 @@ fun UpdateUserForm(
                 TextInput(username) {
                     // disabled()
                     id("username")
+                    if(dataId != null) dataId("$dataId.input.username")
                     style { textInputDesktopStyle() }
                     onInput {
                         username = it.value
@@ -93,6 +96,7 @@ fun UpdateUserForm(
                 )
                 PasswordInput(oldPasswordState) {
                     id("oldPassword")
+                    if(dataId != null) dataId("$dataId.input.old-password")
                     style { textInputDesktopStyle() }
                     onInput {
                         oldPasswordState = it.value
@@ -118,6 +122,7 @@ fun UpdateUserForm(
                 Label((inputs * newPassword * title).emit(), id = "password", labelStyle = formLabelDesktopStyle)
                 PasswordInput(newPasswordState) {
                     id("password")
+                    if(dataId != null) dataId("$dataId.input.password")
                     style { textInputDesktopStyle() }
                     onInput {
                         newPasswordState = it.value
@@ -142,6 +147,7 @@ fun UpdateUserForm(
                 Label((inputs * repeatPassword * title).emit(), id = "repeat-password", labelStyle = formLabelDesktopStyle)
                 PasswordInput(newPasswordRepeatState) {
                     id("repeat-password")
+                    if(dataId != null) dataId("$dataId.input.repeat-password")
                     style { textInputDesktopStyle() }
                     onInput {
                         newPasswordRepeatState = it.value
