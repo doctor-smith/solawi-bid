@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.user.component.modal
 
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.form.label.Label
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.compose.modal.*
@@ -56,6 +57,7 @@ fun CreateUserModal(
     },
     texts = texts.emit(),
     styles = styles(device),
+    dataId = "create-user-modal",
     isOkButtonDisabled = isOkButtonDisabled,
 ) {
     var username by remember{ mutableStateOf("") }
@@ -71,6 +73,7 @@ fun CreateUserModal(
                 Label((inputs * usernameReader * title).emit(), id = "username", labelStyle = formLabelDesktopStyle)
                 TextInput(username) {
                     id("username")
+                    dataId("create-user-modal.input.username")
                     style { textInputDesktopStyle() }
                     onInput {
                         username = it.value
@@ -91,6 +94,7 @@ fun CreateUserModal(
                 Label((inputs * passwordReader * title).emit(), id = "password", labelStyle = formLabelDesktopStyle)
                 PasswordInput(password) {
                     id("password")
+                    dataId("create-user-modal.input.password")
                     style { textInputDesktopStyle() }
                     onInput {
                         password = it.value
@@ -114,6 +118,7 @@ fun CreateUserModal(
                 Label((inputs * repeatPassword * title).emit(), id = "repeat-password", labelStyle = formLabelDesktopStyle)
                 PasswordInput(passwordRepeat) {
                     id("repeat-password")
+                    dataId("create-user-modal.input.repeat-password")
                     style { textInputDesktopStyle() }
                     onInput {
                         passwordRepeat = it.value

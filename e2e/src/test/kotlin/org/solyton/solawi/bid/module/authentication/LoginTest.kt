@@ -1,11 +1,16 @@
+package org.solyton.solawi.bid.module.authentication
+
+import TestConfig
+import clickOn
 import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.Playwright
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import put
 
 class LoginTest {
 
@@ -44,7 +49,10 @@ class LoginTest {
         page.waitForURL("**/dashboard")
 
         val currentUrl = page.url()
-        assertTrue(currentUrl.contains("/dashboard"), "User was not redirected to the dashboard after login.")
+        Assertions.assertTrue(
+            currentUrl.contains("/dashboard"),
+            "User was not redirected to the dashboard after login."
+        )
     }
 
     @Test
@@ -58,7 +66,7 @@ class LoginTest {
 
         val errorMessage = page.waitForSelector("text=User with username Tom does not exists")
 
-        assertTrue(errorMessage.isVisible, "The error message was not displayed as expected.")
+        Assertions.assertTrue(errorMessage.isVisible, "The error message was not displayed as expected.")
     }
 
 }
