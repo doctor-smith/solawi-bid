@@ -73,8 +73,8 @@ import org.solyton.solawi.bid.module.distribution.data.management.DistributionMa
 import org.solyton.solawi.bid.module.distribution.data.management.distributionPoints
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.page.component.Page
-import org.solyton.solawi.bid.module.scrollable.Scrollable
 import org.solyton.solawi.bid.module.scrollable.ScrollableStyles
+import org.solyton.solawi.bid.module.scrollable.VirtualScrollableList
 import org.solyton.solawi.bid.module.search.component.SearchInput
 import org.solyton.solawi.bid.module.search.component.SearchInputStyles
 import org.solyton.solawi.bid.module.shares.action.*
@@ -1447,19 +1447,20 @@ fun ShareSubscriptionManagement(
                         HeaderCell("SEPA - Collection Key / Mandate Ref Pref") { width(20.percent) }
                     }
                 }
-                Scrollable(
-                    ScrollableStyles()
-                    .modifyContainerStyle {
-                        height(80.vh)
-                        flexDirection(FlexDirection.RowReverse)
-                    }
-                    .modifyContentStyle {
-                        flexGrow(1)
-                    }
-                ) {
-                    val checksChanged = checkedMap.filter { it.value }.keys
+                val checksChanged = checkedMap.filter { it.value }.keys
 
-                    ListItemsIndexed(filteredCheckedSubscriptions) { index, checkedSubscription ->
+                VirtualScrollableList(
+                    items = filteredCheckedSubscriptions,
+                    itemHeight = 44.0,
+                    styles = ScrollableStyles()
+                        .modifyContainerStyle {
+                            height(80.vh)
+                            flexDirection(FlexDirection.RowReverse)
+                        }
+                        .modifyContentStyle {
+                            flexGrow(1)
+                        }
+                ) { index, checkedSubscription ->
                         val checked = checkedSubscription.checked
                         val subscription = checkedSubscription.shareSubscription
                         key(index, allChecked, checksChanged, checked, subscription) {
@@ -1727,7 +1728,6 @@ fun ShareSubscriptionManagement(
                                 }
                             }
                         }
-                    }
 
                 }
             }
