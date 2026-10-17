@@ -34,7 +34,7 @@ class LoginTest {
 
     @Test
     fun test_login() {
-        page.navigate("http://localhost:8080/login")
+        page.navigate("${TestConfig.BASE_URL}/login")
         page.clickOn("cookie-disclaimer.modal.submit-button")
 
         page.put("login-form.input.username", user)
@@ -49,7 +49,7 @@ class LoginTest {
 
     @Test
     fun test_login_userDoesNotExist() {
-        page.navigate("http://localhost:8080/login")
+        page.navigate("${TestConfig.BASE_URL}/login")
         page.clickOn("cookie-disclaimer.modal.submit-button")
 
         page.put("login-form.input.username", "Tom")

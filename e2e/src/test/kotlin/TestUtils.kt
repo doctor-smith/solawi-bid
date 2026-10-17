@@ -20,7 +20,7 @@ class TestUtils {
         password = System.getenv("TEST_USER_PASSWORD")
 
         try {
-            page.navigate("http://localhost:8080/login")
+            page.navigate("${TestConfig.BASE_URL}/login")
             page.clickOn("cookie-disclaimer.modal.submit-button")
 
             page.put("login-form.input.username", user)

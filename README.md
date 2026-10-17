@@ -100,15 +100,30 @@ Instead of manually compiling and executing a Kotlin/JS project every time you w
 ## Tests
 
 ### Run E2E-Tests locally
-To run the e2e-tests for the web app on a local machine, one has to 
+Running the e2e-tests against your regular local development environment is
+not safe, since the tests write to the database. Instead, use the dedicated,
+constant local E2E environment described in [e2e/README.md](./e2e/README.md),
+which can be managed with the `script/e2e-local.sh` helper script and reset
+to a known state before every test run.
+
+To run the e2e-tests for the web app on a local machine, one has to
  - set the env vars TEST_USER and TEST_USER_PASSWORD in ```local.properties```
    ```
       # E2E tests
       TEST_USER=<youruser>
       TEST_USER_PASSWORD=<yourpassword>
    ```
-   and then execute the gradle task ```e2e:test```
- - start the application (frontend and backend)
+ - start the dedicated E2E environment, reset its database and run the tests
+   against it, e.g.
+   ```shell
+   ./script/e2e-local.sh build
+   ./script/e2e-local.sh up
+   ./script/e2e-local.sh reset-db
+   ./script/e2e-local.sh test
+   ```
+   (the script points the tests to the dedicated environment automatically;
+   running the gradle task ```e2e:test``` directly tests against the regular
+   local development environment instead)
 
 ## Useful links 
 
