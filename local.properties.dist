@@ -3,3 +3,7 @@ sdk.dir=</path/to/Android/Sdk>
 # E2E tests
 TEST_USER=<youruser>
 TEST_USER_PASSWORD=<yourpassword>
+# Optional: override the base URL used by the E2E tests (defaults to http://localhost:8080,
+# matching the regular development environment / CI). Not needed when using
+# script/e2e-local.sh, which sets this automatically for the dedicated local E2E environment.
+#E2E_BASE_URL=http://localhost:18080

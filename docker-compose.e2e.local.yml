@@ -3,13 +3,13 @@ services:
   solawi-bid_frontend:
     image: solawi-bid/frontend:local
     ports:
-      - "8080:80"
+      - "18080:80"
     environment:
       - ENVIRONMENT=D
       - FRONTEND_URL=http://localhost
-      - FRONTEND_PORT=8080
+      - FRONTEND_PORT=18080
       - BACKEND_URL=http://localhost
-      - BACKEND_PORT=8081
+      - BACKEND_PORT=18081
     healthcheck:
       test: "curl -f http://localhost:80/ || exit 1"
       interval: 2s
@@ -22,7 +22,7 @@ services:
     env_file:
       - solawi-bid-backend/.env.e2e
     ports:
-      - "8081:8080"
+      - "18081:8080"
     container_name: solawi-bid_backend
     depends_on:
       solawi-bid_database:
@@ -37,9 +37,12 @@ services:
   solawi-bid_database:
     image: mysql:9
     ports:
-      - "3306:3306"
-    volumes:
-      - ./infrastructure/database/setup-local.sql:/docker-entrypoint-initdb.d/setup.sql
+      - "13306:3306"
+    # No docker-entrypoint-initdb.d init script here on purpose: the backend creates
+    # the schema (structural migrations) and the owner/test user itself on startup
+    # (see solawi-bid-backend/.env.e2e), exactly like in CI. This also avoids bind-
+    # mounting a file into the MySQL container, which can fail with "Can't initialize
+    # batch_readline" on some Docker setups.
     environment:
       - MYSQL_DATABASE=solawi-bid
       - MYSQL_USER=solawi-bid

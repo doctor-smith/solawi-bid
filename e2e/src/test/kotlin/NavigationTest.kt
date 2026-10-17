@@ -42,7 +42,7 @@ class NavigationTest {
 
         val page = context.newPage()
 
-        page.navigate("http://localhost:8080/app/dashboard")
+        page.navigate("${TestConfig.BASE_URL}/app/dashboard")
 
         assertTrue(page.url().contains("/dashboard"))
 
@@ -64,9 +64,9 @@ class NavigationTest {
 
         val page = context.newPage()
 
-        page.navigate("http://localhost:8080/app/dashboard")
+        page.navigate("${TestConfig.BASE_URL}/app/dashboard")
         // Increase timeout and use a more specific pattern
-        page.waitForURL("http://localhost:8080/app/login", com.microsoft.playwright.Page.WaitForURLOptions().setTimeout(15000.0))
+        page.waitForURL("${TestConfig.BASE_URL}/app/login", com.microsoft.playwright.Page.WaitForURLOptions().setTimeout(15000.0))
 
         assertTrue(
             !page.url().contains("/dashboard"), "The user should not enter the dashboard with an invalid storage state."
