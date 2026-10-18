@@ -10,6 +10,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.solyton.solawi.bid.Smoke
 import put
 
 class LoginTest {
@@ -37,7 +38,7 @@ class LoginTest {
         playwright.close()
     }
 
-    @Test
+    @Smoke@Test
     fun test_login() {
         page.navigate("${TestConfig.BASE_URL}/login")
         page.clickOn("cookie-disclaimer.modal.submit-button")
@@ -55,7 +56,7 @@ class LoginTest {
         )
     }
 
-    @Test
+    @Smoke@Test
     fun test_login_userDoesNotExist() {
         page.navigate("${TestConfig.BASE_URL}/login")
         page.clickOn("cookie-disclaimer.modal.submit-button")

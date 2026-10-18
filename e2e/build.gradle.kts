@@ -78,3 +78,87 @@ tasks.withType<Test>().configureEach {
         (fromEnv ?: fromProps)?.let { environment(key, it) }
     }
 }
+
+tasks.register<Test>("regressionTest"  ) {
+    description = "Run all regression tests"
+    group = "verification"
+    useJUnitPlatform() {
+        includeTags("regression")
+    }
+    reports {
+        junitXml.required = true
+        html.required = true
+
+    }
+//    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.register<Test>("smokeTest") {
+    description = "Run all smoke tests"
+    group = "verification"
+    useJUnitPlatform() {
+        includeTags("smoke")
+    }
+    reports {
+        junitXml.required = true
+        html.required = true
+
+    }
+//    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.register<Test>("userJourneyTest") {
+    description = "Run all user-journey tests"
+    group = "verification"
+    useJUnitPlatform() {
+        includeTags("user-journey")
+    }
+    reports {
+        junitXml.required = true
+        html.required = true
+
+    }
+//    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.register<Test>("workflowTest") {
+    description = "Run all workflow tests"
+    group = "verification"
+    useJUnitPlatform() {
+        includeTags("workflow")
+    }
+    reports {
+        junitXml.required = true
+        html.required = true
+
+    }
+//    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.register<Test>("securityTest") {
+    description = "Run all security tests"
+    group = "verification"
+    useJUnitPlatform() {
+        includeTags("security")
+    }
+    reports {
+        junitXml.required = true
+        html.required = true
+
+    }
+//    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.register<Test>("performanceTest") {
+    description = "Run all performance tests"
+    group = "verification"
+    useJUnitPlatform() {
+        includeTags("performance")
+    }
+    reports {
+        junitXml.required = true
+        html.required = true
+
+    }
+//    finalizedBy(tasks.jacocoTestReport)
+}

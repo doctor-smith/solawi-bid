@@ -5,6 +5,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.solyton.solawi.bid.Smoke
 import java.nio.file.Files
 
 
@@ -33,7 +34,7 @@ class NavigationTest {
         }
     }
 
-    @Test
+    @Smoke@Test
     fun test_useStoredState() {
         val jsonString = Files.readString(TestUtils().storageStatePath)
         val context = browser.newContext(
