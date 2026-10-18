@@ -30,14 +30,20 @@ usage() {
 Usage: $0 <command>
 
 Commands:
-  build       Build the local Docker images (solawi-bid/frontend:local, solawi-bid/backend:local)
-  up          Start the E2E environment (frontend, backend, database)
-  down        Stop the E2E environment (database content is kept until the containers are removed)
-  reset-db    Reset the E2E database to a clean state (same as CI: fresh DB + migrations). Mostly
-              useful on its own, e.g. to inspect a clean database; "test"/"run" below already do
-              this automatically before the first test.
-  test        Reset the database, then run the E2E test suite (./gradlew :e2e:test)
-  run         Full local cycle: build, up, test (which resets the database), down
+  build            Build the local Docker images (solawi-bid/frontend:local, solawi-bid/backend:local)
+  build-frontend   Build only solawi-bid/frontend:local and recreate its container if the
+                   environment is already up. Handy after frontend-only changes, so you don't have
+                   to wait for a backend rebuild as well.
+  build-backend    Build only solawi-bid/backend:local and recreate its container if the
+                   environment is already up. Handy after backend-only changes, so you don't have
+                   to wait for a frontend rebuild as well.
+  up               Start the E2E environment (frontend, backend, database)
+  down             Stop the E2E environment (database content is kept until the containers are removed)
+  reset-db         Reset the E2E database to a clean state (same as CI: fresh DB + migrations). Mostly
+                   useful on its own, e.g. to inspect a clean database; "test"/"run" below already do
+                   this automatically before the first test.
+  test             Reset the database, then run the E2E test suite (./gradlew :e2e:test)
+  run              Full local cycle: build, up, test (which resets the database), down
 EOF
 }
 
@@ -55,14 +61,33 @@ ensure_frontend_base_image() {
   docker build -f infrastructure/docker/Dockerfile-Frontend-Base -t "$GRADLE_BASE_FRONTEND_IMAGE" .
 }
 
-build_images() {
+build_backend() {
   echo "==> Building solawi-bid/backend:local"
   docker build -f infrastructure/docker/Dockerfile-Backend -t solawi-bid/backend:local .
+}
 
+build_frontend() {
   ensure_frontend_base_image
 
   echo "==> Building solawi-bid/frontend:local"
   docker build --pull=false -f infrastructure/docker/Dockerfile-Frontend -t solawi-bid/frontend:local .
+}
+
+build_images() {
+  build_backend
+  build_frontend
+}
+
+# Rebuilds a single image and, if the environment is already up, recreates just that
+# service's container so the freshly built image actually gets picked up (plain
+# "docker compose up -d" would otherwise keep the old container running since the
+# image tag itself didn't change).
+recreate_service_if_running() {
+  local service="$1"
+  if docker compose -f "$COMPOSE_FILE" ps --status running --services | grep -qx "$service"; then
+    echo "==> Recreating $service with the freshly built image"
+    docker compose -f "$COMPOSE_FILE" up -d --force-recreate --no-deps --wait "$service"
+  fi
 }
 
 up() {
@@ -102,6 +127,14 @@ run_tests() {
 
 case "${1:-}" in
   build) build_images ;;
+  build-frontend)
+    build_frontend
+    recreate_service_if_running solawi-bid_frontend
+    ;;
+  build-backend)
+    build_backend
+    recreate_service_if_running solawi-bid_backend
+    ;;
   up) up ;;
   down) down ;;
   reset-db) reset_db ;;
