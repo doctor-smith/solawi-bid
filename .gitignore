@@ -22,3 +22,5 @@ build-reports
 .sql
 setup-local.sql
 !setup.sql
+
+e2e/loggedInState.json

@@ -163,6 +163,7 @@ fun ApplicationManagementPage(storage: Storage<Application>) = withLoading(
                             Color.white,
                             applicationListActions * Component.showDetails * tooltip,
                             device,
+                            dataId = "application-management.page.application.${application.name}.details-button",
                         ) {
                             CoroutineScope(Job()).launch {
                                 navigate(
@@ -175,7 +176,7 @@ fun ApplicationManagementPage(storage: Storage<Application>) = withLoading(
                             Color.white,
                             applicationListActions * Component.edit * tooltip,
                             device,
-
+                            dataId = "application-management.page.application.${application.name}.edit-button",
                             ) {
                             modals.showDialogModal(
                                 texts = dialogModalTexts("Not Implemented: Manage properties of the application"),
