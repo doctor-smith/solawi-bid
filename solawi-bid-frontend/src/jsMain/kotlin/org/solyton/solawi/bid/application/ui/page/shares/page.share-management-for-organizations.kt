@@ -255,6 +255,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                         { "UP" },
                         deviceType,
                         false,
+                        dataId = "shares.page.up-button",
                     ) {
                         navigate(up)
                     }
@@ -342,6 +343,7 @@ fun ShareTypeManagement(
                             color = Color.black,
                             bgColor = Color.white,
                             deviceType = deviceType,
+                            dataId = "shares.page.share-type.create-button",
                         ) {
                             shareManagementModals.showUpsertShareTypeModal(
                                 shareManagementStore,
@@ -398,6 +400,7 @@ fun ShareTypeManagement(
                                 color = Color.black,
                                 bgColor = Color.white,
                                 deviceType = deviceType,
+                                dataId = "shares.page.share-type.${shareType.key}.edit-button",
                             ) {
                                 shareManagementModals.showUpsertShareTypeModal(
                                     shareManagementStore,
@@ -425,7 +428,8 @@ fun ShareTypeManagement(
                                 color = Color.black,
                                 bgColor = Color.white,
                                 deviceType = deviceType,
-                                isDisabled = true
+                                isDisabled = true,
+                                dataId = "shares.page.share-type.${shareType.key}.delete-button",
                             ) {
 
                             }
@@ -486,6 +490,7 @@ fun ShareOfferManagement(
                                 color = Color.black,
                                 bgColor = Color.white,
                                 deviceType = deviceType,
+                                dataId = "shares.page.share-offer.create-button",
                             ) {
                                 shareManagementModals.showUpsertShareOffersModal(
                                     shareManagementStore,
@@ -598,6 +603,7 @@ fun ShareOfferManagement(
                                         color = Color.black,
                                         bgColor = Color.white,
                                         deviceType = deviceType,
+                                        dataId = "shares.page.share-offer.${shareOffer.shareOfferId}.sepa-collection-button",
                                     ) {
 
                                         shareManagementModals.showAttachSepaCollectionModal(
@@ -686,7 +692,8 @@ fun ShareOfferManagement(
                                         bgColor = Color.white,
                                         deviceType = deviceType,
                                         isDisabled = true,
-                                        texts = { "No creditor identifiers defined" }
+                                        texts = { "No creditor identifiers defined" },
+                                        dataId = "shares.page.share-offer.${shareOffer.shareOfferId}.sepa-collection-button",
                                     ) {
 
                                     }
@@ -695,6 +702,7 @@ fun ShareOfferManagement(
                                     color = Color.black,
                                     bgColor = Color.white,
                                     deviceType = deviceType,
+                                    dataId = "shares.page.share-offer.${shareOffer.shareOfferId}.edit-button",
                                 ) {
                                     shareManagementModals.showUpsertShareOffersModal(
                                         shareManagementStore,
@@ -725,7 +733,8 @@ fun ShareOfferManagement(
                                     color = Color.black,
                                     bgColor = Color.white,
                                     deviceType = deviceType,
-                                    isDisabled = true
+                                    isDisabled = true,
+                                    dataId = "shares.page.share-offer.${shareOffer.shareOfferId}.delete-button",
                                 ) {
 
                                 }
@@ -918,7 +927,8 @@ fun ShareSubscriptionManagement(
                             color = Color.black,
                             bgColor = Color.white,
                             deviceType = deviceType,
-                            isDisabled = false
+                            isDisabled = false,
+                            dataId = "shares.page.share-subscription.create-button",
                         ) {
                             shareManagementModals.showUpsertShareSubscriptionModal(
                                 shareManagementStore,
@@ -999,7 +1009,8 @@ fun ShareSubscriptionManagement(
                         Dropdown(
                             fiscalYearOptions,
                             selectedFiscalYear,
-                            iconContent = { opened -> SimpleUpDown(opened) }
+                            iconContent = { opened -> SimpleUpDown(opened) },
+                            dataId = "shares.page.share-subscription.fiscal-year-dropdown",
                         ) { (key, value) ->
                             filter = filter.copy(
                                 fiscalYears = when {
@@ -1026,7 +1037,8 @@ fun ShareSubscriptionManagement(
                         Dropdown(
                             shareTypeOptions,
                             selectedShareType,
-                            iconContent = { opened -> SimpleUpDown(opened) }
+                            iconContent = { opened -> SimpleUpDown(opened) },
+                            dataId = "shares.page.share-subscription.share-type-dropdown",
                         ) { (key, shareTypes) ->
                             selectedShareType = key
                             filter = filter.copy(
@@ -1065,7 +1077,8 @@ fun ShareSubscriptionManagement(
                         Dropdown(
                             statusOptions,
                             selectedStatus,
-                            iconContent = { opened -> SimpleUpDown(opened) }
+                            iconContent = { opened -> SimpleUpDown(opened) },
+                            dataId = "shares.page.share-subscription.status-dropdown",
                         ) { (key, status) ->
                             selectedStatus = key
                             filter = filter.copy(
@@ -1093,7 +1106,8 @@ fun ShareSubscriptionManagement(
                         Dropdown(
                             ahcAuthorizedOptions,
                             selectedAhcAuthorized,
-                            iconContent = { opened -> SimpleUpDown(opened) }
+                            iconContent = { opened -> SimpleUpDown(opened) },
+                            dataId = "shares.page.share-subscription.ahc-authorized-dropdown",
                         ) { (key, ahcAuthorized) ->
                             selectedAhcAuthorized = key
                             filter = filter.copy(
@@ -1118,7 +1132,8 @@ fun ShareSubscriptionManagement(
                         Dropdown(
                             distributionPointOptions,
                             selectedDistributionPoint,
-                            iconContent = { opened -> SimpleUpDown(opened) }
+                            iconContent = { opened -> SimpleUpDown(opened) },
+                            dataId = "shares.page.share-subscription.distribution-point-dropdown",
                         ) { (key, value) ->
                             selectedDistributionPoint = key
                             filter = filter.copy(
@@ -1148,7 +1163,8 @@ fun ShareSubscriptionManagement(
                             sepaCollectionsOptions,
                             selectedSepaCollections,
                             styles = dropdownStyles.modifyContainerStyle { width(250.px) },
-                            iconContent = { opened -> SimpleUpDown(opened) }
+                            iconContent = { opened -> SimpleUpDown(opened) },
+                            dataId = "shares.page.share-subscription.sepa-collection-dropdown",
 
                         ) { (key, value) ->
                             selectedSepaCollections = key
@@ -1163,7 +1179,7 @@ fun ShareSubscriptionManagement(
                         var searchText by remember {
                             mutableStateOf(filter.userProfiles?.joinToString(",") { it }.orEmpty())
                         }
-                        SearchInput(searchText, SearchInputStyles()) { text ->
+                        SearchInput(searchText, SearchInputStyles(), dataId = "shares.page.share-subscription.search-input") { text ->
                             searchText = text
                             filter = filter.copy(
                                 userProfiles = when {
@@ -1190,7 +1206,8 @@ fun ShareSubscriptionManagement(
                             color = Color.black,
                             bgColor = Color.white,
                             deviceType = deviceType,
-                            isDisabled = checkedSubscriptions.none { it.checked }
+                            isDisabled = checkedSubscriptions.none { it.checked },
+                            dataId = "shares.page.share-subscription.bulk-edit-button",
                         ) {
                             shareManagementModals.showBulkEditShareShareSubscriptionsModal(
                                 storage = shareManagementStore,
@@ -1387,7 +1404,8 @@ fun ShareSubscriptionManagement(
                             color = Color.black,
                             bgColor = Color.white,
                             deviceType = deviceType,
-                            isDisabled = false
+                            isDisabled = false,
+                            dataId = "shares.page.share-subscription.import-button",
                         ) {
                             shareManagementModals.showBulkUpdateShareDataByFileImportModal(
                                 texts = dialogModalTexts("BulkEdit by import"),
@@ -1428,7 +1446,7 @@ fun ShareSubscriptionManagement(
                 }
                 HeaderWrapper {
                     Header(cardListStyles.header) {
-                        CheckBoxCell({ allChecked }, { width(2.percent) }) {
+                        CheckBoxCell({ allChecked }, { width(2.percent) }, dataId = "shares.page.share-subscription.select-all-checkbox") {
                             val newCheckedState = !allChecked
                             checkedMap.clear()
                             if (newCheckedState) {
@@ -1469,7 +1487,7 @@ fun ShareSubscriptionManagement(
                             }) {
                                 DataWrapper(cardListStyles.dataWrapper) {
                                     var checkedState by remember { mutableStateOf(checked) }
-                                    CheckBoxCell({ checkedState }, { width(2.percent) }) {
+                                    CheckBoxCell({ checkedState }, { width(2.percent) }, dataId = "shares.page.share-subscription.${subscription.shareSubscriptionId}.checkbox") {
                                         checkedMap[subscription.shareSubscriptionId] = !checkedState
                                         checkedState = !checkedState
                                     }
@@ -1530,7 +1548,8 @@ fun ShareSubscriptionManagement(
                                         color = Color.black,
                                         bgColor = Color.white,
                                         deviceType = deviceType,
-                                        isDisabled = subscription.status !in allowedTransferStatuses
+                                        isDisabled = subscription.status !in allowedTransferStatuses,
+                                        dataId = "shares.page.share-subscription.${subscription.shareSubscriptionId}.transfer-ownership-button",
                                     ) {
 
                                         shareManagementModals.showTransferOwnershipOfShareSubscriptionModal(
@@ -1584,7 +1603,8 @@ fun ShareSubscriptionManagement(
                                         color = Color.black,
                                         bgColor = Color.white,
                                         deviceType = deviceType,
-                                        isDisabled = bankAccount == null ||  collections.isEmpty() || creditorId == null
+                                        isDisabled = bankAccount == null ||  collections.isEmpty() || creditorId == null,
+                                        dataId = "shares.page.share-subscription.${subscription.shareSubscriptionId}.sepa-mandate-button",
                                     ) {
                                         shareManagementModals.showAttachOrUpsertSepaMandateModal(
                                             storage = bankingApplicationStorage,
@@ -1683,7 +1703,8 @@ fun ShareSubscriptionManagement(
                                         color = Color.black,
                                         bgColor = Color.white,
                                         deviceType = deviceType,
-                                        isDisabled = false
+                                        isDisabled = false,
+                                        dataId = "shares.page.share-subscription.${subscription.shareSubscriptionId}.edit-button",
                                     ) {
                                         shareManagementModals.showUpsertShareSubscriptionModal(
                                             shareManagementStore,
@@ -1723,7 +1744,8 @@ fun ShareSubscriptionManagement(
                                         color = Color.black,
                                         bgColor = Color.white,
                                         deviceType = deviceType,
-                                        isDisabled = true
+                                        isDisabled = true,
+                                        dataId = "shares.page.share-subscription.${subscription.shareSubscriptionId}.delete-button",
                                     ) {}
                                 }
                             }

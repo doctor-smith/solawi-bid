@@ -3,6 +3,7 @@ package org.solyton.solawi.bid.module.shares.component.modal
 
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.form.field.Field
 import org.evoleq.compose.form.label.Label
 import org.evoleq.compose.modal.Modal
@@ -55,6 +56,7 @@ fun UpsertShareTypeModal(
     onCancel = {},
     texts = texts,
     styles = auctionModalStyles(device),
+    dataId = "shares.modal.upsert-share-type",
 ) {
     var shareType by remember { mutableStateOf<ShareType?>(shareType) }
     Form {
@@ -68,6 +70,7 @@ fun UpsertShareTypeModal(
             TextInput(shareType?.name ?: "") {
                 required()
                 id("name-of-share-type")
+                dataId("shares.modal.upsert-share-type.name-input")
                 style { textInputDesktopStyle() }
                 onInput {
                     shareType = (shareType?:ShareType.default).copy(
@@ -89,6 +92,7 @@ fun UpsertShareTypeModal(
             TextInput(shareType?.description ?: "") {
                 required()
                 id("description-of-share-type")
+                dataId("shares.modal.upsert-share-type.description-input")
                 style { textInputDesktopStyle() }
                 onInput {
                     shareType = (shareType?:ShareType.default).copy(
@@ -110,6 +114,7 @@ fun UpsertShareTypeModal(
             TextInput(shareType?.key ?: "") {
                 required()
                 id("key-of-share-type")
+                dataId("shares.modal.upsert-share-type.key-input")
                 style { textInputDesktopStyle() }
                 onInput {
                     shareType = (shareType?:ShareType.default).copy(

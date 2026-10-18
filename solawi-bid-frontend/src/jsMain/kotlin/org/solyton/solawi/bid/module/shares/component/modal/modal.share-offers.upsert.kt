@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.shares.component.modal
 
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.conditional.When
 import org.evoleq.compose.form.field.Field
 import org.evoleq.compose.form.label.Label
@@ -65,6 +66,7 @@ fun UpsertShareOffersModal(
     onCancel = {},
     texts = texts,
     styles = auctionModalStyles(device),
+    dataId = "shares.modal.upsert-share-offer",
 ) {
     var shareOffer by remember { mutableStateOf<ShareOffer?>(shareOffer) }
 
@@ -87,7 +89,8 @@ fun UpsertShareOffersModal(
                 options = fiscalYearsMap,
                 selected = shareOffer?.fiscalYear?.format() ?: "Select fiscal year",
                 styles = dropdownStyles,
-                iconContent = {expanded -> SimpleUpDown(expanded) }
+                iconContent = {expanded -> SimpleUpDown(expanded) },
+                dataId = "shares.modal.upsert-share-offer.fiscal-year-dropdown",
             ) { (_, value) ->
                 shareOffer = (shareOffer?:ShareOffer.default).copy(
                     fiscalYear = value
@@ -109,7 +112,8 @@ fun UpsertShareOffersModal(
                 options = shareTypesMap,
                 selected = shareOffer?.shareType?.name ?: "Select share type",
                 styles = dropdownStyles,
-                iconContent = {expanded -> SimpleUpDown(expanded) }
+                iconContent = {expanded -> SimpleUpDown(expanded) },
+                dataId = "shares.modal.upsert-share-offer.share-type-dropdown",
             ) { (_, value) ->
                 shareOffer = (shareOffer?:ShareOffer.default).copy(
                     shareType = value
@@ -135,7 +139,8 @@ fun UpsertShareOffersModal(
                 options = pricingTypesMap,
                 selected = shareOffer?.pricingType?.name ?: "Select pricing type",
                 styles = dropdownStyles,
-                iconContent = {expanded -> SimpleUpDown(expanded) }
+                iconContent = {expanded -> SimpleUpDown(expanded) },
+                dataId = "shares.modal.upsert-share-offer.pricing-type-dropdown",
             ) { (_, value) ->
                 shareOffer = (shareOffer?:ShareOffer.default).copy(
                     pricingType = value,
@@ -159,6 +164,7 @@ fun UpsertShareOffersModal(
                 TextInput(shareOffer?.price?.toString() ?: "") {
                     required()
                     id("price-of-share-type")
+                    dataId("shares.modal.upsert-share-offer.price-input")
                     onInput {
                         shareOffer = (shareOffer?:ShareOffer.default).copy(
                             price = it.value.toDoubleOrNull()
@@ -184,7 +190,8 @@ fun UpsertShareOffersModal(
                 options = booleansMap,
                 selected = getKeyOf(shareOffer?.ahcAuthorizationRequired?:false),
                 styles = dropdownStyles,
-                iconContent = {expanded -> SimpleUpDown(expanded) }
+                iconContent = {expanded -> SimpleUpDown(expanded) },
+                dataId = "shares.modal.upsert-share-offer.ahc-authorization-required-dropdown",
             ) { (_, value) ->
                 shareOffer = (shareOffer?:ShareOffer.default).copy(
                     ahcAuthorizationRequired = value

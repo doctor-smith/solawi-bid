@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.module.list.component
 
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.conditional.When
 import org.evoleq.math.Source
 import org.evoleq.math.emit
@@ -343,10 +344,12 @@ fun ActionCellItem(
 fun CheckBoxCell(
     checked: Source<Boolean>,
     style: StyleScope.()->Unit = {},
+    dataId: String? = null,
     onClick: () -> Unit = {}
 ){
     var checkedState by remember { mutableStateOf(checked.emit()) }
     CheckboxInput(checkedState,{
+        if(dataId != null) dataId(dataId)
         style { style() }
         onClick { checkedState = !checkedState; onClick() }
     })

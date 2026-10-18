@@ -3,6 +3,7 @@ package org.solyton.solawi.bid.module.control.dropdown
 
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.attribute.disabled
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
@@ -25,6 +26,7 @@ fun <T> Dropdown(
     styles: DropdownStyles = DropdownStyles(),
     iconContent: @Composable ((expanded: Boolean) -> Unit)? = null, // Optional custom icon
     isDisabled: ()-> Boolean = {false},
+    dataId: String? = null,
     onSelected: (Map.Entry<String, T>) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -38,6 +40,7 @@ fun <T> Dropdown(
             // Trigger
             Div({
                 if(isDisabled()) disabled()
+                if(dataId != null) dataId(dataId)
                 style { with(styles) {
                     triggerStyle()
                     if(isDisabled()) cursor(Cursor.NotAllowed)
@@ -67,6 +70,7 @@ fun <T> Dropdown(
                 }) {
                     options.forEach { option ->
                         Div({
+                            if(dataId != null) dataId("$dataId.option.${option.key}")
                             style { with(styles) { dropdownItemStyle() } }
                             onClick {
                                 onSelected(option)
