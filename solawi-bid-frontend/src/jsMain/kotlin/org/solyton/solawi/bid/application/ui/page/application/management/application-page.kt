@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.application.ui.page.application.management
 
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -94,13 +95,13 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
                 )
             }
         },
-        onEmpty(storage * applicationManagementModule * personalApplicationContextRelations.get) {
-            CoroutineScope(Job()).launch {
-                (storage * applicationManagementModule * applicationManagementActions).dispatch(
-                    readPersonalApplicationContextRelations
-                )
-            }
-        },
+        // Note: personalApplicationContextRelations is deliberately NOT part of this loading
+        // gate (unlike availableApplications above). onEmpty() can't tell "not fetched yet"
+        // apart from "fetched, genuinely empty" - and for an application owner/admin (who isn't
+        // personally registered for any application) that list IS legitimately always empty, so
+        // gating on it here would leave this page stuck in Loading() forever for such users. It
+        // is instead fetched once below, and the page already tolerates it being empty (see
+        // defaultContext's use of firstOrNull).
         onNullLaunch(
             storage * availablePermissions * contextFromPath("APPLICATION"),
         ) {
@@ -153,6 +154,14 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
 
     val scope = rememberCoroutineScope()
 
+    LaunchedEffect(Unit) {
+        launch {
+            (storage * applicationManagementModule * applicationManagementActions).dispatch(
+                readPersonalApplicationContextRelations
+            )
+        }
+    }
+
     Page({verticalPageStyle() }) {
         Wrap {
             Horizontal(styles = {
@@ -168,6 +177,7 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
                         allApps * tooltip,
                         device,
                         false,
+                        dataId = "application.page.back-button",
                     ) {
                         navigate("/app/management")
                     }
@@ -205,6 +215,7 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
                                 Color.white,
                                 listOfModules * Component.actions * Component.showDetails * tooltip,
                                 device,
+                                dataId = "application.page.module.${module.name}.details-button",
                             ) {
                                 CoroutineScope(Job()).launch {
                                     navigate(
@@ -230,6 +241,7 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
                             Color.white,
                             defaultContextTexts * Component.actions * fixApplicationContext * tooltip,
                             device,
+                            dataId = "application.page.default-context.fix-button",
                         ){
                             scope.launch {
                                 storage * applicationManagementModule * applicationManagementActions dispatch fixApplicationRelatedContexts(
@@ -243,6 +255,7 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
                             Color.white,
                             defaultContextTexts * Component.actions * editContext * tooltip,
                             device,
+                            dataId = "application.page.default-context.edit-button",
                         ) {
                             defaultContext mapRight { context ->
 
@@ -318,6 +331,7 @@ fun ApplicationPage(storage: Storage<Application>, applicationId: String) = with
                                     Color.white,
                                     defaultContextTexts * Component.actions * Component.editRole * tooltip,
                                     device,
+                                    dataId = "application.page.role.${role.roleName}.edit-button",
                                 ) {
                                     (storage * modals).showDialogModal(
                                         texts = dialogModalTexts("Not Implemented: Manage Associated Rights"),
