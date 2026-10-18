@@ -70,7 +70,9 @@ val localProps = Properties().apply {
 
 tasks.withType<Test>().configureEach {
     // Only set if not already provided by the shell / CI
-    listOf("TEST_USER", "TEST_USER_PASSWORD", "E2E_BASE_URL").forEach { key ->
+    // E2E_RESET_DB opts into a full local database reset before the first test,
+    // see DbReset.kt/DbResetExtension.kt; script/e2e-local.sh sets it automatically.
+    listOf("TEST_USER", "TEST_USER_PASSWORD", "E2E_BASE_URL", "E2E_RESET_DB").forEach { key ->
         val fromEnv = System.getenv(key)
         val fromProps = localProps.getProperty(key)
         (fromEnv ?: fromProps)?.let { environment(key, it) }
