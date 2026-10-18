@@ -56,6 +56,7 @@ fun BulkUpdateShareDataByFileImportModal(
     onCancel = {},
     texts = texts,
     styles = commonModalStyles(device),
+    dataId = "shares.modal.import-share-data",
 ) {
     // All subscriptions need to belong to the same share offer
     val subscriptionsAreValid = shareSubscriptions.map{
@@ -87,6 +88,7 @@ fun BulkUpdateShareDataByFileImportModal(
             Horizontal({gap(10.px)}) {
                 CheckBox(
                     exportPricePerShare,
+                    dataId = "shares.modal.import-share-data.export-price-per-share-checkbox",
                 ) { bool ->
                     exportPricePerShare = bool
                     updateCheckCount(bool)
@@ -96,6 +98,7 @@ fun BulkUpdateShareDataByFileImportModal(
             Horizontal({gap(10.px)}) {
                 CheckBox(
                     exportNumberOfShares,
+                    dataId = "shares.modal.import-share-data.export-number-of-shares-checkbox",
                 ) { bool ->
                     exportNumberOfShares = bool
                     updateCheckCount(bool)
@@ -105,6 +108,7 @@ fun BulkUpdateShareDataByFileImportModal(
             Horizontal({gap(10.px)}) {
                 CheckBox(
                     exportAhcAuthorized,
+                    dataId = "shares.modal.import-share-data.export-ahc-authorized-checkbox",
                 ) { bool ->
                     exportAhcAuthorized = bool
                     updateCheckCount(bool)
@@ -129,6 +133,7 @@ fun BulkUpdateShareDataByFileImportModal(
                 bgColor = Color.white,
                 {"Download template"},
                 device,
+                dataId = "shares.modal.import-share-data.download-template-button",
             ) {
                 val checked = mapOf(
                     "username" to true,
@@ -153,7 +158,7 @@ fun BulkUpdateShareDataByFileImportModal(
 
                 downloadCsv(csv, "share-subscriptions_${now()}.csv")
             }
-            Dropzone() { files ->
+            Dropzone(dataId = "shares.modal.import-share-data.dropzone") { files ->
                 files.filter { it.name.endsWith("csv") }.map {
                     readFileContent(it) { content ->
                         val parsed = parseCsv(content)

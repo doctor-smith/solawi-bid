@@ -2,6 +2,7 @@ package org.evoleq.compose.dnd
 
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
@@ -15,6 +16,7 @@ import org.w3c.files.FileReader
 fun Dropzone(
     onProcessingStarted: ()->Unit = {},
     onProcessingStopped: ()->Unit = {},
+    dataId: String? = null,
     onFilesDropped: (List<File>) -> Unit
 ) {
     var isDragging by remember { mutableStateOf(false) }
@@ -22,6 +24,7 @@ fun Dropzone(
 
     Div(
         attrs = {
+            if(dataId != null) dataId(dataId)
             style {
                 height(70.vh)
                 padding(16.px)

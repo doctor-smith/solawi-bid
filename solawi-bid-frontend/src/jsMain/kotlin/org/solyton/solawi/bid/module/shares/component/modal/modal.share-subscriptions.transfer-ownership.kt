@@ -6,6 +6,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.evoleq.change.data.Change
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.conditional.When
 import org.evoleq.compose.form.Form
 import org.evoleq.compose.form.field.Field
@@ -129,7 +130,8 @@ fun TransferOwnershipOfShareSubscriptionModal(
     }.modifyContentWrapperStyle {
         minWidth(50.vw)
     }.compact(),
-    isOkButtonDisabled = isOkButtonDisabled
+    isOkButtonDisabled = isOkButtonDisabled,
+    dataId = "shares.modal.transfer-ownership",
 ) {
 
     val scope = rememberCoroutineScope()
@@ -189,6 +191,7 @@ fun TransferOwnershipOfShareSubscriptionModal(
                 TextInput(userState?.profile?.fullname() ?: "") {
                     disabled()
                     placeholder((searchBox * LangField.placeholder).emit())
+                    dataId("shares.modal.transfer-ownership.user-display-input")
                     style{
                         marginBottom(10.px)
                         width(100.percent)
@@ -228,7 +231,8 @@ fun TransferOwnershipOfShareSubscriptionModal(
                             width(100.percent)
                         },
                         true,
-                        isDisabled = {false}
+                        isDisabled = {false},
+                        dataId = "shares.modal.transfer-ownership.user-search-input",
                     ) {
                         scope.launch {
                             searchUsersResult = users.filter { user ->
@@ -272,7 +276,7 @@ fun TransferOwnershipOfShareSubscriptionModal(
                                                 listOfUsers * LangField.actions * LangField.selectUser * LangField.tooltip * text,
                                                 device,
                                                 false,
-                                                null,
+                                                "shares.modal.transfer-ownership.user.${user.username}.select-button",
                                             ) {
 
                                                 scope.launch {

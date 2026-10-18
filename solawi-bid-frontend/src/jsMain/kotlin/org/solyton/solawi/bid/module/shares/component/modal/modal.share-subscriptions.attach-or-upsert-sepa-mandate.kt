@@ -4,6 +4,7 @@ package org.solyton.solawi.bid.module.shares.component.modal
 
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.conditional.When
 import org.evoleq.compose.form.field.Field
 import org.evoleq.compose.form.label.Label
@@ -86,6 +87,7 @@ fun AttachOrUpsertSepaMandateModal(
     onCancel = {},
     texts = texts.emit(),
     styles = commonModalStyles(device).compact(),
+    dataId = "shares.modal.sepa-mandate",
 ) {
     Wrap {
         val options = remember(usersSepaMandates) {
@@ -113,6 +115,7 @@ fun AttachOrUpsertSepaMandateModal(
                 )
                 Horizontal({ padding(10.px); gap(10.px) }) {
                     RadioInput(selectedAction == MandateDialogAction.ATTACH_EXISTING) {
+                        dataId("shares.modal.sepa-mandate.attach-existing-radio")
                         onClick {
                             selectedAction = MandateDialogAction.ATTACH_EXISTING
                             setMode(AttachOrUpsertSepaMandateModalMode.Attach)
@@ -122,6 +125,7 @@ fun AttachOrUpsertSepaMandateModal(
                     Text("Attach existing")
 
                     RadioInput(selectedAction == MandateDialogAction.EDIT_EXISTING) {
+                        dataId("shares.modal.sepa-mandate.edit-existing-radio")
                         onClick {
                             selectedAction = MandateDialogAction.EDIT_EXISTING
                             setMode(AttachOrUpsertSepaMandateModalMode.Upsert)
@@ -131,6 +135,7 @@ fun AttachOrUpsertSepaMandateModal(
                     Text("Edit existing")
 
                     RadioInput(selectedAction == MandateDialogAction.CREATE_NEW) {
+                        dataId("shares.modal.sepa-mandate.create-new-radio")
                         onClick {
                             selectedAction = MandateDialogAction.CREATE_NEW
                             setMode(AttachOrUpsertSepaMandateModalMode.Upsert)
@@ -155,7 +160,8 @@ fun AttachOrUpsertSepaMandateModal(
                         styles = DropdownStyles().modifyContainerStyle {
                             width(100.percent)
                         },
-                        iconContent = { open -> SimpleUpDown(open) }
+                        iconContent = { open -> SimpleUpDown(open) },
+                        dataId = "shares.modal.sepa-mandate.selected-mandate-dropdown",
                     ) { (_, value) ->
                         selectedRef = value.mandateReference.value
                         setSepaMandate(value)

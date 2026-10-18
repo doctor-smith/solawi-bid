@@ -127,6 +127,7 @@ fun BulkEditShareShareSubscriptionsModal(
     onCancel = {},
     texts = texts,
     styles = auctionModalStyles(device),
+    dataId = "shares.modal.bulk-edit",
 ) {
 
     var checked by remember { mutableStateOf<Checked>(Checked.NONE)}
@@ -138,7 +139,7 @@ fun BulkEditShareShareSubscriptionsModal(
                 width(100.percent)
                 gap(2.px)
             }) {
-                CheckBox(checked == Checked.CHANGE_DISTRIBUTION_POINT) { state ->
+                CheckBox(checked == Checked.CHANGE_DISTRIBUTION_POINT, dataId = "shares.modal.bulk-edit.change-distribution-point-checkbox") { state ->
                     if(state) checked = Checked.CHANGE_DISTRIBUTION_POINT
                 }
                 Text("Edit distribution point")
@@ -168,7 +169,7 @@ fun BulkEditShareShareSubscriptionsModal(
                 gap(2.px)
                 width(100.percent)
             }) {
-                CheckBox(checked == Checked.CHANGE_SHARE_STATUS) { status ->
+                CheckBox(checked == Checked.CHANGE_SHARE_STATUS, dataId = "shares.modal.bulk-edit.change-status-checkbox") { status ->
                     if(status)  checked = Checked.CHANGE_SHARE_STATUS
                 }
                 Text("Edit status")
@@ -190,6 +191,7 @@ fun BulkEditShareShareSubscriptionsModal(
                     options = shareStatusMap,
                     selected = selectedStatusState,
                     iconContent = { opened -> SimpleUpDown(opened) },
+                    dataId = "shares.modal.bulk-edit.status-dropdown",
                 ) { (key, value) ->
                     selectedStatusState = key
                     when (value) {
@@ -511,7 +513,7 @@ fun BulkEditShareShareSubscriptionsModal(
                 gap(2.px)
                 width(100.percent)
             }) {
-                CheckBox(checked == Checked.ROLLOVER) { status ->
+                CheckBox(checked == Checked.ROLLOVER, dataId = "shares.modal.bulk-edit.rollover-checkbox") { status ->
                     if(status)  checked = Checked.ROLLOVER
                 }
                 Text("Roll over to next season")
@@ -537,6 +539,7 @@ fun BulkEditShareShareSubscriptionsModal(
                         shareOffersOptions,
                         selected = selectedShareOffer,
                         iconContent = { opened -> SimpleUpDown(opened) },
+                        dataId = "shares.modal.bulk-edit.rollover-share-offer-dropdown",
                     ) { (key, value) ->
 
                         when (value) {

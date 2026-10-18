@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import org.evoleq.change.data.Change
 import org.evoleq.change.data.Keep
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.conditional.When
 import org.evoleq.compose.form.Form
 import org.evoleq.compose.form.field.Field
@@ -234,7 +235,8 @@ fun UpsertShareSubscriptionModal(
     }.modifyContentWrapperStyle {
         minWidth(50.vw)
     }.compact(),
-    isOkButtonDisabled = isOkButtonDisabled
+    isOkButtonDisabled = isOkButtonDisabled,
+    dataId = "shares.modal.upsert-share-subscription",
 ) {
 
     val scope = rememberCoroutineScope()
@@ -356,6 +358,7 @@ fun UpsertShareSubscriptionModal(
                 TextInput(userState?.profile?.fullname() ?: "") {
                     disabled()
                     placeholder((searchBox * LangField.placeholder).emit())
+                    dataId("shares.modal.upsert-share-subscription.user-display-input")
                     style{
                         marginBottom(10.px)
                         width(100.percent)
@@ -403,7 +406,8 @@ fun UpsertShareSubscriptionModal(
                             width(100.percent)
                         },
                         true,
-                        isDisabled = {!configuration.enabledInputs.user}
+                        isDisabled = {!configuration.enabledInputs.user},
+                        dataId = "shares.modal.upsert-share-subscription.user-search-input",
                     ) {
                         scope.launch {
                             searchUsersResult = users.filter { user ->
@@ -447,7 +451,7 @@ fun UpsertShareSubscriptionModal(
                                                 listOfUsers * LangField.actions * LangField.selectUser * LangField.tooltip * text,
                                                 device,
                                                 false,
-                                                null,
+                                                "shares.modal.upsert-share-subscription.user.${user.username}.select-button",
                                             ) {
                                                 
                                                 scope.launch {
@@ -478,7 +482,8 @@ fun UpsertShareSubscriptionModal(
                     selected = fiscalYearState.format(),
                     styles = dropdownStyles,
                     iconContent = { expanded -> SimpleUpDown(expanded) },
-                    isDisabled = {!configuration.enabledInputs.fiscalYear}
+                    isDisabled = {!configuration.enabledInputs.fiscalYear},
+                    dataId = "shares.modal.upsert-share-subscription.fiscal-year-dropdown",
                 ) { (_, value) ->
                     update(
                         ShareSubscriptionChange(
@@ -523,7 +528,8 @@ fun UpsertShareSubscriptionModal(
                         ?: (shareOfferField * LangField.placeholder).emit(),
                     styles = dropdownStyles,
                     iconContent = { expanded -> SimpleUpDown(expanded) },
-                    isDisabled = {!configuration.enabledInputs.shareOffer}
+                    isDisabled = {!configuration.enabledInputs.shareOffer},
+                    dataId = "shares.modal.upsert-share-subscription.share-offer-dropdown",
                 ) { (_, value) ->
                     update(
                         ShareSubscriptionChange(
@@ -564,7 +570,8 @@ fun UpsertShareSubscriptionModal(
                     selected = distributionPointState?.name ?: "Select distribution point",
                     styles = dropdownStyles,
                     iconContent = { expanded -> SimpleUpDown(expanded) },
-                    isDisabled = {!configuration.enabledInputs.distributionPoint}
+                    isDisabled = {!configuration.enabledInputs.distributionPoint},
+                    dataId = "shares.modal.upsert-share-subscription.distribution-point-dropdown",
                 ) { (_, value) ->
                     update(
                         ShareSubscriptionChange(
@@ -625,7 +632,8 @@ fun UpsertShareSubscriptionModal(
                     selected = statusState.value,
                     styles = dropdownStyles,
                     iconContent = { expanded -> SimpleUpDown(expanded) },
-                    isDisabled = {!configuration.enabledInputs.shareStatus}
+                    isDisabled = {!configuration.enabledInputs.shareStatus},
+                    dataId = "shares.modal.upsert-share-subscription.share-status-dropdown",
                 ) {
                     (_, value) ->
                     update(ShareSubscriptionChange(
@@ -658,6 +666,7 @@ fun UpsertShareSubscriptionModal(
                     pricePerShareState.toString(),
                 ) {
                     if(!configuration.enabledInputs.pricePerShare) disabled()
+                    dataId("shares.modal.upsert-share-subscription.price-per-share-input")
                     style{width(100.percent)}
                     onInput {
                         event ->
@@ -699,6 +708,7 @@ fun UpsertShareSubscriptionModal(
                     numberOfSharesState.toString(),
                 ) {
                     if(!configuration.enabledInputs.numberOfShares) disabled()
+                    dataId("shares.modal.upsert-share-subscription.number-of-shares-input")
                     style{width(100.percent)}
                     onInput { event ->
                             val value = event.value.toIntOrNull() ?: 0
@@ -755,6 +765,7 @@ fun UpsertShareSubscriptionModal(
                     styles = dropdownStyles,
                     iconContent = { expanded -> SimpleUpDown(expanded) },
                     isDisabled = {!configuration.enabledInputs.ahcAuthorized},
+                    dataId = "shares.modal.upsert-share-subscription.ahc-authorized-dropdown",
                 ) {
                     (_, checked) ->
                     update(
@@ -790,6 +801,7 @@ fun UpsertShareSubscriptionModal(
                     isRequired = true
                 )
                 TextArea(coSubscribersState.joinToString(",\n")) {
+                    dataId("shares.modal.upsert-share-subscription.co-subscribers-textarea")
                     if(!configuration.enabledInputs.coSubscribers)
                     style{
                         width(100.percent)

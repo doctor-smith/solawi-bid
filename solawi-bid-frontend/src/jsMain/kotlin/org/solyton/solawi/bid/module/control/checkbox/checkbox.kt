@@ -1,11 +1,8 @@
 package org.solyton.solawi.bid.module.control.checkbox
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.jetbrains.compose.web.css.StyleScope
@@ -21,8 +18,9 @@ data class CheckBoxStyles(
 fun CheckBox(
     checked: Source<Boolean>,
     styles: CheckBoxStyles = CheckBoxStyles(),
+    dataId: String? = null,
     onClick: (Boolean) -> Unit = {}
-) = CheckBox(checked.emit(), styles, onClick)
+) = CheckBox(checked.emit(), styles, dataId, onClick)
 
 
 @Markup
@@ -31,10 +29,12 @@ fun CheckBox(
 fun CheckBox(
     checked: Boolean,
     styles: CheckBoxStyles = CheckBoxStyles(),
+    dataId: String? = null,
     onClick: (Boolean) -> Unit = {}
 ){
     var checkedState by remember { mutableStateOf(checked) }
     CheckboxInput(checkedState,{
+        if(dataId != null) dataId(dataId)
         style { with(styles){ style() } }
         onClick {
             val newCheckedState = !checkedState
