@@ -33,9 +33,11 @@ Commands:
   build       Build the local Docker images (solawi-bid/frontend:local, solawi-bid/backend:local)
   up          Start the E2E environment (frontend, backend, database)
   down        Stop the E2E environment (database content is kept until the containers are removed)
-  reset-db    Reset the E2E database to a clean state (same as CI: fresh DB + migrations)
-  test        Run the E2E test suite (./gradlew :e2e:test)
-  run         Full local cycle: build, up, reset-db, test, down
+  reset-db    Reset the E2E database to a clean state (same as CI: fresh DB + migrations). Mostly
+              useful on its own, e.g. to inspect a clean database; "test"/"run" below already do
+              this automatically before the first test.
+  test        Reset the database, then run the E2E test suite (./gradlew :e2e:test)
+  run         Full local cycle: build, up, test (which resets the database), down
 EOF
 }
 
@@ -92,7 +94,10 @@ reset_db() {
 
 run_tests() {
   echo "==> Running E2E tests against $E2E_BASE_URL"
-  E2E_BASE_URL="$E2E_BASE_URL" ./gradlew :e2e:test
+  # E2E_RESET_DB makes the test suite itself reset the database before the first
+  # test (see e2e/src/test/kotlin/DbReset.kt and DbResetExtension.kt), so callers
+  # no longer need to invoke reset_db() separately beforehand.
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:test
 }
 
 case "${1:-}" in
@@ -104,7 +109,6 @@ case "${1:-}" in
   run)
     build_images
     up
-    reset_db
     run_tests
     down
     ;;

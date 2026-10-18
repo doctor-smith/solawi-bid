@@ -7,3 +7,7 @@ TEST_USER_PASSWORD=<yourpassword>
 # matching the regular development environment / CI). Not needed when using
 # script/e2e-local.sh, which sets this automatically for the dedicated local E2E environment.
 #E2E_BASE_URL=http://localhost:18080
+# Optional: set to "true" to have the E2E test suite reset the local E2E database (via
+# script/e2e-local.sh reset-db) once before the first test, e.g. when running tests from the
+# IDE instead of via script/e2e-local.sh, which sets this automatically for "test"/"run".
+#E2E_RESET_DB=true

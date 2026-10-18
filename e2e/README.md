@@ -33,20 +33,46 @@ in the root folder of the project to manage this environment:
 # Start the E2E environment
 ./script/e2e-local.sh up
 
-# Reset the database to a clean, empty state (recreates the database and backend
-# containers, so the backend re-creates the schema and the owner/test user itself
-# on startup, exactly like in CI). Run this before every test run.
-./script/e2e-local.sh reset-db
-
-# Run the E2E tests
+# Run the E2E tests. This automatically resets the database to a clean, empty
+# state first (recreating the database and backend containers, so the backend
+# re-creates the schema and the owner/test user itself on startup, exactly
+# like in CI) - see "Full database resets" below.
 ./script/e2e-local.sh test
 
 # Stop the E2E environment
 ./script/e2e-local.sh down
 
-# Or run the full cycle (build, up, reset-db, test, down) in one go
+# Or run the full cycle (build, up, test, down) in one go
 ./script/e2e-local.sh run
+
+# Reset the database on its own, without running any tests (e.g. to poke
+# around in a clean environment manually)
+./script/e2e-local.sh reset-db
 ```
+
+### Full database resets
+Most tests should rely on migrations and simply create their own,
+uniquely-named fixtures (e.g. `UserManagementTest` generates a timestamped
+email per created user), so they don't depend on a clean database and don't
+collide with leftover data from previous runs.
+
+Sometimes, though, a truly clean slate is useful - e.g. to avoid the database
+growing unboundedly across local test runs. For that, `script/e2e-local.sh
+test`/`run` set the `E2E_RESET_DB=true` environment variable, which the test
+suite itself picks up via a JUnit 5 extension
+([`DbResetExtension`](src/test/kotlin/DbResetExtension.kt), auto-registered
+for every test class) that runs
+[`DbReset.resetOnce()`](src/test/kotlin/DbReset.kt) before the first test.
+That, in turn, shells out to `./script/e2e-local.sh reset-db` exactly once per
+test run - the same container recreation described above, just triggered
+programmatically instead of as a separate manual step.
+
+This is opt-in and disabled by default (via `E2E_RESET_DB`), so it never runs
+in CI (which already starts from a fresh `docker-compose.e2e.yml` on every
+run) or during a plain `./gradlew :e2e:test`. To opt in manually - e.g. from
+your IDE's test runner, without going through the script - set
+`E2E_RESET_DB=true` yourself, either as an environment variable or in
+`local.properties`.
 
 ### Note on the owner/test user credentials
 On startup, the backend reads `APPLICATION_OWNER_USERNAME`/`APPLICATION_OWNER_PASSWORD`
