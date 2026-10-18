@@ -43,6 +43,12 @@ Commands:
                    useful on its own, e.g. to inspect a clean database; "test"/"run" below already do
                    this automatically before the first test.
   test             Reset the database, then run the E2E test suite (./gradlew :e2e:test)
+  smokeTest        Reset the database, then run the E2E smoke tests (./gradlew :e2e:smokeTest)
+  regressionTest   Reset the database, then run the E2E regression tests (./gradlew :e2e:regressionTest)
+  userJourneyTest  Reset the database, then run the E2E user-journey tests (./gradlew :e2e:userJourneyTest)
+  workflowTest     Reset the database, then run the E2E workflow tests (./gradlew :e2e:workflowTest)
+  securityTest     Reset the database, then run the E2E security tests (./gradlew :e2e:securityTest)
+  performanceTest  Reset the database, then run the E2E performance tests (./gradlew :e2e:performanceTest)
   run              Full local cycle: build, up, test (which resets the database), down
 EOF
 }
@@ -125,6 +131,54 @@ run_tests() {
   E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:test
 }
 
+run_smoke_tests() {
+  echo "==> Running E2E smoke tests against $E2E_BASE_URL"
+  # E2E_RESET_DB makes the test suite itself reset the database before the first
+  # test (see e2e/src/test/kotlin/DbReset.kt and DbResetExtension.kt), so callers
+  # no longer need to invoke reset_db() separately beforehand.
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:smokeTest
+}
+
+run_regression_tests() {
+  echo "==> Running E2E regression tests against $E2E_BASE_URL"
+  # E2E_RESET_DB makes the test suite itself reset the database before the first
+  # test (see e2e/src/test/kotlin/DbReset.kt and DbResetExtension.kt), so callers
+  # no longer need to invoke reset_db() separately beforehand.
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:regressionTest
+}
+
+run_user_journey_tests() {
+  echo "==> Running E2E user-journey tests against $E2E_BASE_URL"
+  # E2E_RESET_DB makes the test suite itself reset the database before the first
+  # test (see e2e/src/test/kotlin/DbReset.kt and DbResetExtension.kt), so callers
+  # no longer need to invoke reset_db() separately beforehand.
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:userJourneyTest
+}
+
+run_workflow_tests() {
+  echo "==> Running E2E workflow tests against $E2E_BASE_URL"
+  # E2E_RESET_DB makes the test suite itself reset the database before the first
+  # test (see e2e/src/test/kotlin/DbReset.kt and DbResetExtension.kt), so callers
+  # no longer need to invoke reset_db() separately beforehand.
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:workflowTest
+}
+
+run_security_tests() {
+  echo "==> Running E2E security tests against $E2E_BASE_URL"
+  # E2E_RESET_DB makes the test suite itself reset the database before the first
+  # test (see e2e/src/test/kotlin/DbReset.kt and DbResetExtension.kt), so callers
+  # no longer need to invoke reset_db() separately beforehand.
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:securityTest
+}
+
+run_performance_tests() {
+  echo "==> Running E2E performance tests against $E2E_BASE_URL"
+  # E2E_RESET_DB makes the test suite itself reset the database before the first
+  # test (see e2e/src/test/kotlin/DbReset.kt and DbResetExtension.kt), so callers
+  # no longer need to invoke reset_db() separately beforehand.
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:performanceTest
+}
+
 case "${1:-}" in
   build) build_images ;;
   build-frontend)
@@ -139,6 +193,12 @@ case "${1:-}" in
   down) down ;;
   reset-db) reset_db ;;
   test) run_tests ;;
+  smokeTest) run_smoke_tests ;;
+  regressionTest) run_regression_tests ;;
+  userJourneyTest) run_user_journey_tests ;;
+  workflowTest) run_workflow_tests ;;
+  securityTest) run_security_tests ;;
+  performanceTest) run_performance_tests ;;
   run)
     build_images
     up
