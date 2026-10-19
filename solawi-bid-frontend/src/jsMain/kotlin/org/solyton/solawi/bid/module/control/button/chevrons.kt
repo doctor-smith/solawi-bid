@@ -28,8 +28,9 @@ val close: Reader<Lang.Block, String> = Reader {block -> block["open"]}
 fun CardChevrons(
     texts: Source<Lang.Block> = Source{cardChevronTexts()},
     deviceType: Source<DeviceType>,
-    opened: Storage<Boolean>
-) = CardChevrons(texts, deviceType, opened.read()) {
+    opened: Storage<Boolean>,
+    dataId: String? = null,
+) = CardChevrons(texts, deviceType, opened.read(), dataId) {
     opened.write(it)
 }
 
@@ -38,6 +39,7 @@ fun CardChevrons(
     texts: Source<Lang.Block> = Source{cardChevronTexts()},
     deviceType: Source<DeviceType>,
     opened: Boolean,
+    dataId: String? = null,
     setOpened: (Boolean) -> Unit
 ) = Div({
     style {
@@ -50,6 +52,7 @@ fun CardChevrons(
             Color.white,
             texts * open,
             deviceType,
+            dataId = dataId,
         ) {
             setOpened(false)
         }
@@ -61,6 +64,7 @@ fun CardChevrons(
             Color.white,
             texts * close,
             deviceType,
+            dataId = dataId,
         ) {
             setOpened(true)
         }

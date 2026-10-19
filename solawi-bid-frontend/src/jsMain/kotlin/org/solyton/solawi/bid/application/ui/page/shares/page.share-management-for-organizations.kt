@@ -370,7 +370,8 @@ fun ShareTypeManagement(
                     CardChevrons(
                         texts = Source{cardChevronTexts()},
                         deviceType = deviceType,
-                        opened = opened
+                        opened = opened,
+                        dataId = "shares.page.share-type.chevron",
                     ) {
                         opened = it
                     }
@@ -520,6 +521,7 @@ fun ShareOfferManagement(
                         CardChevrons(
                             texts = Source { cardChevronTexts() },
                             deviceType = deviceType,
+                            dataId = "shares.page.share-offer.chevron",
                             opened = opened
                         ) {
                             opened = it
@@ -976,7 +978,8 @@ fun ShareSubscriptionManagement(
                     CardChevrons(
                         texts = Source{ cardChevronTexts() },
                         deviceType = deviceType,
-                        opened = opened
+                        opened = opened,
+                        dataId = "shares.page.share-subscription.chevron",
                     ) {
                         opened = it
                     }

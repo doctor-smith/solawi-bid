@@ -24,3 +24,24 @@ setup-local.sql
 !setup.sql
 
 e2e/loggedInState.json
+
+solawi-bid-frontend/src/main/resources/i18n/de.bak
+solawi-bid-frontend/src/main/resources/i18n/en.bak
+/solawi-bid-backend/src/main/resources/GA-4-2627-04-PAIN_2026-05-01.xml
+/solawi-bid-backend/src/main/resources/GA-6-2627-04-PAIN_2026-05-01.xml
+/solawi-bid-backend/src/main/resources/GA-7-2627-04-PAIN_2026-05-01.xml
+/solawi-bid-backend/src/main/resources/MB-3-2627-PAIN_2026-05-02.xml
+/solawi-bid-backend/src/main/resources/MB-6-2627-PAIN_2026-05-02.xml
+
+/.continue/mcpServers/new-mcp-server.yaml
+/infrastructure/database/dumps/clean-dump-2025-12-30.sql
+/infrastructure/database/dumps/dump-clean.sql
+/infrastructure/database/dumps/dump-solawi-bid-2025-08-12.sql
+/infrastructure/database/dumps/dump-solawi-bid-2025-12-30.sql
+/infrastructure/database/dumps/dump-solawi-bid-202603041501.sql
+/infrastructure/database/dev-backup-solawi-bid-202603211725.sql
+/infrastructure/database/prod-backup-solawi-bid-202603201811.sql
+/infrastructure/database/prod-backup-solawi-bid-202603211245.sql
+/infrastructure/database/prod-backup-solawi-bid-202603211726.sql
+/infrastructure/database/solawi-bid-20260501083706.sql
+!/infrastructure/database/setup.sql

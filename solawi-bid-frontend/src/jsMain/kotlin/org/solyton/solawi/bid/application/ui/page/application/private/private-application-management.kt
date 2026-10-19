@@ -26,7 +26,6 @@ import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.data.env.i18nEnvironment
-import org.solyton.solawi.bid.application.data.transform.application.import
 import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
@@ -254,6 +253,7 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) {
                                     Color.white,
                                     texts * Component.listOfApplications * Component.actions * subComp("connectApplication") * tooltip,
                                     device,
+                                    dataId = "private-application-management.page.application.${application.name}.connect-button",
                                 ) {
                                     modals.showConnectApplicationToOrganizationModule(
                                         texts = connectDialogTexts,

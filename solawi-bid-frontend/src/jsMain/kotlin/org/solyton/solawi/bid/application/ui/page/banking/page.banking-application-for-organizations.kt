@@ -941,6 +941,7 @@ fun FiscalYears(
                             color = Color.black,
                             bgColor = Color.white,
                             deviceType = deviceType,
+                            dataId = "banking.page.fiscal-years.create-button",
                         ) {
                             bankingApplicationModals.showUpsertFiscalYearsModal(
                                 bankingApplicationStorage,
@@ -965,7 +966,8 @@ fun FiscalYears(
                     CardChevrons(
                         texts = Source{cardChevronTexts()},
                         deviceType = deviceType,
-                        opened = opened
+                        opened = opened,
+                        dataId = "banking.page.fiscal-years.chevron",
                     ) {
                         opened = it
                     }
