@@ -91,6 +91,7 @@ fun DistributionManagementForOrganizationsPage(storage: Storage<Application>, pr
                             color = Color.black,
                             bgColor = Color.white,
                             deviceType = deviceType,
+                            dataId = "distribution.page.distribution-point.create-button",
                         ) {
                             distributionManagementModals.showUpsertDistributionPointModal(
                                 distributionManagementStore,

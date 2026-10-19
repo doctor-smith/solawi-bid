@@ -77,6 +77,7 @@ fun ConnectApplicationToOrganizationModal(
                     iconContent =  { open ->
                         SimpleUpDown(open)
                     },
+                    dataId = "connect-application-to-organization.modal.organization-dropdown",
                 ) {
                     organizationId = it.value
                     setOrganizationId(it.value)
