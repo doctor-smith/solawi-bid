@@ -1,6 +1,5 @@
 package org.solyton.solawi.bid.module.user.component.modal
 
-import org.solyton.solawi.bid.module.user.component.form.UserProfileForm
 import androidx.compose.runtime.Composable
 import org.evoleq.compose.Markup
 import org.evoleq.compose.modal.*
@@ -14,6 +13,7 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.jetbrains.compose.web.dom.ElementScope
+import org.solyton.solawi.bid.module.user.component.form.UserProfileForm
 import org.solyton.solawi.bid.module.user.data.profile.UserProfile
 import org.w3c.dom.HTMLElement
 
@@ -32,6 +32,7 @@ fun UpsertUserProfileModal(
     cancel: ()->Unit,
     update: ()->Unit,
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
+    dataId = "upsert-user-profile",
     type = ModalType.Dialog,
     id = id,
     modals = modals,

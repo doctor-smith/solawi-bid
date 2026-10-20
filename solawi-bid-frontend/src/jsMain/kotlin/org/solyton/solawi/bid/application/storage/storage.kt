@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.application.storage
 
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.modal.Modals
 import org.evoleq.compose.storage.onInit
 import org.evoleq.math.state.runOn
 import org.evoleq.optics.storage.ActionEnvelope
@@ -27,6 +28,8 @@ fun Storage(): Storage<Application> {
         userData = User()
     ))}
 
+    var modals by remember { mutableStateOf<Modals<Int>>(mapOf()) }
+
     // store context outside the rendering loops
     var context: Context = Context()
 
@@ -35,6 +38,7 @@ fun Storage(): Storage<Application> {
 
     return Storage<Application>(
         read = { application.copy(
+            modals = modals,
             context = context,
             processes = processes
         ) },
@@ -42,6 +46,9 @@ fun Storage(): Storage<Application> {
             newApplication -> when{
                 newApplication.context != context -> {
                     context = newApplication.context
+                }
+                newApplication.modals !== modals -> {
+                    modals = newApplication.modals
                 }
                 newApplication.processes !== processes -> {
                     processes.registry.clear()

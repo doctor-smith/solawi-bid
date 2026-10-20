@@ -1,20 +1,32 @@
 ---
-Last updated: 2026-10-19
-Phase: 1 (Audit) complete; Phase 2 (Report & Ask) in progress — building the fixture
-prerequisite chain (organization -> banking -> fiscal year -> share management) for
-the first workflow test (B1).
+Last updated: 2026-10-22
+Phase: 1 (Audit) complete; Phase 2 (fixture-chain build-out) complete and VERIFIED —
+`ShareSubscriptionApprovalWorkflowTest` (workflow B1) now passes end-to-end in a real
+`./script/e2e-local.sh devTest` run (1 test, 0 failures, 0 errors, ~95s). All P0 blockers
+from the previous session (`FY-1`, `FY-2`, the legal-entity/creditor-id context-id
+mismatch, and the uncaught client-side crash) are resolved. Phase 3 (remaining
+workflows B2-G2) has not started yet.
 ---
 
 # Share Management E2E — Progress & Audit
 
 ## Current Phase / Workflow
 
-**Phase 1 (Audit)** is complete (see matrix below). **Phase 2** is in progress: before
-any shares workflow can be tested, a fully isolated test organization must be created
-and wired up with Banking (for a fiscal year) and Share Management (to create share
-types/offers). This setup chain is being built incrementally, with minimal additive
-`data-id` instrumentation added to production UI code where missing (approved by the
-user, see "Decisions Confirmed by User").
+**Phase 1 (Audit)** is complete (see matrix below). **Phase 2 is now complete and
+verified**: `ShareSubscriptionApprovalWorkflowTest.kt` (the `@Develop @Workflow`-tagged
+test, workflow B1) builds a fully isolated fixture organization from scratch —
+organization creation, booking Banking/Distribution/Share Management, granting every
+role on each application context, legal-entity + creditor-ID creation (as a two-step
+create-then-edit flow, confirmed by the user to be the only supported production flow),
+fiscal-year creation, share type/offer creation, distribution-point creation, member
+subscription creation, and the final provider approval via Bulk-Edit — and **the whole
+chain now passes in a real local run** (confirmed independently, see "Environment /
+Build State"). This was a joint effort: the user fixed several issues directly in the
+IDE (role-assignment, missing form fields, navigation stability, the `FY-1` year-0
+default bug, a modal-identity/storage fix) while this session fixed the
+legal-entity/creditor-identifier context-id mismatch (`CTX-1`/`CTX-2` below) and
+updated the test to match the confirmed two-step legal-entity flow. See the Known
+Issues Register for the full list.
 
 ## Files Inspected
 
@@ -34,34 +46,112 @@ user, see "Decisions Confirmed by User").
 
 ## Files Changed
 
-- Created this progress file. No other files changed in Phase 1.
+- Phase 1: created this progress file. No other files changed.
+- Phase 2 (this and prior sessions): additive `data-id` instrumentation across several
+  application/banking/organization-module UI files (see "Frontend `data-id`
+  instrumentation added so far" below for the full list with exact strings).
+- `e2e/src/test/kotlin/org/solyton/solawi/bid/module/shares/ShareSubscriptionApprovalWorkflowTest.kt`
+  (new) — the fixture-building workflow test itself (see "Tests Implemented").
+- `e2e/src/test/kotlin/util.kt` (modified by the user) — `clickOn`/`waitForLoadingToFinish`
+  switched from one-shot Playwright `waitFor` to auto-retrying `assertThat(locator)...`
+  assertions, to stabilize flaky test runs.
+- `.junie/progress/share-managemet-e2e-progress-user.md` (new, added by the user) — the
+  user's own working notes; kept as-is, untouched, and consolidated (not duplicated)
+  into the "Known Issues Register" below.
 
 ## Tests Implemented
 
-None yet (Phase 1 is audit-only).
+- `ShareSubscriptionApprovalWorkflowTest` (`@Develop`, `@Workflow`) — covers workflow B1
+  (`PendingActivation` →(PROVIDER, NO_PAYMENT_MANDATE_REQUIRED)→ `Subscribed`), building
+  its own fixture organization from scratch (steps 1-7 listed under "Fixture prerequisite
+  chain" below). **Implementation complete AND verification complete** — the full test
+  passes end-to-end in a real local run (see "Environment / Build State" for the exact
+  run). This is the first shares e2e test to go green.
+- An older, URL-navigation-based version of the same test function is kept commented out
+  in the same file for reference (superseded by the click-driven `@Develop` version).
 
-## Exact Test Commands Identified (not yet executed,)
+## Exact Test Commands Identified
 
-Possible commands: prefer local docker e2e env!!! 
+Prefer the local docker e2e env (`./script/e2e-local.sh`) over calling `:e2e:test` directly
+(the latter would affect the development database, per project guidelines).
 
-- Narrowest: `./gradlew :e2e:test --tests "org.solyton.solawi.bid.module.shares.*"` (requires `E2E_BASE_URL`, `TEST_USER`, `TEST_USER_PASSWORD`, optionally `E2E_RESET_DB`).
-- Tag-filtered (whole `@Workflow` suite): `./gradlew :e2e:workflowTest` or `./script/e2e-local.sh workflowTest` (resets DB first).
+- Narrowest, whole-module: `./gradlew :e2e:test --tests "org.solyton.solawi.bid.module.shares.*"`
+  (requires `E2E_BASE_URL`, `TEST_USER`, `TEST_USER_PASSWORD`, optionally `E2E_RESET_DB`) —
+  not recommended standalone; use the script instead.
+- Ad-hoc single-test iteration: `./script/e2e-local.sh filterTest "<gradle-test-pattern>"`.
+- Tag-filtered: `./script/e2e-local.sh workflowTest` (whole `@Workflow` suite) or
+  `./script/e2e-local.sh devTest` (just `@Develop`-tagged tests, the narrowest option
+  while this single test is being iterated on) — both reset the e2e DB first.
+  **Actually run** (see "Environment / Build State" below): `./script/e2e-local.sh devTest`,
+  2026-10-22 08:07 UTC, 95.6s, **0 failures — fully passing**.
 - Local docker E2E environment lifecycle: `./script/e2e-local.sh build|up|down|test`.
 
 ## Environment / Build State
 
-- `org.gradle.jvmargs=-Xmx2048m` in root `gradle.properties`; **no** per-module (`e2e`) JVM heap override in `e2e/build.gradle.kts`. No heap errors encountered yet (no tests were run).
-- The local E2E docker-compose environment (`docker-compose.e2e.local.yml`) is **not currently running** (`docker compose ps` returned no containers). Starting it requires `script/e2e-local.sh build` (builds `solawi-bid/backend:local` and `solawi-bid/frontend:local` images) then `up` — this is a non-trivial, potentially slow operation that was **not** performed in Phase 1 per the "don't run the full suite / don't do expensive setup speculatively" rule.
-- `git status --porcelain` shows only pre-existing untracked files unrelated to this effort (DB dumps under `infrastructure/database/`, generated PAIN XML files under `solawi-bid-backend/src/main/resources/`, `.bak` i18n files, `.continue/`). Nothing in `e2e/` or the shares frontend module is modified. Nothing needs to be preserved/stashed.
+- `org.gradle.jvmargs=-Xmx2048m` in root `gradle.properties`; **no** per-module (`e2e`) JVM heap override in `e2e/build.gradle.kts`. No heap errors encountered in any run so far.
+- **Update 2026-10-21**: the local E2E docker-compose environment *has* since been built and started (`./script/e2e-local.sh build` + `up`), and the `developmentTest` Gradle task (filters by the new `@Develop` tag, see `e2e/build.gradle.kts:167-178` and `script/e2e-local.sh:182-188,210`) was actually run against it:
+  - Command: `./script/e2e-local.sh devTest` (resets the e2e DB first, then runs only `@Develop`-tagged tests).
+  - Result: 2026-10-20 20:18, runtime ~80s, **1 test, 1 failure** —
+    `org.solyton.solawi.bid.module.shares.ShareSubscriptionApprovalWorkflowTest` >
+    "provider approves pending subscription without payment mandate (develop)".
+  - Failure point: `ShareSubscriptionApprovalWorkflowTest.kt:323`, inside
+    `createFiscalYearViaAdminUi` — `Locator expected not to be visible, waiting for
+    locator("[data-id='banking.upsert-fiscal-years.modal']")` ... `unexpected value
+    "visible"`, i.e. the fiscal-year modal's submit button does not close the modal.
+    Root cause: `FY-1` in the Known Issues Register below.
+  - Everything before that point — organization creation, booking
+    Banking/Distribution/Share Management, granting every role on each application
+    context, and legal-entity + creditor-ID creation — **passed**.
+  - Raw results: `e2e/build/test-results/developmentTest/TEST-org.solyton.solawi.bid.module.shares.ShareSubscriptionApprovalWorkflowTest.xml`;
+    diagnostics: `e2e/build/reports/tests/screenshots/{failure.png,failure-console.log,failure-network.log,failure.html}`.
+- `git status --porcelain` additionally shows (beyond the pre-existing untracked files noted previously): `e2e/src/test/kotlin/org/solyton/solawi/bid/module/shares/ShareSubscriptionApprovalWorkflowTest.kt` (new), `e2e/src/test/kotlin/util.kt` (modified — `clickOn`/`waitForLoadingToFinish` now use `assertThat(locator)...` instead of one-shot `waitFor`), and `.junie/progress/share-managemet-e2e-progress-user.md` (new, the user's own working notes — kept as-is, untouched). These are all tracked as part of this effort, not stray files.
+- **Update 2026-10-21, later in the same session**: after fixing `FY-1`, rebuilt the frontend
+  image (`./script/e2e-local.sh build-frontend`, `BUILD SUCCESSFUL`) and re-ran
+  `./script/e2e-local.sh devTest` once more:
+  - Result: 2026-10-21 08:20 UTC, runtime 80.6s, **1 test, 1 failure** — same test, same
+    assertion line (`ShareSubscriptionApprovalWorkflowTest.kt:323`), but a **different
+    underlying symptom**: the `AssertionFailedError` itself still reports the
+    `banking.upsert-fiscal-years.modal` locator resolving to **9** elements (matching the
+    very first failure seen before any fix), yet the HTML page snapshot saved moments
+    later by the test's own failure-diagnostics code shows only **1** matching element,
+    fully rendered and visible, with no stray/overlapping error dialog. See `FY-2` in the
+    Known Issues Register.
+  - Confirms `FY-1` (the year-0 default) is a real, fixed bug, but it was **not** the
+    (or not the only) cause of the modal failing to close — a second, deeper issue
+    remains open and needs live diagnosis before it can be fixed.
+- **Update 2026-10-22 (fully passing run)**: between sessions, the user fixed `FY-2`
+  directly (a modal-identity fix — giving each rendered modal a stable Compose `key`
+  based on its own id, plus separating the `modals` list out of the main `Application`
+  state in `storage.kt` so a modal-list change doesn't require a full-state write), and
+  this session fixed a related context-id mismatch in legal-entity/creditor-identifier
+  handling (see `CTX-1`/`CTX-2` below) plus updated the test's legal-entity fixture step
+  to match the only supported production flow (create legal entity first, then edit it
+  to add the creditor id). Re-ran `./script/e2e-local.sh devTest`:
+  - Result: 2026-10-22 08:07 UTC, runtime **95.6s**, **1 test, 0 failures, 0 errors —
+    fully passing**.
+  - The full fixture chain now completes successfully end-to-end: organization
+    creation → booking Banking/Distribution/Share Management → granting roles →
+    legal-entity + creditor-ID creation (two-step) → fiscal-year creation → share
+    type/offer creation → distribution-point creation → member subscription creation
+    (starts `PENDING_ACTIVATION`) → Bulk-Edit approval → subscription becomes
+    `SUBSCRIBED`.
+  - Three pre-existing, already-deferred background errors (`FE-1`/`FE-2`/`FE-3`,
+    403/404/404 on `bank-accounts/all`, `legal-entities/personal`,
+    `creditors/identifiers/by-legal-entity`) still appear in `failure-network.log`-style
+    diagnostics but do **not** block the test — confirmed benign/cosmetic for a
+    freshly created organization with no legal entity yet at the time those specific
+    calls fire.
+  - Raw results: `e2e/build/test-results/developmentTest/TEST-org.solyton.solawi.bid.module.shares.ShareSubscriptionApprovalWorkflowTest.xml`
+    (`tests="1" failures="0" errors="0" time="95.645"`).
 
 ## Coverage Matrix
 
 | # | Workflow | Expected transition | Existing test coverage | Verification status | Blockers | Next action |
 |---|---|---|---|---|---|---|
-| A1 | Share type creation | n/a (setup) | None | Not verified | None — `data-id`s exist (`shares.page.share-type.create-button`, etc.) | Implement as fixture helper, not a standalone test |
-| A2 | FY-specific share offer creation | n/a (setup) | None | Not verified | None — `data-id`s exist (`shares.page.share-offer.create-button`, fiscal-year/share-type/pricing dropdowns, price input) | Implement as fixture helper |
-| A3 | Member subscribes to offer | → `PendingActivation` | None | Not verified | None — `shares.page.share-subscription.create-button` + `modal.share-subscriptions.upsert.kt` have `data-id`s | Implement as fixture helper |
-| B1 | FY1 approval, no mandate | `PendingActivation` →(PROVIDER, NO_PAYMENT_MANDATE_REQUIRED)→ `Subscribed` | None | Not verified | None — reachable via Bulk-Edit "Change status" (`shares.modal.bulk-edit.status-dropdown`); PROVIDER permission exists for this transition | **Highest-value, safely implementable first test** |
+| A1 | Share type creation | n/a (setup) | `ShareSubscriptionApprovalWorkflowTest.kt` (`createShareTypeViaAdminUi`) | **Verified** — passes as part of the full B1 run | None | Covered as a fixture helper; a dedicated standalone test is not planned |
+| A2 | FY-specific share offer creation | n/a (setup) | `ShareSubscriptionApprovalWorkflowTest.kt` (`createShareOfferViaAdminUi`) | **Verified** — passes as part of the full B1 run | None | Covered as a fixture helper |
+| A3 | Member subscribes to offer | → `PendingActivation` | `ShareSubscriptionApprovalWorkflowTest.kt` (`createShareSubscriptionViaAdminUi`) | **Verified** — passes as part of the full B1 run, subscription confirmed `PENDING_ACTIVATION` | None | Covered as a fixture helper |
+| B1 | FY1 approval, no mandate | `PendingActivation` →(PROVIDER, NO_PAYMENT_MANDATE_REQUIRED)→ `Subscribed` | `ShareSubscriptionApprovalWorkflowTest.kt` | **Implementation complete AND verification complete** — full test passes (0 failures, 95.6s, 2026-10-22) | None | **Done.** Next: pick the next-highest-value workflow (e.g. B2 payment-mandate authorization, or D1 rollover) reusing this fixture chain |
 | B2 | Payment-mandate authorization | `PendingActivation`→`AwaitingAhcAuthorization`→`Subscribed` | None | Not verified | PROVIDER permission exists for both hops; SEPA mandate attach button has `data-id`; needs a configured legal entity/bank account in the env (per existing plan's "Risks" section) | Verify SEPA precondition in target env before implementing |
 | B3 | Failed authorization | `AwaitingAhcAuthorization`→(PROVIDER/SYSTEM, AUTHORIZATION_FAILED)→`Suspended` | None | Not verified | PROVIDER permission exists | Implementable after B2 |
 | B4 | Auction clearance + final approval | `PendingActivation`→`ClearedForAuction`→`Subscribed` | None | Not verified | PROVIDER permission exists for both hops | Implementable |
@@ -89,6 +179,34 @@ Possible commands: prefer local docker e2e env!!!
 | G2 | Expired → PendingActivation | `Expired`→(**USER**, NEW_PERIOD)→`PendingActivation` | None | Not verified | USER-only, same actor-hardcoding issue as B5/C1 | **STOP — ask user** |
 
 **Not e2e-testable without time manipulation** (confirmed consistent between docs and state machine, explicitly out of scope per existing plan and user guidelines): `ActivationRejected→Expired` (REJECTION_NOT_RESOLVED), `Paused→Expired` (PERIOD_END), `Suspended→Expired` (UNRESOLVED_PERIOD_END), `Subscribed→Expired` when driven by SYSTEM (SUBSCRIPTION_END, though a PROVIDER-driven variant of this same transition *is* reachable and in scope, see C-group).
+
+## Known Issues Register
+
+Consolidates `share-managemet-e2e-progress-user.md` (the user's own working notes, kept
+as-is, untouched) with this session's own findings. Priority follows the triage done
+this session: **P0** = actively blocking current progress, high-confidence root cause;
+**P1** = real friction, safe to address now; **P2** = deferred by the user ("next
+sprint"); **P3** = needs more live-environment diagnosis before any fix.
+
+| ID | Area | Description | Priority | Status | Next action |
+|---|---|---|---|---|---|
+| FY-1 | Frontend (source code) | `UpsertFiscalYearsModal` silently defaulted the untouched start/end date field to `FiscalYear.default` (year 0/1, `fiscal-year.kt:16`) | P0 | **Fixed** — both `onInput` handlers now fall back to `guessedNextFiscalYear` instead of `FiscalYear.default`; also fixed a related display bug where the End field's placeholder incorrectly showed `guessedNextFiscalYear.start` (`banking.upsert-fiscal-years-modal.kt:109-146`) | Done; see `FY-2` for the real remaining blocker uncovered by re-running after this fix |
+| FY-2 | Frontend (source code) | Even after `FY-1`, the fiscal-year modal (and other modals) could stay open after a successful submit, or fail to open at all, due to two compounding issues: (1) rendered modals in `ModalLayer`'s `roots().forEach { ... }` had no stable Compose identity across recompositions, and (2) the `modals` list lived inside the single monolithic `Application` state in `storage.kt`, so changing it required a full-state `write()`, racing with other in-flight recompositions | P0 | **Fixed by user** — (1) `evoleq/.../org/evoleq/compose/modal/modal.kt`: wrapped each root modal's `component()` call in `key(root.id) { ... }`; (2) `storage.kt`: pulled `modals` out into its own `remember { mutableStateOf(...) }`, read/written independently of the rest of `Application` (reference-identity check: `newApplication.modals !== modals`) | Done — confirmed fixed by the fully-passing 2026-10-22 run |
+| CTX-1 | Frontend (source code) | `createCreditorIdentifier`/`updateCreditorIdentifier` dispatches in `page.banking-application-for-organizations.kt`'s `LegalEntity` composable passed `legalEntityState.legalEntityId` (the legal-entity row's own database id) as the permission-context key, but Banking's permission contexts are keyed by the **organization/provider id** everywhere else in the same file (e.g. `createFiscalYear(providerId.value, ...)`) — causing the backend to reject these calls with "No such context" for any freshly created organization | P0 | **Fixed this session** — both dispatches now also pass `providerId` alongside the real `legalEntityId` (backend/frontend action signatures extended to carry both ids: one for context resolution, one for the actual DB lookup), implemented jointly with the user | Done — confirmed fixed by the fully-passing 2026-10-22 run |
+| CTX-2 | Frontend (source code) | The `GET /banking/creditors/identifiers/by-legal-entity` read route derived its permission context directly from the `legal_entity` query parameter, which (after `CTX-1`'s partial fix) could be the real legal-entity id rather than the organization id, still causing "No such context" 500s on this one read endpoint | P0 | **Fixed by user** — the route/action now also accepts the `provider` id and uses it for context derivation, matching the create/update routes | Done — confirmed fixed by the fully-passing 2026-10-22 run |
+| LE-1 | E2E test code / confirmed production flow | The "create legal entity" dialog lets the user type a creditor id into the same form, but its `onOk` handler never dispatched creating it (only the separate "edit" dialog does) — attempting to fix this naively would require a legal-entity id that isn't known client-side until the create call completes | P1 | **Resolved by decision, not a code fix** — the user confirmed creditor-id entry is only ever supported via a later "edit" step, never combined with initial creation; `createLegalEntityWithCreditorIdViaAdminUi` in the test was updated to a two-step create-then-edit flow to match | Done |
+| E2E-1 | E2E test code | Role assignment via the "manage permissions" modal did not work at all | P0 | **Fixed by user** — `grantOwnerPermissionViaAdminUi` now only checks *unchecked* boxes via `input[type='checkbox'][data-id^='manage-user-permissions.modal.role.']`, with a sanity check that at least one exists | None — monitor in future runs |
+| E2E-2 | E2E test code | Some form fields were not filled in at all in certain flows (notably the legal-entity address form) | P0 | **Fixed by user** — `createLegalEntityWithCreditorIdViaAdminUi` now fills `#recipientName`/`#organizationName`/`#addressLine1`/`#addressLine2`/`#postalCode`/city | None — monitor in future runs |
+| E2E-3 | E2E test code | No ad-hoc test-name/class filtering in `./script/e2e-local.sh` (only whole-tag commands like `devTest`/`workflowTest`) | P1 | **Fixed** — new `filterTest <pattern>` command added, forwarding to `./gradlew :e2e:test --tests "<pattern>"` with the same env vars as the other commands | Done |
+| E2E-4 | E2E test code | `failure-network.log` entries capture the failing request's own URL but not the page URL the test was on when it failed | P1 | **Fixed** — `withFailureDiagnostics` now appends a `source-page-url: ${page.url()}` line to each logged entry | Done |
+| E2E-5 | E2E test code | User selection in `UpsertShareSubscriptionModal` is unreliable in Playwright — the click sometimes doesn't register | P3 | Partially mitigated — `assertThat(selectedUser).hasValue(username)` moved right after the click | Keep monitoring; no further change until observed failing live |
+| FE-1 | Frontend (deferred) | `GET banking/bank-accounts/all` → 403 Access denied | P2 | Deferred to next sprint (per user) | Permission check fix, out of scope here |
+| FE-2 | Frontend (deferred) | `GET banking/legal-entities/personal` → 404 No such legal entity party | P2 | Deferred to next sprint (per user) | Permission check fix, out of scope here |
+| FE-3 | Frontend (deferred) | `GET banking/creditors/identifiers/by-legal-entity` → 500 "No such context" | P2 | Deferred to next sprint (per user) | Render-guard so the page only renders once a context entity is stored, out of scope here |
+| UNK-1 | Unclear blame | General e2e flakiness: tests fail intermittently on fine production code; removing debug screenshots made failures *more* frequent (timing/race sensitivity, not a deterministic bug) | P3 | Open, needs live reruns to correlate | Continue the `assertThat(...)` auto-retry migration already underway; do not blindly re-add screenshots or arbitrary waits |
+| UNK-2 | Unclear blame | Compose-for-Web form rerendering causes Playwright race conditions not seen in production | P3 | Open | No blanket fix proposed; same direction as UNK-1 |
+| CLARIFY-1 | Needs clarification | "Page Reload does not really work on all pages" — data missing after full refresh vs. present when navigating by clicking | P3 | Needs clarification | Needs a concrete reproducing page/scenario from the user before any fix is attempted |
+| CLARIFY-2 | Needs clarification | Using the dedicated Application card (Banking/Shares/Distribution) to reach the org-application page leads to an incomplete store "in some cases" | P3 | Needs clarification (user says "clarify which") | Needs the user to specify a concrete repro before any fix is attempted |
 
 ## Decisions Confirmed by User
 
@@ -208,11 +326,90 @@ issues, ~26s).
 
 2. **Starting the local E2E environment**: `docker-compose.e2e.local.yml` is not currently running, and no shares tests exist yet to run. Before I can execute even the narrowest test command, `script/e2e-local.sh build` (docker image builds) and `up` are needed, which is a non-trivial, potentially slow operation. I have not started this yet and will only do so once the first test (see below) is implemented, to avoid idle/expensive environment time — flagging here in case you'd rather I start it now in parallel.
 
-## Highest-Value Next Action (pending the above answers)
+## Highest-Value Next Action
 
-Implement `test_newSubscription_noMandate_becomesSubscribed` (FY1 happy path, no SEPA
-mandate; row B1 above) first: it requires no USER-actor transition, has full `data-id`
-coverage on every control it needs (share type, share offer, subscription creation,
-bulk-edit status change to `Subscribed`), and matches the existing plan's Step 4 first
-test case. This does not depend on the answer to Blocker #1, so it can proceed once
-Blocker #2 (environment startup) is confirmed.
+**Update 2026-10-22**: B1 is done (implemented and verified). Blocker #1 above (the
+Bulk-Edit actor-hardcoding bug blocking C1/B5/G2/USER-only transitions) is still open
+and unchanged — it will need a decision before any of those specific workflows can be
+implemented. The next highest-value, **not** blocked by it: **B2 (payment-mandate
+authorization)** or **D1 (FY1→FY2 rollover)**, both PROVIDER-driven and reusable on top
+of the now-working fixture chain. Recommend picking up B2 next, since D1's rollover
+needs a second fiscal year/share offer (FY2) as an extra prerequisite on top of B1's
+fixture.
+
+## Session Log
+
+One dated entry per work session, newest first, so future sessions don't have to
+re-derive history from git diffs alone.
+
+### 2026-10-22
+
+- User confirmed the first shares e2e test (`ShareSubscriptionApprovalWorkflowTest`,
+  workflow B1) is passing completely after further fixes made directly in the IDE,
+  including a fix for `FY-2` (giving each modal a stable Compose `key` based on its own
+  id in `evoleq/.../modal.kt`, and separating the `modals` list out of the monolithic
+  `Application` state in `storage.kt` so modal-list changes don't require a full-state
+  write — see `facts.storage.md`).
+- This session additionally diagnosed and fixed a context-id mismatch
+  (`CTX-1`/`CTX-2`): Banking's `createCreditorIdentifier`/`updateCreditorIdentifier`
+  dispatches and the `by-legal-entity` creditor-identifier read route were using the
+  legal entity's own database id for permission-context resolution instead of the
+  organization/provider id used everywhere else in the Banking module, causing
+  "No such context" errors for freshly created organizations — fixed jointly with the
+  user by passing both ids explicitly (one for context, one for the DB lookup).
+- Confirmed with the user that entering a creditor id together with a brand-new legal
+  entity in one combined step is **not** a supported production flow; updated
+  `createLegalEntityWithCreditorIdViaAdminUi` in the test to the correct two-step
+  create-then-edit flow (logged as `LE-1`, resolved by decision).
+- Re-ran `./script/e2e-local.sh devTest` independently to verify: **1 test, 0
+  failures, 0 errors, 95.6s** — `ShareSubscriptionApprovalWorkflowTest` now passes
+  end-to-end for the first time.
+- Updated this file throughout: header/phase summary, "Tests Implemented", "Exact Test
+  Commands", "Environment / Build State", Coverage Matrix rows A1-A3/B1, the Known
+  Issues Register (`FY-2`/`CTX-1`/`CTX-2`/`LE-1` all marked fixed/resolved), and this
+  "Highest-Value Next Action" section.
+- **Next action**: pick up workflow **B2** (payment-mandate authorization) as the next
+  test, reusing the now-verified fixture chain; confirm the SEPA/bank-account
+  precondition in the test environment first (per the existing plan's "Risks" section)
+  before implementing.
+
+### 2026-10-21
+
+- Reviewed the working tree and both progress files against the actual latest
+  `developmentTest` run artifacts (JUnit XML + `failure-network.log`/`failure.png`,
+  dated 2026-10-20 20:18) to confirm what the user had changed/fixed directly in the
+  IDE since the last agent session.
+- Confirmed: role-assignment fix and missing-form-fields fix (both now **Fixed by
+  user**, see `E2E-1`/`E2E-2` in the Known Issues Register), click-driven navigation
+  (new `@Develop`-tagged test function), `assertThat(...)`-based stabilization in
+  `util.kt`, and the context-header addition to `failure-network.log` are all present
+  in the working tree as described by the user.
+- New finding this session: identified the root cause of the current blocker (`FY-1`)
+  via read-only inspection of `banking.upsert-fiscal-years-modal.kt` and `fiscal-year.kt`
+  — the untouched date field silently defaults to a year-0/year-1 value, likely
+  triggering a Compose-Web remount race that leaves the fiscal-year modal's submit
+  non-functional.
+- Triaged all open items (this session's and the user's) into a prioritized table and
+  consolidated everything into this file's new "Known Issues Register".
+- Updated the Coverage Matrix (rows A2, B1), "Environment / Build State" (recorded the
+  actual `developmentTest` run instead of the stale "not yet executed" note), "Files
+  Changed" and "Tests Implemented" (both were stale "none yet" placeholders).
+- Fixed `FY-1` in `banking.upsert-fiscal-years-modal.kt` (both date fields now fall back
+  to `guessedNextFiscalYear` instead of the year-0 `FiscalYear.default`, plus a related
+  End-field display bug), confirmed via `:solawi-bid-frontend:compileKotlinJs`.
+- Added the `filterTest <pattern>` command to `script/e2e-local.sh` (`E2E-3`, fixed) and
+  a `source-page-url` field to every `failure-network.log` entry in
+  `ShareSubscriptionApprovalWorkflowTest.kt`'s `withFailureDiagnostics` (`E2E-4`, fixed);
+  both verified via `bash -n`/`:e2e:compileTestKotlin`.
+- Rebuilt the frontend image and re-ran `./script/e2e-local.sh devTest`: the test still
+  fails at the same line (`ShareSubscriptionApprovalWorkflowTest.kt:323`), but the
+  symptom changed — `FY-1` is confirmed fixed, yet the fiscal-year modal still doesn't
+  close after a correctly filled, successful submit. The failure message itself reports
+  9 matching DOM elements at the moment of the timeout, while the HTML snapshot saved
+  moments later shows only 1 (visible, no overlapping dialog). Logged as new item `FY-2`.
+- **Next action**: `FY-2` needs live, click-by-click diagnosis of the `Modals<Int>`
+  storage/removal and recomposition path in `modal-impl.kt`/
+  `banking.upsert-fiscal-years-modal.kt` before any further fix is attempted — this is
+  beyond safe guessing and should be the first thing picked up next session, ideally
+  with the user's input on whether this `Modals<Id>` pattern has caused similar
+  "stuck open" symptoms elsewhere in the app.

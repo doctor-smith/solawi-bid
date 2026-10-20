@@ -15,12 +15,14 @@ import org.jetbrains.compose.web.dom.Text
 fun Link(
     text: String,
     target: String,
+    dataId: String? = null,
     styles: StyleScope.()->Unit = {}
 ) = Span({
     style{
         defaultLinkStyles()
         styles()
     }
+    dataId?.let { attr("data-id", it) }
     onClick {
         it.stopPropagation()
         navigate(target)

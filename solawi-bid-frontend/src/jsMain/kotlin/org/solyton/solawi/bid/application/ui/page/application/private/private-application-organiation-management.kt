@@ -32,8 +32,8 @@ import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.application.i18n.ApplicationLangComponent
 import org.solyton.solawi.bid.application.ui.page.application.style.actionsWrapperStyle
 import org.solyton.solawi.bid.application.ui.page.application.style.listItemWrapperStyle
-import org.solyton.solawi.bid.module.application.action.readPersonalApplicationContextRelations
 import org.solyton.solawi.bid.module.application.action.readApplications
+import org.solyton.solawi.bid.module.application.action.readPersonalApplicationContextRelations
 import org.solyton.solawi.bid.module.application.action.readPersonalApplicationOrganizationContextRelations
 import org.solyton.solawi.bid.module.application.component.modal.CheckedUserRole
 import org.solyton.solawi.bid.module.application.component.modal.showManageUserPermissionsModule
@@ -66,15 +66,8 @@ import org.solyton.solawi.bid.module.user.data.organization.members
 import org.solyton.solawi.bid.module.user.data.user
 import org.solyton.solawi.bid.module.user.data.user.organizations
 import org.solyton.solawi.bid.module.user.data.userActions
-import kotlin.collections.List
-import kotlin.collections.associate
-import kotlin.collections.filter
 import kotlin.collections.first
-import kotlin.collections.firstOrNull
-import kotlin.collections.isNotEmpty
-import kotlin.collections.joinToString
 import kotlin.collections.map
-import kotlin.collections.orEmpty
 import kotlin.collections.toBooleanArray
 import kotlin.text.orEmpty
 import org.solyton.solawi.bid.module.application.data.application.name as nameOfApplication
@@ -259,6 +252,7 @@ fun PrivateApplicationOrganizationManagementPage(
                             Color.white,
                             texts * subComp("listOfMembers") * subComp("actions") * subComp("manageUserPermissions") * tooltip  * inject("user" , member.username),
                             device,
+                            dataId = "private-application-organization-management.page.member.${member.username}.manage-permissions-button",
                         ) {
                             (storage * applicationManagementModule * applicationManagementModals).showManageUserPermissionsModule(
                                 texts * subComp("dialogs") * subComp("manageUsersPermissions"),

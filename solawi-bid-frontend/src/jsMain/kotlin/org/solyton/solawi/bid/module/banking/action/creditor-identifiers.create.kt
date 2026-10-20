@@ -12,12 +12,14 @@ import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.creditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.toDomainType
 import org.solyton.solawi.bid.module.values.LegalEntityId
+import org.solyton.solawi.bid.module.values.ProviderId
 
 
 const val CREATE_CREDITOR_IDENTIFIER = "CREATE_CREDITOR_IDENTIFIER"
 
 @Markup
 fun createCreditorIdentifier(
+    providerId: ProviderId,
     legalEntityId: LegalEntityId,
     creditorId: CreditorId,
     validFrom: LocalDate,
@@ -27,11 +29,12 @@ fun createCreditorIdentifier(
 ): Action<BankingApplication, CreateCreditorIdentifier, ApiCreditorIdentifier> = Action(
     name = CREATE_CREDITOR_IDENTIFIER.suffixed(nameSuffix),
     reader = { _ -> CreateCreditorIdentifier(
-            legalEntityId = legalEntityId,
-            creditorId = creditorId,
-            validFrom = validFrom,
-            validUntil = validUntil,
-            isActive = isActive
+        providerId = providerId,
+        legalEntityId = legalEntityId,
+        creditorId = creditorId,
+        validFrom = validFrom,
+        validUntil = validUntil,
+        isActive = isActive
         )
     },
     endPoint = CreateCreditorIdentifier::class,

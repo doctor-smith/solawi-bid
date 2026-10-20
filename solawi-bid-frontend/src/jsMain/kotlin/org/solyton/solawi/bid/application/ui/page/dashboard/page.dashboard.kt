@@ -97,53 +97,73 @@ fun DashboardPage(storage: Storage<Application>) {
             flexWrap(FlexWrap.Wrap)
         }) {
             When(canAccessPersonalData) {
-                Card({
+                Card("page.dashboard.card.personal-data",{
                     navigate("/app/private/data")
                 }) {
                     Wrap { H3 { Text("Persönliche Daten") } }
 
-                    Link("Meine Daten", "/app/private/data")
+                    Link("Meine Daten", "/app/private/data", dataId = "page.dashboard.personal-data.my-data")
                 }
             }
             When(canAccessApplicationManagement) {
-                Card({
+                Card("page.dashboard.card.private-application-management",{
                     navigate("/app/management")
                 }) {
                     Wrap { H3 { Text("Application Management") } }
 
-                    Link("My Apps", "/app/management/private")
-                    Link("User Management", "/app/management/users")
+                    Link(
+                        "My Apps",
+                        "/app/management/private",
+                        dataId = "page.dashboard.application-management.my-apps"
+                    )
+                    Link(
+                        "User Management",
+                        "/app/management/users",
+                        dataId = "page.dashboard.application-management.user-management"
+                    )
                 }
             }
             When(
                 !canAccessApplicationManagement &&
                  (storage * environment * IsNonProdEnv * Emit) // Remove this condition when private app management is production ready
             ) {
-                Card({
+                Card("page.dashboard.card.private-application-management",{
                     navigate("/app/management/private")
                 }) {
                     Wrap { H3 { Text("Application Management") } }
 
-                    Link("My Apps", "/app/management/private")
+                    Link(
+                        "My Apps",
+                        "/app/management/private",
+                        dataId = "page.dashboard.application-management.my-apps"
+                    )
                 }
             }
             When(canAccessOrganizations) {
-                Card({
+                Card("page.dashboard.card.organization-management",{
                     navigate("/app/management/organizations")
                 }) {
                     Wrap { H3 { Text("Organisationen") } }
-                    Link("Organization Management", "/app/management/organizations")
+                    Link(
+                        "Organization Management",
+                        "/app/management/organizations",
+                        dataId = "page.dashboard.organization-management.organization-management"
+                    )
                 }
             }
 
             // auctionsCard
             When(canAccessAuctions) {
-                Card({
+                Card("page.dashboard.auctions-card",{
                     navigate("/app/auctions")
                 }) {
                     Wrap { H3 { Text("Auktionen") } }
 
-                    Link("Meine Auktionen", "/app/auctions")
+                    Link(
+                        "Meine Auktionen",
+                        "/app/auctions",
+                        dataId = "page.dashboard.auctions.my-auctions"
+                    )
                 }
 /*
                 Card({
@@ -154,7 +174,7 @@ fun DashboardPage(storage: Storage<Application>) {
 */
             }
             When(canAccessManual) {
-                Card({
+                Card("page.dashboard.card.manual",{
                     navigate("/manual")
                 }) {
                     Wrap { H3 { Text("Gebrauchsanleitung") } }
@@ -162,33 +182,49 @@ fun DashboardPage(storage: Storage<Application>) {
             }
 
             When(canAccessShareManagement  || hasPersonalShareSubscriptions) {
-                Card({}) {
+                Card("page.dashboard.card.share-management",{}) {
                     Wrap { H3 {Text("Anteils Management") }}
 
                     When(hasPersonalShareSubscriptions) {
-                        Link("Meine Anteile", "/app/management/private/shares")
+                        Link(
+                            "Meine Anteile",
+                            "/app/management/private/shares",
+                            dataId = "page.dashboard.share-management.my-shares"
+                        )
                     }
 
                     When(canAccessShareManagement) {
-                        Link("Anteile in Organisationen verwalten", "/app/management/organizations/with/shares")
+                        Link(
+                            "Anteile in Organisationen verwalten",
+                            "/app/management/organizations/with/shares",
+                            dataId = "page.dashboard.share-management.organization-management"
+                        )
                     }
                 }
             }
 
             When(canAccessDistributionManagement) {
-                Card({}) {
+                Card("page.dashboard.card.distribution-management",{}) {
                     Wrap { H3 {Text("Depot Management") }}
 
-                    Link("Depotverwaltung in Organisationen", "/app/management/organizations/with/distribution")
+                    Link(
+                        "Depotverwaltung in Organisationen",
+                        "/app/management/organizations/with/distribution",
+                        dataId = "page.dashboard.distribution-management.organization-management"
+                    )
                 }
             }
 
             When(canAccessBankingApplication || hasPersonalBankAccounts) {
-                Card({}) {
+                Card("page.dashboard.card.banking-application",{}) {
                     Wrap { H3 {Text("Bank Applikation") }}
 
                     When(canAccessBankingApplication) {
-                        Link("Bank Angelegenheiten in Organisationen", "/app/management/organizations/with/banking")
+                        Link(
+                            "Bank Angelegenheiten in Organisationen",
+                            "/app/management/organizations/with/banking",
+                            dataId = "page.dashboard.banking-application.organization-management"
+                        )
                     }
                 }
             }
@@ -200,10 +236,12 @@ fun DashboardPage(storage: Storage<Application>) {
 @Composable
 @Suppress("FunctionName")
 fun Card(
+    dataId: String? = null,
     onClick: ()->Unit,
     style: StyleScope.()->Unit = {},
     content: @Composable ElementScope<HTMLElement>.()->Unit
 ) = Div({
+    dataId?.let { attr("data-id", it) }
     onClick { onClick() }
     style{
         display(DisplayStyle.Flex)

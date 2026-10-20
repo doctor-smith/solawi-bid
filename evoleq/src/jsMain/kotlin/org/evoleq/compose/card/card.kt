@@ -10,7 +10,11 @@ import org.w3c.dom.HTMLElement
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun Card(content: @Composable ElementScope<HTMLElement>.()->Unit) = Div({
+fun Card(
+    dataId: String? = null,
+    content: @Composable ElementScope<HTMLElement>.()->Unit
+) = Div({
+    dataId?.let { attr("data-id", it) }
     style{
         border {
             style(LineStyle.Solid)

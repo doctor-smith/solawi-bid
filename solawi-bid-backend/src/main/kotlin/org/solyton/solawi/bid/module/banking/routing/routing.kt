@@ -10,6 +10,7 @@ import org.evoleq.ktorx.Respond
 import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
+import org.evoleq.math.x
 import org.evoleq.uuid.toUuid
 import org.solyton.solawi.bid.module.application.repository.contextIdOf
 import org.solyton.solawi.bid.module.banking.action.*
@@ -226,19 +227,24 @@ fun <BankingEnv> Routing.banking (
             route("creditors") {
                 route("identifiers") {
                     get("by-legal-entity"){
-                        ReceiveContextual<String>{
-                            parameters -> requireNotNull(parameters["legal_entity"]) {
+                        ReceiveContextual<Pair<String, String>>{
+                            parameters ->
+                            val legalEntityId = requireNotNull(parameters["legal_entity"]) {
                                 "Parameter 'legal_entity' is empty"
                             }
+                            val providerId = requireNotNull(parameters["provider"]) {
+                                "Parameter 'provider' is empty"
+                            }
+                            legalEntityId x providerId
                         } *
                         IsGrantedInDerivedContext(
                             READ_CREDITOR_IDENTIFIERS,
                             yes
                         ) {
                             contextIdOf(BANKING_APPLICATION_NAME) {
-                                it.data.toUuid()
+                                it.data.second.toUuid()
                             }
-                        } *
+                        }  *
                         ReadCreditorIdentifierByLegalEntity() *
                         Respond{ transform() } runOn Base(call, environment)
                     }
@@ -249,7 +255,7 @@ fun <BankingEnv> Routing.banking (
                             yes
                         ) {
                             contextIdOf(BANKING_APPLICATION_NAME) {
-                                it.data.legalEntityId.value.toUuid()
+                                it.data.providerId.value.toUuid()
                             }
                         } *
                         CreateCreditorIdentifier() *
@@ -262,7 +268,7 @@ fun <BankingEnv> Routing.banking (
                             yes
                         ) {
                             contextIdOf(BANKING_APPLICATION_NAME) {
-                                it.data.legalEntityId.value.toUuid()
+                                it.data.providerId.value.toUuid()
                             }
                         } *
                         UpdateCreditorIdentifier() *

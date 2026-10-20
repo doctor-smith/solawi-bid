@@ -29,6 +29,7 @@ import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.letsPlot.commons.intern.filterNotNullValues
 import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.application.data.context
 import org.solyton.solawi.bid.application.data.transform.banking.bankingApplicationIso
 import org.solyton.solawi.bid.application.data.transform.distribution.distributionManagementIso
 import org.solyton.solawi.bid.application.data.transform.shares.shareManagementIso
@@ -60,6 +61,7 @@ import org.solyton.solawi.bid.module.banking.service.sepa.generateReference
 import org.solyton.solawi.bid.module.constants.CHECK_FALSE
 import org.solyton.solawi.bid.module.constants.CHECK_TRUE
 import org.solyton.solawi.bid.module.constants.checkIcon
+import org.solyton.solawi.bid.module.context.data.isEmpty
 import org.solyton.solawi.bid.module.control.button.*
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
 import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
@@ -136,8 +138,10 @@ data class ShareSubscriptionFilter(
 
 @Markup
 @Composable
-@Suppress("FunctionName", "CyclomaticComplexMethod", "CognitiveComplexMethod")
+@Suppress("FunctionName", "CyclomaticComplexMethod", "CognitiveComplexMethod", "ReturnCount")
 fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerId: ProviderId, up: String) {
+    if((storage * context * isEmpty()).emit() ) return
+
     val scope = rememberCoroutineScope()
 
     val shareManagementStore = storage * shareManagementIso
@@ -177,19 +181,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
         launch {
             bankingApplicationActions dispatch readBankAccounts(LegalEntityId(providerId.value))
         }
-        launch {
-            bankingApplicationActions dispatch readPersonalCreditorIdentifier(
-                LegalEntityId(providerId.value),
-                onError = { (statusCode, _) ->
-                    {
-                        when (statusCode) {
-                            HttpStatusCode.NotFound -> it
-                            else -> it
-                        }
-                    }
-                }
-            )
-        }
+
         launch {
             userActions dispatch readOrganizations()
 
@@ -224,8 +216,23 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
 
     LaunchedEffectOnSource(isLegalEntityDefined)  {
         if(isLegalEntityDefined.emit()) {
+            val legalEntityId = (legalEntityStorage * legalEntityId).read()
             launch {
-                bankingApplicationActions dispatch readPersonalSepaCollections(LegalEntityId(providerId.value))
+                bankingApplicationActions dispatch readPersonalCreditorIdentifier(
+                    providerId,
+                    legalEntityId,
+                    onError = { (statusCode, _) ->
+                        {
+                            when (statusCode) {
+                                HttpStatusCode.NotFound -> it
+                                else -> it
+                            }
+                        }
+                    }
+                )
+            }
+            launch {
+                bankingApplicationActions dispatch readPersonalSepaCollections(legalEntityId)
             }
             launch {
                 bankingApplicationActions dispatch readSepaMessagesByLegalEntity(LegalEntityId(providerId.value))
@@ -1471,6 +1478,7 @@ fun ShareSubscriptionManagement(
                 val checksChanged = checkedMap.filter { it.value }.keys
 
                 VirtualScrollableList(
+                    dataId = "shares.page.share-subscription.list",
                     items = filteredCheckedSubscriptions,
                     itemHeight = 44.0,
                     styles = ScrollableStyles()

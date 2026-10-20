@@ -24,6 +24,7 @@ setup-local.sql
 !setup.sql
 
 e2e/loggedInState.json
+e2e/dev
 
 solawi-bid-frontend/src/main/resources/i18n/de.bak
 solawi-bid-frontend/src/main/resources/i18n/en.bak

@@ -49,6 +49,11 @@ Commands:
   workflowTest     Reset the database, then run the E2E workflow tests (./gradlew :e2e:workflowTest)
   securityTest     Reset the database, then run the E2E security tests (./gradlew :e2e:securityTest)
   performanceTest  Reset the database, then run the E2E performance tests (./gradlew :e2e:performanceTest)
+  devTest          Reset the database, then run the E2E tests tagged @Develop (./gradlew :e2e:developmentTest)
+  filterTest <pattern>
+                   Reset the database, then run only the tests matching <pattern> (forwarded as-is
+                   to Gradle's --tests, e.g. "org.solyton.solawi.bid.module.shares.*" or a single
+                   "...ClassName.methodName"), without waiting for a full tag-based suite
   run              Full local cycle: build, up, test (which resets the database), down
 EOF
 }
@@ -179,6 +184,25 @@ run_performance_tests() {
   E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:performanceTest
 }
 
+run_dev_tests() {
+  echo "==> Running E2E tests under development against $E2E_BASE_URL"
+  # E2E_RESET_DB makes the test suite itself reset the database before the first
+  # test (see e2e/src/test/kotlin/DbReset.kt and DbResetExtension.kt), so callers
+  # no longer need to invoke reset_db() separately beforehand.
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:developmentTest
+}
+
+# Runs only the tests matching a Gradle test-filter pattern (e.g. a single class or
+# method), instead of a whole tag-based suite, for fast iteration during development.
+run_filtered_tests() {
+  local pattern="$1"
+  echo "==> Running E2E tests matching \"$pattern\" against $E2E_BASE_URL"
+  # E2E_RESET_DB makes the test suite itself reset the database before the first
+  # test (see e2e/src/test/kotlin/DbReset.kt and DbResetExtension.kt), so callers
+  # no longer need to invoke reset_db() separately beforehand.
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:test --tests "$pattern"
+}
+
 case "${1:-}" in
   build) build_images ;;
   build-frontend)
@@ -199,6 +223,15 @@ case "${1:-}" in
   workflowTest) run_workflow_tests ;;
   securityTest) run_security_tests ;;
   performanceTest) run_performance_tests ;;
+  devTest) run_dev_tests ;;
+  filterTest)
+    if [[ -z "${2:-}" ]]; then
+      echo "ERROR: filterTest requires a Gradle test-filter pattern, e.g.:" >&2
+      echo "  $0 filterTest \"org.solyton.solawi.bid.module.shares.*\"" >&2
+      exit 1
+    fi
+    run_filtered_tests "$2"
+    ;;
   run)
     build_images
     up

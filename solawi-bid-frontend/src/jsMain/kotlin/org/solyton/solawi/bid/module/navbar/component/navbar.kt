@@ -48,7 +48,8 @@ fun NavBar(
         Color.transparent,
         {"Home"},
         device,
-        isDisabled = true
+        isDisabled = true,
+        dataId = "navbar.home-button"
     ){
         navigate("/home")
     }
@@ -59,6 +60,7 @@ fun NavBar(
         Color.transparent,
         {"Dashboard"},
         device,
+        dataId = "navbar.apps-button"
         ){
         navigate("/app/dashboard")
     }
@@ -67,7 +69,8 @@ fun NavBar(
         navIconColor,
         Color.transparent,
         {"Help"},
-        device
+        device,
+        dataId = "navbar.help-button"
     ) {
         navigate("/manual")
     }
@@ -76,7 +79,8 @@ fun NavBar(
         navIconColor,
         Color.transparent,
         {"Support"},
-        device
+        device,
+        dataId = "navbar.support-button"
     ) {
         // todo:dev move to env
         openUrlInNewTab("https://solawi-management.atlassian.net/servicedesk/customer/portal/1")

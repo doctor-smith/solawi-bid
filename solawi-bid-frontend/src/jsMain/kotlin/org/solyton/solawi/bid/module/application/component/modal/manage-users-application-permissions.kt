@@ -67,6 +67,7 @@ fun ManageUserPermissionsModal(
                 } }) {
                     var checked by remember{ mutableStateOf(checkedRole.checked) }
                     CheckboxInput(checked = checked) {
+                        attr("data-id", "manage-user-permissions.modal.role.${checkedRole.role.roleName}.checkbox")
                         if(checkedRole.role.roleName == "OWNER") disabled()
                         onInput { event ->
                             userRoles[id] = checkedRole.copy(checked = event.value)
