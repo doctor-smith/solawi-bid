@@ -16,13 +16,14 @@ import org.solyton.solawi.bid.module.banking.schema.CreditorIdentifiersTable
 import java.util.*
 
 
+
 @MathDsl
 @Suppress("FunctionName")
-fun ReadCreditorIdentifierByLegalEntity(): KlAction<Result<Contextual<String>>, Result<CreditorIdentifier>> = KlAction { result ->
+fun ReadCreditorIdentifierByLegalEntity(): KlAction<Result<Contextual<Pair<String, String>>>, Result<CreditorIdentifier>> = KlAction { result ->
     DbAction { database ->
         result bindSuspend { contextual ->
             resultTransaction(database) {
-                val legalEntityId = UUID.fromString(contextual.data)
+                val legalEntityId = UUID.fromString(contextual.data.first)
                 CreditorIdentifierEntity.find {
                     CreditorIdentifiersTable.legalEntityId eq legalEntityId
                 }.toList().firstOrNull()?.toApiType()

@@ -450,7 +450,7 @@ fun UpsertShareSubscriptionModal(
                                                 Color.white,
                                                 listOfUsers * LangField.actions * LangField.selectUser * LangField.tooltip * text,
                                                 device,
-                                                false,
+                                                user.profile == null,
                                                 "shares.modal.upsert-share-subscription.user.${user.username}.select-button",
                                             ) {
                                                 

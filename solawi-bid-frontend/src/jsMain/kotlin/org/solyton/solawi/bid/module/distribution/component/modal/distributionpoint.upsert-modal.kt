@@ -1,10 +1,6 @@
 package org.solyton.solawi.bid.module.distribution.component.modal
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
 import org.evoleq.compose.form.field.Field
 import org.evoleq.compose.form.label.Label
@@ -59,6 +55,7 @@ fun UpsertDistributionPointModal(
     onCancel = {},
     texts = texts,
     styles = auctionModalStyles(device),
+    dataId = "distribution.upsert-distribution-point"
 ) {
     Form {
         var distributionPointName by remember { mutableStateOf(distributionPoint?.name ?: "") }

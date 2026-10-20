@@ -12,6 +12,7 @@ import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.creditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.toDomainType
 import org.solyton.solawi.bid.module.values.LegalEntityId
+import org.solyton.solawi.bid.module.values.ProviderId
 
 
 const val READ_PERSONAL_CREDITOR_IDENTIFIER = "ReadPersonalCreditorIdentifier"
@@ -24,12 +25,16 @@ const val READ_PERSONAL_CREDITOR_IDENTIFIER = "ReadPersonalCreditorIdentifier"
  */
 @Markup
 fun readPersonalCreditorIdentifier(
+    providerId: ProviderId,
     legalEntityId: LegalEntityId,
     onError: Writer<BankingApplication, Pair<HttpStatusCode, String>>? = null,
     nameSuffix: String? = null
 ) = Action<BankingApplication, ReadCreditorIdentifierByLegalEntity, ApiCreditorIdentifier>(
     name = READ_PERSONAL_CREDITOR_IDENTIFIER.suffixed(nameSuffix),
-    reader = {_ -> ReadCreditorIdentifierByLegalEntity(listOf("legal_entity" to legalEntityId.value))},
+    reader = {_ -> ReadCreditorIdentifierByLegalEntity(listOf(
+        "legal_entity" to legalEntityId.value,
+        "provider" to providerId.value
+    ))},
     endPoint = ReadCreditorIdentifierByLegalEntity::class,
     writer = creditorIdentifier.set contraMap { creditorIdentifier -> creditorIdentifier.toDomainType() },
     onError = onError,

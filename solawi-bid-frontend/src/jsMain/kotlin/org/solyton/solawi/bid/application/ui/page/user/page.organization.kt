@@ -804,7 +804,8 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                 CardChevrons(
                                     texts = Source { cardChevronTexts() },
                                     deviceType = Read(device),
-                                    opened = open
+                                    opened = open,
+                                    dataId = "organization.page.connected-applications.chevron",
                                 )
                             }
                         }
@@ -851,7 +852,8 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                             bgColor = Color.white,
                                             texts = { "Apply features of ${application.name} to this organization" },
                                             deviceType = { device.read() },
-                                            isDisabled = disabled.emit()
+                                            isDisabled = disabled.emit(),
+                                            dataId = "organization.page.connected-applications.${application.name}.enter-button",
                                         ) {
                                             applicationStorage.setContext(contextId ?: "")
                                             navigate("/app/management/organizations/${organizationId}/${application.name.lowercase()}")
@@ -860,7 +862,8 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                             Color.black,
                                             Color.white,
                                             listOfConnectedApplicationsActions * subComp("manageUserPermissions") * tooltip,
-                                            { device.read() }
+                                            { device.read() },
+                                            dataId = "organization.page.connected-applications.${application.name}.manage-permissions-button",
                                         ) {
                                             navigate("/app/management/private/application/${application.id}/organization/$organizationId")
                                         }

@@ -57,9 +57,13 @@ fun SetStateOf(processId: String) : Writer<Processes, ProcessState> = Writer { s
 
     if(process != null) {
         processes.registry[processId] = process.copy(state = state)
-    } else {
-        console.warn("Process with id ${processId} not found; tried to set state to $state")
     }
+    else {
+        if(state == ProcessState.Active) {
+            console.warn("Process with id ${processId} not found; tried to set state to $state")
+        }
+    }
+    // else { console.warn("Process with id ${processId} not found; tried to set state to $state") }
     processes
 } }
 

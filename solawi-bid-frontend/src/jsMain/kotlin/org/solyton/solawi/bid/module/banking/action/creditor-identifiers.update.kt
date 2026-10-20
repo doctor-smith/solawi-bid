@@ -13,11 +13,13 @@ import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.creditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.toDomainType
 import org.solyton.solawi.bid.module.values.LegalEntityId
+import org.solyton.solawi.bid.module.values.ProviderId
 
 const val UPDATE_CREDITOR_IDENTIFIER = "UPDATE_CREDITOR_IDENTIFIER"
 
 @Markup
 fun updateCreditorIdentifier(
+    providerId: ProviderId,
     creditorIdentifierId: CreditorIdentifierId,
     legalEntityId: LegalEntityId,
     creditorId: CreditorId,
@@ -28,6 +30,7 @@ fun updateCreditorIdentifier(
 ): Action<BankingApplication, UpdateCreditorIdentifier, ApiCreditorIdentifier> = Action(
     name = UPDATE_CREDITOR_IDENTIFIER.suffixed(nameSuffix),
     reader = { _ -> UpdateCreditorIdentifier(
+        providerId = providerId,
         creditorIdentifierId = creditorIdentifierId,
         legalEntityId = legalEntityId,
         creditorId = creditorId,

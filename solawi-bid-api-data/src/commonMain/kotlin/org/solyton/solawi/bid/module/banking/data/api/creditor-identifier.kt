@@ -7,6 +7,7 @@ import org.evoleq.ktorx.client.QueryParams
 import org.solyton.solawi.bid.module.banking.data.CreditorId
 import org.solyton.solawi.bid.module.banking.data.CreditorIdentifierId
 import org.solyton.solawi.bid.module.values.LegalEntityId
+import org.solyton.solawi.bid.module.values.ProviderId
 
 typealias ApiCreditorIdentifier = CreditorIdentifier
 
@@ -27,6 +28,8 @@ data class CreditorIdentifier(
 
 @Serializable
 data class CreateCreditorIdentifier(
+    // needed for permission check
+    val providerId: ProviderId,
     val legalEntityId: LegalEntityId,
     val creditorId: CreditorId,
     val validFrom: LocalDate,
@@ -37,6 +40,8 @@ data class CreateCreditorIdentifier(
 @Serializable
 data class UpdateCreditorIdentifier(
     val creditorIdentifierId: CreditorIdentifierId,
+    // needed for permission check
+    val providerId: ProviderId,
     val legalEntityId: LegalEntityId,
     val creditorId: CreditorId,
     val validFrom: LocalDate,

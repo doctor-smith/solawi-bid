@@ -1,6 +1,7 @@
 package org.evoleq.compose.modal
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import org.evoleq.compose.Markup
 import org.evoleq.math.Source
 import org.evoleq.math.emit
@@ -106,8 +107,15 @@ fun <Id> SubLayer(
             }
         }) {
             roots().forEach { root ->
-                with(root) {
-                    component()
+                // Give each modal instance a stable identity based on its own id, not its
+                // position in this (dynamic) list. Without this, a full-application
+                // recomposition - which happens whenever the modals list itself changes,
+                // see facts.storage.md - can mismatch a modal's composition state against
+                // the wrong list position.
+                key(root.id) {
+                    with(root) {
+                        component()
+                    }
                 }
             }
         }

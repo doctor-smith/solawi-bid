@@ -203,6 +203,7 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) {
                                     texts = texts * with(Component){listOfApplications * actions * subComp("subscribeApplication")} * tooltip,
                                     deviceType = device,
                                     isDisabled = true,
+                                    dataId = "private-application-management.page.application.${application.name}.subscribe-button",
                                 ) {
                                     scope.launch { (storage * applicationManagementModule * actions).dispatch(
                                         subscribeApplications(listOf(application.id))
@@ -213,7 +214,8 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) {
                                     bgColor = Color.white,
                                     texts = texts * with(Component){listOfApplications * actions * subComp("startTrialOfApplication")} * tooltip,
                                     deviceType = device,
-                                    isDisabled = false
+                                    isDisabled = false,
+                                    dataId = "private-application-management.page.application.${application.name}.start-trial-button",
                                 ) {
                                     scope.launch { (storage * applicationManagementModule * actions).dispatch(
                                         startTrialsOfApplications(listOf(application.id))
@@ -226,6 +228,7 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) {
                                     bgColor = Color.white,
                                     texts = texts * with(Component){listOfApplications * actions * subComp("subscribeApplication")} * tooltip,
                                     deviceType = device,
+                                    dataId = "private-application-management.page.application.${application.name}.subscribe-button",
                                 ) {
                                     scope.launch { (storage * applicationManagementModule * actions).dispatch(
                                         subscribeApplications(listOf(application.id))
@@ -327,7 +330,7 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) {
                                     texts = texts * with(Component) { listOfApplications * actions * registerForApplication } * tooltip,
                                     deviceType = device,
                                     isDisabled = false,
-
+                                    dataId = "private-application-management.page.available-application.${application.name}.register-button",
                                     ) {
                                     scope.launch {
                                         (storage * applicationManagementModule * actions).dispatch(

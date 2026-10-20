@@ -162,3 +162,18 @@ tasks.register<Test>("performanceTest") {
     }
 //    finalizedBy(tasks.jacocoTestReport)
 }
+
+
+tasks.register<Test>("developmentTest") {
+    description = "Run all tests under development"
+    group = "verification"
+    useJUnitPlatform() {
+        includeTags("develop")
+    }
+    reports {
+        junitXml.required = true
+        html.required = true
+
+    }
+//    finalizedBy(tasks.jacocoTestReport)
+}

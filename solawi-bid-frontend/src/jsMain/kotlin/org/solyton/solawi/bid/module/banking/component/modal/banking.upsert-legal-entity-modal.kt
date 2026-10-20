@@ -10,18 +10,15 @@ import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.Lang
 import org.evoleq.language.component
-import org.evoleq.language.subComp
 import org.evoleq.math.Source
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.ElementScope
-import org.solyton.solawi.bid.module.banking.component.form.BankAccountForm
 import org.solyton.solawi.bid.module.banking.component.form.LegalEntityForm
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.deviceData
-import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.creditor.identifier.CreditorIdentifier
 import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntity
 import org.solyton.solawi.bid.module.style.modal.commonModalStyles
@@ -54,6 +51,7 @@ fun UpsertLegalEntityModal(
     onCancel = {},
     texts = texts,
     styles = commonModalStyles(device),
+    dataId = "banking.modal.upsert-legal-entity",
 ) {
     val inputs = texts.component("inputs")
     Wrap {

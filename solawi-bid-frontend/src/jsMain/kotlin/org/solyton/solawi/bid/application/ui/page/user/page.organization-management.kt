@@ -249,6 +249,7 @@ fun OrganizationItems(listStyles: ListStyles, organizations: Lens<Application, L
                 (storage * isNotGranted(OrganizationRight.Organization.read, organizationContextId, )).emit()
                         && !isMember
                 ,
+                dataId = "organization-management-page.organization-list.organization.$organizationName.details-button",
             ) {
                 navigate("/app/management/organizations/$organizationId")
             }

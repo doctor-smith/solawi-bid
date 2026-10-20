@@ -395,6 +395,7 @@ fun UserProfile(
                             color = Color.black,
                             bgColor = Color.white,
                             texts = { "Edit" },
+                            dataId = "private-data.page.profile.create",
                             deviceType = deviceData,
                         ) {
                             // open create dialog
@@ -440,6 +441,7 @@ fun UserProfile(
                             color = Color.black,
                             bgColor = Color.white,
                             texts = { "Edit" },
+                            dataId = "private-data.page.profile.edit",
                             deviceType = deviceData,
                         ) {
                             // open update dialog
@@ -487,6 +489,7 @@ fun UserProfile(
                 CardChevrons(
                     deviceType = deviceData,
                     opened = opened,
+                    dataId = "private-data.page.profile.chevron",
                     setOpened = { opened = it }
                 )
             }

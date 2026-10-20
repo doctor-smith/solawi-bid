@@ -177,7 +177,11 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
         val legalEntityId = legalEntity.read().legalEntityId
         if(legalEntityId.value != NIL_UUID) {
             launch {
+                // Same context-key convention as createCreditorIdentifier/updateCreditorIdentifier
+                // below: the permission context is keyed by the organization (provider) id, not
+                // by the legal entity row's own generated id.
                 bankingApplicationActions dispatch readPersonalCreditorIdentifier(
+                    providerId,
                     legalEntityId,
                     onError = {(statusCode, _) -> {
                         when(statusCode) {
@@ -307,14 +311,15 @@ fun LegalEntity(
                                 color = Color.black,
                                 bgColor = Color.white,
                                 texts = actions * subComp("create") * tooltip,
-                                deviceType = deviceType
+                                deviceType = deviceType,
+                                dataId = "banking.page.legal-entity.create-button",
                             ) {
                                 bankingApplicationModals.showUpsertLegalEntityModal(
                                     bankingApplicationStorage,
                                     (modalTexts map {
                                         it .override (
                                             (createDialog * subComp("inputs")).emit(),
-                                                (createDialog * subComp("create") * variable("title")).emit()
+                                                (createDialog * variable("title")).emit()
                                         )
                                     }).emit() ,
                                     deviceType,
@@ -346,7 +351,8 @@ fun LegalEntity(
                                 color = Color.black,
                                 bgColor = Color.white,
                                 texts = actions * subComp("edit") * tooltip,
-                                deviceType = deviceType
+                                deviceType = deviceType,
+                                dataId = "banking.page.legal-entity.edit-button",
                             ) {
                                 bankingApplicationModals.showUpsertLegalEntityModal(
                                     bankingApplicationStorage,
@@ -379,8 +385,17 @@ fun LegalEntity(
                                         scope.launch {
                                             val creditorIdentifier = requireNotNull(creditorIdentifierState) {"creditor identifier state should not be null"}
                                             val actionDispatcher = bankingApplicationStorage * bankingApplicationActions
+                                            // Permission contexts for Banking are keyed by the
+                                            // organization (provider) id, not by the legal
+                                            // entity row's own generated id - see how fiscal
+                                            // years/bank accounts elsewhere in this file always
+                                            // pass LegalEntityId(providerId.value). Passing
+                                            // legalEntityState.legalEntityId here instead caused
+                                            // the backend to report "No such context" for any
+                                            // freshly created legal entity.
                                             when (storedCreditorIdentifier) {
                                                 null -> actionDispatcher dispatch createCreditorIdentifier(
+                                                    providerId = providerId,
                                                     legalEntityId = legalEntityState.legalEntityId,
                                                     creditorId = creditorIdentifier.creditorId,
                                                     validFrom = creditorIdentifier.validFrom,
@@ -388,6 +403,7 @@ fun LegalEntity(
                                                     isActive = true
                                                 )
                                                 else -> actionDispatcher dispatch updateCreditorIdentifier(
+                                                    providerId = providerId,
                                                     creditorIdentifierId = creditorIdentifier.creditorIdentifierId,
                                                     legalEntityId = legalEntityState.legalEntityId,
                                                     creditorId = creditorIdentifier.creditorId,
@@ -947,12 +963,13 @@ fun FiscalYears(
                                 bankingApplicationStorage,
                                 dialogModalTexts("Message"),
                                 deviceType,
+                                {fiscalYearState == null},
                                 fiscalYears.read(),
                                 fiscalYearState,
                                 { fiscalYear -> fiscalYearState = fiscalYear },
                             ) {
                                 val state = fiscalYearState
-                                requireNotNull(state)
+                                requireNotNull(state) { "fiscal year state is null" }
                                 scope.launch {
                                     bankingApplicationActions dispatch createFiscalYear(
                                         providerId.value,
@@ -1002,6 +1019,7 @@ fun FiscalYears(
                                     bankingApplicationStorage,
                                     dialogModalTexts("Message"),
                                     deviceType,
+                                    {fiscalYearState == null},
                                     fiscalYears.read(),
                                     fiscalYearState,
                                     { fiscalYear -> fiscalYearState = fiscalYear },

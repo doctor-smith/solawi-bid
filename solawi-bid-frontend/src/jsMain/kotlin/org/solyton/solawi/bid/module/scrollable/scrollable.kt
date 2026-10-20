@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.math.Source
 import org.evoleq.math.emit
@@ -106,6 +107,7 @@ fun <T> VirtualScrollableList(
     itemHeight: Double,
     styles: ScrollableStyles = ScrollableStyles(),
     overscan: Int = 4,
+    dataId: String? = null,
     item: @Composable (Int, T) -> Unit
 ) {
     val containerId = remember { "virtual-scrollable-${virtualScrollableInstanceCounter++}" }
@@ -141,6 +143,7 @@ fun <T> VirtualScrollableList(
 
     Div(
         attrs = {
+            if(dataId != null) dataId(dataId)
             style {
                 with(styles) { containerStyle() }
                 // Prevent the browser's scroll anchoring heuristic from "correcting" the scroll
@@ -195,10 +198,12 @@ fun <T> VirtualScrollableList(
     itemHeight: Double,
     styles: ScrollableStyles = ScrollableStyles(),
     overscan: Int = 4,
+    dataId: String? = null,
     item: @Composable (Int, T) -> Unit) = VirtualScrollableList(
     items.emit(),
     itemHeight,
     styles,
     overscan,
+    dataId,
     item
 )

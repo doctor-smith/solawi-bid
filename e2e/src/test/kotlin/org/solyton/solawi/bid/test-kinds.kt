@@ -35,4 +35,7 @@ annotation class Security
 @org.junit.jupiter.api.Tag("performance")
 annotation class Performance
 
-
+@Target(CLASS, FUNCTION)
+@Retention(RUNTIME)
+@org.junit.jupiter.api.Tag("develop")
+annotation class Develop

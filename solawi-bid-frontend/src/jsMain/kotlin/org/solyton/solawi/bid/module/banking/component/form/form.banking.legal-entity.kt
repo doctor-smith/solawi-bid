@@ -125,7 +125,8 @@ fun LegalEntityForm(
                 options = legalEntityTypeOptions,
                 selected = inverted[legalEntityTypeState?: LegalEntityType.HUMAN],
                 iconContent = {open -> SimpleUpDown(open) },
-                styles = dropdownStyles
+                styles = dropdownStyles,
+                dataId = "legal-entity-form.legal-entity-type-dropdown",
             ) {
                 (_, value) -> update(LegalEntityChange(
                     legalEntityId = legalEntity?.legalEntityId ?: LegalEntityId(NIL_UUID),

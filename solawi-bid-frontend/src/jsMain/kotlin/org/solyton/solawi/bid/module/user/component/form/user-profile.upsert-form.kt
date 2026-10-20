@@ -1,11 +1,8 @@
 package org.solyton.solawi.bid.module.user.component.form
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.form.Form
 import org.evoleq.compose.form.field.Field
 import org.evoleq.compose.form.label.Label
@@ -21,33 +18,21 @@ import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.times
 import org.jetbrains.compose.web.attributes.required
-import org.jetbrains.compose.web.css.StyleScope
-import org.jetbrains.compose.web.css.marginTop
-import org.jetbrains.compose.web.css.percent
-import org.jetbrains.compose.web.css.px
-import org.jetbrains.compose.web.css.width
+import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.dom.TextInput
 import org.solyton.solawi.bid.module.control.dropdown.Dropdown
 import org.solyton.solawi.bid.module.control.dropdown.DropdownStyles
+import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
 import org.solyton.solawi.bid.module.country.i18n.CountryLangComponent
 import org.solyton.solawi.bid.module.country.i18n.CountryLangComponent.Companion.names
 import org.solyton.solawi.bid.module.i18n.data.variables
-import org.solyton.solawi.bid.module.control.dropdown.SimpleUpDown
 import org.solyton.solawi.bid.module.style.form.fieldDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formDesktopStyle
 import org.solyton.solawi.bid.module.style.form.formLabelDesktopStyle
 import org.solyton.solawi.bid.module.style.form.textInputDesktopStyle
-import org.solyton.solawi.bid.module.user.data.address.Address
-import org.solyton.solawi.bid.module.user.data.address.addressLine1
-import org.solyton.solawi.bid.module.user.data.address.addressLine2
-import org.solyton.solawi.bid.module.user.data.address.city
-import org.solyton.solawi.bid.module.user.data.address.countryCode
-import org.solyton.solawi.bid.module.user.data.address.organizationName
-import org.solyton.solawi.bid.module.user.data.address.postalCode
-import org.solyton.solawi.bid.module.user.data.address.recipientName
-import org.solyton.solawi.bid.module.user.data.address.stateOrProvince
+import org.solyton.solawi.bid.module.user.data.address.*
 import org.solyton.solawi.bid.module.user.data.profile.UserProfile
 import org.solyton.solawi.bid.module.user.data.profile.addresses
 
@@ -86,6 +71,7 @@ fun UserProfileForm(
                     )
                     TextInput(userProfileState?.title ?: "") {
                         id("title")
+                        dataId("user-profile.form.title-input")
                         style { textInputDesktopStyle() }
                         onInput {
                             val newUserProfile =
@@ -106,6 +92,7 @@ fun UserProfileForm(
                     TextInput(userProfileState?.firstname ?: "") {
                         required()
                         id("firstname")
+                        dataId("user-profile.form.firstname-input")
                         style { textInputDesktopStyle() }
                         onInput {
                             val newUserProfile =
@@ -125,6 +112,7 @@ fun UserProfileForm(
                     )
                     TextInput(userProfileState?.lastname ?: "") {
                         required()
+                        dataId("user-profile.form.lastname-input")
                         id("lastname")
                         style { textInputDesktopStyle() }
                         onInput {
@@ -144,6 +132,7 @@ fun UserProfileForm(
                         )
                         TextInput(userProfileState?.phoneNumber ?: "") {
                             id("phoneNumber")
+                            dataId("user-profile.form.phone-number-input")
                             style { textInputDesktopStyle() }
                             onInput {
                                 val newUserProfile =
@@ -162,6 +151,7 @@ fun UserProfileForm(
                         )
                         TextInput(userProfileState?.phoneNumber1 ?: "") {
                             id("phoneNumber1")
+                            dataId("user-profile.form.cell-phone-number-input")
                             style { textInputDesktopStyle() }
                             onInput {
                                 val newUserProfile =
@@ -190,6 +180,7 @@ fun UserProfileForm(
                         )
                         TextInput(address?.recipientName ?: "") {
                             required()
+                            dataId("user-profile.form.address.recipient-name-input")
                             id("recipientName")
                             style { textInputDesktopStyle() }
                             onInput {
@@ -214,6 +205,7 @@ fun UserProfileForm(
                         )
                         TextInput(address?.organizationName ?: "") {
                             id("organizationName")
+                            dataId("user-profile.form.address.organization-name-input")
                             style { textInputDesktopStyle() }
                             onInput {
                                 val newUserProfile = (userProfileState ?: UserProfile.default).addresses {
@@ -239,6 +231,7 @@ fun UserProfileForm(
                     )
                     TextInput(address?.addressLine1 ?: "") {
                         required()
+                        dataId("user-profile.form.address.address-line-1-input")
                         id("addressLine1")
                         style { textInputDesktopStyle() }
                         onInput {
@@ -262,6 +255,7 @@ fun UserProfileForm(
                     )
                     TextInput(address?.addressLine2 ?: "") {
                         id("addressLine2")
+                        dataId("user-profile.form.address.address-line-2-input")
                         style { textInputDesktopStyle() }
                         onInput {
                             val newUserProfile = (userProfileState ?: UserProfile.default).addresses {
@@ -285,6 +279,7 @@ fun UserProfileForm(
                         )
                         TextInput(address?.postalCode ?: "") {
                             required()
+                            dataId("user-profile.form.address.postal-code-input")
                             id("postalCode")
                             style { textInputDesktopStyle() }
                             onInput {
@@ -309,6 +304,7 @@ fun UserProfileForm(
                         TextInput(address?.city ?: "") {
                             required()
                             id("city")
+                            dataId("user-profile.form.address.city-input")
                             style { textInputDesktopStyle() }
                             onInput {
                                 val newUserProfile = (userProfileState ?: UserProfile.default).addresses {
@@ -354,6 +350,7 @@ fun UserProfileForm(
                             options = countriesMap,
                             selected = countries.firstOrNull { it.key == (address?.countryCode ?: "DE") }?.value,
                             styles = dropdownStyles,
+                            dataId = "user-profile.form.address.country-code-input",
                             iconContent = { expanded -> SimpleUpDown(expanded) }
                         ) { (_, value) ->
                             val newUserProfile = (userProfileState ?: UserProfile.default).addresses {
@@ -365,8 +362,6 @@ fun UserProfileForm(
                             userProfileState = newUserProfile
                             setUserProfile(newUserProfile)
                         }
-
-
                     }
                     Field(fieldDesktopStyle) {
                         Label(
@@ -381,6 +376,7 @@ fun UserProfileForm(
                                 it.key == (address?.stateOrProvince ?: "DE-BW")
                             }?.value,
                             styles = dropdownStyles,
+                            dataId = "user-profile.form.address.state-or-province-input",
                             iconContent = { expanded -> SimpleUpDown(expanded) }
                         ) { (_, value) ->
                             val newUserProfile = (userProfileState ?: UserProfile.default).addresses {

@@ -36,7 +36,8 @@ fun <Id> Modal(
 
     val close: Id.()-> Unit = { modals.remove( this )}
     ModalContainer(
-        styles.containerStyle
+        styles.containerStyle,
+        dataId
     ) {
 
         ModalHeader(
@@ -72,8 +73,10 @@ fun <Id> Modal(
 @Suppress("FunctionName")
 fun ModalContainer(
     styles : StyleScope.() -> Unit,
+    dataId: String? = null,
     content: @Composable ElementScope<HTMLElement>.()->Unit
 )  = Div({
+    if(dataId != null) dataId("$dataId.modal")
     style {
         border {
             style = LineStyle.Solid

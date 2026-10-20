@@ -18,12 +18,13 @@ import org.solyton.solawi.bid.module.permission.action.db.IsGrantedOneOf
 import org.solyton.solawi.bid.module.permission.action.db.no
 import org.solyton.solawi.bid.module.permission.action.db.rights
 import org.solyton.solawi.bid.module.shares.action.api.*
+import org.solyton.solawi.bid.module.shares.application.SHARE_MANAGEMENT_APPLICATION_NAME
 import org.solyton.solawi.bid.module.shares.data.api.*
 import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
 import org.solyton.solawil.bid.module.user.data.toUUID
 import java.util.*
 
-const val SHARE_APPLICATION = "AUCTIONS"
+// const val SHARE_APPLICATION = "AUCTIONS"
 
 @KtorDsl
 fun <SharesEnv> Routing.shares(
@@ -44,7 +45,7 @@ authenticate {
                     no, // todo:permission enable access check
                 ) { contextual ->
                     val providerId = UUID.fromString(contextual.data.providerId)
-                    contextIdOf(providerId, SHARE_APPLICATION)
+                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
                 } *
                 CreateShareType() *
                 Respond<ShareType> { transform() } runOn Base(call, environment)
@@ -60,7 +61,7 @@ authenticate {
                     no // todo:permission enable access check
                 ) { contextual ->
                     val providerId = UUID.fromString(contextual.data.providerId)
-                    contextIdOf(providerId, SHARE_APPLICATION)
+                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
                 } *
                 UpdateShareType() *
                 Respond<ShareType> { transform() } runOn Base(call, environment)
@@ -81,7 +82,7 @@ authenticate {
                     no // todo:permission enable access check
                 ) { contextual ->
                     val providerId = contextual.data.providerId
-                    contextIdOf(providerId, SHARE_APPLICATION)
+                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
                 } *
                 ReadShareTypesByProvider() *
                 Respond<ShareTypes> { transform() } runOn Base(call, environment)
@@ -102,7 +103,7 @@ authenticate {
                     no // todo:permission enable access check
                 ) { contextual ->
                     val providerId = UUID.fromString(contextual.data.providerId)
-                    contextIdOf(providerId, SHARE_APPLICATION)
+                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
                 } *
                 CreateShareOffer() *
                 Respond<ShareOffer> { transform() } runOn Base(call, environment)
@@ -118,7 +119,7 @@ authenticate {
                     no // todo:permission enable access check
                 ) { contextual ->
                     val providerId = UUID.fromString(contextual.data.providerId)
-                    contextIdOf(providerId, SHARE_APPLICATION)
+                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
                 } *
                 UpdateShareOffer() *
                 Respond<ShareOffer> { transform() } runOn Base(call, environment)
@@ -142,7 +143,7 @@ authenticate {
                     no // todo:permission enable access check
                 ) { contextual ->
                     val providerId = contextual.data.providerId
-                    contextIdOf(providerId, SHARE_APPLICATION)
+                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
                 } *
                 ReadShareOffersByProvider() *
                 Respond<ShareOffers> { transform() } runOn Base(call, environment)
@@ -170,7 +171,7 @@ authenticate {
                     no // todo:permission enable access check
                 ) { contextual ->
                     val providerId = UUID.fromString(contextual.data.providerId)
-                    contextIdOf(providerId, SHARE_APPLICATION)
+                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
                 } *
                 CreateShareSubscription() *
                 Respond<ShareSubscription> { transform() } runOn Base(call, environment)
@@ -185,7 +186,7 @@ authenticate {
                     ), no
                 ) { contextual ->
                     val providerId = UUID.fromString(contextual.data.providerId.value)
-                    contextIdOf(providerId, SHARE_APPLICATION)
+                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
                 } *
                 RolloverShareSubscription() *
                 Respond<ShareSubscriptions> { transform() } runOn Base(call, environment)
@@ -199,7 +200,7 @@ authenticate {
                     ), no
                 ) { contextual ->
                     val providerId = contextual.data.providerId.value.toUuid()
-                    contextIdOf(providerId, SHARE_APPLICATION)
+                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
                 } *
                 TransferOwnership() *
                 Respond { transform() } runOn Base(call, environment)
@@ -215,7 +216,7 @@ authenticate {
                     no // todo:permission enable access check
                 ) { contextual ->
                     val providerId = UUID.fromString(contextual.data.providerId)
-                    contextIdOf(providerId, SHARE_APPLICATION)
+                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
                 } *
                 UpdateShareSubscription() *
                 Respond<ShareSubscription> { transform() } runOn Base(call, environment)
@@ -231,7 +232,7 @@ authenticate {
                     no // todo:permission enable access check
                 ) { contextual ->
                     val providerId = contextual.data.providerId.toUUID()
-                    contextIdOf(providerId, SHARE_APPLICATION)
+                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
                 } *
                 UpdateShareStatus() *
                 Respond<ShareSubscription> { transform() } runOn Base(call, environment)
@@ -255,7 +256,7 @@ authenticate {
                     no // todo:permission enable access check
                 ) { contextual ->
                     val providerId = contextual.data.providerId
-                    contextIdOf(providerId, SHARE_APPLICATION)
+                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
                 } *
                 ReadShareShareSubscriptionsByProvider() * Respond<ShareSubscriptions> { transform() } runOn Base(call, environment)
             }
@@ -286,7 +287,7 @@ authenticate {
                     no
                 ) { contextual ->
                     val providerId = contextual.data.providerId.toUuid()
-                    contextIdOf(providerId, SHARE_APPLICATION)
+                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
 
                 } *
                 ImportShareSubscriptions() *
