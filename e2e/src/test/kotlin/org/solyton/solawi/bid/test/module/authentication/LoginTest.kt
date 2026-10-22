@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.authentication
+package org.solyton.solawi.bid.test.module.authentication
 
 import TestConfig
 import clickOn
@@ -38,7 +38,8 @@ class LoginTest {
         playwright.close()
     }
 
-    @Smoke@Test
+    @Smoke
+    @Test
     fun test_login() {
         page.navigate("${TestConfig.BASE_URL}/login")
         page.clickOn("cookie-disclaimer.modal.submit-button")
@@ -56,7 +57,8 @@ class LoginTest {
         )
     }
 
-    @Smoke@Test
+    @Smoke
+    @Test
     fun test_login_userDoesNotExist() {
         page.navigate("${TestConfig.BASE_URL}/login")
         page.clickOn("cookie-disclaimer.modal.submit-button")

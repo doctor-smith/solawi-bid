@@ -1,13 +1,17 @@
+package org.solyton.solawi.bid.test.application
+
+import TestConfig
+import TestUtils
 import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserType
+import com.microsoft.playwright.Page
 import com.microsoft.playwright.Playwright
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Smoke
 import java.nio.file.Files
-
 
 class NavigationTest {
 
@@ -34,7 +38,8 @@ class NavigationTest {
         }
     }
 
-    @Smoke@Test
+    @Smoke
+    @Test
     fun test_useStoredState() {
         val jsonString = Files.readString(TestUtils().storageStatePath)
         val context = browser.newContext(
@@ -45,7 +50,7 @@ class NavigationTest {
 
         page.navigate("${TestConfig.BASE_URL}/app/dashboard")
 
-        assertTrue(page.url().contains("/dashboard"))
+        Assertions.assertTrue(page.url().contains("/dashboard"))
 
         context.close()
     }
@@ -67,9 +72,9 @@ class NavigationTest {
 
         page.navigate("${TestConfig.BASE_URL}/app/dashboard")
         // Increase timeout and use a more specific pattern
-        page.waitForURL("${TestConfig.BASE_URL}/app/login", com.microsoft.playwright.Page.WaitForURLOptions().setTimeout(15000.0))
+        page.waitForURL("${TestConfig.BASE_URL}/app/login", Page.WaitForURLOptions().setTimeout(15000.0))
 
-        assertTrue(
+        Assertions.assertTrue(
             !page.url().contains("/dashboard"), "The user should not enter the dashboard with an invalid storage state."
         )
 

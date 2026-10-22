@@ -1,6 +1,6 @@
+package org.solyton.solawi.bid.test.application
 
 import org.junit.jupiter.api.fail
-// import org.junit.jupiter.api.Test
 
 class PreventDeployment {
     // @Test
