@@ -55,20 +55,58 @@ Issues Register for the full list.
 - `e2e/src/test/kotlin/util.kt` (modified by the user) — `clickOn`/`waitForLoadingToFinish`
   switched from one-shot Playwright `waitFor` to auto-retrying `assertThat(locator)...`
   assertions, to stabilize flaky test runs.
+- **2026-10-22 (page-object extraction)**: `util.kt` gained four more shared `Page`
+  extension functions (`dismissStrayErrorDialogIfPresent`, `clickIfPresent`,
+  `navigateToOrganizationApplicationPage`, `withFailureDiagnostics`), moved out of the
+  test class so any e2e test can reuse them. Six new page-object classes were added
+  under `e2e/src/test/kotlin/org/solyton/solawi/bid/pageobjects/`:
+  `OrganizationManagementPage`, `PrivateApplicationManagementPage`, `PersonalDataPage`,
+  `BankingPage`, `DistributionPage`, `SharesPage` — each wrapping the UI actions for one
+  admin page/module, reusable by future e2e tests across modules. See "Test
+  Architecture" below for the rationale and conventions.
 - `.junie/progress/share-managemet-e2e-progress-user.md` (new, added by the user) — the
   user's own working notes; kept as-is, untouched, and consolidated (not duplicated)
   into the "Known Issues Register" below.
 
 ## Tests Implemented
 
-- `ShareSubscriptionApprovalWorkflowTest` (`@Develop`, `@Workflow`) — covers workflow B1
+- `ShareSubscriptionApprovalWorkflowTest` (`@Workflow`) — covers workflow B1
   (`PendingActivation` →(PROVIDER, NO_PAYMENT_MANDATE_REQUIRED)→ `Subscribed`), building
-  its own fixture organization from scratch (steps 1-7 listed under "Fixture prerequisite
-  chain" below). **Implementation complete AND verification complete** — the full test
-  passes end-to-end in a real local run (see "Environment / Build State" for the exact
-  run). This is the first shares e2e test to go green.
-- An older, URL-navigation-based version of the same test function is kept commented out
-  in the same file for reference (superseded by the click-driven `@Develop` version).
+  its own fixture organization from scratch. **Implementation complete AND verification
+  complete** — the full test passes end-to-end in a real local run (see "Environment /
+  Build State" for the exact run). This is the first shares e2e test to go green. The
+  `@Develop` tag was removed once the test stabilized, since it now runs as part of the
+  regular `@Workflow` suite.
+- The test now also creates a personal user profile (name/contact/address) as its first
+  fixture step, via the new `PersonalDataPage` page object, and applies status/AHC
+  filters on the Share Subscriptions list before asserting row visibility (more robust
+  against unrelated rows from other test data).
+- As of 2026-10-22, the test's UI-interaction logic was extracted into reusable page
+  objects (see "Files Changed" and "Test Architecture" below); the test itself is now a
+  thin orchestration of page-object calls.
+
+## Test Architecture
+
+Page objects live in `e2e/src/test/kotlin/org/solyton/solawi/bid/pageobjects/` (plain
+Kotlin classes, one per admin page/module: `OrganizationManagementPage`,
+`PrivateApplicationManagementPage`, `PersonalDataPage`, `BankingPage`,
+`DistributionPage`, `SharesPage`). Each wraps a `Page` instance and exposes one method
+per user action (e.g. `BankingPage.createFiscalYear(start, end)`), using the same
+`data-id`-based locators as before. This is a deliberate choice **to stay in the test
+source set, not `main`**: the `e2e` module's `build.gradle.kts` only declares
+Playwright/JUnit as `testImplementation`, no other Gradle module depends on `:e2e`, and
+Page Objects are test infrastructure by convention (same reasoning Gradle's own
+`java-test-fixtures` plugin exists for — that plugin would only be needed if another
+*module* needed to depend on these page objects from its own tests; today nothing does).
+Any class under `e2e/src/test/kotlin/**` can already use any other class in that same
+source set without further wiring, exactly like the pre-existing `util.kt` helpers.
+
+**Known regression and fix during this extraction**: a `dismiss: Boolean = false`
+parameter had been added to `dismissStrayErrorDialogIfPresent` shortly before this
+session (effectively disabling it, since every call site relies on the default),
+which caused one flaky `TimeoutError` failure right after extraction. The user fixed
+this by changing the default back to `dismiss: Boolean = true` in `util.kt`; re-run
+confirmed the test passes again. No other behavior changed during the extraction.
 
 ## Exact Test Commands Identified
 
@@ -341,6 +379,36 @@ fixture.
 
 One dated entry per work session, newest first, so future sessions don't have to
 re-derive history from git diffs alone.
+
+### 2026-10-22 (later, page-object extraction)
+
+- User asked to extract the test's UI-interaction helper functions into reusable page
+  objects, so other e2e tests/modules can reuse them, and asked whether `main` vs. the
+  test source set is the right place for this (common Playwright/Selenium practice).
+- Investigated `e2e/build.gradle.kts` and `settings.gradle.kts`: confirmed Playwright is
+  `testImplementation`-only and no other module depends on `:e2e`, so the test source
+  set already supports full reuse across test classes without any `build.gradle`
+  changes - recommended staying there (or `java-test-fixtures` if cross-module reuse is
+  ever needed), and the user agreed.
+- Moved four generic helpers into `util.kt` as `Page` extension functions
+  (`dismissStrayErrorDialogIfPresent`, `clickIfPresent`,
+  `navigateToOrganizationApplicationPage`, `withFailureDiagnostics`) and created six
+  page-object classes under `org.solyton.solawi.bid.pageobjects`
+  (`OrganizationManagementPage`, `PrivateApplicationManagementPage`,
+  `PersonalDataPage`, `BankingPage`, `DistributionPage`, `SharesPage`).
+- Discovered the test file had changed substantially in parallel (user's own edits): the
+  `@Develop` tag was dropped, a new personal-profile creation step and status/AHC filter
+  interactions were added, and a `dismiss: Boolean = false` parameter had quietly
+  disabled `dismissStrayErrorDialogIfPresent`. Per the user's explicit instruction,
+  carried all of this over as-is into the extraction rather than reverting it.
+- Rewired `ShareSubscriptionApprovalWorkflowTest.kt` to use the new page objects;
+  `:e2e:compileTestKotlin` succeeded, but the first live re-run failed with a
+  `TimeoutError` caused by the disabled dismiss logic. The user fixed this by changing
+  the default back to `dismiss: Boolean = true`; a second run passed cleanly
+  (`./script/e2e-local.sh filterTest "org.solyton.solawi.bid.module.shares.ShareSubscriptionApprovalWorkflowTest"`).
+- **Next action**: pick up the next workflow (B2 payment-mandate authorization, or D1
+  rollover) as a new test class, reusing these page objects instead of duplicating UI
+  logic.
 
 ### 2026-10-22
 

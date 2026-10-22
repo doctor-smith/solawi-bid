@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.module.application
+package org.solyton.solawi.bid.test.module.application
 
 import TestConfig
 import TestUtils

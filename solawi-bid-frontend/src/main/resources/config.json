@@ -3,5 +3,5 @@
   "FRONTEND_URL": "http://localhost",
   "FRONTEND_PORT": "8080",
   "BACKEND_URL": "http://localhost",
-  "BACKEND_PORT": "18081"
+  "BACKEND_PORT": "8081"
 }
