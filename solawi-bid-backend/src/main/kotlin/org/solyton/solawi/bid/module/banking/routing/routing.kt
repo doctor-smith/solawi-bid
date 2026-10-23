@@ -3,10 +3,7 @@ package org.solyton.solawi.bid.module.banking.routing
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import org.evoleq.exposedx.data.DbEnv
-import org.evoleq.ktorx.Base
-import org.evoleq.ktorx.NotImplemented
-import org.evoleq.ktorx.ReceiveContextual
-import org.evoleq.ktorx.Respond
+import org.evoleq.ktorx.*
 import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
@@ -323,12 +320,22 @@ fun <BankingEnv> Routing.banking (
                 }
                 route("collections"){
                     get("by-legal-entity") {
-                        ReceiveContextual<String>{
-                            parameters -> requireNotNull(parameters["legal_entity"]) {
+                        ReceiveContextual<Pair<String, String>>{
+                            parameters ->
+                            val legalEntity = requireNotNull(parameters["legal_entity"]) {
                                 "Parameter 'legal_entity' is empty"
                             }
+                            val provider = requireNotNull(parameters["provider"]) {
+                                "Parameter 'provider' is empty"
+                            }
+                            provider x legalEntity
                         } *
-                        IsGranted(READ_SEPA_COLLECTIONS, no) *
+                        IsGrantedInDerivedContext(READ_SEPA_COLLECTIONS, yes) {
+                            contextual -> contextIdOf(BANKING_APPLICATION_NAME){
+                                contextual.data.first.toUuid()
+                            }
+                        } *
+                        TransformContextual { x: Pair<String, String> -> x.second } *
                         ReadSepaCollectionsByLegalEntity() *
                         Respond { transform() } runOn Base(call, environment)
                     }
