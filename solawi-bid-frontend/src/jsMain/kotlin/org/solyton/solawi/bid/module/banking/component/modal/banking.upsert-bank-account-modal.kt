@@ -16,6 +16,7 @@ import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.ElementScope
 import org.solyton.solawi.bid.module.banking.component.form.BankAccountForm
+import org.solyton.solawi.bid.module.banking.component.form.BankAccountFormConfig
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.deviceData
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
@@ -51,6 +52,7 @@ fun UpsertBankAccountModal(
     setBankAccount: (BankAccount)->Unit,
     isOkButtonDisabled: () -> Boolean = {false},
     hasDescription: Boolean = false,
+    config: BankAccountFormConfig = BankAccountFormConfig(),
     update: ()->Unit
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
     type = ModalType.Dialog,
@@ -64,6 +66,7 @@ fun UpsertBankAccountModal(
     texts = texts,
     isOkButtonDisabled = isOkButtonDisabled,
     styles = commonModalStyles(device),
+    dataId = "banking.upsert-bank-account"
 ) {
     Wrap {
         BankAccountForm(
@@ -72,6 +75,7 @@ fun UpsertBankAccountModal(
             bankAccount,
             setBankAccount,
             hasDescription,
+            config
         )
     }
 }
@@ -97,6 +101,7 @@ fun Storage<Modals<Int>>.showUpsertBankAccountModal(
     setBankAccount: (BankAccount)->Unit = {},
     isOkButtonDisabled: () -> Boolean = {false},
     hasDescription: Boolean = false,
+    config: BankAccountFormConfig = BankAccountFormConfig(),
     update: ()->Unit
 ) = with(nextId()) {
     put(this to ModalData(this,
@@ -112,6 +117,7 @@ fun Storage<Modals<Int>>.showUpsertBankAccountModal(
             setBankAccount,
             isOkButtonDisabled,
             hasDescription,
+            config,
             update = update
         )
     ) )

@@ -19,6 +19,7 @@ import org.evoleq.compose.layout.ReadOnlyProperties
 import org.evoleq.compose.routing.navigate
 import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.device.data.mediaType
+import org.evoleq.iql.dsl.query
 import org.evoleq.kotlinx.date.days
 import org.evoleq.kotlinx.date.now
 import org.evoleq.kotlinx.date.today
@@ -49,6 +50,8 @@ import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyl
 import org.solyton.solawi.bid.module.banking.action.*
 import org.solyton.solawi.bid.module.banking.action.sepa.*
 import org.solyton.solawi.bid.module.banking.application.BANKING_APPLICATION_NAME
+import org.solyton.solawi.bid.module.banking.component.form.BankAccountFormConfig
+import org.solyton.solawi.bid.module.banking.component.form.SelectableAccountTypes
 import org.solyton.solawi.bid.module.banking.component.form.defaultBankAccountInputs
 import org.solyton.solawi.bid.module.banking.component.form.sepa.FormConfiguration
 import org.solyton.solawi.bid.module.banking.component.form.sepa.PartialSepaCollection
@@ -91,8 +94,8 @@ import org.solyton.solawi.bid.module.style.page.PageTitle
 import org.solyton.solawi.bid.module.style.page.SubTitle
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
-import org.solyton.solawi.bid.module.user.action.user.getUsers
 import org.solyton.solawi.bid.module.user.action.user.readUserProfiles
+import org.solyton.solawi.bid.module.user.action.user.userQuery
 import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 import org.solyton.solawi.bid.module.user.data.userActions
 import org.solyton.solawi.bid.module.values.AccessorId
@@ -115,8 +118,10 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
         providerId.value
     )
 
-    val managedUsers = storage * managedUsers
     val bankingApplicationStorage = storage * bankingApplicationIso
+    // val organization = Read(bankingApplicationStorage * user * organizations * DeepSearch { it.organizationId == providerId.value })
+    // val organizationMembers = organization * Reader{ o -> o.members.map{it.memberId}}
+    val managedUsers = storage * managedUsers //  * FilterBy { user -> user.id in organizationMembers }
     val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
     val deviceType = bankingApplicationStorage * deviceData * mediaType.get
 
@@ -142,7 +147,16 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
 
     LaunchedEffect(providerId) {
         launch {
-            storage * userIso * userActions dispatch getUsers(providerId.value)
+            storage * userIso * userActions dispatch userQuery(
+                query("user") {
+                    select("user")
+                    where {
+                        any("organizations") {
+                            p("id") eq providerId.value
+                        }
+                    }
+                }
+            )
         }
         launch {
             bankingApplicationActions dispatch readPersonalLegalEntity(
@@ -478,6 +492,7 @@ fun CreditorBankAccounts(
                             color = Color.black,
                             bgColor = Color.white,
                             deviceType = deviceType,
+                            dataId = "banking.page.creditor-bank-accounts.create-button",
                         ) {
                             val bankAccountTexts = dialogModalTexts("BankAccounts").extend {
                                 add(defaultBankAccountInputs())
@@ -491,7 +506,8 @@ fun CreditorBankAccounts(
                                 bankAccount = null,
                                 setBankAccount = { bA -> bankAccountState = bA },
                                 isOkButtonDisabled = { bankAccountState == null },
-                                hasDescription = true
+                                hasDescription = true,
+                                config = BankAccountFormConfig(SelectableAccountTypes.Debtor),
                             ) {
                                 if (bankAccountState != null) {
                                     val newBankAccount = requireNotNull(bankAccountState)
@@ -515,7 +531,8 @@ fun CreditorBankAccounts(
                     CardChevrons(
                         texts = Source{ cardChevronTexts() },
                         deviceType = deviceType,
-                        opened = opened
+                        opened = opened,
+                        dataId = "banking.page.creditor-bank-accounts.chevron",
                     ) {
                         opened = it
                     }
@@ -562,6 +579,7 @@ fun CreditorBankAccounts(
                                     bankAccount = bankAccount,
                                     setBankAccount = { bA -> bankAccountState = bA },
                                     isOkButtonDisabled = { bankAccountState == null },
+                                    config = BankAccountFormConfig(SelectableAccountTypes.Creditor),
                                     hasDescription = true
                                 ) {
                                     if (bankAccountState != null) {
@@ -648,6 +666,7 @@ fun CustomerBankAccounts(
                             color = Color.black,
                             bgColor = Color.white,
                             deviceType = deviceType,
+                            dataId = "banking.page.customer-bank-accounts.create-button",
                         ) {
                             val bankAccountTexts = dialogModalTexts("BankAccounts").extend {
                                 add(defaultBankAccountInputs())
@@ -663,7 +682,8 @@ fun CustomerBankAccounts(
                                 setBankAccount = { bA -> bankAccountState = bA },
                                 isOkButtonDisabled = {
                                     bankAccountState == null || bankAccountState?.userId?.value == NIL_UUID
-                                }
+                                },
+                                config = BankAccountFormConfig(SelectableAccountTypes.Debtor)
                             ) {
                                 if (bankAccountState != null) {
                                     val newBankAccount = requireNotNull(bankAccountState)
@@ -749,7 +769,8 @@ fun CustomerBankAccounts(
                     CardChevrons(
                         texts = Source{ cardChevronTexts() },
                         deviceType = deviceType,
-                        opened = opened
+                        opened = opened,
+                        dataId = "banking.page.customer-bank-accounts.chevron",
                     ) {
                         opened = it
                     }
@@ -832,7 +853,8 @@ fun CustomerBankAccounts(
                                         deviceType,
                                         LegalEntityId(bankAccount.userId.value),
                                         bankAccount,
-                                        { bA -> bankAccountState = bA }
+                                        { bA -> bankAccountState = bA },
+                                        config = BankAccountFormConfig(SelectableAccountTypes.Debtor),
                                     ) {
                                         if (bankAccountState != null) {
                                             val newBankAccount = requireNotNull(bankAccountState)
@@ -1094,7 +1116,10 @@ fun SepaCollections(
         val downloadStatus = sepaMessageString * downloadLens
         if(downloadStatus.read() == Download.Start) {
             scope.launch{
-                bankingApplicationActions dispatch readPersonalSepaCollections(LegalEntityId(providerId.value))
+                bankingApplicationActions dispatch readPersonalSepaCollections(
+                    providerId,
+                    Read(legalEntity * legalEntityId) * Emit
+                )
             }.join()
             download((sepaMessageString * message).read(), "PAIN_${now().format(Locale.Iso)}.xml")
             downloadStatus.write(Download.None)
@@ -1102,7 +1127,10 @@ fun SepaCollections(
     }
     LaunchedEffectOnSource(Read(sepaMandates), Read(sepaMessages)) {
         if(isLegalEntityDefined.emit()) launch{
-            bankingApplicationActions dispatch readPersonalSepaCollections(LegalEntityId(providerId.value))
+            bankingApplicationActions dispatch readPersonalSepaCollections(
+                providerId,
+                Read(legalEntity * legalEntityId) * Emit
+            )
         }
     }
     LaunchedEffectOnSource(Read(sepaCollections)) {

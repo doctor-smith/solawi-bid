@@ -93,7 +93,7 @@ class ShareSubscriptionApprovalWorkflowTest {
         val context = adminContext()
         try {
             val page = context.newPage()
-            page.withFailureDiagnostics {
+            page.withFailureDiagnostics("ShareSubscriptionApprovalWorkflowTest") {
                 val suffix = System.currentTimeMillis()
                 val organizationName = "e2e-shares-org-$suffix"
                 val shareTypeName = "e2e-share-type-$suffix"

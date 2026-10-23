@@ -1,10 +1,13 @@
 package org.solyton.solawi.bid.pageobjects
 
+import CHECK_FALSE
+import CHECK_TRUE
 import checkIcon
 import clickOn
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import getByDataId
+import getByPartialDataId
 import put
 
 /**
@@ -37,10 +40,17 @@ class SharesPage(private val page: Page) {
 
     /**
      * Creates a fixed-price share offer for [shareTypeName] on the fiscal year named
-     * [fiscalYearKey] (its `FiscalYear.format()`, e.g. "2026"), with the given [price]
-     * and SEPA mandate not required (keeps this fixture independent of any SEPA setup).
+     * [fiscalYearKey] (its `FiscalYear.format()`, e.g. "2026"), with the given [price].
+     * [ahcAuthorizationRequired] controls whether a SEPA payment-mandate authorization is
+     * required before the resulting subscription can become `Subscribed` (workflow B2),
+     * or not (workflow B1).
      */
-    fun createShareOffer(fiscalYearKey: String, shareTypeName: String, price: String) {
+    fun createShareOffer(
+        fiscalYearKey: String,
+        shareTypeName: String,
+        price: String,
+        ahcAuthorizationRequired: Boolean = false
+    ) {
         page.clickOn("shares.page.share-offer.chevron")
         page.clickOn("shares.page.share-offer.create-button")
 
@@ -58,12 +68,66 @@ class SharesPage(private val page: Page) {
 
         page.put("shares.modal.upsert-share-offer.price-input", price)
 
+        val ahcOptionKey = if (ahcAuthorizationRequired) CHECK_TRUE else CHECK_FALSE
         page.clickOn("shares.modal.upsert-share-offer.ahc-authorization-required-dropdown")
-        page.clickOn("shares.modal.upsert-share-offer.ahc-authorization-required-dropdown.option.\u274C")
+        page.clickOn("shares.modal.upsert-share-offer.ahc-authorization-required-dropdown.option.$ahcOptionKey")
 
         page.clickOn("shares.modal.upsert-share-offer.modal.submit-button")
 
         assertThat(modal).not().isVisible()
+    }
+
+    /**
+     * Attaches a SEPA collection to the (single) existing share offer, selecting the
+     * creditor bank account by its `"<holder> / <description>"` dropdown key.
+     */
+    fun attachSepaCollectionToOffer(
+        creditorAccountHolder: String,
+        creditorAccountDescription: String,
+        collectionKey: String,
+        mandateReferencePrefix: String,
+        remittanceInformation: String
+    ) {
+        val sepaCollectionButton = page.locator(
+            "[data-id^='shares.page.share-offer.'][data-id\$='.sepa-collection-button']"
+        ).first()
+        assertThat(sepaCollectionButton).isVisible()
+        sepaCollectionButton.click()
+
+        page.clickOn("sepa-collection-form.bank-account-dropdown")
+        page.clickOn("sepa-collection-form.bank-account-dropdown.option.$creditorAccountHolder / $creditorAccountDescription")
+
+        page.locator("#collection-key-input").fill(collectionKey)
+        page.locator("#mandate-reference-prefix").fill(mandateReferencePrefix)
+        page.locator("#remittance-information").fill(remittanceInformation)
+
+        page.clickOn("null.modal.submit-button")
+    }
+
+    /**
+     * Attaches/creates a SEPA mandate for the (single) existing share subscription. The
+     * "Upsert" dialog pre-fills every field with sensible defaults (debtor name, the
+     * only available SEPA collection, today's date, status ACTIVE), but its internal
+     * "selected mandate" state stays null - and submit silently no-ops - until at least
+     * one field's change callback has fired, so the status dropdown is re-selected to
+     * its own current value to trigger it.
+     */
+    fun attachSepaMandateToSubscription() {
+        val sepaMandateButton = page.getByPartialDataId(".attach-or-upsert-sepa-mandate-button")
+            /*
+            page.locator(
+            "[data-id^='shares.page.share-subscription.'][data-id\$='.sepa-mandate-button']"
+        ).first()
+
+             */
+        assertThat(sepaMandateButton).isEnabled()
+        sepaMandateButton.click()
+
+        page.clickOn("sepa-mandate-form.status-dropdown")
+        page.clickOn("sepa-mandate-form.status-dropdown.option.ACTIVE")
+
+
+        page.clickOn("shares.modal.attach-or-upsert-sepa-mandate.modal.submit-button")
     }
 
     /**

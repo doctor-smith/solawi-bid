@@ -59,6 +59,9 @@ data class AttachOrUpsertSepaMandateModalConfiguration(
     val mode: AttachOrUpsertSepaMandateModalMode
 )
 
+const val ATTACH_OR_UPSERT_SEPA_MANDATE_MODAL_DATA_ID = "shares.modal.attach-or-upsert-sepa-mandate"
+
+
 @Markup
 @Suppress("FunctionName", "UnusedParameter")
 fun AttachOrUpsertSepaMandateModal(
@@ -87,8 +90,9 @@ fun AttachOrUpsertSepaMandateModal(
     onCancel = {},
     texts = texts.emit(),
     styles = commonModalStyles(device).compact(),
-    dataId = "shares.modal.sepa-mandate",
+    dataId = ATTACH_OR_UPSERT_SEPA_MANDATE_MODAL_DATA_ID,
 ) {
+    val baseDataId = "$ATTACH_OR_UPSERT_SEPA_MANDATE_MODAL_DATA_ID.modal"
     Wrap {
         val options = remember(usersSepaMandates) {
             usersSepaMandates.associateBy { it.mandateReference.value }
@@ -115,7 +119,7 @@ fun AttachOrUpsertSepaMandateModal(
                 )
                 Horizontal({ padding(10.px); gap(10.px) }) {
                     RadioInput(selectedAction == MandateDialogAction.ATTACH_EXISTING) {
-                        dataId("shares.modal.sepa-mandate.attach-existing-radio")
+                        dataId("$baseDataId.attach-existing-radio")
                         onClick {
                             selectedAction = MandateDialogAction.ATTACH_EXISTING
                             setMode(AttachOrUpsertSepaMandateModalMode.Attach)
@@ -125,7 +129,7 @@ fun AttachOrUpsertSepaMandateModal(
                     Text("Attach existing")
 
                     RadioInput(selectedAction == MandateDialogAction.EDIT_EXISTING) {
-                        dataId("shares.modal.sepa-mandate.edit-existing-radio")
+                        dataId("$baseDataId.edit-existing-radio")
                         onClick {
                             selectedAction = MandateDialogAction.EDIT_EXISTING
                             setMode(AttachOrUpsertSepaMandateModalMode.Upsert)
@@ -135,7 +139,7 @@ fun AttachOrUpsertSepaMandateModal(
                     Text("Edit existing")
 
                     RadioInput(selectedAction == MandateDialogAction.CREATE_NEW) {
-                        dataId("shares.modal.sepa-mandate.create-new-radio")
+                        dataId("$baseDataId.create-new-radio")
                         onClick {
                             selectedAction = MandateDialogAction.CREATE_NEW
                             setMode(AttachOrUpsertSepaMandateModalMode.Upsert)
@@ -161,7 +165,7 @@ fun AttachOrUpsertSepaMandateModal(
                             width(100.percent)
                         },
                         iconContent = { open -> SimpleUpDown(open) },
-                        dataId = "shares.modal.sepa-mandate.selected-mandate-dropdown",
+                        dataId = "$baseDataId.selected-mandate-dropdown",
                     ) { (_, value) ->
                         selectedRef = value.mandateReference.value
                         setSepaMandate(value)

@@ -4,6 +4,7 @@ import org.evoleq.iql.data.Query
 import org.evoleq.math.Reader
 import org.evoleq.math.contraMap
 import org.evoleq.optics.storage.Action
+import org.evoleq.optics.storage.suffixed
 import org.solyton.solawi.bid.module.permissions.data.Permissions
 import org.solyton.solawi.bid.module.user.data.Application
 import org.solyton.solawi.bid.module.user.data.api.UserQuery
@@ -16,9 +17,9 @@ const val USER_QUERY = "USER_QUERY"
 
 fun userQuery(
     query: Query,
-    nameSuffix: String = ""
+    nameSuffix: String? = null
 ) = Action<Application, UserQuery, Users>(
-    name = "$USER_QUERY$nameSuffix",
+    name = USER_QUERY.suffixed(nameSuffix),
     reader = Reader { _: Application -> UserQuery(query) },
     endPoint = UserQuery::class,
     writer = managedUsers.set contraMap {
