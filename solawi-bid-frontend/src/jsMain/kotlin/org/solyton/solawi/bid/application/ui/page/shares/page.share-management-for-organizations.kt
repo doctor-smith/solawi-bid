@@ -11,6 +11,7 @@ import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.routing.navigate
 import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.device.data.mediaType
+import org.evoleq.iql.dsl.query
 import org.evoleq.kotlinx.date.now
 import org.evoleq.language.Lang
 import org.evoleq.language.subComp
@@ -110,8 +111,8 @@ import org.solyton.solawi.bid.module.style.page.SubTitle
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.action.organization.readOrganizations
-import org.solyton.solawi.bid.module.user.action.user.getUsers
 import org.solyton.solawi.bid.module.user.action.user.readUserProfiles
+import org.solyton.solawi.bid.module.user.action.user.userQuery
 import org.solyton.solawi.bid.module.user.component.dropdown.dropdownStyles
 import org.solyton.solawi.bid.module.user.data.UserApplication
 import org.solyton.solawi.bid.module.user.data.managed.id
@@ -187,7 +188,14 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
 
         }
         launch {
-            userActions dispatch getUsers(providerId.value)
+            userActions dispatch userQuery(query("user") {
+                select("user")
+                where{
+                    any("organizations") {
+                        p("id") eq providerId.value
+                    }
+                }
+            })
         }
     }
     if(organizationsStorage.read().isEmpty()) return
@@ -232,7 +240,10 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                 )
             }
             launch {
-                bankingApplicationActions dispatch readPersonalSepaCollections(legalEntityId)
+                bankingApplicationActions dispatch readPersonalSepaCollections(
+                    providerId,
+                    legalEntityId
+                )
             }
             launch {
                 bankingApplicationActions dispatch readSepaMessagesByLegalEntity(LegalEntityId(providerId.value))
@@ -469,10 +480,17 @@ fun ShareOfferManagement(
 
     // Banking stuff
     val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
-    val debtorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.bankAccountType == AccountType.DEBTOR }
+    val debtorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy {
+        it.bankAccountType == AccountType.DEBTOR ||
+        it.userId != UserId(providerId.value)
+    }
     val fiscalYears = bankingApplicationStorage * fiscalYears
     val creditorIdentifier = bankingApplicationStorage * creditorIdentifier
-    val creditorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.bankAccountType == AccountType.CREDITOR }
+    val creditorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy {
+        it.bankAccountType == AccountType.CREDITOR ||
+        it.userId == UserId(providerId.value)
+    }
+
     val sepaModule = bankingApplicationStorage * sepaModule
     val sepaCollections = sepaModule * sepaCollections
 
@@ -619,7 +637,7 @@ fun ShareOfferManagement(
                                             bankingApplicationStorage,
                                             texts = dialogModalTexts("Attach Sepa Collection"),
                                             device = deviceType,
-                                            bankAccounts = creditorBankAccounts.read(),
+                                            bankAccounts = Read(creditorBankAccounts),
                                             sepaCollection = sepaCollectionState,
                                             isOkButtonDisabled = {
                                                 with(sepaCollectionState) {
@@ -1493,9 +1511,10 @@ fun ShareSubscriptionManagement(
                         val checked = checkedSubscription.checked
                         val subscription = checkedSubscription.shareSubscription
                         key(index, allChecked, checksChanged, checked, subscription) {
-                            ListItemWrapper({
-                                listItemWrapperStyle(this, index)
-                            }) {
+                            ListItemWrapper(
+                                { listItemWrapperStyle(this, index) },
+                                "shares.page.share-subscription.list.item.${subscription.shareSubscriptionId}"
+                            ) {
                                 DataWrapper(cardListStyles.dataWrapper) {
                                     var checkedState by remember { mutableStateOf(checked) }
                                     CheckBoxCell({ checkedState }, { width(2.percent) }, dataId = "shares.page.share-subscription.${subscription.shareSubscriptionId}.checkbox") {
@@ -1615,7 +1634,7 @@ fun ShareSubscriptionManagement(
                                         bgColor = Color.white,
                                         deviceType = deviceType,
                                         isDisabled = bankAccount == null ||  collections.isEmpty() || creditorId == null,
-                                        dataId = "shares.page.share-subscription.${subscription.shareSubscriptionId}.sepa-mandate-button",
+                                        dataId = "shares.page.share-subscription.${subscription.shareSubscriptionId}.attach-or-upsert-sepa-mandate-button",
                                     ) {
                                         shareManagementModals.showAttachOrUpsertSepaMandateModal(
                                             storage = bankingApplicationStorage,

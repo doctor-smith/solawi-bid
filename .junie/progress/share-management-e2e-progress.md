@@ -1,11 +1,10 @@
 ---
-Last updated: 2026-10-22
-Phase: 1 (Audit) complete; Phase 2 (fixture-chain build-out) complete and VERIFIED —
-`ShareSubscriptionApprovalWorkflowTest` (workflow B1) now passes end-to-end in a real
-`./script/e2e-local.sh devTest` run (1 test, 0 failures, 0 errors, ~95s). All P0 blockers
-from the previous session (`FY-1`, `FY-2`, the legal-entity/creditor-id context-id
-mismatch, and the uncaught client-side crash) are resolved. Phase 3 (remaining
-workflows B2-G2) has not started yet.
+Last updated: 2026-10-23
+Phase: 1 (Audit) complete; Phase 2 (fixture-chain build-out) complete and VERIFIED.
+Phase 3 (remaining workflows) is underway: B1 (approval, no mandate) and B2
+(payment-mandate authorization) both pass end-to-end, confirmed by the user. Test
+infrastructure is evolving toward reusable page objects and a per-test isolated-user
+pattern (see "Test Architecture"). Next up: B3/B4/D1.
 ---
 
 # Share Management E2E — Progress & Audit
@@ -67,6 +66,14 @@ Issues Register for the full list.
 - `.junie/progress/share-managemet-e2e-progress-user.md` (new, added by the user) — the
   user's own working notes; kept as-is, untouched, and consolidated (not duplicated)
   into the "Known Issues Register" below.
+- **2026-10-22 (B2 implementation)**: eight additive `data-id`s added across
+  `page.banking-application-for-organizations.kt` (two bank-account `PlusButton`s +
+  their `CardChevrons`), `form.banking.bank-account.kt` (account-type and is-active
+  dropdowns), `form.sepa.upsert-sepa-collection.kt` (creditor-bank-account dropdown),
+  and `form.update-sepa-mandate.kt` (SEPA-collection and status dropdowns) - all
+  following the same no-business-logic-change pattern as every prior instrumentation
+  change. New file `e2e/src/test/kotlin/org/solyton/solawi/bid/module/shares/PaymentMandateAuthorizationWorkflowTest.kt`
+  (workflow B2), plus new methods on the `BankingPage`/`SharesPage` page objects.
 
 ## Tests Implemented
 
@@ -84,29 +91,68 @@ Issues Register for the full list.
 - As of 2026-10-22, the test's UI-interaction logic was extracted into reusable page
   objects (see "Files Changed" and "Test Architecture" below); the test itself is now a
   thin orchestration of page-object calls.
+- `PaymentMandateAuthorizationWorkflowTest` (`@Develop`, `@Workflow`) - covers
+  workflow B2 (`PendingActivation` -> ... -> `Subscribed` via a SEPA payment-mandate
+  authorization). **Implementation complete AND verification complete** - the user
+  confirmed on 2026-10-23 that it passes end-to-end ("der zweite Testcase läuft jetzt
+  auch"). Reuses `BankingPage`/`SharesPage` methods added for B2
+  (`createCreditorBankAccount`, `createDebtorBankAccount`,
+  `createShareOffer(..., ahcAuthorizationRequired = true)`, `attachSepaCollectionToOffer`,
+  `attachSepaMandateToSubscription`). The user substantially reworked the test on top of
+  this (see "Test Architecture" for the new per-test isolated-user pattern and
+  page-object package restructuring) and changed the final assertion from a bulk-edit
+  `SUBSCRIBED` check to confirming the attached SEPA mandate's collection
+  key/reference-prefix is visible in the subscription list - a TODO comment in the test
+  notes richer assertions (SEPA collection active, mandate visible on the Banking page)
+  are still open for a future pass.
 
 ## Test Architecture
 
-Page objects live in `e2e/src/test/kotlin/org/solyton/solawi/bid/pageobjects/` (plain
-Kotlin classes, one per admin page/module: `OrganizationManagementPage`,
-`PrivateApplicationManagementPage`, `PersonalDataPage`, `BankingPage`,
-`DistributionPage`, `SharesPage`). Each wraps a `Page` instance and exposes one method
-per user action (e.g. `BankingPage.createFiscalYear(start, end)`), using the same
-`data-id`-based locators as before. This is a deliberate choice **to stay in the test
-source set, not `main`**: the `e2e` module's `build.gradle.kts` only declares
-Playwright/JUnit as `testImplementation`, no other Gradle module depends on `:e2e`, and
-Page Objects are test infrastructure by convention (same reasoning Gradle's own
-`java-test-fixtures` plugin exists for — that plugin would only be needed if another
-*module* needed to depend on these page objects from its own tests; today nothing does).
-Any class under `e2e/src/test/kotlin/**` can already use any other class in that same
-source set without further wiring, exactly like the pre-existing `util.kt` helpers.
+Page objects live under `e2e/src/test/kotlin/org/solyton/solawi/bid/pageobjects/`
+(plain Kotlin classes, no `build.gradle` changes needed - see rationale below). The
+original flat layout (`OrganizationManagementPage`, `PrivateApplicationManagementPage`,
+`PersonalDataPage`, `BankingPage`, `DistributionPage`, `SharesPage` directly under
+`pageobjects/`) is being evolved by the user into a nested structure mirroring the
+app's own module layout, e.g. `pageobjects.application.dashboard.DashboardPage`,
+`pageobjects.module.authentication.LoginPage`, `pageobjects.module.user.UserManagementPage`,
+`pageobjects.shared.NavBar`. Both layouts currently coexist (imported via a mix of
+`import org.solyton.solawi.bid.pageobjects.*` and explicit nested imports) as the
+restructuring is still in progress. Each page object wraps a `Page` instance and
+exposes one method per user action (e.g. `BankingPage.createFiscalYear(start, end)`),
+using the same `data-id`-based locators as before.
 
-**Known regression and fix during this extraction**: a `dismiss: Boolean = false`
-parameter had been added to `dismissStrayErrorDialogIfPresent` shortly before this
-session (effectively disabling it, since every call site relies on the default),
-which caused one flaky `TimeoutError` failure right after extraction. The user fixed
-this by changing the default back to `dismiss: Boolean = true` in `util.kt`; re-run
-confirmed the test passes again. No other behavior changed during the extraction.
+This stays **in the test source set, not `main`**: the `e2e` module's
+`build.gradle.kts` only declares Playwright/JUnit as `testImplementation`, no other
+Gradle module depends on `:e2e`, and Page Objects are test infrastructure by
+convention (same reasoning Gradle's own `java-test-fixtures` plugin exists for - that
+plugin would only be needed if another *module* needed to depend on these page objects
+from its own tests; today nothing does). Any class under `e2e/src/test/kotlin/**` can
+already use any other class in that same source set without further wiring, exactly
+like the pre-existing `util.kt` helpers.
+
+**New since B2 (2026-10-23): per-test isolated user + `withUser`/`context.use`
+helpers.** Rather than running every fixture step as `TEST_USER`,
+`PaymentMandateAuthorizationWorkflowTest` now has an admin phase (logged in as
+`TEST_USER`, using `UserManagementPage.createUserViaAdminUi` to create a disposable
+e2e-only user, then logging out) followed by a user phase that logs in as that new
+user (`withUser(testUser on browser) { ... }`) to run the rest of the fixture and the
+actual workflow. `context.use { ... }` wraps a `BrowserContext` for
+auto-closing/diagnostics scoping. `withFailureDiagnostics` was also extended to accept
+a `reportDirectory: String` parameter, so admin-phase and user-phase diagnostics are
+written to separate subfolders (e.g. `.../PaymentMandateAuthorizationWorkflowTest/admin-actions/`,
+`.../user-actions/`) instead of overwriting one shared set of files. A code comment in
+the test flags a known gap: there is currently no UI link to reach
+`UserManagementPage` as a normal admin flow (missing rights/roles for `TEST_USER`),
+so the test navigates there directly via `.load()`; the user's TODO is to grant the
+right rights via a migration so this can go through a real navigation click instead -
+tracked as `E2E-6` below.
+
+**Known regression and fix during the page-object extraction (2026-10-22)**: a
+`dismiss: Boolean = false` parameter had been added to `dismissStrayErrorDialogIfPresent`
+shortly before that session (effectively disabling it, since every call site relies on
+the default), which caused one flaky `TimeoutError` failure right after extraction. The
+user fixed this by changing the default back to `dismiss: Boolean = true` in `util.kt`;
+re-run confirmed the test passes again. No other behavior changed during the extraction.
 
 ## Exact Test Commands Identified
 
@@ -190,7 +236,7 @@ Prefer the local docker e2e env (`./script/e2e-local.sh`) over calling `:e2e:tes
 | A2 | FY-specific share offer creation | n/a (setup) | `ShareSubscriptionApprovalWorkflowTest.kt` (`createShareOfferViaAdminUi`) | **Verified** — passes as part of the full B1 run | None | Covered as a fixture helper |
 | A3 | Member subscribes to offer | → `PendingActivation` | `ShareSubscriptionApprovalWorkflowTest.kt` (`createShareSubscriptionViaAdminUi`) | **Verified** — passes as part of the full B1 run, subscription confirmed `PENDING_ACTIVATION` | None | Covered as a fixture helper |
 | B1 | FY1 approval, no mandate | `PendingActivation` →(PROVIDER, NO_PAYMENT_MANDATE_REQUIRED)→ `Subscribed` | `ShareSubscriptionApprovalWorkflowTest.kt` | **Implementation complete AND verification complete** — full test passes (0 failures, 95.6s, 2026-10-22) | None | **Done.** Next: pick the next-highest-value workflow (e.g. B2 payment-mandate authorization, or D1 rollover) reusing this fixture chain |
-| B2 | Payment-mandate authorization | `PendingActivation`→`AwaitingAhcAuthorization`→`Subscribed` | None | Not verified | PROVIDER permission exists for both hops; SEPA mandate attach button has `data-id`; needs a configured legal entity/bank account in the env (per existing plan's "Risks" section) | Verify SEPA precondition in target env before implementing |
+| B2 | Payment-mandate authorization | `PendingActivation`→`AwaitingAhcAuthorization`→`Subscribed` | `PaymentMandateAuthorizationWorkflowTest.kt` | **Implementation complete AND verification complete** - confirmed passing by the user on 2026-10-23, via a SEPA-collection-attached + SEPA-mandate-attached fixture on top of B1's chain | None | **Done.** Note: final assertion checks the attached mandate's collection key/reference prefix rather than a direct `SUBSCRIBED` check; richer assertions (SEPA collection active, mandate visible on Banking page) are a noted TODO for a future pass |
 | B3 | Failed authorization | `AwaitingAhcAuthorization`→(PROVIDER/SYSTEM, AUTHORIZATION_FAILED)→`Suspended` | None | Not verified | PROVIDER permission exists | Implementable after B2 |
 | B4 | Auction clearance + final approval | `PendingActivation`→`ClearedForAuction`→`Subscribed` | None | Not verified | PROVIDER permission exists for both hops | Implementable |
 | B5 | Activation rejected → resubmission | `PendingActivation`→(PROVIDER, REQUIREMENTS_NOT_MET)→`ActivationRejected`; `ActivationRejected`→(**USER**, NEW_REQUIREMENTS)→`PendingActivation` | None | Not verified | **Second hop has no PROVIDER-permitted reason.** The only UI control for status changes (Bulk-Edit dropdown) hardcodes `ChangedBy.PROVIDER` and does `permissions[ChangedBy.PROVIDER]!!` — selecting `PendingActivation` as target here will throw `NullPointerException` client-side. See "Blockers" below. | **STOP — ask user** |
@@ -238,6 +284,7 @@ sprint"); **P3** = needs more live-environment diagnosis before any fix.
 | E2E-3 | E2E test code | No ad-hoc test-name/class filtering in `./script/e2e-local.sh` (only whole-tag commands like `devTest`/`workflowTest`) | P1 | **Fixed** — new `filterTest <pattern>` command added, forwarding to `./gradlew :e2e:test --tests "<pattern>"` with the same env vars as the other commands | Done |
 | E2E-4 | E2E test code | `failure-network.log` entries capture the failing request's own URL but not the page URL the test was on when it failed | P1 | **Fixed** — `withFailureDiagnostics` now appends a `source-page-url: ${page.url()}` line to each logged entry | Done |
 | E2E-5 | E2E test code | User selection in `UpsertShareSubscriptionModal` is unreliable in Playwright — the click sometimes doesn't register | P3 | Partially mitigated — `assertThat(selectedUser).hasValue(username)` moved right after the click | Keep monitoring; no further change until observed failing live |
+| E2E-6 | E2E test code / possibly source code | No UI link lets `TEST_USER` reach `UserManagementPage` via a normal navigation click (missing rights/roles) — `PaymentMandateAuthorizationWorkflowTest` works around this with a direct `.load()` navigation (code comment left in place by the user) | P2 | Open — documented workaround in place, not blocking | User's own TODO: grant the right rights/roles to `TEST_USER` via a migration so the real navigation link becomes usable, then switch the test back to click-driven navigation |
 | FE-1 | Frontend (deferred) | `GET banking/bank-accounts/all` → 403 Access denied | P2 | Deferred to next sprint (per user) | Permission check fix, out of scope here |
 | FE-2 | Frontend (deferred) | `GET banking/legal-entities/personal` → 404 No such legal entity party | P2 | Deferred to next sprint (per user) | Permission check fix, out of scope here |
 | FE-3 | Frontend (deferred) | `GET banking/creditors/identifiers/by-legal-entity` → 500 "No such context" | P2 | Deferred to next sprint (per user) | Render-guard so the page only renders once a context entity is stored, out of scope here |
@@ -379,6 +426,70 @@ fixture.
 
 One dated entry per work session, newest first, so future sessions don't have to
 re-derive history from git diffs alone.
+
+### 2026-10-23 (B2 confirmed passing + user reworked the test)
+
+- User confirmed `PaymentMandateAuthorizationWorkflowTest` (workflow B2) now passes
+  end-to-end ("der zweite Testcase läuft jetzt auch").
+- Between sessions, the user substantially reworked the test on top of the B2
+  implementation from the previous entry: it now runs an admin phase (as `TEST_USER`)
+  that creates a disposable e2e-only user via a new `UserManagementPage` page object,
+  logs out, then runs the rest of the fixture and the actual B2 workflow logged in as
+  that new user via new `withUser(testUser on browser) { ... }` /
+  `context.use { ... }` test-framework helpers. `withFailureDiagnostics` now takes a
+  `reportDirectory` parameter so admin-phase and user-phase diagnostics land in
+  separate subfolders.
+- Page objects are being reorganized into a nested package structure mirroring the
+  app's own modules (`pageobjects.application.dashboard.DashboardPage`,
+  `pageobjects.module.authentication.LoginPage`,
+  `pageobjects.module.user.UserManagementPage`, `pageobjects.shared.NavBar`), alongside
+  the original flat `pageobjects.*` classes from B1/B2 (`BankingPage`, `SharesPage`,
+  etc.) - both coexist for now.
+- The test's final assertion changed from checking the subscription row's status text
+  directly to confirming the attached SEPA mandate's collection key/reference prefix is
+  visible in the list; a TODO comment in the test flags that richer assertions (SEPA
+  collection active, mandate visible on the Banking page) are intentionally deferred.
+- New known issue logged (`E2E-6`): no UI link yet lets `TEST_USER` reach
+  `UserManagementPage` through a normal click (missing rights/roles) - worked around
+  with a direct page-load navigation, with a migration-based fix noted as a TODO.
+- Updated this file throughout: "Tests Implemented", "Test Architecture" (new
+  per-test-user pattern section), Coverage Matrix row B2 (now fully verified), and the
+  Known Issues Register (new `E2E-6`).
+- **Next action**: once the user has had a chance to finish the page-object
+  restructuring, resume with the next workflow (B3/B4/D1), following whichever of the
+  two page-object layouts the user settles on.
+
+### 2026-10-22 (later still, B2 payment-mandate authorization)
+
+- Investigated (via a read-only subagent plus direct source inspection) every UI
+  element needed for workflow B2 on top of B1's fixture: creditor/debtor bank-account
+  creation, attaching a SEPA collection to a share offer, and attaching/upserting a
+  SEPA mandate on a subscription. Confirmed both status hops are PROVIDER-reachable
+  (no actor-hardcoding blocker like B5/C1/G2), and that the SEPA collection's
+  sequence-type/charge-bearer/is-active fields have safe Kotlin defaults and don't need
+  any UI input at all.
+- Added eight additive `data-id`s (no business-logic changes) across
+  `page.banking-application-for-organizations.kt` (two bank-account `PlusButton`s and
+  their `CardChevrons`), `form.banking.bank-account.kt` (account-type/is-active
+  dropdowns - also confirmed via source that the account-type defaults to `DEBTOR` and
+  `isActive` starts unset, so both dropdowns must be explicitly clicked once even when
+  keeping the default value, or the form's internal `!!` validation throws silently and
+  the submit button never activates), `form.sepa.upsert-sepa-collection.kt` (bank
+  account dropdown), and `form.update-sepa-mandate.kt` (collection/status dropdowns).
+  Frontend recompiled cleanly after each change.
+- Added `createCreditorBankAccount`/`createDebtorBankAccount` to `BankingPage`, and
+  `attachSepaCollectionToOffer`/`attachSepaMandateToSubscription` to `SharesPage`, plus
+  an `ahcAuthorizationRequired` parameter on `SharesPage.createShareOffer` (defaults to
+  `false`, preserving B1's behavior).
+- Wrote `PaymentMandateAuthorizationWorkflowTest.kt`, reusing all six existing page
+  objects. `:e2e:compileTestKotlin` succeeds.
+- User took over live debugging/iteration themselves and re-added the `@Develop` tag
+  for fast single-test iteration (same convention B1 used before it stabilized); also
+  switched the page-object imports to a wildcard (`import
+  org.solyton.solawi.bid.pageobjects.*`) for convenience.
+- **Next action**: wait for the user's live-run findings on B2 before making further
+  changes; once it passes, remove the `@Develop` tag (matching B1's precedent) and move
+  on to the next workflow (B3/B4/D1).
 
 ### 2026-10-22 (later, page-object extraction)
 

@@ -182,7 +182,8 @@ fun UpsertSepaCollectionForm(
                 options = bankAccountOptions,
                 selected = bankAccountState?.let{ "${it.bankAccountHolder} / ${it.description}" }?: "Select Bank Account",
                 styles = dropdownStyles,
-                iconContent = {opened -> SimpleUpDown(opened) }
+                iconContent = {opened -> SimpleUpDown(opened) },
+                dataId = "sepa-collection-form.bank-account-dropdown",
             ) { (_, newValue) ->
                 update( SepaCollectionChange(
                     sepaCollectionId = sepaCollection?.sepaCollectionId,

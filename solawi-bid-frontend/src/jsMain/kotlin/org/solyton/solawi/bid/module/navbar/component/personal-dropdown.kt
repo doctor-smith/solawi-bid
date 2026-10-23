@@ -3,6 +3,7 @@ package org.solyton.solawi.bid.module.navbar.component
 import androidx.compose.runtime.*
 import kotlinx.coroutines.CoroutineScope
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.dropdown.addDropdownCloseHandler
 import org.evoleq.compose.routing.navigate
 import org.evoleq.optics.storage.Action
@@ -28,6 +29,7 @@ fun PersonalDropdown(
     logoutAction: Action<NavBar, Logout, Unit>,
     scope: CoroutineScope
 ) {
+    val maidDataId = "navbar.personal-dropdown"
 
     val initialValue = "my-data"
     val options = mapOf(
@@ -38,6 +40,7 @@ fun PersonalDropdown(
     var open by remember { mutableStateOf(false) }
     // Container für das Dropdown
     Div(attrs = {
+        dataId(maidDataId)
         style {
             position(Position.Relative)
             cursor("pointer")
@@ -97,11 +100,13 @@ fun PersonalDropdown(
             }) {
                 Option(
                     options[initialValue]!!,
+                    "$maidDataId.option.my-data"
                 ) {
                     navigate("/app/private/data")
                 }
                 Option(
                     options["logout"]!!,
+                    "$maidDataId.option.logout"
                 ) {
                     TriggerLogoutEffect(navBar, logoutAction )
                 }
@@ -117,10 +122,12 @@ fun PersonalDropdown(
 @Suppress("FunctionName")
 private fun Option(
     text: String,
+    dataId: String? = null,
     action: ()->Unit
 )  {
     var hovered by remember { mutableStateOf(false)}
     Div(attrs = {
+        if(dataId != null) dataId(dataId)
         style {
             display(DisplayStyle.Flex)
             alignItems(AlignItems.Center)

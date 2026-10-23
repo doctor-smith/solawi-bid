@@ -265,8 +265,8 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                 *conditionalActions(
                     organizationId,
                     usesShareManagement,
+                    usesDistributionManagement,
                     usesBankingApplication,
-                    usesDistributionManagement
                 )
             )
         }

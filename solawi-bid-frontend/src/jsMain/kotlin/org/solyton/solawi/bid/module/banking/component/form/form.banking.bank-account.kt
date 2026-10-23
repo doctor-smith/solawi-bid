@@ -39,6 +39,15 @@ import org.solyton.solawi.bid.module.style.form.textInputDesktopStyle
 import org.solyton.solawi.bid.module.values.LegalEntityId
 import org.solyton.solawi.bid.module.values.UserId
 
+sealed class SelectableAccountTypes {
+    object All : SelectableAccountTypes()
+    object Debtor : SelectableAccountTypes()
+    object Creditor : SelectableAccountTypes()
+}
+
+data class BankAccountFormConfig(
+    val selectableAccountTypes: SelectableAccountTypes = SelectableAccountTypes.All,
+)
 
 @Markup
 @Composable
@@ -49,7 +58,14 @@ fun BankAccountForm(
     bankAccount: BankAccount?,
     setBankAccount: (BankAccount) -> Unit,
     hasDescription: Boolean = false,
+    config: BankAccountFormConfig = BankAccountFormConfig()
 ) {
+
+    val initialBankAccountType = when(config.selectableAccountTypes){
+        SelectableAccountTypes.All -> AccountType.DEBTOR
+        SelectableAccountTypes.Debtor -> AccountType.DEBTOR
+        SelectableAccountTypes.Creditor -> AccountType.CREDITOR
+    }
 
     Form(formDesktopStyle) {
         // Bank account
@@ -59,8 +75,8 @@ fun BankAccountForm(
         var ibanState by remember { mutableStateOf(bankAccount?.iban?.value) }
         var bicState by remember { mutableStateOf(bankAccount?.bic?.value?:"") }
         var accountHolderState by remember { mutableStateOf(bankAccount?.bankAccountHolder) }
-        var isActiveState by remember { mutableStateOf(bankAccount?.isActive) }
-        var accountTypeState by remember { mutableStateOf(bankAccount?.bankAccountType?: AccountType.DEBTOR) }
+        var isActiveState by remember { mutableStateOf(bankAccount?.isActive?: true) }
+        var accountTypeState by remember { mutableStateOf(bankAccount?.bankAccountType?: initialBankAccountType) }
         var descriptionState by remember { mutableStateOf(bankAccount?.description) }
         H3{Text((bankAccountInputs * title).emit())}
 
@@ -83,7 +99,9 @@ fun BankAccountForm(
                     options = accountTypesMap,
                     selected = invertedAccountTypesMap[accountTypeState?: AccountType.DEBTOR],
                     styles = dropdownStyle,
-                    iconContent = {open -> SimpleUpDown(open) }
+                    iconContent = {open -> SimpleUpDown(open) },
+                    isDisabled = {config.selectableAccountTypes != SelectableAccountTypes.All},
+                    dataId = "bank-account-form.account-type-dropdown",
                 ) { (_, value) ->
                     update(BankAccountChange(
                         bankAccountIdState,
@@ -119,7 +137,8 @@ fun BankAccountForm(
                     options = accountTypesMap,
                     selected = invertedAccountTypesMap[isActiveState],
                     styles = dropdownStyle,
-                    iconContent = {open -> SimpleUpDown(open) }
+                    iconContent = {open -> SimpleUpDown(open) },
+                    dataId = "bank-account-form.is-active-dropdown",
                 ) { (_, value) ->
                     update(BankAccountChange(
                         bankAccountIdState,

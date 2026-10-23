@@ -15,12 +15,11 @@ import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.dom.ElementScope
-import org.solyton.solawi.bid.module.banking.component.form.BankAccountForm
+import org.solyton.solawi.bid.module.banking.component.form.BankAccountFormConfig
 import org.solyton.solawi.bid.module.banking.component.form.BankAccountFormWithUserSearch
 import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.deviceData
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
-import org.solyton.solawi.bid.module.banking.data.legalentity.LegalEntity
 import org.solyton.solawi.bid.module.style.modal.commonModalStyles
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
@@ -56,6 +55,7 @@ fun UpsertBankAccountWithUserSearchModal(
     setBankAccount: (BankAccount)->Unit,
     isOkButtonDisabled: () -> Boolean = {false},
     hasDescription: Boolean = false,
+    config: BankAccountFormConfig = BankAccountFormConfig(),
     update: ()->Unit
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
     type = ModalType.Dialog,
@@ -69,15 +69,17 @@ fun UpsertBankAccountWithUserSearchModal(
     texts = texts,
     isOkButtonDisabled = isOkButtonDisabled,
     styles = commonModalStyles(device),
+    dataId = "banking.upsert-bank-account"
 ) {
     Wrap {
         BankAccountFormWithUserSearch(
-            {texts},
-            legalEntities,
-            legalEntityId,
-            bankAccount,
-            setBankAccount,
-            hasDescription
+            inputs = {texts},
+            legalEntities = legalEntities,
+            legalEntityId = legalEntityId,
+            bankAccount = bankAccount,
+            setBankAccount = setBankAccount,
+            hasDescription = hasDescription,
+            config = config
         )
     }
 }
@@ -105,6 +107,7 @@ fun Storage<Modals<Int>>.showUpsertBankAccountWithUserSearchModal(
     setBankAccount: (BankAccount)->Unit = {},
     isOkButtonDisabled: () -> Boolean = {false},
     hasDescription: Boolean = false,
+    config: BankAccountFormConfig = BankAccountFormConfig(),
     update: ()->Unit
 ) = with(nextId()) {
     put(this to ModalData(this,
@@ -121,6 +124,7 @@ fun Storage<Modals<Int>>.showUpsertBankAccountWithUserSearchModal(
             setBankAccount,
             isOkButtonDisabled,
             hasDescription,
+            config,
             update = update
         )
     ) )

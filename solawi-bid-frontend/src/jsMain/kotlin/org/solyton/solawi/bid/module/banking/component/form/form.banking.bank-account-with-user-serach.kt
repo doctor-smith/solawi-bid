@@ -12,6 +12,7 @@ import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.ui.page.user.style.listItemWrapperStyle
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
+import org.solyton.solawi.bid.module.control.button.SquareCheckButton
 import org.solyton.solawi.bid.module.control.button.TrashCanButton
 import org.solyton.solawi.bid.module.list.component.*
 import org.solyton.solawi.bid.module.scrollable.Scrollable
@@ -33,6 +34,8 @@ fun BankAccountFormWithUserSearch(
     bankAccount: BankAccount?,
     setBankAccount: (BankAccount) -> Unit,
     hasDescription: Boolean = false,
+    config: BankAccountFormConfig = BankAccountFormConfig(),
+    dataId: String? = "banking.bank-account.upsert-with-user-search.form"
 ) {
     /*
     val listStyles = ListStyles().modifyDataWrapper {
@@ -62,7 +65,11 @@ fun BankAccountFormWithUserSearch(
             TitleWrapper {
                 Title { H3 { Text("Legal Entities Search") } }
             }
-            SearchInput(searchInput, SearchInputStyles()) {
+            SearchInput(
+                dataId = "$dataId.search-input",
+                initialText = searchInput,
+                styles = SearchInputStyles()
+            ) {
                 searching = true
                 searchInput = it
             }
@@ -103,13 +110,27 @@ fun BankAccountFormWithUserSearch(
                             }
                         }
                         ActionsWrapper {
+                            When(id != legalEntityIdState.value) {
+                                SquareCheckButton(
+                                    color = Color.black,
+                                    bgColor = Color.white,
+                                    deviceType = { DeviceType.Desktop },
+                                    texts = { "Select" },
+                                    dataId = "$dataId.search-list.select.$id",
+                                    isDisabled = false
+                                ) {
+                                    legalEntityIdState = LegalEntityId(id)
+                                    searching = false
+                                }
+                            }
                             When(id == legalEntityIdState.value) {
                                 TrashCanButton(
                                     color = Color.black,
                                     bgColor = Color.white,
                                     deviceType = { DeviceType.Desktop },
                                     texts = { "Deselect" },
-                                    isDisabled = true
+                                    dataId = "$dataId.search-list.deselect.$id",
+                                    isDisabled = false
                                 ) {
                                     legalEntityIdState = LegalEntityId(NIL_UUID)
                                 }
@@ -120,5 +141,12 @@ fun BankAccountFormWithUserSearch(
             }
         }
     }
-    BankAccountForm(inputs, legalEntityIdState, bankAccount, setBankAccount,hasDescription = hasDescription)
+    BankAccountForm(
+        inputs = inputs,
+        legalEntityId = legalEntityIdState,
+        bankAccount = bankAccount,
+        setBankAccount = setBankAccount,
+        hasDescription = hasDescription,
+        config = config
+    )
 }

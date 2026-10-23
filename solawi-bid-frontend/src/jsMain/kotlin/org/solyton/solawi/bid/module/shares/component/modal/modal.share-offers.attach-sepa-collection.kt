@@ -10,6 +10,7 @@ import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.Lang
 import org.evoleq.math.Source
+import org.evoleq.math.emit
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
@@ -34,7 +35,7 @@ fun AttachSepaCollectionModal(
     modals: Storage<Modals<Int>>,
     storage: Storage<BankingApplication>,
     device: Source<DeviceType>,
-    bankAccounts: List<BankAccount>,
+    bankAccounts: Source<List<BankAccount>>,
     sepaCollection: PartialSepaCollection?,
     setSepaCollection: (PartialSepaCollection) -> Unit,
     isOkButtonDisabled: () -> Boolean,
@@ -53,9 +54,11 @@ fun AttachSepaCollectionModal(
     isOkButtonDisabled = isOkButtonDisabled
 ) {
     Wrap {
+        println(bankAccounts)
+
         UpsertSepaCollectionForm(
             inputs = Source{defaultSepaCollectionInputs()} ,
-            bankAccounts =  bankAccounts,
+            bankAccounts =  bankAccounts.emit(),
             sepaCollection = sepaCollection,
             setSepaCollection = setSepaCollection
         )
@@ -67,7 +70,7 @@ fun Storage<Modals<Int>>.showAttachSepaCollectionModal(
     storage: Storage<BankingApplication>,
     texts: Lang.Block,
     device: Source<DeviceType>,
-    bankAccounts: List<BankAccount>,
+    bankAccounts: Source<List<BankAccount>>,
     sepaCollection: PartialSepaCollection?,
     setSepaCollection: (PartialSepaCollection) -> Unit,
     isOkButtonDisabled: () -> Boolean,

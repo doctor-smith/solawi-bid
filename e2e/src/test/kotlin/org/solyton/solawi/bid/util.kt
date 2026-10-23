@@ -5,6 +5,7 @@ import com.microsoft.playwright.TimeoutError
 import com.microsoft.playwright.assertions.LocatorAssertions
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import com.microsoft.playwright.options.WaitForSelectorState
+import org.solyton.solawi.bid.TestUserContext
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.LocalDateTime
@@ -12,6 +13,10 @@ import java.time.format.DateTimeFormatter
 
 fun Page.getByDataId(testId: String): Locator {
     return locator("[data-id='$testId']")
+}
+
+fun Page.getByPartialDataId(testId: String): Locator {
+    return locator("[data-id*='$testId']")
 }
 
 fun Page.put(testId: String, value: String) = getByDataId(testId).fill(value)
@@ -108,7 +113,7 @@ fun Page.navigateToOrganizationApplicationPage(listSegment: String, organization
  * On any failure, dumps a full-page screenshot and the current page's HTML into
  * `build/reports/tests/screenshots/` for debugging, before rethrowing.
  */
-fun <T> Page.withFailureDiagnostics(block: () -> T): T {
+fun <T> Page.withFailureDiagnostics(testCase: String? = null, block: () -> T): T {
     val consoleLog = StringBuilder()
     val networkLog = StringBuilder()
     onConsoleMessage { msg -> consoleLog.appendLine("[console:${msg.type()}] ${msg.text()}") }
@@ -138,7 +143,7 @@ fun <T> Page.withFailureDiagnostics(block: () -> T): T {
         return block()
     } catch (e: Throwable) {
         try {
-            val dir = Paths.get("build/reports/tests/screenshots")
+            val dir = Paths.get("build/reports/tests/screenshots${testCase?.let{"/$testCase"}}")
             Files.createDirectories(dir)
             screenshot(Page.ScreenshotOptions().setPath(dir.resolve("failure.png")).setFullPage(true))
             Files.writeString(dir.resolve("failure.html"), content())
@@ -150,3 +155,59 @@ fun <T> Page.withFailureDiagnostics(block: () -> T): T {
         throw e
     }
 }
+
+fun <T> TestUserContext.withFailureDiagnostics(testCase: String? = null, block: () -> T): T {
+    val userLog = StringBuilder()
+    val consoleLog = StringBuilder()
+    val networkLog = StringBuilder()
+
+    val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
+    userLog.appendLine("Date: $timestamp")
+    userLog.appendLine("username: ${user.username.value}")
+    userLog.appendLine("password: ${user.password.value}")
+
+    // create dir and write user log
+    val dir = Paths.get("build/reports/tests/screenshots${testCase?.let{"/$testCase/${user.username.value}"}}")
+    Files.createDirectories(dir)
+    Files.writeString(dir.resolve("user.log"), userLog.toString())
+
+    page.onConsoleMessage { msg -> consoleLog.appendLine("[console:${msg.type()}] ${msg.text()}") }
+    page.onPageError { error -> consoleLog.appendLine("[pageerror] $error") }
+    page.onResponse { response ->
+        if (response.status() >= 400) {
+            try {
+                val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
+
+                networkLog.appendLine("=== ${response.request().method()} ${response.url()} -> ${response.status()} ===")
+                networkLog.appendLine("timestamp: $timestamp")
+                val context = response.request().headerValue("CONTEXT")
+                networkLog.appendLine("context-header: $context")
+                val postData = response.request().postData()
+                if (postData != null) networkLog.appendLine("request body: $postData")
+                networkLog.appendLine("response body: ${response.text()}")
+                // The page the test was on when this background request fired, so a failing
+                // call can be matched back to the fixture step that triggered it.
+                networkLog.appendLine("source-page-url: ${page.url()}")
+                networkLog.appendLine()
+            } catch (ignored: Exception) {
+                // Response body may not be readable for every request type - ignore.
+            }
+        }
+    }
+    try {
+        return block()
+    } catch (e: Throwable) {
+        try {
+
+
+            page.screenshot(Page.ScreenshotOptions().setPath(dir.resolve("failure.png")).setFullPage(true))
+            Files.writeString(dir.resolve("failure.html"), page.content())
+            Files.writeString(dir.resolve("failure-console.log"), consoleLog.toString())
+            Files.writeString(dir.resolve("failure-network.log"), networkLog.toString())
+        } catch (diagnosticFailure: Exception) {
+            // Best-effort diagnostics only - never hide the original failure.
+        }
+        throw e
+    }
+}
+

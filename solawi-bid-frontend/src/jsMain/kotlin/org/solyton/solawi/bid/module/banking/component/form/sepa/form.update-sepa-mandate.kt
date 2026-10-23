@@ -13,6 +13,7 @@ import org.evoleq.compose.form.field.Field
 import org.evoleq.compose.form.label.Label
 import org.evoleq.kotlinx.date.now
 import org.evoleq.kotlinx.date.toDateTime
+import org.evoleq.kotlinx.date.today
 import org.evoleq.language.Lang
 import org.evoleq.language.Locale
 import org.evoleq.language.texts
@@ -66,8 +67,8 @@ fun UpsertSepaMandateForm(
     var debtorNameState by remember { mutableStateOf(sepaMandate?.debtorName?:bankAccount?.bankAccountHolder) }
     var mandateReferenceState by remember { mutableStateOf(sepaMandate?.mandateReference) }
     var statusState by remember { mutableStateOf(sepaMandate?.status ?: MandateStatus.ACTIVE) }
-    var signedAtState by remember { mutableStateOf(sepaMandate?.signedAt) }
-    var validFromState by remember { mutableStateOf(sepaMandate?.validFrom) }
+    var signedAtState by remember { mutableStateOf(sepaMandate?.signedAt?: today().toDateTime()) }
+    var validFromState by remember { mutableStateOf(sepaMandate?.validFrom?: today().toDateTime()) }
     var validUntilState by remember { mutableStateOf(sepaMandate?.validUntil) }
     var lastUsedAtState by remember { mutableStateOf(sepaMandate?.lastUsedAt) }
     var isActiveState by remember { mutableStateOf(sepaMandate?.isActive ?: true) }
@@ -80,8 +81,8 @@ fun UpsertSepaMandateForm(
         debtorNameState = sepaMandate?.debtorName ?: bankAccount?.bankAccountHolder
         mandateReferenceState = sepaMandate?.mandateReference
         statusState = sepaMandate?.status ?: MandateStatus.ACTIVE
-        signedAtState = sepaMandate?.signedAt
-        validFromState = sepaMandate?.validFrom
+        signedAtState = sepaMandate?.signedAt?:today().toDateTime()
+        validFromState = sepaMandate?.validFrom?:today().toDateTime()
         validUntilState = sepaMandate?.validUntil
         lastUsedAtState = sepaMandate?.lastUsedAt
         isActiveState = sepaMandate?.isActive ?: true
@@ -185,6 +186,7 @@ fun UpsertSepaMandateForm(
                 isDisabled = { isReadOnly },
                 iconContent = { open -> SimpleUpDown(open) },
                 styles = dropdownStyles,
+                dataId = "sepa-mandate-form.collection-dropdown",
             ) { (_, value) ->
                 if (isReadOnly) return@Dropdown
                 update(
@@ -273,6 +275,7 @@ fun UpsertSepaMandateForm(
             isDisabled = { isReadOnly },
             iconContent = {open -> SimpleUpDown(open) },
             styles = dropdownStyles,
+            dataId = "sepa-mandate-form.status-dropdown",
         ) {
                 (_, value) ->
             if (isReadOnly) return@Dropdown

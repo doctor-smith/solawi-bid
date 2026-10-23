@@ -4,6 +4,7 @@ import clickOn
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import getByDataId
+import getByPartialDataId
 import inputText
 import waitForLoadingToFinish
 
@@ -67,6 +68,66 @@ class BankingPage(private val page: Page) {
 
         page.waitForLoadingToFinish()
         page.waitForSelector("text=$creditorId")
+    }
+
+    /**
+     * Creates a `CREDITOR` bank account for the organization itself, used as the
+     * target account for SEPA collections attached to share offers.
+     */
+    fun createCreditorBankAccount(accountHolder: String, iban: String, bic: String, description: String) {
+        page.clickOn("banking.page.creditor-bank-accounts.chevron")
+        page.clickOn("banking.page.creditor-bank-accounts.create-button")
+
+        page.locator("#account-holder").fill(accountHolder)
+        page.locator("#iban").fill(iban)
+        page.locator("#bic").fill(bic)
+        page.locator("#description").fill(description)
+
+        // Account type defaults to DEBTOR - must explicitly switch to CREDITOR.
+        // page.clickOn("bank-account-form.account-type-dropdown")
+        // page.clickOn("bank-account-form.account-type-dropdown.option.CREDITOR")
+
+        // isActive starts unset (null) until explicitly chosen once - required for submit.
+        // page.clickOn("bank-account-form.is-active-dropdown")
+        // page.clickOn("bank-account-form.is-active-dropdown.option.TRUE")
+
+        page.clickOn("banking.upsert-bank-account.modal.submit-button")
+    }
+
+    /**
+     * Creates a `DEBTOR` bank account for [username] (the subscribing member), via the
+     * customer bank-account card's user-search modal.
+     */
+    fun createDebtorBankAccount(username: String, accountHolder: String, iban: String, bic: String) {
+
+        page.clickOn("banking.page.customer-bank-accounts.chevron")
+        page.clickOn("banking.page.customer-bank-accounts.create-button")
+
+        val modal = page.getByDataId("banking.upsert-bank-account.modal")
+        assertThat(modal).isVisible()
+
+        // fill search box
+        page.getByDataId("banking.bank-account.upsert-with-user-search.form.search-input").fill(username)
+
+        // find first matching element in the list and click it
+        page.getByPartialDataId("banking.bank-account.upsert-with-user-search.form.search-list.select").first().click()
+
+
+        // page.locator("span", Page.LocatorOptions().setHasText(username)).first().click()
+
+        page.locator("#account-holder").fill(accountHolder)
+        page.locator("#iban").fill(iban)
+        page.locator("#bic").fill(bic)
+
+        // Account type already defaults to DEBTOR, but isActive still needs an explicit pick.
+        page.clickOn("bank-account-form.is-active-dropdown")
+        page.clickOn("bank-account-form.is-active-dropdown.option.TRUE")
+
+        val submitButton = page.getByDataId("banking.upsert-bank-account.modal.submit-button")
+        assertThat(submitButton).isEnabled()
+        submitButton.click()
+
+        assertThat(modal).not().isVisible()
     }
 
     /** Creates a fiscal year running from [start] to [end] (format `YYYY-MM-DD`). */
