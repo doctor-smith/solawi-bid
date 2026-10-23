@@ -14,7 +14,7 @@ const val GET_USERS = "GET_USERS"
 
 @Markup
 fun getUsers(nameSuffix: String = "") = Action<Application, GetUsers, Users>(
-    name = "$GET_USERS$nameSuffix",
+    name = "$GET_USERS.$nameSuffix",
     reader = Reader { _: Application -> GetUsers },
     endPoint = GetUsers::class,
     writer = {users: Users ->
