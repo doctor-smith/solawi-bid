@@ -13,10 +13,13 @@ class FieldTypeRegistry {
         columnType: KClass<out IColumnType>,
         fieldType: FieldType
     ) {
-        require(columnType !in mappings) {
+        // If the pair is already registered, do nothing
+        if(mappings[columnType] == fieldType) return
+
+        // Avoid breaking existing mappings
+        require((columnType !in mappings)) {
             "Field type mapping for '${columnType.simpleName}' is already registered"
         }
-
         mappings[columnType] = fieldType
     }
 

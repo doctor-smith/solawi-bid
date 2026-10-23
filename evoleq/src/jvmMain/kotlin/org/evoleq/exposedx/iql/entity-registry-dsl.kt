@@ -52,6 +52,16 @@ class RegistryConfiguration : Configuration<Registry> {
         }
     }
 
+    // TODO write tests before usage
+    fun fieldDefinitions(vararg fieldDefinitions: FieldDefinition) {
+        val config : Registry.() -> Unit = {
+            fieldDefinitions.forEach { fieldDefinition ->
+                registerFieldDefinition(fieldDefinition)
+            }
+        }
+        configurations.add(config)
+    }
+
     fun fieldType(
         columnType: KClass<out IColumnType>,
         fieldType: FieldType

@@ -382,5 +382,9 @@ class Registry(
                 }
             )
         )
+
+        registerFieldDefinition(
+            UUIDFieldDefinition()
+        )
     }
 }
