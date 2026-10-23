@@ -111,6 +111,7 @@ val userModuleRegistry: Registry by lazy {
 
 
         entity("organization", OrganizationsTable) {
+            field(OrganizationsTable.id)
             field(OrganizationsTable.name)
             field(OrganizationsTable.left)
             field(OrganizationsTable.right)
