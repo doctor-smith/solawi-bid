@@ -92,6 +92,12 @@ suspend inline fun <reified T : Any>  Receive(d: T): Action<Result<T>> = ApiActi
 fun <S : Any, T: Any> Transform(f: (S)-> T): KlAction<Result<S>, Result<T>> =
     {result: Result<S> -> Action { base -> result map f x base } }
 
+@KtorDsl
+@Suppress("FunctionName")
+fun <S : Any, T: Any> TransformContextual(f: (S)-> T): KlAction<Result<Contextual<S>>, Result<Contextual<T>>> =
+    {result: Result<Contextual<S>> -> Action { base -> (result map {c -> c map f }) x base } }
+
+
 fun Throwable.toMessage(): Result.Failure.Message = Result.Failure.Message(message?: NO_MESSAGE_PROVIDED)
 
 @KtorDsl
