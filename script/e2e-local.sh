@@ -133,7 +133,8 @@ run_tests() {
   # E2E_RESET_DB makes the test suite itself reset the database before the first
   # test (see e2e/src/test/kotlin/DbReset.kt and DbResetExtension.kt), so callers
   # no longer need to invoke reset_db() separately beforehand.
-  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:test
+  reset_db
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:test
 }
 
 run_smoke_tests() {
@@ -141,7 +142,8 @@ run_smoke_tests() {
   # E2E_RESET_DB makes the test suite itself reset the database before the first
   # test (see e2e/src/test/kotlin/DbReset.kt and DbResetExtension.kt), so callers
   # no longer need to invoke reset_db() separately beforehand.
-  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:smokeTest
+  reset_db
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:smokeTest
 }
 
 run_regression_tests() {
@@ -149,7 +151,8 @@ run_regression_tests() {
   # E2E_RESET_DB makes the test suite itself reset the database before the first
   # test (see e2e/src/test/kotlin/DbReset.kt and DbResetExtension.kt), so callers
   # no longer need to invoke reset_db() separately beforehand.
-  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:regressionTest
+  reset_db
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:regressionTest
 }
 
 run_user_journey_tests() {
@@ -157,7 +160,8 @@ run_user_journey_tests() {
   # E2E_RESET_DB makes the test suite itself reset the database before the first
   # test (see e2e/src/test/kotlin/DbReset.kt and DbResetExtension.kt), so callers
   # no longer need to invoke reset_db() separately beforehand.
-  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:userJourneyTest
+  reset_db
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:userJourneyTest
 }
 
 run_workflow_tests() {
@@ -165,7 +169,8 @@ run_workflow_tests() {
   # E2E_RESET_DB makes the test suite itself reset the database before the first
   # test (see e2e/src/test/kotlin/DbReset.kt and DbResetExtension.kt), so callers
   # no longer need to invoke reset_db() separately beforehand.
-  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:workflowTest
+  reset_db
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:workflowTest
 }
 
 run_security_tests() {
@@ -173,7 +178,8 @@ run_security_tests() {
   # E2E_RESET_DB makes the test suite itself reset the database before the first
   # test (see e2e/src/test/kotlin/DbReset.kt and DbResetExtension.kt), so callers
   # no longer need to invoke reset_db() separately beforehand.
-  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:securityTest
+  reset_db
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:securityTest
 }
 
 run_performance_tests() {
@@ -181,7 +187,8 @@ run_performance_tests() {
   # E2E_RESET_DB makes the test suite itself reset the database before the first
   # test (see e2e/src/test/kotlin/DbReset.kt and DbResetExtension.kt), so callers
   # no longer need to invoke reset_db() separately beforehand.
-  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:performanceTest
+  reset_db
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:performanceTest
 }
 
 run_dev_tests() {
@@ -189,7 +196,8 @@ run_dev_tests() {
   # E2E_RESET_DB makes the test suite itself reset the database before the first
   # test (see e2e/src/test/kotlin/DbReset.kt and DbResetExtension.kt), so callers
   # no longer need to invoke reset_db() separately beforehand.
-  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:developmentTest
+  reset_db
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:developmentTest
 }
 
 # Runs only the tests matching a Gradle test-filter pattern (e.g. a single class or
@@ -200,7 +208,8 @@ run_filtered_tests() {
   # E2E_RESET_DB makes the test suite itself reset the database before the first
   # test (see e2e/src/test/kotlin/DbReset.kt and DbResetExtension.kt), so callers
   # no longer need to invoke reset_db() separately beforehand.
-  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=true ./gradlew :e2e:test --tests "$pattern"
+  reset_db
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:test --tests "$pattern"
 }
 
 case "${1:-}" in
