@@ -98,6 +98,8 @@ jobs:
     env:
       TEST_USER: ${{ vars.TEST_USER }}
       TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      PARALLEL_TESTS: "true"
+      NUMBER_OF_WORKERS: "4"
     name: Run E2E Tests
     runs-on: ubuntu-latest
     

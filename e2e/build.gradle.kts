@@ -72,10 +72,43 @@ tasks.withType<Test>().configureEach {
     // Only set if not already provided by the shell / CI
     // E2E_RESET_DB opts into a full local database reset before the first test,
     // see DbReset.kt/DbResetExtension.kt; script/e2e-local.sh sets it automatically.
-    listOf("TEST_USER", "TEST_USER_PASSWORD", "E2E_BASE_URL", "E2E_RESET_DB").forEach { key ->
+    listOf(
+        "TEST_USER",
+        "TEST_USER_PASSWORD",
+        "E2E_BASE_URL",
+        "E2E_RESET_DB",
+        "PARALLEL_TESTS",
+        "NUMBER_OF_WORKERS"
+    ).forEach { key ->
         val fromEnv = System.getenv(key)
         val fromProps = localProps.getProperty(key)
         (fromEnv ?: fromProps)?.let { environment(key, it) }
+    }
+
+// Parallel test execution
+    val parallelTests = (
+            System.getenv("PARALLEL_TESTS")
+                ?: localProps.getProperty("PARALLEL_TESTS")
+            )?.toBoolean() ?: false
+
+    val numberOfWorkers = (
+            System.getenv("NUMBER_OF_WORKERS")
+                ?: localProps.getProperty("NUMBER_OF_WORKERS")
+            )?.toIntOrNull() ?: 1
+
+    maxParallelForks = if (parallelTests) {
+        numberOfWorkers.coerceAtLeast(1)
+    } else {
+        1
+    }
+
+    doFirst {
+        logger.lifecycle("========================================")
+        logger.lifecycle("Test task: $name")
+        logger.lifecycle("PARALLEL_TESTS: $parallelTests")
+        logger.lifecycle("NUMBER_OF_WORKERS requested: $numberOfWorkers")
+        logger.lifecycle("Gradle maxParallelForks: $maxParallelForks")
+        logger.lifecycle("========================================")
     }
 }
 
