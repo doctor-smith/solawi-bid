@@ -57,4 +57,16 @@ class DashboardPage(
     fun organizationsCard(): OrganizationCard =
         OrganizationCard(page)
 
+    fun myAppsLink(): TestLink =
+        TestLink(page.getByDataId("page.dashboard.application-management.my-apps"))
+
+    fun bankingOrganizationManagementLink(): TestLink =
+        TestLink(page.getByDataId("page.dashboard.banking-application.organization-management"))
+
+    fun distributionOrganizationManagementLink(): TestLink =
+        TestLink(page.getByDataId("page.dashboard.distribution-management.organization-management"))
+
+    fun shareManagementOrganizationManagementLink(): TestLink =
+        TestLink(page.getByDataId("page.dashboard.share-management.organization-management"))
+
 }

@@ -19,6 +19,14 @@ fun Page.getByPartialDataId(testId: String): Locator {
     return locator("[data-id*='$testId']")
 }
 
+fun Locator.getByDataId(testId: String): Locator {
+    return locator("[data-id='$testId']")
+}
+
+fun Locator.getByPartialDataId(testId: String): Locator {
+    return locator("[data-id*='$testId']")
+}
+
 fun Page.put(testId: String, value: String) = getByDataId(testId).fill(value)
 
 fun Page.clickOn(testId: String) = getByDataId(testId).apply {
@@ -35,6 +43,10 @@ fun Page.clickOn(testId: String) = getByDataId(testId).apply {
 fun Page.waitForLoadingToFinish() {
     val loadingSpinner = locator("div.loading-page")
     assertThat(loadingSpinner).not().isVisible(LocatorAssertions.IsVisibleOptions())
+}
+
+fun TestUserContext.waitForLoadingToFinish() {
+    page.waitForLoadingToFinish()
 }
 
 fun Page.shot(path: String): ByteArray = screenshot(Page.ScreenshotOptions().setPath(Paths.get(path.let{
@@ -70,6 +82,10 @@ fun Page.dismissStrayErrorDialogIfPresent(dismiss: Boolean = true) {
             return
         }
     }
+}
+
+fun TestUserContext.dismissStrayErrorDialogIfPresent(dismiss: Boolean = true) {
+    page.dismissStrayErrorDialogIfPresent(dismiss)
 }
 
 /**

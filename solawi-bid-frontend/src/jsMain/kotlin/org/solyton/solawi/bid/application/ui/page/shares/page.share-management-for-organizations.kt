@@ -343,9 +343,10 @@ fun ShareTypeManagement(
     val shareTypes = shareManagementStore * shareTypes
 
 
-    Wrap({
-        cardStyle()
-    }) {
+    Wrap(
+        style = { cardStyle() },
+        dataId = "shares.page.share-type"
+    ) {
         ListWrapper(cardListStyles.listWrapper) {
             var opened by remember { mutableStateOf(false) }
             TitleWrapper(cardListStyles.titleWrapper) {
@@ -498,9 +499,10 @@ fun ShareOfferManagement(
 
 
 
-    Wrap({
-        cardStyle()
-    }) {
+    Wrap(
+        style = { cardStyle() },
+        dataId = "shares.page.share-offer"
+    ) {
         var opened by remember { mutableStateOf(false) }
         key((sepaCollections * Size()).emit()) {
             ListWrapper(cardListStyles.listWrapper) {
@@ -824,9 +826,10 @@ fun ShareSubscriptionManagement(
     val currentUserId = usersStorage * FirstBy { it.username == (userStorage * user * username).read() } * id
     val membersAsUsers = usersStorage * FilterBy { it.username in (memberStorage.read().map { m -> m.username }) }
 
-    Wrap({
-        cardStyle()
-    }){
+    Wrap(
+        style = { cardStyle() },
+        dataId = "shares.page.share-subscription"
+     ){
         val checkedMap = remember {  mutableStateMapOf<String, Boolean>() }
         fun isChecked(id: String): Boolean = checkedMap[id] ?: false
         val checkedSubscriptions = shareSubscriptions * BiMap<ShareSubscription, CheckedShareSubscription>(

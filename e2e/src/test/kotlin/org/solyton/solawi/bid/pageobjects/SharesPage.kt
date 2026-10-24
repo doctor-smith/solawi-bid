@@ -4,10 +4,12 @@ import CHECK_FALSE
 import CHECK_TRUE
 import checkIcon
 import clickOn
+import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import getByDataId
 import getByPartialDataId
+import org.solyton.solawi.bid.TestAccordion
 import put
 
 /**
@@ -17,13 +19,100 @@ import put
  */
 class SharesPage(private val page: Page) {
 
+    class ShareTypes(override val locator: Locator) : TestAccordion(locator) {
+        companion object {
+            const val BASE_ID = "shares.page.share-type"
+        }
+
+
+        override fun trigger(): Locator = locator.getByDataId("$BASE_ID.chevron")
+
+        override fun isOpened(): Boolean =
+            locator.getAttribute("opened") == "true"
+
+
+        override fun open(){
+            if(!isOpened()) trigger().click()
+        }
+
+        override fun close() {
+            if(isOpened()) trigger().click()
+        }
+
+        fun createNewShareTypeButton(): Locator = locator.getByDataId("$BASE_ID.create-button")
+
+    }
+
+    class ShareOffers(override val locator: Locator) : TestAccordion(locator) {
+        companion object {
+            const val BASE_ID = "shares.page.share-offer"
+        }
+
+
+        override fun trigger(): Locator = locator.getByDataId("$BASE_ID.chevron")
+
+        override fun isOpened(): Boolean =
+            locator.getAttribute("opened") == "true"
+
+
+        override fun open(){
+            if(!isOpened()) trigger().click()
+        }
+
+        override fun close() {
+            if(isOpened()) trigger().click()
+        }
+
+        fun createNewShareOfferButton(): Locator = locator.getByDataId("$BASE_ID.create-button")
+
+    }
+
+    class ShareSubscriptions(override val locator: Locator) : TestAccordion(locator) {
+        companion object {
+            const val BASE_ID = "shares.page.share-subscription"
+        }
+
+
+        override fun trigger(): Locator = locator.getByDataId("$BASE_ID.chevron")
+
+        override fun isOpened(): Boolean =
+            locator.getAttribute("opened") == "true"
+
+
+        override fun open(){
+            if(!isOpened()) trigger().click()
+        }
+
+        override fun close() {
+            if(isOpened()) trigger().click()
+        }
+
+        fun createNewShareSubscriptionButton(): Locator = locator.getByDataId("$BASE_ID.create-button")
+
+    }
+
+    // API
+
+    fun ShareTypes(): ShareTypes =
+        ShareTypes(page.getByDataId(ShareTypes.BASE_ID))
+
+    fun ShareOffers(): ShareOffers =
+        ShareOffers(page.getByDataId(ShareOffers.BASE_ID))
+
+    fun ShareSubscriptions(): ShareSubscriptions =
+        ShareSubscriptions(page.getByDataId(ShareSubscriptions.BASE_ID))
+
     /**
      * Creates a share type with the given [name]/[key]/[description].
      * The key must have length <= 20.
      */
     fun createShareType(name: String, key: String, description: String) {
-        page.clickOn("shares.page.share-type.chevron")
-        page.clickOn("shares.page.share-type.create-button")
+        with(ShareTypes()) {
+            open()
+            createNewShareTypeButton().click()
+        }
+        // page.clickOn("shares.page.share-type.chevron")
+        // page.clickOn("shares.page.share-type.create-button")
 
         val modal = page.getByDataId("shares.modal.upsert-share-type.modal")
         assertThat(modal).isVisible()
@@ -51,8 +140,12 @@ class SharesPage(private val page: Page) {
         price: String,
         ahcAuthorizationRequired: Boolean = false
     ) {
-        page.clickOn("shares.page.share-offer.chevron")
-        page.clickOn("shares.page.share-offer.create-button")
+        with(ShareOffers()) {
+            open()
+            createNewShareOfferButton().click()
+        }
+        // page.clickOn("shares.page.share-offer.chevron")
+        // page.clickOn("shares.page.share-offer.create-button")
 
         val modal = page.getByDataId("shares.modal.upsert-share-offer.modal")
         assertThat(modal).isVisible()
@@ -147,8 +240,12 @@ class SharesPage(private val page: Page) {
         ahcAuthorized: Boolean,
         coSubscribers: List<String> = emptyList()
     ) {
-        page.clickOn("shares.page.share-subscription.chevron")
-        page.clickOn("shares.page.share-subscription.create-button")
+        with(ShareSubscriptions()) {
+            open()
+            createNewShareSubscriptionButton().click()
+        }
+        // page.clickOn("shares.page.share-subscription.chevron")
+        // page.clickOn("shares.page.share-subscription.create-button")
 
         val modal = page.getByDataId("shares.modal.upsert-share-subscription.modal")
         assertThat(modal).isVisible()

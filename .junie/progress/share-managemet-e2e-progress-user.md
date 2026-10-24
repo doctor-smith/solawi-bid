@@ -1,3 +1,6 @@
+## 24.10.26
+1) Second test is passing: B
+
 ## 22.10.2026 (morning 9:55)
 1) First devTest is passing :-) : `provider approves pending subscription without payment mandate`
 

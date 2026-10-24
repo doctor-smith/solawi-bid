@@ -42,6 +42,7 @@ fun CardChevrons(
     dataId: String? = null,
     setOpened: (Boolean) -> Unit
 ) = Div({
+    attr("opened", "$opened")
     style {
         alignSelf(AlignSelf.FlexEnd)
     }
