@@ -1,10 +1,11 @@
 ---
-Last updated: 2026-10-23
+Last updated: 2026-10-23 (later)
 Phase: 1 (Audit) complete; Phase 2 (fixture-chain build-out) complete and VERIFIED.
 Phase 3 (remaining workflows) is underway: B1 (approval, no mandate) and B2
-(payment-mandate authorization) both pass end-to-end, confirmed by the user. Test
-infrastructure is evolving toward reusable page objects and a per-test isolated-user
-pattern (see "Test Architecture"). Next up: B3/B4/D1.
+(payment-mandate authorization) both pass end-to-end, confirmed by the user. A new
+`TestPage`/`TestComponent`/`TestUser` test framework (`framework.kt`, `StdTestUser.kt`)
+is in active development, with an initial small-scope migration applied (see "Test
+Architecture"). Next up: B3/B4/D1.
 ---
 
 # Share Management E2E — Progress & Audit
@@ -153,6 +154,25 @@ shortly before that session (effectively disabling it, since every call site rel
 the default), which caused one flaky `TimeoutError` failure right after extraction. The
 user fixed this by changing the default back to `dismiss: Boolean = true` in `util.kt`;
 re-run confirmed the test passes again. No other behavior changed during the extraction.
+
+**New framework in progress (2026-10-23): `framework.kt` + `StdTestUser.kt`.** Two new
+files under `e2e/src/test/kotlin/org/solyton/solawi/bid/` introduce a lighter
+Page-Object/user-session DSL: `TestPage` (base class for pages with a fixed URL,
+exposing `load()`), `TestComponent`/`TestLink`/`TestDropdown` (typed wrappers around a
+`Locator`, plus a `TestComponent`-aware `assertThat` overload), and `TestUser`
+(`StdTestUser` for a freshly created, not-yet-logged-in user vs. `AdminTestUser` for the
+existing `TEST_USER`), with `infix fun TestUser.on(browser): TestUserContext` building
+the right kind of browser context for each, and `TestUserContext : AutoCloseable` so
+`withUser(user on browser) { ... }` replaces manual `try/finally { context.close() }`.
+`DashboardPage` already adopted the `TestComponent`/`TestLink` pattern for its cards
+(`PrivateDataCard`, `OrganizationCard`, etc.). This session additionally: migrated
+`PersonalDataPage` to extend `TestPage` (the only other page object with a fixed URL),
+added four `TestLink` methods to `DashboardPage` for links previously read via raw
+`page.getByDataId(...)`, and removed an unused `withUser` overload. The remaining
+M1-era page objects (`BankingPage`, `SharesPage`, `DistributionPage`,
+`OrganizationManagementPage`, `PrivateApplicationManagementPage`) still use the older
+raw-`Locator`/`getByDataId` style and have **not** been migrated yet - this was a
+deliberately small, scoped step, not a full rewrite.
 
 ## Exact Test Commands Identified
 
@@ -426,6 +446,42 @@ fixture.
 
 One dated entry per work session, newest first, so future sessions don't have to
 re-derive history from git diffs alone.
+
+### 2026-10-23 (later, framework review and cleanup)
+
+- User asked for an assessment of two new framework files they wrote:
+  `framework.kt` (`TestPage`/`TestComponent`/`TestLink`/`TestDropdown` base classes plus
+  a `TestComponent`-aware `assertThat` overload) and `StdTestUser.kt` (`TestUser` sealed
+  interface with `StdTestUser`/`AdminTestUser`, an `AutoCloseable` `TestUserContext`,
+  `withUser`, and `infix on` functions for building a fresh-vs-pre-authenticated browser
+  context depending on user type). Assessment: solid, idiomatic direction - the
+  `AutoCloseable` context plus `.use{}` removes manual `try/finally { context.close() }`
+  boilerplate, and the `AdminTestUser`/`StdTestUser` split cleanly models the two actual
+  login paths needed.
+- Applied three small, explicitly scoped ("sparsam") follow-ups with the user's
+  approval, each verified via `:e2e:compileTestKotlin`:
+  1. Unified `PaymentMandateAuthorizationWorkflowTest`'s admin phase to use
+     `withUser(adminUser on browser) { ... }` (previously a manual
+     `context.use { ... }` + removed `adminContext()` helper), matching the user
+     phase's existing style; removed the now-unused `Files`/`BrowserContext` imports.
+  2. Migrated `PersonalDataPage` to extend the new `TestPage(page, "app/private/data")`
+     base class (the only existing page object with a fixed URL - the
+     organization-scoped pages take a dynamic org id and can't use `TestPage` as-is).
+  3. Added four small `TestLink`-returning methods to `DashboardPage` (`myAppsLink`,
+     `bankingOrganizationManagementLink`, `distributionOrganizationManagementLink`,
+     `shareManagementOrganizationManagementLink`), replacing four raw
+     `page.getByDataId(...)` lookups in the B2 test with named, typed links - matching
+     the `Card`/`TestLink` pattern the user had already started in `DashboardPage`.
+- Also found and flagged (not fixed, per user's request) an unrelated, transient
+  compile error the user introduced concurrently while extending `TestDropdown` in
+  `framework.kt` (an incomplete `fun select()` with no body); the user finished it
+  themselves and the build was confirmed green again before continuing.
+- Removed the unused `withUser(user: TestUser, block: TestUser.() -> T)` overload from
+  `StdTestUser.kt` (confirmed via a repo-wide search that it had no call sites) at the
+  user's request, along with its leftover `// fun withUser` placeholder comment.
+- **Next action**: resume with the next workflow (B3/B4/D1) on top of the now-cleaner
+  framework, or continue the `TestPage`/`TestComponent` migration further if the user
+  wants more page objects converted later.
 
 ### 2026-10-23 (B2 confirmed passing + user reworked the test)
 

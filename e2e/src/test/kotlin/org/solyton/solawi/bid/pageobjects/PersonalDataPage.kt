@@ -1,11 +1,11 @@
 package org.solyton.solawi.bid.pageobjects
 
-import TestConfig
 import clickOn
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import dismissStrayErrorDialogIfPresent
 import getByDataId
+import org.solyton.solawi.bid.TestPage
 import org.solyton.solawi.bid.module.values.Firstname
 import org.solyton.solawi.bid.module.values.Lastname
 import org.solyton.solawi.bid.module.values.PhoneNumber
@@ -15,10 +15,10 @@ import waitForLoadingToFinish
  * Page object for the current user's personal-data page (`/app/private/data`), covering
  * creation of a personal user profile (name, contact data, address).
  */
-class PersonalDataPage(private val page: Page) {
+class PersonalDataPage(private val page: Page) : TestPage(page, "app/private/data") {
 
     fun navigateTo(hasToNavigate: Boolean = false) {
-        if (hasToNavigate) page.navigate("${TestConfig.BASE_URL}/app/private/data")
+        if (hasToNavigate) load()
         page.dismissStrayErrorDialogIfPresent()
         page.waitForLoadingToFinish()
     }

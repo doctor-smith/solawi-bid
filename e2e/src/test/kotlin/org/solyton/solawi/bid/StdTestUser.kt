@@ -38,10 +38,6 @@ data class TestUserContext(
     // fun withUser
 }
 
-fun <T> withUser(user: TestUser, block: TestUser.() -> T): T {
-    return user.block()
-}
-
 fun <T> withUser(userContext: TestUserContext, block: TestUserContext.() -> T): T {
     return userContext.use { _ ->
         userContext.block()

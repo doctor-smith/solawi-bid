@@ -3,7 +3,6 @@ package org.solyton.solawi.bid.test.module.shares
 import TestUtils
 import clickOn
 import com.microsoft.playwright.Browser
-import com.microsoft.playwright.BrowserContext
 import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
@@ -15,15 +14,16 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.*
+import org.solyton.solawi.bid.module.authentication.service.generateSecurePassword
 import org.solyton.solawi.bid.module.values.*
 import org.solyton.solawi.bid.pageobjects.*
 import org.solyton.solawi.bid.pageobjects.application.dashboard.DashboardPage
 import org.solyton.solawi.bid.pageobjects.module.authentication.LoginPage
-import org.solyton.solawi.bid.pageobjects.module.user.UserManagementPage
 import org.solyton.solawi.bid.pageobjects.shared.NavBar
+import org.solyton.solawi.bid.workflow.admin.CreateTestUserInput
+import org.solyton.solawi.bid.workflow.admin.CreateTestUserWorkflow
 import waitForLoadingToFinish
 import withFailureDiagnostics
-import java.nio.file.Files
 
 /**
  * End-to-end coverage for the Share Management module, workflow B2 from
@@ -64,65 +64,30 @@ class PaymentMandateAuthorizationWorkflowTest {
         }
     }
 
-    private fun adminContext(): BrowserContext {
-        val storedState = Files.readString(TestUtils().storageStatePath)
-        return browser.newContext(
-            Browser.NewContextOptions().setStorageState(storedState)
-        )
-    }
-
     @Develop
     @Workflow
     @Test
     fun `provider approves pending subscription with payment mandate authorization`() {
-        val context = adminContext()
         val reportDirectory = "PaymentMandateAuthorizationWorkflowTest"
         val suffix = System.currentTimeMillis()
 
-        val testUser =  context.use { context ->
-            val page = context.newPage()
-            page.withFailureDiagnostics("$reportDirectory/admin-actions") {
+        val adminUsername = requireNotNull(System.getenv("TEST_USER")) { "TEST_USER must be set" }
+        val adminPassword = requireNotNull(System.getenv("TEST_USER_PASSWORD")) { "TEST_USER_PASSWORD must be set" }
+        val adminUser = AdminTestUser(Username(adminUsername), Password(adminPassword))
 
-
-                // val username = requireNotNull(System.getenv("TEST_USER")) { "TEST_USER must be set" }
-                // val password = requireNotNull(System.getenv("TEST_USER_PASSWORD")) { "TEST_USER_PASSWORD must be set" }
-
-
-                val navbar = NavBar(page)
-                val userManagementPage = UserManagementPage(page)
-
-                // TODO Want to navigate to userManagementPage by clicking on the right link. But the link is missing!
-                //     Fix: Add rights and roles to the db by migration, so that the test user gets owner rights
-                //     Then: uncomment these lines
-                //
-                // val dashboardPage = DashboardPage(page)
-                // dashboardPage.load()
-                // dashboardPage.userManagementLink().click()
-
-                userManagementPage.load()
-                // Known bug on UsermanagementPage -> CoroutineScope left composition
-                page.dismissStrayErrorDialogIfPresent(true)
-
-
-                // Create user to perform the actions
-                val testUser = userManagementPage.createUserViaAdminUi(
+        // Create a test user and log out again
+        val testUser = withUser(adminUser on browser) {
+            run (CreateTestUserWorkflow(this)) withInput
+                CreateTestUserInput(
                     Username("e2e-user@solyton.org"),
-                    Password("TestPass-123"),
+                    Password(generateSecurePassword()),
                     true,
+                    "$suffix",
+                    "$reportDirectory/admin-actions"
                 )
-
-
-
-                navbar.logout()
-
-                page.waitForURL("**/login")
-                // dismiss error message: 'Token is not valid or expired'
-                page.dismissStrayErrorDialogIfPresent(true)
-
-                testUser
-            }
         }
 
+        // Run the test with the recently created test user
         withUser(testUser on browser) {
             withFailureDiagnostics("$reportDirectory/user-actions") {
 
@@ -168,7 +133,7 @@ class PaymentMandateAuthorizationWorkflowTest {
 
                 // Login as e2e user
                 loginPage.load()
-                page.waitForLoadingToFinish()
+                waitForLoadingToFinish()
 
                 // dismiss cookie-disclaimer
                 page.clickOn("cookie-disclaimer.modal.submit-button")
@@ -181,7 +146,7 @@ class PaymentMandateAuthorizationWorkflowTest {
                 assertThat(personalDataCard).isVisible()
                 personalDataCard.click()
 
-                page.waitForLoadingToFinish()
+                waitForLoadingToFinish()
 
                 personalDataPage.createProfile(
                     title,
@@ -207,22 +172,21 @@ class PaymentMandateAuthorizationWorkflowTest {
                 assertThat(organizationCard).isVisible()
                 organizationCard.click()
 
-                page.dismissStrayErrorDialogIfPresent()
-                page.waitForLoadingToFinish()
+                dismissStrayErrorDialogIfPresent()
+                waitForLoadingToFinish()
 
                 organizationManagementPage.createOrganization(organizationName)
-                page.waitForLoadingToFinish()
+                waitForLoadingToFinish()
 
                 navBar.moveToDashboard()
                 assertThat(organizationCard).isVisible()
 
                 // Book every application this fixture needs, then explicitly (re-)grant the
                 // owner permission via the UI to refresh the client-side permission cache.
-                val myAppsButton = page.getByDataId("page.dashboard.application-management.my-apps")
-                myAppsButton.click()
-                page.waitForLoadingToFinish()
-                page.dismissStrayErrorDialogIfPresent()
-                page.waitForLoadingToFinish()
+                dashboardPage.myAppsLink().click()
+                waitForLoadingToFinish()
+                dismissStrayErrorDialogIfPresent()
+                waitForLoadingToFinish()
 
                 privateApplicationManagementPage.bookApplication("BANKING", organizationName, false)
                 privateApplicationManagementPage.bookApplication("DISTRIBUTION", organizationName, false)
@@ -234,20 +198,16 @@ class PaymentMandateAuthorizationWorkflowTest {
 
                 // back to dashboard
                 navBar.moveToDashboard()
-                val bankingButton = page.getByDataId("page.dashboard.banking-application.organization-management")
-                bankingButton.apply {
-                    waitFor()
-                    click()
-                }
+                dashboardPage.bankingOrganizationManagementLink().click()
                 // Legal entity + creditor id, fiscal year, and (new for B2) a creditor bank
                 // account for the organization itself.
                 page.navigateToOrganizationApplicationPage("banking", organizationName, false)
 
                 bankingPage.createLegalEntityWithCreditorId(organizationName, "e.V.", "DE98ZZZ09999999999")
-                page.waitForLoadingToFinish()
+                waitForLoadingToFinish()
 
                 bankingPage.createFiscalYear("$fiscalYearKey-01-01", "$fiscalYearKey-12-31")
-                page.waitForLoadingToFinish()
+                waitForLoadingToFinish()
 
                 bankingPage.createCreditorBankAccount(
                     accountHolder = organizationName,
@@ -255,7 +215,7 @@ class PaymentMandateAuthorizationWorkflowTest {
                     bic = "PBNKDEFFXXX",
                     description = "e2e-creditor-account"
                 )
-                page.waitForLoadingToFinish()
+                waitForLoadingToFinish()
 
                 // (new for B2) a debtor bank account for the subscribing member.
                 bankingPage.createDebtorBankAccount(
@@ -264,33 +224,23 @@ class PaymentMandateAuthorizationWorkflowTest {
                     iban = "DE89370400440532013000",
                     bic = "COBADEFFXXX"
                 )
-                page.waitForLoadingToFinish()
+                waitForLoadingToFinish()
 
                 // back to dashboard
                 navBar.moveToDashboard()
 
                 // Distribution point (required to create a subscription)
-                val distributionManagementLink =
-                    page.getByDataId("page.dashboard.distribution-management.organization-management")
-                distributionManagementLink.apply {
-                    waitFor()
-                    click()
-                }
+                dashboardPage.distributionOrganizationManagementLink().click()
 
                 page.navigateToOrganizationApplicationPage("distribution", organizationName, false)
                 distributionPage.createDistributionPoint(distributionPointName)
-                page.waitForLoadingToFinish()
+                waitForLoadingToFinish()
 
                 navBar.moveToDashboard()
 
                 // Share type + fiscal-year-scoped share offer, this time requiring SEPA
                 // authorization, then a SEPA collection attached to it.
-                val shareManagementLink =
-                    page.getByDataId("page.dashboard.share-management.organization-management")
-                shareManagementLink.apply {
-                    waitFor()
-                    click()
-                }
+                dashboardPage.shareManagementOrganizationManagementLink().click()
                 page.navigateToOrganizationApplicationPage("shares", organizationName, false)
                 sharesPage.createShareType(shareTypeName, shareTypeKey, "E2E fixture share type (B2)")
                 sharesPage.createShareOffer(fiscalYearKey, shareTypeName, price, ahcAuthorizationRequired = true)
@@ -305,7 +255,7 @@ class PaymentMandateAuthorizationWorkflowTest {
                     mandateReferencePrefix = mandateReferencePrefix,
                     remittanceInformation = "E2E fixture collection"
                 )
-                page.waitForLoadingToFinish()
+                waitForLoadingToFinish()
 
                 // Member subscription - starts out as PendingActivation.
                 sharesPage.createShareSubscription(
@@ -318,7 +268,7 @@ class PaymentMandateAuthorizationWorkflowTest {
                     "1",
                     true,
                 )
-                page.waitForLoadingToFinish()
+                waitForLoadingToFinish()
 
 
                 // set status filter to PENDING_ACTIVATION
@@ -337,7 +287,7 @@ class PaymentMandateAuthorizationWorkflowTest {
 
                 // Attach a SEPA mandate to the subscription - this authorizes the payment mandate
                 sharesPage.attachSepaMandateToSubscription()
-                page.waitForLoadingToFinish()
+                waitForLoadingToFinish()
 
                 // We added just one mandate to the subscription
                 val list = page.getByDataId("shares.page.share-subscription.list")
