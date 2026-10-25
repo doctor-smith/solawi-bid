@@ -49,7 +49,6 @@ class FailedAuthorizationWorkflowTest {
         }
     }
 
-    @Develop
     @Workflow
     @Test
     fun `provider transitions pending subscription to suspended upon failed mandate authorization`() {
