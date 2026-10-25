@@ -16,7 +16,8 @@ fun AnglesLeftButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -25,6 +26,7 @@ fun AnglesLeftButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 @Markup
@@ -37,7 +39,8 @@ fun AnglesRightButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -46,6 +49,7 @@ fun AnglesRightButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 @Markup
@@ -58,7 +62,8 @@ fun AppsButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -67,6 +72,7 @@ fun AppsButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -80,7 +86,8 @@ fun ArrowUpButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -89,6 +96,7 @@ fun ArrowUpButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -102,7 +110,8 @@ fun BanButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -111,6 +120,7 @@ fun BanButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 @Markup
@@ -123,7 +133,8 @@ fun BuildingColumnsButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -132,6 +143,7 @@ fun BuildingColumnsButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -145,6 +157,7 @@ fun BulkEditButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
+    attributes: List<Pair<String, String>>? = null,
     onClick: ()->Unit
 ) = IconButton(
     color,
@@ -154,6 +167,7 @@ fun BulkEditButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -167,7 +181,8 @@ fun CheckButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -178,6 +193,7 @@ fun CheckButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -192,7 +208,8 @@ fun ChevronDownButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -203,6 +220,7 @@ fun ChevronDownButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -217,7 +235,8 @@ fun ChevronLeftButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -228,6 +247,7 @@ fun ChevronLeftButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -242,7 +262,8 @@ fun ChevronRightButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -253,6 +274,7 @@ fun ChevronRightButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -267,7 +289,8 @@ fun ChevronUpButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -278,6 +301,7 @@ fun ChevronUpButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -291,7 +315,8 @@ fun ClockButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -300,6 +325,7 @@ fun ClockButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -313,7 +339,8 @@ fun CodeMergeButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -322,6 +349,7 @@ fun CodeMergeButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -336,7 +364,8 @@ fun CoinsButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -345,6 +374,7 @@ fun CoinsButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -358,7 +388,8 @@ fun CommentButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -367,6 +398,7 @@ fun CommentButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -380,7 +412,8 @@ fun CommentDollarButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -389,6 +422,7 @@ fun CommentDollarButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -402,7 +436,8 @@ fun CreditCardButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -411,6 +446,7 @@ fun CreditCardButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -425,7 +461,8 @@ fun DetailsButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -434,6 +471,7 @@ fun DetailsButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -447,7 +485,8 @@ fun DownloadButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -456,6 +495,7 @@ fun DownloadButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -469,7 +509,8 @@ fun EditButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -478,6 +519,7 @@ fun EditButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -491,7 +533,8 @@ fun EnvelopeCircleCheckButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -500,6 +543,7 @@ fun EnvelopeCircleCheckButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 @Markup
@@ -512,7 +556,8 @@ fun EvaluationButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -521,6 +566,7 @@ fun EvaluationButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -534,7 +580,8 @@ fun FileExportButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -543,6 +590,7 @@ fun FileExportButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 @Markup
@@ -555,7 +603,8 @@ fun FileImportButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -564,6 +613,7 @@ fun FileImportButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -577,7 +627,8 @@ fun GearButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -586,6 +637,7 @@ fun GearButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -599,7 +651,8 @@ fun HelpButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -608,6 +661,7 @@ fun HelpButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -621,7 +675,8 @@ fun HomeButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -630,6 +685,7 @@ fun HomeButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -643,7 +699,8 @@ fun PlayButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -652,6 +709,7 @@ fun PlayButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -665,7 +723,8 @@ fun PlusButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -674,6 +733,7 @@ fun PlusButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -687,7 +747,8 @@ fun SackDollarButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -696,6 +757,7 @@ fun SackDollarButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -709,7 +771,8 @@ fun SackXMarkButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -718,6 +781,7 @@ fun SackXMarkButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -731,7 +795,8 @@ fun ScrewDriverWrenchButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -740,6 +805,7 @@ fun ScrewDriverWrenchButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -754,7 +820,8 @@ fun ShareNodesButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -763,6 +830,7 @@ fun ShareNodesButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -776,7 +844,8 @@ fun SquareCheckButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -785,6 +854,7 @@ fun SquareCheckButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -798,7 +868,8 @@ fun SupportButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -807,6 +878,7 @@ fun SupportButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -820,7 +892,8 @@ fun TrashCanButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -829,6 +902,7 @@ fun TrashCanButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -842,7 +916,8 @@ fun UploadButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -851,6 +926,7 @@ fun UploadButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -864,7 +940,8 @@ fun UsersButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -873,6 +950,7 @@ fun UsersButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -886,7 +964,8 @@ fun UserLockButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -895,6 +974,7 @@ fun UserLockButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -909,7 +989,8 @@ fun UserGearButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -918,6 +999,7 @@ fun UserGearButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )
 
@@ -931,7 +1013,8 @@ fun XMarkButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit
+    attributes: List<Pair<String, String>>? = null,
+    onClick: () -> Unit
 ) = IconButton(
     color,
     bgColor,
@@ -940,5 +1023,6 @@ fun XMarkButton(
     deviceType,
     isDisabled,
     dataId,
+    attributes,
     onClick
 )

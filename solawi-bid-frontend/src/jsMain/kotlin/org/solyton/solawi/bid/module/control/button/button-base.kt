@@ -140,9 +140,14 @@ fun IconButton(
     deviceType: Source<DeviceType>,
     isDisabled: Boolean = false,
     dataId: String? = null,
-    onClick: ()->Unit) = Tooltip(texts) {
+    attributes: List<Pair<String, String>>? = null,
+    onClick: ()->Unit
+) = Tooltip(texts) {
     Button(
         attrs = {
+            attributes?.forEach { attr ->
+                attr(attr.first, attr.second)
+            }
             if(isDisabled) disabled()
             if(dataId != null) dataId(dataId)
             style {

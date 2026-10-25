@@ -52,7 +52,7 @@ class PaymentMandateAuthorizationWorkflowTest {
         fun beforeAll() {
             playwright = Playwright.create()
             browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
-            TestUtils().getCookie(browser)
+            TestUtils().getCookie(browser, "PaymentMandateAuthorizationWorkflowTest")
         }
 
         @JvmStatic
@@ -60,7 +60,7 @@ class PaymentMandateAuthorizationWorkflowTest {
         fun afterAll() {
             browser.close()
             playwright.close()
-            TestUtils().deleteStorageStateFile()
+            TestUtils().deleteStorageStateFile("PaymentMandateAuthorizationWorkflowTest")
         }
     }
 
