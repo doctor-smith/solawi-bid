@@ -1,29 +1,42 @@
+package org.solyton.solawi.bid
+
 import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserContext
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 
 class TestUtils {
 
-    var numberOfUsers = 0
+    val storageStatePath: Path
+        get() = storageStatePath(null)
 
-    val storageStatePath: Path = Paths.get("loggedInState.json")
-    private lateinit var user: String
-    private lateinit var password: String
+    fun storageStatePath(of: String? = null): Path {
+        var dir = File(System.getProperty("user.dir")).absoluteFile
+        if (!File(dir, "e2e").exists() && dir.name != "e2e") {
+            // Falls aus einem Unterordner gestartet
+            while (dir.parentFile != null && !File(dir, "e2e").exists()) {
+                dir = dir.parentFile
+            }
+        }
+        val e2eDir = if (dir.name == "e2e") dir else File(dir, "e2e")
+        val base = File(e2eDir, "build/playwright").toPath().toAbsolutePath().normalize()
 
-    fun getCookie(browser: Browser, of: String? = null){
+        val targetDir = if (of == null) base.resolve("default") else base.resolve(of)
+        Files.createDirectories(targetDir)
 
-        numberOfUsers++
+        return targetDir.resolve("loggedInState.json")
+    }
 
+    fun getCookie(browser: Browser, of: String? = null) {
+        val target = storageStatePath(of)
         val context = browser.newContext()
         val page = context.newPage()
 
-        // get data from environment
-        user = System.getenv("TEST_USER")
-        password = System.getenv("TEST_USER_PASSWORD")
+        val user = System.getenv("TEST_USER")
+        val password = System.getenv("TEST_USER_PASSWORD")
 
-        try {
+        context.use { context ->
             page.navigate("${TestConfig.BASE_URL}/login")
             page.clickOn("cookie-disclaimer.modal.submit-button")
 
@@ -32,33 +45,18 @@ class TestUtils {
             page.clickOn("login-form.submit-button")
             page.waitForURL("**/dashboard")
 
-            val storagePath = when{
-                of == null -> storageStatePath
-                else -> Paths.get("$of/loggedInState.json")
-            }
-
             context.storageState(
-                BrowserContext.StorageStateOptions().setPath(storagePath)
+                BrowserContext.StorageStateOptions().setPath(target)
             )
-        } finally {
-            context.close()
         }
     }
 
     fun deleteStorageStateFile(of: String? = null) {
+        val target = storageStatePath(of)
         try {
-            val storagePath = when{
-                of == null -> storageStatePath
-                else -> Paths.get("$of/loggedInState.json")
-            }
-            when {
-                of == null && numberOfUsers == 1 -> Files.deleteIfExists(storagePath)
-                of != null -> Files.deleteIfExists(storagePath)
-            }
-            numberOfUsers--
+            Files.deleteIfExists(target)
         } catch (e: Exception) {
             println("Error deleting storage state file: ${e.message}")
         }
     }
-
 }

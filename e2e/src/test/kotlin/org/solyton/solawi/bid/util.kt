@@ -1,11 +1,10 @@
-
+package org.solyton.solawi.bid
 import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.TimeoutError
 import com.microsoft.playwright.assertions.LocatorAssertions
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import com.microsoft.playwright.options.WaitForSelectorState
-import org.solyton.solawi.bid.TestUserContext
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.LocalDateTime

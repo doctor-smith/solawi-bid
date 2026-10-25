@@ -3,14 +3,10 @@ package org.solyton.solawi.bid.pageobjects
 import CHECK_FALSE
 import CHECK_TRUE
 import checkIcon
-import clickOn
 import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
-import getByDataId
-import getByPartialDataId
 import org.solyton.solawi.bid.*
-import put
 
 /**
  * Page object for the Share Management application's organization page
@@ -139,7 +135,7 @@ class SharesPage(private val page: Page) {
         fun BulkEditModal(page: Page): BulkEditModal =
             BulkEditModal(
                 page.getByDataId("${BulkEditModal.BASE_ID}.modal"),
-                page.getByDataId("${ShareSubscriptionManagement.BASE_ID}.bulk-edit-button")
+                page.getByDataId("${BASE_ID}.bulk-edit-button")
             )
     }
 

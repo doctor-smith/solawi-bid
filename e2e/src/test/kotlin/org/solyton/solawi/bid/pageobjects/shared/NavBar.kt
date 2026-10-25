@@ -3,8 +3,8 @@ package org.solyton.solawi.bid.pageobjects.shared
 import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
-import getByDataId
-import waitForLoadingToFinish
+import org.solyton.solawi.bid.getByDataId
+import org.solyton.solawi.bid.waitForLoadingToFinish
 
 class NavBar(private val page: Page) {
 

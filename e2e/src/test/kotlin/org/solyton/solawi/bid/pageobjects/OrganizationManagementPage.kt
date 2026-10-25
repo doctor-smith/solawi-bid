@@ -1,10 +1,10 @@
 package org.solyton.solawi.bid.pageobjects
 
-import TestConfig
-import clickOn
 import com.microsoft.playwright.Page
-import dismissStrayErrorDialogIfPresent
-import waitForLoadingToFinish
+import org.solyton.solawi.bid.TestConfig
+import org.solyton.solawi.bid.clickOn
+import org.solyton.solawi.bid.dismissStrayErrorDialogIfPresent
+import org.solyton.solawi.bid.waitForLoadingToFinish
 
 /**
  * Page object for the organization-management admin UI: the organization list/creation

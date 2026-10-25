@@ -2,10 +2,10 @@ package org.solyton.solawi.bid.pageobjects.application.dashboard
 
 import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
-import getByDataId
 import org.solyton.solawi.bid.TestComponent
 import org.solyton.solawi.bid.TestLink
 import org.solyton.solawi.bid.TestPage
+import org.solyton.solawi.bid.getByDataId
 
 class DashboardPage(
     private val page: Page,

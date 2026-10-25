@@ -1,27 +1,20 @@
 package org.solyton.solawi.bid.test.module.shares
 
 import CHECK_FALSE
-import TestConfig
-import TestUtils
 import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserContext
 import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
 import com.microsoft.playwright.assertions.PlaywrightAssertions
-import dismissStrayErrorDialogIfPresent
-import getByDataId
-import navigateToOrganizationApplicationPage
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.solyton.solawi.bid.Workflow
+import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.module.values.Firstname
 import org.solyton.solawi.bid.module.values.Lastname
 import org.solyton.solawi.bid.module.values.PhoneNumber
 import org.solyton.solawi.bid.pageobjects.*
-import waitForLoadingToFinish
-import withFailureDiagnostics
 import java.nio.file.Files
 
 /**
@@ -56,6 +49,7 @@ import java.nio.file.Files
 class ShareSubscriptionApprovalWorkflowTest {
 
     companion object {
+        const val STORAGE_PATH = "ShareSubscriptionApprovalWorkflowTest"
         private lateinit var playwright: Playwright
         private lateinit var browser: Browser
 
@@ -67,7 +61,7 @@ class ShareSubscriptionApprovalWorkflowTest {
             // Logs in once as TEST_USER (who becomes the owner/admin of every organization
             // it creates, see `OrganizationManagementPage.createOrganization`) and stores
             // the resulting session, so the test can reuse it.
-            TestUtils().getCookie(browser, "ShareSubscriptionApprovalWorkflowTest")
+            TestUtils().getCookie(browser, STORAGE_PATH)
         }
 
         @JvmStatic
@@ -75,13 +69,13 @@ class ShareSubscriptionApprovalWorkflowTest {
         fun afterAll() {
             browser.close()
             playwright.close()
-            TestUtils().deleteStorageStateFile("ShareSubscriptionApprovalWorkflowTest")
+            TestUtils().deleteStorageStateFile(STORAGE_PATH)
         }
     }
 
     // A fresh context, already logged in as TEST_USER via the stored session.
     private fun adminContext(): BrowserContext {
-        val storedState = Files.readString(TestUtils().storageStatePath)
+        val storedState = Files.readString(TestUtils().storageStatePath(STORAGE_PATH))
         return browser.newContext(
             Browser.NewContextOptions().setStorageState(storedState)
         )

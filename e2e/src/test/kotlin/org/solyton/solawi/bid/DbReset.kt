@@ -1,4 +1,6 @@
-import DbReset.RESET_FLAG_ENV
+package org.solyton.solawi.bid
+
+import org.solyton.solawi.bid.DbReset.RESET_FLAG_ENV
 import java.io.File
 
 /**

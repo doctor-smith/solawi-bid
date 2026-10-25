@@ -1,12 +1,8 @@
 package org.solyton.solawi.bid.pageobjects
 
-import clickOn
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
-import getByDataId
-import getByPartialDataId
-import inputText
-import waitForLoadingToFinish
+import org.solyton.solawi.bid.*
 
 /**
  * Page object for the Banking application's organization page

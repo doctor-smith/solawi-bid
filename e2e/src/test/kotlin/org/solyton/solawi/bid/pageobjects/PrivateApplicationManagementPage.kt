@@ -1,14 +1,9 @@
 package org.solyton.solawi.bid.pageobjects
 
-import TestConfig
-import clickIfPresent
-import clickOn
 import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.options.WaitForSelectorState
-import dismissStrayErrorDialogIfPresent
-import getByDataId
-import waitForLoadingToFinish
+import org.solyton.solawi.bid.*
 
 /**
  * Page object for `/app/management/private`, where the current user personally

@@ -1,7 +1,5 @@
 package org.solyton.solawi.bid.test.module.authentication
 
-import TestConfig
-import clickOn
 import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Page
@@ -11,7 +9,9 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Smoke
-import put
+import org.solyton.solawi.bid.TestConfig
+import org.solyton.solawi.bid.clickOn
+import org.solyton.solawi.bid.put
 
 class LoginTest {
 

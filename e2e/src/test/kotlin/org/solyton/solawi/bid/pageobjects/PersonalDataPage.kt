@@ -1,15 +1,11 @@
 package org.solyton.solawi.bid.pageobjects
 
-import clickOn
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
-import dismissStrayErrorDialogIfPresent
-import getByDataId
-import org.solyton.solawi.bid.TestPage
+import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.module.values.Firstname
 import org.solyton.solawi.bid.module.values.Lastname
 import org.solyton.solawi.bid.module.values.PhoneNumber
-import waitForLoadingToFinish
 
 /**
  * Page object for the current user's personal-data page (`/app/private/data`), covering

@@ -1,7 +1,5 @@
 package org.solyton.solawi.bid.test.application
 
-import TestConfig
-import TestUtils
 import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Page
@@ -11,11 +9,17 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Smoke
+import org.solyton.solawi.bid.TestConfig
+import org.solyton.solawi.bid.TestUtils
 import java.nio.file.Files
 
 class NavigationTest {
 
+
+
     companion object {
+
+        const val STORAGE_PATH = "NavigationTest"
         private lateinit var playwright: Playwright
         private lateinit var browser: Browser
 
@@ -26,7 +30,7 @@ class NavigationTest {
             playwright = Playwright.create()
             browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
 
-            TestUtils().getCookie(browser, "NavigationTest")
+            TestUtils().getCookie(browser, STORAGE_PATH)
         }
 
         @JvmStatic
@@ -34,14 +38,14 @@ class NavigationTest {
         fun afterAll() {
             browser.close()
             playwright.close()
-            TestUtils().deleteStorageStateFile("NavigationTest")
+            TestUtils().deleteStorageStateFile(STORAGE_PATH)
         }
     }
 
     @Smoke
     @Test
     fun test_useStoredState() {
-        val jsonString = Files.readString(TestUtils().storageStatePath)
+        val jsonString = Files.readString(TestUtils().storageStatePath(STORAGE_PATH))
         val context = browser.newContext(
             Browser.NewContextOptions().setStorageState(jsonString)
         )
