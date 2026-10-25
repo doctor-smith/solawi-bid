@@ -1,7 +1,7 @@
 ---
-Last updated: 2026-10-23 (later)
+Last updated: 2026-10-24
 Phase: 1 (Audit) complete; Phase 2 (fixture-chain build-out) complete and VERIFIED.
-Phase 3 (remaining workflows) is underway: B1 (approval, no mandate) and B2
+Phase 3 (remaining workflows) is underway: B1 (approval, no mandate), B2
 (payment-mandate authorization) both pass end-to-end, confirmed by the user. A new
 `TestPage`/`TestComponent`/`TestUser` test framework (`framework.kt`, `StdTestUser.kt`)
 is in active development, with an initial small-scope migration applied (see "Test
