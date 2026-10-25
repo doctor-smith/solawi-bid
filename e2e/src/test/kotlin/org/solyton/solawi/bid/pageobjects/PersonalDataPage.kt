@@ -68,7 +68,12 @@ class PersonalDataPage(private val page: Page) : TestPage(page, "app/private/dat
 
         val submitButton = page.getByDataId("upsert-user-profile.modal.submit-button")
         assertThat(submitButton).isEnabled()
-        submitButton.click()
+        // val response =
+        page.waitForResponse({
+                r -> r.url().endsWith("users/profiles/create") && r.request().method() == "POST"
+        }) {
+            submitButton.click()
+        }
 
         assertThat(modal).not().isVisible()
     }
