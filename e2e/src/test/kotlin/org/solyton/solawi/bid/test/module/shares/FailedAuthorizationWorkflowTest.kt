@@ -1,13 +1,8 @@
 package org.solyton.solawi.bid.test.module.shares
 
-import TestUtils
-import clickOn
 import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
-import dismissStrayErrorDialogIfPresent
-import getByDataId
-import navigateToOrganizationApplicationPage
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -22,8 +17,6 @@ import org.solyton.solawi.bid.pageobjects.module.authentication.LoginPage
 import org.solyton.solawi.bid.pageobjects.shared.NavBar
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserInput
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserWorkflow
-import waitForLoadingToFinish
-import withFailureDiagnostics
 
 /**
  * End-to-end coverage for the Share Management module, workflow B3 from
@@ -34,6 +27,8 @@ import withFailureDiagnostics
 class FailedAuthorizationWorkflowTest {
 
     companion object {
+        const val STORAGE_PATH = "FailedAuthorizationWorkflowTest"
+
         private lateinit var playwright: Playwright
         private lateinit var browser: Browser
 
@@ -42,7 +37,7 @@ class FailedAuthorizationWorkflowTest {
         fun beforeAll() {
             playwright = Playwright.create()
             browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
-            TestUtils().getCookie(browser, "ApplicationManagementTest")
+            TestUtils().getCookie(browser, STORAGE_PATH)
         }
 
         @JvmStatic
@@ -50,7 +45,7 @@ class FailedAuthorizationWorkflowTest {
         fun afterAll() {
             browser.close()
             playwright.close()
-            TestUtils().deleteStorageStateFile("ApplicationManagementTest")
+            TestUtils().deleteStorageStateFile(STORAGE_PATH)
         }
     }
 
@@ -63,7 +58,7 @@ class FailedAuthorizationWorkflowTest {
 
         val adminUsername = requireNotNull(System.getenv("TEST_USER")) { "TEST_USER must be set" }
         val adminPassword = requireNotNull(System.getenv("TEST_USER_PASSWORD")) { "TEST_USER_PASSWORD must be set" }
-        val adminUser = AdminTestUser(Username(adminUsername), Password(adminPassword))
+        val adminUser = AdminTestUser(Username(adminUsername), Password(adminPassword), STORAGE_PATH)
 
         // 1. Create a test user via workflow
         val testUser = withUser(adminUser on browser) {

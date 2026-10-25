@@ -1,14 +1,14 @@
 package org.solyton.solawi.bid.pageobjects.module.user
 
-import TestConfig
-import clickOn
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.Response
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.solyton.solawi.bid.StdTestUser
+import org.solyton.solawi.bid.TestConfig
+import org.solyton.solawi.bid.clickOn
 import org.solyton.solawi.bid.module.values.Password
 import org.solyton.solawi.bid.module.values.Username
-import put
+import org.solyton.solawi.bid.put
 
 class UserManagementPage(private val page: Page) {
     val url = "${TestConfig.BASE_URL}/app/management/users"

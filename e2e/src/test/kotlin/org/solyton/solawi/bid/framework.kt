@@ -1,13 +1,10 @@
 package org.solyton.solawi.bid
 
-import TestConfig
 import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.Response
 import com.microsoft.playwright.assertions.LocatorAssertions
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
-import getByDataId
-import getByPartialDataId
 import org.evoleq.math.x
 
 /**

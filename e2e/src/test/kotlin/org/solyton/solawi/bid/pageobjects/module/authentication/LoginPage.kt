@@ -1,13 +1,13 @@
 package org.solyton.solawi.bid.pageobjects.module.authentication
 
-import TestConfig
-import clickOn
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.Response
+import org.solyton.solawi.bid.TestConfig
 import org.solyton.solawi.bid.TestUser
+import org.solyton.solawi.bid.clickOn
 import org.solyton.solawi.bid.module.values.Password
 import org.solyton.solawi.bid.module.values.Username
-import put
+import org.solyton.solawi.bid.put
 
 class LoginPage(private val page: Page) {
 

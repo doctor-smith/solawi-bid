@@ -1,6 +1,5 @@
 package org.solyton.solawi.bid
 
-import TestUtils
 import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserContext
 import com.microsoft.playwright.Page
@@ -21,7 +20,8 @@ data class StdTestUser(
 
 data class AdminTestUser(
     override val username: Username,
-    override val password: Password
+    override val password: Password,
+    val storagePath: String
 ) : TestUser
 
 data class TestUserContext(
@@ -45,7 +45,7 @@ fun <T> withUser(userContext: TestUserContext, block: TestUserContext.() -> T): 
 }
 
 infix fun AdminTestUser.on(browser: Browser): TestUserContext {
-    val storedState = Files.readString(TestUtils().storageStatePath)
+    val storedState = Files.readString(TestUtils().storageStatePath(storagePath))
     val context = browser.newContext(
         Browser.NewContextOptions().setStorageState(storedState)
     )

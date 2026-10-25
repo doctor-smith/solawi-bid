@@ -1,3 +1,5 @@
+package org.solyton.solawi.bid
+
 object TestConfig {
     // Defaults to the port used by the regular development environment and CI
     // (docker-compose.yml / docker-compose.e2e.yml), so existing setups keep working

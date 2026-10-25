@@ -1,9 +1,9 @@
 package org.solyton.solawi.bid.pageobjects
 
-import clickOn
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
-import getByDataId
+import org.solyton.solawi.bid.clickOn
+import org.solyton.solawi.bid.getByDataId
 
 /**
  * Page object for the Distribution application's organization page

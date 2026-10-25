@@ -1,16 +1,12 @@
 package org.solyton.solawi.bid.test.module.user
 
-import TestConfig
-import TestUtils
-import clickOn
 import com.microsoft.playwright.*
 import com.microsoft.playwright.options.WaitForSelectorState
-import getByDataId
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import put
+import org.solyton.solawi.bid.*
 import java.nio.file.Files
 
 /**
@@ -22,6 +18,7 @@ import java.nio.file.Files
 class UserManagementTest {
 
     companion object {
+        const val STORAGE_PATH = "UserManagementTest"
         private lateinit var playwright: Playwright
         private lateinit var browser: Browser
 
@@ -32,7 +29,7 @@ class UserManagementTest {
             browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
             // Logs in once as TEST_USER (the application owner, who may manage users)
             // and stores the resulting session, so every test here can reuse it.
-            TestUtils().getCookie(browser, "UserManagementTest")
+            TestUtils().getCookie(browser, STORAGE_PATH)
         }
 
         @JvmStatic
@@ -40,13 +37,15 @@ class UserManagementTest {
         fun afterAll() {
             browser.close()
             playwright.close()
-            TestUtils().deleteStorageStateFile("UserManagementTest")
+            TestUtils().deleteStorageStateFile(STORAGE_PATH)
         }
     }
 
     // A fresh context, already logged in as TEST_USER via the stored session.
     private fun adminContext(): BrowserContext {
-        val storedState = Files.readString(TestUtils().storageStatePath)
+        val path = TestUtils().storageStatePath(STORAGE_PATH)
+        check(Files.exists(path)) { "Missing storage state: $path" }
+        val storedState = Files.readString(path)
         return browser.newContext(
             Browser.NewContextOptions().setStorageState(storedState)
         )

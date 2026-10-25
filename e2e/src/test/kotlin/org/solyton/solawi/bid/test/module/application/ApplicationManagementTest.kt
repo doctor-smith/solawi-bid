@@ -1,16 +1,12 @@
 package org.solyton.solawi.bid.test.module.application
 
-import TestConfig
-import TestUtils
-import clickOn
 import com.microsoft.playwright.*
 import com.microsoft.playwright.options.WaitForSelectorState
-import getByDataId
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import waitForLoadingToFinish
+import org.solyton.solawi.bid.*
 import java.nio.file.Files
 
 /**
@@ -29,6 +25,8 @@ import java.nio.file.Files
 class ApplicationManagementTest {
 
     companion object {
+
+        const val STORAGE_PATH = "ApplicationManagementTest"
         private lateinit var playwright: Playwright
         private lateinit var browser: Browser
 
@@ -39,7 +37,7 @@ class ApplicationManagementTest {
             browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
             // Logs in once as TEST_USER (the application owner, who may manage applications)
             // and stores the resulting session, so every test here can reuse it.
-            TestUtils().getCookie(browser, "ApplicationManagementTest")
+            TestUtils().getCookie(browser, STORAGE_PATH)
         }
 
         @JvmStatic
@@ -47,13 +45,13 @@ class ApplicationManagementTest {
         fun afterAll() {
             browser.close()
             playwright.close()
-            TestUtils().deleteStorageStateFile("ApplicationManagementTest")
+            TestUtils().deleteStorageStateFile(STORAGE_PATH)
         }
     }
 
     // A fresh context, already logged in as TEST_USER via the stored session.
     private fun adminContext(): BrowserContext {
-        val storedState = Files.readString(TestUtils().storageStatePath)
+        val storedState = Files.readString(TestUtils().storageStatePath(STORAGE_PATH))
         return browser.newContext(
             Browser.NewContextOptions().setStorageState(storedState)
         )
