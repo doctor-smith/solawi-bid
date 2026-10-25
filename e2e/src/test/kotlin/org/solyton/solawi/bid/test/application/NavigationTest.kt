@@ -26,7 +26,7 @@ class NavigationTest {
             playwright = Playwright.create()
             browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
 
-            TestUtils().getCookie(browser)
+            TestUtils().getCookie(browser, "NavigationTest")
         }
 
         @JvmStatic
@@ -34,7 +34,7 @@ class NavigationTest {
         fun afterAll() {
             browser.close()
             playwright.close()
-            TestUtils().deleteStorageStateFile()
+            TestUtils().deleteStorageStateFile("NavigationTest")
         }
     }
 

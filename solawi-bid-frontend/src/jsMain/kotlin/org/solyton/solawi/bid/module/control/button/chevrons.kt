@@ -9,6 +9,7 @@ import org.evoleq.language.texts
 import org.evoleq.math.Reader
 import org.evoleq.math.Source
 import org.evoleq.math.times
+import org.evoleq.math.x
 import org.evoleq.optics.storage.Storage
 import org.jetbrains.compose.web.css.AlignSelf
 import org.jetbrains.compose.web.css.Color
@@ -42,7 +43,6 @@ fun CardChevrons(
     dataId: String? = null,
     setOpened: (Boolean) -> Unit
 ) = Div({
-    attr("opened", "$opened")
     style {
         alignSelf(AlignSelf.FlexEnd)
     }
@@ -54,6 +54,7 @@ fun CardChevrons(
             texts * open,
             deviceType,
             dataId = dataId,
+            attributes = listOf("opened" x "$opened")
         ) {
             setOpened(false)
         }
@@ -66,6 +67,7 @@ fun CardChevrons(
             texts * close,
             deviceType,
             dataId = dataId,
+            attributes = listOf("opened" x "$opened")
         ) {
             setOpened(true)
         }

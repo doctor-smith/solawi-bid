@@ -67,7 +67,7 @@ class ShareSubscriptionApprovalWorkflowTest {
             // Logs in once as TEST_USER (who becomes the owner/admin of every organization
             // it creates, see `OrganizationManagementPage.createOrganization`) and stores
             // the resulting session, so the test can reuse it.
-            TestUtils().getCookie(browser)
+            TestUtils().getCookie(browser, "ShareSubscriptionApprovalWorkflowTest")
         }
 
         @JvmStatic
@@ -75,7 +75,7 @@ class ShareSubscriptionApprovalWorkflowTest {
         fun afterAll() {
             browser.close()
             playwright.close()
-            TestUtils().deleteStorageStateFile()
+            TestUtils().deleteStorageStateFile("ShareSubscriptionApprovalWorkflowTest")
         }
     }
 

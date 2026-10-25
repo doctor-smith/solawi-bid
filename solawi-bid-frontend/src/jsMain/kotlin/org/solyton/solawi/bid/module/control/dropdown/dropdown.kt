@@ -32,6 +32,7 @@ fun <T> Dropdown(
     var expanded by remember { mutableStateOf(false) }
 
     Div({
+        if(dataId != null) dataId("$dataId.wrapper")
         attr("expanded", "$expanded")
         style {
             with(styles) { containerStyle() }

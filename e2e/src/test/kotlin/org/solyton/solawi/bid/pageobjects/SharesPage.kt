@@ -9,7 +9,7 @@ import com.microsoft.playwright.Page
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import getByDataId
 import getByPartialDataId
-import org.solyton.solawi.bid.TestAccordion
+import org.solyton.solawi.bid.*
 import put
 
 /**
@@ -19,7 +19,7 @@ import put
  */
 class SharesPage(private val page: Page) {
 
-    class ShareTypes(override val locator: Locator) : TestAccordion(locator) {
+    class ShareTypeManagement(override val locator: Locator) : TestAccordion(locator) {
         companion object {
             const val BASE_ID = "shares.page.share-type"
         }
@@ -43,7 +43,7 @@ class SharesPage(private val page: Page) {
 
     }
 
-    class ShareOffers(override val locator: Locator) : TestAccordion(locator) {
+    class ShareOfferManagement(override val locator: Locator) : TestAccordion(locator) {
         companion object {
             const val BASE_ID = "shares.page.share-offer"
         }
@@ -67,47 +67,103 @@ class SharesPage(private val page: Page) {
 
     }
 
-    class ShareSubscriptions(override val locator: Locator) : TestAccordion(locator) {
+    class ShareSubscriptionManagement(override val locator: Locator) : DefaultTestAccordion(locator) {
+
         companion object {
             const val BASE_ID = "shares.page.share-subscription"
         }
 
-
         override fun trigger(): Locator = locator.getByDataId("$BASE_ID.chevron")
 
-        override fun isOpened(): Boolean =
-            locator.getAttribute("opened") == "true"
-
-
-        override fun open(){
-            if(!isOpened()) trigger().click()
-        }
-
-        override fun close() {
-            if(isOpened()) trigger().click()
-        }
 
         fun createNewShareSubscriptionButton(): Locator = locator.getByDataId("$BASE_ID.create-button")
 
+        fun selectAllButton(): Locator = locator.getByDataId("$BASE_ID.select-all-checkbox")
+        fun selectAll() {
+            if (!selectAllButton().isChecked) selectAllButton().click()
+        }
+        fun deselectAll() {
+            if(selectAllButton().isChecked) selectAllButton().click()
+        }
+
+        class StatusFilter(
+            override val locator: Locator
+        ) : DefaultTestDropdown(
+            locator,
+            with(locator) { mapOf(
+                option("All Statuses"),
+                option("PENDING_ACTIVATION"),
+                option("SUBSCRIBED"),
+                option("SUSPENDED"),
+                option("AWAITING_AHC_AUTHORIZATION"),
+                option("ACTIVATION_REJECTED"),
+            ) }
+        )
+
+        class AhcAuthFilter(
+            override val locator: Locator
+        ) : DefaultTestDropdown(
+            locator,
+            with(locator) { mapOf(
+                option("All Authorized"),
+                option(CHECK_FALSE),
+                option(CHECK_TRUE),
+            ) }
+        )
+
+        class BulkEditModal(
+            override val locator: Locator,
+            override val trigger: Locator,
+        ) : TestModal(
+            locator, trigger
+        ) {
+            companion object {
+                const val BASE_ID = "shares.modal.bulk-edit"
+            }
+
+            override fun submitButton(): Locator = locator.getByDataId("$BASE_ID.modal.submit-button")
+            override fun cancelButton(): Locator {
+                TODO("Not yet implemented")
+            }
+
+            override fun closeButton(): Locator {
+                TODO("Not yet implemented")
+            }
+
+            fun changeStatusCheckbox(): Locator = locator.getByDataId("$BASE_ID.change-status-checkbox")
+            fun statusDropdown(): Locator = locator.getByDataId("$BASE_ID.status-dropdown")
+            fun statusOption(status: String): Locator = locator.getByDataId("$BASE_ID.status-dropdown.option.$status")
+
+        }
+
+        fun BulkEditModal(page: Page): BulkEditModal =
+            BulkEditModal(
+                page.getByDataId("${BulkEditModal.BASE_ID}.modal"),
+                page.getByDataId("${ShareSubscriptionManagement.BASE_ID}.bulk-edit-button")
+            )
     }
 
     // API
 
-    fun ShareTypes(): ShareTypes =
-        ShareTypes(page.getByDataId(ShareTypes.BASE_ID))
+    @Suppress("FunctionName")
+    fun ShareTypeManagement(): ShareTypeManagement =
+        ShareTypeManagement(page.getByDataId(ShareTypeManagement.BASE_ID))
 
-    fun ShareOffers(): ShareOffers =
-        ShareOffers(page.getByDataId(ShareOffers.BASE_ID))
+    @Suppress("FunctionName")
+    fun ShareOfferManagement(): ShareOfferManagement =
+        ShareOfferManagement(page.getByDataId(ShareOfferManagement.BASE_ID))
 
-    fun ShareSubscriptions(): ShareSubscriptions =
-        ShareSubscriptions(page.getByDataId(ShareSubscriptions.BASE_ID))
+    @Suppress("FunctionName")
+    fun ShareSubscriptionManagement(): ShareSubscriptionManagement =
+        ShareSubscriptionManagement(page.getByDataId(ShareSubscriptionManagement.BASE_ID))
+
 
     /**
      * Creates a share type with the given [name]/[key]/[description].
      * The key must have length <= 20.
      */
     fun createShareType(name: String, key: String, description: String) {
-        with(ShareTypes()) {
+        with(ShareTypeManagement()) {
             open()
             createNewShareTypeButton().click()
         }
@@ -140,7 +196,7 @@ class SharesPage(private val page: Page) {
         price: String,
         ahcAuthorizationRequired: Boolean = false
     ) {
-        with(ShareOffers()) {
+        with(ShareOfferManagement()) {
             open()
             createNewShareOfferButton().click()
         }
@@ -240,7 +296,7 @@ class SharesPage(private val page: Page) {
         ahcAuthorized: Boolean,
         coSubscribers: List<String> = emptyList()
     ) {
-        with(ShareSubscriptions()) {
+        with(ShareSubscriptionManagement()) {
             open()
             createNewShareSubscriptionButton().click()
         }
@@ -302,24 +358,35 @@ class SharesPage(private val page: Page) {
      * `ChangedBy.PROVIDER` and will throw a client-side error for USER-only
      * transitions (see progress doc).
      */
-    fun changeStatusViaBulkEdit(targetStatus: String) {
-        page.clickOn("shares.page.share-subscription.select-all-checkbox")
-        page.clickOn("shares.page.share-subscription.bulk-edit-button")
+    fun changeStatusViaBulkEdit(targetStatus: String) = with(ShareSubscriptionManagement()){
+        open()
+        assertThat(selectAllButton()).isEnabled()
 
-        page.clickOn("shares.modal.bulk-edit.change-status-checkbox")
-        page.clickOn("shares.modal.bulk-edit.status-dropdown")
-        page.clickOn("shares.modal.bulk-edit.status-dropdown.option.$targetStatus")
+        deselectAll()
+        selectAll()
+        assertThat(selectAllButton()).isChecked()
 
-        val submitButton = page.getByDataId("shares.modal.bulk-edit.modal.submit-button")
-        submitButton.apply {
-            assertThat(this).isEnabled()
-            click()
-        }
+        val bulkModal = BulkEditModal(page)
+        assertThat(bulkModal.trigger).isEnabled()
 
-        // page.shot("dev/confirm-bulk-edit-share-subscriptions.png")
+        bulkModal.open()
+        assertThat(bulkModal).isVisible()
+        bulkModal.changeStatusCheckbox().click()
+        bulkModal.statusDropdown().click()
+        bulkModal.statusOption(targetStatus).click()
+        // bulkModal.statusDropdown().click()
+
+
+        val submitButton = bulkModal.submitButton()
+        assertThat(submitButton).isEnabled()
+        submitButton.click()
+
+
+        assertThat(bulkModal).not().isVisible()
 
         // A second, generic confirmation dialog ("Are you sure...?") is the one that
         // actually dispatches the status change.
         page.clickOn("null.modal.submit-button")
+        assertThat(page.getByDataId("null.modal")).not().isVisible()
     }
 }

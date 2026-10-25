@@ -39,7 +39,7 @@ class ApplicationManagementTest {
             browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
             // Logs in once as TEST_USER (the application owner, who may manage applications)
             // and stores the resulting session, so every test here can reuse it.
-            TestUtils().getCookie(browser)
+            TestUtils().getCookie(browser, "ApplicationManagementTest")
         }
 
         @JvmStatic
@@ -47,7 +47,7 @@ class ApplicationManagementTest {
         fun afterAll() {
             browser.close()
             playwright.close()
-            TestUtils().deleteStorageStateFile()
+            TestUtils().deleteStorageStateFile("ApplicationManagementTest")
         }
     }
 
