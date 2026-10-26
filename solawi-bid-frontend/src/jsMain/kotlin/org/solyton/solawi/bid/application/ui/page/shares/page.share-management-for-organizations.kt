@@ -383,6 +383,7 @@ fun ShareTypeManagement(
                                         state.description,
                                     )
                                 }
+                                shareTypeState = null
                             }
                         }
                     }
@@ -542,6 +543,7 @@ fun ShareOfferManagement(
                                             state.ahcAuthorizationRequired,
                                         )
                                     }
+                                    shareOfferState = null
                                 }
                             }
                         }
@@ -607,7 +609,7 @@ fun ShareOfferManagement(
                                         requireNotNull(creditorIdentifierState) { "Cannot be null " }
                                     val sepaCollectionReader =
                                         sepaCollections * FirstOrNull { shareOffer.shareOfferId in it.referenceIds.map { id -> id.value } }
-                                    var sepaCollectionState by remember {
+                                    var sepaCollectionState by remember(shareOffer.shareOfferId) {
                                         mutableStateOf(
                                             PartialSepaCollection(
                                                 sepaCollectionId = sepaCollectionReader.emit()?.sepaCollectionId,
@@ -999,6 +1001,7 @@ fun ShareSubscriptionManagement(
                                             )
                                         }
                                     }
+                                    newShareSubscriptionState = null
                                 }
                             }
                         }

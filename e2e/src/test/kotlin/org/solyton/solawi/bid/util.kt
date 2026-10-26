@@ -239,14 +239,19 @@ fun Page.waitForApi(
     api: Api,
     keyOfEndpoint: KClass<*>,
     expectedStatus: Int = 200,
+    options: Page.WaitForResponseOptions = Page.WaitForResponseOptions(),
     action: () -> Unit
 ): Response {
     val endPoint = requireNotNull( api.getValue(keyOfEndpoint) ) {
         "Required endpoint not found: searched for ${keyOfEndpoint.simpleName}"
     }
-    val response = this.waitForResponse({ r ->
+    val response = this.waitForResponse(
+         { r ->
         r.url().contains(endPoint.url) && r.request().method().equals(endPoint.method, ignoreCase = true)
-    }, action)
+        },
+        options,
+        action
+    )
     assertTrue(response.status() == expectedStatus, "API Call to ${endPoint.url} failed with ${response.status()}")
     return response
 }
