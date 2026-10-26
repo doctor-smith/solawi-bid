@@ -199,12 +199,13 @@ class FailedAuthorizationWorkflowTest {
 
                 with(sharesPage) {
                     createShareType(shareTypeName, shareTypeKey, "E2E fixture share type (B3)")
-                    createShareOffer(fiscalYearKey, shareTypeName, price, ahcAuthorizationRequired = true)
+                    val shareOffer = createShareOffer(fiscalYearKey, shareTypeName, price, ahcAuthorizationRequired = true)
 
                     val collectionKey = "B3-$suffix"
                     val mandateReferencePrefix = "B3"
 
                     attachSepaCollectionToOffer(
+                        shareOffer = shareOffer,
                         creditorAccountHolder = organizationName,
                         creditorAccountDescription = "e2e-creditor-account",
                         collectionKey = collectionKey,

@@ -196,23 +196,39 @@ abstract class TestAccordion (
  * @constructor Initializes the instance with the given [locator] representing the UI element.
  */
 abstract class DefaultTestAccordion(override val locator: Locator): TestAccordion(locator) {
-    // val baseId: String = locator.getAttribute("data-id")
 
-
-
+    /**
+     * Checks whether the accordion is currently opened.
+     *
+     * The method evaluates the "opened" attribute of the accordion's trigger element.
+     * It returns true if the attribute's value is "true", indicating that the accordion is open.
+     *
+     * @return true if the accordion is opened, false otherwise.
+     */
     override fun isOpened(): Boolean =
         trigger().getAttribute("opened") == "true"
 
-
+    /**
+     * Opens the accordion if it is not already open.
+     *
+     * This method checks the current state of the accordion by invoking [isOpened].
+     * If the accordion is not open, it triggers a click action on the accordion's toggle control
+     * by calling [trigger] and performing the click operation.
+     */
     override fun open(){
         if(!isOpened()) trigger().click()
     }
 
+    /**
+     * Closes the accordion if it is currently open.
+     *
+     * This method checks the state of the accordion using [isOpened]. If the accordion is open,
+     * it performs a click action on the accordion's trigger element, represented by [trigger],
+     * to toggle its state to closed.
+     */
     override fun close() {
         if(isOpened()) trigger().click()
     }
-
-
 }
 
 /**

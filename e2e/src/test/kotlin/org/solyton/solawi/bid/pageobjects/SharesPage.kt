@@ -18,7 +18,7 @@ import org.solyton.solawi.bid.module.shares.data.api.*
  */
 class SharesPage(private val page: Page) {
 
-    class ShareTypeManagement(override val locator: Locator) : TestAccordion(locator) {
+    class ShareTypeManagement(override val locator: Locator) : DefaultTestAccordion(locator) {
         companion object {
             const val BASE_ID = "shares.page.share-type"
         }
@@ -26,23 +26,11 @@ class SharesPage(private val page: Page) {
 
         override fun trigger(): Locator = locator.getByDataId("$BASE_ID.chevron")
 
-        override fun isOpened(): Boolean =
-            locator.getAttribute("opened") == "true"
-
-
-        override fun open(){
-            if(!isOpened()) trigger().click()
-        }
-
-        override fun close() {
-            if(isOpened()) trigger().click()
-        }
-
         fun createNewShareTypeButton(): Locator = locator.getByDataId("$BASE_ID.create-button")
 
     }
 
-    class ShareOfferManagement(override val locator: Locator) : TestAccordion(locator) {
+    class ShareOfferManagement(override val locator: Locator) : DefaultTestAccordion(locator) {
         companion object {
             const val BASE_ID = "shares.page.share-offer"
         }
@@ -50,20 +38,7 @@ class SharesPage(private val page: Page) {
 
         override fun trigger(): Locator = locator.getByDataId("$BASE_ID.chevron")
 
-        override fun isOpened(): Boolean =
-            locator.getAttribute("opened") == "true"
-
-
-        override fun open(){
-            if(!isOpened()) trigger().click()
-        }
-
-        override fun close() {
-            if(isOpened()) trigger().click()
-        }
-
         fun createNewShareOfferButton(): Locator = locator.getByDataId("$BASE_ID.create-button")
-
     }
 
     class ShareSubscriptionManagement(override val locator: Locator) : DefaultTestAccordion(locator) {
@@ -205,11 +180,12 @@ class SharesPage(private val page: Page) {
         shareTypeName: String,
         price: String,
         ahcAuthorizationRequired: Boolean = false
-    ) : ApiShareOffer {
-        with(ShareOfferManagement()) {
-            open()
-            createNewShareOfferButton().click()
-        }
+    ) : ApiShareOffer = with(ShareOfferManagement()) {
+        assertThat(this).isVisible()
+        if(!isOpened()) open()
+        assertThat(createNewShareOfferButton()).isVisible()
+        createNewShareOfferButton().click()
+
         // page.clickOn("shares.page.share-offer.chevron")
         // page.clickOn("shares.page.share-offer.create-button")
 
@@ -249,15 +225,18 @@ class SharesPage(private val page: Page) {
      * creditor bank account by its `"<holder> / <description>"` dropdown key.
      */
     fun attachSepaCollectionToOffer(
+        shareOffer: ApiShareOffer,
         creditorAccountHolder: String,
         creditorAccountDescription: String,
         collectionKey: String,
         mandateReferencePrefix: String,
         remittanceInformation: String
-    ): SepaCollection {
-        val sepaCollectionButton = page.locator(
-            "[data-id^='shares.page.share-offer.'][data-id\$='.sepa-collection-button']"
-        ).first()
+    ): SepaCollection = with(ShareOfferManagement()){
+        assertThat(this).isVisible()
+        if(!isOpened()) open()
+
+        val sepaCollectionButton = page.getByDataId("shares.page.share-offer.${shareOffer.id}.sepa-collection-button")
+
         assertThat(sepaCollectionButton).isVisible()
         sepaCollectionButton.click()
 
@@ -268,11 +247,15 @@ class SharesPage(private val page: Page) {
         page.locator("#mandate-reference-prefix").fill(mandateReferencePrefix)
         page.locator("#remittance-information").fill(remittanceInformation)
 
+        // page.shot("dev/attach-collection-$collectionKey.png")
+
+        val submitButton = page.getByDataId("null.modal.submit-button")
+        assertThat(submitButton).isEnabled()
         val collection = page.waitForApi(
             api = solawiApi,
             keyOfEndpoint = CreateSepaCollection::class
         ) {
-            page.clickOn("null.modal.submit-button")
+            submitButton.click()
         }.decodeBodyTo<ApiSepaCollection>()
 
         return collection
@@ -455,17 +438,19 @@ class SharesPage(private val page: Page) {
 
         val shareSubscriptions = page.waitForApi(
             api = solawiApi,
+            options = Page.WaitForResponseOptions().setTimeout(45_000.0),
             keyOfEndpoint = RolloverShareSubscriptions::class,
         ){
             submitButton.click()
+
+            assertThat(bulkModal).not().isVisible()
+
+            // Confirmation dialog
+            val confirmationButton = page.getByDataId("null.modal.submit-button")
+            assertThat(confirmationButton).isVisible()
+            confirmationButton.click()
+            assertThat(page.getByDataId("null.modal")).not().isVisible()
         }.decodeBodyTo<ApiShareSubscriptions>()
-
-
-        assertThat(bulkModal).not().isVisible()
-
-        // Confirmation dialog
-        page.clickOn("null.modal.submit-button")
-        assertThat(page.getByDataId("null.modal")).not().isVisible()
 
         return shareSubscriptions
     }

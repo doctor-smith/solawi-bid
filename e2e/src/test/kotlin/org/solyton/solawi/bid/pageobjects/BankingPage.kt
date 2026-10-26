@@ -1,5 +1,6 @@
 package org.solyton.solawi.bid.pageobjects
 
+import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import org.solyton.solawi.bid.*
@@ -12,6 +13,82 @@ import org.solyton.solawi.bid.module.banking.data.api.*
  * creditor-id setup and fiscal-year creation.
  */
 class BankingPage(private val page: Page) {
+
+    class LegalEntityManagement(override val locator: Locator): DefaultTestAccordion(locator) {
+
+        companion object {
+            const val BASE_ID = "banking.page.legal-entity"
+        }
+
+        override fun trigger(): Locator {
+            return locator.getByDataId("${BASE_ID}.chevron")
+        }
+    }
+
+    class CreditorBankAccountsManagement(override val locator: Locator): DefaultTestAccordion(locator) {
+
+        companion object {
+            const val BASE_ID = "banking.page.creditor-bank-accounts"
+        }
+
+        override fun trigger(): Locator {
+            return locator.getByDataId("${BASE_ID}.chevron")
+        }
+    }
+
+    class CustomerBankAccountsManagement(override val locator: Locator): DefaultTestAccordion(locator) {
+
+        companion object {
+            const val BASE_ID = "banking.page.customer-bank-accounts"
+        }
+
+        override fun trigger(): Locator {
+            return locator.getByDataId("${BASE_ID}.chevron")
+        }
+    }
+
+    class FiscalYearsManagement(override val locator: Locator): DefaultTestAccordion(locator) {
+
+        companion object {
+            const val BASE_ID = "banking.page.fiscal-years"
+        }
+
+        override fun trigger(): Locator {
+            return locator.getByDataId("${BASE_ID}.chevron")
+        }
+
+    }
+
+    class SepaManagement(override val locator: Locator): DefaultTestAccordion(locator) {
+
+        companion object {
+            const val BASE_ID = "banking.page.sepa-collections"
+        }
+
+        override fun trigger(): Locator {
+            return locator.getByDataId("${BASE_ID}.chevron")
+        }
+    }
+
+    //
+    // API
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    fun LegalEntityManagement(): LegalEntityManagement =
+        LegalEntityManagement(page.getByDataId(LegalEntityManagement.BASE_ID))
+
+
+    fun CreditorBankAccountsManagement(): CreditorBankAccountsManagement =
+        CreditorBankAccountsManagement(page.getByDataId(CreditorBankAccountsManagement.BASE_ID))
+
+    fun CustomerBankAccountsManagement(): CustomerBankAccountsManagement =
+        CustomerBankAccountsManagement(page.getByDataId(CustomerBankAccountsManagement.BASE_ID))
+
+    fun FiscalYearsManagement(): FiscalYearsManagement =
+        FiscalYearsManagement(page.getByDataId(FiscalYearsManagement.BASE_ID))
+
+    fun SepaManagement(): SepaManagement =
+        SepaManagement(page.getByDataId(SepaManagement.BASE_ID))
 
     /**
      * Creates a legal entity (type HUMAN) for the organization and, once it exists,
@@ -26,10 +103,10 @@ class BankingPage(private val page: Page) {
         name: String,
         legalForm: String,
         creditorId: String
-    ): ApiLegalEntity {
-        page.evaluate("console.log('MARKER_BEFORE_CREATE_LEGAL_ENTITY_CLICK')")
+    ): ApiLegalEntity = with(LegalEntityManagement()){
+        open()
+
         page.clickOn("banking.page.legal-entity.create-button")
-        page.evaluate("console.log('MARKER_AFTER_CREATE_LEGAL_ENTITY_CLICK')")
 
         // basic data
         page.locator("#name").fill(name)
@@ -85,7 +162,7 @@ class BankingPage(private val page: Page) {
         page.waitForLoadingToFinish()
         page.waitForSelector("text=$creditorId")
 
-        return legalEntity
+        legalEntity
     }
 
     /**
@@ -97,8 +174,8 @@ class BankingPage(private val page: Page) {
         iban: String,
         bic: String,
         description: String
-    ): ApiBankAccount {
-        page.clickOn("banking.page.creditor-bank-accounts.chevron")
+    ): ApiBankAccount = with(CreditorBankAccountsManagement()){
+        open()
         page.clickOn("banking.page.creditor-bank-accounts.create-button")
 
         page.locator("#account-holder").fill(accountHolder)
@@ -122,7 +199,7 @@ class BankingPage(private val page: Page) {
             page.clickOn("banking.upsert-bank-account.modal.submit-button")
         }.decodeBodyTo<ApiBankAccount>()
 
-        return bankAccount
+        bankAccount
     }
 
     /**
@@ -134,9 +211,9 @@ class BankingPage(private val page: Page) {
         accountHolder: String,
         iban: String,
         bic: String
-    ): ApiBankAccount {
+    ): ApiBankAccount = with(CustomerBankAccountsManagement()){
+        open()
 
-        page.clickOn("banking.page.customer-bank-accounts.chevron")
         page.clickOn("banking.page.customer-bank-accounts.create-button")
 
         val modal = page.getByDataId("banking.upsert-bank-account.modal")
@@ -174,42 +251,46 @@ class BankingPage(private val page: Page) {
 
         assertThat(modal).not().isVisible()
 
-        return bankAccount
+        bankAccount
     }
 
     /** Creates a fiscal year running from [start] to [end] (format `YYYY-MM-DD`). */
-    fun createFiscalYear(start: String, end: String): ApiFiscalYear {
-        page.clickOn("banking.page.fiscal-years.chevron")
-        page.clickOn("banking.page.fiscal-years.create-button")
+    fun createFiscalYear(start: String, end: String): ApiFiscalYear =
+        with(FiscalYearsManagement()) {
+            open()
 
-        val modal = page.getByDataId("banking.upsert-fiscal-years.modal")
-        assertThat(modal).isVisible()
 
-        val startDate = page.getByDataId("upsert-fiscal-year.form.input.date.start")
-        val endDate = page.getByDataId("upsert-fiscal-year.form.input.date.end")
-        val submitButton = page.getByDataId("banking.upsert-fiscal-years.modal.submit-button")
+            // page.clickOn("banking.page.fiscal-years.chevron")
+            page.clickOn("banking.page.fiscal-years.create-button")
 
-        startDate.apply {
-            fill(start)
-            assertThat(this).hasValue(start)
+            val modal = page.getByDataId("banking.upsert-fiscal-years.modal")
+            assertThat(modal).isVisible()
+
+            val startDate = page.getByDataId("upsert-fiscal-year.form.input.date.start")
+            val endDate = page.getByDataId("upsert-fiscal-year.form.input.date.end")
+            val submitButton = page.getByDataId("banking.upsert-fiscal-years.modal.submit-button")
+
+            startDate.apply {
+                fill(start)
+                assertThat(this).hasValue(start)
+            }
+
+            endDate.apply {
+                fill(end)
+                assertThat(this).hasValue(end)
+            }
+
+            assertThat(submitButton).isEnabled()
+
+            val fiscalYear = page.waitForApi(
+                api = solawiApi,
+                keyOfEndpoint = CreateFiscalYear::class
+            ) {
+                submitButton.click()
+            }.decodeBodyTo<ApiFiscalYear>()
+
+            assertThat(modal).not().isVisible()
+
+            fiscalYear
         }
-
-        endDate.apply {
-            fill(end)
-            assertThat(this).hasValue(end)
-        }
-
-        assertThat(submitButton).isEnabled()
-
-        val fiscalYear = page.waitForApi(
-            api = solawiApi,
-            keyOfEndpoint = CreateFiscalYear::class
-        ) {
-            submitButton.click()
-        }.decodeBodyTo<ApiFiscalYear>()
-
-        assertThat(modal).not().isVisible()
-
-        return fiscalYear
-    }
 }

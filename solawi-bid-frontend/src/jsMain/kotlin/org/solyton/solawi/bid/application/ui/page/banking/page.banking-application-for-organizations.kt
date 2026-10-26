@@ -302,7 +302,10 @@ fun LegalEntity(
     val modalTexts = bankingApplicationStorage * i18N * language * component(ModalLangComponent.Default)
 
 
-    Wrap(cardStyle) {
+    Wrap(
+        dataId = "banking.page.legal-entity",
+        style = cardStyle
+    ) {
         var opened by remember { mutableStateOf(true) }
         key(legalEntity.read(), creditorIdentifier.read() ) {
             Horizontal({
@@ -435,7 +438,8 @@ fun LegalEntity(
                     CardChevrons(
                         texts = Source{ cardChevronTexts() },
                         deviceType = deviceType,
-                        opened = opened
+                        opened = opened,
+                        dataId = "banking.page.legal-entity.chevron"
                     ) {
                         opened = it
                     }
@@ -477,7 +481,10 @@ fun CreditorBankAccounts(
     val texts = bankingApplicationStorage * i18N * language * component(BankingLangComponent.BankingForOrganizationsPage) * subComp("creditorBankAccounts")
     val headers = texts * subComp("headers")
 
-    Wrap(cardStyle) {
+    Wrap(
+        dataId = "banking.page.creditor-bank-accounts",
+        style = cardStyle
+    ) {
         var opened by remember { mutableStateOf(false) }
         ListWrapper(cardListStyles.listWrapper,) {
             TitleWrapper(cardListStyles.titleWrapper,) {
@@ -651,7 +658,10 @@ fun CustomerBankAccounts(
     val sepaMandates = sepaModule * sepaMandates
     val sepaCollections = sepaModule * sepaCollections
 
-    Wrap(cardStyle) {
+    Wrap(
+        dataId = "banking.page.customer-bank-accounts",
+        style = cardStyle
+    ) {
         ListWrapper(cardListStyles.listWrapper) {
             var opened by remember { mutableStateOf(false) }
             TitleWrapper(cardListStyles.titleWrapper,) {
@@ -964,7 +974,10 @@ fun FiscalYears(
     val texts = bankingApplicationStorage * i18N * language * component(BankingLangComponent.BankingForOrganizationsPage) * subComp("fiscalYears")
     val headers = texts * subComp("headers")
 
-    Wrap(cardStyle) {
+    Wrap(
+        dataId = "banking.page.fiscal-years",
+        style = cardStyle
+    ) {
         ListWrapper(cardListStyles.listWrapper) {
             var opened by remember { mutableStateOf(false) }
             TitleWrapper(cardListStyles.titleWrapper) {
@@ -999,6 +1012,7 @@ fun FiscalYears(
                                         state.end
                                     )
                                 }
+                                fiscalYearState = null
                             }
                         }
                     }
@@ -1145,7 +1159,10 @@ fun SepaCollections(
 
     }
 
-    Wrap(cardStyle) {
+    Wrap(
+        dataId = "banking.page.sepa-collections",
+        style = cardStyle
+    ) {
         ListWrapper(cardListStyles.listWrapper) {
             var opened by remember { mutableStateOf(false) }
             TitleWrapper(cardListStyles.titleWrapper) {
@@ -1158,7 +1175,8 @@ fun SepaCollections(
                     CardChevrons(
                         texts = Source{cardChevronTexts()},
                         deviceType = deviceType,
-                        opened = opened
+                        opened = opened,
+                        dataId = "banking.page.sepa-collections.chevron"
                     ) {
                         opened = it
                     }

@@ -54,8 +54,6 @@ fun AttachSepaCollectionModal(
     isOkButtonDisabled = isOkButtonDisabled
 ) {
     Wrap {
-        println(bankAccounts)
-
         UpsertSepaCollectionForm(
             inputs = Source{defaultSepaCollectionInputs()} ,
             bankAccounts =  bankAccounts.emit(),

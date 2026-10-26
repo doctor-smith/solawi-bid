@@ -237,12 +237,13 @@ class PaymentMandateAuthorizationWorkflowTest {
                 dashboardPage.shareManagementOrganizationManagementLink().click()
                 page.navigateToOrganizationApplicationPage("shares", organizationName, false)
                 sharesPage.createShareType(shareTypeName, shareTypeKey, "E2E fixture share type (B2)")
-                sharesPage.createShareOffer(fiscalYearKey, shareTypeName, price, ahcAuthorizationRequired = true)
+                val shareOffer = sharesPage.createShareOffer(fiscalYearKey, shareTypeName, price, ahcAuthorizationRequired = true)
 
                 val collectionKey = "e2e-collection-$suffix"
                 val mandateReferencePrefix = "E2E$suffix"
 
                 sharesPage.attachSepaCollectionToOffer(
+                    shareOffer = shareOffer,
                     creditorAccountHolder = organizationName,
                     creditorAccountDescription = "e2e-creditor-account",
                     collectionKey = collectionKey,
