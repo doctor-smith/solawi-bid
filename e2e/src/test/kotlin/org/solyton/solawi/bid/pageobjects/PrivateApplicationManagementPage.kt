@@ -20,6 +20,7 @@ class PrivateApplicationManagementPage(private val page: Page) {
      * not-yet-reached steps are harmlessly skipped by `clickIfPresent`.
      */
     fun ensureApplicationActiveForTestUser(applicationName: String, hasToNavigate: Boolean = true) {
+        // TODO wait for responses
         if (hasToNavigate) {
             page.navigate("${TestConfig.BASE_URL}/app/management/private")
             page.dismissStrayErrorDialogIfPresent()
@@ -42,6 +43,7 @@ class PrivateApplicationManagementPage(private val page: Page) {
     fun bookApplication(applicationName: String, organizationName: String, hasToNavigate: Boolean = true) {
         ensureApplicationActiveForTestUser(applicationName, hasToNavigate)
 
+        // TODO wait for responses
         page.clickOn("private-application-management.page.application.$applicationName.connect-button")
         page.clickOn("connect-application-to-organization.modal.organization-dropdown")
         page.clickOn("connect-application-to-organization.modal.organization-dropdown.option.$organizationName")

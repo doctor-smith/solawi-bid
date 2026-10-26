@@ -1,14 +1,23 @@
 package org.solyton.solawi.bid
 import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
+import com.microsoft.playwright.Response
 import com.microsoft.playwright.TimeoutError
 import com.microsoft.playwright.assertions.LocatorAssertions
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import com.microsoft.playwright.options.WaitForSelectorState
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.json.Json
+import org.evoleq.ktorx.api.Api
+import org.evoleq.ktorx.result.Result
+import org.evoleq.ktorx.result.serializers
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.solyton.solawi.bid.application.pipeline.installSerializers
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.reflect.KClass
 
 fun Page.getByDataId(testId: String): Locator {
     return locator("[data-id='$testId']")
@@ -224,5 +233,38 @@ fun <T> TestUserContext.withFailureDiagnostics(testCase: String? = null, block: 
         }
         throw e
     }
+}
+
+fun Page.waitForApi(
+    api: Api,
+    keyOfEndpoint: KClass<*>,
+    expectedStatus: Int = 200,
+    action: () -> Unit
+): Response {
+    val endPoint = requireNotNull( api.getValue(keyOfEndpoint) ) {
+        "Required endpoint not found: searched for ${keyOfEndpoint.simpleName}"
+    }
+    val response = this.waitForResponse({ r ->
+        r.url().contains(endPoint.url) && r.request().method().equals(endPoint.method, ignoreCase = true)
+    }, action)
+    assertTrue(response.status() == expectedStatus, "API Call to ${endPoint.url} failed with ${response.status()}")
+    return response
+}
+
+fun serializers() : Map<KClass<*>, KSerializer<*>> {
+    if (serializers.isEmpty()) installSerializers()
+    return serializers
+}
+
+inline fun <reified T> Response.decodeBodyTo(
+    json: Json = Json { ignoreUnknownKeys = true }
+): T {
+    val serializer = requireNotNull (serializers()[T::class]) {
+        "Serializer not defined"
+    }
+    val result = json.decodeFromString(Result.serializer(serializer), text())
+    assertTrue(result is Result.Success)
+    require(result is Result.Success<*>)
+    return result.data as T
 }
 

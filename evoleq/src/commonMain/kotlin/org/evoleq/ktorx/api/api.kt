@@ -3,7 +3,6 @@ package org.evoleq.ktorx.api
 import org.evoleq.ktorx.client.Parameters
 import org.evoleq.math.MathDsl
 import org.evoleq.math.Reader
-import kotlin.collections.set
 import kotlin.reflect.KClass
 
 @Suppress("TooManyFunctions")
@@ -189,4 +188,13 @@ sealed class EndPoint<in S, out T>(
         responseType,
         group
     )
+
+    val method: String = when(this) {
+        is Head<*, *> -> "HEAD"
+        is Delete<*, *> -> "DELETE"
+        is Get<*, *> -> "GET"
+        is Patch<*, *> -> "PATCH"
+        is Post<*, *> -> "POST"
+        is Put<*, *> -> "PUT"
+    }
 }

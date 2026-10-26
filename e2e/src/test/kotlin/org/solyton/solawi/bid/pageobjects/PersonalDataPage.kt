@@ -3,6 +3,9 @@ package org.solyton.solawi.bid.pageobjects
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import org.solyton.solawi.bid.*
+import org.solyton.solawi.bid.application.api.solawiApi
+import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateUserProfile
+import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfile
 import org.solyton.solawi.bid.module.values.Firstname
 import org.solyton.solawi.bid.module.values.Lastname
 import org.solyton.solawi.bid.module.values.PhoneNumber
@@ -34,7 +37,7 @@ class PersonalDataPage(private val page: Page) : TestPage(page, "app/private/dat
         city: String,
         countryCode: String,
         stateOrProvince: String
-    ) {
+    ): UserProfile {
         // assumes user to be on the personal data page
         page.clickOn("private-data.page.profile.chevron")
         page.clickOn("private-data.page.profile.create")
@@ -68,13 +71,17 @@ class PersonalDataPage(private val page: Page) : TestPage(page, "app/private/dat
 
         val submitButton = page.getByDataId("upsert-user-profile.modal.submit-button")
         assertThat(submitButton).isEnabled()
-        // val response =
-        page.waitForResponse({
-                r -> r.url().endsWith("users/profiles/create") && r.request().method() == "POST"
-        }) {
+
+        val response = page.waitForApi(
+            api = solawiApi,
+            keyOfEndpoint = CreateUserProfile::class
+        ) {
             submitButton.click()
         }
 
         assertThat(modal).not().isVisible()
+
+        val userProfile = response.decodeBodyTo<UserProfile>()
+        return userProfile
     }
 }

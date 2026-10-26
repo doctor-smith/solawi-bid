@@ -59,7 +59,6 @@ class PaymentMandateAuthorizationWorkflowTest {
         }
     }
 
-    @Develop
     @Workflow
     @Test
     fun `provider approves pending subscription with payment mandate authorization`() {

@@ -1,10 +1,12 @@
 package org.solyton.solawi.bid.pageobjects
 
 import com.microsoft.playwright.Page
-import org.solyton.solawi.bid.TestConfig
-import org.solyton.solawi.bid.clickOn
-import org.solyton.solawi.bid.dismissStrayErrorDialogIfPresent
-import org.solyton.solawi.bid.waitForLoadingToFinish
+import org.solyton.solawi.bid.*
+import org.solyton.solawi.bid.application.api.solawiApi
+import org.solyton.solawi.bid.module.permission.data.api.PutUserRoleContext
+import org.solyton.solawi.bid.module.permission.data.api.UserContext
+import org.solyton.solawi.bid.module.user.data.api.organization.CreateOrganization
+import org.solyton.solawi.bid.module.user.data.api.organization.Organization
 
 /**
  * Page object for the organization-management admin UI: the organization list/creation
@@ -20,16 +22,24 @@ class OrganizationManagementPage(private val page: Page) {
      * so it can later subscribe to a share offer in this same organization without any
      * separate "add member" step.
      */
-    fun createOrganization(name: String, hasToNavigate: Boolean = true) {
+    fun createOrganization(name: String, hasToNavigate: Boolean = true): Organization {
         if (hasToNavigate) page.navigate("${TestConfig.BASE_URL}/app/management/organizations")
         page.dismissStrayErrorDialogIfPresent()
         page.waitForLoadingToFinish()
 
         page.clickOn("organization-management-page.button.create-organization")
         page.locator("#organization-name").fill(name)
-        page.clickOn("null.modal.submit-button")
+
+        val organization = page.waitForApi(
+            api = solawiApi,
+            keyOfEndpoint = CreateOrganization::class
+        ) {
+            page.clickOn("null.modal.submit-button")
+        }.decodeBodyTo<Organization>()
 
         page.waitForSelector("text=$name")
+
+        return organization
     }
 
     /**
@@ -46,7 +56,7 @@ class OrganizationManagementPage(private val page: Page) {
         applicationName: String,
         username: String,
         hasToNavigate: Boolean = true
-    ) {
+    ): UserContext {
         if (hasToNavigate) page.navigate("${TestConfig.BASE_URL}/app/management/organizations")
         page.dismissStrayErrorDialogIfPresent()
         page.waitForLoadingToFinish()
@@ -72,6 +82,14 @@ class OrganizationManagementPage(private val page: Page) {
             val checkbox = roleCheckboxes.nth(i)
             if (checkbox.isChecked.not()) checkbox.check()
         }
-        page.clickOn("null.modal.submit-button")
+
+        val response = page.waitForApi(
+            api = solawiApi,
+            keyOfEndpoint = PutUserRoleContext::class,
+        ) {
+            page.clickOn("null.modal.submit-button")
+        }.decodeBodyTo<UserContext>()
+
+        return response
     }
 }

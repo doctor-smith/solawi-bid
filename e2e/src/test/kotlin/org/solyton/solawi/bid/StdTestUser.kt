@@ -3,6 +3,7 @@ package org.solyton.solawi.bid
 import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserContext
 import com.microsoft.playwright.Page
+import org.solyton.solawi.bid.module.authentication.data.api.AccessToken
 import org.solyton.solawi.bid.module.values.Password
 import org.solyton.solawi.bid.module.values.Username
 import java.nio.file.Files
@@ -11,17 +12,24 @@ sealed interface TestUser {
     val username: Username
     val password: Password
 
+    val accessToken: AccessToken?
+    val refreshToken: String?
+
 }
 
 data class StdTestUser(
     override val username: Username,
-    override val password: Password
+    override val password: Password,
+    override val accessToken: AccessToken? = null,
+    override val refreshToken: String? = null,
 ) : TestUser
 
 data class AdminTestUser(
     override val username: Username,
     override val password: Password,
-    val storagePath: String
+    val storagePath: String,
+    override val accessToken: AccessToken? = null,
+    override val refreshToken: String? = null,
 ) : TestUser
 
 data class TestUserContext(
