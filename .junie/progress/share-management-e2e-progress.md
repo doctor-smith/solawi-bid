@@ -1,11 +1,9 @@
 ---
-Last updated: 2026-10-24
+Last updated: 2026-10-26
 Phase: 1 (Audit) complete; Phase 2 (fixture-chain build-out) complete and VERIFIED.
 Phase 3 (remaining workflows) is underway: B1 (approval, no mandate), B2
-(payment-mandate authorization) both pass end-to-end, confirmed by the user. A new
-`TestPage`/`TestComponent`/`TestUser` test framework (`framework.kt`, `StdTestUser.kt`)
-is in active development, with an initial small-scope migration applied (see "Test
-Architecture"). Next up: B3/B4/D1.
+(payment-mandate authorization), B3 (failed mandate authorization), and D1
+(FY1->FY2 rollover with shadow creation) all pass end-to-end and are verified.
 ---
 
 # Share Management E2E — Progress & Audit
@@ -257,7 +255,7 @@ Prefer the local docker e2e env (`./script/e2e-local.sh`) over calling `:e2e:tes
 | A3 | Member subscribes to offer | → `PendingActivation` | `ShareSubscriptionApprovalWorkflowTest.kt` (`createShareSubscriptionViaAdminUi`) | **Verified** — passes as part of the full B1 run, subscription confirmed `PENDING_ACTIVATION` | None | Covered as a fixture helper |
 | B1 | FY1 approval, no mandate | `PendingActivation` →(PROVIDER, NO_PAYMENT_MANDATE_REQUIRED)→ `Subscribed` | `ShareSubscriptionApprovalWorkflowTest.kt` | **Implementation complete AND verification complete** — full test passes (0 failures, 95.6s, 2026-10-22) | None | **Done.** Next: pick the next-highest-value workflow (e.g. B2 payment-mandate authorization, or D1 rollover) reusing this fixture chain |
 | B2 | Payment-mandate authorization | `PendingActivation`→`AwaitingAhcAuthorization`→`Subscribed` | `PaymentMandateAuthorizationWorkflowTest.kt` | **Implementation complete AND verification complete** - confirmed passing by the user on 2026-10-23, via a SEPA-collection-attached + SEPA-mandate-attached fixture on top of B1's chain | None | **Done.** Note: final assertion checks the attached mandate's collection key/reference prefix rather than a direct `SUBSCRIBED` check; richer assertions (SEPA collection active, mandate visible on Banking page) are a noted TODO for a future pass |
-| B3 | Failed authorization | `AwaitingAhcAuthorization`→(PROVIDER/SYSTEM, AUTHORIZATION_FAILED)→`Suspended` | None | Not verified | PROVIDER permission exists | Implementable after B2 |
+| B3 | Failed authorization | `AwaitingAhcAuthorization`→(PROVIDER/SYSTEM, AUTHORIZATION_FAILED)→`Suspended` | `FailedAuthorizationWorkflowTest.kt` | **Implementation complete AND verification complete** — full test passes end-to-end | None | **Done.** |
 | B4 | Auction clearance + final approval | `PendingActivation`→`ClearedForAuction`→`Subscribed` | None | Not verified | PROVIDER permission exists for both hops | Implementable |
 | B5 | Activation rejected → resubmission | `PendingActivation`→(PROVIDER, REQUIREMENTS_NOT_MET)→`ActivationRejected`; `ActivationRejected`→(**USER**, NEW_REQUIREMENTS)→`PendingActivation` | None | Not verified | **Second hop has no PROVIDER-permitted reason.** The only UI control for status changes (Bulk-Edit dropdown) hardcodes `ChangedBy.PROVIDER` and does `permissions[ChangedBy.PROVIDER]!!` — selecting `PendingActivation` as target here will throw `NullPointerException` client-side. See "Blockers" below. | **STOP — ask user** |
 | B6 | Cancellation before activation (both actors) | `PendingActivation`→`Cancelled` (PROVIDER or USER reason) | None | Not verified | PROVIDER reason exists so provider-side cancel is UI-testable; USER-side cancel hits the same actor-hardcoding issue as B5 | Implement PROVIDER-cancel variant only, pending decision on USER variant |
@@ -266,7 +264,7 @@ Prefer the local docker e2e env (`./script/e2e-local.sh`) over calling `:e2e:tes
 | C3 | Payment failure / recovery | `Subscribed`→`PaymentFailed`→`Subscribed`/`Suspended`/`Cancelled` | None | Not verified | All reasons here have PROVIDER/SYSTEM permission | Implementable |
 | C4 | Suspension & resolution | `Subscribed`→`Suspended`→`Subscribed`/`ClearedForAuction`/`Cancelled` | None | Not verified | All PROVIDER/SYSTEM-permitted | Implementable |
 | C5 | Invalid actions from terminal/incompatible states | e.g. rollover from `Cancelled` | None | Not verified | `Cancelled`/`RolledOver` have `emptySet()` transitions — worth checking whether the UI disables/rejects these or whether the Bulk-Edit dropdown blindly offers them (same crash class as B5/C1) | Needs UI inspection during implementation |
-| D1 | Rollover: Subscribed → RollingOver, shadow created | `Subscribed`→(PROVIDER/SYSTEM, NEW_PERIOD)→`RollingOver` + shadow `PendingActivation` on FY2 offer | None | Not verified | PROVIDER permission exists; reachable via Bulk-Edit "Rollover" option (`Checked.ROLLOVER`), not a per-row button | Implementable after B1 |
+| D1 | Rollover: Subscribed → RollingOver, shadow created | `Subscribed`→(PROVIDER/SYSTEM, NEW_PERIOD)→`RollingOver` + shadow `PendingActivation` on FY2 offer | `RolloverWorkflowTest.kt` | **Implementation complete AND verification complete** — full test passes end-to-end | None | **Done.** |
 | D2 | Shadow activation → original `RolledOver` | shadow `PendingActivation`→`Subscribed`; original `RollingOver`→(PROVIDER/SYSTEM, ROLLED_OVER)→`RolledOver` | None | Not verified | PROVIDER permission exists for both | Implementable |
 | D3 | Missing next-year offer | rollover attempted with no FY2 offer | None | Not verified | Need to confirm in UI whether Bulk-Edit's offer dropdown for rollover simply has no FY2 entries (safe) or allows an invalid selection | Needs UI inspection |
 | D4 | Ineligible source status (e.g. `Cancelled`) | no `RollingOver` transition defined | None | Not verified | Same class of question as C5/D3 | Needs UI inspection |
@@ -446,6 +444,16 @@ fixture.
 
 One dated entry per work session, newest first, so future sessions don't have to
 re-derive history from git diffs alone.
+
+### 2026-10-26 (B3 and D1 verification)
+
+- Re-verified all four implemented Share Management E2E workflow tests against local docker environment (`./script/e2e-local.sh filterTest`):
+  - `ShareSubscriptionApprovalWorkflowTest.kt` (B1): PASSED.
+  - `PaymentMandateAuthorizationWorkflowTest.kt` (B2): PASSED.
+  - `FailedAuthorizationWorkflowTest.kt` (B3): PASSED.
+  - `RolloverWorkflowTest.kt` (D1): PASSED.
+- Updated progress documentation and coverage matrix accordingly.
+- **Next action**: Pick up workflow B4 (Auction clearance + final approval) or B6 (Provider-driven cancellation before activation).
 
 ### 2026-10-23 (later, framework review and cleanup)
 
