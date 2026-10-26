@@ -3,6 +3,8 @@ package org.solyton.solawi.bid.pageobjects
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import org.solyton.solawi.bid.*
+import org.solyton.solawi.bid.application.api.solawiApi
+import org.solyton.solawi.bid.module.banking.data.api.*
 
 /**
  * Page object for the Banking application's organization page
@@ -20,7 +22,11 @@ class BankingPage(private val page: Page) {
      * SEPA-related Banking operations (e.g. fiscal years) are permitted for the
      * organization.
      */
-    fun createLegalEntityWithCreditorId(name: String, legalForm: String, creditorId: String) {
+    fun createLegalEntityWithCreditorId(
+        name: String,
+        legalForm: String,
+        creditorId: String
+    ): ApiLegalEntity {
         page.evaluate("console.log('MARKER_BEFORE_CREATE_LEGAL_ENTITY_CLICK')")
         page.clickOn("banking.page.legal-entity.create-button")
         page.evaluate("console.log('MARKER_AFTER_CREATE_LEGAL_ENTITY_CLICK')")
@@ -48,7 +54,14 @@ class BankingPage(private val page: Page) {
 
         page.inputText("#city", "city")
 
-        page.clickOn("banking.modal.upsert-legal-entity.modal.submit-button")
+        page.waitForApi(
+            api = solawiApi,
+            keyOfEndpoint = CreateLegalEntity::class
+        ) {
+            page.clickOn("banking.modal.upsert-legal-entity.modal.submit-button")
+        }.decodeBodyTo<ApiLegalEntity>()
+
+        // page.clickOn("banking.modal.upsert-legal-entity.modal.submit-button")
 
         page.waitForLoadingToFinish()
         page.waitForSelector("text=$name")
@@ -60,17 +73,31 @@ class BankingPage(private val page: Page) {
 
         page.locator("#creditor-id").fill(creditorId)
 
-        page.clickOn("banking.modal.upsert-legal-entity.modal.submit-button")
+        val legalEntity = page.waitForApi(
+            api = solawiApi,
+            keyOfEndpoint = UpdateLegalEntity::class
+        ) {
+            page.clickOn("banking.modal.upsert-legal-entity.modal.submit-button")
+        }.decodeBodyTo<ApiLegalEntity>()
+
+
 
         page.waitForLoadingToFinish()
         page.waitForSelector("text=$creditorId")
+
+        return legalEntity
     }
 
     /**
      * Creates a `CREDITOR` bank account for the organization itself, used as the
      * target account for SEPA collections attached to share offers.
      */
-    fun createCreditorBankAccount(accountHolder: String, iban: String, bic: String, description: String) {
+    fun createCreditorBankAccount(
+        accountHolder: String,
+        iban: String,
+        bic: String,
+        description: String
+    ): ApiBankAccount {
         page.clickOn("banking.page.creditor-bank-accounts.chevron")
         page.clickOn("banking.page.creditor-bank-accounts.create-button")
 
@@ -87,14 +114,27 @@ class BankingPage(private val page: Page) {
         // page.clickOn("bank-account-form.is-active-dropdown")
         // page.clickOn("bank-account-form.is-active-dropdown.option.TRUE")
 
-        page.clickOn("banking.upsert-bank-account.modal.submit-button")
+        val bankAccount = page.waitForApi(
+            api = solawiApi,
+            keyOfEndpoint = CreateBankAccount::class
+        ) {
+
+            page.clickOn("banking.upsert-bank-account.modal.submit-button")
+        }.decodeBodyTo<ApiBankAccount>()
+
+        return bankAccount
     }
 
     /**
      * Creates a `DEBTOR` bank account for [username] (the subscribing member), via the
      * customer bank-account card's user-search modal.
      */
-    fun createDebtorBankAccount(username: String, accountHolder: String, iban: String, bic: String) {
+    fun createDebtorBankAccount(
+        username: String,
+        accountHolder: String,
+        iban: String,
+        bic: String
+    ): ApiBankAccount {
 
         page.clickOn("banking.page.customer-bank-accounts.chevron")
         page.clickOn("banking.page.customer-bank-accounts.create-button")
@@ -121,13 +161,24 @@ class BankingPage(private val page: Page) {
 
         val submitButton = page.getByDataId("banking.upsert-bank-account.modal.submit-button")
         assertThat(submitButton).isEnabled()
-        submitButton.click()
+
+
+        val bankAccount = page.waitForApi(
+            api = solawiApi,
+            keyOfEndpoint = CreateBankAccount::class
+        ) {
+            submitButton.click()
+        }.decodeBodyTo<ApiBankAccount>()
+
+
 
         assertThat(modal).not().isVisible()
+
+        return bankAccount
     }
 
     /** Creates a fiscal year running from [start] to [end] (format `YYYY-MM-DD`). */
-    fun createFiscalYear(start: String, end: String) {
+    fun createFiscalYear(start: String, end: String): ApiFiscalYear {
         page.clickOn("banking.page.fiscal-years.chevron")
         page.clickOn("banking.page.fiscal-years.create-button")
 
@@ -148,11 +199,17 @@ class BankingPage(private val page: Page) {
             assertThat(this).hasValue(end)
         }
 
-        submitButton.apply {
-            assertThat(this@apply).isEnabled()
-            click()
-        }
+        assertThat(submitButton).isEnabled()
+
+        val fiscalYear = page.waitForApi(
+            api = solawiApi,
+            keyOfEndpoint = CreateFiscalYear::class
+        ) {
+            submitButton.click()
+        }.decodeBodyTo<ApiFiscalYear>()
 
         assertThat(modal).not().isVisible()
+
+        return fiscalYear
     }
 }

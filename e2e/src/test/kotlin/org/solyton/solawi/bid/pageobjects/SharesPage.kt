@@ -7,6 +7,9 @@ import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import org.solyton.solawi.bid.*
+import org.solyton.solawi.bid.application.api.solawiApi
+import org.solyton.solawi.bid.module.banking.data.api.*
+import org.solyton.solawi.bid.module.shares.data.api.*
 
 /**
  * Page object for the Share Management application's organization page
@@ -129,7 +132,9 @@ class SharesPage(private val page: Page) {
             fun changeStatusCheckbox(): Locator = locator.getByDataId("$BASE_ID.change-status-checkbox")
             fun statusDropdown(): Locator = locator.getByDataId("$BASE_ID.status-dropdown")
             fun statusOption(status: String): Locator = locator.getByDataId("$BASE_ID.status-dropdown.option.$status")
-
+            fun rolloverCheckbox(): Locator = locator.getByDataId("$BASE_ID.rollover-checkbox")
+            fun rolloverShareOfferDropdown(): Locator = locator.getByDataId("$BASE_ID.rollover-share-offer-dropdown")
+            fun rolloverShareOfferOption(optionText: String): Locator = locator.getByDataId("$BASE_ID.rollover-share-offer-dropdown.option.$optionText")
         }
 
         fun BulkEditModal(page: Page): BulkEditModal =
@@ -158,7 +163,7 @@ class SharesPage(private val page: Page) {
      * Creates a share type with the given [name]/[key]/[description].
      * The key must have length <= 20.
      */
-    fun createShareType(name: String, key: String, description: String) {
+    fun createShareType(name: String, key: String, description: String): ShareType {
         with(ShareTypeManagement()) {
             open()
             createNewShareTypeButton().click()
@@ -175,8 +180,17 @@ class SharesPage(private val page: Page) {
 
         // page.shot("dev/share-type-filled")
 
-        page.clickOn("shares.modal.upsert-share-type.modal.submit-button")
+        val shareType = page.waitForApi(
+            api = solawiApi,
+            keyOfEndpoint = CreateShareType::class
+        ) {
+            page.clickOn("shares.modal.upsert-share-type.modal.submit-button")
+        }.decodeBodyTo<ShareType>()
+
+
         assertThat(modal).not().isVisible()
+
+        return shareType
     }
 
     /**
@@ -191,7 +205,7 @@ class SharesPage(private val page: Page) {
         shareTypeName: String,
         price: String,
         ahcAuthorizationRequired: Boolean = false
-    ) {
+    ) : ApiShareOffer {
         with(ShareOfferManagement()) {
             open()
             createNewShareOfferButton().click()
@@ -217,9 +231,17 @@ class SharesPage(private val page: Page) {
         page.clickOn("shares.modal.upsert-share-offer.ahc-authorization-required-dropdown")
         page.clickOn("shares.modal.upsert-share-offer.ahc-authorization-required-dropdown.option.$ahcOptionKey")
 
-        page.clickOn("shares.modal.upsert-share-offer.modal.submit-button")
+
+        val shareOffer = page.waitForApi(
+            api = solawiApi,
+            keyOfEndpoint = CreateShareOffer::class
+        ) {
+            page.clickOn("shares.modal.upsert-share-offer.modal.submit-button")
+        }.decodeBodyTo<ApiShareOffer>()
 
         assertThat(modal).not().isVisible()
+
+        return shareOffer
     }
 
     /**
@@ -232,7 +254,7 @@ class SharesPage(private val page: Page) {
         collectionKey: String,
         mandateReferencePrefix: String,
         remittanceInformation: String
-    ) {
+    ): SepaCollection {
         val sepaCollectionButton = page.locator(
             "[data-id^='shares.page.share-offer.'][data-id\$='.sepa-collection-button']"
         ).first()
@@ -246,7 +268,14 @@ class SharesPage(private val page: Page) {
         page.locator("#mandate-reference-prefix").fill(mandateReferencePrefix)
         page.locator("#remittance-information").fill(remittanceInformation)
 
-        page.clickOn("null.modal.submit-button")
+        val collection = page.waitForApi(
+            api = solawiApi,
+            keyOfEndpoint = CreateSepaCollection::class
+        ) {
+            page.clickOn("null.modal.submit-button")
+        }.decodeBodyTo<ApiSepaCollection>()
+
+        return collection
     }
 
     /**
@@ -257,7 +286,7 @@ class SharesPage(private val page: Page) {
      * one field's change callback has fired, so the status dropdown is re-selected to
      * its own current value to trigger it.
      */
-    fun attachSepaMandateToSubscription() {
+    fun attachSepaMandateToSubscription(): ApiSepaMandate {
         val sepaMandateButton = page.getByPartialDataId(".attach-or-upsert-sepa-mandate-button")
             /*
             page.locator(
@@ -271,8 +300,14 @@ class SharesPage(private val page: Page) {
         page.clickOn("sepa-mandate-form.status-dropdown")
         page.clickOn("sepa-mandate-form.status-dropdown.option.ACTIVE")
 
+        val sepaMandate = page.waitForApi(
+            api = solawiApi,
+            keyOfEndpoint = CreateSepaMandate::class
+        ) {
+            page.clickOn("shares.modal.attach-or-upsert-sepa-mandate.modal.submit-button")
+        }.decodeBodyTo<ApiSepaMandate>()
 
-        page.clickOn("shares.modal.attach-or-upsert-sepa-mandate.modal.submit-button")
+        return sepaMandate
     }
 
     /**
@@ -291,7 +326,7 @@ class SharesPage(private val page: Page) {
         numberOfShares: String,
         ahcAuthorized: Boolean,
         coSubscribers: List<String> = emptyList()
-    ) {
+    ): ShareSubscription {
         with(ShareSubscriptionManagement()) {
             open()
             createNewShareSubscriptionButton().click()
@@ -339,12 +374,18 @@ class SharesPage(private val page: Page) {
         )
 
         val submitButton = page.getByDataId("shares.modal.upsert-share-subscription.modal.submit-button")
+        assertThat(submitButton).isEnabled()
 
-        submitButton.apply {
-            assertThat(this).isEnabled()
-            click()
-        }
+        val subscription = page.waitForApi(
+            api = solawiApi,
+            keyOfEndpoint = CreateShareSubscription::class
+        ) {
+            submitButton.click()
+        }.decodeBodyTo<ShareSubscription>()
+
         assertThat(modal).not().isVisible()
+
+        return subscription
     }
 
     /**
@@ -378,11 +419,54 @@ class SharesPage(private val page: Page) {
         submitButton.click()
 
 
+
         assertThat(bulkModal).not().isVisible()
 
         // A second, generic confirmation dialog ("Are you sure...?") is the one that
         // actually dispatches the status change.
         page.clickOn("null.modal.submit-button")
         assertThat(page.getByDataId("null.modal")).not().isVisible()
+    }
+
+    /**
+     * Performs a rollover for the selected subscription(s) to the target share offer specified
+     * by [targetOfferOptionText] (format: `"<FY-format> - <ShareTypeName>"`).
+     */
+    fun rolloverViaBulkEdit(targetOfferOptionText: String): ApiShareSubscriptions = with(ShareSubscriptionManagement()) {
+        open()
+        assertThat(selectAllButton()).isEnabled()
+
+        deselectAll()
+        selectAll()
+        assertThat(selectAllButton()).isChecked()
+
+        val bulkModal = BulkEditModal(page)
+        assertThat(bulkModal.trigger).isEnabled()
+
+        bulkModal.open()
+        assertThat(bulkModal).isVisible()
+
+        bulkModal.rolloverCheckbox().click()
+        bulkModal.rolloverShareOfferDropdown().click()
+        bulkModal.rolloverShareOfferOption(targetOfferOptionText).click()
+
+        val submitButton = bulkModal.submitButton()
+        assertThat(submitButton).isEnabled()
+
+        val shareSubscriptions = page.waitForApi(
+            api = solawiApi,
+            keyOfEndpoint = RolloverShareSubscriptions::class,
+        ){
+            submitButton.click()
+        }.decodeBodyTo<ApiShareSubscriptions>()
+
+
+        assertThat(bulkModal).not().isVisible()
+
+        // Confirmation dialog
+        page.clickOn("null.modal.submit-button")
+        assertThat(page.getByDataId("null.modal")).not().isVisible()
+
+        return shareSubscriptions
     }
 }

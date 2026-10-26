@@ -3,12 +3,12 @@ package org.solyton.solawi.bid.pageobjects.module.user
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.Response
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.solyton.solawi.bid.StdTestUser
-import org.solyton.solawi.bid.TestConfig
-import org.solyton.solawi.bid.clickOn
+import org.solyton.solawi.bid.*
+import org.solyton.solawi.bid.application.api.solawiApi
+import org.solyton.solawi.bid.module.user.data.api.ApiUser
+import org.solyton.solawi.bid.module.user.data.api.CreateUser
 import org.solyton.solawi.bid.module.values.Password
 import org.solyton.solawi.bid.module.values.Username
-import org.solyton.solawi.bid.put
 
 class UserManagementPage(private val page: Page) {
     val url = "${TestConfig.BASE_URL}/app/management/users"
@@ -37,7 +37,13 @@ class UserManagementPage(private val page: Page) {
         page.put("create-user-modal.input.username", realUsername)
         page.put("create-user-modal.input.password", password.value)
         page.put("create-user-modal.input.repeat-password", password.value)
-        page.clickOn("create-user-modal.modal.submit-button")
+
+        page.waitForApi(
+            api = solawiApi,
+            keyOfEndpoint = CreateUser::class
+        ) {
+            page.clickOn("create-user-modal.modal.submit-button")
+        }.decodeBodyTo<ApiUser>()
 
         return StdTestUser(Username(realUsername), password)
     }

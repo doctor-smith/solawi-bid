@@ -15,11 +15,18 @@ repositories {
 }
 
 dependencies {
-    testImplementation(project(":solawi-bid-backend"))
+    // Test stuff
     testImplementation(libs.microsoft.playwright)
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.jupiter.v581)
+
+    // Backend code
+    testImplementation(project(":solawi-bid-backend"))
+
+    // Serialization
+    testImplementation(libs.kotlinx.serialization.json)
+    testImplementation(libs.ktor.client.serialization)
 }
 
 java {
