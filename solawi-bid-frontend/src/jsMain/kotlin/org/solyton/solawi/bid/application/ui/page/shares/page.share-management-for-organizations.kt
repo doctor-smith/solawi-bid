@@ -83,6 +83,7 @@ import org.solyton.solawi.bid.module.search.component.SearchInputStyles
 import org.solyton.solawi.bid.module.shares.action.*
 import org.solyton.solawi.bid.module.shares.component.modal.*
 import org.solyton.solawi.bid.module.shares.data.api.UpdateShareStatus
+import org.solyton.solawi.bid.module.shares.data.api.UpdateShareStatuses
 import org.solyton.solawi.bid.module.shares.data.internal.ChangedBy
 import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
 import org.solyton.solawi.bid.module.shares.data.management.ShareManagement
@@ -1266,20 +1267,25 @@ fun ShareSubscriptionManagement(
                                     scope.launch {
                                         when (val changes = bulksEditShareSubscriptionChanges) {
                                             is BulkEditShareSubscriptionChanges.None -> Unit
-                                            is BulkEditShareSubscriptionChanges.Status ->
-                                                shareSubscriptionsState.forEach { shareSubscription ->
-                                                    shareManagementActions dispatch updateShareStatus(
-                                                        UpdateShareStatus(
-                                                            providerId,
-                                                            ShareSubscriptionId(shareSubscription.shareSubscriptionId),
-                                                            changes.status.toApiType(),
-                                                            changes.reason.toApiType(),
-                                                            changes.changedBy.toApiType(),
-                                                            changes.modifier,
-                                                            changes.comment.orEmpty()
-                                                        ),
+                                            is BulkEditShareSubscriptionChanges.Status -> {
+                                                val data = shareSubscriptionsState.map { shareSubscription ->
+                                                    UpdateShareStatus(
+                                                        providerId,
+                                                        ShareSubscriptionId(shareSubscription.shareSubscriptionId),
+                                                        changes.status.toApiType(),
+                                                        changes.reason.toApiType(),
+                                                        changes.changedBy.toApiType(),
+                                                        changes.modifier,
+                                                        changes.comment.orEmpty()
                                                     )
                                                 }
+                                                shareManagementActions dispatch updateShareStatuses(
+                                                    UpdateShareStatuses(
+                                                        providerId,
+                                                        data
+                                                    )
+                                                )
+                                            }
                                             is BulkEditShareSubscriptionChanges.Rollover ->
                                                 shareManagementActions dispatch rolloverShareSubscriptions(
                                                     providerId = providerId,

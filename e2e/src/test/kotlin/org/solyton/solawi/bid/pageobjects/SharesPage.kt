@@ -60,6 +60,12 @@ class SharesPage(private val page: Page) {
             if(selectAllButton().isChecked) selectAllButton().click()
         }
 
+        class ListOfShareSubscriptions(
+            override val locator: Locator
+        ): TestComponent(locator) {
+            fun item(shareSubscriptionId: String): Locator = locator.getByDataId("$BASE_ID.list.item.$shareSubscriptionId")
+        }
+
         class StatusFilter(
             override val locator: Locator
         ) : DefaultTestDropdown(
@@ -378,7 +384,7 @@ class SharesPage(private val page: Page) {
      * `ChangedBy.PROVIDER` and will throw a client-side error for USER-only
      * transitions (see progress doc).
      */
-    fun changeStatusViaBulkEdit(targetStatus: String) = with(ShareSubscriptionManagement()){
+    fun changeStatusViaBulkEdit(targetStatus: String): ApiShareSubscriptions = with(ShareSubscriptionManagement()){
         open()
         assertThat(selectAllButton()).isEnabled()
 
@@ -394,21 +400,25 @@ class SharesPage(private val page: Page) {
         bulkModal.changeStatusCheckbox().click()
         bulkModal.statusDropdown().click()
         bulkModal.statusOption(targetStatus).click()
-        // bulkModal.statusDropdown().click()
 
 
         val submitButton = bulkModal.submitButton()
         assertThat(submitButton).isEnabled()
-        submitButton.click()
 
+        page.waitForApi(
+            api = solawiApi,
+            keyOfEndpoint = UpdateShareStatuses::class,
+            options = Page.WaitForResponseOptions().setTimeout(45_000.0)
+        ) {
+            submitButton.click()
 
+            assertThat(bulkModal).not().isVisible()
 
-        assertThat(bulkModal).not().isVisible()
-
-        // A second, generic confirmation dialog ("Are you sure...?") is the one that
-        // actually dispatches the status change.
-        page.clickOn("null.modal.submit-button")
-        assertThat(page.getByDataId("null.modal")).not().isVisible()
+            // A second, generic confirmation dialog ("Are you sure...?") is the one that
+            // actually dispatches the status change.
+            page.clickOn("null.modal.submit-button")
+            assertThat(page.getByDataId("null.modal")).not().isVisible()
+        }.decodeBodyTo<ApiShareSubscriptions>()
     }
 
     /**

@@ -82,6 +82,10 @@ val shareStatusTransitionsWithPermissions: Map<ShareStatus, Set<ShareStatusPermi
                 ChangedBy.PROVIDER to setOf(ChangeReason.NEW_PERIOD),
                 ChangedBy.SYSTEM to setOf(ChangeReason.NEW_PERIOD)
             ),
+            ShareStatus.RolledOver permit mapOf(
+                ChangedBy.PROVIDER to setOf(ChangeReason.ROLLED_OVER),
+                ChangedBy.SYSTEM to setOf(ChangeReason.ROLLED_OVER),
+            ),
             ShareStatus.Paused permit mapOf(
                 ChangedBy.USER to setOf(ChangeReason.USER_PAUSED)
             ),

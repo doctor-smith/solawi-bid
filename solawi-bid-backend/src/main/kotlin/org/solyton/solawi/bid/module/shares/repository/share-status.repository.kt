@@ -110,21 +110,32 @@ fun Transaction.next(
 
     if(nextState != ShareStatus.Subscribed)  return shareSubscription
 
-    // check if there is a rolling-over companion
-    // Yes => move companions' state to RolledOver
+    // check if there is a pending rolling-over companion, i.e., a companion that is still
+    // ROLLING_OVER (status = ROLLING_OVER)
+    // if Yes => move companions' state to RolledOver and track changes
+
+    // Get the companion
     val rollingOverCompanion = ShareSubscriptionStatusHistoryEntry.find {
         (ShareSubscriptionStatusHistory.shareSubscriptionId eq shareSubscriptionId) and
         (ShareSubscriptionStatusHistory.rollingOverFromSubscriptionId neq null)
-    }.firstOrNull()
-    if(rollingOverCompanion != null) {
+    }.firstOrNull()?.rollingOverFromShareSubscription
+
+    // Check if it is pending
+    val rolloverCompanionIsPending = rollingOverCompanion != null &&
+            (rollingOverCompanion.status.isEqualTo( ShareStatus.RollingOver))
+
+    // Eventually transform companions' state
+    if(rolloverCompanionIsPending) {
         next(
             rollingOverCompanion.id.value,
             ShareStatus.RolledOver,
-            ChangeReason.ROLLOVER,
+            ChangeReason.ROLLED_OVER,
             changedBy,
             modifier,
             "state moved automatically during rollover"
         )
+        // track companion
+        shareSubscription.pendingRolloverCompanion = rollingOverCompanion
     }
 
     return shareSubscription

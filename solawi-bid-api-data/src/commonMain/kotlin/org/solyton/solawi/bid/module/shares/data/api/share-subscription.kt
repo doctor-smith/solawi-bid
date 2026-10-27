@@ -30,6 +30,7 @@ data class ShareSubscription(
     val status: ShareStatus,
     val coSubscribers: /*list of usernames */ List<String> = emptyList(),
     val statusUpdatedAt: LocalDateTime,
+    val pendingRolloverCompanion: String? = null
 )
 
 @Serializable

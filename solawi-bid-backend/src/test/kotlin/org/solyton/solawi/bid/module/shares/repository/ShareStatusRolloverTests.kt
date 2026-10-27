@@ -291,6 +291,26 @@ class ShareStatusRolloverTests {
             TestCase(
                 testId = "${UUID.randomUUID()}",
                 description = """
+                    1. Rollover from Subscribed status
+                    2. Move to subscribed
+                    3. Check that a
+                """.trimIndent(),
+                status = ShareStatus.Subscribed,
+                modifier = ChangedBy.PROVIDER,
+                humanModifierId = UUID_ONE,
+                comment = "Attempt rollover from cancelled status"
+            ) { testCase ->
+                assertThrows<ShareStatusException> {
+                    rolloverAndAssert(testCase)
+                }
+            },
+
+
+             */
+            /*
+            TestCase(
+                testId = "${UUID.randomUUID()}",
+                description = """
                     1. Rollover to new period; triggered by PROVIDER
                     2. User requests activation: RollingOver -> PendingActivation
                     3. Provider rejects activation: PendingActivation -> Rejected

@@ -54,6 +54,11 @@ sealed class ShareStatus(protected open val value: String) {
     override fun toString(): String = value
 }
 
+@Serializable
+data class UpdateShareStatuses(
+    val providerId: ProviderId,
+    val all: List<UpdateShareStatus>
+)
 
 @Serializable
 data class UpdateShareStatus(
