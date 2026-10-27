@@ -45,17 +45,25 @@ class PersonalDataPage(private val page: Page) : TestPage(page, "app/private/dat
         val modal = page.getByDataId("upsert-user-profile.modal")
         assertThat(modal).isVisible()
 
-        page.getByDataId("user-profile.form.title-input").fill(title)
+        title?.let {
+            page.getByDataId("user-profile.form.title-input").fill(title)
+        }
         page.getByDataId("user-profile.form.firstname-input").fill(firstname.value)
         page.getByDataId("user-profile.form.lastname-input").fill(lastname.value)
-        page.getByDataId("user-profile.form.phone-number-input").fill(phoneNumber?.value)
-        page.getByDataId("user-profile.form.cell-phone-number-input").fill(mobileNumber?.value)
+        phoneNumber?.value?.let {
+            page.getByDataId("user-profile.form.phone-number-input").fill(it)
+        }
+        mobileNumber?.value?.let {
+            page.getByDataId("user-profile.form.cell-phone-number-input").fill(it)
+        }
 
         // address data
         page.getByDataId("user-profile.form.address.recipient-name-input").fill(recipientName)
-        page.getByDataId("user-profile.form.address.organization-name-input").fill(organizationName)
+        organizationName?.let { page.getByDataId("user-profile.form.address.organization-name-input").fill(it) }
         page.getByDataId("user-profile.form.address.address-line-1-input").fill(addressLine1)
-        page.getByDataId("user-profile.form.address.address-line-2-input").fill(addressLine2)
+        addressLine2?.let {
+            page.getByDataId("user-profile.form.address.address-line-2-input").fill(it)
+        }
         page.getByDataId("user-profile.form.address.city-input").fill(city)
         page.getByDataId("user-profile.form.address.postal-code-input").fill(postalCode)
 

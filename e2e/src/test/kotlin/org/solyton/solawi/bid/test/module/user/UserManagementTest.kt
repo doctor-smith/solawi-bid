@@ -100,7 +100,7 @@ class UserManagementTest {
 
             val createdUserRow = page.waitForSelector("text=$username")
 
-            Assertions.assertTrue(createdUserRow.isVisible, "The newly created user should show up in the user list.")
+            Assertions.assertTrue(createdUserRow?.isVisible?:false, "The newly created user should show up in the user list.")
         } finally {
             context.close()
         }
@@ -155,7 +155,7 @@ class UserManagementTest {
             val usernameProperty = page.waitForSelector("text=$user")
 
             Assertions.assertTrue(
-                usernameProperty.isVisible,
+                usernameProperty?.isVisible?:false,
                 "The private user page should display the logged-in user's own username."
             )
         } finally {
