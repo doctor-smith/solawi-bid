@@ -16,6 +16,200 @@ concurrency:
 
 
 jobs:
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+
+    outputs:
+      frontend: ${{ steps.detect.outputs.frontend }}
+      backend: ${{ steps.detect.outputs.backend }}
+      e2e: ${{ steps.detect.outputs.e2e }}
+      release: ${{ steps.detect.outputs.release }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect Changes
+        id: detect
+        shell: bash
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+          REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+
+          # ----------------------------------------
+          # Release-Tag erkennen
+          # ----------------------------------------
+
+          if [[ "$REF" == refs/tags/* ]]; then
+            echo "Release detected: $REF"
+
+            echo "release=true" >> "$GITHUB_OUTPUT"
+            echo "frontend=false" >> "$GITHUB_OUTPUT"
+            echo "backend=false" >> "$GITHUB_OUTPUT"
+            echo "e2e=false" >> "$GITHUB_OUTPUT"
+
+            exit 0
+          fi
+
+          echo "release=false" >> "$GITHUB_OUTPUT"
+
+          # ----------------------------------------
+          # Ersten Push / fehlenden Commit behandeln
+          # ----------------------------------------
+
+          if [[ -z "$BEFORE" || "$BEFORE" =~ ^0+$ ]] || \
+             ! git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then
+
+            echo "No previous commit found. Building everything."
+
+            echo "frontend=true" >> "$GITHUB_OUTPUT"
+            echo "backend=true" >> "$GITHUB_OUTPUT"
+            echo "e2e=true" >> "$GITHUB_OUTPUT"
+
+            exit 0
+          fi
+
+          # ----------------------------------------
+          # Geänderte Dateien ermitteln
+          # ----------------------------------------
+
+          git diff --name-only "$BEFORE" "$AFTER" > changed-files.txt
+
+          echo "Changed files:"
+          cat changed-files.txt
+
+          FRONTEND=false
+          BACKEND=false
+          E2E=false
+
+          # ----------------------------------------
+          # Änderungen klassifizieren
+          # ----------------------------------------
+
+          while IFS= read -r file; do
+
+            case "$file" in
+
+              # Frontend
+              solawi-bid-frontend/*|\
+              infrastructure/docker/Dockerfile-Frontend)
+                FRONTEND=true
+                E2E=true
+                ;;
+
+              # Backend
+              solawi-bid-backend/*|\
+              solawi-bid-database/*|\
+              infrastructure/docker/Dockerfile-Backend)
+                BACKEND=true
+                E2E=true
+                ;;
+
+              # E2E Tests / Testumgebung
+              e2e/*|\
+              docker-compose.e2e.yml|\
+              docker-compose.e2e.local.yml|\
+              infrastructure/database/*|\
+              infrastructure/docker/Dockerfile-E2E-Runner)
+                E2E=true
+                ;;
+
+              # Gemeinsame Module
+              solawi-bid-api-data/*|\
+              evoleq/*)
+                FRONTEND=true
+                BACKEND=true
+                E2E=true
+                ;;
+
+              # Gradle Build-Konfiguration
+              buildSrc/*|\
+              gradle/*|\
+              build.gradle.kts|\
+              settings.gradle.kts*|\
+              gradle.properties|\
+              gradlew|\
+              gradlew.bat|\
+              kotlin-js-store/*)
+                FRONTEND=true
+                BACKEND=true
+                E2E=true
+                ;;
+
+              # Gemeinsame Docker-Konfiguration
+              .dockerignore)
+                FRONTEND=true
+                BACKEND=true
+                E2E=true
+                ;;
+
+              # GitHub Actions
+              .github/actions/*|\
+              .github/workflows/*)
+                FRONTEND=true
+                BACKEND=true
+                E2E=true
+                ;;
+
+              # Deployment-Konfiguration
+              infrastructure/ansible/*|\
+              infrastructure/apache/*|\
+              infrastructure/nginx/*|\
+              docker-compose.yml)
+                FRONTEND=true
+                BACKEND=true
+                E2E=true
+                ;;
+
+              # Dokumentation / lokale Konfiguration
+              docs/*|\
+              README.md|\
+              LICENSE|\
+              .gitignore|\
+              dependency-analysis.md|\
+              build-reports/*|\
+              .continue/*|\
+              .junie/*)
+                ;;
+
+              # Unbekannte Dateien:
+              # Sicherheitshalber alles ausführen
+              *)
+                echo "Unknown file: $file"
+                echo "Conservative fallback: build everything"
+
+                FRONTEND=true
+                BACKEND=true
+                E2E=true
+                ;;
+
+            esac
+
+          done < changed-files.txt
+
+          # ----------------------------------------
+          # Ergebnisse ausgeben
+          # ----------------------------------------
+
+          echo "frontend=$FRONTEND" >> "$GITHUB_OUTPUT"
+          echo "backend=$BACKEND" >> "$GITHUB_OUTPUT"
+          echo "e2e=$E2E" >> "$GITHUB_OUTPUT"
+
+          echo ""
+          echo "================================"
+          echo "Change Detection Results"
+          echo "================================"
+          echo "Frontend build required: $FRONTEND"
+          echo "Backend build required:  $BACKEND"
+          echo "E2E tests required:      $E2E"
+          echo "Release:                 false"
+          echo "================================"
   build-Frontend:
     name: Build Frontend Docker Image
     runs-on: ubuntu-latest
