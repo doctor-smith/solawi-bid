@@ -264,27 +264,54 @@ jobs:
     if: needs.detect-changes.outputs.e2e == 'true'
     name: Check E2E Runner Changes
     runs-on: ubuntu-latest
+
     outputs:
       needs-rebuild: ${{ steps.check.outputs.needs-rebuild }}
+      existing-image: ${{ steps.check.outputs.existing-image }}
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
-      - name: Check if E2E Runner needs rebuild
+      - name: Check E2E Runner image
         id: check
+        shell: bash
         run: |
-          # Check if the E2E Runner image exists first
-          if ! docker manifest inspect ghcr.io/${{ github.repository }}/e2e-runner:latest > /dev/null 2>&1; then
-            echo "needs-rebuild=true" >> $GITHUB_OUTPUT
-            echo "E2E Runner image doesn't exist, rebuild needed"
-          elif [[ "${{ github.ref }}" == "refs/heads/main" ]] && git diff --name-only HEAD~1 HEAD 2>/dev/null | grep -q "infrastructure/docker/Dockerfile-E2E-Runner"; then
-            echo "needs-rebuild=true" >> $GITHUB_OUTPUT
-            echo "E2E Runner Dockerfile changed on main, rebuild needed"
+          set -euo pipefail
+
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}/e2e-runner"
+          BRANCH="${GITHUB_REF_NAME//\//-}"
+          BRANCH_IMAGE="${IMAGE}:${BRANCH}"
+          LATEST_IMAGE="${IMAGE}:latest"
+
+          # Prüfen, ob das Dockerfile geändert wurde
+          if git diff --name-only HEAD~1 HEAD 2>/dev/null \
+            | grep -q '^infrastructure/docker/Dockerfile-E2E-Runner$'; then
+
+            echo "needs-rebuild=true" >> "$GITHUB_OUTPUT"
+            echo "existing-image=$BRANCH_IMAGE" >> "$GITHUB_OUTPUT"
+            echo "Dockerfile changed - rebuilding runner"
+
+          elif docker manifest inspect "$BRANCH_IMAGE" > /dev/null 2>&1; then
+
+            echo "needs-rebuild=false" >> "$GITHUB_OUTPUT"
+            echo "existing-image=$BRANCH_IMAGE" >> "$GITHUB_OUTPUT"
+            echo "Using existing branch image: $BRANCH_IMAGE"
+
+          elif docker manifest inspect "$LATEST_IMAGE" > /dev/null 2>&1; then
+
+            echo "needs-rebuild=false" >> "$GITHUB_OUTPUT"
+            echo "existing-image=$LATEST_IMAGE" >> "$GITHUB_OUTPUT"
+            echo "Using existing latest image: $LATEST_IMAGE"
+
           else
-            echo "needs-rebuild=false" >> $GITHUB_OUTPUT
-            echo "Using existing latest E2E Runner image"
+
+            echo "needs-rebuild=true" >> "$GITHUB_OUTPUT"
+            echo "existing-image=$BRANCH_IMAGE" >> "$GITHUB_OUTPUT"
+            echo "No existing image - rebuilding runner"
+
           fi
 
   build-e2e-runner:
@@ -304,7 +331,7 @@ jobs:
     name: Run E2E Tests
     runs-on: ubuntu-latest # [self-hosted, Linux, X64, solyton]
 
-    needs: [detect-changes, build-Frontend, build-Backend, build-e2e-runner]
+    needs: [detect-changes, build-Frontend, build-Backend, check-e2e-runner-changes, build-e2e-runner]
     if: >-
       ${{ always() && !cancelled() &&
       needs.detect-changes.outputs.e2e == 'true' &&
@@ -379,6 +406,23 @@ jobs:
           docker ps -a
           docker compose -f docker-compose.e2e.yml logs --no-color
 
+      - name: Select E2E Runner image
+        shell: bash
+        env:
+          IMAGE_DIGEST: ${{ needs.build-e2e-runner.outputs.image-digest }}
+          EXISTING_IMAGE: ${{ needs.check-e2e-runner-changes.outputs.existing-image }}
+        run: |
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}/e2e-runner"
+
+          if [[ -n "$IMAGE_DIGEST" ]]; then
+            RUNNER_IMAGE="${IMAGE}@${IMAGE_DIGEST}"
+          else
+            RUNNER_IMAGE="$EXISTING_IMAGE"
+          fi
+
+          echo "Using E2E Runner: $RUNNER_IMAGE"
+          echo "E2E_RUNNER_IMAGE=$RUNNER_IMAGE" >> "$GITHUB_ENV"
+
       # E2E Tests im E2E Runner Container ausführen
       - name: Cache Gradle dependencies
         uses: actions/cache@v4
@@ -403,7 +447,7 @@ jobs:
             -e TEST_USER_PASSWORD="${{ secrets.TEST_USER_PASSWORD }}" \
             -e PARALLEL_TESTS="${{ vars.PARALLEL_E2E_TESTS }}" \
             -e NUMBER_OF_WORKERS="${{vars.NUMBER_OF_E2E_WORKERS }}" \
-            ghcr.io/${{ github.repository }}/e2e-runner:latest \
+            "$E2E_RUNNER_IMAGE" \
             bash -c "chmod +x ./gradlew && ./gradlew :e2e:test --build-cache --info"
 
       # Cleanup
