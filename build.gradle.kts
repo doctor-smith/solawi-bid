@@ -1,11 +1,11 @@
 allprojects {
     repositories {
-        google()
-        mavenLocal()
         mavenCentral()
         maven { url = uri("https://jitpack.io") }
         maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+        google()
+        mavenLocal()
     }
 }
 

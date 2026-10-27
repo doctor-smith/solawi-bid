@@ -16,11 +16,11 @@ version = libs.versions.solawi.get()
 val kotlinVersion = libs.versions.kotlin
 
 repositories {
-    google()
-    mavenLocal()
     mavenCentral()
+    google()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     maven ("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
+    mavenLocal()
 }
 
 configurations.all {

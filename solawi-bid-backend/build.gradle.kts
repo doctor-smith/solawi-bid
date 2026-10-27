@@ -41,8 +41,8 @@ application {
 
 repositories {
     mavenCentral()
-    mavenLocal()
     maven("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
+    mavenLocal()
 }
 
 dependencies {
