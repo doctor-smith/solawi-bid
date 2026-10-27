@@ -1,4 +1,5 @@
-FROM mcr.microsoft.com/playwright/java:v1.51.0-noble
+ARG PLAYWRIGHT_VERSION=1.51.0
+FROM mcr.microsoft.com/playwright/java:v${PLAYWRIGHT_VERSION}-noble
 
 # System-Level Performance
 ENV GRADLE_OPTS="-Xmx2g -XX:+UseG1GC -XX:+UseStringDeduplication"
