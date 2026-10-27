@@ -15,7 +15,6 @@ plugins {
 }
 
 repositories {
-    mavenLocal()
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     maven {
@@ -25,6 +24,7 @@ repositories {
         url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
     }
     google()
+    mavenLocal()
 }
 
 group = libs.versions.solytonGroup
