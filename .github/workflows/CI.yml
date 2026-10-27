@@ -211,6 +211,8 @@ jobs:
           echo "Release:                 false"
           echo "================================"
   build-Frontend:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend == 'true'
     name: Build Frontend Docker Image
     runs-on: ubuntu-latest
     outputs:
@@ -233,6 +235,8 @@ jobs:
           dockerfile_path: infrastructure/docker/Dockerfile-Frontend
 
   build-Backend:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.backend == 'true'
     name: Build Backend Docker Image
     runs-on: ubuntu-latest
     outputs:
