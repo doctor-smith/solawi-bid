@@ -14,7 +14,7 @@ class LoginPage(private val page: Page) {
 
     val url = "${TestConfig.BASE_URL}/login"
 
-    fun load(): Response = page.navigate(url)
+    fun load(): Response? = page.navigate(url)
 
     fun login(username: Username, password: Password): LoggedIn {
         page.put("login-form.input.username", username.value)

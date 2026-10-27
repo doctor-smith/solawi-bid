@@ -69,7 +69,7 @@ class LoginTest {
 
         val errorMessage = page.waitForSelector("text=User with username Tom does not exists")
 
-        Assertions.assertTrue(errorMessage.isVisible, "The error message was not displayed as expected.")
+        Assertions.assertTrue(errorMessage?.isVisible?:false, "The error message was not displayed as expected.")
     }
 
 }

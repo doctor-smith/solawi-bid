@@ -24,7 +24,7 @@ abstract class TestPage(
     /**
      *
      */
-    fun load(): Response = page.navigate("$baseUrl/$url")
+    fun load(): Response? = page.navigate("$baseUrl/$url")
 }
 
 /**
@@ -152,7 +152,9 @@ open class DefaultTestDropdown(
     }
 
     override fun trigger(): Locator = with(locator.getAttribute("data-id")){
-        val wrapperId = this
+        val wrapperId = requireNotNull(this) {
+            "DefaultTestDropdown: The main locator has no data-id"
+        }
 
         // TODO Here we compute the triggerId in a complicated way. This is due to the fact, that the dataId structure
         //  of the [Dropdown] is messed up. But this messed up structure is used widely in the tests by now. So the fix

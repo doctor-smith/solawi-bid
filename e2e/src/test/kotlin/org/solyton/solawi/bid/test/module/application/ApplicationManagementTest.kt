@@ -190,7 +190,7 @@ class ApplicationManagementTest {
             // title, even when the list itself happens to be empty.
             val title = page.waitForSelector("h3")
 
-            Assertions.assertTrue(title.isVisible, "The personal application management page should render.")
+            Assertions.assertTrue(title?.isVisible?:false, "The personal application management page should render.")
             Assertions.assertTrue(
                 page.url().contains("/app/management/private"),
                 "The admin user should not be redirected away from the personal application management page."

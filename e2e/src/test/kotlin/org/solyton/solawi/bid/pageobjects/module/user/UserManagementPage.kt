@@ -13,7 +13,7 @@ import org.solyton.solawi.bid.module.values.Username
 class UserManagementPage(private val page: Page) {
     val url = "${TestConfig.BASE_URL}/app/management/users"
 
-    fun load(): Response = page.navigate(url)
+    fun load(): Response? = page.navigate(url)
 
     /**
      *
