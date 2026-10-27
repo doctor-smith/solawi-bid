@@ -288,7 +288,7 @@ jobs:
 
           # Prüfen, ob das Dockerfile geändert wurde
           if git diff --name-only HEAD~1 HEAD 2>/dev/null \
-            | grep -q '^infrastructure/docker/Dockerfile-E2E-Runner$'; then
+            | grep -Eq '^(infrastructure/docker/Dockerfile-E2E-Runner|gradle/libs\.versions\.toml)$'; then
 
             echo "needs-rebuild=true" >> "$GITHUB_OUTPUT"
             echo "existing-image=$BRANCH_IMAGE" >> "$GITHUB_OUTPUT"
