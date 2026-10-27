@@ -1,5 +1,5 @@
 name: Continuous Integration
-run-name: ${{ startsWith(github.ref, 'refs/tags/') && 'Main → Prod' || (github.ref == 'refs/heads/main' && 'Main → Staging' || 'Feature → Dev') }} (${{ github.event.head_commit.message }})
+run-name: ${{ startsWith(github.ref, 'refs/tags/') && 'Main → Prod' || (github.ref == 'refs/heads/main' && 'Main → Staging' || 'Feature → Dev') }} (${{ github.ref_name }})
 
 on:
   push:
@@ -9,6 +9,7 @@ permissions:
   packages: write  # Allows workflow to create and modify container registry packages
   id-token: write  # Enables OIDC token generation for secure communication purposes
   checks: write  # Allows workflow to create, update, and finalize GitHub checks
+  actions: read  # Verify successful main workflow for releases
 
 concurrency:
   group: ci-${{ startsWith(github.ref, 'refs/tags/') && 'P' || (github.ref == 'refs/heads/main' && 'Q' || 'D') }}
@@ -259,6 +260,8 @@ jobs:
           dockerfile_path: infrastructure/docker/Dockerfile-Backend
 
   check-e2e-runner-changes:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.e2e == 'true'
     name: Check E2E Runner Changes
     runs-on: ubuntu-latest
     outputs:
@@ -300,14 +303,19 @@ jobs:
       NUMBER_OF_WORKERS: ${{ vars.NUMBER_OF_E2E_WORKERS }}
     name: Run E2E Tests
     runs-on: [self-hosted, Linux, X64, solyton] # ubuntu-latest
-    
-    needs: [build-Frontend, build-Backend, check-e2e-runner-changes, build-e2e-runner]
-    if: always() && !cancelled() && !failure()
-    
+
+    needs: [detect-changes, build-Frontend, build-Backend, build-e2e-runner]
+    if: >-
+      ${{ always() && !cancelled() &&
+      needs.detect-changes.outputs.e2e == 'true' &&
+      needs.build-e2e-runner.result == 'success' &&
+      (needs.build-Frontend.result == 'success' || needs.build-Frontend.result == 'skipped') &&
+      (needs.build-Backend.result == 'success' || needs.build-Backend.result == 'skipped') }}
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-        
+
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
@@ -315,20 +323,48 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Download Docker Images
+      - name: Download freshly built frontend image
+        if: needs.build-Frontend.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: docker-image-frontend
-  
-      - name: Download Docker Images  
+          path: /tmp/ci-frontend
+
+      - name: Download freshly built backend image
+        if: needs.build-Backend.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: docker-image-backend
+          path: /tmp/ci-backend
 
-      - name: Load Docker Images
+      - name: Prepare exact images for E2E
+        shell: bash
+        env:
+          FE_BUILT: ${{ needs.build-Frontend.result }}
+          BE_BUILT: ${{ needs.build-Backend.result }}
+          FE_REF: ${{ needs.build-Frontend.outputs.full_image_reference }}
+          BE_REF: ${{ needs.build-Backend.outputs.full_image_reference }}
         run: |
-          docker load --input docker_image_frontend.tar
-          docker load --input docker_image_backend.tar
+          set -euo pipefail
+          SHORT_SHA="${GITHUB_SHA:0:7}"
+          FE="ghcr.io/${GITHUB_REPOSITORY,,}/frontend:ci-${SHORT_SHA}"
+          BE="ghcr.io/${GITHUB_REPOSITORY,,}/backend:ci-${SHORT_SHA}"
+          if [[ "$FE_BUILT" == success ]]; then
+            docker load -i /tmp/ci-frontend/docker_image_frontend.tar
+            docker tag "$FE_REF" "$FE"
+          else
+            docker pull "ghcr.io/${GITHUB_REPOSITORY,,}/frontend:branch-main"
+            docker tag "ghcr.io/${GITHUB_REPOSITORY,,}/frontend:branch-main" "$FE"
+          fi
+          if [[ "$BE_BUILT" == success ]]; then
+            docker load -i /tmp/ci-backend/docker_image_backend.tar
+            docker tag "$BE_REF" "$BE"
+          else
+            docker pull "ghcr.io/${GITHUB_REPOSITORY,,}/backend:branch-main"
+            docker tag "ghcr.io/${GITHUB_REPOSITORY,,}/backend:branch-main" "$BE"
+          fi
+          echo "FRONTEND_IMAGE=$FE" >> "$GITHUB_ENV"
+          echo "BACKEND_IMAGE=$BE" >> "$GITHUB_ENV"
 
       # Services auf Runner starten (ohne E2E Container!)
       - name: Start E2E Test Environment
@@ -396,41 +432,120 @@ jobs:
 
 
 
-  push-Frontend:
-    name: Push Frontend Docker Image
+  publish-images:
+    name: Publish verified image references
     runs-on: ubuntu-latest
-    needs: [e2e, build-Frontend]
+    needs: [detect-changes, build-Frontend, build-Backend, e2e]
+    if: >-
+      ${{ always() && !cancelled() &&
+      needs.detect-changes.result == 'success' &&
+      (needs.build-Frontend.result == 'success' || needs.build-Frontend.result == 'skipped') &&
+      (needs.build-Backend.result == 'success' || needs.build-Backend.result == 'skipped') &&
+      (needs.detect-changes.outputs.release == 'true' ||
+       needs.e2e.result == 'success' ||
+       (needs.detect-changes.outputs.e2e == 'false' && needs.e2e.result == 'skipped')) }}
+    outputs:
+      frontend: ${{ steps.publish.outputs.frontend }}
+      backend: ${{ steps.publish.outputs.backend }}
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-      - name: Push Docker Image
-        uses: ./.github/actions/push-docker
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          image_name: frontend
-          full_image_name: ${{ needs.build-Frontend.outputs.full_image_name }}
+          fetch-depth: 0
 
-  push-Backend:
-    name: Push Backend Docker Image
-    runs-on: ubuntu-latest
-    needs: [e2e, build-Backend]
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-      - name: push-docker
-        uses: ./.github/actions/push-docker
+      - name: Verify release is current, successfully tested main HEAD
+        if: needs.detect-changes.outputs.release == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          [[ "$(git rev-parse origin/main)" == "$GITHUB_SHA" ]] || {
+            echo 'Release tag must point to current main HEAD' >&2; exit 1;
+          }
+          RUNS=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/CI.yml/runs?head_sha=${GITHUB_SHA}&branch=main&status=success&per_page=100")
+          echo "$RUNS" | jq -e --arg sha "$GITHUB_SHA" \
+            '[.workflow_runs[] | select(.head_sha == $sha and .event == "push" and .conclusion == "success")] | length > 0' >/dev/null || {
+              echo 'No successful main CI run for release commit' >&2; exit 1;
+            }
+
+      - name: Download newly built frontend
+        if: needs.build-Frontend.result == 'success'
+        uses: actions/download-artifact@v4
         with:
+          name: docker-image-frontend
+          path: /tmp/ci-frontend
+
+      - name: Download newly built backend
+        if: needs.build-Backend.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image-backend
+          path: /tmp/ci-backend
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          image_name: backend
-          full_image_name: ${{ needs.build-Backend.outputs.full_image_name }}
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Publish or reuse images
+        id: publish
+        shell: bash
+        env:
+          RELEASE: ${{ needs.detect-changes.outputs.release }}
+          FE_BUILT: ${{ needs.build-Frontend.result }}
+          BE_BUILT: ${{ needs.build-Backend.result }}
+          FE_REF: ${{ needs.build-Frontend.outputs.full_image_reference }}
+          BE_REF: ${{ needs.build-Backend.outputs.full_image_reference }}
+          FE_NAME: ${{ needs.build-Frontend.outputs.full_image_name }}
+          BE_NAME: ${{ needs.build-Backend.outputs.full_image_name }}
+        run: |
+          set -euo pipefail
+          SHORT_SHA="${GITHUB_SHA:0:7}"
+          BASE="ghcr.io/${GITHUB_REPOSITORY,,}"
+          if [[ "$RELEASE" == true ]]; then
+            # Images were already published by the successful main run.
+            for component in frontend backend; do
+              source="$BASE/$component:sha-$SHORT_SHA"
+              target="$BASE/$component:tag-${GITHUB_REF_NAME}"
+              docker buildx imagetools inspect "$source" >/dev/null
+              docker buildx imagetools create --tag "$target" "$source"
+              echo "$component=$target" >> "$GITHUB_OUTPUT"
+            done
+            exit 0
+          fi
+
+          for component in frontend backend; do
+            if [[ "$component" == frontend ]]; then
+              result="$FE_BUILT"; ref="$FE_REF"; name="$FE_NAME"
+            else
+              result="$BE_BUILT"; ref="$BE_REF"; name="$BE_NAME"
+            fi
+            target="$BASE/$component:sha-$SHORT_SHA"
+            if [[ "$result" == success ]]; then
+              docker load -i "/tmp/ci-$component/docker_image_$component.tar"
+              docker push -a "$name"
+              # Build action metadata already includes the sha-* tag.
+              docker buildx imagetools inspect "$target" >/dev/null
+            else
+              source="$BASE/$component:branch-main"
+              docker buildx imagetools inspect "$source" >/dev/null
+              docker buildx imagetools create --tag "$target" "$source"
+            fi
+            echo "$component=$target" >> "$GITHUB_OUTPUT"
+          done
 
   deploy:
     environment: ${{ startsWith(github.ref, 'refs/tags/') && 'Production' || (github.ref == 'refs/heads/main' && 'Staging' || 'Develop') }}
     name: Deploy Application
     runs-on: ubuntu-latest
-    needs: [push-Frontend, push-Backend, build-Frontend, build-Backend]
+    needs: publish-images
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -461,8 +576,8 @@ jobs:
           fi
       - name: Debug image reference
         run: |
-          echo "Backend: ${{ needs.build-Backend.outputs.full_image_reference }}"
-          echo "Frontend: ${{ needs.build-Frontend.outputs.full_image_reference }}"
+          echo "Backend: ${{ needs.publish-images.outputs.backend }}"
+          echo "Frontend: ${{ needs.publish-images.outputs.frontend }}"
       - name: Deploy Application
         uses: ./.github/actions/deploy-application
         with:
@@ -472,8 +587,8 @@ jobs:
           backend_domain: ${{ steps.collect-env-config.outputs.backend_domain }}
           jwt_secret: ${{ steps.collect-env-config.outputs.jwt_secret }}
           application_owner_password: ${{ steps.collect-env-config.outputs.application_owner_password }}
-          backend_image_name: ${{ needs.build-Backend.outputs.full_image_reference }}
-          frontend_image_name: ${{ needs.build-Frontend.outputs.full_image_reference }}
+          backend_image_name: ${{ needs.publish-images.outputs.backend }}
+          frontend_image_name: ${{ needs.publish-images.outputs.frontend }}
           application_owner_username: 'owner@solyton.org'
           server_address: '${{ vars.SERVER_ADDRESS }}'
           server_user: ${{ vars.SERVER_USER }}
