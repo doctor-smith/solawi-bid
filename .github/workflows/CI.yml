@@ -302,7 +302,7 @@ jobs:
       PARALLEL_TESTS: ${{ vars.PARALLEL_E2E_TESTS }}
       NUMBER_OF_WORKERS: ${{ vars.NUMBER_OF_E2E_WORKERS }}
     name: Run E2E Tests
-    runs-on: [self-hosted, Linux, X64, solyton] # ubuntu-latest
+    runs-on: ubuntu-latest # [self-hosted, Linux, X64, solyton]
 
     needs: [detect-changes, build-Frontend, build-Backend, build-e2e-runner]
     if: >-
