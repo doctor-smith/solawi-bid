@@ -163,13 +163,14 @@ jobs:
             --network host \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v ${{ github.workspace }}:/workspace \
+            -v "${HOME}/.gradle:/root/.gradle" \
             -w /workspace \
             -e TEST_USER="${{ vars.TEST_USER }}" \
             -e TEST_USER_PASSWORD="${{ secrets.TEST_USER_PASSWORD }}" \
             -e PARALLEL_TESTS="${{ vars.PARALLEL_E2E_TESTS }}" \
             -e NUMBER_OF_WORKERS="${{vars.NUMBER_OF_E2E_WORKERS }}" \
             ghcr.io/${{ github.repository }}/e2e-runner:latest \
-            bash -c "chmod +x ./gradlew && ./gradlew :e2e:test --info"
+            bash -c "chmod +x ./gradlew && ./gradlew :e2e:test --build-cache --info"
 
       # Cleanup
       - name: Stop E2E Environment
