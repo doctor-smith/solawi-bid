@@ -160,6 +160,7 @@ fun installSerializers() {
         // ShareStatus
         add<ShareStatus>(ShareStatus.serializer())
         add<UpdateShareStatus>(UpdateShareStatus.serializer())
+        add<UpdateShareStatuses>(UpdateShareStatuses.serializer())
         add<ChangedBy>(ChangedBy.serializer())
         add<ChangeReason>(ChangeReason.serializer())
 

@@ -22,6 +22,7 @@ data class ShareSubscription (
     @ReadWrite val status: ShareStatus,
     @ReadWrite val coSubscribers: List<String> = emptyList(),
     @ReadOnly val statusUpdatedAt: LocalDateTime? = null,
+    @ReadOnly val pendingRolloverCompanion: String? = null
 ) {
     init {
         require(isValidUUID(providerId)) {"Provider id is not a valid UUID: $providerId"}

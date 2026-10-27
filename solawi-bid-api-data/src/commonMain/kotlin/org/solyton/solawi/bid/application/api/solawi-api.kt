@@ -225,9 +225,13 @@ val solawiApi by lazy {
                 key = ImportShareSubscriptions::class,
                 url = "shares/subscriptions/import"
             )
-            patch<UpdateShareStatus, ShareSubscription>(
+            patch<UpdateShareStatus, ShareSubscriptions>(
                 key = UpdateShareStatus::class,
                 url = "shares/subscriptions/update-status"
+            )
+            patch<UpdateShareStatuses, ShareSubscriptions>(
+                key = UpdateShareStatuses::class,
+                url = "shares/subscriptions/update-statuses"
             )
 
             // History

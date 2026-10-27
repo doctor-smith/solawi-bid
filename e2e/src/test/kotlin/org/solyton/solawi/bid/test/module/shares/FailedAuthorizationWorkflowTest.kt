@@ -261,17 +261,16 @@ class FailedAuthorizationWorkflowTest {
 
                     // Provider sets status to SUSPENDED via Bulk Edit (reason: AUTHORIZATION_FAILED)
                     sharesPage.changeStatusViaBulkEdit("SUSPENDED")
-                    page.waitForResponse({
-                        response -> response.url().endsWith("shares/subscriptions/update-status")
-                    }) {
-                        page.waitForTimeout(1000.0)
-                    }
                     waitForLoadingToFinish()
 
                     // navigate to the list of share-subscriptions
                     val newShareSubscriptionList = page.getByDataId("shares.page.share-subscription.list")
                     waitForLoadingToFinish()
                     val suspendedRow = newShareSubscriptionList.getByText("SUSPENDED")
+
+                    statusFilter.select("All Statuses")
+                    waitForLoadingToFinish()
+                    statusFilter.close()
 
                     Assertions.assertTrue(
                         suspendedRow.isVisible,

@@ -54,6 +54,10 @@ class ShareSubscription(id: EntityID<UUID>): UUIDEntity(id), AuditableEntity<UUI
 
     val coSubscribers by CoSubscriberEntity referrersOn CoSubscribersTable.shareSubscriptionId
 
+    // indicates that the pending rollover
+    // companion has just been ROLLED_OVER
+    var pendingRolloverCompanion: ShareSubscriptionEntity? = null
+
     override var createdAt: DateTime by ShareSubscriptions.createdAt
     override var createdBy: UUID by ShareSubscriptions.createdBy
     override var modifiedAt: DateTime? by ShareSubscriptions.modifiedAt

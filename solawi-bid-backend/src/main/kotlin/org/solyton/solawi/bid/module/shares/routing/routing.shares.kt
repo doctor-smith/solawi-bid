@@ -4,10 +4,7 @@ import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.util.*
 import org.evoleq.exposedx.data.DbEnv
-import org.evoleq.ktorx.Base
-import org.evoleq.ktorx.NotImplemented
-import org.evoleq.ktorx.ReceiveContextual
-import org.evoleq.ktorx.Respond
+import org.evoleq.ktorx.*
 import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
@@ -21,6 +18,7 @@ import org.solyton.solawi.bid.module.shares.action.api.*
 import org.solyton.solawi.bid.module.shares.application.SHARE_MANAGEMENT_APPLICATION_NAME
 import org.solyton.solawi.bid.module.shares.data.api.*
 import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
+import org.solyton.solawi.bid.module.shares.exception.ShareException
 import org.solyton.solawil.bid.module.user.data.toUUID
 import java.util.*
 
@@ -235,7 +233,32 @@ authenticate {
                     contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
                 } *
                 UpdateShareStatus() *
-                Respond<ShareSubscription> { transform() } runOn Base(call, environment)
+                Respond<ShareSubscriptions> { transform() } runOn Base(call, environment)
+            }
+            patch("update-statuses") {
+                ReceiveContextual<UpdateShareStatuses>() *
+                TransformContextual {
+                    statuses ->
+                    val (providerId, all) = statuses
+
+                    // All providers musst be the same
+                    val sameProviderPolicyHolds = all.all{ it.providerId == providerId }
+                    if(!sameProviderPolicyHolds) throw ShareException.ProviderMismatch
+                    statuses
+                } *
+                IsGrantedOneOf(
+                    rights(
+                        "UPDATE_SHARE_SUBSCRIPTIONS",
+                        "MANAGE_SHARE_SUBSCRIPTIONS",
+                        "MANAGE_SHARES"
+                    ),
+                    no // todo:permission enable access check
+                ) { contextual ->
+                    val providerId = contextual.data.all.first().providerId.toUUID()
+                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                } *
+                UpdateShareStatuses() *
+                Respond<ShareSubscriptions> { transform() } runOn Base(call, environment)
             }
             get("all") {
                 @Suppress("UnsafeCallOnNullableType")
