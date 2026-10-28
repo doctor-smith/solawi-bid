@@ -834,6 +834,12 @@ jobs:
     name: Deploy Application
     runs-on: ubuntu-latest
     needs: [publish-images, determine-version]
+    if: >-
+      ${{
+        !cancelled() &&
+        needs.publish-images.result == 'success' &&
+        needs.determine-version.result == 'success'
+      }}
     outputs:
       frontend_domain: ${{ steps.collect-env-config.outputs.frontend_domain }}
       backend_domain: ${{ steps.collect-env-config.outputs.backend_domain }}
