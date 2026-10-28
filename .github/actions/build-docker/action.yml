@@ -12,6 +12,9 @@ inputs:
   dockerfile_path:
     description: 'Path to the Dockerfile'
     required: true
+  application_version:
+    description: 'Application version'
+    required: true
 
 outputs:
   full_image_name:
@@ -113,6 +116,7 @@ runs:
         labels: ${{ steps.meta.outputs.labels }}
         build-args: |
           GIT_SHA=${{ github.sha }}
+          APPLICATION_VERSION=${{ inputs.application_version }}
         outputs: type=docker,dest=docker_image_${{ inputs.image_name }}.tar
         cache-from: type=gha
         cache-to: type=gha,mode=max

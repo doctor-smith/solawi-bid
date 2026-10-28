@@ -51,9 +51,11 @@ RUN mkdir -p /test-results && \
 FROM nginx:1-alpine as production
 
 ARG GIT_SHA=unknown
-LABEL org.opencontainers.image.revision="${GIT_SHA}"
+ARG APPLICATION_VERSION=unknown
 
-ENV APPLICATION_VERSION="${GIT_SHA}"
+LABEL org.opencontainers.image.revision="${GIT_SHA}"
+LABEL org.opencontainers.image.version="${APPLICATION_VERSION}"
+
 ENV ENVIRONMENT="D"
 ENV FRONTEND_URL="http://localhost"
 ENV FRONTEND_PORT="8080"
@@ -63,7 +65,8 @@ ENV BACKEND_PORT="8081"
 COPY infrastructure/nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /build/solawi-bid-frontend/build/dist/js/productionExecutable/ /usr/share/nginx/html
 # CMD ["sh", "-c", "envsubst < /usr/share/nginx/html/config.json.template > /usr/share/nginx/html/config.json && nginx -g 'daemon off;'"]
-RUN printf '{"commit":"%s"}\n' "$GIT_SHA" \
+RUN printf '{"commit":"%s","version":"%s"}\n' \
+    "$GIT_SHA" "$APPLICATION_VERSION" \
     > /usr/share/nginx/html/version.json
 
 CMD ["sh", "-c", "\
@@ -74,7 +77,7 @@ CMD ["sh", "-c", "\
      ls -la /usr/share/nginx/html >&2; \
      exit 1; \
   fi; \
-  envsubst '$ENVIRONMENT $FRONTEND_URL $FRONTEND_PORT $BACKEND_URL $BACKEND_PORT $APPLICATION_VERSION' \
+  envsubst '$ENVIRONMENT $FRONTEND_URL $FRONTEND_PORT $BACKEND_URL $BACKEND_PORT' \
     < \"$TEMPLATE\" > /usr/share/nginx/html/config.json; \
   echo 'Generated config.json:'; cat /usr/share/nginx/html/config.json; \
   exec nginx -g 'daemon off;'"]
