@@ -448,6 +448,14 @@ issues, ~26s).
 One dated entry per work session, newest first, so future sessions don't have to
 re-derive history from git diffs alone.
 
+### 2026-10-28 (Enhanced Test Logging & Output Formatting)
+
+- Enhanced Gradle test logging in `e2e/build.gradle.kts` and fixed `script/e2e-local.sh`:
+  - Added custom Gradle `TestListener` to `tasks.withType<Test>().configureEach`.
+  - Added colorized status badges (`✔ PASSED`, `✘ FAILED`, `⊘ SKIPPED`), execution duration per test (e.g. `[100.54s]`), class and method display names.
+  - Added a formatted Test Results Summary block at the end of each test task with total count, pass/fail/skip totals, execution time, and failed test details.
+  - Restored `reset_db()` function in `script/e2e-local.sh`.
+
 ### 2026-10-28 (E2E Local Environment documentation update)
 
 - Updated progress tracking document to emphasize mandatory usage of `./script/e2e-local.sh` for E2E tests to prevent development database contamination.
