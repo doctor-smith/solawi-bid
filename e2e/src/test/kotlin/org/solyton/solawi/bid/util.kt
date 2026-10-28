@@ -103,15 +103,21 @@ fun TestUserContext.dismissStrayErrorDialogIfPresent(dismiss: Boolean = true) {
  * current state up front: steps that don't apply (already done, or not reached yet)
  * are simply skipped.
  */
-fun Page.clickIfPresent(dataId: String, timeoutMs: Double = 3000.0) {
+fun Page.clickIfPresent(dataId: String, timeoutMs: Double = 3000.0): Boolean {
     val locator = getByDataId(dataId).first()
+
     try {
-        locator.waitFor(Locator.WaitForOptions().setTimeout(timeoutMs).setState(WaitForSelectorState.VISIBLE))
-    } catch (e: TimeoutError) {
-        return
+        locator.waitFor(
+            Locator.WaitForOptions()
+                .setTimeout(timeoutMs)
+                .setState(WaitForSelectorState.VISIBLE)
+        )
+    } catch (_: TimeoutError) {
+        return false
     }
+
     locator.click()
-    waitForLoadingToFinish()
+    return true
 }
 
 /**
