@@ -1,10 +1,10 @@
 ---
-Last updated: 2026-10-27
+Last updated: 2026-10-28
 Phase: 1 (Audit) complete; Phase 2 (fixture-chain build-out) complete and VERIFIED.
 Phase 3 (remaining workflows) is underway: B1 (approval, no mandate), B2
 (payment-mandate authorization), B3 (failed mandate authorization), B4 (auction clearance),
-B6 (cancellation before activation), D1 (FY1->FY2 rollover), and D2 (shadow activation)
-all pass end-to-end and are verified.
+B6 (cancellation before activation), C2 (cancellation after activation), D1 (FY1->FY2 rollover),
+and D2 (shadow activation) all pass end-to-end and are verified.
 ---
 
 # Share Management E2E — Progress & Audit
@@ -74,7 +74,7 @@ Issues Register for the full list.
   following the same no-business-logic-change pattern as every prior instrumentation
   change. New file `e2e/src/test/kotlin/org/solyton/solawi/bid/module/shares/PaymentMandateAuthorizationWorkflowTest.kt`
   (workflow B2), plus new methods on the `BankingPage`/`SharesPage` page objects.
-- **2026-10-27 (B4, B6, D2 implementation & status transition refactoring)**: Added `AuctionClearanceWorkflowTest.kt` (workflow B4), `CancellationBeforeActivationWorkflowTest.kt` (workflow B6), and `RolloverActivationWorkflowTest.kt` (workflow D2). Refactored status transitions and bulk status update handling in `page.share-management-for-organizations.kt` and `SharesPage.kt`.
+- **2026-10-27 (B4, B6, C2, D2 implementation & status transition refactoring)**: Added `AuctionClearanceWorkflowTest.kt` (workflow B4), `CancellationBeforeActivationWorkflowTest.kt` (workflow B6), `CancellationAfterActivationWorkflowTest.kt` (workflow C2), and `RolloverActivationWorkflowTest.kt` (workflow D2). Refactored status transitions and bulk status update handling in `page.share-management-for-organizations.kt` and `SharesPage.kt`.
 
 ## Tests Implemented
 
@@ -111,6 +111,9 @@ Issues Register for the full list.
   **Implementation complete AND verification complete** — full test passes end-to-end.
 - `CancellationBeforeActivationWorkflowTest` (`@Workflow`) — covers workflow B6
   (`PendingActivation` →(PROVIDER, PROVIDER_CANCELLED_BEFORE_ACTIVATION)→ `Cancelled`).
+  **Implementation complete AND verification complete** — full test passes end-to-end.
+- `CancellationAfterActivationWorkflowTest` (`@Workflow`) — covers workflow C2
+  (`Subscribed` →(PROVIDER, USER_CANCEL)→ `Cancelled`).
   **Implementation complete AND verification complete** — full test passes end-to-end.
 - `RolloverActivationWorkflowTest` (`@Workflow`) — covers workflow D2
   (Shadow `PendingActivation` → `Subscribed` in FY2, triggering automatic companion transition of original subscription from `RollingOver` to `RolledOver` in FY1).
@@ -183,21 +186,15 @@ M1-era page objects (`BankingPage`, `SharesPage`, `DistributionPage`,
 raw-`Locator`/`getByDataId` style and have **not** been migrated yet - this was a
 deliberately small, scoped step, not a full rewrite.
 
-## Exact Test Commands Identified
+## Exact Test Commands & E2E Local Environment (`e2e-local.sh`)
 
-Prefer the local docker e2e env (`./script/e2e-local.sh`) over calling `:e2e:test` directly
-(the latter would affect the development database, per project guidelines).
+**Mandatory Rule:** Always use `./script/e2e-local.sh` to run E2E tests. Never run Gradle commands like `:e2e:test` directly, as running them directly targets the active development database and will affect or corrupt development data.
 
-- Narrowest, whole-module: `./gradlew :e2e:test --tests "org.solyton.solawi.bid.module.shares.*"`
-  (requires `E2E_BASE_URL`, `TEST_USER`, `TEST_USER_PASSWORD`, optionally `E2E_RESET_DB`) —
-  not recommended standalone; use the script instead.
-- Ad-hoc single-test iteration: `./script/e2e-local.sh filterTest "<gradle-test-pattern>"`.
-- Tag-filtered: `./script/e2e-local.sh workflowTest` (whole `@Workflow` suite) or
-  `./script/e2e-local.sh devTest` (just `@Develop`-tagged tests, the narrowest option
-  while this single test is being iterated on) — both reset the e2e DB first.
-  **Actually run** (see "Environment / Build State" below): `./script/e2e-local.sh devTest`,
-  2026-10-22 08:07 UTC, 95.6s, **0 failures — fully passing**.
 - Local docker E2E environment lifecycle: `./script/e2e-local.sh build|up|down|test`.
+- Ad-hoc single-test iteration: `./script/e2e-local.sh filterTest "<gradle-test-pattern>"`.
+- Tag-filtered runs: `./script/e2e-local.sh workflowTest` (whole `@Workflow` suite) or `./script/e2e-local.sh devTest` (just `@Develop`-tagged tests) — both automatically reset the E2E database beforehand.
+- Frontend rebuild for E2E: `./script/e2e-local.sh build-frontend`.
+- Direct Gradle execution (`./gradlew :e2e:test ...`): **Not recommended / strictly avoided** for E2E runs to prevent database state collision with local development.
 
 ## Environment / Build State
 
@@ -271,7 +268,7 @@ Prefer the local docker e2e env (`./script/e2e-local.sh`) over calling `:e2e:tes
 | B5 | Activation rejected → resubmission | `PendingActivation`→(PROVIDER, REQUIREMENTS_NOT_MET)→`ActivationRejected`; `ActivationRejected`→(**USER**, NEW_REQUIREMENTS)→`PendingActivation` | None | Not verified | **Second hop has no PROVIDER-permitted reason.** The only UI control for status changes (Bulk-Edit dropdown) hardcodes `ChangedBy.PROVIDER` and does `permissions[ChangedBy.PROVIDER]!!` — selecting `PendingActivation` as target here will throw `NullPointerException` client-side. See "Blockers" below. | **STOP — ask user** |
 | B6 | Cancellation before activation (both actors) | `PendingActivation`→`Cancelled` (PROVIDER or USER reason) | `CancellationBeforeActivationWorkflowTest.kt` | **Implementation complete AND verification complete** (PROVIDER variant) — full test passes end-to-end | USER-actor status transitions blocked by actor hardcoding in UI | **Done** (provider variant). USER variant remains blocked. |
 | C1 | Pause / resume | `Subscribed`→(**USER**, USER_PAUSED)→`Paused`; `Paused`→(**USER**, RESUME)→`Subscribed` | None | Not verified | **Both hops are USER-only — no PROVIDER permission at all.** No reachable, `data-id`-instrumented UI control exists for either hop (Bulk-Edit hardcodes PROVIDER → crashes; the member-facing `share-subscriptions.personal.list.kt` has no pause/resume action and no `data-id`s at all). | **STOP — ask user** |
-| C2 | Cancel after activation | `Subscribed`→(USER/PROVIDER, USER_CANCEL)→`Cancelled` | None | Not verified | PROVIDER reason exists, so provider-driven cancel is testable | Implementable |
+| C2 | Cancel after activation | `Subscribed`→(USER/PROVIDER, USER_CANCEL)→`Cancelled` | `CancellationAfterActivationWorkflowTest.kt` | **Implementation complete AND verification complete** — full test passes end-to-end | None | **Done.** |
 | C3 | Payment failure / recovery | `Subscribed`→`PaymentFailed`→`Subscribed`/`Suspended`/`Cancelled` | None | Not verified | All reasons here have PROVIDER/SYSTEM permission | Implementable |
 | C4 | Suspension & resolution | `Subscribed`→`Suspended`→`Subscribed`/`ClearedForAuction`/`Cancelled` | None | Not verified | All PROVIDER/SYSTEM-permitted | Implementable |
 | C5 | Invalid actions from terminal/incompatible states | e.g. rollover from `Cancelled` | None | Not verified | `Cancelled`/`RolledOver` have `emptySet()` transitions — worth checking whether the UI disables/rejects these or whether the Bulk-Edit dropdown blindly offers them (same crash class as B5/C1) | Needs UI inspection during implementation |
@@ -450,6 +447,11 @@ issues, ~26s).
 
 One dated entry per work session, newest first, so future sessions don't have to
 re-derive history from git diffs alone.
+
+### 2026-10-28 (E2E Local Environment documentation update)
+
+- Updated progress tracking document to emphasize mandatory usage of `./script/e2e-local.sh` for E2E tests to prevent development database contamination.
+- Added comprehensive section on `e2e-local.sh` lifecycle commands (`build`, `up`, `down`, `test`, `devTest`, `workflowTest`, `filterTest`, `build-frontend`).
 
 ### 2026-10-27 (B4, B6, D2 implementation & status transition refactoring)
 
