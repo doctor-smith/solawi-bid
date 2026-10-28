@@ -94,12 +94,17 @@ abstract class TestDropdown(
      * the dropdown first. By default, the dropdown will close after the selection unless
      * specified otherwise.
      *
+     * If the option is already selected, the function returns without performing any action.
+     *
      * @param option The name of the option to be selected from the dropdown. Must match an entry in the options map.
      * @param closeOnSelect Determines whether the dropdown should close automatically after selecting the option. Defaults to true.
      * @throws IllegalArgumentException If the specified option is not found in the options map.
      */
     open fun select(option: String, closeOnSelect: Boolean = true) {
+
+        if(isSelected(option)) return
         if(!isExpanded()) open()
+
         val optionLocator = options[option]?.invoke()
         requireNotNull(optionLocator)
         assertThat(optionLocator).isVisible()
@@ -109,6 +114,7 @@ abstract class TestDropdown(
         if(isExpanded() && closeOnSelect) close()
     }
 
+    open fun isSelected(option: String): Boolean = trigger().textContent() == option
 
     companion object Builder {
          val option: Locator.(String)-> Pair<String, ()-> Locator> = {item->  item x { getByPartialDataId(".option.$item") }}
@@ -277,6 +283,32 @@ interface TestWorkflow<in S, out T> {
     fun TestUserContext.runWith(input: S): T
 
     fun runWith(input: S): T = context.runWith(input)
+
+    fun <R> map(transform: (T) -> R): TestWorkflow<S, R> = object : TestWorkflow<S, R> {
+        override val context: TestUserContext = this@TestWorkflow.context
+        override fun TestUserContext.runWith(input: S): R = transform(this@TestWorkflow.runWith(input))
+    }
+
+    fun <R> contraMap(transform: (R)->S): TestWorkflow<R, T> = object : TestWorkflow<R, T> {
+        override val context: TestUserContext = this@TestWorkflow.context
+        override fun TestUserContext.runWith(input: R): T = this@TestWorkflow.runWith(transform(input))
+    }
+
+    companion object {
+        /**
+         * Monad Return
+         */
+        fun <S, T> Return(context: TestUserContext, t: T): TestWorkflow<S, T> = object : TestWorkflow<S, T> {
+            override val context: TestUserContext = context
+            override fun TestUserContext.runWith(input: S): T = t
+        }
+
+    }
+}
+
+fun <S, T> TestWorkflow<S, TestWorkflow<S, T>>.multiply(): TestWorkflow<S, T> = object : TestWorkflow<S, T> {
+    override val context: TestUserContext = this@multiply.context
+    override fun TestUserContext.runWith(input: S): T = this@multiply.runWith(input).runWith(input)
 }
 
 infix fun <S, T> Any?.run(workflow: TestWorkflow<S,T>): (S) -> T = {s:S -> workflow.runWith(s)}

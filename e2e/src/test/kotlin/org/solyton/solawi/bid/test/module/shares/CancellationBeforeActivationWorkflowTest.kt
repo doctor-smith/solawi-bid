@@ -4,18 +4,16 @@ import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.module.authentication.service.generateSecurePassword
-import org.solyton.solawi.bid.module.values.*
-import org.solyton.solawi.bid.pageobjects.*
-import org.solyton.solawi.bid.pageobjects.application.dashboard.DashboardPage
-import org.solyton.solawi.bid.pageobjects.module.authentication.LoginPage
-import org.solyton.solawi.bid.pageobjects.shared.NavBar
+import org.solyton.solawi.bid.module.values.Password
+import org.solyton.solawi.bid.module.values.Username
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserInput
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserWorkflow
+import org.solyton.solawi.bid.workflow.banking.FiscalYearPeriod
+import org.solyton.solawi.bid.workflow.shares.*
 
 /**
  * End-to-end coverage for the Share Management module, workflow B6:
@@ -72,30 +70,6 @@ class CancellationBeforeActivationWorkflowTest {
         // 2. Perform workflow as the isolated test user
         withUser(testUser on browser) {
             withFailureDiagnostics("$reportDirectory/user-actions") {
-                val navBar = NavBar(page)
-                val loginPage = LoginPage(page)
-                val dashboardPage = DashboardPage(page)
-                val personalDataPage = PersonalDataPage(page)
-                val organizationManagementPage = OrganizationManagementPage(page)
-                val privateApplicationManagementPage = PrivateApplicationManagementPage(page)
-                val bankingPage = BankingPage(page)
-                val distributionPage = DistributionPage(page)
-                val sharesPage = SharesPage(page)
-
-                // Profile data
-                val title = "Dr."
-                val firstname = Firstname("Jane")
-                val lastname = Lastname("Doe")
-                val phoneNumber = PhoneNumber("0123456789")
-                val mobileNumber = PhoneNumber("0123456789")
-                val recipientName = "Jane Doe"
-                val addressLine1 = "123 Main Street"
-                val addressLine2 = "Apt 2"
-                val city = "Anytown"
-                val postalCode = "12345"
-                val stateOrProvince = "DE-BW"
-                val countryCode = "DE"
-
                 val organizationName = "e2e-shares-org-b6-$suffix"
                 val shareTypeName = "e2e-share-type-b6-$suffix"
                 val shareTypeKey = "key-b6-$suffix"
@@ -103,143 +77,42 @@ class CancellationBeforeActivationWorkflowTest {
                 val fiscalYearKey = "3028"
                 val price = "100"
 
-                // Login
-                loginPage.load()
-                waitForLoadingToFinish()
-                page.clickOn("cookie-disclaimer.modal.submit-button")
-
-                loginPage.login(user)
-                page.waitForURL("**/dashboard")
-
-                // Create profile
-                val personalDataCard = dashboardPage.privateDataCard()
-                assertThat(personalDataCard).isVisible()
-                personalDataCard.click()
-                waitForLoadingToFinish()
-
-                personalDataPage.createProfile(
-                    title, firstname, lastname, phoneNumber, mobileNumber,
-                    recipientName, organizationName, addressLine1, addressLine2,
-                    postalCode, city, countryCode, stateOrProvince
-                )
-                navBar.moveToDashboard()
-
-                // Create organization
-                val organizationCard = dashboardPage.organizationsCard()
-                assertThat(organizationCard).isVisible()
-                organizationCard.click()
-                dismissStrayErrorDialogIfPresent()
-                waitForLoadingToFinish()
-
-                organizationManagementPage.createOrganization(organizationName)
-                waitForLoadingToFinish()
-
-                navBar.moveToDashboard()
-                assertThat(organizationCard).isVisible()
-
-                // Book applications & grant permissions
-                dashboardPage.myAppsLink().click()
-                waitForLoadingToFinish()
-                dismissStrayErrorDialogIfPresent()
-                waitForLoadingToFinish()
-
-                privateApplicationManagementPage.bookApplication("BANKING", organizationName, false)
-                privateApplicationManagementPage.bookApplication("DISTRIBUTION", organizationName, false)
-                privateApplicationManagementPage.bookApplication("SHARE_MANAGEMENT", organizationName, false)
-
-                organizationManagementPage.grantOwnerPermission(organizationName, "BANKING", user.username.value)
-                organizationManagementPage.grantOwnerPermission(organizationName, "DISTRIBUTION", user.username.value)
-                organizationManagementPage.grantOwnerPermission(
-                    organizationName,
-                    "SHARE_MANAGEMENT",
-                    user.username.value
-                )
-
-                // Setup Banking (Legal Entity, Fiscal Year, Creditor & Debtor Bank Account)
-                navBar.moveToDashboard()
-                dashboardPage.bankingOrganizationManagementLink().click()
-                page.navigateToOrganizationApplicationPage("banking", organizationName, false)
-
-                bankingPage.createLegalEntityWithCreditorId(organizationName, "e.V.", "DE98ZZZ09999999999")
-                waitForLoadingToFinish()
-
-                bankingPage.createFiscalYear("$fiscalYearKey-01-01", "$fiscalYearKey-12-31")
-                waitForLoadingToFinish()
-
-                bankingPage.createCreditorBankAccount(
-                    accountHolder = organizationName,
-                    iban = "DE02100100100006820101",
-                    bic = "PBNKDEFFXXX",
-                    description = "e2e-creditor-account"
-                )
-                waitForLoadingToFinish()
-
-                bankingPage.createDebtorBankAccount(
-                    username = user.username.value,
-                    accountHolder = "${firstname.value} ${lastname.value}",
-                    iban = "DE89370400440532013000",
-                    bic = "COBADEFFXXX"
-                )
-                waitForLoadingToFinish()
-
-                // Setup Distribution
-                navBar.moveToDashboard()
-                dashboardPage.distributionOrganizationManagementLink().click()
-
-                page.navigateToOrganizationApplicationPage("distribution", organizationName, false)
-                distributionPage.createDistributionPoint(distributionPointName)
-                waitForLoadingToFinish()
-
-                // Setup Shares
-                navBar.moveToDashboard()
-                dashboardPage.shareManagementOrganizationManagementLink().click()
-                page.navigateToOrganizationApplicationPage("shares", organizationName, false)
-
-                with(sharesPage) {
-                    createShareType(shareTypeName, shareTypeKey, "E2E fixture share type (B6)")
-                    createShareOffer(fiscalYearKey, shareTypeName, price, ahcAuthorizationRequired = false)
-                    waitForLoadingToFinish()
-
-                    // Create Share Subscription (starts PENDING_ACTIVATION)
-                    createShareSubscription(
-                        user.username.value,
-                        "${firstname.value} ${lastname.value}",
-                        fiscalYearKey,
-                        shareTypeName,
-                        distributionPointName,
-                        price,
-                        "1",
-                        true
+                // Setup entire share environment
+                run(SetupShareEnvironmentWorkflow(this)) withInput SetupShareEnvironmentInput(
+                    organizationName = organizationName,
+                    fiscalYears = listOf(FiscalYearPeriod("$fiscalYearKey-01-01", "$fiscalYearKey-12-31")),
+                    distributionPointName = distributionPointName,
+                    shareTypeName = shareTypeName,
+                    shareTypeKey = shareTypeKey,
+                    shareTypeDescription = "E2E fixture share type (B6)",
+                    offers = listOf(
+                        ShareOfferConfig(
+                            fiscalYearKey = fiscalYearKey,
+                            price = price,
+                            ahcAuthorizationRequired = false
+                        )
                     )
-                    waitForLoadingToFinish()
+                )
 
-                    val shareSubscriptions = ShareSubscriptionManagement()
-                    shareSubscriptions.open()
+                // Create Share Subscription (starts PENDING_ACTIVATION)
+                val subscription = run(CreateShareSubscriptionWorkflow(this)) withInput CreateShareSubscriptionInput(
+                    memberName = "Jane Doe",
+                    fiscalYearKey = fiscalYearKey,
+                    shareTypeName = shareTypeName,
+                    distributionPointName = distributionPointName,
+                    price = price,
+                    quantity = "1",
+                    ahcAuthorized = true
+                )
 
-                    // Reset status filter to show all
-                    val statusFilter = SharesPage.ShareSubscriptionManagement.StatusFilter(
-                        locator = shareSubscriptions.locator.getByDataId("shares.page.share-subscription.status-dropdown.wrapper")
-                    )
-                    assertThat(statusFilter).isVisible()
-                    statusFilter.select("All Statuses")
-                    waitForLoadingToFinish()
-                    statusFilter.close()
+                // PendingActivation -> CANCELLED via Bulk Edit
+                val listAfterCancellation = run(BulkChangeSubscriptionStatusWorkflow(this)) withInput BulkChangeSubscriptionStatusInput(
+                    filterStatus = "All Statuses",
+                    newStatus = "CANCELLED"
+                )
 
-                    // PendingActivation -> CANCELLED via Bulk Edit
-                    sharesPage.changeStatusViaBulkEdit("CANCELLED")
-                    waitForLoadingToFinish()
-
-                    statusFilter.select("All Statuses")
-                    waitForLoadingToFinish()
-                    statusFilter.close()
-
-                    val listAfterCancellation = page.getByDataId("shares.page.share-subscription.list")
-                    val cancelledRow = listAfterCancellation.getByText("CANCELLED")
-                    Assertions.assertTrue(
-                        cancelledRow.isVisible,
-                        "The subscription should be in CANCELLED state following cancellation before activation."
-                    )
-                }
+                val cancelledRow = listAfterCancellation.item(subscription.id).getByText("CANCELLED")
+                com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat(cancelledRow).isVisible()
             }
         }
     }

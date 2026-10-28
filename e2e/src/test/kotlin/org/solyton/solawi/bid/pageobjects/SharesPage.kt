@@ -53,11 +53,16 @@ class SharesPage(private val page: Page) {
         fun createNewShareSubscriptionButton(): Locator = locator.getByDataId("$BASE_ID.create-button")
 
         fun selectAllButton(): Locator = locator.getByDataId("$BASE_ID.select-all-checkbox")
-        fun selectAll() {
-            if (!selectAllButton().isChecked) selectAllButton().click()
-        }
         fun deselectAll() {
-            if(selectAllButton().isChecked) selectAllButton().click()
+            if (selectAllButton().isChecked) {
+                selectAllButton().click()
+                assertThat(selectAllButton()).not().isChecked()
+            }
+        }
+        fun selectAll() {
+            deselectAll()
+            selectAllButton().click()
+            assertThat(selectAllButton()).isChecked()
         }
 
         class ListOfShareSubscriptions(
@@ -279,14 +284,17 @@ class SharesPage(private val page: Page) {
      * one field's change callback has fired, so the status dropdown is re-selected to
      * its own current value to trigger it.
      */
-    fun attachSepaMandateToSubscription(): ApiSepaMandate {
-        val sepaMandateButton = page.getByPartialDataId(".attach-or-upsert-sepa-mandate-button")
-            /*
-            page.locator(
-            "[data-id^='shares.page.share-subscription.'][data-id\$='.sepa-mandate-button']"
-        ).first()
+    fun attachSepaMandateToSubscription(): ApiSepaMandate = with(ShareSubscriptionManagement()) {
+        open()
+        val statusFilter = ShareSubscriptionManagement.StatusFilter(
+            locator = locator.getByDataId("shares.page.share-subscription.status-dropdown.wrapper")
+        )
+        if (statusFilter.locator.isVisible) {
+            statusFilter.select("All Statuses")
+            page.waitForLoadingToFinish()
+        }
 
-             */
+        val sepaMandateButton = page.getByPartialDataId(".attach-or-upsert-sepa-mandate-button").first()
         assertThat(sepaMandateButton).isEnabled()
         sepaMandateButton.click()
 
@@ -392,9 +400,7 @@ class SharesPage(private val page: Page) {
         open()
         assertThat(selectAllButton()).isEnabled()
 
-        deselectAll()
         selectAll()
-        assertThat(selectAllButton()).isChecked()
 
         val bulkModal = BulkEditModal(page)
         assertThat(bulkModal.trigger).isEnabled()
@@ -433,9 +439,7 @@ class SharesPage(private val page: Page) {
         open()
         assertThat(selectAllButton()).isEnabled()
 
-        deselectAll()
         selectAll()
-        assertThat(selectAllButton()).isChecked()
 
         val bulkModal = BulkEditModal(page)
         assertThat(bulkModal.trigger).isEnabled()

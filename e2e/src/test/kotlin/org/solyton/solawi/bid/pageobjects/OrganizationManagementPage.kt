@@ -51,7 +51,7 @@ class OrganizationManagementPage(private val page: Page) {
      * (e.g. creating a legal entity), so every role checkbox is checked here; the user
      * will restrict this later once the exact required roles are known.
      */
-    fun grantOwnerPermission(
+    fun grantAllPermissions(
         organizationName: String,
         applicationName: String,
         username: String,
@@ -81,6 +81,45 @@ class OrganizationManagementPage(private val page: Page) {
         for (i in 0 until count) {
             val checkbox = roleCheckboxes.nth(i)
             if (checkbox.isChecked.not()) checkbox.check()
+        }
+
+        val response = page.waitForApi(
+            api = solawiApi,
+            keyOfEndpoint = PutUserRoleContext::class,
+        ) {
+            page.clickOn("null.modal.submit-button")
+        }.decodeBodyTo<UserContext>()
+
+        return response
+    }
+
+    fun grantPermissions(
+        organizationName: String,
+        applicationName: String,
+        username: String,
+        roles: List<String>,
+        hasToNavigate: Boolean = true
+    ): UserContext {
+        if (hasToNavigate) page.navigate("${TestConfig.BASE_URL}/app/management/organizations")
+        page.dismissStrayErrorDialogIfPresent()
+        page.waitForLoadingToFinish()
+
+        page.clickOn("organization-management-page.organization-list.organization.$organizationName.details-button")
+        page.waitForLoadingToFinish()
+        page.dismissStrayErrorDialogIfPresent()
+
+        page.clickOn("organization.page.connected-applications.chevron")
+        page.clickOn("organization.page.connected-applications.$applicationName.manage-permissions-button")
+        page.waitForLoadingToFinish()
+        page.dismissStrayErrorDialogIfPresent()
+
+        page.clickOn("private-application-organization-management.page.member.$username.manage-permissions-button")
+
+        val roleCheckboxes = page.locator("input[type='checkbox'][data-id^='manage-user-permissions.modal.role.']")
+        roleCheckboxes.first().waitFor()
+
+        roles.forEach { role ->
+            page.clickOn("manage-user-permissions.modal.role.$role.checkbox")
         }
 
         val response = page.waitForApi(
