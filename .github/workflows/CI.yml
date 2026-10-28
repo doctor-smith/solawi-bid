@@ -17,6 +17,38 @@ concurrency:
 
 
 jobs:
+  determine-version:
+    name: Determine Application Version
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine Application Version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git fetch origin main --tags
+
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            VERSION="$GITHUB_REF_NAME"
+          elif [[ "$GITHUB_REF" == refs/heads/main ]]; then
+            VERSION=$(git describe --tags --abbrev=0 HEAD)
+          else
+            BASE_COMMIT=$(git merge-base HEAD origin/main)
+            VERSION=$(git describe --tags --abbrev=0 "$BASE_COMMIT")
+          fi
+
+          echo "Application version: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
   detect-changes:
     name: Detect Changes
     runs-on: ubuntu-latest
@@ -285,7 +317,7 @@ jobs:
             echo "$component: build=$BUILD, image=$IMAGE"
           done
   build-Frontend:
-    needs: resolve-images
+    needs: [determine-version,detect-changes, resolve-images]
     if: needs.resolve-images.outputs.frontend_build == 'true'
     name: Build Frontend Docker Image
     runs-on: ubuntu-latest
@@ -307,9 +339,10 @@ jobs:
         with:
           image_name: frontend
           dockerfile_path: infrastructure/docker/Dockerfile-Frontend
+          application_version: ${{ needs.determine-version.outputs.version }}
 
   build-Backend:
-    needs: resolve-images
+    needs: [determine-version,detect-changes, resolve-images]
     if: needs.resolve-images.outputs.backend_build == 'true'
     name: Build Backend Docker Image
     runs-on: ubuntu-latest
@@ -331,6 +364,7 @@ jobs:
         with:
           image_name: backend
           dockerfile_path: infrastructure/docker/Dockerfile-Backend
+          application_version: ${{ needs.determine-version.outputs.version }}
 
   check-e2e-runner-changes:
     needs: detect-changes
@@ -799,7 +833,7 @@ jobs:
     environment: ${{ startsWith(github.ref, 'refs/tags/') && 'Production' || (github.ref == 'refs/heads/main' && 'Staging' || 'Develop') }}
     name: Deploy Application
     runs-on: ubuntu-latest
-    needs: publish-images
+    needs: [publish-images, determine-version]
     outputs:
       frontend_domain: ${{ steps.collect-env-config.outputs.frontend_domain }}
       backend_domain: ${{ steps.collect-env-config.outputs.backend_domain }}
@@ -810,25 +844,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Determine Application Version
-        id: app-version
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          git fetch origin main --tags
-
-          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
-            VERSION="$GITHUB_REF_NAME"
-          elif [[ "$GITHUB_REF" == refs/heads/main ]]; then
-            VERSION=$(git describe --tags --abbrev=0 HEAD)
-          else
-            BASE_COMMIT=$(git merge-base HEAD origin/main)
-            VERSION=$(git describe --tags --abbrev=0 "$BASE_COMMIT")
-          fi
-
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
       - name: collect environment config
         id: collect-env-config
         run: |
@@ -861,7 +876,7 @@ jobs:
       - name: Deploy Application
         uses: ./.github/actions/deploy-application
         with:
-          application_version: ${{ steps.app-version.outputs.version }}
+          application_version: ${{ needs.determine-version.outputs.version }}
           environment: ${{ steps.collect-env-config.outputs.environment }}
           mysql_password: ${{ steps.collect-env-config.outputs.mysql_password }}
           frontend_domain: ${{ steps.collect-env-config.outputs.frontend_domain }}

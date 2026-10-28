@@ -17,6 +17,10 @@ data class Config(
     val BACKEND_PORT: String
 )
 
+private val json = Json {
+    ignoreUnknownKeys = true
+}
+
 /**
  * Retrieves the application environment configuration.
  *
@@ -30,7 +34,7 @@ suspend fun getEnv(): Environment {
     return try {
         val response = window.fetch("/config.json").await()
         val text = response.text().await()
-        val config = Json.decodeFromString<Config>(text)
+        val config = json.decodeFromString<Config>(text)
         Environment(
             set = true,
             type = config.ENVIRONMENT,

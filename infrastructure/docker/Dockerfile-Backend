@@ -63,13 +63,17 @@ FROM eclipse-temurin:17 as production
 WORKDIR /app
 
 ARG GIT_SHA=unknown
+ARG APPLICATION_VERSION=unknown
 
 LABEL org.opencontainers.image.revision="${GIT_SHA}"
+LABEL org.opencontainers.image.version="${APPLICATION_VERSION}"
 
 
 COPY --from=build /build/solawi-bid-backend/build/resources/main/application.env.conf /app/application.conf
 COPY --from=build /build/solawi-bid-backend/build/libs/*-all.jar /app/server.jar
 
-RUN printf '{"commit":"%s"}\n' "$GIT_SHA" > /app/version.json
+RUN printf '{"commit":"%s","version":"%s"}\n' \
+    "$GIT_SHA" "$APPLICATION_VERSION" \
+    > /usr/share/nginx/html/version.json
 
 ENTRYPOINT ["java","-jar","/app/server.jar", "-config=/app/application.conf"]
