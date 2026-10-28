@@ -155,6 +155,7 @@
         cpus: "{{ frontend_cpu | float }}"
         memory: "{{ frontend_mem }}"
         env:
+          APPLICATION_VERSION: "{{ application_version }}"
           ENVIRONMENT: "{{ environment_letter }}"
           FRONTEND_URL: "https://{{ frontend_domain }}"
           FRONTEND_PORT: "443"
@@ -232,6 +233,7 @@
         cpus: "{{ backend_cpu | float }}"
         memory: "{{ backend_mem }}"
         env:
+          APPLICATION_VERSION: "{{ application_version }}"
           KTOR_ENV: "{{ environment_letter }}"
           BACKEND_PORT: "8080"
           JWT_DOMAIN: solawi-bid_backend
