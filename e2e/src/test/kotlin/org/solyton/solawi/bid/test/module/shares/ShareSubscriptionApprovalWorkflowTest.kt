@@ -5,7 +5,6 @@ import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserContext
 import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
-import com.microsoft.playwright.assertions.PlaywrightAssertions
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
@@ -233,7 +232,7 @@ class ShareSubscriptionApprovalWorkflowTest {
 
                 // Member subscription (TEST_USER is automatically a member of the org it
                 // just created) - starts out as PendingActivation.
-                sharesPage.createShareSubscription(
+                val subscription = sharesPage.createShareSubscription(
                     username,
                     "${firstname.value} ${lastname.value}",
                     fiscalYearKey,
@@ -246,22 +245,29 @@ class ShareSubscriptionApprovalWorkflowTest {
 
                 page.waitForLoadingToFinish()
 
-                // set status filter to PENDING_ACTIVATION
-                val statusFilterDropdown = page.getByDataId("shares.page.share-subscription.status-dropdown")
-                statusFilterDropdown.click()
-                val pendingStatusOption = page.getByDataId("shares.page.share-subscription.status-dropdown.option.PENDING_ACTIVATION")
-                pendingStatusOption.click()
-                PlaywrightAssertions.assertThat(pendingStatusOption).not().isVisible()
+                val shareSubscriptionManagement = sharesPage.ShareSubscriptionManagement()
+                shareSubscriptionManagement.open()
 
-                // set ahc authorization filter to No
-                val ahcAuthorizedFilterDropdown = page.getByDataId("shares.page.share-subscription.ahc-authorized-dropdown")
-                ahcAuthorizedFilterDropdown.click()
-                val ahcAuthorizedFilterNoOption = page.getByDataId("shares.page.share-subscription.ahc-authorized-dropdown.option.$CHECK_FALSE")
-                ahcAuthorizedFilterNoOption.click()
-                PlaywrightAssertions.assertThat(ahcAuthorizedFilterNoOption).not().isVisible()
+                val statusFilter = SharesPage.ShareSubscriptionManagement.StatusFilter(
+                    locator = shareSubscriptionManagement.locator.getByDataId("shares.page.share-subscription.status-dropdown.wrapper")
+                )
+                assertThat(statusFilter).isVisible()
+                statusFilter.select("PENDING_ACTIVATION")
+                page.waitForLoadingToFinish()
+                statusFilter.close()
 
-                val shareSubscriptionList = page.getByDataId("shares.page.share-subscription.list")
-                val pendingRow = shareSubscriptionList.getByText("PENDING_ACTIVATION")
+                val ahcAuthFilter = SharesPage.ShareSubscriptionManagement.AhcAuthFilter(
+                    locator = shareSubscriptionManagement.locator.getByDataId("shares.page.share-subscription.ahc-authorized-dropdown.wrapper")
+                )
+                assertThat(ahcAuthFilter).isVisible()
+                ahcAuthFilter.select(CHECK_FALSE)
+                page.waitForLoadingToFinish()
+                ahcAuthFilter.close()
+
+                val listOfSubscriptions = SharesPage.ShareSubscriptionManagement.ListOfShareSubscriptions(
+                    locator = page.getByDataId("shares.page.share-subscription.list")
+                )
+                val pendingRow = listOfSubscriptions.item(subscription.id).getByText("PENDING_ACTIVATION")
                 Assertions.assertTrue(
                     pendingRow.isVisible,
                     "The newly created subscription should start out as PENDING_ACTIVATION."
@@ -272,12 +278,11 @@ class ShareSubscriptionApprovalWorkflowTest {
                 sharesPage.changeStatusViaBulkEdit("SUBSCRIBED")
                 page.waitForLoadingToFinish()
 
-                statusFilterDropdown.click()
-                val subscribedStatusOption = page.getByDataId("shares.page.share-subscription.status-dropdown.option.SUBSCRIBED")
-                subscribedStatusOption.click()
-                PlaywrightAssertions.assertThat(subscribedStatusOption).not().isVisible()
+                statusFilter.select("SUBSCRIBED")
+                page.waitForLoadingToFinish()
+                statusFilter.close()
 
-                val subscribedRow = shareSubscriptionList.getByText("SUBSCRIBED")
+                val subscribedRow = listOfSubscriptions.item(subscription.id).getByText("SUBSCRIBED")
                 Assertions.assertTrue(
                     subscribedRow.isVisible,
                     "The subscription should become SUBSCRIBED after provider approval without a payment mandate."

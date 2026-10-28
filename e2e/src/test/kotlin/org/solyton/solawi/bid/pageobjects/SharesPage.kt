@@ -73,10 +73,14 @@ class SharesPage(private val page: Page) {
             with(locator) { mapOf(
                 option("All Statuses"),
                 option("PENDING_ACTIVATION"),
+                option("CLEARED_FOR_AUCTION"),
                 option("SUBSCRIBED"),
                 option("SUSPENDED"),
                 option("AWAITING_AHC_AUTHORIZATION"),
                 option("ACTIVATION_REJECTED"),
+                option("CANCELLED"),
+                option("ROLLING_OVER"),
+                option("ROLLED_OVER"),
             ) }
         )
 
