@@ -46,3 +46,4 @@ solawi-bid-frontend/src/main/resources/i18n/en.bak
 /infrastructure/database/prod-backup-solawi-bid-202603211726.sql
 /infrastructure/database/solawi-bid-20260501083706.sql
 !/infrastructure/database/setup.sql
+/solawi-bid-frontend/src/main/resources/version.json
