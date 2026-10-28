@@ -203,7 +203,7 @@ class AuctionClearanceWorkflowTest {
                     waitForLoadingToFinish()
 
                     // Create Share Subscription (starts PENDING_ACTIVATION)
-                    createShareSubscription(
+                    val subscription = createShareSubscription(
                         user.username.value,
                         "${firstname.value} ${lastname.value}",
                         fiscalYearKey,
@@ -218,7 +218,6 @@ class AuctionClearanceWorkflowTest {
                     val shareSubscriptions = ShareSubscriptionManagement()
                     shareSubscriptions.open()
 
-                    // Reset status filter to show all
                     val statusFilter = SharesPage.ShareSubscriptionManagement.StatusFilter(
                         locator = shareSubscriptions.locator.getByDataId("shares.page.share-subscription.status-dropdown.wrapper")
                     )
@@ -227,15 +226,22 @@ class AuctionClearanceWorkflowTest {
                     waitForLoadingToFinish()
                     statusFilter.close()
 
+                    val listOfSubscriptions = SharesPage.ShareSubscriptionManagement.ListOfShareSubscriptions(
+                        locator = page.getByDataId("shares.page.share-subscription.list")
+                    )
+
                     // 1. Hop: PendingActivation -> CLEARED_FOR_AUCTION
                     val clearedSubscriptions = sharesPage.changeStatusViaBulkEdit("CLEARED_FOR_AUCTION")
-                    assertTrue{
+                    assertTrue {
                         clearedSubscriptions.all.size == 1
                     }
                     waitForLoadingToFinish()
 
-                    val listAfterAuctionClearance = page.getByDataId("shares.page.share-subscription.list")
-                    val clearedRow = listAfterAuctionClearance.getByText("CLEARED_FOR_AUCTION")
+                    statusFilter.select("All Statuses")
+                    waitForLoadingToFinish()
+                    statusFilter.close()
+
+                    val clearedRow = listOfSubscriptions.item(subscription.id).getByText("CLEARED_FOR_AUCTION")
                     Assertions.assertTrue(
                         clearedRow.isVisible,
                         "The subscription should be in CLEARED_FOR_AUCTION state."
@@ -252,8 +258,7 @@ class AuctionClearanceWorkflowTest {
                     waitForLoadingToFinish()
                     statusFilter.close()
 
-                    val listAfterSubscription = page.getByDataId("shares.page.share-subscription.list")
-                    val subscribedRow = listAfterSubscription.getByText("SUBSCRIBED")
+                    val subscribedRow = listOfSubscriptions.item(subscription.id).getByText("SUBSCRIBED")
                     Assertions.assertTrue(
                         subscribedRow.isVisible,
                         "The subscription should be in SUBSCRIBED state."

@@ -123,8 +123,6 @@ class PaymentMandateAuthorizationWorkflowTest {
                 val fiscalYearKey = "3027"
                 val price = "100"
 
-
-
                 // Login as e2e user
                 loginPage.load()
                 waitForLoadingToFinish()
@@ -159,7 +157,6 @@ class PaymentMandateAuthorizationWorkflowTest {
                 )
 
                 navBar.moveToDashboard()
-
 
                 // Create organization
                 val organizationCard = dashboardPage.organizationsCard()
@@ -253,7 +250,7 @@ class PaymentMandateAuthorizationWorkflowTest {
                 waitForLoadingToFinish()
 
                 // Member subscription - starts out as PendingActivation.
-                sharesPage.createShareSubscription(
+                val subscription = sharesPage.createShareSubscription(
                     user.username.value,
                     "${firstname.value} ${lastname.value}",
                     fiscalYearKey,
@@ -265,16 +262,21 @@ class PaymentMandateAuthorizationWorkflowTest {
                 )
                 waitForLoadingToFinish()
 
+                val shareSubscriptionManagement = sharesPage.ShareSubscriptionManagement()
+                shareSubscriptionManagement.open()
 
-                // set status filter to PENDING_ACTIVATION
-                val statusFilterDropdown = page.getByDataId("shares.page.share-subscription.status-dropdown")
-                statusFilterDropdown.click()
-                val pendingStatusOption = page.getByDataId("shares.page.share-subscription.status-dropdown.option.PENDING_ACTIVATION")
-                pendingStatusOption.click()
-                assertThat(pendingStatusOption).not().isVisible()
+                val statusFilter = SharesPage.ShareSubscriptionManagement.StatusFilter(
+                    locator = shareSubscriptionManagement.locator.getByDataId("shares.page.share-subscription.status-dropdown.wrapper")
+                )
+                assertThat(statusFilter).isVisible()
+                statusFilter.select("PENDING_ACTIVATION")
+                waitForLoadingToFinish()
+                statusFilter.close()
 
-                val shareSubscriptionList = page.getByDataId("shares.page.share-subscription.list")
-                val pendingRow = shareSubscriptionList.getByText("PENDING_ACTIVATION")
+                val listOfSubscriptions = SharesPage.ShareSubscriptionManagement.ListOfShareSubscriptions(
+                    locator = page.getByDataId("shares.page.share-subscription.list")
+                )
+                val pendingRow = listOfSubscriptions.item(subscription.id).getByText("PENDING_ACTIVATION")
                 Assertions.assertTrue(
                     pendingRow.isVisible,
                     "The newly created subscription should start out as PENDING_ACTIVATION."
@@ -285,8 +287,7 @@ class PaymentMandateAuthorizationWorkflowTest {
                 waitForLoadingToFinish()
 
                 // We added just one mandate to the subscription
-                val list = page.getByDataId("shares.page.share-subscription.list")
-                val mandateEntry = list.getByText("$collectionKey / $mandateReferencePrefix")
+                val mandateEntry = listOfSubscriptions.item(subscription.id).getByText("$collectionKey / $mandateReferencePrefix")
                 assertThat(mandateEntry).isVisible()
 
                 // TODO Think about navigating to the related banking page and check
