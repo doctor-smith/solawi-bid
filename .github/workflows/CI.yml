@@ -475,18 +475,21 @@ jobs:
       - name: Debug E2E Environment
         shell: bash
         run: |
-          echo "=== Images ==="
+          echo "=== Expected Images ==="
           echo "Frontend: $FRONTEND_IMAGE"
           echo "Backend:  $BACKEND_IMAGE"
           
-          echo "=== Containers ==="
+          echo "=== Resolved Compose Images ==="
+          docker compose -f docker-compose.e2e.yml config --images
+          
+          echo "=== Running Containers ==="
           docker compose -f docker-compose.e2e.yml ps
           
-          echo "=== Frontend response ==="
-          curl -v http://localhost:3000/login || true
+          echo "=== Frontend Response ==="
+          curl -fsSI http://localhost:8080/login || true
           
-          echo "=== Container logs ==="
-          docker compose -f docker-compose.e2e.yml logs --tail=100
+          echo "=== Container Logs ==="
+          docker compose -f docker-compose.e2e.yml logs --tail=50
 
       # Dump logs on failure
       - name: Dump container logs on failure
