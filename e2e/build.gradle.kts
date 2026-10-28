@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import java.util.*
 
 
@@ -43,9 +44,6 @@ tasks.register<JavaExec>("playwright") {
 
 tasks.test {
     useJUnitPlatform()
-    testLogging {
-        events("passed", "skipped", "failed")
-    }
     reports {
         junitXml.required.set(true)
         html.required.set(true)
@@ -76,6 +74,93 @@ val localProps = Properties().apply {
 }
 
 tasks.withType<Test>().configureEach {
+    testLogging {
+        events()
+        exceptionFormat = TestExceptionFormat.FULL
+        showExceptions = true
+        showCauses = true
+        showStackTraces = true
+    }
+
+    val ansiReset = "\u001B[0m"
+    val ansiGreen = "\u001B[32m"
+    val ansiRed = "\u001B[31m"
+    val ansiYellow = "\u001B[33m"
+    val ansiCyan = "\u001B[36m"
+    val ansiBold = "\u001B[1m"
+    val ansiDim = "\u001B[2m"
+
+    val failedTestDetails = mutableListOf<Pair<String, String>>()
+    var suiteStartTime = 0L
+
+    addTestListener(object : TestListener {
+        override fun beforeSuite(suite: TestDescriptor) {
+            if (suite.parent == null) {
+                suiteStartTime = System.currentTimeMillis()
+                failedTestDetails.clear()
+                logger.lifecycle("\n${ansiBold}${ansiCyan}► Executing test suite: :${project.name}:${name}${ansiReset}\n")
+            }
+        }
+
+        override fun afterSuite(suite: TestDescriptor, result: TestResult) {
+            if (suite.parent == null) {
+                val totalDuration = (System.currentTimeMillis() - suiteStartTime) / 1000.0
+                val passedStr = "${ansiGreen}${result.successfulTestCount} PASSED${ansiReset}"
+                val failedStr = if (result.failedTestCount > 0) "${ansiRed}${result.failedTestCount} FAILED${ansiReset}" else "0 FAILED"
+                val skippedStr = if (result.skippedTestCount > 0) "${ansiYellow}${result.skippedTestCount} SKIPPED${ansiReset}" else "0 SKIPPED"
+
+                logger.lifecycle("")
+                logger.lifecycle("${ansiBold}================================================================================${ansiReset}")
+                logger.lifecycle("${ansiBold} TEST RESULTS SUMMARY: :${project.name}:${name}${ansiReset}")
+                logger.lifecycle("--------------------------------------------------------------------------------")
+                logger.lifecycle(" Total Tests : ${result.testCount}")
+                logger.lifecycle(" Results     : $passedStr | $failedStr | $skippedStr")
+                logger.lifecycle(" Total Time  : ${String.format(Locale.US, "%.2f", totalDuration)}s")
+
+                if (failedTestDetails.isNotEmpty()) {
+                    logger.lifecycle("--------------------------------------------------------------------------------")
+                    logger.lifecycle("${ansiRed}${ansiBold} FAILED TESTS (${failedTestDetails.size}):${ansiReset}")
+                    failedTestDetails.forEach { (testName, reason) ->
+                        logger.lifecycle("   ${ansiRed}✘${ansiReset} ${ansiBold}$testName${ansiReset}")
+                        logger.lifecycle("     ${ansiRed}Reason:${ansiReset} $reason")
+                    }
+                }
+                logger.lifecycle("${ansiBold}================================================================================${ansiReset}\n")
+            }
+        }
+
+        override fun beforeTest(testDescriptor: TestDescriptor) {
+        }
+
+        override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) {
+            val durationMs = result.endTime - result.startTime
+            val durationStr = if (durationMs >= 1000) {
+                String.format(Locale.US, "%.2fs", durationMs / 1000.0)
+            } else {
+                "${durationMs}ms"
+            }
+
+            val statusSymbol = when (result.resultType) {
+                TestResult.ResultType.SUCCESS -> "${ansiGreen}✔ PASSED${ansiReset}"
+                TestResult.ResultType.FAILURE -> "${ansiRed}✘ FAILED${ansiReset}"
+                TestResult.ResultType.SKIPPED -> "${ansiYellow}⊘ SKIPPED${ansiReset}"
+                else -> result.resultType.name
+            }
+
+            val className = testDescriptor.className?.substringAfterLast('.') ?: testDescriptor.className ?: ""
+            val testName = testDescriptor.displayName ?: testDescriptor.name
+
+            logger.lifecycle("  $statusSymbol  ${ansiDim}[${durationStr}]${ansiReset} ${ansiBold}$className${ansiReset} > $testName")
+
+            if (result.resultType == TestResult.ResultType.FAILURE) {
+                val fullTestName = "${testDescriptor.className} > ${testDescriptor.name}"
+                val cause = result.exception?.message?.lines()?.firstOrNull() ?: "Unknown error"
+                failedTestDetails.add(fullTestName to cause)
+                logger.lifecycle("     ${ansiRed}└─ Reason: $cause${ansiReset}")
+            }
+        }
+    })
+
     // Only set if not already provided by the shell / CI
     // E2E_RESET_DB opts into a full local database reset before the first test,
     // see DbReset.kt/DbResetExtension.kt; script/e2e-local.sh sets it automatically.

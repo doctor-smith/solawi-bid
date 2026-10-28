@@ -86,8 +86,10 @@ maybe_reset_db() {
   fi
 }
 
-status_browsers() {
-// ... existing code ...
+reset_db() {
+  echo "==> Resetting E2E database (recreating $DB_SERVICE and $BACKEND_SERVICE from a clean state)"
+  docker compose -f "$COMPOSE_FILE" rm -fsv "$BACKEND_SERVICE" "$DB_SERVICE"
+  docker compose -f "$COMPOSE_FILE" up -d --wait "$DB_SERVICE" "$BACKEND_SERVICE"
   echo "==> Database reset complete"
 }
 
