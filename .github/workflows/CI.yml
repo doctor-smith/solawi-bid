@@ -597,7 +597,28 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Determine Application Version
+        id: app-version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git fetch origin main --tags
+
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            VERSION="$GITHUB_REF_NAME"
+          elif [[ "$GITHUB_REF" == refs/heads/main ]]; then
+            VERSION=$(git describe --tags --abbrev=0 HEAD)
+          else
+            BASE_COMMIT=$(git merge-base HEAD origin/main)
+            VERSION=$(git describe --tags --abbrev=0 "$BASE_COMMIT")
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: collect environment config
         id: collect-env-config
         run: |
@@ -630,6 +651,7 @@ jobs:
       - name: Deploy Application
         uses: ./.github/actions/deploy-application
         with:
+          application_version: ${{ steps.app-version.outputs.version }}
           environment: ${{ steps.collect-env-config.outputs.environment }}
           mysql_password: ${{ steps.collect-env-config.outputs.mysql_password }}
           frontend_domain: ${{ steps.collect-env-config.outputs.frontend_domain }}
@@ -648,7 +670,7 @@ jobs:
 
   smoke-tests:
     name: Smoke Tests
-    needs: deploy
+    needs: [deploy, publish-images]
     if: ${{ needs.deploy.result == 'success' }}
     runs-on: ubuntu-latest
 
@@ -665,9 +687,10 @@ jobs:
 
       - name: Run smoke tests
         env:
+          FRONTEND_IMAGE: ${{ needs.publish-images.outputs.frontend }}
           E2E_BASE_URL: https://${{ needs.deploy.outputs.frontend_domain }}
           TEST_USER: ${{ vars.TEST_USER }}
-          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          TEST_USER_PASSWORD: ${{ secrets[format('SMOKE_TEST_USER_PASSWORD_{0}', needs.deploy.outputs.environment)] }}
           PARALLEL_TESTS: false # ${{ vars.PARALLEL_E2E_TESTS }}
           NUMBER_OF_WORKERS: 1 # ${{ vars.NUMBER_OF_E2E_WORKERS }}
         run: |

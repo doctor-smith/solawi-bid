@@ -2,6 +2,9 @@ name: build-and-push-docker
 description: Build Docker images
 
 inputs:
+  application_version:
+    description: 'Application version determined from Git tags'
+    required: true
   environment:
     description: 'Deployment environment (e.g., D, Q, P)'
     required: true
@@ -75,6 +78,7 @@ runs:
         -i ${{ inputs.server_address }}, \
         -u ${{ inputs.server_user }} \
         --private-key server_key.pem \
+        -e 'application_version=${{ inputs.application_version }}' \
         -e 'environment_letter=${{ inputs.environment }}' \
         -e 'mysql_password=${{ inputs.mysql_password }}' \
         -e 'backend_image_name=${{ inputs.backend_image_name }}' \

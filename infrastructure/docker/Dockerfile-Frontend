@@ -50,6 +50,13 @@ RUN mkdir -p /test-results && \
 # ---- Final Stage ----
 FROM nginx:1-alpine as production
 
+ARG GIT_SHA=unknown
+
+LABEL org.opencontainers.image.revision="${GIT_SHA}"
+
+RUN printf '{"commit":"%s"}\n' "$GIT_SHA" \
+    > /usr/share/nginx/html/version.json
+
 ENV ENVIRONMENT="D"
 ENV FRONTEND_URL="http://localhost"
 ENV FRONTEND_PORT="8080"
@@ -67,7 +74,7 @@ CMD ["sh", "-c", "\
      ls -la /usr/share/nginx/html >&2; \
      exit 1; \
   fi; \
-  envsubst '$ENVIRONMENT $FRONTEND_URL $FRONTEND_PORT $BACKEND_URL $BACKEND_PORT' \
+  envsubst '$ENVIRONMENT $FRONTEND_URL $FRONTEND_PORT $BACKEND_URL $BACKEND_PORT $APPLICATION_VERSION' \
     < \"$TEMPLATE\" > /usr/share/nginx/html/config.json; \
   echo 'Generated config.json:'; cat /usr/share/nginx/html/config.json; \
   exec nginx -g 'daemon off;'"]

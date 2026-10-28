@@ -62,6 +62,12 @@ FROM eclipse-temurin:17 as production
 
 WORKDIR /app
 
+ARG GIT_SHA=unknown
+
+LABEL org.opencontainers.image.revision="${GIT_SHA}"
+
+RUN printf '{"commit":"%s"}\n' "$GIT_SHA" > /app/version.json
+
 COPY --from=build /build/solawi-bid-backend/build/resources/main/application.env.conf /app/application.conf
 COPY --from=build /build/solawi-bid-backend/build/libs/*-all.jar /app/server.jar
 

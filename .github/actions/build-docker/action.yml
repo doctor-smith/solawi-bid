@@ -111,6 +111,8 @@ runs:
         target: production
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        build-args: |
+          GIT_SHA=${{ github.sha }}
         outputs: type=docker,dest=docker_image_${{ inputs.image_name }}.tar
         cache-from: type=gha
         cache-to: type=gha,mode=max
