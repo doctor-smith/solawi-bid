@@ -640,3 +640,27 @@ jobs:
           smtp_password: ${{ secrets.SMTP_PASSWORD }}
           ghcr_pat: ${{ secrets.GHCR_PAT }}
           ghcr_user: ${{ github.actor }}
+
+  smoke-tests:
+    name: Smoke Tests (deployed environment)
+    needs: deploy
+    if: ${{ needs.deploy.result == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Wait for deployment readiness
+        env:
+          APP_URL: ${{ vars.DEPLOY_URL }}
+        run: |
+          for i in {1..30}; do
+            if curl --fail --silent --output /dev/null "$APP_URL"; then
+              echo "Application is reachable"
+              exit 0
+            fi
+
+            echo "Waiting for application..."
+            sleep 5
+          done
+
+          echo "Application did not become ready"
+          exit 1
