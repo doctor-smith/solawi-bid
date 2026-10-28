@@ -37,10 +37,30 @@ class TestUtils {
         context.use { context ->
             val page = context.newPage()
 
+            page.onConsoleMessage { message ->
+                if (message.type() == "error") {
+                    println("BROWSER ERROR: ${message.text()}")
+                }
+            }
+
+            page.onPageError { error ->
+                println("JAVASCRIPT ERROR: ${error.message}")
+            }
+
+
+
+
             val user = System.getenv("TEST_USER")
             val password = System.getenv("TEST_USER_PASSWORD")
 
             page.navigate("${TestConfig.BASE_URL}/login")
+
+            println("DEBUG URL: ${page.url()}")
+            println("DEBUG BODY: ${page.locator("body").innerText()}")
+            println("DEBUG LOGIN INPUT: ${page.getByDataId("login-form.input.username").count()}")
+            println("DEBUG COOKIE BUTTON: ${page.getByDataId("cookie-disclaimer.modal.submit-button").count()}")
+
+
             page.clickOn("cookie-disclaimer.modal.submit-button")
             /*
             page.clickIfPresent(
