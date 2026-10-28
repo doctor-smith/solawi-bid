@@ -4,20 +4,16 @@ import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.module.authentication.service.generateSecurePassword
-import org.solyton.solawi.bid.module.shares.data.api.ShareStatus
-import org.solyton.solawi.bid.module.values.*
-import org.solyton.solawi.bid.pageobjects.*
-import org.solyton.solawi.bid.pageobjects.application.dashboard.DashboardPage
-import org.solyton.solawi.bid.pageobjects.module.authentication.LoginPage
-import org.solyton.solawi.bid.pageobjects.shared.NavBar
+import org.solyton.solawi.bid.module.values.Password
+import org.solyton.solawi.bid.module.values.Username
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserInput
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserWorkflow
+import org.solyton.solawi.bid.workflow.banking.FiscalYearPeriod
+import org.solyton.solawi.bid.workflow.shares.*
 
 /**
  * End-to-end coverage for the Share Management module, workflow C2:
@@ -74,30 +70,6 @@ class CancellationAfterActivationWorkflowTest {
         // 2. Perform workflow as the isolated test user
         withUser(testUser on browser) {
             withFailureDiagnostics("$reportDirectory/user-actions") {
-                val navBar = NavBar(page)
-                val loginPage = LoginPage(page)
-                val dashboardPage = DashboardPage(page)
-                val personalDataPage = PersonalDataPage(page)
-                val organizationManagementPage = OrganizationManagementPage(page)
-                val privateApplicationManagementPage = PrivateApplicationManagementPage(page)
-                val bankingPage = BankingPage(page)
-                val distributionPage = DistributionPage(page)
-                val sharesPage = SharesPage(page)
-
-                // Profile data
-                val title = "Dr."
-                val firstname = Firstname("Jane")
-                val lastname = Lastname("Doe")
-                val phoneNumber = PhoneNumber("0123456789")
-                val mobileNumber = PhoneNumber("0123456789")
-                val recipientName = "Jane Doe"
-                val addressLine1 = "123 Main Street"
-                val addressLine2 = "Apt 2"
-                val city = "Anytown"
-                val postalCode = "12345"
-                val stateOrProvince = "DE-BW"
-                val countryCode = "DE"
-
                 val organizationName = "e2e-shares-org-c2-$suffix"
                 val shareTypeName = "e2e-share-type-c2-$suffix"
                 val shareTypeKey = "key-c2-$suffix"
@@ -105,161 +77,51 @@ class CancellationAfterActivationWorkflowTest {
                 val fiscalYearKey = "3028"
                 val price = "100"
 
-                // Login
-                loginPage.load()
-                waitForLoadingToFinish()
-                page.clickOn("cookie-disclaimer.modal.submit-button")
-
-                loginPage.login(user)
-                page.waitForURL("**/dashboard")
-
-                // Create profile
-                val personalDataCard = dashboardPage.privateDataCard()
-                assertThat(personalDataCard).isVisible()
-                personalDataCard.click()
-                waitForLoadingToFinish()
-
-                personalDataPage.createProfile(
-                    title, firstname, lastname, phoneNumber, mobileNumber,
-                    recipientName, organizationName, addressLine1, addressLine2,
-                    postalCode, city, countryCode, stateOrProvince
-                )
-                navBar.moveToDashboard()
-
-                // Create organization
-                val organizationCard = dashboardPage.organizationsCard()
-                assertThat(organizationCard).isVisible()
-                organizationCard.click()
-                dismissStrayErrorDialogIfPresent()
-                waitForLoadingToFinish()
-
-                organizationManagementPage.createOrganization(organizationName)
-                waitForLoadingToFinish()
-
-                navBar.moveToDashboard()
-                assertThat(organizationCard).isVisible()
-
-                // Book applications & grant permissions
-                dashboardPage.myAppsLink().click()
-                waitForLoadingToFinish()
-                dismissStrayErrorDialogIfPresent()
-                waitForLoadingToFinish()
-
-                privateApplicationManagementPage.bookApplication("BANKING", organizationName, false)
-                privateApplicationManagementPage.bookApplication("DISTRIBUTION", organizationName, false)
-                privateApplicationManagementPage.bookApplication("SHARE_MANAGEMENT", organizationName, false)
-
-                organizationManagementPage.grantOwnerPermission(organizationName, "BANKING", user.username.value)
-                organizationManagementPage.grantOwnerPermission(organizationName, "DISTRIBUTION", user.username.value)
-                organizationManagementPage.grantOwnerPermission(
-                    organizationName,
-                    "SHARE_MANAGEMENT",
-                    user.username.value
+                // Setup entire share environment
+                run(SetupShareEnvironmentWorkflow(this)) withInput SetupShareEnvironmentInput(
+                    organizationName = organizationName,
+                    fiscalYears = listOf(FiscalYearPeriod("$fiscalYearKey-01-01", "$fiscalYearKey-12-31")),
+                    distributionPointName = distributionPointName,
+                    shareTypeName = shareTypeName,
+                    shareTypeKey = shareTypeKey,
+                    shareTypeDescription = "E2E fixture share type (C2)",
+                    offers = listOf(
+                        ShareOfferConfig(
+                            fiscalYearKey = fiscalYearKey,
+                            price = price,
+                            ahcAuthorizationRequired = false
+                        )
+                    )
                 )
 
-                // Setup Banking
-                navBar.moveToDashboard()
-                dashboardPage.bankingOrganizationManagementLink().click()
-                page.navigateToOrganizationApplicationPage("banking", organizationName, false)
-
-                bankingPage.createLegalEntityWithCreditorId(organizationName, "e.V.", "DE98ZZZ09999999999")
-                waitForLoadingToFinish()
-
-                bankingPage.createFiscalYear("$fiscalYearKey-01-01", "$fiscalYearKey-12-31")
-                waitForLoadingToFinish()
-
-                bankingPage.createCreditorBankAccount(
-                    accountHolder = organizationName,
-                    iban = "DE02100100100006820101",
-                    bic = "PBNKDEFFXXX",
-                    description = "e2e-creditor-account"
+                // Create Share Subscription (starts PENDING_ACTIVATION)
+                val subscription = run(CreateShareSubscriptionWorkflow(this)) withInput CreateShareSubscriptionInput(
+                    memberName = "Jane Doe",
+                    fiscalYearKey = fiscalYearKey,
+                    shareTypeName = shareTypeName,
+                    distributionPointName = distributionPointName,
+                    price = price,
+                    quantity = "1",
+                    ahcAuthorized = true
                 )
-                waitForLoadingToFinish()
 
-                bankingPage.createDebtorBankAccount(
-                    username = user.username.value,
-                    accountHolder = "${firstname.value} ${lastname.value}",
-                    iban = "DE89370400440532013000",
-                    bic = "COBADEFFXXX"
+                // Step 1: Provider approves pending subscription -> SUBSCRIBED
+                val subscribedList = run(BulkChangeSubscriptionStatusWorkflow(this)) withInput BulkChangeSubscriptionStatusInput(
+                    filterStatus = "All Statuses",
+                    newStatus = "SUBSCRIBED"
                 )
-                waitForLoadingToFinish()
 
-                // Setup Distribution
-                navBar.moveToDashboard()
-                dashboardPage.distributionOrganizationManagementLink().click()
+                val subscribedRow = subscribedList.item(subscription.id).getByText("SUBSCRIBED")
+                com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat(subscribedRow).isVisible()
 
-                page.navigateToOrganizationApplicationPage("distribution", organizationName, false)
-                distributionPage.createDistributionPoint(distributionPointName)
-                waitForLoadingToFinish()
+                // Step 2: Provider cancels active subscription -> CANCELLED
+                val cancelledList = run(BulkChangeSubscriptionStatusWorkflow(this)) withInput BulkChangeSubscriptionStatusInput(
+                    filterStatus = "All Statuses",
+                    newStatus = "CANCELLED"
+                )
 
-                // Setup Shares
-                navBar.moveToDashboard()
-                dashboardPage.shareManagementOrganizationManagementLink().click()
-                page.navigateToOrganizationApplicationPage("shares", organizationName, false)
-
-                with(sharesPage) {
-                    createShareType(shareTypeName, shareTypeKey, "E2E fixture share type (C2)")
-                    createShareOffer(fiscalYearKey, shareTypeName, price, ahcAuthorizationRequired = false)
-                    waitForLoadingToFinish()
-
-                    // Create Share Subscription (starts PENDING_ACTIVATION)
-                    val subscription = createShareSubscription(
-                        user.username.value,
-                        "${firstname.value} ${lastname.value}",
-                        fiscalYearKey,
-                        shareTypeName,
-                        distributionPointName,
-                        price,
-                        "1",
-                        true
-                    )
-                    waitForLoadingToFinish()
-
-                    val shareSubscriptions = ShareSubscriptionManagement()
-                    shareSubscriptions.open()
-
-                    val statusFilter = SharesPage.ShareSubscriptionManagement.StatusFilter(
-                        locator = shareSubscriptions.locator.getByDataId("shares.page.share-subscription.status-dropdown.wrapper")
-                    )
-                    assertThat(statusFilter).isVisible()
-                    statusFilter.select("All Statuses")
-                    waitForLoadingToFinish()
-                    statusFilter.close()
-
-                    val listOfSubscriptions = SharesPage.ShareSubscriptionManagement.ListOfShareSubscriptions(
-                        locator = page.getByDataId("shares.page.share-subscription.list")
-                    )
-
-                    // Step 1: Provider approves pending subscription -> SUBSCRIBED
-                    val updatedStatusSubscribed = changeStatusViaBulkEdit("SUBSCRIBED")
-                    assertEquals(ShareStatus.Subscribed, updatedStatusSubscribed.all.first().status)
-                    waitForLoadingToFinish()
-
-                    statusFilter.select("All Statuses")
-                    waitForLoadingToFinish()
-                    statusFilter.close()
-
-                    val subscribedRow = listOfSubscriptions.item(subscription.id).getByText("SUBSCRIBED")
-                    assertTrue(
-                        subscribedRow.isVisible,
-                        "The subscription should be in SUBSCRIBED state."
-                    )
-
-                    // Step 2: Provider cancels active subscription -> CANCELLED
-                    val updatedStatusCancelled = changeStatusViaBulkEdit("CANCELLED")
-                    assertEquals(ShareStatus.Cancelled, updatedStatusCancelled.all.first().status)
-                    waitForLoadingToFinish()
-
-                    statusFilter.select("All Statuses")
-                    waitForLoadingToFinish()
-                    statusFilter.close()
-
-                    val cancelledRow = listOfSubscriptions.item(subscription.id).getByText("CANCELLED")
-                    assertTrue(
-                        cancelledRow.isVisible,
-                        "The subscription should be in CANCELLED state following cancellation after activation."
-                    )
-                }
+                val cancelledRow = cancelledList.item(subscription.id).getByText("CANCELLED")
+                com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat(cancelledRow).isVisible()
             }
         }
     }

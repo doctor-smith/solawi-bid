@@ -4,19 +4,16 @@ import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.module.authentication.service.generateSecurePassword
-import org.solyton.solawi.bid.module.values.*
-import org.solyton.solawi.bid.pageobjects.*
-import org.solyton.solawi.bid.pageobjects.application.dashboard.DashboardPage
-import org.solyton.solawi.bid.pageobjects.module.authentication.LoginPage
-import org.solyton.solawi.bid.pageobjects.shared.NavBar
+import org.solyton.solawi.bid.module.values.Password
+import org.solyton.solawi.bid.module.values.Username
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserInput
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserWorkflow
+import org.solyton.solawi.bid.workflow.banking.FiscalYearPeriod
+import org.solyton.solawi.bid.workflow.shares.*
 
 /**
  * End-to-end coverage for the Share Management module, workflow B3 from
@@ -72,211 +69,66 @@ class FailedAuthorizationWorkflowTest {
         }
 
         // 2. Perform workflow as the isolated test user
-        withUser(testUser on browser) {
+        withUser<Unit>(testUser on browser) {
             withFailureDiagnostics("$reportDirectory/user-actions") {
-                val navBar = NavBar(page)
-                val loginPage = LoginPage(page)
-                val dashboardPage = DashboardPage(page)
-                val personalDataPage = PersonalDataPage(page)
-                val organizationManagementPage = OrganizationManagementPage(page)
-                val privateApplicationManagementPage = PrivateApplicationManagementPage(page)
-                val bankingPage = BankingPage(page)
-                val distributionPage = DistributionPage(page)
-                val sharesPage = SharesPage(page)
-
-                // Profile data
-                val title = "Dr."
-                val firstname = Firstname("Jane")
-                val lastname = Lastname("Doe")
-                val phoneNumber = PhoneNumber("0123456789")
-                val mobileNumber = PhoneNumber("0123456789")
-                val recipientName = "Jane Doe"
-                val addressLine1 = "123 Main Street"
-                val addressLine2 = "Apt 2"
-                val city = "Anytown"
-                val postalCode = "12345"
-                val stateOrProvince = "DE-BW"
-                val countryCode = "DE"
-
                 val organizationName = "e2e-shares-org-b3-$suffix"
                 val shareTypeName = "e2e-share-type-b3-$suffix"
                 val shareTypeKey = "key-b3-$suffix"
                 val distributionPointName = "e2e-dp-b3-$suffix"
                 val fiscalYearKey = "3028"
                 val price = "120"
+                val collectionKey = "B3-$suffix"
+                val mandateReferencePrefix = "B3"
 
-                // Login
-                loginPage.load()
-                waitForLoadingToFinish()
-                page.clickOn("cookie-disclaimer.modal.submit-button")
-
-                loginPage.login(user)
-                page.waitForURL("**/dashboard")
-
-                // Create profile
-                val personalDataCard = dashboardPage.privateDataCard()
-                assertThat(personalDataCard).isVisible()
-                personalDataCard.click()
-                waitForLoadingToFinish()
-
-                personalDataPage.createProfile(
-                    title, firstname, lastname, phoneNumber, mobileNumber,
-                    recipientName, organizationName, addressLine1, addressLine2,
-                    postalCode, city, countryCode, stateOrProvince
-                )
-                navBar.moveToDashboard()
-
-                // Create organization
-                val organizationCard = dashboardPage.organizationsCard()
-                assertThat(organizationCard).isVisible()
-                organizationCard.click()
-                dismissStrayErrorDialogIfPresent()
-                waitForLoadingToFinish()
-
-                organizationManagementPage.createOrganization(organizationName)
-                waitForLoadingToFinish()
-
-                navBar.moveToDashboard()
-                assertThat(organizationCard).isVisible()
-
-                // Book applications & grant permissions
-                dashboardPage.myAppsLink().click()
-                waitForLoadingToFinish()
-                dismissStrayErrorDialogIfPresent()
-                waitForLoadingToFinish()
-
-                privateApplicationManagementPage.bookApplication("BANKING", organizationName, false)
-                privateApplicationManagementPage.bookApplication("DISTRIBUTION", organizationName, false)
-                privateApplicationManagementPage.bookApplication("SHARE_MANAGEMENT", organizationName, false)
-
-                organizationManagementPage.grantOwnerPermission(organizationName, "BANKING", user.username.value)
-                organizationManagementPage.grantOwnerPermission(organizationName, "DISTRIBUTION", user.username.value)
-                organizationManagementPage.grantOwnerPermission(
-                    organizationName,
-                    "SHARE_MANAGEMENT",
-                    user.username.value
+                // Setup entire share environment (offer with SEPA collection requiring AHC authorization)
+                run(SetupShareEnvironmentWorkflow(this)) withInput SetupShareEnvironmentInput(
+                    organizationName = organizationName,
+                    fiscalYears = listOf(FiscalYearPeriod("$fiscalYearKey-01-01", "$fiscalYearKey-12-31")),
+                    distributionPointName = distributionPointName,
+                    shareTypeName = shareTypeName,
+                    shareTypeKey = shareTypeKey,
+                    shareTypeDescription = "E2E fixture share type (B3)",
+                    offers = listOf(
+                        ShareOfferConfig(
+                            fiscalYearKey = fiscalYearKey,
+                            price = price,
+                            ahcAuthorizationRequired = true,
+                            sepaCollectionConfig = SepaCollectionConfig(
+                                collectionKey = collectionKey,
+                                mandateReferencePrefix = mandateReferencePrefix,
+                                remittanceInformation = "E2E fixture collection (B3)"
+                            )
+                        )
+                    )
                 )
 
-                // Setup Banking (Legal Entity, Fiscal Year, Creditor & Debtor Bank Account)
-                navBar.moveToDashboard()
-                dashboardPage.bankingOrganizationManagementLink().click()
-                page.navigateToOrganizationApplicationPage("banking", organizationName, false)
-
-                bankingPage.createLegalEntityWithCreditorId(organizationName, "e.V.", "DE98ZZZ09999999999")
-                waitForLoadingToFinish()
-
-                bankingPage.createFiscalYear("$fiscalYearKey-01-01", "$fiscalYearKey-12-31")
-                waitForLoadingToFinish()
-
-                bankingPage.createCreditorBankAccount(
-                    accountHolder = organizationName,
-                    iban = "DE02100100100006820101",
-                    bic = "PBNKDEFFXXX",
-                    description = "e2e-creditor-account"
+                // Create Share Subscription with SEPA Mandate attached
+                run(CreateShareSubscriptionWorkflow(this)) withInput CreateShareSubscriptionInput(
+                    memberName = "Jane Doe",
+                    fiscalYearKey = fiscalYearKey,
+                    shareTypeName = shareTypeName,
+                    distributionPointName = distributionPointName,
+                    price = price,
+                    quantity = "1",
+                    ahcAuthorized = true,
+                    attachSepaMandate = true
                 )
-                waitForLoadingToFinish()
 
-                bankingPage.createDebtorBankAccount(
-                    username = user.username.value,
-                    accountHolder = "${firstname.value} ${lastname.value}",
-                    iban = "DE89370400440532013000",
-                    bic = "COBADEFFXXX"
+                // Transition to AWAITING_AHC_AUTHORIZATION
+                val awaitingList = run(BulkChangeSubscriptionStatusWorkflow(this)) withInput BulkChangeSubscriptionStatusInput(
+                    filterStatus = "All Statuses",
+                    newStatus = "AWAITING_AHC_AUTHORIZATION"
                 )
-                waitForLoadingToFinish()
+                val waitingForAuthorizationRow = awaitingList.locator.getByText("AWAITING_AHC_AUTHORIZATION")
+                com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat(waitingForAuthorizationRow).isVisible()
 
-                // Setup Distribution
-                navBar.moveToDashboard()
-                dashboardPage.distributionOrganizationManagementLink().click()
-
-                page.navigateToOrganizationApplicationPage("distribution", organizationName, false)
-                distributionPage.createDistributionPoint(distributionPointName)
-                waitForLoadingToFinish()
-
-                // Setup Shares: Offer requiring SEPA mandate
-                navBar.moveToDashboard()
-                dashboardPage.shareManagementOrganizationManagementLink().click()
-                page.navigateToOrganizationApplicationPage("shares", organizationName, false)
-
-                with(sharesPage) {
-                    createShareType(shareTypeName, shareTypeKey, "E2E fixture share type (B3)")
-                    val shareOffer = createShareOffer(fiscalYearKey, shareTypeName, price, ahcAuthorizationRequired = true)
-
-                    val collectionKey = "B3-$suffix"
-                    val mandateReferencePrefix = "B3"
-
-                    attachSepaCollectionToOffer(
-                        shareOffer = shareOffer,
-                        creditorAccountHolder = organizationName,
-                        creditorAccountDescription = "e2e-creditor-account",
-                        collectionKey = collectionKey,
-                        mandateReferencePrefix = mandateReferencePrefix,
-                        remittanceInformation = "E2E fixture collection (B3)"
-                    )
-                    waitForLoadingToFinish()
-
-                    // Create Share Subscription
-                    createShareSubscription(
-                        user.username.value,
-                        "${firstname.value} ${lastname.value}",
-                        fiscalYearKey,
-                        shareTypeName,
-                        distributionPointName,
-                        price,
-                        "1",
-                        true
-                    )
-                    waitForLoadingToFinish()
-
-                    val shareSubscriptions = ShareSubscriptionManagement()
-                    shareSubscriptions.open()
-
-
-                    val statusFilter = SharesPage.ShareSubscriptionManagement.StatusFilter(
-                        locator = shareSubscriptions.locator.getByDataId("shares.page.share-subscription.status-dropdown.wrapper")
-                    )
-                    assertThat(statusFilter).isVisible()
-
-                    statusFilter.select("All Statuses")
-                    waitForLoadingToFinish()
-                    statusFilter.close()
-
-                    assertFalse(statusFilter.isExpanded())
-
-                    sharesPage.changeStatusViaBulkEdit("AWAITING_AHC_AUTHORIZATION")
-                    waitForLoadingToFinish()
-
-
-
-                    // Attach SEPA mandate -> Subscription enters AWAITING_AHC_AUTHORIZATION
-                    sharesPage.attachSepaMandateToSubscription()
-                    waitForLoadingToFinish()
-
-                    // navigate to the list of share-subscriptions
-                    val shareSubscriptionList = page.getByDataId("shares.page.share-subscription.list")
-                    val waitingForAuthorizationRow = shareSubscriptionList.getByText("AWAITING_AHC_AUTHORIZATION")
-                    Assertions.assertTrue(
-                        waitingForAuthorizationRow.isVisible,
-                        "The subscription should be in AWAITING_AHC_AUTHORIZATION state following a failed mandate authorization."
-                    )
-
-                    // Provider sets status to SUSPENDED via Bulk Edit (reason: AUTHORIZATION_FAILED)
-                    sharesPage.changeStatusViaBulkEdit("SUSPENDED")
-                    waitForLoadingToFinish()
-
-                    // navigate to the list of share-subscriptions
-                    val newShareSubscriptionList = page.getByDataId("shares.page.share-subscription.list")
-                    waitForLoadingToFinish()
-                    val suspendedRow = newShareSubscriptionList.getByText("SUSPENDED")
-
-                    statusFilter.select("All Statuses")
-                    waitForLoadingToFinish()
-                    statusFilter.close()
-
-                    Assertions.assertTrue(
-                        suspendedRow.isVisible,
-                        "The subscription should be in SUSPENDED state following a failed mandate authorization."
-                    )
-                }
+                // Provider sets status to SUSPENDED via Bulk Edit (reason: AUTHORIZATION_FAILED)
+                val suspendedList = run(BulkChangeSubscriptionStatusWorkflow(this)) withInput BulkChangeSubscriptionStatusInput(
+                    filterStatus = "All Statuses",
+                    newStatus = "SUSPENDED"
+                )
+                val suspendedRow = suspendedList.locator.getByText("SUSPENDED")
+                com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat(suspendedRow).isVisible()
             }
         }
     }

@@ -5,18 +5,19 @@ import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.module.authentication.service.generateSecurePassword
-import org.solyton.solawi.bid.module.values.*
-import org.solyton.solawi.bid.pageobjects.*
-import org.solyton.solawi.bid.pageobjects.application.dashboard.DashboardPage
-import org.solyton.solawi.bid.pageobjects.module.authentication.LoginPage
-import org.solyton.solawi.bid.pageobjects.shared.NavBar
+import org.solyton.solawi.bid.module.values.Firstname
+import org.solyton.solawi.bid.module.values.Lastname
+import org.solyton.solawi.bid.module.values.Password
+import org.solyton.solawi.bid.module.values.Username
+import org.solyton.solawi.bid.pageobjects.SharesPage
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserInput
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserWorkflow
+import org.solyton.solawi.bid.workflow.banking.FiscalYearPeriod
+import org.solyton.solawi.bid.workflow.shares.*
 
 /**
  * End-to-end coverage for the Share Management module, workflow B2 from
@@ -84,216 +85,62 @@ class PaymentMandateAuthorizationWorkflowTest {
         // Run the test with the recently created test user
         withUser(testUser on browser) {
             withFailureDiagnostics("$reportDirectory/user-actions") {
-
-                // used pages
-                val navBar = NavBar(page)
-                val loginPage = LoginPage(page)
-                val dashboardPage = DashboardPage(page)
-                val personalDataPage = PersonalDataPage(page)
-                val organizationManagementPage = OrganizationManagementPage(page)
-                val privateApplicationManagementPage = PrivateApplicationManagementPage(page)
-                val bankingPage = BankingPage(page)
-                val distributionPage = DistributionPage(page)
-                val sharesPage = SharesPage(page)
-
-                // necessary data
-
-                // profile
-                val title = "Dr."
-                val firstname = Firstname("Jane")
-                val lastname = Lastname("Roe")
-                val phoneNumber = PhoneNumber("0123456789")
-                val mobileNumber = PhoneNumber("0123456789")
-                // address
-                val recipientName = "Jane Roe"
-                val addressLine1 = "123 Main Street"
-                val addressLine2 = "Apt 1"
-                val city = "Anytown"
-                val postalCode = "12345"
-                val stateOrProvince = "DE-BW"
-                val countryCode = "DE"
-
-                // organization
                 val organizationName = "e2e-shares-org-b2-$suffix"
-
-                // shares
                 val shareTypeName = "e2e-share-type-b2-$suffix"
                 val shareTypeKey = "key-b2-$suffix"
                 val distributionPointName = "e2e-dp-b2-$suffix"
                 val fiscalYearKey = "3027"
                 val price = "100"
-
-                // Login as e2e user
-                loginPage.load()
-                waitForLoadingToFinish()
-
-                // dismiss cookie-disclaimer
-                page.clickOn("cookie-disclaimer.modal.submit-button")
-
-                loginPage.login(user)
-                page.waitForURL("**/dashboard")
-
-                // Create Userprofile
-                val personalDataCard = dashboardPage.privateDataCard()
-                assertThat(personalDataCard).isVisible()
-                personalDataCard.click()
-
-                waitForLoadingToFinish()
-
-                personalDataPage.createProfile(
-                    title,
-                    firstname,
-                    lastname,
-                    phoneNumber,
-                    mobileNumber,
-                    recipientName,
-                    organizationName,
-                    addressLine1,
-                    addressLine2,
-                    postalCode,
-                    city,
-                    countryCode,
-                    stateOrProvince
-                )
-
-                navBar.moveToDashboard()
-
-                // Create organization
-                val organizationCard = dashboardPage.organizationsCard()
-                assertThat(organizationCard).isVisible()
-                organizationCard.click()
-
-                dismissStrayErrorDialogIfPresent()
-                waitForLoadingToFinish()
-
-                organizationManagementPage.createOrganization(organizationName)
-                waitForLoadingToFinish()
-
-                navBar.moveToDashboard()
-                assertThat(organizationCard).isVisible()
-
-                // Book every application this fixture needs, then explicitly (re-)grant the
-                // owner permission via the UI to refresh the client-side permission cache.
-                dashboardPage.myAppsLink().click()
-                waitForLoadingToFinish()
-                dismissStrayErrorDialogIfPresent()
-                waitForLoadingToFinish()
-
-                privateApplicationManagementPage.bookApplication("BANKING", organizationName, false)
-                privateApplicationManagementPage.bookApplication("DISTRIBUTION", organizationName, false)
-                privateApplicationManagementPage.bookApplication("SHARE_MANAGEMENT", organizationName, false)
-
-                organizationManagementPage.grantOwnerPermission(organizationName, "BANKING", user.username.value)
-                organizationManagementPage.grantOwnerPermission(organizationName, "DISTRIBUTION", user.username.value)
-                organizationManagementPage.grantOwnerPermission(organizationName, "SHARE_MANAGEMENT", user.username.value)
-
-                // back to dashboard
-                navBar.moveToDashboard()
-                dashboardPage.bankingOrganizationManagementLink().click()
-                // Legal entity + creditor id, fiscal year, and (new for B2) a creditor bank
-                // account for the organization itself.
-                page.navigateToOrganizationApplicationPage("banking", organizationName, false)
-
-                bankingPage.createLegalEntityWithCreditorId(organizationName, "e.V.", "DE98ZZZ09999999999")
-                waitForLoadingToFinish()
-
-                bankingPage.createFiscalYear("$fiscalYearKey-01-01", "$fiscalYearKey-12-31")
-                waitForLoadingToFinish()
-
-                bankingPage.createCreditorBankAccount(
-                    accountHolder = organizationName,
-                    iban = "DE02100100100006820101",
-                    bic = "PBNKDEFFXXX",
-                    description = "e2e-creditor-account"
-                )
-                waitForLoadingToFinish()
-
-                // (new for B2) a debtor bank account for the subscribing member.
-                bankingPage.createDebtorBankAccount(
-                    username = user.username.value,
-                    accountHolder = "${firstname.value} ${lastname.value}",
-                    iban = "DE89370400440532013000",
-                    bic = "COBADEFFXXX"
-                )
-                waitForLoadingToFinish()
-
-                // back to dashboard
-                navBar.moveToDashboard()
-
-                // Distribution point (required to create a subscription)
-                dashboardPage.distributionOrganizationManagementLink().click()
-
-                page.navigateToOrganizationApplicationPage("distribution", organizationName, false)
-                distributionPage.createDistributionPoint(distributionPointName)
-                waitForLoadingToFinish()
-
-                navBar.moveToDashboard()
-
-                // Share type + fiscal-year-scoped share offer, this time requiring SEPA
-                // authorization, then a SEPA collection attached to it.
-                dashboardPage.shareManagementOrganizationManagementLink().click()
-                page.navigateToOrganizationApplicationPage("shares", organizationName, false)
-                sharesPage.createShareType(shareTypeName, shareTypeKey, "E2E fixture share type (B2)")
-                val shareOffer = sharesPage.createShareOffer(fiscalYearKey, shareTypeName, price, ahcAuthorizationRequired = true)
-
                 val collectionKey = "e2e-collection-$suffix"
                 val mandateReferencePrefix = "E2E$suffix"
 
-                sharesPage.attachSepaCollectionToOffer(
-                    shareOffer = shareOffer,
-                    creditorAccountHolder = organizationName,
-                    creditorAccountDescription = "e2e-creditor-account",
-                    collectionKey = collectionKey,
-                    mandateReferencePrefix = mandateReferencePrefix,
-                    remittanceInformation = "E2E fixture collection"
+                // Setup entire share environment
+                run(SetupShareEnvironmentWorkflow(this)) withInput SetupShareEnvironmentInput(
+                    organizationName = organizationName,
+                    firstname = Firstname("Jane"),
+                    lastname = Lastname("Roe"),
+                    fiscalYears = listOf(FiscalYearPeriod("$fiscalYearKey-01-01", "$fiscalYearKey-12-31")),
+                    distributionPointName = distributionPointName,
+                    shareTypeName = shareTypeName,
+                    shareTypeKey = shareTypeKey,
+                    shareTypeDescription = "E2E fixture share type (B2)",
+                    offers = listOf(
+                        ShareOfferConfig(
+                            fiscalYearKey = fiscalYearKey,
+                            price = price,
+                            ahcAuthorizationRequired = true,
+                            sepaCollectionConfig = SepaCollectionConfig(
+                                collectionKey = collectionKey,
+                                mandateReferencePrefix = mandateReferencePrefix,
+                                remittanceInformation = "E2E fixture collection"
+                            )
+                        )
+                    )
                 )
-                waitForLoadingToFinish()
 
-                // Member subscription - starts out as PendingActivation.
-                val subscription = sharesPage.createShareSubscription(
-                    user.username.value,
-                    "${firstname.value} ${lastname.value}",
-                    fiscalYearKey,
-                    shareTypeName,
-                    distributionPointName,
-                    price,
-                    "1",
-                    true,
+                // Member subscription - starts out as PendingActivation
+                val subscription = run(CreateShareSubscriptionWorkflow(this)) withInput CreateShareSubscriptionInput(
+                    memberName = "Jane Roe",
+                    fiscalYearKey = fiscalYearKey,
+                    shareTypeName = shareTypeName,
+                    distributionPointName = distributionPointName,
+                    price = price,
+                    quantity = "1",
+                    ahcAuthorized = true,
+                    attachSepaMandate = true
                 )
-                waitForLoadingToFinish()
 
+                val sharesPage = SharesPage(page)
                 val shareSubscriptionManagement = sharesPage.ShareSubscriptionManagement()
                 shareSubscriptionManagement.open()
-
-                val statusFilter = SharesPage.ShareSubscriptionManagement.StatusFilter(
-                    locator = shareSubscriptionManagement.locator.getByDataId("shares.page.share-subscription.status-dropdown.wrapper")
-                )
-                assertThat(statusFilter).isVisible()
-                statusFilter.select("PENDING_ACTIVATION")
-                waitForLoadingToFinish()
-                statusFilter.close()
 
                 val listOfSubscriptions = SharesPage.ShareSubscriptionManagement.ListOfShareSubscriptions(
                     locator = page.getByDataId("shares.page.share-subscription.list")
                 )
-                val pendingRow = listOfSubscriptions.item(subscription.id).getByText("PENDING_ACTIVATION")
-                Assertions.assertTrue(
-                    pendingRow.isVisible,
-                    "The newly created subscription should start out as PENDING_ACTIVATION."
-                )
-
-                // Attach a SEPA mandate to the subscription - this authorizes the payment mandate
-                sharesPage.attachSepaMandateToSubscription()
-                waitForLoadingToFinish()
 
                 // We added just one mandate to the subscription
                 val mandateEntry = listOfSubscriptions.item(subscription.id).getByText("$collectionKey / $mandateReferencePrefix")
                 assertThat(mandateEntry).isVisible()
-
-                // TODO Think about navigating to the related banking page and check
-                //     - if the sepa collection is listed
-                //     - if the sepa collection is active
-                //     - if the users sepa mandate is there
             }
         }
     }
