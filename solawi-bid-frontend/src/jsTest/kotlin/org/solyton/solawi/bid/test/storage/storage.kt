@@ -51,6 +51,27 @@ fun <Data> TestStorage(data: Data): Storage<Data>  {
     )
 }
 
+fun SimpleTestStorage(
+    initial: Application = Application(
+        environment = Environment(true, "DEV"),
+        userData = User("", "", "", "", null, Permissions())
+    )
+): Storage<Application> {
+    var application = initial
+    return Storage(
+        read = { application },
+        write = { newApplication -> application = newApplication }
+    )
+}
+
+fun <Data> SimpleTestStorage(data: Data): Storage<Data> {
+    var storedData = data
+    return Storage(
+        read = { storedData },
+        write = { newData -> storedData = newData }
+    )
+}
+
 class TestStorageTest {
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test fun testStorageTest() = runTest {

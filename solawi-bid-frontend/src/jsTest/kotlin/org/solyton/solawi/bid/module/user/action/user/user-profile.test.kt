@@ -5,8 +5,6 @@ import org.evoleq.math.on
 import org.evoleq.math.write
 import org.evoleq.optics.transform.times
 import org.evoleq.uuid.NIL_UUID
-import org.jetbrains.compose.web.testutils.ComposeWebExperimentalTestsApi
-import org.jetbrains.compose.web.testutils.runTest
 import org.solyton.solawi.bid.application.data.managedUsers
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.module.permissions.data.Permissions
@@ -15,15 +13,14 @@ import org.solyton.solawi.bid.module.user.data.managed.ManagedUser
 import org.solyton.solawi.bid.module.user.data.profile.UserProfile
 import org.solyton.solawi.bid.module.user.data.status.UserStatus
 import org.solyton.solawi.bid.module.values.UserId
-import org.solyton.solawi.bid.test.storage.TestStorage
+import org.solyton.solawi.bid.test.storage.SimpleTestStorage
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class UserProfileTest {
 
-    @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
-    fun readUserProfilesTest() = runTest {
+    fun readUserProfilesTest()  {
         val users = listOf<ManagedUser>(
             ManagedUser("user-id-1", "", "", UserStatus.ACTIVE,Permissions(), null)
         )
@@ -39,24 +36,24 @@ class UserProfileTest {
                     UserId(NIL_UUID),"1", "", "", null, "123","123", listOf()
                 ))
         )
-        composition {
-            val storage = TestStorage()
 
-            val readUserIds = (storage * userIso * action.reader).emit()
-            assertEquals(ReadUserProfiles(listOf("1","2","3")), readUserIds)
 
-            (storage * managedUsers.set) write users on Unit
+        val storage = SimpleTestStorage()
 
-            (storage * userIso * action.writer) write apiUserProfiles on Unit
-            val storedManagedUsers = (storage * managedUsers.get).emit()
-            assertEquals(expected, storedManagedUsers )
-        }
+        val readUserIds = (storage * userIso * action.reader).emit()
+        assertEquals(ReadUserProfiles(listOf("1","2","3")), readUserIds)
+
+        (storage * managedUsers.set) write users on Unit
+
+        (storage * userIso * action.writer) write apiUserProfiles on Unit
+        val storedManagedUsers = (storage * managedUsers.get).emit()
+        assertEquals(expected, storedManagedUsers )
+
     }
 
 
-    @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
-    fun importUserProfilesTest() = runTest {
+    fun importUserProfilesTest()  {
         val users = listOf<ManagedUser>(
             ManagedUser("user-id-1", "", "", UserStatus.ACTIVE, Permissions(), null)
         )
@@ -90,16 +87,15 @@ class UserProfileTest {
                     UserId(NIL_UUID),"1", "", "", null, "123", "123",listOf()
                 ))
         )
-        composition {
-            val storage = TestStorage()
 
-            val readUserProfilesToImport: ImportUserProfiles = (storage * userIso * action.reader).emit()
-            assertEquals( userProfilesToImport, readUserProfilesToImport)
+        val storage = SimpleTestStorage()
 
-            (storage * managedUsers.set) write users on Unit
-            (storage * userIso * action.writer) write apiUserProfiles on Unit
-            val storedManagedUsers = (storage * managedUsers.get).emit()
-            assertEquals(expected, storedManagedUsers )
-        }
+        val readUserProfilesToImport: ImportUserProfiles = (storage * userIso * action.reader).emit()
+        assertEquals( userProfilesToImport, readUserProfilesToImport)
+
+        (storage * managedUsers.set) write users on Unit
+        (storage * userIso * action.writer) write apiUserProfiles on Unit
+        val storedManagedUsers = (storage * managedUsers.get).emit()
+        assertEquals(expected, storedManagedUsers )
     }
 }
