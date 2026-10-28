@@ -44,7 +44,7 @@ class TestUtils {
             }
 
             page.onPageError { error ->
-                println("JAVASCRIPT ERROR: ${error.message}")
+                println("JAVASCRIPT ERROR: error")
             }
 
 
