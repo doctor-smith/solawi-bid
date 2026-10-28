@@ -2,6 +2,7 @@ package org.solyton.solawi.bid
 
 import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserContext
+import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -32,18 +33,35 @@ class TestUtils {
     fun getCookie(browser: Browser, of: String? = null) {
         val target = storageStatePath(of)
         val context = browser.newContext()
-        val page = context.newPage()
-
-        val user = System.getenv("TEST_USER")
-        val password = System.getenv("TEST_USER_PASSWORD")
 
         context.use { context ->
+            val page = context.newPage()
+
+            val user = System.getenv("TEST_USER")
+            val password = System.getenv("TEST_USER_PASSWORD")
+
             page.navigate("${TestConfig.BASE_URL}/login")
             page.clickOn("cookie-disclaimer.modal.submit-button")
+            /*
+            page.clickIfPresent(
+                "cookie-disclaimer.modal.submit-button",
+                3_000.0
+            )
 
-            page.put("login-form.input.username", user)
-            page.put("login-form.input.password", password)
-            page.clickOn("login-form.submit-button")
+             */
+
+            val usernameInput = page.getByDataId("login-form.input.username")
+            assertThat(usernameInput).isVisible()
+            usernameInput.fill(user)
+
+            val passwordInput = page.getByDataId("login-form.input.password",)
+            assertThat(passwordInput).isVisible()
+            passwordInput.fill(password)
+
+            val submitButton = page.getByDataId("login-form.submit-button")
+            assertThat(submitButton).isVisible()
+            submitButton.click()
+
             page.waitForURL("**/dashboard")
 
             context.storageState(

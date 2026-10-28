@@ -472,6 +472,22 @@ jobs:
           chmod 644 ./infrastructure/database/setup.sql
           docker compose -f docker-compose.e2e.yml up -d --wait --quiet-pull
 
+      - name: Debug E2E Environment
+        shell: bash
+        run: |
+          echo "=== Images ==="
+          echo "Frontend: $FRONTEND_IMAGE"
+          echo "Backend:  $BACKEND_IMAGE"
+          
+          echo "=== Containers ==="
+          docker compose -f docker-compose.e2e.yml ps
+          
+          echo "=== Frontend response ==="
+          curl -v http://localhost:3000/login || true
+          
+          echo "=== Container logs ==="
+          docker compose -f docker-compose.e2e.yml logs --tail=100
+
       # Dump logs on failure
       - name: Dump container logs on failure
         if: failure()
