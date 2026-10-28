@@ -6,14 +6,27 @@ import org.solyton.solawi.bid.pageobjects.PrivateApplicationManagementPage
 import org.solyton.solawi.bid.pageobjects.application.dashboard.DashboardPage
 import org.solyton.solawi.bid.pageobjects.shared.NavBar
 
-sealed class ApplicationBookingConfig {
-    data object AllRoles : ApplicationBookingConfig()
-    data class SpecificRoles(val roles: List<String>) : ApplicationBookingConfig()
+sealed class ApplicationBookingConfig(open val name: String) {
+    data class AllRoles(
+        override val name: String
+    ) : ApplicationBookingConfig(name)
+    data class SpecificRoles(
+        override val name: String,
+        val roles: List<String>
+    ) : ApplicationBookingConfig(name)
+
+    companion object {
+        fun from(vararg applications: String): List<ApplicationBookingConfig> = applications.map {
+            AllRoles(it)
+        }
+    }
 }
 
 data class CreateOrganizationInput(
     val organizationName: String,
-    val appsToBook: List<String> = listOf("BANKING", "DISTRIBUTION", "SHARE_MANAGEMENT")
+    val appsToBook: List<ApplicationBookingConfig> = ApplicationBookingConfig.from(
+        "BANKING", "DISTRIBUTION", "SHARE_MANAGEMENT"
+    )
 )
 
 class CreateOrganizationWorkflow(
@@ -42,12 +55,26 @@ class CreateOrganizationWorkflow(
         dismissStrayErrorDialogIfPresent()
         waitForLoadingToFinish()
 
-        input.appsToBook.forEach { appName ->
-            privateApplicationManagementPage.bookApplication(appName, input.organizationName, false)
+        input.appsToBook.forEach { app ->
+            privateApplicationManagementPage.bookApplication(app.name, input.organizationName, false)
         }
 
-        input.appsToBook.forEach { appName ->
-            organizationManagementPage.grantAllPermissions(input.organizationName, appName, user.username.value)
+        input.appsToBook.forEach { app ->
+            when(app) {
+                is ApplicationBookingConfig.AllRoles ->
+                    organizationManagementPage.grantAllPermissions(
+                        input.organizationName,
+                        app.name,
+                        user.username.value
+                    )
+                is ApplicationBookingConfig.SpecificRoles ->
+                    organizationManagementPage.grantPermissions(
+                        input.organizationName,
+                        app.name,
+                        user.username.value,
+                        app.roles
+                    )
+            }
         }
     }
 }
