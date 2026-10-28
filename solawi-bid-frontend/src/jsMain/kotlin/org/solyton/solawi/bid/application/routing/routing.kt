@@ -11,6 +11,7 @@ import org.solyton.solawi.bid.application.data.env.type
 import org.solyton.solawi.bid.application.data.transform.navbar.navBarIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.service.seemsToBeLoggerIn
+import org.solyton.solawi.bid.application.ui.component.VersionInfo
 import org.solyton.solawi.bid.application.ui.page.application.management.ApplicationManagementPage
 import org.solyton.solawi.bid.application.ui.page.application.management.ApplicationPage
 import org.solyton.solawi.bid.application.ui.page.application.management.ModulePage
@@ -118,6 +119,9 @@ fun Routing(storage: Storage<Application>): Routes = Routing(
                     device = storage * deviceData * mediaType.get,
                     logoutAction = logoutAction
                 )
+
+                VersionInfo()
+
                 // render page
                 page()
             } }

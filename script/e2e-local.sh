@@ -67,6 +67,56 @@ Commands:
 EOF
 }
 
+
+ensure_frontend_base_image() {
+  if docker image inspect "$GRADLE_BASE_FRONTEND_IMAGE" >/dev/null 2>&1; then
+    echo "==> Using locally cached $GRADLE_BASE_FRONTEND_IMAGE"
+    return
+  fi
+
+  # Deliberately not trying "docker pull" here: the image is private on GHCR,
+  # so pulling it would require registry credentials most developers don't
+  # have. Building it locally avoids that dependency entirely.
+  echo "==> $GRADLE_BASE_FRONTEND_IMAGE not found locally."
+  echo "==> Building it locally instead from infrastructure/docker/Dockerfile-Frontend-Base (one-time, may take a while)."
+  docker build -f infrastructure/docker/Dockerfile-Frontend-Base -t "$GRADLE_BASE_FRONTEND_IMAGE" .
+}
+
+build_frontend() {
+  ensure_frontend_base_image
+
+  echo "==> Building solawi-bid/frontend:local"
+  docker build --pull=false -f infrastructure/docker/Dockerfile-Frontend -t solawi-bid/frontend:local .
+}
+
+build_images() {
+  build_backend
+  build_frontend
+}
+
+# Rebuilds a single image and, if the environment is already up, recreates just that
+# service's container so the freshly built image actually gets picked up (plain
+# "docker compose up -d" would otherwise keep the old container running since the
+# image tag itself didn't change).
+recreate_service_if_running() {
+  local service="$1"
+  if docker compose -f "$COMPOSE_FILE" ps --status running --services | grep -qx "$service"; then
+    echo "==> Recreating $service with the freshly built image"
+    docker compose -f "$COMPOSE_FILE" up -d --force-recreate --no-deps --wait "$service"
+  fi
+}
+
+up() {
+  echo "==> Starting E2E environment ($COMPOSE_FILE)"
+  docker compose -f "$COMPOSE_FILE" up -d --wait
+}
+
+down() {
+  echo "==> Stopping E2E environment ($COMPOSE_FILE)"
+  docker compose -f "$COMPOSE_FILE" down
+}
+
+
 parse_reset_db_flag() {
   local arg="${1:-}"
   case "$arg" in
