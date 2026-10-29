@@ -5,17 +5,22 @@ import org.evoleq.compose.attribute.dataId
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
+import org.solyton.solawi.bid.application.data.env.Environment
+import org.solyton.solawi.bid.application.data.env.getEnv
 import org.solyton.solawi.bid.application.data.version.VersionInfo
 import org.solyton.solawi.bid.application.data.version.getVersionInfo
-
 @Composable
 fun VersionInfo() {
     var versionInfo by remember { mutableStateOf<VersionInfo?>(null) }
+    var env by remember { mutableStateOf<Environment?>(null) }
 
     LaunchedEffect(Unit) {
         versionInfo = runCatching {
             getVersionInfo()
         }.getOrNull()
+    }
+    LaunchedEffect(Unit) {
+        env = runCatching { getEnv() }.getOrNull()
     }
 
     Div({
@@ -29,7 +34,7 @@ fun VersionInfo() {
         }
     }) {
         versionInfo?.let {
-            Text("v${it.version} · ${it.commit.take(7)}")
+            Text("${it.version} · ${it.commit.take(7)}")
         }
     }
 }
