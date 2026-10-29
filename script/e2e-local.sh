@@ -85,8 +85,39 @@ ensure_frontend_base_image() {
 build_frontend() {
   ensure_frontend_base_image
 
+  local version
+  local git_sha
+
+  version=$(./script/determine-version.sh)
+  git_sha=$(git rev-parse HEAD)
+
   echo "==> Building solawi-bid/frontend:local"
-  docker build --pull=false -f infrastructure/docker/Dockerfile-Frontend -t solawi-bid/frontend:local .
+  echo "    Version: $version"
+  echo "    Commit:  $git_sha"
+
+  docker build --pull=false \
+    --build-arg application_version="$version" \
+    --build-arg GIT_SHA="$git_sha" \
+    -f infrastructure/docker/Dockerfile-Frontend \
+    -t solawi-bid/frontend:local .
+}
+
+build_backend() {
+  local version
+  local git_sha
+
+  version=$(./script/determine-version.sh)
+  git_sha=$(git rev-parse HEAD)
+
+  echo "==> Building solawi-bid/backend:local"
+  echo "    Version: $version"
+  echo "    Commit:  $git_sha"
+
+  docker build --pull=false \
+    --build-arg application_version="$version" \
+    --build-arg GIT_SHA="$git_sha" \
+    -f infrastructure/docker/Dockerfile-Backend \
+    -t solawi-bid/backend:local .
 }
 
 build_images() {
