@@ -70,6 +70,11 @@ suspend fun getEnv(): Environment {
  */
 fun Environment.isNonProdEnv() = type.toLowerCasePreservingASCIIRules() !in listOf( "p", "prod", "production" )
 
+fun Environment?.isNonProdEnv() = this?.isNonProdEnv() ?: true
+
+fun Environment?.isDev(): Boolean = this?.type?.toLowerCasePreservingASCIIRules() in listOf( "d", "dev", "develop" )
+
+fun Environment?.isStaging(): Boolean = this?.type?.toLowerCasePreservingASCIIRules() in listOf( "q", "int", "integration", "staging" )
 /**
  * Reader instance that determines if the current environment is a non-production environment.
  *
