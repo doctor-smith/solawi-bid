@@ -902,7 +902,7 @@ jobs:
   smoke-tests:
     name: Smoke Tests
     needs: [deploy, publish-images]
-    if: ${{ needs.deploy.result == 'success' }}
+    if: ${{ !cancelled() && needs.deploy.result == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
