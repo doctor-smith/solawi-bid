@@ -35,37 +35,24 @@ class TransferSubscriptionOwnershipWorkflow(
         assertThat(ahcAuthFilter).isVisible()
         ahcAuthFilter.select("All Authorized")
 
-        val transferButton = page.getByDataId("shares.page.share-subscription.${input.subscriptionId}.transfer-ownership-button")
-        transferButton.click()
+        val transferModal = sharesPage.TransferOwnershipModal(input.subscriptionId)
+        transferModal.trigger().click()
 
-        val modal = page.getByDataId("shares.modal.transfer-ownership.modal")
-        assertThat(modal).isVisible()
+        assertThat(transferModal.locator).isVisible()
 
-        // Benutzer im Modal suchen und auswählen
-        val searchInput = modal.locator("[data-id='shares.modal.transfer-ownership.user-search-input']")
-        if (searchInput.isVisible) {
-            searchInput.fill(input.newOwnerUsername)
-        }
+        transferModal.searchUser(input.newOwnerUsername)
+        transferModal.selectUser(input.newOwnerUsername)
 
-        // Select-Button für den neuen Benutzer anklicken
-        val selectButton = modal.locator("[data-id='shares.modal.transfer-ownership.user.${input.newOwnerUsername}.select-button']")
-            .or(modal.locator("[data-id*='select-button']"))
-            .first()
-        selectButton.click()
+        assertThat(transferModal.userDisplayInput()).hasValue(input.newOwnerFullname)
 
-        val userDisplay = page.getByDataId("shares.modal.transfer-ownership.user-display-input")
-        assertThat(userDisplay).hasValue(input.newOwnerFullname)
-
-        // Bestätigen
-        val confirmButton = modal.locator("[data-id='shares.modal.transfer-ownership.modal.submit-button']")
         val response = page.waitForApi(
             solawiApi,
             TransferOwnership::class
         ) {
-            confirmButton.click()
+            transferModal.submitButton().click()
         }.decodeBodyTo<ShareSubscription>()
 
-        assertThat(modal).isHidden()
+        assertThat(transferModal.locator).isHidden()
 
         return response
     }
