@@ -22,7 +22,7 @@ build-reports
 .sql
 setup-local.sql
 !setup.sql
-
+.output.txt
 e2e/loggedInState.json
 e2e/dev
 

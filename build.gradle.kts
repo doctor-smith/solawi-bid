@@ -28,6 +28,43 @@ plugins{
     alias(libs.plugins.evoleq.fp.axioms) apply false
 }
 
+val gitDirectory = rootProject.file(".git")
+val hooksDirectory = rootProject.file(".githooks")
+
+if (gitDirectory.exists() && hooksDirectory.isDirectory) {
+    val currentHooksPath = providers.exec {
+        commandLine("git", "config", "--local", "--get", "core.hooksPath")
+        isIgnoreExitValue = true
+    }.standardOutput.asText.get().trim()
+
+    if (currentHooksPath != ".githooks") {
+        providers.exec {
+            commandLine(
+                "git",
+                "config",
+                "--local",
+                "core.hooksPath",
+                ".githooks"
+            )
+        }.result.get()
+
+        logger.lifecycle("Git pre-commit hooks configured successfully.")
+    }
+}
+
+
+tasks.register<Exec>("installGitHooks") {
+    group = "setup"
+    description = "Configure Git to use project hooks"
+
+    commandLine(
+        "git",
+        "config",
+        "core.hooksPath",
+        ".githooks"
+    )
+}
+
 tasks.register("detektAll") {
     group = "verification"
     description = "Runs all detekt tasks in all projects"
