@@ -5,6 +5,7 @@ import kotlinx.browser.window
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.evoleq.compose.attribute.dataId
+import org.evoleq.compose.icons.svg.SvgIcon
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.map
@@ -127,14 +128,17 @@ fun VersionInfo(storage: Storage<Application>) {
                     }
                 }
                 val clipboardText = Source {
-                        """
-                        Environment: ${env.emit()}
-                        Frontend:
-                          Version: ${frontendInfo.emit<VersionInfo>().version}
-                          Commit: ${frontendInfo.emit<VersionInfo>().commit}
-                        Backend:
-                          Version: ${backendInfo.emit<VersionInfo>().version}
-                          Commit: ${backendInfo.emit<VersionInfo>().commit}
+                    """
+                    Environment: ${env.emit()}
+                    Username: ${username.emit()}
+                
+                    Frontend:
+                      Version: ${frontendInfo.emit<VersionInfo>().version}
+                      Commit: ${frontendInfo.emit<VersionInfo>().commit}
+                
+                    Backend:
+                      Version: ${backendInfo.emit<VersionInfo>().version}
+                      Commit: ${backendInfo.emit<VersionInfo>().commit}
                     """.trimIndent()
                 }
 
@@ -144,9 +148,11 @@ fun VersionInfo(storage: Storage<Application>) {
                         display(DisplayStyle.Flex)
                         justifyContent(JustifyContent.SpaceBetween)
                         alignItems(AlignItems.Center)
+                        height(24.px)
                         marginBottom(14.px)
                     }
                 }) {
+                    // Headline
                     Span({
                         style {
                             fontSize(13.px)
@@ -158,15 +164,17 @@ fun VersionInfo(storage: Storage<Application>) {
                         Text("Version Info")
                     }
 
+                    // Actions
                     Div({
                         style {
                             display(DisplayStyle.Flex)
                             alignItems(AlignItems.Center)
-                            property("gap", "12px")
+                            property("gap", "8px")
                         }
                     }) {
+                        // Copy
                         Span({
-                            attr("title", if (copied) "Copied!" else "Copy version info")
+                            title(if (copied) "Copied!" else "Copy version info")
 
                             onClick {
                                 window.navigator.clipboard.writeText(clipboardText.emit())
@@ -176,25 +184,43 @@ fun VersionInfo(storage: Storage<Application>) {
                             }
 
                             style {
+                                display(DisplayStyle.Flex)
+                                alignItems(AlignItems.Center)
+                                justifyContent(JustifyContent.Center)
+                                width(20.px)
+                                height(20.px)
                                 property("cursor", "pointer")
                                 property("user-select", "none")
-                                color(Color(if (copied) "#4CAF50" else "#888888"))
-                                fontSize(14.px)
-                                property("transition", "color 0.2s ease")
                             }
                         }) {
-                            Text(if (copied) "✓" else "⧉")
+                            SvgIcon(
+                                name = if (copied) "check" else "copy",
+                                color = if (copied) "#4CAF50" else "#888888"
+                            )
                         }
 
+                        // Close
                         Span({
-                            onClick { opened = false }
+                            title("Close")
+
+                            onClick {
+                                opened = false
+                            }
+
                             style {
+                                display(DisplayStyle.Flex)
+                                alignItems(AlignItems.Center)
+                                justifyContent(JustifyContent.Center)
+                                width(20.px)
+                                height(20.px)
                                 property("cursor", "pointer")
-                                color(Color("#777777"))
-                                fontSize(16.px)
+                                property("user-select", "none")
                             }
                         }) {
-                            Text("×")
+                            SvgIcon(
+                                name = "close",
+                                color = "#888888"
+                            )
                         }
                     }
                 }
