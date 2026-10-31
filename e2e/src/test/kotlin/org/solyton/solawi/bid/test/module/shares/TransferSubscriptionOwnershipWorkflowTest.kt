@@ -13,8 +13,6 @@ import org.solyton.solawi.bid.module.values.Firstname
 import org.solyton.solawi.bid.module.values.Lastname
 import org.solyton.solawi.bid.module.values.Password
 import org.solyton.solawi.bid.module.values.Username
-import org.solyton.solawi.bid.workflow.admin.CreateTestUserInput
-import org.solyton.solawi.bid.workflow.admin.CreateTestUserWorkflow
 import org.solyton.solawi.bid.workflow.banking.FiscalYearPeriod
 import org.solyton.solawi.bid.workflow.organization.AddMemberToOrganizationInput
 import org.solyton.solawi.bid.workflow.organization.AddMemberToOrganizationWorkflow
@@ -38,8 +36,14 @@ class TransferSubscriptionOwnershipWorkflowTest {
         @JvmStatic
         @BeforeAll
         fun beforeAll() {
+            val headless = TestConfig.HEADLESS
+            val slowMo = TestConfig.SLOWMO
             playwright = Playwright.create()
-            browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
+            browser = playwright.chromium().launch(
+                BrowserType.LaunchOptions()
+                    .setHeadless(headless)
+                    .setSlowMo(slowMo)
+            )
             TestUtils().getCookie(browser, STORAGE_PATH)
         }
 
@@ -62,29 +66,44 @@ class TransferSubscriptionOwnershipWorkflowTest {
         val adminPassword = requireNotNull(System.getenv("TEST_USER_PASSWORD")) { "TEST_USER_PASSWORD must be set" }
         val adminUser = AdminTestUser(Username(adminUsername), Password(adminPassword), STORAGE_PATH)
 
-        // 1. Admin erstellt den Provider / Test-User
-        val providerUser = withUser(adminUser on browser) {
-            run(CreateTestUserWorkflow(this)) withInput
-                    CreateTestUserInput(
-                        Username("e2e-provider-$suffix@solyton.org"),
-                        Password(generateSecurePassword()),
-                        true,
-                        "$suffix",
-                        "$reportDirectory/admin-actions"
-                    )
+        // 1. Admin erstellt den Provider / Test-User und den neuen Eigentümer in einer Admin-Sitzung
+        val (providerUser, newOwnerUser) = withUser(adminUser on browser) {
+            withFailureDiagnostics("$reportDirectory/admin-actions") {
+                val userManagementPage = org.solyton.solawi.bid.pageobjects.module.user.UserManagementPage(page)
+                userManagementPage.load()
+                dismissStrayErrorDialogIfPresent(true)
+
+                val provider = userManagementPage.createUserViaAdminUi(
+                    Username("e2e-provider-$suffix@solyton.org"),
+                    Password(generateSecurePassword()),
+                    useTimestamp = false
+                )
+
+                val newOwner = userManagementPage.createUserViaAdminUi(
+                    Username("new-owner-$suffix@solyton.org"),
+                    Password(generateSecurePassword()),
+                    useTimestamp = false
+                )
+
+                org.solyton.solawi.bid.pageobjects.shared.NavBar(page).logout()
+                page.waitForURL("**/login")
+                dismissStrayErrorDialogIfPresent(true)
+
+                Pair(provider, newOwner)
+            }
         }
 
-        // 2. Ablauf als Provider durchführen
+        // 3. Ablauf als Provider durchführen
         withUser(providerUser on browser) {
             withFailureDiagnostics("$reportDirectory/user-actions") {
                 val organizationName = "e2e-shares-org-transfer-$suffix"
                 val shareTypeName = "e2e-share-type-transfer-$suffix"
-                val shareTypeKey = "key-transfer-$suffix"
+                val shareTypeKey = "key-transfer-$suffix".take(20)
                 val distributionPointName = "e2e-dp-transfer-$suffix"
                 val fiscalYearKey = "3030"
                 val price = "120"
-                val initialMemberName = "Original Owner"
-                val newOwnerUsername = "new-owner-$suffix@solyton.org"
+                val initialMemberName = "Provider Admin"
+                val newOwnerUsername = newOwnerUser.username.value
 
                 // Setup Share-Umgebung (Organisation, Fiskaljahr, Share Type & Offer)
                 run(SetupShareEnvironmentWorkflow(this)) withInput SetupShareEnvironmentInput(
@@ -136,14 +155,16 @@ class TransferSubscriptionOwnershipWorkflowTest {
                 page.navigateToOrganizationApplicationPage("shares", organizationName, true)
 
                 // Ownership Transfer auf neuen Eigentümer ausführen
-                run(TransferSubscriptionOwnershipWorkflow(this)) withInput TransferSubscriptionOwnershipInput(
+                val transferredSubscription = run(TransferSubscriptionOwnershipWorkflow(this)) withInput TransferSubscriptionOwnershipInput(
                     subscriptionId = subscription.id,
-                    newOwnerUsername = newOwnerUsername
+                    newOwnerUsername = newOwnerUsername,
+                    newOwnerFullname = "New Owner"
                 )
 
                 // Verifikation: Abonnement existiert weiterhin im Status SUBSCRIBED
-                val subscriptionItem = page.getByDataId("shares.page.share-subscription.${subscription.id}")
+                val subscriptionItem = page.getByDataId("shares.page.share-subscription.list.item.${transferredSubscription.id}")
                 assertThat(subscriptionItem.getByText("SUBSCRIBED")).isVisible()
+                assertThat(subscriptionItem.getByText("New Owner")).isVisible()
             }
         }
     }

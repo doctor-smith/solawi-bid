@@ -6,4 +6,6 @@ object TestConfig {
     // unchanged. The dedicated local E2E environment (docker-compose.e2e.local.yml) uses
     // distinct ports and sets E2E_BASE_URL itself (see script/e2e-local.sh).
     val BASE_URL: String = System.getenv("E2E_BASE_URL") ?: "http://localhost:8080"
+    val HEADLESS: Boolean = System.getenv("HEADLESS")?.toBoolean()?: true
+    val SLOWMO: Double = System.getenv("SLOWMO")?.toDouble() ?: 0.0
 }

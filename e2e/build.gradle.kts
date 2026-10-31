@@ -170,7 +170,9 @@ tasks.withType<Test>().configureEach {
         "E2E_BASE_URL",
         "E2E_RESET_DB",
         "PARALLEL_TESTS",
-        "NUMBER_OF_WORKERS"
+        "NUMBER_OF_WORKERS",
+        "SLOWMO",
+        "HEADLESS"
     ).forEach { key ->
         val fromEnv = System.getenv(key)
         val fromProps = localProps.getProperty(key)
