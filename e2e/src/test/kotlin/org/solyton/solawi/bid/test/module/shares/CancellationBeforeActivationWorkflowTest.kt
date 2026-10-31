@@ -111,8 +111,7 @@ class CancellationBeforeActivationWorkflowTest {
                     newStatus = "CANCELLED"
                 )
 
-                val cancelledRow = listAfterCancellation.item(subscription.id).getByText("CANCELLED")
-                com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat(cancelledRow).isVisible()
+                assertThat(listAfterCancellation.itemStatus(subscription.id, "CANCELLED")).isVisible()
             }
         }
     }

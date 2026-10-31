@@ -119,16 +119,14 @@ class FailedAuthorizationWorkflowTest {
                     filterStatus = "All Statuses",
                     newStatus = "AWAITING_AHC_AUTHORIZATION"
                 )
-                val waitingForAuthorizationRow = awaitingList.locator.getByText("AWAITING_AHC_AUTHORIZATION")
-                com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat(waitingForAuthorizationRow).isVisible()
+                assertThat(awaitingList.statusBadge("AWAITING_AHC_AUTHORIZATION")).isVisible()
 
                 // Provider sets status to SUSPENDED via Bulk Edit (reason: AUTHORIZATION_FAILED)
                 val suspendedList = run(BulkChangeSubscriptionStatusWorkflow(this)) withInput BulkChangeSubscriptionStatusInput(
                     filterStatus = "All Statuses",
                     newStatus = "SUSPENDED"
                 )
-                val suspendedRow = suspendedList.locator.getByText("SUSPENDED")
-                com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat(suspendedRow).isVisible()
+                assertThat(suspendedList.statusBadge("SUSPENDED")).isVisible()
             }
         }
     }

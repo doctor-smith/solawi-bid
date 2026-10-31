@@ -134,13 +134,10 @@ class PaymentMandateAuthorizationWorkflowTest {
                 val shareSubscriptionManagement = sharesPage.ShareSubscriptionManagement()
                 shareSubscriptionManagement.open()
 
-                val listOfSubscriptions = SharesPage.ShareSubscriptionManagement.ListOfShareSubscriptions(
-                    locator = page.getByDataId("shares.page.share-subscription.list")
-                )
+                val listOfSubscriptions = shareSubscriptionManagement.listOfSubscriptions()
 
                 // We added just one mandate to the subscription
-                val mandateEntry = listOfSubscriptions.item(subscription.id).getByText("$collectionKey / $mandateReferencePrefix")
-                assertThat(mandateEntry).isVisible()
+                assertThat(listOfSubscriptions.mandateEntry(subscription.id, "$collectionKey / $mandateReferencePrefix")).isVisible()
             }
         }
     }

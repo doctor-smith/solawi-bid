@@ -31,7 +31,7 @@ class AddMemberToOrganizationWorkflowTest {
         @BeforeAll
         fun beforeAll() {
             val headless = TestConfig.HEADLESS
-            val slowMo = TestConfig.SLOWMO
+            val slowMo = TestConfig.SLOW_MO
             playwright = Playwright.create()
             browser = playwright.chromium().launch(
                 BrowserType.LaunchOptions()
@@ -103,8 +103,8 @@ class AddMemberToOrganizationWorkflowTest {
                 )
 
                 // Verification: new member appears in member list
-                val memberRow = page.getByText(memberUsername)
-                assertThat(memberRow).isVisible()
+                val membersCard = org.solyton.solawi.bid.pageobjects.OrganizationManagementPage(page).MembersCard()
+                assertThat(membersCard.memberRow(memberUsername)).isVisible()
             }
         }
     }

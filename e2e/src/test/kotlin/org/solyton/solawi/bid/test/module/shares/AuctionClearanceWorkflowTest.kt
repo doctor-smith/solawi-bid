@@ -111,16 +111,14 @@ class AuctionClearanceWorkflowTest {
                     filterStatus = "All Statuses",
                     newStatus = "CLEARED_FOR_AUCTION"
                 )
-                val clearedRow = clearedList.item(subscription.id).getByText("CLEARED_FOR_AUCTION")
-                com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat(clearedRow).isVisible()
+                assertThat(clearedList.itemStatus(subscription.id, "CLEARED_FOR_AUCTION")).isVisible()
 
                 // 2. Hop: ClearedForAuction -> SUBSCRIBED
                 val subscribedList = run(BulkChangeSubscriptionStatusWorkflow(this)) withInput BulkChangeSubscriptionStatusInput(
                     filterStatus = "All Statuses",
                     newStatus = "SUBSCRIBED"
                 )
-                val subscribedRow = subscribedList.item(subscription.id).getByText("SUBSCRIBED")
-                com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat(subscribedRow).isVisible()
+                assertThat(subscribedList.itemStatus(subscription.id, "SUBSCRIBED")).isVisible()
             }
         }
     }

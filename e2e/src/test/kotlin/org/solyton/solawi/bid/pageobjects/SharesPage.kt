@@ -104,6 +104,10 @@ class SharesPage(private val page: Page) {
             override val locator: Locator
         ): TestComponent(locator) {
             fun item(shareSubscriptionId: String): Locator = locator.getByDataId("$BASE_ID.list.item.$shareSubscriptionId")
+            fun itemStatus(shareSubscriptionId: String, status: String): Locator = item(shareSubscriptionId).getByText(status)
+            fun itemText(shareSubscriptionId: String, text: String): Locator = item(shareSubscriptionId).getByText(text)
+            fun statusBadge(status: String): Locator = locator.getByText(status)
+            fun mandateEntry(shareSubscriptionId: String, mandateText: String): Locator = item(shareSubscriptionId).getByText(mandateText)
         }
 
         class StatusFilter(
@@ -162,6 +166,9 @@ class SharesPage(private val page: Page) {
                 page.getByDataId("${BulkEditModal.BASE_ID}.modal"),
                 page.getByDataId("${BASE_ID}.bulk-edit-button")
             )
+
+        fun listOfSubscriptions(): ListOfShareSubscriptions =
+            ListOfShareSubscriptions(locator.getByDataId("$BASE_ID.list"))
     }
 
     class TransferOwnershipModal(
@@ -216,6 +223,7 @@ class SharesPage(private val page: Page) {
         fun numberOfSharesInput(): Locator = locator.getByDataId("$BASE_ID.number-of-shares-input")
         fun ahcAuthorizedDropdown(): Locator = locator.getByDataId("$BASE_ID.ahc-authorized-dropdown")
         fun ahcAuthorizedOption(key: String): Locator = locator.getByDataId("$BASE_ID.ahc-authorized-dropdown.option.$key")
+        fun coSubscribersTextarea(): Locator = locator.getByDataId("$BASE_ID.co-subscribers-textarea")
         fun coSubscriberSelectButton(username: String): Locator = locator.getByDataId("$BASE_ID.user.$username.select-button")
     }
 
@@ -233,6 +241,38 @@ class SharesPage(private val page: Page) {
 
         fun statusDropdown(): Locator = locator.page().getByDataId("sepa-mandate-form.status-dropdown")
         fun statusOption(status: String): Locator = locator.page().getByDataId("sepa-mandate-form.status-dropdown.option.$status")
+    }
+
+    class AttachSepaCollectionModal(
+        override val locator: Locator,
+        override val trigger: Locator,
+    ) : TestModal(locator, trigger) {
+        companion object {
+            const val BASE_ID = "sepa-collection-form"
+        }
+
+        override fun submitButton(): Locator = locator.page().getByDataId("null.modal.submit-button")
+        override fun cancelButton(): Locator = locator.page().getByDataId("null.modal.cancel-button")
+        override fun closeButton(): Locator = locator.page().getByDataId("null.modal.close-button")
+
+        fun bankAccountDropdown(): Locator = locator.getByDataId("$BASE_ID.bank-account-dropdown")
+        fun bankAccountOption(accountKey: String): Locator = locator.getByDataId("$BASE_ID.bank-account-dropdown.option.$accountKey")
+        fun collectionKeyInput(): Locator = locator.locator("#collection-key-input")
+        fun mandateReferencePrefixInput(): Locator = locator.locator("#mandate-reference-prefix")
+        fun remittanceInformationInput(): Locator = locator.locator("#remittance-information")
+    }
+
+    class ConfirmationModal(
+        override val locator: Locator,
+        override val trigger: Locator = locator,
+    ) : TestModal(locator, trigger) {
+        companion object {
+            const val BASE_ID = "null.modal"
+        }
+
+        override fun submitButton(): Locator = locator.page().getByDataId("$BASE_ID.submit-button")
+        override fun cancelButton(): Locator = locator.page().getByDataId("$BASE_ID.cancel-button")
+        override fun closeButton(): Locator = locator.page().getByDataId("$BASE_ID.close-button")
     }
 
     // API
@@ -283,6 +323,16 @@ class SharesPage(private val page: Page) {
             page.getByDataId("${AttachOrUpsertSepaMandateModal.BASE_ID}.modal"),
             page.getByPartialDataId(".attach-or-upsert-sepa-mandate-button").first()
         )
+
+    @Suppress("FunctionName")
+    fun AttachSepaCollectionModal(shareOfferId: String): AttachSepaCollectionModal =
+        AttachSepaCollectionModal(
+            page.getByDataId("null.modal"),
+            page.getByDataId("shares.page.share-offer.$shareOfferId.sepa-collection-button")
+        )
+
+    @Suppress("FunctionName")
+    fun ConfirmationModal(): ConfirmationModal = ConfirmationModal(page.getByDataId("null.modal"))
 
 
     /**
@@ -379,21 +429,18 @@ class SharesPage(private val page: Page) {
         assertThat(this).isVisible()
         if(!isOpened()) open()
 
-        val sepaCollectionButton = page.getByDataId("shares.page.share-offer.${shareOffer.id}.sepa-collection-button")
+        val modal = AttachSepaCollectionModal(shareOffer.id)
+        assertThat(modal.trigger).isVisible()
+        modal.trigger.click()
 
-        assertThat(sepaCollectionButton).isVisible()
-        sepaCollectionButton.click()
+        modal.bankAccountDropdown().click()
+        modal.bankAccountOption("$creditorAccountHolder / $creditorAccountDescription").click()
 
-        page.clickOn("sepa-collection-form.bank-account-dropdown")
-        page.clickOn("sepa-collection-form.bank-account-dropdown.option.$creditorAccountHolder / $creditorAccountDescription")
+        modal.collectionKeyInput().fill(collectionKey)
+        modal.mandateReferencePrefixInput().fill(mandateReferencePrefix)
+        modal.remittanceInformationInput().fill(remittanceInformation)
 
-        page.locator("#collection-key-input").fill(collectionKey)
-        page.locator("#mandate-reference-prefix").fill(mandateReferencePrefix)
-        page.locator("#remittance-information").fill(remittanceInformation)
-
-        // page.shot("dev/attach-collection-$collectionKey.png")
-
-        val submitButton = page.getByDataId("null.modal.submit-button")
+        val submitButton = modal.submitButton()
         assertThat(submitButton).isEnabled()
         val collection = page.waitForApi(
             api = solawiApi,
@@ -492,8 +539,7 @@ class SharesPage(private val page: Page) {
         modal.ahcAuthorizedDropdown().click()
         modal.ahcAuthorizedOption(ahcAuthorized.checkIcon()).click()
 
-        page.put(
-            "shares.modal.upsert-share-subscription.co-subscribers-textarea",
+        modal.coSubscribersTextarea().fill(
             coSubscribers.joinToString("\n") { it }
         )
 
@@ -549,8 +595,9 @@ class SharesPage(private val page: Page) {
 
             // A second, generic confirmation dialog ("Are you sure...?") is the one that
             // actually dispatches the status change.
-            page.clickOn("null.modal.submit-button")
-            assertThat(page.getByDataId("null.modal")).not().isVisible()
+            val confirmationModal = ConfirmationModal()
+            confirmationModal.submitButton().click()
+            assertThat(confirmationModal.locator).not().isVisible()
         }.decodeBodyTo<ApiShareSubscriptions>()
     }
 
@@ -587,10 +634,10 @@ class SharesPage(private val page: Page) {
             assertThat(bulkModal).not().isVisible()
 
             // Confirmation dialog
-            val confirmationButton = page.getByDataId("null.modal.submit-button")
-            assertThat(confirmationButton).isVisible()
-            confirmationButton.click()
-            assertThat(page.getByDataId("null.modal")).not().isVisible()
+            val confirmationModal = ConfirmationModal()
+            assertThat(confirmationModal.submitButton()).isVisible()
+            confirmationModal.submitButton().click()
+            assertThat(confirmationModal.locator).not().isVisible()
         }.decodeBodyTo<ApiShareSubscriptions>()
 
         return shareSubscriptions

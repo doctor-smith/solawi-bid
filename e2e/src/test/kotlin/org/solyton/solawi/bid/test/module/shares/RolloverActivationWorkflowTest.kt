@@ -148,12 +148,10 @@ class RolloverActivationWorkflowTest {
 
                 // Assertions:
                 // a) The shadow subscription is now SUBSCRIBED
-                val subscribedRow = shareSubscriptionList.locator.getByText("SUBSCRIBED")
-                com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat(subscribedRow).isVisible()
+                assertThat(shareSubscriptionList.statusBadge("SUBSCRIBED")).isVisible()
 
                 // b) The original subscription has transitioned automatically to ROLLED_OVER
-                val rolledOverRow = shareSubscriptionList.locator.getByText("ROLLED_OVER")
-                com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat(rolledOverRow).isVisible()
+                assertThat(shareSubscriptionList.statusBadge("ROLLED_OVER")).isVisible()
             }
         }
     }

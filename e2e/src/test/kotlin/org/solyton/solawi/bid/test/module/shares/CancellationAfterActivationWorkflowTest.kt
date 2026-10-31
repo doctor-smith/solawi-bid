@@ -111,8 +111,7 @@ class CancellationAfterActivationWorkflowTest {
                     newStatus = "SUBSCRIBED"
                 )
 
-                val subscribedRow = subscribedList.item(subscription.id).getByText("SUBSCRIBED")
-                com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat(subscribedRow).isVisible()
+                assertThat(subscribedList.itemStatus(subscription.id, "SUBSCRIBED")).isVisible()
 
                 // Step 2: Provider cancels active subscription -> CANCELLED
                 val cancelledList = run(BulkChangeSubscriptionStatusWorkflow(this)) withInput BulkChangeSubscriptionStatusInput(
@@ -120,8 +119,7 @@ class CancellationAfterActivationWorkflowTest {
                     newStatus = "CANCELLED"
                 )
 
-                val cancelledRow = cancelledList.item(subscription.id).getByText("CANCELLED")
-                com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat(cancelledRow).isVisible()
+                assertThat(cancelledList.itemStatus(subscription.id, "CANCELLED")).isVisible()
             }
         }
     }

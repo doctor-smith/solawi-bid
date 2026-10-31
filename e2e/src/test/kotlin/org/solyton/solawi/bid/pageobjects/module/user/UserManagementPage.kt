@@ -1,5 +1,6 @@
 package org.solyton.solawi.bid.pageobjects.module.user
 
+import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.Response
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -12,6 +13,30 @@ import org.solyton.solawi.bid.module.values.Username
 
 class UserManagementPage(private val page: Page) {
     val url = "${TestConfig.BASE_URL}/app/management/users"
+
+    class CreateUserModal(
+        override val locator: Locator,
+        override val trigger: Locator,
+    ) : TestModal(locator, trigger) {
+        companion object {
+            const val BASE_ID = "create-user-modal"
+        }
+
+        override fun submitButton(): Locator = locator.getByDataId("$BASE_ID.modal.submit-button")
+        override fun cancelButton(): Locator = locator.getByDataId("$BASE_ID.modal.cancel-button")
+        override fun closeButton(): Locator = locator.getByDataId("$BASE_ID.modal.close-button")
+
+        fun usernameInput(): Locator = locator.getByDataId("$BASE_ID.input.username")
+        fun passwordInput(): Locator = locator.getByDataId("$BASE_ID.input.password")
+        fun repeatPasswordInput(): Locator = locator.getByDataId("$BASE_ID.input.repeat-password")
+    }
+
+    @Suppress("FunctionName")
+    fun CreateUserModal(): CreateUserModal =
+        CreateUserModal(
+            page.getByDataId("create-user-modal.modal"),
+            page.getByDataId("user-management.create-user-button")
+        )
 
     fun load(): Response? = page.navigate(url)
 
@@ -31,18 +56,18 @@ class UserManagementPage(private val page: Page) {
             else -> username.value
         }
 
+        val modal = CreateUserModal()
+        modal.trigger.click()
 
-        page.clickOn("user-management.create-user-button")
-
-        page.put("create-user-modal.input.username", realUsername)
-        page.put("create-user-modal.input.password", password.value)
-        page.put("create-user-modal.input.repeat-password", password.value)
+        modal.usernameInput().fill(realUsername)
+        modal.passwordInput().fill(password.value)
+        modal.repeatPasswordInput().fill(password.value)
 
         page.waitForApi(
             api = solawiApi,
             keyOfEndpoint = CreateUser::class
         ) {
-            page.clickOn("create-user-modal.modal.submit-button")
+            modal.submitButton().click()
         }.decodeBodyTo<ApiUser>()
 
         return StdTestUser(Username(realUsername), password)
