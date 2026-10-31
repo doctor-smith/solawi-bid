@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.application.ui.page.auction.action
 
-import kotlinx.datetime.LocalDate
+import org.evoleq.kotlinx.date.toDateTime
+import org.evoleq.kotlinx.date.today
 import org.evoleq.kotlinx.date.todayWithTime
 import org.evoleq.ktorx.result.on
 import org.evoleq.math.write
@@ -15,6 +16,7 @@ import org.solyton.solawi.bid.module.bid.action.createAuction
 import org.solyton.solawi.bid.module.bid.action.readAuctions
 import org.solyton.solawi.bid.module.bid.component.form.DEFAULT_AUCTION_ID
 import org.solyton.solawi.bid.module.bid.data.BidApplication
+import org.solyton.solawi.bid.module.bid.data.api.CreateAuction
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.bidenv.Environment
 import org.solyton.solawi.bid.test.storage.TestStorage
@@ -32,8 +34,8 @@ class AuctionTests {
             get = {Auction(DEFAULT_AUCTION_ID,name, todayWithTime())},
             set = {{it}}
         )
-
-        createAuction(auctionLens)
+        val data = CreateAuction("", today().toDateTime(), "")
+        createAuction(data)
     }
 
     @OptIn(ComposeWebExperimentalTestsApi::class)

@@ -9,11 +9,11 @@ import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.ActionDispatcher
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.testutils.ComposeWebExperimentalTestsApi
-import org.jetbrains.compose.web.testutils.runTest
 import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
 import org.solyton.solawi.bid.application.serialization.installSerializers
 import org.solyton.solawi.bid.module.bid.data.*
 import org.solyton.solawi.bid.module.bid.data.api.*
+import org.solyton.solawi.bid.module.bid.data.api.CreateAuction
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.auction.rounds
 import org.solyton.solawi.bid.module.bid.data.bidder.BidderInfo
@@ -151,8 +151,8 @@ class ActionTests{
             0,
             ApiRoundComments(listOf())
         )
-
-        val createAuction = createAuction(auctionLens)
+        val data = CreateAuction(auction.name, auction.date, auction.contextId)
+        val createAuction = createAuction(data)
 
         val action = createRound(auctionLens)
 
