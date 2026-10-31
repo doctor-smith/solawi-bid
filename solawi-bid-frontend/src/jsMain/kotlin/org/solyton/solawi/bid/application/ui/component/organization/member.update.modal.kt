@@ -82,7 +82,8 @@ fun UpdateMemberOfOrganizationModal(
     setBankAccount: (BankAccount) -> Unit,
     isOkButtonDisabled: ()->Boolean,
     cancel: ()->Unit,
-    update: ()->Unit
+    update: ()->Unit,
+    dataId: String? = "organization.member.update-modal"
 ): @Composable ElementScope<HTMLElement>.()->Unit = Modal(
     type = ModalType.Dialog,
     id = id,
@@ -97,6 +98,7 @@ fun UpdateMemberOfOrganizationModal(
     isOkButtonDisabled = isOkButtonDisabled,
     texts = texts.emit(),
     styles = modalStyles(device),
+    dataId = dataId,
 ) {
     val scope = rememberCoroutineScope()
     val inputs = texts * subComp("inputs")
@@ -213,6 +215,7 @@ fun Storage<Modals<Int>>.showUpdateMembersOfOrganizationModal(
     setBankAccount: (BankAccount) -> Unit,
     isOkButtonDisabled: ()->Boolean = {false},
     cancel: ()->Unit = {},
+    dataId: String? = "organization.member.update-modal",
     update: ()->Unit
 ) = with(nextId()) {
     put(this to ModalData(this,
@@ -241,7 +244,8 @@ fun Storage<Modals<Int>>.showUpdateMembersOfOrganizationModal(
             setBankAccount,
             isOkButtonDisabled,
             cancel,
-            update
+            update,
+            dataId
         )
     ) )
 }

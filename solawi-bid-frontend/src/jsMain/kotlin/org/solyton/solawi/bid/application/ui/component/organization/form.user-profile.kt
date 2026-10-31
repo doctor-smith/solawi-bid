@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.application.ui.component.organization
 
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.conditional.When
 import org.evoleq.compose.form.Form
 import org.evoleq.compose.form.field.Field
@@ -95,6 +96,7 @@ fun UserProfileForm(
                     TextInput(usernameState ?: "") {
                         required()
                         id("username")
+                        dataId("user-profile.form.username-input")
                         style { textInputDesktopStyle() }
                         onInput {
                             usernameState = it.value
@@ -115,6 +117,7 @@ fun UserProfileForm(
                     )
                     TextInput(userProfileState?.title ?: "") {
                         id("title")
+                        dataId("user-profile.form.title-input")
                         style { textInputDesktopStyle() }
                         onInput {
                             val newUserProfile =
@@ -135,6 +138,7 @@ fun UserProfileForm(
                     TextInput(userProfileState?.firstname ?: "") {
                         required()
                         id("firstname")
+                        dataId("user-profile.form.firstname-input")
                         style { textInputDesktopStyle() }
                         onInput {
                             val newUserProfile =
@@ -155,6 +159,7 @@ fun UserProfileForm(
                     TextInput(userProfileState?.lastname ?: "") {
                         required()
                         id("lastname")
+                        dataId("user-profile.form.lastname-input")
                         style { textInputDesktopStyle() }
                         onInput {
                             val newUserProfile =
@@ -173,6 +178,7 @@ fun UserProfileForm(
                         )
                         TextInput(userProfileState?.phoneNumber ?: "") {
                             id("phoneNumber")
+                            dataId("user-profile.form.phone-number-input")
                             style { textInputDesktopStyle() }
                             onInput {
                                 val newUserProfile =
@@ -191,6 +197,7 @@ fun UserProfileForm(
                         )
                         TextInput(userProfileState?.phoneNumber1 ?: "") {
                             id("phoneNumber1")
+                            dataId("user-profile.form.cell-phone-number-input")
                             style { textInputDesktopStyle() }
                             onInput {
                                 val newUserProfile =
@@ -223,6 +230,7 @@ fun UserProfileForm(
                         TextInput(address?.recipientName ?: "") {
                             required()
                             id("recipientName")
+                            dataId("user-profile.form.recipient-name-input")
                             style { textInputDesktopStyle() }
                             onInput {
                                 val newUserProfile = (userProfileState?: UserProfile.default).addresses {
@@ -245,6 +253,7 @@ fun UserProfileForm(
                         )
                         TextInput(address?.organizationName ?: "") {
                             id("organizationName")
+                            dataId("user-profile.form.organization-name-input")
                             style { textInputDesktopStyle() }
                             onInput {
                                 val newUserProfile = (userProfileState?: UserProfile.default).addresses {
@@ -271,6 +280,7 @@ fun UserProfileForm(
                     TextInput(address?.addressLine1 ?: "") {
                         required()
                         id("addressLine1")
+                        dataId("user-profile.form.address-line1-input")
                         style { textInputDesktopStyle() }
                         onInput {
                             val newUserProfile = (userProfileState?: UserProfile.default).addresses{
@@ -293,6 +303,7 @@ fun UserProfileForm(
                     )
                     TextInput(address?.addressLine2 ?: "") {
                         id("addressLine2")
+                        dataId("user-profile.form.address-line2-input")
                         style { textInputDesktopStyle() }
                         onInput {
                             val newUserProfile = (userProfileState?: UserProfile.default).addresses{
@@ -317,6 +328,7 @@ fun UserProfileForm(
                         TextInput(address?.postalCode ?: "") {
                             required()
                             id("postalCode")
+                            dataId("user-profile.form.postal-code-input")
                             style { textInputDesktopStyle() }
                             onInput {
                                 val newUserProfile = (userProfileState?: UserProfile.default).addresses {
@@ -340,6 +352,7 @@ fun UserProfileForm(
                         TextInput(address?.city ?: "") {
                             required()
                             id("city")
+                            dataId("user-profile.form.city-input")
                             style { textInputDesktopStyle() }
                             onInput {
                                 val newUserProfile = (userProfileState?: UserProfile.default).addresses {
@@ -384,7 +397,8 @@ fun UserProfileForm(
                             options = countriesMap,
                             selected = countries.firstOrNull{it.key == (address?.countryCode?:"DE")}?.value,
                             styles = dropdownStyles,
-                            iconContent = {expanded -> SimpleUpDown(expanded) }
+                            iconContent = {expanded -> SimpleUpDown(expanded) },
+                            dataId = "user-profile.form.country-code-dropdown"
                         ) { (_, value) ->
                             val newUserProfile = (userProfileState?: UserProfile.default).addresses {
                                 val address = userProfileState?.addresses?.firstOrNull()
@@ -409,7 +423,8 @@ fun UserProfileForm(
                             options = countryStatesMap,
                             selected = countryStates.firstOrNull{it.key == (address?.stateOrProvince?:"DE-BW")}?.value,
                             styles = dropdownStyles,
-                            iconContent = {expanded -> SimpleUpDown(expanded) }
+                            iconContent = {expanded -> SimpleUpDown(expanded) },
+                            dataId = "user-profile.form.state-or-province-dropdown"
                         ) { (_, value) ->
                             val newUserProfile = (userProfileState?: UserProfile.default).addresses {
                                 val address = userProfileState?.addresses?.firstOrNull()

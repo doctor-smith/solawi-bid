@@ -6,6 +6,7 @@ import org.solyton.solawi.bid.application.api.solawiApi
 import org.solyton.solawi.bid.module.permission.data.api.PutUserRoleContext
 import org.solyton.solawi.bid.module.permission.data.api.UserContext
 import org.solyton.solawi.bid.module.user.data.api.organization.CreateOrganization
+import org.solyton.solawi.bid.module.user.data.api.organization.ImportMembers
 import org.solyton.solawi.bid.module.user.data.api.organization.Organization
 
 /**
@@ -130,5 +131,40 @@ class OrganizationManagementPage(private val page: Page) {
         }.decodeBodyTo<UserContext>()
 
         return response
+    }
+
+    /**
+     * Adds a new member to an existing organization via the members card modal
+     * on the organization detail page.
+     */
+    fun addMember(
+        organizationName: String,
+        username: String,
+        firstname: String = "New",
+        lastname: String = "Member",
+        hasToNavigate: Boolean = true
+    ) {
+        if (hasToNavigate) page.navigate("${TestConfig.BASE_URL}/app/management/organizations")
+        page.dismissStrayErrorDialogIfPresent()
+        page.waitForLoadingToFinish()
+
+        page.clickOn("organization-management-page.organization-list.organization.$organizationName.details-button")
+        page.waitForLoadingToFinish()
+        page.dismissStrayErrorDialogIfPresent()
+
+        page.clickOn("organization.page.members.chevron")
+        page.clickOn("organization.page.members.add-button")
+
+        page.getByDataId("user-profile.form.username-input").fill(username)
+        page.getByDataId("user-profile.form.firstname-input").fill(firstname)
+        page.getByDataId("user-profile.form.lastname-input").fill(lastname)
+
+        page.waitForApi(
+            api = solawiApi,
+            keyOfEndpoint = ImportMembers::class
+        ) {
+            page.clickOn("organization.member.update-modal.modal.submit-button")
+        }
+        page.waitForLoadingToFinish()
     }
 }

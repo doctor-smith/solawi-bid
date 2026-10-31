@@ -80,7 +80,8 @@ fun ShareSubscriptionsForm(
                         it.fiscalYear.format() + " - " + it.shareType.name
                     },
                     selected = null,
-                    closeOnSelect = true
+                    closeOnSelect = true,
+                    dataId = "share-subscriptions.form.share-offers-dropdown"
                 ) { (_, shareOffer) ->
 
                     shareSubscriptions = (shareSubscriptions?.all.orEmpty() + ShareSubscription(
