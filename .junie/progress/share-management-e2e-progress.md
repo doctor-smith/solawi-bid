@@ -1,7 +1,7 @@
 ---
 Last updated: 2026-10-31
-Phase: 1 (Audit) complete; Phase 2 (fixture-chain build-out) complete and VERIFIED.
-Phase 3 (remaining workflows) is underway: B1, B2, B3, B4, B6, C2, D1, D2, and E1 (ownership transfer) all pass end-to-end or are verified.
+Phase: Phase 3 complete; Rule 3b PageObject and TestComponent abstraction mandate fully implemented and verified.
+Phase 3 (remaining workflows): B1, B2, B3, B4, B6, C2, D1, D2, E1 (ownership transfer), and PageObject / TestComponent abstractions all pass end-to-end and are verified.
 ---
 
 # Share Management E2E — Progress & Audit
@@ -74,6 +74,7 @@ Issues Register for the full list.
 - **2026-10-31 (VersionInfoTest enhancement)**: Updated `e2e/src/test/kotlin/org/solyton/solawi/bid/test/application/VersionInfoTest.kt` to thoroughly test Environment ("DEV"), Username, FRONTEND/BACKEND sections, Version rows, and Commit rows in the Version Info overlay. Robust URL determination and safe JSON parsing were added to prevent HTML fallback decoding exceptions across CI and local E2E environments.
 - **2026-10-27 (B4, B6, C2, D2 implementation & status transition refactoring)**: Added `AuctionClearanceWorkflowTest.kt` (workflow B4), `CancellationBeforeActivationWorkflowTest.kt` (workflow B6), `CancellationAfterActivationWorkflowTest.kt` (workflow C2), and `RolloverActivationWorkflowTest.kt` (workflow D2). Refactored status transitions and bulk status update handling in `page.share-management-for-organizations.kt` and `SharesPage.kt`.
 - **2026-10-31 (E1 Ownership Transfer & Organization Member Modal integration)**: Added `addMember` method to `OrganizationManagementPage.kt` and created `AddMemberToOrganizationWorkflow.kt` to allow adding new members to an organization via the Organization Page modal. Updated `TransferSubscriptionOwnershipWorkflow.kt` and `TransferSubscriptionOwnershipWorkflowTest.kt` to invoke the `AddMemberToOrganizationWorkflow` step before transferring subscription ownership. All components compiled and verified with zero errors.
+- **2026-10-31 (Rule 3b PageObject and TestComponent Abstraction Mandate)**: Updated operating rules in `.junie/rules/share-management-e2e.md` adding Section 3b requiring all UI interactions and modal handling to go strictly through PageObjects and typed `TestModal` / `TestComponent` abstractions. Created typed `TestModal` classes (`UpsertShareTypeModal`, `UpsertShareOfferModal`, `TransferOwnershipModal`, `UpsertShareSubscriptionModal`, `AttachOrUpsertSepaMandateModal`, `AttachSepaCollectionModal`, `ConfirmationModal`, `CreateOrganizationModal`, `ManageUserPermissionsModal`, `AddMemberModal`, `CreateUserModal`, `ConnectApplicationModal`) and `MembersCard` accordion across `SharesPage.kt`, `OrganizationManagementPage.kt`, `PrivateApplicationManagementPage.kt`, `UserManagementPage.kt`, and refactored workflows and workflow tests (`TransferSubscriptionOwnershipWorkflow.kt`, `TransferSubscriptionOwnershipWorkflowTest.kt`, `AddMemberToOrganizationWorkflowTest.kt`, `ShareSubscriptionApprovalWorkflowTest.kt`, `AuctionClearanceWorkflowTest.kt`, `CancellationAfterActivationWorkflowTest.kt`, `CancellationBeforeActivationWorkflowTest.kt`, `FailedAuthorizationWorkflowTest.kt`, `PaymentMandateAuthorizationWorkflowTest.kt`, `RolloverWorkflowTest.kt`, `RolloverActivationWorkflowTest.kt`) to eliminate raw Playwright locators on `page`. Added `assertThat(locator: Locator)` overload in `framework.kt`. Verified build and ran `TransferSubscriptionOwnershipWorkflowTest` (100% pass).
 
 ## Tests Implemented
 

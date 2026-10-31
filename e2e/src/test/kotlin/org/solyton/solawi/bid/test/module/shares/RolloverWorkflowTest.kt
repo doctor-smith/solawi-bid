@@ -144,12 +144,10 @@ class RolloverWorkflowTest {
 
                 // Assertions:
                 // 1. Original subscription in FY1 must be in status ROLLING_OVER
-                val rollingOverRow = shareSubscriptionList.locator.getByText("ROLLING_OVER")
-                com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat(rollingOverRow).isVisible()
+                assertThat(shareSubscriptionList.statusBadge("ROLLING_OVER")).isVisible()
 
                 // 2. Newly created shadow subscription in FY2 must be in status PENDING_ACTIVATION
-                val pendingRow = shareSubscriptionList.locator.getByText("PENDING_ACTIVATION")
-                com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat(pendingRow).isVisible()
+                assertThat(shareSubscriptionList.statusBadge("PENDING_ACTIVATION")).isVisible()
             }
         }
     }

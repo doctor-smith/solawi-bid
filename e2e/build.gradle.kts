@@ -171,7 +171,7 @@ tasks.withType<Test>().configureEach {
         "E2E_RESET_DB",
         "PARALLEL_TESTS",
         "NUMBER_OF_WORKERS",
-        "SLOWMO",
+        "SLOW_MO",
         "HEADLESS"
     ).forEach { key ->
         val fromEnv = System.getenv(key)

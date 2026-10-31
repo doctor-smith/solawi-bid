@@ -115,8 +115,7 @@ class ShareSubscriptionApprovalWorkflowTest {
                     newStatus = "SUBSCRIBED"
                 )
 
-                val subscribedRow = subscribedList.item(subscription.id).getByText("SUBSCRIBED")
-                com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat(subscribedRow).isVisible()
+                assertThat(subscribedList.itemStatus(subscription.id, "SUBSCRIBED")).isVisible()
             }
         }
     }

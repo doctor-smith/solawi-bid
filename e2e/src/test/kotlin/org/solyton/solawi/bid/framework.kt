@@ -269,6 +269,7 @@ abstract class TestModal(
 }
 
 fun assertThat(component: TestComponent): LocatorAssertions = assertThat(component.locator)
+fun assertThat(locator: Locator): LocatorAssertions = assertThat(locator)
 
 
 /**

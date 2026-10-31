@@ -18,6 +18,46 @@ import org.solyton.solawi.bid.module.user.data.api.organization.Organization
  */
 class OrganizationManagementPage(private val page: Page) {
 
+    class CreateOrganizationModal(
+        override val locator: Locator,
+        override val trigger: Locator,
+    ) : TestModal(locator, trigger) {
+        companion object {
+            const val BASE_ID = "null.modal"
+        }
+        override fun submitButton(): Locator = locator.page().getByDataId("$BASE_ID.submit-button")
+        override fun cancelButton(): Locator = locator.page().getByDataId("$BASE_ID.cancel-button")
+        override fun closeButton(): Locator = locator.page().getByDataId("$BASE_ID.close-button")
+
+        fun nameInput(): Locator = locator.page().locator("#organization-name")
+    }
+
+    class ManageUserPermissionsModal(
+        override val locator: Locator,
+        override val trigger: Locator = locator,
+    ) : TestModal(locator, trigger) {
+        companion object {
+            const val BASE_ID = "manage-user-permissions.modal"
+        }
+        override fun submitButton(): Locator = locator.page().getByDataId("null.modal.submit-button")
+        override fun cancelButton(): Locator = locator.page().getByDataId("null.modal.cancel-button")
+        override fun closeButton(): Locator = locator.page().getByDataId("null.modal.close-button")
+
+        fun roleCheckbox(role: String): Locator = locator.page().getByDataId("$BASE_ID.role.$role.checkbox")
+        fun allRoleCheckboxes(): Locator = locator.page().locator("input[type='checkbox'][data-id^='$BASE_ID.role.']")
+    }
+
+    class MembersCard(override val locator: Locator) : DefaultTestAccordion(locator) {
+        companion object {
+            const val BASE_ID = "organization.page.members"
+        }
+        override fun trigger(): Locator = locator.getByDataId("$BASE_ID.chevron")
+        fun addButton(): Locator = locator.getByDataId("$BASE_ID.add-button")
+        fun memberRow(username: String): Locator = locator.page().getByText(username)
+    }
+
+    fun MembersCard(): MembersCard = MembersCard(page.getByDataId(MembersCard.BASE_ID))
+
     /**
      * Creates a brand-new root organization with a unique [name] via
      * `/app/management/organizations`. TEST_USER (the creator) automatically becomes a
@@ -30,14 +70,20 @@ class OrganizationManagementPage(private val page: Page) {
         page.dismissStrayErrorDialogIfPresent()
         page.waitForLoadingToFinish()
 
-        page.clickOn("organization-management-page.button.create-organization")
-        page.locator("#organization-name").fill(name)
+        val modal = CreateOrganizationModal(
+            page.getByDataId("null.modal"),
+            page.getByDataId("organization-management-page.button.create-organization")
+        )
+        assertThat(modal.trigger).isVisible()
+        modal.trigger.click()
+
+        modal.nameInput().fill(name)
 
         val organization = page.waitForApi(
             api = solawiApi,
             keyOfEndpoint = CreateOrganization::class
         ) {
-            page.clickOn("null.modal.submit-button")
+            modal.submitButton().click()
         }.decodeBodyTo<Organization>()
 
         page.waitForSelector("text=$name")
@@ -75,12 +121,11 @@ class OrganizationManagementPage(private val page: Page) {
 
         page.clickOn("private-application-organization-management.page.member.$username.manage-permissions-button")
 
-        // Check every available role checkbox (not just the already-checked, non-togglable
-        // OWNER one), since OWNER alone is not always sufficient for every action.
-        val roleCheckboxes = page.locator("input[type='checkbox'][data-id^='manage-user-permissions.modal.role.']")
+        val permissionsModal = ManageUserPermissionsModal(page.getByDataId("manage-user-permissions.modal"))
+        val roleCheckboxes = permissionsModal.allRoleCheckboxes()
         roleCheckboxes.first().waitFor()
         val count = roleCheckboxes.count()
-        if (count <= 0) throw IllegalArgumentException("There should be at lease one role")
+        if (count <= 0) throw IllegalArgumentException("There should be at least one role")
         for (i in 0 until count) {
             val checkbox = roleCheckboxes.nth(i)
             if (checkbox.isChecked.not()) checkbox.check()
@@ -90,7 +135,7 @@ class OrganizationManagementPage(private val page: Page) {
             api = solawiApi,
             keyOfEndpoint = PutUserRoleContext::class,
         ) {
-            page.clickOn("null.modal.submit-button")
+            permissionsModal.submitButton().click()
         }.decodeBodyTo<UserContext>()
 
         return response
@@ -118,18 +163,19 @@ class OrganizationManagementPage(private val page: Page) {
 
         page.clickOn("private-application-organization-management.page.member.$username.manage-permissions-button")
 
-        val roleCheckboxes = page.locator("input[type='checkbox'][data-id^='manage-user-permissions.modal.role.']")
+        val permissionsModal = ManageUserPermissionsModal(page.getByDataId("manage-user-permissions.modal"))
+        val roleCheckboxes = permissionsModal.allRoleCheckboxes()
         roleCheckboxes.first().waitFor()
 
         roles.forEach { role ->
-            page.clickOn("manage-user-permissions.modal.role.$role.checkbox")
+            permissionsModal.roleCheckbox(role).click()
         }
 
         val response = page.waitForApi(
             api = solawiApi,
             keyOfEndpoint = PutUserRoleContext::class,
         ) {
-            page.clickOn("null.modal.submit-button")
+            permissionsModal.submitButton().click()
         }.decodeBodyTo<UserContext>()
 
         return response

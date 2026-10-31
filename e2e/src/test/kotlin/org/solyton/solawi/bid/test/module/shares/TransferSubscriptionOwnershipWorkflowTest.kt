@@ -37,7 +37,7 @@ class TransferSubscriptionOwnershipWorkflowTest {
         @BeforeAll
         fun beforeAll() {
             val headless = TestConfig.HEADLESS
-            val slowMo = TestConfig.SLOWMO
+            val slowMo = TestConfig.SLOW_MO
             playwright = Playwright.create()
             browser = playwright.chromium().launch(
                 BrowserType.LaunchOptions()
@@ -140,8 +140,7 @@ class TransferSubscriptionOwnershipWorkflowTest {
                     filterStatus = "All Statuses",
                     newStatus = "SUBSCRIBED"
                 )
-                val subscribedRow = subscribedList.item(subscription.id).getByText("SUBSCRIBED")
-                assertThat(subscribedRow).isVisible()
+                assertThat(subscribedList.itemStatus(subscription.id, "SUBSCRIBED")).isVisible()
 
                 // Neuen Eigentümer als Mitglied zur Organisation via Organisationsseiten-Modal hinzufügen
                 run(AddMemberToOrganizationWorkflow(this)) withInput AddMemberToOrganizationInput(
@@ -162,9 +161,9 @@ class TransferSubscriptionOwnershipWorkflowTest {
                 )
 
                 // Verifikation: Abonnement existiert weiterhin im Status SUBSCRIBED
-                val subscriptionItem = page.getByDataId("shares.page.share-subscription.list.item.${transferredSubscription.id}")
-                assertThat(subscriptionItem.getByText("SUBSCRIBED")).isVisible()
-                assertThat(subscriptionItem.getByText("New Owner")).isVisible()
+                val listOfSubscriptions = org.solyton.solawi.bid.pageobjects.SharesPage(page).ShareSubscriptionManagement().listOfSubscriptions()
+                assertThat(listOfSubscriptions.itemStatus(transferredSubscription.id, "SUBSCRIBED")).isVisible()
+                assertThat(listOfSubscriptions.itemText(transferredSubscription.id, "New Owner")).isVisible()
             }
         }
     }

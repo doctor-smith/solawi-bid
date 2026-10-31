@@ -12,6 +12,22 @@ import org.solyton.solawi.bid.*
  */
 class PrivateApplicationManagementPage(private val page: Page) {
 
+    class ConnectApplicationModal(
+        override val locator: Locator,
+        override val trigger: Locator,
+    ) : TestModal(locator, trigger) {
+        companion object {
+            const val BASE_ID = "connect-application-to-organization.modal"
+        }
+
+        override fun submitButton(): Locator = locator.page().getByDataId("null.modal.submit-button")
+        override fun cancelButton(): Locator = locator.page().getByDataId("null.modal.cancel-button")
+        override fun closeButton(): Locator = locator.page().getByDataId("null.modal.close-button")
+
+        fun organizationDropdown(): Locator = locator.page().getByDataId("$BASE_ID.organization-dropdown")
+        fun organizationOption(orgName: String): Locator = locator.page().getByDataId("$BASE_ID.organization-dropdown.option.$orgName")
+    }
+
     /**
      * Ensures [applicationName] is personally `Active` for the current user (TEST_USER),
      * which is a prerequisite for the "connect to organization" button to even render on
@@ -43,11 +59,15 @@ class PrivateApplicationManagementPage(private val page: Page) {
     fun bookApplication(applicationName: String, organizationName: String, hasToNavigate: Boolean = true) {
         ensureApplicationActiveForTestUser(applicationName, hasToNavigate)
 
-        // TODO wait for responses
-        page.clickOn("private-application-management.page.application.$applicationName.connect-button")
-        page.clickOn("connect-application-to-organization.modal.organization-dropdown")
-        page.clickOn("connect-application-to-organization.modal.organization-dropdown.option.$organizationName")
-        page.clickOn("null.modal.submit-button")
+        val modal = ConnectApplicationModal(
+            page.getByDataId("null.modal"),
+            page.getByDataId("private-application-management.page.application.$applicationName.connect-button")
+        )
+        modal.trigger.click()
+
+        modal.organizationDropdown().click()
+        modal.organizationOption(organizationName).click()
+        modal.submitButton().click()
 
         // Confirm the booking actually persisted before moving on: the organization name
         // shows up in the "linked organizations" column of the application's row.
