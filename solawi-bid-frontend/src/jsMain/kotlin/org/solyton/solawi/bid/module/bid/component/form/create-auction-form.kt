@@ -95,30 +95,38 @@ fun AuctionModal(
         return organizationsMap[organizationId]
     }
 
+    // States
+    val initDate = (auction * date).read().format(Locale.Iso)
+    var dateStringState by remember{ mutableStateOf( initDate ) }
+    var nameState by remember { mutableStateOf<String?>(null) }
+    var auctionContextIdState by remember { mutableStateOf<String?>(null) }
+
+
     Div(attrs = {style { formDesktopStyle() }}) {
 
         Div(attrs = {style { fieldDesktopStyle() }}) {
             Label(inputs["title"], id = "name" , labelStyle = formLabelDesktopStyle)
-            TextInput((auction * name).read()) {
+            TextInput(nameState.orEmpty()) {
                 id("name")
                 dataId("create-auction.form.input.name")
                 style { textInputDesktopStyle() }
-                onInput { (auction * name).write(it.value) }
+                onInput {
+                    nameState = it.value
+                    (auction * name).write(it.value)
+                }
             }
         }
         Div(attrs = {style { fieldDesktopStyle() }}) {
-            // State
-            val initDate = (auction * date).read().format(Locale.Iso)
-            var dateString by remember{ mutableStateOf( initDate ) }
+
 
             Label(inputs["date"], id = "date" , labelStyle = formLabelDesktopStyle)
             Input(InputType.Date) {
                 id("date")
                 dataId("create-auction.form.input.date")
-                value(dateString)
+                value(dateStringState)
                 style { dateInputDesktopStyle() }
                 onInput {
-                    dateString = it.value
+                    dateStringState = it.value
                     (auction * date).write(it.value.parse(Locale.Iso).toDateTime())
                 }
             }
@@ -147,6 +155,7 @@ fun AuctionModal(
                     )]) {
                         "No context found for application ${applicationId.emit()} and organization ${organization.organizationId}"
                     }.contextId
+                    auctionContextIdState = applicationContextId
                     (auction * contextId).write(applicationContextId)
             }
         }

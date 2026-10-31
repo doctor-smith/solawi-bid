@@ -33,6 +33,7 @@ import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.application.ui.page.user.effect.trigger
 import org.solyton.solawi.bid.application.ui.page.user.i18n.OrganizationLangComponent
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
+import org.solyton.solawi.bid.module.context.data.isEmpty
 import org.solyton.solawi.bid.module.control.button.DetailsButton
 import org.solyton.solawi.bid.module.control.button.EditButton
 import org.solyton.solawi.bid.module.control.button.PlusButton
@@ -68,6 +69,7 @@ import org.solyton.solawi.bid.module.user.permission.OrganizationRight
 @Composable
 @Suppress("FunctionName")
 fun OrganizationManagementPage(storage: Storage<Application>) {
+    if((storage * context * isEmpty()).emit()) return
     val scope = rememberCoroutineScope()
     withLoading(
         isLoading = isLoading(

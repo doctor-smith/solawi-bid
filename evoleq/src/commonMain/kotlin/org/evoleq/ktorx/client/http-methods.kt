@@ -64,13 +64,17 @@ fun <S: Any,T: Any> HttpClient.delete(url: String, port: Int, serializer: KSeria
         decode(deserializer)
     } }
 
-
+private val json by lazy {
+    Json{
+        ignoreUnknownKeys = true
+    }
+}
 /**
  *  Decode Http Response to generic Result<Contextual<T>>.
  *  Try to parse body as text and return a Contextual Result object carrying the current context, result and the http status code.
  */
 suspend fun <T : Any> HttpResponse.decode(deserializer : KSerializer<Result<T>>): Result<Contextual<T>> = try{
-    Json.decodeFromString(deserializer, this.bodyAsText())
+    json.decodeFromString(deserializer, this.bodyAsText())
 } catch(ex: Exception){
     val failure = Json.decodeFromString(Result.Failure.Message.serializer(), this.bodyAsText())
     Result.Failure.HttpStatusMessage(this.status, failure.value)

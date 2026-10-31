@@ -10,27 +10,31 @@ import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.application.data.context
 import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
 import org.solyton.solawi.bid.application.service.useI18nTransform
 import org.solyton.solawi.bid.application.ui.effect.LaunchComponentLookup
 import org.solyton.solawi.bid.module.bid.data.i18N
 import org.solyton.solawi.bid.module.bid.data.reader.BidComponent
+import org.solyton.solawi.bid.module.context.data.isEmpty
 import org.solyton.solawi.bid.module.i18n.data.componentLoaded
 
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun BidRoundEvaluationPage(storage: Storage<Application>, bidRoundId: String) = Div{
-    LaunchComponentLookup(
-        BidComponent.AuctionPage,
-        storage  * Reader { app: Application -> app.environment.useI18nTransform() },
-        storage * bidApplicationIso * i18N
-    )
-    val loaded = (storage * bidApplicationIso * i18N * componentLoaded(BidComponent.AuctionPage)).emit()
-    if(!loaded) return@Div
+fun BidRoundEvaluationPage(storage: Storage<Application>, bidRoundId: String) {
+    if((storage * context * isEmpty()).emit()) return
+    Div{
+        LaunchComponentLookup(
+            BidComponent.AuctionPage,
+            storage  * Reader { app: Application -> app.environment.useI18nTransform() },
+            storage * bidApplicationIso * i18N
+        )
+        val loaded = (storage * bidApplicationIso * i18N * componentLoaded(BidComponent.AuctionPage)).emit()
+        if(!loaded) return@Div
 
 
-    H1 { Text("BidRoundEvaluationPage, bidRoundId : $bidRoundId") }
-    storage.read()
-
+        H1 { Text("BidRoundEvaluationPage, bidRoundId : $bidRoundId") }
+        storage.read()
+    }
 }

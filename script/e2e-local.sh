@@ -96,7 +96,7 @@ build_frontend() {
   echo "    Commit:  $git_sha"
 
   docker build --pull=false \
-    --build-arg application_version="$version" \
+    --build-arg APPLICATION_VERSION="$version" \
     --build-arg GIT_SHA="$git_sha" \
     -f infrastructure/docker/Dockerfile-Frontend \
     -t solawi-bid/frontend:local .
@@ -114,7 +114,7 @@ build_backend() {
   echo "    Commit:  $git_sha"
 
   docker build --pull=false \
-    --build-arg application_version="$version" \
+    --build-arg APPLICATION_VERSION="$version" \
     --build-arg GIT_SHA="$git_sha" \
     -f infrastructure/docker/Dockerfile-Backend \
     -t solawi-bid/backend:local .

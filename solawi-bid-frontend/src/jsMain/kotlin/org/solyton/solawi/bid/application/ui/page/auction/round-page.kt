@@ -17,6 +17,7 @@ import org.jetbrains.compose.web.css.vh
 import org.jetbrains.compose.web.dom.Div
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.auctions
+import org.solyton.solawi.bid.application.data.context
 import org.solyton.solawi.bid.application.data.environment
 import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
 import org.solyton.solawi.bid.application.service.useI18nTransform
@@ -26,6 +27,7 @@ import org.solyton.solawi.bid.module.bid.data.auction.rounds
 import org.solyton.solawi.bid.module.bid.data.bidround.link
 import org.solyton.solawi.bid.module.bid.data.i18N
 import org.solyton.solawi.bid.module.bid.data.reader.BidComponent
+import org.solyton.solawi.bid.module.context.data.isEmpty
 import org.solyton.solawi.bid.module.i18n.data.componentLoaded
 import org.solyton.solawi.bid.module.qrcode.QRCodeSvg
 import org.solyton.solawi.bid.module.style.page.verticalPageStyle
@@ -34,85 +36,88 @@ import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun RoundPage(storage: Storage<Application>, auctionId: String, roundId: String) = Div{
-    // Effect
-    // Load missing data if necessary
-    val dataIsMissing = onMissing(
-        storage * auctions.get,
-        { it.auctionId == auctionId }
-    ) {
-        LaunchedEffect(Unit) {
-            launch {
-                readAuctions()
-            }
-        }
-    }
-    if(dataIsMissing) return@Div
-    LaunchComponentLookup(
-        BidComponent.Round,
-        storage  * Reader { app: Application -> app.environment.useI18nTransform() },
-        storage * bidApplicationIso * i18N
-    )
-    val loaded = (storage * bidApplicationIso * i18N * componentLoaded(BidComponent.Round)).emit()
-    if(!loaded) return@Div
-
-    // Data
-    val auction = storage * auctions * FirstBy { it.auctionId == auctionId }
-    val round = auction * rounds * FirstBy { it.roundId == roundId }
-    val link = round * link
-    val frontendBaseUrl = with((storage * environment).read()){
-        "$frontendUrl:$frontendPort"
-    }
-    val fullLink = "$frontendBaseUrl/bid/send/${link.read()}"
-
-    //H1 { Text("Round Page") }
-    Vertical(verticalPageStyle){
-        Vertical({
-            justifyContent(JustifyContent.Center)
-        }) {
-            QRCodeSvg(
-                size = 80.vh,
-                id = roundId,
-                data = fullLink,
-                download = false
-            )
-        }
-    }
-
-    /*
-    Div(attrs = {
-                style {
-                    width(80.percent)
-                }
-            }){
-                Text("left")
-            }
-
-
-
-    Div() {
-        var preEvaluationLoaded  by remember { mutableStateOf(false) }
-        // todo:improve find another way?
-        if(!preEvaluationLoaded) {
+fun RoundPage(storage: Storage<Application>, auctionId: String, roundId: String) {
+    if((storage * context * isEmpty()).emit()) return
+    Div{
+        // Effect
+        // Load missing data if necessary
+        val dataIsMissing = onMissing(
+            storage * auctions.get,
+            { it.auctionId == auctionId }
+        ) {
             LaunchedEffect(Unit) {
                 launch {
-                    (storage * actions).read().emit(
-                        preEvaluateBidRound(
-                            auctionId,
-                            auctions * FirstBy { it.auctionId == auctionId } * rounds * FirstBy { it.roundId == roundId }
-                        )
-                    )
-                    preEvaluationLoaded = true
+                    readAuctions()
                 }
             }
         }
+        if(dataIsMissing) return@Div
+        LaunchComponentLookup(
+            BidComponent.Round,
+            storage  * Reader { app: Application -> app.environment.useI18nTransform() },
+            storage * bidApplicationIso * i18N
+        )
+        val loaded = (storage * bidApplicationIso * i18N * componentLoaded(BidComponent.Round)).emit()
+        if(!loaded) return@Div
+
+        // Data
+        val auction = storage * auctions * FirstBy { it.auctionId == auctionId }
+        val round = auction * rounds * FirstBy { it.roundId == roundId }
+        val link = round * link
+        val frontendBaseUrl = with((storage * environment).read()){
+            "$frontendUrl:$frontendPort"
+        }
+        val fullLink = "$frontendBaseUrl/bid/send/${link.read()}"
+
+        //H1 { Text("Round Page") }
+        Vertical(verticalPageStyle){
+            Vertical({
+                justifyContent(JustifyContent.Center)
+            }) {
+                QRCodeSvg(
+                    size = 80.vh,
+                    id = roundId,
+                    data = fullLink,
+                    download = false
+                )
+            }
+        }
+
+        /*
+        Div(attrs = {
+                    style {
+                        width(80.percent)
+                    }
+                }){
+                    Text("left")
+                }
 
 
-        val preEvaluation = (round * preEvaluation).read()
-        val details = preEvaluation.auctionDetailsPreEval
 
-        Text(preEvaluation.toString())
+        Div() {
+            var preEvaluationLoaded  by remember { mutableStateOf(false) }
+            // todo:improve find another way?
+            if(!preEvaluationLoaded) {
+                LaunchedEffect(Unit) {
+                    launch {
+                        (storage * actions).read().emit(
+                            preEvaluateBidRound(
+                                auctionId,
+                                auctions * FirstBy { it.auctionId == auctionId } * rounds * FirstBy { it.roundId == roundId }
+                            )
+                        )
+                        preEvaluationLoaded = true
+                    }
+                }
+            }
+
+
+            val preEvaluation = (round * preEvaluation).read()
+            val details = preEvaluation.auctionDetailsPreEval
+
+            Text(preEvaluation.toString())
+        }
+        */
     }
-    */
 }
 

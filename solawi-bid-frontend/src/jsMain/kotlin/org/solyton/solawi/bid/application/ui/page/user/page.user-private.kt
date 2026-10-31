@@ -50,6 +50,7 @@ import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.bankingApplicationActions
 import org.solyton.solawi.bid.module.banking.data.bankingApplicationModals
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaMandates
+import org.solyton.solawi.bid.module.context.data.isEmpty
 import org.solyton.solawi.bid.module.control.button.CardChevrons
 import org.solyton.solawi.bid.module.control.button.EditButton
 import org.solyton.solawi.bid.module.control.button.PlusButton
@@ -117,127 +118,130 @@ import org.solyton.solawi.bid.module.user.data.profile.title as userTitle
 @Markup
 @Composable
 @Suppress("FunctionName", "CyclomaticComplexMethod", "CognitiveComplexMethod")
-fun PrivateUserPage(storage: Storage<Application>) = withLoading(
-    isLoading = isLoading(
-        onMissing(
-            UserLangComponent.UserPrivatePage,
-            storage * i18N.get
-        ) {
-            LaunchComponentLookup(
-                langComponent = UserLangComponent.UserPrivatePage,
-                environment = storage * environment * i18nEnvironment,
-                i18n = (storage * i18N)
-            )
-        },
-        *arrayOf("DE", "AT", "CH").map { countryCode ->
+fun PrivateUserPage(storage: Storage<Application>) {
+    if((storage * context * isEmpty()).emit()) return
+    withLoading(
+        isLoading = isLoading(
             onMissing(
-                CountryLangComponent.StateOrProvince(countryCode),
+                UserLangComponent.UserPrivatePage,
+                storage * i18N.get
+            ) {
+                LaunchComponentLookup(
+                    langComponent = UserLangComponent.UserPrivatePage,
+                    environment = storage * environment * i18nEnvironment,
+                    i18n = (storage * i18N)
+                )
+            },
+            *arrayOf("DE", "AT", "CH").map { countryCode ->
+                onMissing(
+                    CountryLangComponent.StateOrProvince(countryCode),
+                    storage * userIso * i18n.get
+                ) {
+                    LaunchComponentLookup(
+                        langComponent = CountryLangComponent.StateOrProvince(countryCode),
+                        environment = storage * environment * i18nEnvironment,
+                        i18n = (storage * userIso * i18n)
+                    )
+                }
+            }.toBooleanArray(),
+            onMissing(
+                CountryLangComponent.Countries,
                 storage * userIso * i18n.get
             ) {
                 LaunchComponentLookup(
-                    langComponent = CountryLangComponent.StateOrProvince(countryCode),
+                    langComponent = CountryLangComponent.Countries,
                     environment = storage * environment * i18nEnvironment,
                     i18n = (storage * userIso * i18n)
                 )
-            }
-        }.toBooleanArray(),
-        onMissing(
-            CountryLangComponent.Countries,
-            storage * userIso * i18n.get
-        ) {
-            LaunchComponentLookup(
-                langComponent = CountryLangComponent.Countries,
-                environment = storage * environment * i18nEnvironment,
-                i18n = (storage * userIso * i18n)
-            )
-        },
-        onNullLaunch(
-            storage * availablePermissions * contextFromPath("APPLICATION"),
-        ) {
-            CoroutineScope(Job()).launch {
-                (storage * userIso * userActions).dispatch(readUserPermissionsAction())
-            }
-        },
-    ),
-    onLoading = {Loading()}
-) {
+            },
+            onNullLaunch(
+                storage * availablePermissions * contextFromPath("APPLICATION"),
+            ) {
+                CoroutineScope(Job()).launch {
+                    (storage * userIso * userActions).dispatch(readUserPermissionsAction())
+                }
+            },
+        ),
+        onLoading = {Loading()}
+    ) {
 
-    // Data
-    val deviceData = storage * userIso * deviceData * mediaType.get
-    val userDataStorage = storage * userData
-    val managedUsersStorage = storage * managedUsers
+        // Data
+        val deviceData = storage * userIso * deviceData * mediaType.get
+        val userDataStorage = storage * userData
+        val managedUsersStorage = storage * managedUsers
 
-    // Data / I18N
-    val texts = storage * i18N * language * component(UserLangComponent.UserPrivatePage)
+        // Data / I18N
+        val texts = storage * i18N * language * component(UserLangComponent.UserPrivatePage)
 
-    val permissions = texts * subComp("permissions")
+        val permissions = texts * subComp("permissions")
 
-/*
-    LaunchedEffect((userDataStorage * userIdFromToken).emit()) {
-        val userId = (userDataStorage * userIdFromToken).emit()
-        if(userId != null) {
-            (storage * userIso * userActions).dispatch(readPersonalUserProfile(UserId(userId)))
-        }
-    }
-    */
-    LaunchedEffect((userDataStorage * userIdFromToken).emit()) {
-        val userId = (userDataStorage * userIdFromToken).emit()
-        if(userId != null) {
-            (storage * userIso * userActions).dispatch(readOrganizations())
-        }
-    }
-
-    // Markup
-    Vertical(verticalPageStyle) {
-        Wrap {
-            Horizontal(styles = { justifyContent(JustifyContent.SpaceBetween); width(100.percent) }) {
-                PageTitle(texts * title)
-                Horizontal {
-                    // General Actions here !!!
+        /*
+            LaunchedEffect((userDataStorage * userIdFromToken).emit()) {
+                val userId = (userDataStorage * userIdFromToken).emit()
+                if(userId != null) {
+                    (storage * userIso * userActions).dispatch(readPersonalUserProfile(UserId(userId)))
                 }
             }
+            */
+        LaunchedEffect((userDataStorage * userIdFromToken).emit()) {
+            val userId = (userDataStorage * userIdFromToken).emit()
+            if(userId != null) {
+                (storage * userIso * userActions).dispatch(readOrganizations())
+            }
         }
 
-        Wrap {
-            H2 { Text((texts * personalData * title).emit()) }
-        }
+        // Markup
+        Vertical(verticalPageStyle) {
+            Wrap {
+                Horizontal(styles = { justifyContent(JustifyContent.SpaceBetween); width(100.percent) }) {
+                    PageTitle(texts * title)
+                    Horizontal {
+                        // General Actions here !!!
+                    }
+                }
+            }
+
+            Wrap {
+                H2 { Text((texts * personalData * title).emit()) }
+            }
 
 
-        UserData(
-            storage = storage,
-            userDataStorage = userDataStorage,
-            texts = texts,
-            deviceData = deviceData,
-        )
+            UserData(
+                storage = storage,
+                userDataStorage = userDataStorage,
+                texts = texts,
+                deviceData = deviceData,
+            )
 
-        UserProfile(
-            storage = storage,
-            texts = texts,
-            deviceData = deviceData,
-        )
+            UserProfile(
+                storage = storage,
+                texts = texts,
+                deviceData = deviceData,
+            )
 
-        Banking(
-            userDataStorage =userDataStorage,
-            bankingStorage = storage * bankingApplicationIso,
-            deviceData = deviceData,
-        )
-
-
-        ShareManagement(
-            userDataStorage = userDataStorage,
-            managedUsersStorage = managedUsersStorage,
-            shareManagementStorage = storage * shareManagementIso,
-            bankingStorage = storage * bankingApplicationIso,
-            distributionManagementStorage = storage * distributionManagementIso,
-            deviceData = deviceData,
-        )
+            Banking(
+                userDataStorage =userDataStorage,
+                bankingStorage = storage * bankingApplicationIso,
+                deviceData = deviceData,
+            )
 
 
-        // User permissions
-        When(false) {
-            H2 { Text((permissions * title).emit()) }
+            ShareManagement(
+                userDataStorage = userDataStorage,
+                managedUsersStorage = managedUsersStorage,
+                shareManagementStorage = storage * shareManagementIso,
+                bankingStorage = storage * bankingApplicationIso,
+                distributionManagementStorage = storage * distributionManagementIso,
+                deviceData = deviceData,
+            )
 
-            ListUserPermissions(storage * userIso, permissions * table)
+
+            // User permissions
+            When(false) {
+                H2 { Text((permissions * title).emit()) }
+
+                ListUserPermissions(storage * userIso, permissions * table)
+            }
         }
     }
 }

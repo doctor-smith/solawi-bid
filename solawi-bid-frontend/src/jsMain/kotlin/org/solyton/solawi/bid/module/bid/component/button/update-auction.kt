@@ -49,7 +49,7 @@ fun UpdateAuctionButton(
     // Auction can only be configured, if no rounds have been created
     val isDisabled = (storage * auction * rounds * existRounds).emit() ||
         (storage * auction * auctionAccepted).emit()||
-        (storage * user.get).emit().isNotGranted(BidRight.Auction.manage)
+        (storage * user.get).emit().isNotGranted(BidRight.Auction.update)
 
     val action: () -> Unit = {
         (storage * modals).showUpdateAuctionModal(

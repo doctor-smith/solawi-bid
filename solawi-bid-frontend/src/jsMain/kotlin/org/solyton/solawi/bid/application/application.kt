@@ -15,6 +15,7 @@ import org.solyton.solawi.bid.application.storage.event.langLoaded
 import org.solyton.solawi.bid.application.storage.event.loadLanguage
 import org.solyton.solawi.bid.application.ui.UI
 import org.solyton.solawi.bid.application.ui.effect.LaunchReadEnvironmentEffect
+import org.solyton.solawi.bid.application.ui.effect.LaunchReadVersionInfoEffect
 import org.solyton.solawi.bid.application.ui.effect.LaunchSetDeviceData
 import org.solyton.solawi.bid.application.ui.page.login.effect.LaunchIsLoggedInEffect
 import org.solyton.solawi.bid.application.ui.page.user.effect.LaunchReadUserPermissionsEffect
@@ -35,7 +36,10 @@ fun Application() = renderComposable("root") {
                 loadLanguage()
                 LaunchIsLoggedInEffect(this)
             }
-            false -> LaunchReadEnvironmentEffect(this)
+            false -> {
+                LaunchReadEnvironmentEffect(this)
+                LaunchReadVersionInfoEffect(this)
+            }
         }
         when( langLoaded() && environmentSet ) {
             true -> {
