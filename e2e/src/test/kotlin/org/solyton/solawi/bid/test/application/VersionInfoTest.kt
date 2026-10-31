@@ -139,8 +139,6 @@ class VersionInfoTest {
                 if (beCommitText.isNotBlank()) {
                     assertEquals(expectedBeCommit.take(7), beCommitText)
                 }
-
-                page.shot("dev/x.png")
             }
         } finally {
             context.close()
