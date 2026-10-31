@@ -1,5 +1,6 @@
 package org.solyton.solawi.bid.pageobjects
 
+import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import org.solyton.solawi.bid.*
@@ -134,6 +135,30 @@ class OrganizationManagementPage(private val page: Page) {
         return response
     }
 
+    class AddMemberModal(
+        override val locator: Locator,
+        override val trigger: Locator,
+    ) : TestModal(locator, trigger) {
+        companion object {
+            const val BASE_ID = "organization.member.update-modal"
+        }
+
+        override fun submitButton(): Locator = locator.getByDataId("$BASE_ID.modal.submit-button")
+        override fun cancelButton(): Locator = locator.getByDataId("$BASE_ID.modal.cancel-button")
+        override fun closeButton(): Locator = locator.getByDataId("$BASE_ID.modal.close-button")
+
+        fun usernameInput(): Locator = locator.page().getByDataId("user-profile.form.username-input")
+        fun firstnameInput(): Locator = locator.page().getByDataId("user-profile.form.firstname-input")
+        fun lastnameInput(): Locator = locator.page().getByDataId("user-profile.form.lastname-input")
+    }
+
+    @Suppress("FunctionName")
+    fun AddMemberModal(): AddMemberModal =
+        AddMemberModal(
+            page.getByDataId("${AddMemberModal.BASE_ID}.modal"),
+            page.getByDataId("organization.page.members.add-button")
+        )
+
     /**
      * Adds a new member to an existing organization via the members card modal
      * on the organization detail page.
@@ -157,22 +182,21 @@ class OrganizationManagementPage(private val page: Page) {
         assertThat(chevron).isVisible()
         chevron.click()
 
-        val addButton = page.getByDataId("organization.page.members.add-button")
-        assertThat(addButton).isVisible()
-        addButton.click()
+        val modal = AddMemberModal()
+        assertThat(modal.trigger).isVisible()
+        modal.trigger.click()
 
-        val modal = page.getByDataId("organization.member.update-modal.modal")
-        assertThat(modal).isVisible()
+        assertThat(modal.locator).isVisible()
 
-        page.getByDataId("user-profile.form.username-input").fill(username)
-        page.getByDataId("user-profile.form.firstname-input").fill(firstname)
-        page.getByDataId("user-profile.form.lastname-input").fill(lastname)
+        modal.usernameInput().fill(username)
+        modal.firstnameInput().fill(firstname)
+        modal.lastnameInput().fill(lastname)
 
         page.waitForApi(
             api = solawiApi,
             keyOfEndpoint = ImportMembers::class
         ) {
-            page.clickOn("organization.member.update-modal.modal.submit-button")
+            modal.submitButton().click()
         }
         page.waitForLoadingToFinish()
     }

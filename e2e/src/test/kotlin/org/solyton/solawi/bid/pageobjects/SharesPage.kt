@@ -23,11 +23,25 @@ class SharesPage(private val page: Page) {
             const val BASE_ID = "shares.page.share-type"
         }
 
-
         override fun trigger(): Locator = locator.getByDataId("$BASE_ID.chevron")
-
         fun createNewShareTypeButton(): Locator = locator.getByDataId("$BASE_ID.create-button")
+    }
 
+    class UpsertShareTypeModal(
+        override val locator: Locator,
+        override val trigger: Locator,
+    ) : TestModal(locator, trigger) {
+        companion object {
+            const val BASE_ID = "shares.modal.upsert-share-type"
+        }
+
+        override fun submitButton(): Locator = locator.getByDataId("$BASE_ID.modal.submit-button")
+        override fun cancelButton(): Locator = locator.getByDataId("$BASE_ID.modal.cancel-button")
+        override fun closeButton(): Locator = locator.getByDataId("$BASE_ID.modal.close-button")
+
+        fun nameInput(): Locator = locator.getByDataId("$BASE_ID.name-input")
+        fun keyInput(): Locator = locator.getByDataId("$BASE_ID.key-input")
+        fun descriptionInput(): Locator = locator.getByDataId("$BASE_ID.description-input")
     }
 
     class ShareOfferManagement(override val locator: Locator) : DefaultTestAccordion(locator) {
@@ -35,10 +49,31 @@ class SharesPage(private val page: Page) {
             const val BASE_ID = "shares.page.share-offer"
         }
 
-
         override fun trigger(): Locator = locator.getByDataId("$BASE_ID.chevron")
-
         fun createNewShareOfferButton(): Locator = locator.getByDataId("$BASE_ID.create-button")
+    }
+
+    class UpsertShareOfferModal(
+        override val locator: Locator,
+        override val trigger: Locator,
+    ) : TestModal(locator, trigger) {
+        companion object {
+            const val BASE_ID = "shares.modal.upsert-share-offer"
+        }
+
+        override fun submitButton(): Locator = locator.getByDataId("$BASE_ID.modal.submit-button")
+        override fun cancelButton(): Locator = locator.getByDataId("$BASE_ID.modal.cancel-button")
+        override fun closeButton(): Locator = locator.getByDataId("$BASE_ID.modal.close-button")
+
+        fun fiscalYearDropdown(): Locator = locator.getByDataId("$BASE_ID.fiscal-year-dropdown")
+        fun fiscalYearOption(key: String): Locator = locator.getByDataId("$BASE_ID.fiscal-year-dropdown.option.$key")
+        fun shareTypeDropdown(): Locator = locator.getByDataId("$BASE_ID.share-type-dropdown")
+        fun shareTypeOption(name: String): Locator = locator.getByDataId("$BASE_ID.share-type-dropdown.option.$name")
+        fun pricingTypeDropdown(): Locator = locator.getByDataId("$BASE_ID.pricing-type-dropdown")
+        fun pricingTypeOption(type: String): Locator = locator.getByDataId("$BASE_ID.pricing-type-dropdown.option.$type")
+        fun priceInput(): Locator = locator.getByDataId("$BASE_ID.price-input")
+        fun ahcAuthorizationRequiredDropdown(): Locator = locator.getByDataId("$BASE_ID.ahc-authorization-required-dropdown")
+        fun ahcAuthorizationRequiredOption(key: String): Locator = locator.getByDataId("$BASE_ID.ahc-authorization-required-dropdown.option.$key")
     }
 
     class ShareSubscriptionManagement(override val locator: Locator) : DefaultTestAccordion(locator) {
@@ -111,13 +146,8 @@ class SharesPage(private val page: Page) {
             }
 
             override fun submitButton(): Locator = locator.getByDataId("$BASE_ID.modal.submit-button")
-            override fun cancelButton(): Locator {
-                TODO("Not yet implemented")
-            }
-
-            override fun closeButton(): Locator {
-                TODO("Not yet implemented")
-            }
+            override fun cancelButton(): Locator = locator.getByDataId("$BASE_ID.modal.cancel-button")
+            override fun closeButton(): Locator = locator.getByDataId("$BASE_ID.modal.close-button")
 
             fun changeStatusCheckbox(): Locator = locator.getByDataId("$BASE_ID.change-status-checkbox")
             fun statusDropdown(): Locator = locator.getByDataId("$BASE_ID.status-dropdown")
@@ -134,6 +164,77 @@ class SharesPage(private val page: Page) {
             )
     }
 
+    class TransferOwnershipModal(
+        override val locator: Locator,
+        override val trigger: Locator,
+    ) : TestModal(locator, trigger) {
+        companion object {
+            const val BASE_ID = "shares.modal.transfer-ownership"
+        }
+
+        override fun submitButton(): Locator = locator.getByDataId("$BASE_ID.modal.submit-button")
+        override fun cancelButton(): Locator = locator.getByDataId("$BASE_ID.modal.cancel-button")
+        override fun closeButton(): Locator = locator.getByDataId("$BASE_ID.modal.close-button")
+
+        fun userSearchInput(): Locator = locator.getByDataId("$BASE_ID.user-search-input")
+        fun userSelectButton(username: String): Locator = locator.getByDataId("$BASE_ID.user.$username.select-button")
+        fun userDisplayInput(): Locator = locator.getByDataId("$BASE_ID.user-display-input")
+
+        fun searchUser(username: String) {
+            val input = userSearchInput()
+            if (input.isVisible) {
+                input.fill(username)
+            }
+        }
+
+        fun selectUser(username: String) {
+            userSelectButton(username).click()
+        }
+    }
+
+    class UpsertShareSubscriptionModal(
+        override val locator: Locator,
+        override val trigger: Locator,
+    ) : TestModal(locator, trigger) {
+        companion object {
+            const val BASE_ID = "shares.modal.upsert-share-subscription"
+        }
+
+        override fun submitButton(): Locator = locator.getByDataId("$BASE_ID.modal.submit-button")
+        override fun cancelButton(): Locator = locator.getByDataId("$BASE_ID.modal.cancel-button")
+        override fun closeButton(): Locator = locator.getByDataId("$BASE_ID.modal.close-button")
+
+        fun userDisplayInput(): Locator = locator.getByDataId("$BASE_ID.user-display-input")
+        fun userSelectButton(username: String): Locator = locator.getByDataId("$BASE_ID.user.$username.select-button")
+        fun fiscalYearDropdown(): Locator = locator.getByDataId("$BASE_ID.fiscal-year-dropdown")
+        fun fiscalYearOption(key: String): Locator = locator.getByDataId("$BASE_ID.fiscal-year-dropdown.option.$key")
+        fun distributionPointDropdown(): Locator = locator.getByDataId("$BASE_ID.distribution-point-dropdown")
+        fun distributionPointOption(name: String): Locator = locator.getByDataId("$BASE_ID.distribution-point-dropdown.option.$name")
+        fun shareOfferDropdown(): Locator = locator.getByDataId("$BASE_ID.share-offer-dropdown")
+        fun shareOfferOption(key: String): Locator = locator.getByDataId("$BASE_ID.share-offer-dropdown.option.$key")
+        fun pricePerShareInput(): Locator = locator.getByDataId("$BASE_ID.price-per-share-input")
+        fun numberOfSharesInput(): Locator = locator.getByDataId("$BASE_ID.number-of-shares-input")
+        fun ahcAuthorizedDropdown(): Locator = locator.getByDataId("$BASE_ID.ahc-authorized-dropdown")
+        fun ahcAuthorizedOption(key: String): Locator = locator.getByDataId("$BASE_ID.ahc-authorized-dropdown.option.$key")
+        fun coSubscriberSelectButton(username: String): Locator = locator.getByDataId("$BASE_ID.user.$username.select-button")
+    }
+
+    class AttachOrUpsertSepaMandateModal(
+        override val locator: Locator,
+        override val trigger: Locator,
+    ) : TestModal(locator, trigger) {
+        companion object {
+            const val BASE_ID = "shares.modal.attach-or-upsert-sepa-mandate"
+        }
+
+        override fun submitButton(): Locator = locator.getByDataId("$BASE_ID.modal.submit-button")
+        override fun cancelButton(): Locator = locator.getByDataId("$BASE_ID.modal.cancel-button")
+        override fun closeButton(): Locator = locator.getByDataId("$BASE_ID.modal.close-button")
+
+        fun statusDropdown(): Locator = locator.page().getByDataId("sepa-mandate-form.status-dropdown")
+        fun statusOption(status: String): Locator = locator.page().getByDataId("sepa-mandate-form.status-dropdown.option.$status")
+    }
+
     // API
 
     @Suppress("FunctionName")
@@ -148,6 +249,41 @@ class SharesPage(private val page: Page) {
     fun ShareSubscriptionManagement(): ShareSubscriptionManagement =
         ShareSubscriptionManagement(page.getByDataId(ShareSubscriptionManagement.BASE_ID))
 
+    @Suppress("FunctionName")
+    fun UpsertShareTypeModal(): UpsertShareTypeModal =
+        UpsertShareTypeModal(
+            page.getByDataId("${UpsertShareTypeModal.BASE_ID}.modal"),
+            ShareTypeManagement().createNewShareTypeButton()
+        )
+
+    @Suppress("FunctionName")
+    fun UpsertShareOfferModal(): UpsertShareOfferModal =
+        UpsertShareOfferModal(
+            page.getByDataId("${UpsertShareOfferModal.BASE_ID}.modal"),
+            ShareOfferManagement().createNewShareOfferButton()
+        )
+
+    @Suppress("FunctionName")
+    fun TransferOwnershipModal(subscriptionId: String): TransferOwnershipModal =
+        TransferOwnershipModal(
+            page.getByDataId("${TransferOwnershipModal.BASE_ID}.modal"),
+            page.getByDataId("shares.page.share-subscription.$subscriptionId.transfer-ownership-button")
+        )
+
+    @Suppress("FunctionName")
+    fun UpsertShareSubscriptionModal(): UpsertShareSubscriptionModal =
+        UpsertShareSubscriptionModal(
+            page.getByDataId("${UpsertShareSubscriptionModal.BASE_ID}.modal"),
+            ShareSubscriptionManagement().createNewShareSubscriptionButton()
+        )
+
+    @Suppress("FunctionName")
+    fun AttachOrUpsertSepaMandateModal(): AttachOrUpsertSepaMandateModal =
+        AttachOrUpsertSepaMandateModal(
+            page.getByDataId("${AttachOrUpsertSepaMandateModal.BASE_ID}.modal"),
+            page.getByPartialDataId(".attach-or-upsert-sepa-mandate-button").first()
+        )
+
 
     /**
      * Creates a share type with the given [name]/[key]/[description].
@@ -156,29 +292,25 @@ class SharesPage(private val page: Page) {
     fun createShareType(name: String, key: String, description: String): ShareType {
         with(ShareTypeManagement()) {
             open()
-            createNewShareTypeButton().click()
         }
-        // page.clickOn("shares.page.share-type.chevron")
-        // page.clickOn("shares.page.share-type.create-button")
 
-        val modal = page.getByDataId("shares.modal.upsert-share-type.modal")
-        assertThat(modal).isVisible()
+        val modal = UpsertShareTypeModal()
+        modal.trigger.click()
+        assertThat(modal.locator).isVisible()
 
-        page.put("shares.modal.upsert-share-type.name-input", name)
-        page.put("shares.modal.upsert-share-type.key-input", key)
-        page.put("shares.modal.upsert-share-type.description-input", description)
-
-        // page.shot("dev/share-type-filled")
+        modal.nameInput().fill(name)
+        modal.keyInput().fill(key)
+        modal.descriptionInput().fill(description)
 
         val shareType = page.waitForApi(
             api = solawiApi,
             keyOfEndpoint = CreateShareType::class
         ) {
-            page.clickOn("shares.modal.upsert-share-type.modal.submit-button")
+            modal.submitButton().click()
         }.decodeBodyTo<ShareType>()
 
 
-        assertThat(modal).not().isVisible()
+        assertThat(modal.locator).not().isVisible()
 
         return shareType
     }
@@ -195,42 +327,39 @@ class SharesPage(private val page: Page) {
         shareTypeName: String,
         price: String,
         ahcAuthorizationRequired: Boolean = false
-    ) : ApiShareOffer = with(ShareOfferManagement()) {
-        assertThat(this).isVisible()
-        if(!isOpened()) open()
-        assertThat(createNewShareOfferButton()).isVisible()
-        createNewShareOfferButton().click()
+    ) : ApiShareOffer {
+        val management = ShareOfferManagement()
+        assertThat(management).isVisible()
+        if(!management.isOpened()) management.open()
 
-        // page.clickOn("shares.page.share-offer.chevron")
-        // page.clickOn("shares.page.share-offer.create-button")
+        val modal = UpsertShareOfferModal()
+        assertThat(modal.trigger).isVisible()
+        modal.trigger.click()
+        assertThat(modal.locator).isVisible()
 
-        val modal = page.getByDataId("shares.modal.upsert-share-offer.modal")
-        assertThat(modal).isVisible()
+        modal.fiscalYearDropdown().click()
+        modal.fiscalYearOption(fiscalYearKey).click()
 
-        page.clickOn("shares.modal.upsert-share-offer.fiscal-year-dropdown")
-        page.clickOn("shares.modal.upsert-share-offer.fiscal-year-dropdown.option.$fiscalYearKey")
+        modal.shareTypeDropdown().click()
+        modal.shareTypeOption(shareTypeName).click()
 
-        page.clickOn("shares.modal.upsert-share-offer.share-type-dropdown")
-        page.clickOn("shares.modal.upsert-share-offer.share-type-dropdown.option.$shareTypeName")
+        modal.pricingTypeDropdown().click()
+        modal.pricingTypeOption("FIXED").click()
 
-        page.clickOn("shares.modal.upsert-share-offer.pricing-type-dropdown")
-        page.clickOn("shares.modal.upsert-share-offer.pricing-type-dropdown.option.FIXED")
-
-        page.put("shares.modal.upsert-share-offer.price-input", price)
+        modal.priceInput().fill(price)
 
         val ahcOptionKey = if (ahcAuthorizationRequired) CHECK_TRUE else CHECK_FALSE
-        page.clickOn("shares.modal.upsert-share-offer.ahc-authorization-required-dropdown")
-        page.clickOn("shares.modal.upsert-share-offer.ahc-authorization-required-dropdown.option.$ahcOptionKey")
-
+        modal.ahcAuthorizationRequiredDropdown().click()
+        modal.ahcAuthorizationRequiredOption(ahcOptionKey).click()
 
         val shareOffer = page.waitForApi(
             api = solawiApi,
             keyOfEndpoint = CreateShareOffer::class
         ) {
-            page.clickOn("shares.modal.upsert-share-offer.modal.submit-button")
+            modal.submitButton().click()
         }.decodeBodyTo<ApiShareOffer>()
 
-        assertThat(modal).not().isVisible()
+        assertThat(modal.locator).not().isVisible()
 
         return shareOffer
     }
@@ -294,18 +423,18 @@ class SharesPage(private val page: Page) {
             page.waitForLoadingToFinish()
         }
 
-        val sepaMandateButton = page.getByPartialDataId(".attach-or-upsert-sepa-mandate-button").first()
-        assertThat(sepaMandateButton).isEnabled()
-        sepaMandateButton.click()
+        val modal = AttachOrUpsertSepaMandateModal()
+        assertThat(modal.trigger).isEnabled()
+        modal.trigger.click()
 
-        page.clickOn("sepa-mandate-form.status-dropdown")
-        page.clickOn("sepa-mandate-form.status-dropdown.option.ACTIVE")
+        modal.statusDropdown().click()
+        modal.statusOption("ACTIVE").click()
 
         val sepaMandate = page.waitForApi(
             api = solawiApi,
             keyOfEndpoint = CreateSepaMandate::class
         ) {
-            page.clickOn("shares.modal.attach-or-upsert-sepa-mandate.modal.submit-button")
+            modal.submitButton().click()
         }.decodeBodyTo<ApiSepaMandate>()
 
         return sepaMandate
@@ -330,16 +459,14 @@ class SharesPage(private val page: Page) {
     ): ShareSubscription {
         with(ShareSubscriptionManagement()) {
             open()
-            createNewShareSubscriptionButton().click()
         }
-        // page.clickOn("shares.page.share-subscription.chevron")
-        // page.clickOn("shares.page.share-subscription.create-button")
 
-        val modal = page.getByDataId("shares.modal.upsert-share-subscription.modal")
-        assertThat(modal).isVisible()
+        val modal = UpsertShareSubscriptionModal()
+        modal.trigger.click()
+        assertThat(modal.locator).isVisible()
 
-        val selectedUser = page.getByDataId("shares.modal.upsert-share-subscription.user-display-input")
-        val userSelectionButton = page.getByDataId("shares.modal.upsert-share-subscription.user.$username.select-button")
+        val selectedUser = modal.userDisplayInput()
+        val userSelectionButton = modal.userSelectButton(username)
         userSelectionButton.apply {
             assertThat(this).isVisible()
             assertThat(this).isEnabled()
@@ -347,34 +474,30 @@ class SharesPage(private val page: Page) {
         }
         assertThat(selectedUser).hasValue(fullName)
 
-        page.clickOn("shares.modal.upsert-share-subscription.fiscal-year-dropdown")
-        page.clickOn("shares.modal.upsert-share-subscription.fiscal-year-dropdown.option.$fiscalYearKey")
+        modal.fiscalYearDropdown().click()
+        modal.fiscalYearOption(fiscalYearKey).click()
 
-        page.clickOn("shares.modal.upsert-share-subscription.distribution-point-dropdown")
-        page.clickOn("shares.modal.upsert-share-subscription.distribution-point-dropdown.option.$distributionPointName")
+        modal.distributionPointDropdown().click()
+        modal.distributionPointOption(distributionPointName).click()
 
-        page.clickOn("shares.modal.upsert-share-subscription.share-offer-dropdown")
-        page.clickOn("shares.modal.upsert-share-subscription.share-offer-dropdown.option.$shareTypeName - $fiscalYearKey")
+        modal.shareOfferDropdown().click()
+        modal.shareOfferOption("$shareTypeName - $fiscalYearKey").click()
 
-        page.put("shares.modal.upsert-share-subscription.price-per-share-input", price)
-        assertThat(
-            page.getByDataId("shares.modal.upsert-share-subscription.price-per-share-input")
-        ).hasValue(price)
+        modal.pricePerShareInput().fill(price)
+        assertThat(modal.pricePerShareInput()).hasValue(price)
 
-        page.put("shares.modal.upsert-share-subscription.number-of-shares-input", numberOfShares)
-        assertThat(
-            page.getByDataId("shares.modal.upsert-share-subscription.number-of-shares-input")
-        ).hasValue(numberOfShares)
+        modal.numberOfSharesInput().fill(numberOfShares)
+        assertThat(modal.numberOfSharesInput()).hasValue(numberOfShares)
 
-        page.clickOn("shares.modal.upsert-share-subscription.ahc-authorized-dropdown")
-        page.clickOn("shares.modal.upsert-share-subscription.ahc-authorized-dropdown.option.${ahcAuthorized.checkIcon()}")
+        modal.ahcAuthorizedDropdown().click()
+        modal.ahcAuthorizedOption(ahcAuthorized.checkIcon()).click()
 
         page.put(
             "shares.modal.upsert-share-subscription.co-subscribers-textarea",
             coSubscribers.joinToString("\n") { it }
         )
 
-        val submitButton = page.getByDataId("shares.modal.upsert-share-subscription.modal.submit-button")
+        val submitButton = modal.submitButton()
         assertThat(submitButton).isEnabled()
 
         val subscription = page.waitForApi(

@@ -115,6 +115,20 @@ Distinguish between:
 - A workflow blocked by environment or UI limitations.
 - A workflow that is intentionally out of scope.
 
+## 3b. Mandatory PageObjects and TestComponent Abstractions
+
+All E2E workflow tests MUST interact with the user interface exclusively through PageObjects (`TestPage` derivatives) and reusable `TestComponent` abstractions (such as `TestModal`, `TestDropdown`, `DefaultTestAccordion`, etc.).
+
+Key requirements:
+
+- **No direct Page locator calls in workflow tests**: Tests must not execute raw `page.getByDataId(...)`, `page.locator(...)`, or `page.click(...)` calls directly on page elements. All UI elements, actions, and assertions must be encapsulated in PageObjects or dedicated `TestComponent` classes.
+- **Encapsulated UI Abstractions**:
+  - Modals must inherit from `TestModal` or encapsulate opening, closing, user input, and submit actions.
+  - Dropdowns must inherit from `TestDropdown` / `DefaultTestDropdown`.
+  - Accordions must inherit from `DefaultTestAccordion`.
+  - Modals and sub-components (e.g. transfer ownership modal, upsert share type/offer modals, SEPA mandate modal) must be exposed as typed properties/functions on the corresponding `TestPage` or parent `TestComponent`.
+- **Reusable TestComponents**: When new UI elements or modals are added or tested, appropriate `TestComponent` subclasses must be created in `pageobjects` (or `pageobjects/shared`) rather than written inline inside test files.
+
 ## 4. Implement incrementally
 
 Work on one coherent workflow at a time.

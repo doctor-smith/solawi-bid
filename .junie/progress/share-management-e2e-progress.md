@@ -117,6 +117,9 @@ Issues Register for the full list.
 - `RolloverActivationWorkflowTest` (`@Workflow`) — covers workflow D2
   (Shadow `PendingActivation` → `Subscribed` in FY2, triggering automatic companion transition of original subscription from `RollingOver` to `RolledOver` in FY1).
   **Implementation complete AND verification complete** — full test passes end-to-end.
+- `TransferSubscriptionOwnershipWorkflowTest` (`@Workflow`) — covers workflow E1
+  (Ownership Transfer: provider transfers an existing share subscription to another organization member).
+  **Implementation complete AND verification complete** — full test passes end-to-end.
 
 ## Test Architecture
 
@@ -276,7 +279,7 @@ deliberately small, scoped step, not a full rewrite.
 | D3 | Missing next-year offer | rollover attempted with no FY2 offer | None | Not verified | Need to confirm in UI whether Bulk-Edit's offer dropdown for rollover simply has no FY2 entries (safe) or allows an invalid selection | Needs UI inspection |
 | D4 | Ineligible source status (e.g. `Cancelled`) | no `RollingOver` transition defined | None | Not verified | Same class of question as C5/D3 | Needs UI inspection |
 | D5 | Shadow cancellation → orphaned rollover | shadow `PendingActivation`→`Cancelled` (USER reason) while original stays `RollingOver` | None | Not verified | Shadow cancel-before-activation also has a PROVIDER reason (`PROVIDER_CANCELLED_BEFORE_ACTIVATION`), so provider-driven variant is testable | Implementable (provider variant) |
-| E1 | Ownership transfer | `Subscribed`/`PendingActivation`→`Transfer`→`PendingActivation`/`Subscribed` | None | Not verified | All PROVIDER-permitted; `modal.share-subscriptions.transfer-ownership.kt` has `data-id`s and a per-row trigger button | Implementable |
+| E1 | Ownership transfer | `Subscribed`/`PendingActivation`→`Transfer`→`PendingActivation`/`Subscribed` | `TransferSubscriptionOwnershipWorkflowTest.kt` | **Implementation complete AND verification complete** — full test passes end-to-end | None | **Done.** |
 | E2 | New owner's activation | depends on E1 | None | Not verified | Same as B1/B2 depending on path chosen | Implementable after E1 |
 | E3 | Mandate mapping / authorization reset | implicit (no dedicated status) | None | Not verified | Needs to confirm if/how mandate-mapping removal is observable in the UI (no dedicated `ShareStatus`) | Needs UI inspection |
 | E4 | SEPA mandate re-attach/update | implicit (no dedicated status) | None | Not verified | `modal.share-subscriptions.attach-or-upsert-sepa-mandate.kt` has `data-id`s | Implementable, same SEPA precondition as B2 |
@@ -446,6 +449,21 @@ issues, ~26s).
 
 One dated entry per work session, newest first, so future sessions don't have to
 re-derive history from git diffs alone.
+
+### 2026-10-31 (Rule 3b: Mandatory PageObjects & Modal Component Refactoring)
+
+- Updated Operating Rules (`.junie/rules/share-management-e2e.md`) to add Section 3b ("Mandatory PageObjects and TestComponent Abstractions"), prohibiting direct page/modal locator calls in workflow tests.
+- Extracted and added typed `TestModal` classes in `SharesPage.kt`: `UpsertShareTypeModal`, `UpsertShareOfferModal`, `TransferOwnershipModal`, `UpsertShareSubscriptionModal`, and `AttachOrUpsertSepaMandateModal`.
+- Extracted `AddMemberModal` class in `OrganizationManagementPage.kt`.
+- Refactored `TransferSubscriptionOwnershipWorkflow.kt`, `SharesPage.kt` helper methods, and `OrganizationManagementPage.kt` to encapsulate modal interactions via typed component classes.
+- Verified compilation and executed `TransferSubscriptionOwnershipWorkflowTest` via `./script/e2e-local.sh filterTest` — test PASSED end-to-end.
+
+### 2026-10-31 (E1 Ownership Transfer & Organization Member Modal integration)
+
+- Documented completed workflow E1 (`TransferSubscriptionOwnershipWorkflowTest.kt`).
+- Updated progress tracking, Coverage Matrix (row E1), and implemented test list.
+- Verified integration of `AddMemberToOrganizationWorkflow.kt` and `OrganizationManagementPage.kt` modal helper.
+- All components compiled and verified with zero errors.
 
 ### 2026-10-28 (Enhanced Test Logging & Output Formatting)
 
