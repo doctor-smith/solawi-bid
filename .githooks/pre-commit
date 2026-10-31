@@ -1,0 +1,14 @@
+#!/bin/sh
+
+echo "Running Detekt on staged Kotlin files..."
+
+./gradlew detektAll -PstagedOnly=true
+
+RESULT=$?
+
+if [ $RESULT -ne 0 ]; then
+    echo "Detekt failed. Commit aborted."
+    exit 1
+else
+    echo "Detekt passed. Proceeding with commit."
+fi

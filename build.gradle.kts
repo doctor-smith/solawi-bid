@@ -1,3 +1,5 @@
+import io.gitlab.arturbosch.detekt.Detekt
+
 allprojects {
     repositories {
         mavenCentral()
@@ -43,6 +45,54 @@ tasks.register("detektAll") {
             }
         }
     )
+}
+
+val stagedOnly = providers.gradleProperty("stagedOnly")
+    .map(String::toBoolean)
+    .getOrElse(false)
+
+if (stagedOnly) {
+
+    val stagedFiles = providers.exec {
+        commandLine(
+            "git",
+            "diff",
+            "--cached",
+            "--name-only",
+            "--diff-filter=ACMR",
+            "-z"
+        )
+    }.standardOutput.asText.get()
+        .split('\u0000')
+        .filter { it.endsWith(".kt") || it.endsWith(".kts") }
+        .map { rootProject.file(it).canonicalFile }
+        .filter { it.isFile }
+        .toSet()
+
+    allprojects {
+        plugins.withId("io.gitlab.arturbosch.detekt") {
+
+            tasks.withType<Detekt>().configureEach {
+
+                // Ursprüngliche Quellen des jeweiligen Detekt-Tasks
+                val originalSources = source
+
+                // Nur gestagte Dateien, die zum Task gehören
+                val relevantFiles = originalSources.asFileTree
+                    .matching {
+                        include("**/*.kt", "**/*.kts")
+                    }
+                    .files
+                    .filter { it.canonicalFile in stagedFiles }
+
+                setSource(files(relevantFiles))
+
+                onlyIf {
+                    relevantFiles.isNotEmpty()
+                }
+            }
+        }
+    }
 }
 
 tasks.register("analyseDependencies") {
