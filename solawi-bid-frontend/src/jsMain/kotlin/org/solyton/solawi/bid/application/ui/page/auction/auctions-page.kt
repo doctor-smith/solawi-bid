@@ -31,6 +31,7 @@ import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.availableApplications
+import org.solyton.solawi.bid.application.data.context
 import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.service.useI18nTransform
@@ -41,6 +42,7 @@ import org.solyton.solawi.bid.module.bid.component.button.CreateAuctionButton
 import org.solyton.solawi.bid.module.bid.component.form.DEFAULT_AUCTION_ID
 import org.solyton.solawi.bid.module.bid.data.*
 import org.solyton.solawi.bid.module.bid.data.reader.BidComponent
+import org.solyton.solawi.bid.module.context.data.isEmpty
 import org.solyton.solawi.bid.module.error.component.showErrorModal
 import org.solyton.solawi.bid.module.error.lang.errorModalTexts
 import org.solyton.solawi.bid.module.i18n.data.language
@@ -56,91 +58,96 @@ import org.solyton.solawi.bid.module.user.data.actions as userActions
 @Markup
 @Composable
 @Suppress("FunctionName")
-fun AuctionsPage(storage: Storage<Application>) = Div {
-    // Bid Application Storage
-    val bidApplicationStorage = storage * bidApplicationIso
-    // Effect
+fun AuctionsPage(storage: Storage<Application>) {
+    if((storage * context * isEmpty()).emit()) return
+    Div {
 
-    LaunchedEffect(Unit) {
-        (bidApplicationStorage * actions).dispatch(readAuctions())
-    }
 
-    LaunchedEffect(Unit) {
-        (storage * userIso * userActions).dispatch(readOrganizations())
-    }
+        // Bid Application Storage
+        val bidApplicationStorage = storage * bidApplicationIso
+        // Effect
 
-    if(sequentiallyExecuted(
-        onFulfilled(
-            source = { ConditionalActionInput(
-                (storage * availableApplications).read(),
-                (storage * availableApplications).read()
-            )},
-            predicate = { it.isEmpty() },
-        ){
-            LaunchedEffect(Unit) {
-                (storage * userIso * userActions).dispatch(readUserPermissionsAction("React"))
-            }
+        LaunchedEffect(Unit) {
+            (bidApplicationStorage * actions).dispatch(readAuctions())
         }
-    )) return@Div
 
-    if(isLoading(
-        onMissing(
-            BidComponent.AuctionsPage,
-            bidApplicationStorage * i18N.get,
-        ) {
-            LaunchComponentLookup(
-                BidComponent.AuctionsPage,
-                storage  * Reader { app: Application -> app.environment.useI18nTransform() },
-                bidApplicationStorage * i18N
-            )
+        LaunchedEffect(Unit) {
+            (storage * userIso * userActions).dispatch(readOrganizations())
         }
-    )) return@Div
 
-    // Data
-    val auction = auctions * FirstBy { it.auctionId == DEFAULT_AUCTION_ID }
+        if(sequentiallyExecuted(
+                onFulfilled(
+                    source = { ConditionalActionInput(
+                        (storage * availableApplications).read(),
+                        (storage * availableApplications).read()
+                    )},
+                    predicate = { it.isEmpty() },
+                ){
+                    LaunchedEffect(Unit) {
+                        (storage * userIso * userActions).dispatch(readUserPermissionsAction("React"))
+                    }
+                }
+            )) return@Div
 
-    // Texts
-    val texts = (bidApplicationStorage * i18N * language * component(BidComponent.AuctionsPage))
-
-    val applicationId = storage * availableApplications * FirstBy { it.name == "AUCTIONS" } * applicationId.get
-    // Markup
-    Vertical(style = verticalPageStyle) {
-        VerticalAccent(
-            verticalAccentStyles(bidApplicationStorage * deviceData * mediaType.get)
-        ) {
-        Wrap {
-            Horizontal(styles = { justifyContent(JustifyContent.FlexStart); alignItems(AlignItems.Center); width(100.percent); gap(20.px) }) {
-                H1({style { marginLeft(20.px) }}) { Text((texts * title).emit()) }
-                CreateAuctionButton(
-                    storage = bidApplicationStorage,
-                    auction = auction,
-                    applicationId = applicationId,
-                    texts = texts * subComp("buttons") * subComp("createAuction")
-                )
-            }
-        }
-        Wrap{ AuctionList(
-            auctions= bidApplicationStorage * auctions,
-            user = bidApplicationStorage * user.get,
-            organizationApplicationContextRelations = bidApplicationStorage * applicationOrganizationRelations.get,
-            applicationId = applicationId,
-            bidApplicationStorage * i18N,
-            bidApplicationStorage * modals,
-            bidApplicationStorage * deviceData * mediaType.get
-        ) {
-            CoroutineScope(Job()).launch {
-                val actions = (bidApplicationStorage * actions).read()
-                try {
-                    actions.dispatch(it)
-                } catch (exception: Exception) {
-                    (bidApplicationStorage * modals).showErrorModal(
-                        texts = errorModalTexts(
-                            exception.message ?: exception.cause?.message ?: "Cannot Emit action '${it.name}'"
-                        ),
-                        device = bidApplicationStorage * deviceData * mediaType.get,
+        if(isLoading(
+                onMissing(
+                    BidComponent.AuctionsPage,
+                    bidApplicationStorage * i18N.get,
+                ) {
+                    LaunchComponentLookup(
+                        BidComponent.AuctionsPage,
+                        storage  * Reader { app: Application -> app.environment.useI18nTransform() },
+                        bidApplicationStorage * i18N
                     )
                 }
-            }
-        }}
-    } }
+            )) return@Div
+
+        // Data
+        val auction = auctions * FirstBy { it.auctionId == DEFAULT_AUCTION_ID }
+
+        // Texts
+        val texts = (bidApplicationStorage * i18N * language * component(BidComponent.AuctionsPage))
+
+        val applicationId = storage * availableApplications * FirstBy { it.name == "AUCTIONS" } * applicationId.get
+        // Markup
+        Vertical(style = verticalPageStyle) {
+            VerticalAccent(
+                verticalAccentStyles(bidApplicationStorage * deviceData * mediaType.get)
+            ) {
+                Wrap {
+                    Horizontal(styles = { justifyContent(JustifyContent.FlexStart); alignItems(AlignItems.Center); width(100.percent); gap(20.px) }) {
+                        H1({style { marginLeft(20.px) }}) { Text((texts * title).emit()) }
+                        CreateAuctionButton(
+                            storage = bidApplicationStorage,
+                            auction = auction,
+                            applicationId = applicationId,
+                            texts = texts * subComp("buttons") * subComp("createAuction")
+                        )
+                    }
+                }
+                Wrap{ AuctionList(
+                    auctions= bidApplicationStorage * auctions,
+                    user = bidApplicationStorage * user.get,
+                    organizationApplicationContextRelations = bidApplicationStorage * applicationOrganizationRelations.get,
+                    applicationId = applicationId,
+                    bidApplicationStorage * i18N,
+                    bidApplicationStorage * modals,
+                    bidApplicationStorage * deviceData * mediaType.get
+                ) {
+                    CoroutineScope(Job()).launch {
+                        val actions = (bidApplicationStorage * actions).read()
+                        try {
+                            actions.dispatch(it)
+                        } catch (exception: Exception) {
+                            (bidApplicationStorage * modals).showErrorModal(
+                                texts = errorModalTexts(
+                                    exception.message ?: exception.cause?.message ?: "Cannot Emit action '${it.name}'"
+                                ),
+                                device = bidApplicationStorage * deviceData * mediaType.get,
+                            )
+                        }
+                    }
+                }}
+            } }
+    }
 }

@@ -29,7 +29,6 @@ import org.solyton.solawi.bid.module.bid.service.isNotGranted
 import org.solyton.solawi.bid.module.control.button.PlayButton
 import org.solyton.solawi.bid.module.control.button.PlayButtonWithText
 import org.solyton.solawi.bid.module.style.data.Side
-import org.w3c.dom.Text
 
 @Markup
 @Composable
@@ -50,7 +49,7 @@ fun CreateNewRoundButton(
         (storage * auction * auctionDetails * areNotConfigured).emit() ||
         (storage * auction * biddersHaveNotBeenImported).emit() ||
         (storage * auction * auctionAccepted).emit() ||
-        (storage * user.get).emit().isNotGranted(BidRight.Auction.manage)
+        (storage * user.get).emit().isNotGranted(BidRight.Auction.moderateAuction)
 
     when(showText) {
         true -> PlayButtonWithText(

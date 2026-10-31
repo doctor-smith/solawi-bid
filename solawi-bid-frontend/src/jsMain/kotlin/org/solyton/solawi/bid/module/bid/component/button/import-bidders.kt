@@ -1,10 +1,6 @@
 package org.solyton.solawi.bid.module.bid.component.button
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import io.ktor.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -21,7 +17,6 @@ import org.evoleq.math.times
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
-import org.evoleq.optics.storage.read
 import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.Color
 import org.solyton.solawi.bid.module.bid.action.addBidders
@@ -61,7 +56,7 @@ fun ImportBiddersButton(
 
     val isDisabled = (storage * auction * rounds * existRounds).emit() ||
         (storage * auction * auctionAccepted).emit()||
-        (storage * user.get).emit().isNotGranted(BidRight.Auction.manage)
+        (storage * user.get).emit().isNotGranted(BidRight.Auction.importBidders)
 
     val action: () -> Unit = {
         (storage * modals).showImportBiddersModal(

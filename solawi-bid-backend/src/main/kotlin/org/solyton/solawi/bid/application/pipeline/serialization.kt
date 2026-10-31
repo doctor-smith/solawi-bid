@@ -7,6 +7,8 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.ktorx.result.add
 import org.evoleq.ktorx.result.serializers
+import org.solyton.solawi.bid.application.data.BuildInfo
+import org.solyton.solawi.bid.application.data.ReadBackendBuildInfo
 import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.banking.data.*
@@ -53,6 +55,8 @@ fun installSerializers() {
         add<Description>(Description.serializer())
         // API
         add<Parameters>(Parameters.serializer())
+        add<BuildInfo>(BuildInfo.serializer())
+        add<ReadBackendBuildInfo>(ReadBackendBuildInfo.serializer())
         // Result serializers
         // Result
         add<Result<*>>(ResultSerializer)

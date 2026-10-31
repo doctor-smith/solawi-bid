@@ -2,6 +2,8 @@ package org.solyton.solawi.bid.application.api
 
 
 import org.evoleq.ktorx.api.Api
+import org.solyton.solawi.bid.application.data.BuildInfo
+import org.solyton.solawi.bid.application.data.ReadBackendBuildInfo
 import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.authentication.data.api.*
 import org.solyton.solawi.bid.module.banking.data.SepaPaymentId
@@ -17,6 +19,11 @@ import org.solyton.solawi.bid.module.user.data.api.userprofile.*
 val solawiApi by lazy {
     // Authentication
     Api{
+        get<ReadBackendBuildInfo, BuildInfo>(
+            key = ReadBackendBuildInfo::class,
+            url = "api/version"
+        )
+
         group("authentication") {
             post<Login, LoggedIn>(
                 key = Login::class,

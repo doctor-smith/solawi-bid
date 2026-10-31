@@ -120,7 +120,7 @@ fun Routing(storage: Storage<Application>): Routes = Routing(
                     logoutAction = logoutAction
                 )
 
-                VersionInfo()
+                VersionInfo(storage)
 
                 // render page
                 page()

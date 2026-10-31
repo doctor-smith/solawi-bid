@@ -27,6 +27,7 @@ import org.jetbrains.compose.web.dom.H2
 import org.jetbrains.compose.web.dom.Text
 import org.solyton.solawi.bid.application.data.Application
 import org.solyton.solawi.bid.application.data.availableApplications
+import org.solyton.solawi.bid.application.data.context
 import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
 import org.solyton.solawi.bid.application.data.transform.user.userIso
 import org.solyton.solawi.bid.application.service.useI18nTransform
@@ -41,11 +42,7 @@ import org.solyton.solawi.bid.module.bid.component.button.AuctionsButton
 import org.solyton.solawi.bid.module.bid.component.button.CreateNewRoundButton
 import org.solyton.solawi.bid.module.bid.component.button.ImportBiddersButton
 import org.solyton.solawi.bid.module.bid.component.button.UpdateAuctionButton
-import org.solyton.solawi.bid.module.bid.component.effect.LaunchBidRoundEvaluation
-import org.solyton.solawi.bid.module.bid.component.effect.LaunchDownloadOfBidRoundResults
-import org.solyton.solawi.bid.module.bid.component.effect.TriggerCommentOnRoundDialog
-import org.solyton.solawi.bid.module.bid.component.effect.TriggerExportOfBidRoundResults
-import org.solyton.solawi.bid.module.bid.component.effect.TriggerPresentationOfBidRoundEvaluationInModal
+import org.solyton.solawi.bid.module.bid.component.effect.*
 import org.solyton.solawi.bid.module.bid.component.form.ApplicationContextKey
 import org.solyton.solawi.bid.module.bid.component.form.showUpdateAuctionModal
 import org.solyton.solawi.bid.module.bid.data.*
@@ -60,6 +57,7 @@ import org.solyton.solawi.bid.module.bid.data.reader.BidComponent
 import org.solyton.solawi.bid.module.bid.data.reader.auctionAccepted
 import org.solyton.solawi.bid.module.bid.permission.BidRight
 import org.solyton.solawi.bid.module.bid.service.isNotGranted
+import org.solyton.solawi.bid.module.context.data.isEmpty
 import org.solyton.solawi.bid.module.control.button.CommentButton
 import org.solyton.solawi.bid.module.control.button.DownloadButton
 import org.solyton.solawi.bid.module.control.button.EvaluationButton
@@ -94,146 +92,236 @@ val auctionPropertiesStyles = PropertiesStyles(
 @Markup
 @Composable
 @Suppress("FunctionName", "CognitiveComplexMethod")
-fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style { overflowY("auto" /*todo:dev - scroll only if needed*/)}}) {
-    // Bid Application Storage
-    val bidApplicationStorage = storage * bidApplicationIso
+fun AuctionPage(storage: Storage<Application>, auctionId: String) {
+    if((storage * context * isEmpty()).emit()) return
+    Div({style { overflowY("auto" /*todo:dev - scroll only if needed*/)}}) {
+        // Bid Application Storage
+        val bidApplicationStorage = storage * bidApplicationIso
 
-    if(sequentiallyExecuted(
-            onFulfilled(
-                source = { ConditionalActionInput(
-                    (storage * availableApplications).read(),
-                    (storage * availableApplications).read()
-                )},
-                predicate = { it.isEmpty() },
-            ){
-                LaunchedEffect(Unit) {
-                    (storage * userIso * userActions).dispatch(readUserPermissionsAction("React"))
+        if(sequentiallyExecuted(
+                onFulfilled(
+                    source = { ConditionalActionInput(
+                        (storage * availableApplications).read(),
+                        (storage * availableApplications).read()
+                    )},
+                    predicate = { it.isEmpty() },
+                ){
+                    LaunchedEffect(Unit) {
+                        (storage * userIso * userActions).dispatch(readUserPermissionsAction("React"))
+                    }
                 }
-            }
-        )) return@Div
+            )) return@Div
 
-    // Effects
-    if(isLoading(
-        onEmpty(
-            bidApplicationStorage * auctions.get
-        ) {
-            LaunchedEffect(Unit) {
-                (bidApplicationStorage * actions).read().dispatch(readAuctions())
-            }
-        },
-        onMissing(
-                BidComponent.AuctionPage,
-                bidApplicationStorage * i18N.get,
-        ) {
-            LaunchComponentLookup(
-                BidComponent.AuctionPage,
-                storage  * Reader { app: Application -> app.environment.useI18nTransform() },
-                bidApplicationStorage * i18N
-            )
+        // Effects
+        if(isLoading(
+                onEmpty(
+                    bidApplicationStorage * auctions.get
+                ) {
+                    LaunchedEffect(Unit) {
+                        (bidApplicationStorage * actions).read().dispatch(readAuctions())
+                    }
+                },
+                onMissing(
+                    BidComponent.AuctionPage,
+                    bidApplicationStorage * i18N.get,
+                ) {
+                    LaunchComponentLookup(
+                        BidComponent.AuctionPage,
+                        storage  * Reader { app: Application -> app.environment.useI18nTransform() },
+                        bidApplicationStorage * i18N
+                    )
+                }
+            )) return@Div
+
+        // Internal State
+        var newBidders by remember { mutableStateOf<List<NewBidder>>(listOf()) }
+        var addBidders by remember { mutableStateOf<AddBidders>(AddBidders()) }
+
+        // Data
+        val auction = auctions * FirstBy { it.auctionId == auctionId }
+        val auctionAccepted = bidApplicationStorage * auction * auctionAccepted
+        val runningRound = auction * rounds * Reader {
+                list: List<Round> -> list.firstOrNull{
+                round -> round.state != RoundState.Frozen.toString()
         }
-    )) return@Div
-
-    // Internal State
-    var newBidders by remember { mutableStateOf<List<NewBidder>>(listOf()) }
-    var addBidders by remember { mutableStateOf<AddBidders>(AddBidders()) }
-
-    // Data
-    val auction = auctions * FirstBy { it.auctionId == auctionId }
-    val auctionAccepted = bidApplicationStorage * auction * auctionAccepted
-    val runningRound = auction * rounds * Reader {
-        list: List<Round> -> list.firstOrNull{
-            round -> round.state != RoundState.Frozen.toString()
         }
-    }
-    val frozenRounds = auction * rounds * Reader {
-        list: List<Round> -> list
+        val frozenRounds = auction * rounds * Reader {
+                list: List<Round> -> list
             .filter{ it.state == RoundState.Frozen.toString() }
             .sortedByDescending { it.roundNumber }
-    }
-    val applicationId = storage * availableApplications * FirstBy { it.name == "AUCTIONS" } * applicationId.get
+        }
+        val applicationId = storage * availableApplications * FirstBy { it.name == "AUCTIONS" } * applicationId.get
 
-    val applicationTimesContextToOrganizationMap = (bidApplicationStorage * applicationOrganizationRelations.get map { orgList -> orgList.associateBy {
+        val applicationTimesContextToOrganizationMap = (bidApplicationStorage * applicationOrganizationRelations.get map { orgList -> orgList.associateBy {
             ApplicationContextKey(it.applicationId , it.contextId)
         } })
 
 
-    val organizationId = Source{ applicationTimesContextToOrganizationMap.emit()[ApplicationContextKey(
+        val organizationId = Source{ applicationTimesContextToOrganizationMap.emit()[ApplicationContextKey(
             applicationId.emit(),
             (bidApplicationStorage * auction * contextId.get).emit()
         )]!!.organizationId
-    }
+        }
 
-    // Texts
-    val texts = (bidApplicationStorage * i18N * language * component(BidComponent.AuctionPage))
-    val details = texts * subComp("details")
-    val buttons = texts * subComp("buttons")
+        // Texts
+        val texts = (bidApplicationStorage * i18N * language * component(BidComponent.AuctionPage))
+        val details = texts * subComp("details")
+        val buttons = texts * subComp("buttons")
 
-    var confirmationModalOpen by remember { mutableStateOf(false)}
-    if(!confirmationModalOpen && onStringEmpty(
-        bidApplicationStorage * auction * contextId.get
-    ) {
-        confirmationModalOpen = true
-        (bidApplicationStorage * modals).showDialogModal(
-            texts = dialogModalTexts("No organizations connected"),
-            device = bidApplicationStorage * deviceData * mediaType.get,
-            dataId = "auction-page.dialog.",
-        ) {
-            (bidApplicationStorage * modals).showUpdateAuctionModal(
-                auction =  bidApplicationStorage * auction,
-                organizations = bidApplicationStorage * user * organizations.get,
-                organizationApplicationContextRelations = bidApplicationStorage * applicationOrganizationRelations.get,
-                applicationId = applicationId,
-                texts = ((bidApplicationStorage * i18N * language).read() as Lang.Block).component("solyton.auction.updateDialog"),
-                device = bidApplicationStorage * deviceData * mediaType.get,
-                cancel = {confirmationModalOpen = false}
+        var confirmationModalOpen by remember { mutableStateOf(false)}
+        if(!confirmationModalOpen && onStringEmpty(
+                bidApplicationStorage * auction * contextId.get
             ) {
-                CoroutineScope(Job()).launch {
-                    val action = configureAuction(auction)
-                    val actions = (bidApplicationStorage * actions).read()
-                    try {
-                        actions.dispatch( action )
-                    } catch(exception: Exception) {
-                        (bidApplicationStorage * modals).showErrorModal(
-                            errorModalTexts(exception.message?:exception.cause?.message?:"Cannot Emit action '${action.name}'"),
-                            bidApplicationStorage * deviceData * mediaType.get
+                confirmationModalOpen = true
+                (bidApplicationStorage * modals).showDialogModal(
+                    texts = dialogModalTexts("No organizations connected"),
+                    device = bidApplicationStorage * deviceData * mediaType.get,
+                    dataId = "auction-page.dialog.",
+                ) {
+                    (bidApplicationStorage * modals).showUpdateAuctionModal(
+                        auction =  bidApplicationStorage * auction,
+                        organizations = bidApplicationStorage * user * organizations.get,
+                        organizationApplicationContextRelations = bidApplicationStorage * applicationOrganizationRelations.get,
+                        applicationId = applicationId,
+                        texts = ((bidApplicationStorage * i18N * language).read() as Lang.Block).component("solyton.auction.updateDialog"),
+                        device = bidApplicationStorage * deviceData * mediaType.get,
+                        cancel = {confirmationModalOpen = false}
+                    ) {
+                        CoroutineScope(Job()).launch {
+                            val action = configureAuction(auction)
+                            val actions = (bidApplicationStorage * actions).read()
+                            try {
+                                actions.dispatch( action )
+                            } catch(exception: Exception) {
+                                (bidApplicationStorage * modals).showErrorModal(
+                                    errorModalTexts(exception.message?:exception.cause?.message?:"Cannot Emit action '${action.name}'"),
+                                    bidApplicationStorage * deviceData * mediaType.get
+                                )
+                            }
+                        }
+                    }
+                }
+            }) return@Div
+
+        // Markup
+        Page({verticalPageStyle(); }) {
+            // Auction Details
+            VerticalAccent(verticalAccentStyles(bidApplicationStorage * deviceData * mediaType.get)) {
+                Wrap({marginLeft(20.px)}) {
+                    Horizontal(styles = { justifyContent(JustifyContent.SpaceBetween); width(100.percent) }) {
+                        // Title
+                        H1 { Text(with((bidApplicationStorage * auction).read()) { name }) }
+
+                        // Action Buttons
+                        Horizontal({
+                            alignItems(AlignItems.Center);
+                            // todo:dev - use default value
+                            gap(5.px)}
+                        ) {
+                            AuctionsButton(
+                                url = "/app/auctions",
+                                color = Color.black,
+                                bgColor = Color.transparent,
+                                // todo:i18n
+                                texts= {"Auctions"},
+                                deviceType = bidApplicationStorage * deviceData * mediaType.get,
+                                isDisabled = false,
+                                dataId = "auction-page.button.nav-to-auctions"
+                            )
+                            UpdateAuctionButton(
+                                storage = bidApplicationStorage,
+                                auction = auction,
+                                applicationId = applicationId,
+                                texts = buttons * subComp("updateAuction"),
+                                dataId = "auction-page.button.configure-auction"
+                            )
+                            ImportBiddersButton(
+                                storage = bidApplicationStorage,
+                                organizationId = ProviderId(organizationId.emit()),
+                                newBidders = Storage<List<NewBidder>>(
+                                    read = { newBidders },
+                                    write = { newBidders = it }
+                                ),
+                                addBidders = Storage<AddBidders>(
+                                    read = { addBidders },
+                                    write = { addBidders = it }
+                                ),
+                                auction = auction,
+                                texts = buttons * subComp("importBidders"),
+                                dataId = "auction-page.button.import-bidders"
+                            )
+                            CreateNewRoundButton(
+                                storage = bidApplicationStorage,
+                                auction = auction,
+                                texts = buttons * subComp("createRound"),
+                                dataId = "auction-page.button.create-round"
+                            )
+                            HelpButton(
+                                color = Color.black,
+                                bgColor = Color.transparent,
+                                texts = buttons * subComp("help") * tooltip ,
+                                deviceType = bidApplicationStorage * deviceData * mediaType.get,
+                                isDisabled = false,
+                                dataId = "auction-page.button.help"
+                            ) {
+                                openUrlInNewTab("/manual/how-to-carry-ou-an-auction")
+                            }
+                        }
+                    }
+                }
+                Wrap({marginLeft(20.px)}) {
+                    H2 { Text((details * title).emit()) }
+                }
+                Wrap({marginLeft(20.px); backgroundColor(forestGreenUltraLite)}) {
+                    Horizontal {
+                        AuctionDetails(
+                            bidApplicationStorage * auction,
+                            bidApplicationStorage * i18N * locale.get map { l -> Locale.from(l) },
+                            details,
+                            auctionPropertiesStyles
                         )
                     }
                 }
             }
-        }
-    }) return@Div
 
-    // Markup
-    Page({verticalPageStyle(); }) {
-        // Auction Details
-        VerticalAccent(verticalAccentStyles(bidApplicationStorage * deviceData * mediaType.get)) {
-            Wrap({marginLeft(20.px)}) {
-                Horizontal(styles = { justifyContent(JustifyContent.SpaceBetween); width(100.percent) }) {
-                    // Title
-                    H1 { Text(with((bidApplicationStorage * auction).read()) { name }) }
-
-                    // Action Buttons
+            // Process / ~ Explanation
+            val r = (bidApplicationStorage * runningRound).emit()
+            val frontendBaseUrl = with((bidApplicationStorage * environment).read()) {
+                "$frontendUrl:$frontendPort"
+            }
+            Wrap({width(100.percent)}) {
+                When(r != null && not(auctionAccepted).emit()) {
+                    CurrentBidRound(
+                        storage = bidApplicationStorage,
+                        auction = auction,
+                        r!!,
+                        frontendBaseUrl,
+                        (bidApplicationStorage * i18N * language * component(BidComponent.Round))
+                    )
+                }
+                When(r == null && not(auctionAccepted).emit()) {
                     Horizontal({
-                        alignItems(AlignItems.Center);
-                        // todo:dev - use default value
-                        gap(5.px)}
-                    ) {
-                        AuctionsButton(
-                            url = "/app/auctions",
-                            color = Color.black,
-                            bgColor = Color.transparent,
-                            // todo:i18n
-                            texts= {"Auctions"},
-                            deviceType = bidApplicationStorage * deviceData * mediaType.get,
-                            isDisabled = false,
-                            dataId = "auction-page.button.nav-to-auctions"
-                        )
+                        width(100.percent)
+                        marginTop(50.px)
+                        // alignItems(AlignItems.Center)
+                        justifyContent(JustifyContent.Center)
+                        gap(20.px)
+                    }) {
                         UpdateAuctionButton(
                             storage = bidApplicationStorage,
                             auction = auction,
                             applicationId = applicationId,
                             texts = buttons * subComp("updateAuction"),
-                            dataId = "auction-page.button.configure-auction"
+                            dataId = "auction-page.button.configure-auction.explanation",
+                            showText = true,
+                        )
+
+                        BidArrow(
+                            Color.black,
+                            Color.black,
+                            Color.transparent,
+                            {"Next"}
+
                         )
                         ImportBiddersButton(
                             storage = bidApplicationStorage,
@@ -248,246 +336,159 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) = Div({style {
                             ),
                             auction = auction,
                             texts = buttons * subComp("importBidders"),
-                            dataId = "auction-page.button.import-bidders"
+                            dataId = "auction-page.button.import-bidders.explanation",
+                            showText = true
+                        )
+                        BidArrow(
+                            Color.black,
+                            Color.black,
+                            Color.transparent,
+                            {"Next"}
+
                         )
                         CreateNewRoundButton(
                             storage = bidApplicationStorage,
                             auction = auction,
                             texts = buttons * subComp("createRound"),
-                            dataId = "auction-page.button.create-round"
+                            dataId = "auction-page.button.create-round.explanation",
+                            showText = true
                         )
-                        HelpButton(
-                            color = Color.black,
-                            bgColor = Color.transparent,
-                            texts = buttons * subComp("help") * tooltip ,
-                            deviceType = bidApplicationStorage * deviceData * mediaType.get,
-                            isDisabled = false,
-                            dataId = "auction-page.button.help"
-                        ) {
-                            openUrlInNewTab("/manual/how-to-carry-ou-an-auction")
+                    }
+                }
+            }
+
+            // List of passed rounds
+            When((bidApplicationStorage * frozenRounds).emit().isNotEmpty()) {
+                val listStyles = ListStyles()
+                    .modifyListWrapper {
+                        marginBottom(20.px)
+                    }
+                    .modifyHeaderWrapper{
+                        justifyContent(JustifyContent.SpaceBetween)
+                        alignItems(AlignItems.Center)
+                        width(100.percent)
+                    }
+                    .modifyListItemWrapper{
+                        justifyContent(JustifyContent.SpaceBetween)
+                        alignItems(AlignItems.Center)
+                        backgroundColor(Color.ghostwhite)
+                        width(100.percent)
+                        border {
+                            style(LineStyle.Solid)
+                            color(Color.ghostwhite)
                         }
+                        borderWidth(1.px, 1.px, 1.px, 1.px)
                     }
-                }
-            }
-            Wrap({marginLeft(20.px)}) {
-                H2 { Text((details * title).emit()) }
-            }
-            Wrap({marginLeft(20.px); backgroundColor(forestGreenUltraLite)}) {
-                Horizontal {
-                    AuctionDetails(
-                        bidApplicationStorage * auction,
-                        bidApplicationStorage * i18N * locale.get map { l -> Locale.from(l) },
-                        details,
-                        auctionPropertiesStyles
-                    )
-                }
-            }
-        }
+                // Wrap {
+                ListWrapper {
+                    // Title
+                    // todo:i18n
+                    TitleWrapper{ Title{
+                        H2({/*style { marginLeft(20.px) }*/ }) { Text("Abgeschlossene Runden") }
+                    } }
 
-        // Process / ~ Explanation
-        val r = (bidApplicationStorage * runningRound).emit()
-        val frontendBaseUrl = with((bidApplicationStorage * environment).read()) {
-            "$frontendUrl:$frontendPort"
-        }
-        Wrap({width(100.percent)}) {
-            When(r != null && not(auctionAccepted).emit()) {
-                CurrentBidRound(
-                    storage = bidApplicationStorage,
-                    auction = auction,
-                    r!!,
-                    frontendBaseUrl,
-                    (bidApplicationStorage * i18N * language * component(BidComponent.Round))
-                )
-            }
-            When(r == null && not(auctionAccepted).emit()) {
-                Horizontal({
-                    width(100.percent)
-                    marginTop(50.px)
-                    // alignItems(AlignItems.Center)
-                    justifyContent(JustifyContent.Center)
-                    gap(20.px)
-                }) {
-                    UpdateAuctionButton(
-                        storage = bidApplicationStorage,
-                        auction = auction,
-                        applicationId = applicationId,
-                        texts = buttons * subComp("updateAuction"),
-                        dataId = "auction-page.button.configure-auction.explanation",
-                        showText = true,
-                    )
-
-                    BidArrow(
-                        Color.black,
-                        Color.black,
-                        Color.transparent,
-                        {"Next"}
-
-                    )
-                    ImportBiddersButton(
-                        storage = bidApplicationStorage,
-                        organizationId = ProviderId(organizationId.emit()),
-                        newBidders = Storage<List<NewBidder>>(
-                            read = { newBidders },
-                            write = { newBidders = it }
-                        ),
-                        addBidders = Storage<AddBidders>(
-                            read = { addBidders },
-                            write = { addBidders = it }
-                        ),
-                        auction = auction,
-                        texts = buttons * subComp("importBidders"),
-                        dataId = "auction-page.button.import-bidders.explanation",
-                        showText = true
-                    )
-                    BidArrow(
-                        Color.black,
-                        Color.black,
-                        Color.transparent,
-                        {"Next"}
-
-                    )
-                    CreateNewRoundButton(
-                        storage = bidApplicationStorage,
-                        auction = auction,
-                        texts = buttons * subComp("createRound"),
-                        dataId = "auction-page.button.create-round.explanation",
-                        showText = true
-                    )
-                }
-            }
-        }
-
-        // List of passed rounds
-        When((bidApplicationStorage * frozenRounds).emit().isNotEmpty()) {
-            val listStyles = ListStyles()
-                .modifyListWrapper {
-                    marginBottom(20.px)
-                }
-                .modifyHeaderWrapper{
-                    justifyContent(JustifyContent.SpaceBetween)
-                    alignItems(AlignItems.Center)
-                    width(100.percent)
-                }
-                .modifyListItemWrapper{
-                    justifyContent(JustifyContent.SpaceBetween)
-                    alignItems(AlignItems.Center)
-                    backgroundColor(Color.ghostwhite)
-                    width(100.percent)
-                    border {
-                        style(LineStyle.Solid)
-                        color(Color.ghostwhite)
-                    }
-                    borderWidth(1.px, 1.px, 1.px, 1.px)
-                }
-            // Wrap {
-            ListWrapper {
-                // Title
-                // todo:i18n
-                TitleWrapper{ Title{
-                    H2({/*style { marginLeft(20.px) }*/ }) { Text("Abgeschlossene Runden") }
-                } }
-
-                HeaderWrapper(styles = listStyles.headerWrapper ) {
-                    Header {
-                        // Space for  Check or Xmark
-                        // -> HCell
-                        // todo:i18n
-                        HeaderCell("Runde Nr")
-/*
-                        // todo:i18n
-                        HeaderCell("Start")
-
-                        // todo:i18n
-                        HeaderCell("Stop")
-*/
-                        // todo:i18n
-                        HeaderCell("Kommentar"){width(50.percent)}
-                    }
-                }
-
-                // Rows
-                (bidApplicationStorage * frozenRounds).emit().forEach { round ->
-                    // Effect
-                    LaunchDownloadOfBidRoundResults(
-                        storage = bidApplicationStorage,
-                        auction = auction,
-                        round = round,
-                        texts = texts
-                    )
-
-                    LaunchBidRoundEvaluation(
-                        storage = bidApplicationStorage,
-                        auction = auction,
-                        round = round,
-                    )
-
-                    ListItemWrapper(styles = listStyles.listItemWrapper ) {
-                        DataWrapper{
-                            // Check or Xmark ???
-                            // todo:i18n runde
-                            TextCell("Runde ${round.roundNumber}")
+                    HeaderWrapper(styles = listStyles.headerWrapper ) {
+                        Header {
+                            // Space for  Check or Xmark
+                            // -> HCell
+                            // todo:i18n
+                            HeaderCell("Runde Nr")
                             /*
-                            // todo:i18n date
-                            TimeCell(Date())
-                            // todo:i18n date
-                            TimeCell(Date(Date.now() + 15 * 60_000))
+                                                    // todo:i18n
+                                                    HeaderCell("Start")
 
-                             */
-                            // todo:i18n date
-                            TextCell(round.comments.firstOrNull()?.comment?:"") { width(50.percent) }
+                                                    // todo:i18n
+                                                    HeaderCell("Stop")
+                            */
+                            // todo:i18n
+                            HeaderCell("Kommentar"){width(50.percent)}
                         }
-                        ActionsWrapper {
-                            val scope = rememberCoroutineScope()
-                            val isExportDisabled = (bidApplicationStorage * user.get).emit()
-                                .isNotGranted(BidRight.BidRound.manage)
+                    }
 
-                            // todo:i18n
-                            CommentButton(
-                                Color.black,
-                                Color.transparent,
-                                { "Runde kommentieren" },
-                                bidApplicationStorage * deviceData * mediaType.get,
-                                false
-                            ) {
-                                TriggerCommentOnRoundDialog(
-                                    bidApplicationStorage,
-                                    auction * rounds * FirstBy { it.roundId == round.roundId }
-                                )
+                    // Rows
+                    (bidApplicationStorage * frozenRounds).emit().forEach { round ->
+                        // Effect
+                        LaunchDownloadOfBidRoundResults(
+                            storage = bidApplicationStorage,
+                            auction = auction,
+                            round = round,
+                            texts = texts
+                        )
+
+                        LaunchBidRoundEvaluation(
+                            storage = bidApplicationStorage,
+                            auction = auction,
+                            round = round,
+                        )
+
+                        ListItemWrapper(styles = listStyles.listItemWrapper ) {
+                            DataWrapper{
+                                // Check or Xmark ???
+                                // todo:i18n runde
+                                TextCell("Runde ${round.roundNumber}")
+                                /*
+                                // todo:i18n date
+                                TimeCell(Date())
+                                // todo:i18n date
+                                TimeCell(Date(Date.now() + 15 * 60_000))
+
+                                 */
+                                // todo:i18n date
+                                TextCell(round.comments.firstOrNull()?.comment?:"") { width(50.percent) }
                             }
+                            ActionsWrapper {
+                                val scope = rememberCoroutineScope()
+                                val isExportDisabled = (bidApplicationStorage * user.get).emit()
+                                    .isNotGranted(BidRight.BidRound.manage)
 
-                            // todo:i18n
-                            DownloadButton(
-                                Color.black,
-                                Color.transparent,
-                                { "Ergebnisse Exportieren" },
-                                bidApplicationStorage * deviceData * mediaType.get,
-                                isExportDisabled
-                            ) {
-                                TriggerExportOfBidRoundResults(
-                                    storage = bidApplicationStorage,
-                                    auction = auction,
-                                    round = round
-                                )
-                            }
-
-                            val isEvaluationDisabled = (bidApplicationStorage * user.get).emit()
-                                .isNotGranted(BidRight.BidRound.manage)
-                            // todo:i18n
-                            EvaluationButton(
-                                Color.black,
-                                Color.transparent,
-                                { "Evaluation einsehen" },
-                                bidApplicationStorage * deviceData * mediaType.get,
-                                isEvaluationDisabled
-                            ) {
-                                scope.TriggerPresentationOfBidRoundEvaluationInModal(
-                                    storage = bidApplicationStorage,
-                                    auction = auction,
-                                    round = round,
-                                    config =BidRoundEvaluationConfig(
-                                        showEvaluationDiagrams = true
+                                // todo:i18n
+                                CommentButton(
+                                    Color.black,
+                                    Color.transparent,
+                                    { "Runde kommentieren" },
+                                    bidApplicationStorage * deviceData * mediaType.get,
+                                    false
+                                ) {
+                                    TriggerCommentOnRoundDialog(
+                                        bidApplicationStorage,
+                                        auction * rounds * FirstBy { it.roundId == round.roundId }
                                     )
-                                )
+                                }
+
+                                // todo:i18n
+                                DownloadButton(
+                                    Color.black,
+                                    Color.transparent,
+                                    { "Ergebnisse Exportieren" },
+                                    bidApplicationStorage * deviceData * mediaType.get,
+                                    isExportDisabled
+                                ) {
+                                    TriggerExportOfBidRoundResults(
+                                        storage = bidApplicationStorage,
+                                        auction = auction,
+                                        round = round
+                                    )
+                                }
+
+                                val isEvaluationDisabled = (bidApplicationStorage * user.get).emit()
+                                    .isNotGranted(BidRight.BidRound.manage)
+                                // todo:i18n
+                                EvaluationButton(
+                                    Color.black,
+                                    Color.transparent,
+                                    { "Evaluation einsehen" },
+                                    bidApplicationStorage * deviceData * mediaType.get,
+                                    isEvaluationDisabled
+                                ) {
+                                    scope.TriggerPresentationOfBidRoundEvaluationInModal(
+                                        storage = bidApplicationStorage,
+                                        auction = auction,
+                                        round = round,
+                                        config =BidRoundEvaluationConfig(
+                                            showEvaluationDiagrams = true
+                                        )
+                                    )
+                                }
                             }
                         }
                     }

@@ -1,8 +1,6 @@
 package org.solyton.solawi.bid.module.bid.component.form
 
 import androidx.compose.runtime.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import org.evoleq.compose.Markup
 import org.evoleq.compose.date.format
 import org.evoleq.compose.date.parse
@@ -21,7 +19,6 @@ import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.map
 import org.evoleq.math.onIsDouble
-import org.evoleq.optics.lens.DeepSearch
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
@@ -33,7 +30,6 @@ import org.jetbrains.compose.web.dom.Input
 import org.jetbrains.compose.web.dom.TextInput
 import org.solyton.solawi.bid.module.application.data.organizationrelation.ApplicationOrganizationRelation
 import org.solyton.solawi.bid.module.bid.component.dropdown.OrganizationsDropdown
-import org.solyton.solawi.bid.module.bid.component.dropdown.flatById
 import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
 import org.solyton.solawi.bid.module.bid.data.auction.*
 import org.solyton.solawi.bid.module.bid.service.onNullEmpty
@@ -88,28 +84,36 @@ fun UpdateAuctionModal(
         } }).emit()
     }
 
+    // States
+    val initDate = (auction * date).read().format(Locale.Iso)
+    var dateStringState by remember{ mutableStateOf( initDate ) }
+    var nameState by remember { mutableStateOf<String>((auction * name).read()) }
+    // var auctionContextIdState by remember { mutableStateOf<String>((auction * contextId).read()) }
+
+
+
     Div(attrs = {style { formDesktopStyle() }}) {
 
         Div(attrs = {style { fieldDesktopStyle() }}) {
             Label(inputs["title"], id = "name" , labelStyle = formLabelDesktopStyle)
-            TextInput((auction * name).read()) {
+            TextInput(nameState) {
                 id("name")
                 style { textInputDesktopStyle() }
-                onInput { (auction * name).write(it.value) }
+                onInput {
+                    nameState = it.value
+                    (auction * name).write(it.value)
+                }
             }
         }
         Div(attrs = {style { fieldDesktopStyle() }}) {
-            // State
-            val initDate = (auction * date).read().format(Locale.Iso)
-            var dateString by remember{ mutableStateOf( initDate ) }
 
             Label(inputs["date"], id = "date" , labelStyle = formLabelDesktopStyle)
             Input(InputType.Date) {
                 id("date")
-                value(dateString)
+                value(dateStringState)
                 style { dateInputDesktopStyle() }
                 onInput {
-                    dateString = it.value
+                    dateStringState = it.value
                     (auction * date).write(it.value.parse(Locale.Iso).toDateTime())
                 }
             }

@@ -1,10 +1,16 @@
 package org.solyton.solawi.bid.application.routing
 
-import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.json.Json
+import org.evoleq.ktorx.Base
+import org.evoleq.ktorx.Receive
+import org.evoleq.ktorx.Respond
+import org.evoleq.math.state.runOn
+import org.evoleq.math.state.times
+import org.solyton.solawi.bid.application.action.io.transform
+import org.solyton.solawi.bid.application.data.BuildInfo
 import org.solyton.solawi.bid.application.environment.Environment
 import org.solyton.solawi.bid.module.application.routing.application
 import org.solyton.solawi.bid.module.authentication.routing.authentication
@@ -25,10 +31,9 @@ fun Application.setupRouting(environment: Environment) {
     routing {
         get("/api/version") {
             val json = File("/app/version.json").readText()
-            call.respondText(
-                json,
-                ContentType.Application.Json
-            )
+            val buildInfo = Json.decodeFromString<BuildInfo>(json)
+            Receive<BuildInfo>(buildInfo) *
+            Respond<BuildInfo> { transform() } runOn Base(call, environment)
         }
         authentication(environment)
         health(environment)

@@ -11,6 +11,7 @@ import org.evoleq.optics.storage.MutableSharedFlowActionDispatcher
 import org.solyton.solawi.bid.application.api.solawiApi
 import org.solyton.solawi.bid.application.data.env.Environment
 import org.solyton.solawi.bid.application.data.ui.UiStates
+import org.solyton.solawi.bid.application.data.version.full.FullVersionInfo
 import org.solyton.solawi.bid.module.application.data.organizationrelation.ApplicationOrganizationRelation
 import org.solyton.solawi.bid.module.application.data.userapplication.UserApplications
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
@@ -38,6 +39,7 @@ import org.solyton.solawi.bid.module.user.data.user.User
 
 @Lensify data class Application (
     @ReadOnly val environment: Environment,
+    @ReadWrite val versionInfo: FullVersionInfo = FullVersionInfo(),
     @ReadOnly val api: Api = solawiApi,
     @ReadOnly override val actions: MutableSharedFlowActionDispatcher<Application> = MutableSharedFlowActionDispatcher(MutableSharedFlow()),
     @ReadWrite override val processes: Processes = Processes(),

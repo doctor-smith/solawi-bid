@@ -2,25 +2,20 @@ package org.solyton.solawi.bid.application.ui.page.auction
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.routing.navigate
 import org.evoleq.device.data.mediaType
+import org.evoleq.math.emit
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
-import org.jetbrains.compose.web.css.AlignItems
-import org.jetbrains.compose.web.css.Color
-import org.jetbrains.compose.web.css.JustifyContent
-import org.jetbrains.compose.web.css.alignItems
-import org.jetbrains.compose.web.css.justifyContent
-import org.jetbrains.compose.web.css.percent
-import org.jetbrains.compose.web.css.width
+import org.jetbrains.compose.web.css.*
 import org.solyton.solawi.bid.application.data.Application
+import org.solyton.solawi.bid.application.data.context
 import org.solyton.solawi.bid.application.data.transform.bid.bidApplicationIso
 import org.solyton.solawi.bid.module.bid.data.deviceData
-import org.solyton.solawi.bid.module.bid.data.bidActions
+import org.solyton.solawi.bid.module.context.data.isEmpty
 import org.solyton.solawi.bid.module.control.button.ArrowUpButton
 import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.style.page.PageTitle
@@ -34,6 +29,7 @@ import org.solyton.solawi.bid.module.values.ProviderId
 @Composable
 @Suppress("FunctionName")
 fun AuctionsForOrganizationsPage(storage: Storage<Application>, providerId: ProviderId, up: String) {
+    if((storage * context * isEmpty()).emit()) return
     // val scope = rememberCoroutineScope()
 
     val auctionApplicationStorage = storage * bidApplicationIso

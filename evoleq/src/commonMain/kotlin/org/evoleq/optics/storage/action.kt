@@ -29,6 +29,7 @@ data class Action<Base: Any, out I : Any, O : Any>(
     val deserializer: KSerializer<Result<O>>,
     val onError: Writer<Base, Pair<HttpStatusCode, String>>? = null,
     val failOnError: Boolean = onError == null,
+    val onSuccess: Writer<Base, O>? = null
 )
 
 
