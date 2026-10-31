@@ -405,7 +405,8 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
 
                                 SearchInput(
                                     "",
-                                    SearchInputStyles()
+                                    SearchInputStyles(),
+                                    dataId = "organization.page.members.search-input"
                                 ) {
                                     val newSearchInputState = it.trim()
                                     memberFilter = if (newSearchInputState.isNotBlank()) {
@@ -424,7 +425,8 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                     color = Color.black,
                                     bgColor = Color.white,
                                     texts = listOfMembers * Component.actions * Component.exportMembersOfOrganization * tooltip,
-                                    deviceType = { device.read() }
+                                    deviceType = { device.read() },
+                                    dataId = "organization.page.members.export-button"
                                 ) {
                                     // todo:dev implement dialog where one can set some download-options
                                     //  (data to download, delimiter, etc)
@@ -443,7 +445,8 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                     color = Color.black,
                                     bgColor = Color.white,
                                     texts = listOfMembers * Component.actions * Component.importMembersToOrganization * tooltip,
-                                    deviceType = { device.read() }
+                                    deviceType = { device.read() },
+                                    dataId = "organization.page.members.import-button"
                                 ) {
                                     (userModuleStorage * userModals).showImportMembersToOrganizationModal(
                                         texts = importMembersToOrganization.emit(),
@@ -483,7 +486,8 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                     color = Color.black,
                                     bgColor = Color.white,
                                     texts = listOfMembers * Component.actions * Component.create * tooltip,
-                                    deviceType = { device.read() }
+                                    deviceType = { device.read() },
+                                    dataId = "organization.page.members.add-button"
                                 ) {
                                     (applicationStorage * modals).showUpdateMembersOfOrganizationModal(
                                         texts = updateMemberOfOrganization,
@@ -595,7 +599,8 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                             CardChevrons(
                                 texts = Source { cardChevronTexts() },
                                 deviceType = Read(device),
-                                opened = open
+                                opened = open,
+                                dataId = "organization.page.members.chevron"
                             )
                         }
                     }
@@ -718,7 +723,8 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                                             Color.black,
                                             Color.white,
                                             listOfMembers * Component.actions * Component.edit * tooltip,
-                                            { device.read() }
+                                            { device.read() },
+                                            dataId = "organization.page.members.edit-button"
                                         ) {
                                             (applicationStorage * mainModales).showUpdateMembersOfOrganizationModal(
                                                 texts = updateMemberOfOrganization,

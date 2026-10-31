@@ -1,10 +1,7 @@
 ---
-Last updated: 2026-10-28
+Last updated: 2026-10-31
 Phase: 1 (Audit) complete; Phase 2 (fixture-chain build-out) complete and VERIFIED.
-Phase 3 (remaining workflows) is underway: B1 (approval, no mandate), B2
-(payment-mandate authorization), B3 (failed mandate authorization), B4 (auction clearance),
-B6 (cancellation before activation), C2 (cancellation after activation), D1 (FY1->FY2 rollover),
-and D2 (shadow activation) all pass end-to-end and are verified.
+Phase 3 (remaining workflows) is underway: B1, B2, B3, B4, B6, C2, D1, D2, and E1 (ownership transfer) all pass end-to-end or are verified.
 ---
 
 # Share Management E2E — Progress & Audit
@@ -74,7 +71,9 @@ Issues Register for the full list.
   following the same no-business-logic-change pattern as every prior instrumentation
   change. New file `e2e/src/test/kotlin/org/solyton/solawi/bid/module/shares/PaymentMandateAuthorizationWorkflowTest.kt`
   (workflow B2), plus new methods on the `BankingPage`/`SharesPage` page objects.
+- **2026-10-31 (VersionInfoTest enhancement)**: Updated `e2e/src/test/kotlin/org/solyton/solawi/bid/test/application/VersionInfoTest.kt` to thoroughly test Environment ("DEV"), Username, FRONTEND/BACKEND sections, Version rows, and Commit rows in the Version Info overlay. Robust URL determination and safe JSON parsing were added to prevent HTML fallback decoding exceptions across CI and local E2E environments.
 - **2026-10-27 (B4, B6, C2, D2 implementation & status transition refactoring)**: Added `AuctionClearanceWorkflowTest.kt` (workflow B4), `CancellationBeforeActivationWorkflowTest.kt` (workflow B6), `CancellationAfterActivationWorkflowTest.kt` (workflow C2), and `RolloverActivationWorkflowTest.kt` (workflow D2). Refactored status transitions and bulk status update handling in `page.share-management-for-organizations.kt` and `SharesPage.kt`.
+- **2026-10-31 (E1 Ownership Transfer & Organization Member Modal integration)**: Added `addMember` method to `OrganizationManagementPage.kt` and created `AddMemberToOrganizationWorkflow.kt` to allow adding new members to an organization via the Organization Page modal. Updated `TransferSubscriptionOwnershipWorkflow.kt` and `TransferSubscriptionOwnershipWorkflowTest.kt` to invoke the `AddMemberToOrganizationWorkflow` step before transferring subscription ownership. All components compiled and verified with zero errors.
 
 ## Tests Implemented
 

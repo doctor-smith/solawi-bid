@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.application.ui.component.organization
 
 import androidx.compose.runtime.*
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.form.Form
 import org.evoleq.compose.form.field.Field
 import org.evoleq.compose.form.label.Label
@@ -62,6 +63,7 @@ fun BankAccountForm(
                     )
                     TextInput(bankAccountHolderState) {
                         id("bank-account-holder")
+                        dataId("bank-account.form.account-holder-input")
                         style { textInputDesktopStyle() }
                         onInput {
                             try {
@@ -98,6 +100,7 @@ fun BankAccountForm(
                         )
                         TextInput(ibanState ?: "") {
                             id("iban")
+                            dataId("bank-account.form.iban-input")
                             style { textInputDesktopStyle() }
                             onInput {
                                 try {
@@ -126,6 +129,7 @@ fun BankAccountForm(
                         )
                         TextInput(bicState ?: "") {
                             id("bic")
+                            dataId("bank-account.form.bic-input")
                             style { textInputDesktopStyle() }
                             onInput {
                                 try {
