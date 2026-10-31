@@ -1,10 +1,13 @@
 package org.solyton.solawi.bid.application.ui.page.user
 
+
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
 import org.evoleq.compose.effect.LaunchedEffectOnSource
 import org.evoleq.compose.guard.data.isLoading
+import org.evoleq.compose.guard.data.onNullLaunch
 import org.evoleq.compose.guard.data.withLoading
 import org.evoleq.compose.layout.Horizontal
 import org.evoleq.compose.routing.navigate
@@ -30,7 +33,6 @@ import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.letsPlot.commons.intern.filterNotNullValues
 import org.solyton.solawi.bid.application.data.Application
-import org.solyton.solawi.bid.application.data.context
 import org.solyton.solawi.bid.application.data.env.i18nEnvironment
 import org.solyton.solawi.bid.application.data.i18N
 import org.solyton.solawi.bid.application.data.mainActions
@@ -76,7 +78,6 @@ import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.fiscalYears
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.mappings.BankingMappings
-import org.solyton.solawi.bid.module.context.data.isEmpty
 import org.solyton.solawi.bid.module.control.button.*
 import org.solyton.solawi.bid.module.country.i18n.CountryLangComponent
 import org.solyton.solawi.bid.module.distribution.action.READ_DISTRIBUTION_POINTS
@@ -92,6 +93,7 @@ import org.solyton.solawi.bid.module.page.component.Page
 import org.solyton.solawi.bid.module.pagination.component.Pagination
 import org.solyton.solawi.bid.module.pagination.data.PaginationData
 import org.solyton.solawi.bid.module.pagination.service.paginate
+import org.solyton.solawi.bid.module.permissions.service.contextFromPath
 import org.solyton.solawi.bid.module.process.service.process.next
 import org.solyton.solawi.bid.module.process.service.process.runProcesses
 import org.solyton.solawi.bid.module.process.service.process.sequence
@@ -115,6 +117,7 @@ import org.solyton.solawi.bid.module.style.page.verticalPageStyle
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.solyton.solawi.bid.module.user.action.organization.READ_ORGANIZATIONS
 import org.solyton.solawi.bid.module.user.action.organization.readOrganizations
+import org.solyton.solawi.bid.module.user.action.permission.readUserPermissionsAction
 import org.solyton.solawi.bid.module.user.action.user.GET_USERS
 import org.solyton.solawi.bid.module.user.action.user.READ_USER_PROFILES
 import org.solyton.solawi.bid.module.user.action.user.getUsers
@@ -147,18 +150,20 @@ import kotlin.text.trim
 import org.solyton.solawi.bid.application.data.environment as appEnv
 import org.solyton.solawi.bid.module.application.data.application.Application as App
 
-
 @Markup
 @Composable
 @Suppress("FunctionName","CyclomaticComplexMethod", "CognitiveComplexMethod")
 fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: String) {
 
-    if((applicationStorage * context * isEmpty()).emit() ) return@OrganizationPage
-
     val scope = rememberCoroutineScope()
 
     return withLoading(
         isLoading = isLoading(
+            onNullLaunch(
+                applicationStorage * userIso * availablePermissions * contextFromPath("APPLICATION"),
+            ) {
+                scope.launch { (applicationStorage * userIso * userActions).dispatch(readUserPermissionsAction()) }
+            },
             // I18N stuff
             onMissing(
                 OrganizationLangComponent.OrganizationPage,

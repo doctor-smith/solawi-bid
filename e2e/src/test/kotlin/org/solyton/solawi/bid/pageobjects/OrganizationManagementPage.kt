@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.pageobjects
 
 import com.microsoft.playwright.Page
+import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.application.api.solawiApi
 import org.solyton.solawi.bid.module.permission.data.api.PutUserRoleContext
@@ -152,8 +153,16 @@ class OrganizationManagementPage(private val page: Page) {
         page.waitForLoadingToFinish()
         page.dismissStrayErrorDialogIfPresent()
 
-        page.clickOn("organization.page.members.chevron")
-        page.clickOn("organization.page.members.add-button")
+        val chevron = page.getByDataId("organization.page.members.chevron")
+        assertThat(chevron).isVisible()
+        chevron.click()
+
+        val addButton = page.getByDataId("organization.page.members.add-button")
+        assertThat(addButton).isVisible()
+        addButton.click()
+
+        val modal = page.getByDataId("organization.member.update-modal.modal")
+        assertThat(modal).isVisible()
 
         page.getByDataId("user-profile.form.username-input").fill(username)
         page.getByDataId("user-profile.form.firstname-input").fill(firstname)
