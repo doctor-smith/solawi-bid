@@ -11,3 +11,11 @@ TEST_USER_PASSWORD=<yourpassword>
 # script/e2e-local.sh reset-db) once before the first test, e.g. when running tests from the
 # IDE instead of via script/e2e-local.sh, which sets this automatically for "test"/"run".
 #E2E_RESET_DB=true
+# Optional: set to "true" to run E2E tests in parallel across multiple workers (defaults to false).
+PARALLEL_TESTS=false
+# Optional: specify the number of parallel workers when PARALLEL_TESTS is enabled (defaults to 1).
+NUMBER_OF_WORKERS=1
+# Optional: set to "true" to run E2E tests in headless browser mode without UI (defaults to true).
+HEADLESS=true
+# Optional: specify delay in seconds to slow down test execution for debugging purposes (defaults to 0.0).
+SLOW_MO=0.0
