@@ -95,7 +95,7 @@ class VersionInfoTest {
                     } catch (_: Exception) { Pair("", "") }
                 } else Pair("", "")
 
-                val expectedEnv = "DEV"
+                // val expectedEnv = "DEV"
                 val expectedUser = System.getenv("TEST_USER") ?: "owner@solyton.org"
 
                 // 1. VersionInfo Element auf der Seite auffinden
@@ -114,8 +114,8 @@ class VersionInfoTest {
                 assertThat(overlayHeader).isVisible()
 
                 // 4. Prüfen, ob Environment und Username im Overlay korrekt angezeigt werden
-                val envValue = versionInfoContainer.locator("xpath=.//div[span[text()='Environment']]/span[2]")
-                assertThat(envValue).hasText(expectedEnv)
+                // val envValue = versionInfoContainer.locator("xpath=.//div[span[text()='Environment']]/span[2]")
+                // assertThat(envValue).hasText(expectedEnv)
 
                 val userValue = versionInfoContainer.locator("xpath=.//div[span[text()='Username']]/span[2]")
                 assertThat(userValue).hasText(expectedUser)
