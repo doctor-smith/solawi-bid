@@ -27,28 +27,33 @@ plugins{
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.evoleq.fp.axioms) apply false
 }
+val isCI = System.getenv("CI")?.toBoolean() == true
 
-val gitDirectory = rootProject.file(".git")
-val hooksDirectory = rootProject.file(".githooks")
+if (!isCI) {
+    val gitDirectory = rootProject.file(".git")
+    val hooksDirectory = rootProject.file(".githooks")
 
-if (gitDirectory.exists() && hooksDirectory.isDirectory) {
-    val currentHooksPath = providers.exec {
-        commandLine("git", "config", "--local", "--get", "core.hooksPath")
-        isIgnoreExitValue = true
-    }.standardOutput.asText.get().trim()
+    if (gitDirectory.exists() && hooksDirectory.isDirectory) {
+        val currentHooksPath = providers.exec {
+            workingDir = rootProject.projectDir
+            commandLine("git", "config", "--local", "--get", "core.hooksPath")
+            isIgnoreExitValue = true
+        }.standardOutput.asText.get().trim()
 
-    if (currentHooksPath != ".githooks") {
-        providers.exec {
-            commandLine(
-                "git",
-                "config",
-                "--local",
-                "core.hooksPath",
-                ".githooks"
-            )
-        }.result.get()
+        if (currentHooksPath != ".githooks") {
+            providers.exec {
+                workingDir = rootProject.projectDir
+                commandLine(
+                    "git",
+                    "config",
+                    "--local",
+                    "core.hooksPath",
+                    ".githooks"
+                )
+            }.result.get()
 
-        logger.lifecycle("Git pre-commit hooks configured successfully.")
+            logger.lifecycle("Git pre-commit hooks configured successfully.")
+        }
     }
 }
 
