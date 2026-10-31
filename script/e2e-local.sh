@@ -42,28 +42,32 @@ Commands:
   reset-db         Reset the E2E database to a clean state (same as CI: fresh DB + migrations). Mostly
                    useful on its own, e.g. to inspect a clean database; "test"/"run" below already do
                    this automatically before the first test.
-  test [--reset-db[=true|false]]
+  test [--reset-db[=true|false]] [gradle options...]
                    Reset the database (default: true), then run the E2E test suite (./gradlew :e2e:test)
-  smokeTest [--reset-db[=true|false]]
+  smokeTest [--reset-db[=true|false]] [gradle options...]
                    Reset the database (default: true), then run the E2E smoke tests (./gradlew :e2e:smokeTest)
-  regressionTest [--reset-db[=true|false]]
+  regressionTest [--reset-db[=true|false]] [gradle options...]
                    Reset the database (default: true), then run the E2E regression tests (./gradlew :e2e:regressionTest)
-  userJourneyTest [--reset-db[=true|false]]
+  userJourneyTest [--reset-db[=true|false]] [gradle options...]
                    Reset the database (default: true), then run the E2E user-journey tests (./gradlew :e2e:userJourneyTest)
-  workflowTest [--reset-db[=true|false]]
+  workflowTest [--reset-db[=true|false]] [gradle options...]
                    Reset the database (default: true), then run the E2E workflow tests (./gradlew :e2e:workflowTest)
-  securityTest [--reset-db[=true|false]]
+  securityTest [--reset-db[=true|false]] [gradle options...]
                    Reset the database (default: true), then run the E2E security tests (./gradlew :e2e:securityTest)
-  performanceTest [--reset-db[=true|false]]
+  performanceTest [--reset-db[=true|false]] [gradle options...]
                    Reset the database (default: true), then run the E2E performance tests (./gradlew :e2e:performanceTest)
-  devTest [--reset-db[=true|false]]
+  devTest [--reset-db[=true|false]] [gradle options...]
                    Reset the database (default: true), then run the E2E tests tagged @Develop (./gradlew :e2e:developmentTest)
-  filterTest <pattern> [--reset-db[=true|false]]
+  filterTest <pattern> [--reset-db[=true|false]] [gradle options...]
                    Reset the database (default: true), then run only tests matching <pattern> (e.g. "org.solyton.solawi.bid.module.shares.*" or a single
                    "...ClassName.methodName")
   status-browsers  Show running Playwright browser instances
   kill-browsers    Stop all running Playwright browser instances
-  run              Full local cycle: build, up, test (which resets the database), down
+  run [gradle options...]
+                   Full local cycle: build, up, test (which resets the database), down
+
+Options:
+  Any extra arguments (e.g. --headed, --debug) passed after the test command are forwarded directly to ./gradlew.
 EOF
 }
 
@@ -148,16 +152,26 @@ down() {
 }
 
 
-parse_reset_db_flag() {
-  local arg="${1:-}"
-  case "$arg" in
-    --reset-db|--reset-db=true|true|"") echo "true" ;;
-    --reset-db=false|false) echo "false" ;;
-    *)
-      echo "ERROR: Unknown reset-db argument: $arg. Expected --reset-db, --reset-db=true, or --reset-db=false." >&2
-      exit 1
-      ;;
-  esac
+parse_test_args() {
+  RESET_DB_FLAG="true"
+  EXTRA_GRADLE_ARGS=()
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --reset-db|--reset-db=true|true)
+        RESET_DB_FLAG="true"
+        shift
+        ;;
+      --reset-db=false|false)
+        RESET_DB_FLAG="false"
+        shift
+        ;;
+      *)
+        EXTRA_GRADLE_ARGS+=("$1")
+        shift
+        ;;
+    esac
+  done
 }
 
 maybe_reset_db() {
@@ -175,78 +189,70 @@ reset_db() {
 }
 
 run_tests() {
-  local reset_db_flag
-  reset_db_flag=$(parse_reset_db_flag "${1:-}")
-  echo "==> Running E2E tests against $E2E_BASE_URL (reset_db=$reset_db_flag)"
-  maybe_reset_db "$reset_db_flag"
-  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:test
+  parse_test_args "$@"
+  echo "==> Running E2E tests against $E2E_BASE_URL (reset_db=$RESET_DB_FLAG)"
+  maybe_reset_db "$RESET_DB_FLAG"
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:test ${EXTRA_GRADLE_ARGS+"${EXTRA_GRADLE_ARGS[@]}"}
 }
 
 run_smoke_tests() {
-  local reset_db_flag
-  reset_db_flag=$(parse_reset_db_flag "${1:-}")
-  echo "==> Running E2E smoke tests against $E2E_BASE_URL (reset_db=$reset_db_flag)"
-  maybe_reset_db "$reset_db_flag"
-  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:smokeTest
+  parse_test_args "$@"
+  echo "==> Running E2E smoke tests against $E2E_BASE_URL (reset_db=$RESET_DB_FLAG)"
+  maybe_reset_db "$RESET_DB_FLAG"
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:smokeTest ${EXTRA_GRADLE_ARGS+"${EXTRA_GRADLE_ARGS[@]}"}
 }
 
 run_regression_tests() {
-  local reset_db_flag
-  reset_db_flag=$(parse_reset_db_flag "${1:-}")
-  echo "==> Running E2E regression tests against $E2E_BASE_URL (reset_db=$reset_db_flag)"
-  maybe_reset_db "$reset_db_flag"
-  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:regressionTest
+  parse_test_args "$@"
+  echo "==> Running E2E regression tests against $E2E_BASE_URL (reset_db=$RESET_DB_FLAG)"
+  maybe_reset_db "$RESET_DB_FLAG"
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:regressionTest ${EXTRA_GRADLE_ARGS+"${EXTRA_GRADLE_ARGS[@]}"}
 }
 
 run_user_journey_tests() {
-  local reset_db_flag
-  reset_db_flag=$(parse_reset_db_flag "${1:-}")
-  echo "==> Running E2E user-journey tests against $E2E_BASE_URL (reset_db=$reset_db_flag)"
-  maybe_reset_db "$reset_db_flag"
-  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:userJourneyTest
+  parse_test_args "$@"
+  echo "==> Running E2E user-journey tests against $E2E_BASE_URL (reset_db=$RESET_DB_FLAG)"
+  maybe_reset_db "$RESET_DB_FLAG"
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:userJourneyTest ${EXTRA_GRADLE_ARGS+"${EXTRA_GRADLE_ARGS[@]}"}
 }
 
 run_workflow_tests() {
-  local reset_db_flag
-  reset_db_flag=$(parse_reset_db_flag "${1:-}")
-  echo "==> Running E2E workflow tests against $E2E_BASE_URL (reset_db=$reset_db_flag)"
-  maybe_reset_db "$reset_db_flag"
-  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:workflowTest
+  parse_test_args "$@"
+  echo "==> Running E2E workflow tests against $E2E_BASE_URL (reset_db=$RESET_DB_FLAG)"
+  maybe_reset_db "$RESET_DB_FLAG"
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:workflowTest ${EXTRA_GRADLE_ARGS+"${EXTRA_GRADLE_ARGS[@]}"}
 }
 
 run_security_tests() {
-  local reset_db_flag
-  reset_db_flag=$(parse_reset_db_flag "${1:-}")
-  echo "==> Running E2E security tests against $E2E_BASE_URL (reset_db=$reset_db_flag)"
-  maybe_reset_db "$reset_db_flag"
-  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:securityTest
+  parse_test_args "$@"
+  echo "==> Running E2E security tests against $E2E_BASE_URL (reset_db=$RESET_DB_FLAG)"
+  maybe_reset_db "$RESET_DB_FLAG"
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:securityTest ${EXTRA_GRADLE_ARGS+"${EXTRA_GRADLE_ARGS[@]}"}
 }
 
 run_performance_tests() {
-  local reset_db_flag
-  reset_db_flag=$(parse_reset_db_flag "${1:-}")
-  echo "==> Running E2E performance tests against $E2E_BASE_URL (reset_db=$reset_db_flag)"
-  maybe_reset_db "$reset_db_flag"
-  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:performanceTest
+  parse_test_args "$@"
+  echo "==> Running E2E performance tests against $E2E_BASE_URL (reset_db=$RESET_DB_FLAG)"
+  maybe_reset_db "$RESET_DB_FLAG"
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:performanceTest ${EXTRA_GRADLE_ARGS+"${EXTRA_GRADLE_ARGS[@]}"}
 }
 
 run_dev_tests() {
-  local reset_db_flag
-  reset_db_flag=$(parse_reset_db_flag "${1:-}")
-  echo "==> Running E2E tests under development against $E2E_BASE_URL (reset_db=$reset_db_flag)"
-  maybe_reset_db "$reset_db_flag"
-  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:developmentTest
+  parse_test_args "$@"
+  echo "==> Running E2E tests under development against $E2E_BASE_URL (reset_db=$RESET_DB_FLAG)"
+  maybe_reset_db "$RESET_DB_FLAG"
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:developmentTest ${EXTRA_GRADLE_ARGS+"${EXTRA_GRADLE_ARGS[@]}"}
 }
 
 # Runs only the tests matching a Gradle test-filter pattern (e.g. a single class or
 # method), instead of a whole tag-based suite, for fast iteration during development.
 run_filtered_tests() {
   local pattern="$1"
-  local reset_db_flag
-  reset_db_flag=$(parse_reset_db_flag "${2:-}")
-  echo "==> Running E2E tests matching \"$pattern\" against $E2E_BASE_URL (reset_db=$reset_db_flag)"
-  maybe_reset_db "$reset_db_flag"
-  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:test --tests "$pattern"
+  shift
+  parse_test_args "$@"
+  echo "==> Running E2E tests matching \"$pattern\" against $E2E_BASE_URL (reset_db=$RESET_DB_FLAG)"
+  maybe_reset_db "$RESET_DB_FLAG"
+  E2E_BASE_URL="$E2E_BASE_URL" E2E_RESET_DB=false ./gradlew :e2e:test --tests "$pattern" ${EXTRA_GRADLE_ARGS+"${EXTRA_GRADLE_ARGS[@]}"}
 }
 
 case "${1:-}" in
@@ -262,14 +268,14 @@ case "${1:-}" in
   up) up ;;
   down) down ;;
   reset-db) reset_db ;;
-  test) run_tests "${2:-}" ;;
-  smokeTest) run_smoke_tests "${2:-}" ;;
-  regressionTest) run_regression_tests "${2:-}" ;;
-  userJourneyTest) run_user_journey_tests "${2:-}" ;;
-  workflowTest) run_workflow_tests "${2:-}" ;;
-  securityTest) run_security_tests "${2:-}" ;;
-  performanceTest) run_performance_tests "${2:-}" ;;
-  devTest) run_dev_tests "${2:-}" ;;
+  test) run_tests "${@:2}" ;;
+  smokeTest) run_smoke_tests "${@:2}" ;;
+  regressionTest) run_regression_tests "${@:2}" ;;
+  userJourneyTest) run_user_journey_tests "${@:2}" ;;
+  workflowTest) run_workflow_tests "${@:2}" ;;
+  securityTest) run_security_tests "${@:2}" ;;
+  performanceTest) run_performance_tests "${@:2}" ;;
+  devTest) run_dev_tests "${@:2}" ;;
   status-browsers) status_browsers ;;
   kill-browsers) kill_browsers ;;
   filterTest)
@@ -278,12 +284,12 @@ case "${1:-}" in
       echo "  $0 filterTest \"org.solyton.solawi.bid.module.shares.*\"" >&2
       exit 1
     fi
-    run_filtered_tests "$2" "${3:-}"
+    run_filtered_tests "$2" "${@:3}"
     ;;
   run)
     build_images
     up
-    run_tests --reset-db=true
+    run_tests --reset-db=true "${@:2}"
     down
     ;;
   *)
