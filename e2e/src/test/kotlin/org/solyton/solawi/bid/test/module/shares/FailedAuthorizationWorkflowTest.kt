@@ -3,13 +3,17 @@ package org.solyton.solawi.bid.test.module.shares
 import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
+import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.module.authentication.service.generateSecurePassword
+import org.solyton.solawi.bid.module.shares.data.api.ShareStatus
 import org.solyton.solawi.bid.module.values.Password
 import org.solyton.solawi.bid.module.values.Username
+import org.solyton.solawi.bid.pageobjects.SharesPage
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserInput
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserWorkflow
 import org.solyton.solawi.bid.workflow.banking.FiscalYearPeriod
@@ -32,8 +36,14 @@ class FailedAuthorizationWorkflowTest {
         @JvmStatic
         @BeforeAll
         fun beforeAll() {
+            val headless = TestConfig.HEADLESS
+            val slowMo = TestConfig.SLOW_MO
             playwright = Playwright.create()
-            browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
+            browser = playwright.chromium().launch(
+                BrowserType.LaunchOptions()
+                    .setHeadless(headless)
+                    .setSlowMo(slowMo)
+            )
             TestUtils().getCookie(browser, STORAGE_PATH)
         }
 
@@ -103,7 +113,7 @@ class FailedAuthorizationWorkflowTest {
                 )
 
                 // Create Share Subscription with SEPA Mandate attached
-                run(CreateShareSubscriptionWorkflow(this)) withInput CreateShareSubscriptionInput(
+                val subscription = run(CreateShareSubscriptionWorkflow(this)) withInput CreateShareSubscriptionInput(
                     memberName = "Jane Doe",
                     fiscalYearKey = fiscalYearKey,
                     shareTypeName = shareTypeName,
@@ -115,18 +125,24 @@ class FailedAuthorizationWorkflowTest {
                 )
 
                 // Transition to AWAITING_AHC_AUTHORIZATION
-                val awaitingList = run(BulkChangeSubscriptionStatusWorkflow(this)) withInput BulkChangeSubscriptionStatusInput(
+                val awaitingSubscriptions = run(BulkChangeSubscriptionStatusWorkflow(this)) withInput BulkChangeSubscriptionStatusInput(
                     filterStatus = "All Statuses",
                     newStatus = "AWAITING_AHC_AUTHORIZATION"
                 )
-                assertThat(awaitingList.statusBadge("AWAITING_AHC_AUTHORIZATION")).isVisible()
+                assertEquals(ShareStatus.AwaitingAhcAuthorization, awaitingSubscriptions.all.first { it.id == subscription.id }.status)
+
+                val sharesList = SharesPage(page).ShareSubscriptionManagement().listOfSubscriptions()
+                assertThat(sharesList.itemStatus(subscription.id, "AWAITING_AHC_AUTHORIZATION")).isVisible()
 
                 // Provider sets status to SUSPENDED via Bulk Edit (reason: AUTHORIZATION_FAILED)
-                val suspendedList = run(BulkChangeSubscriptionStatusWorkflow(this)) withInput BulkChangeSubscriptionStatusInput(
+                val suspendedSubscriptions = run(BulkChangeSubscriptionStatusWorkflow(this)) withInput BulkChangeSubscriptionStatusInput(
                     filterStatus = "All Statuses",
                     newStatus = "SUSPENDED"
                 )
-                assertThat(suspendedList.statusBadge("SUSPENDED")).isVisible()
+                assertEquals(ShareStatus.Suspended, suspendedSubscriptions.all.first { it.id == subscription.id }.status)
+
+                assertThat(sharesList.itemStatus(subscription.id, "SUSPENDED")).isVisible()
+                assertThat(sharesList.statusBadge("SUSPENDED")).isVisible()
             }
         }
     }

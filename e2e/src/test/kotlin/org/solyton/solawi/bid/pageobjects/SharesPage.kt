@@ -255,11 +255,11 @@ class SharesPage(private val page: Page) {
         override fun cancelButton(): Locator = locator.page().getByDataId("null.modal.cancel-button")
         override fun closeButton(): Locator = locator.page().getByDataId("null.modal.close-button")
 
-        fun bankAccountDropdown(): Locator = locator.getByDataId("$BASE_ID.bank-account-dropdown")
-        fun bankAccountOption(accountKey: String): Locator = locator.getByDataId("$BASE_ID.bank-account-dropdown.option.$accountKey")
-        fun collectionKeyInput(): Locator = locator.locator("#collection-key-input")
-        fun mandateReferencePrefixInput(): Locator = locator.locator("#mandate-reference-prefix")
-        fun remittanceInformationInput(): Locator = locator.locator("#remittance-information")
+        fun bankAccountDropdown(): Locator = locator.page().getByDataId("$BASE_ID.bank-account-dropdown")
+        fun bankAccountOption(accountKey: String): Locator = locator.page().getByDataId("$BASE_ID.bank-account-dropdown.option.$accountKey")
+        fun collectionKeyInput(): Locator = locator.page().locator("#collection-key-input")
+        fun mandateReferencePrefixInput(): Locator = locator.page().locator("#mandate-reference-prefix")
+        fun remittanceInformationInput(): Locator = locator.page().locator("#remittance-information")
     }
 
     class ConfirmationModal(
@@ -273,6 +273,53 @@ class SharesPage(private val page: Page) {
         override fun submitButton(): Locator = locator.page().getByDataId("$BASE_ID.submit-button")
         override fun cancelButton(): Locator = locator.page().getByDataId("$BASE_ID.cancel-button")
         override fun closeButton(): Locator = locator.page().getByDataId("$BASE_ID.close-button")
+    }
+
+    class ImportShareSubscriptionsModal(
+        override val locator: Locator,
+        override val trigger: Locator,
+    ) : TestModal(locator, trigger) {
+        companion object {
+            const val BASE_ID = "shares.modal.import-share-data"
+        }
+
+        override fun submitButton(): Locator = locator.getByDataId("$BASE_ID.modal.submit-button")
+        override fun cancelButton(): Locator = locator.getByDataId("$BASE_ID.modal.close-button")
+        override fun closeButton(): Locator = locator.getByDataId("$BASE_ID.modal.close-x")
+
+        fun exportPricePerShareCheckbox(): Locator = locator.getByDataId("$BASE_ID.export-price-per-share-checkbox")
+        fun exportNumberOfSharesCheckbox(): Locator = locator.getByDataId("$BASE_ID.export-number-of-shares-checkbox")
+        fun exportAhcAuthorizedCheckbox(): Locator = locator.getByDataId("$BASE_ID.export-ahc-authorized-checkbox")
+        fun downloadTemplateButton(): Locator = locator.getByDataId("$BASE_ID.download-template-button")
+        fun dropzone(): Locator = locator.getByDataId("$BASE_ID.dropzone")
+
+        fun dropCsv(csvContent: String, fileName: String = "share-subscriptions.csv") {
+            val dropzoneElement = dropzone()
+            assertThat(dropzoneElement).isVisible()
+            val jsScript = """
+                (element, args) => {
+                    const content = args.content;
+                    const name = args.fileName;
+                    const file = new File([content], name, { type: 'text/csv' });
+                    const dataTransfer = new DataTransfer();
+                    
+                    Object.defineProperty(dataTransfer, 'files', {
+                        value: Object.assign([file], {
+                            item: (i) => i === 0 ? file : null,
+                            length: 1
+                        })
+                    });
+                    
+                    const dropEvent = new DragEvent('drop', {
+                        dataTransfer: dataTransfer,
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    element.dispatchEvent(dropEvent);
+                }
+            """.trimIndent()
+            dropzoneElement.evaluate(jsScript, mapOf("content" to csvContent, "fileName" to fileName))
+        }
     }
 
     // API
@@ -333,6 +380,13 @@ class SharesPage(private val page: Page) {
 
     @Suppress("FunctionName")
     fun ConfirmationModal(): ConfirmationModal = ConfirmationModal(page.getByDataId("null.modal"))
+
+    @Suppress("FunctionName")
+    fun ImportShareSubscriptionsModal(): ImportShareSubscriptionsModal =
+        ImportShareSubscriptionsModal(
+            page.getByDataId("${ImportShareSubscriptionsModal.BASE_ID}.modal"),
+            page.getByDataId("shares.page.share-subscription.import-button")
+        )
 
 
     /**

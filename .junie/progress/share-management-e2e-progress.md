@@ -314,6 +314,7 @@ sprint"); **P3** = needs more live-environment diagnosis before any fix.
 | E2E-4 | E2E test code | `failure-network.log` entries capture the failing request's own URL but not the page URL the test was on when it failed | P1 | **Fixed** — `withFailureDiagnostics` now appends a `source-page-url: ${page.url()}` line to each logged entry | Done |
 | E2E-5 | E2E test code | User selection in `UpsertShareSubscriptionModal` is unreliable in Playwright — the click sometimes doesn't register | P3 | Partially mitigated — `assertThat(selectedUser).hasValue(username)` moved right after the click | Keep monitoring; no further change until observed failing live |
 | E2E-6 | E2E test code / possibly source code | No UI link lets `TEST_USER` reach `UserManagementPage` via a normal navigation click (missing rights/roles) — `PaymentMandateAuthorizationWorkflowTest` works around this with a direct `.load()` navigation (code comment left in place by the user) | P2 | Open — documented workaround in place, not blocking | User's own TODO: grant the right rights/roles to `TEST_USER` via a migration so the real navigation link becomes usable, then switch the test back to click-driven navigation |
+| MDL-1 | Frontend (component design) | Some modals lack proper `data-id` attributes on form inputs or inner elements, requiring PageObjects to access form inputs via `locator.page()` instead of scoped modal locators. Additionally, generic `confirmationDialog` (rendering as `null.modal`) is reused for custom content instead of dedicated modal components. | P1 | Open (Frontend TODO) | Refactor inline confirmation dialog usages to dedicated modal components with proper root and input `data-id` attributes so PageObjects can scope all interactions strictly within their modal root `locator`. |
 | FE-1 | Frontend (deferred) | `GET banking/bank-accounts/all` → 403 Access denied | P2 | Deferred to next sprint (per user) | Permission check fix, out of scope here |
 | FE-2 | Frontend (deferred) | `GET banking/legal-entities/personal` → 404 No such legal entity party | P2 | Deferred to next sprint (per user) | Permission check fix, out of scope here |
 | FE-3 | Frontend (deferred) | `GET banking/creditors/identifiers/by-legal-entity` → 500 "No such context" | P2 | Deferred to next sprint (per user) | Render-guard so the page only renders once a context entity is stored, out of scope here |
@@ -450,6 +451,14 @@ issues, ~26s).
 
 One dated entry per work session, newest first, so future sessions don't have to
 re-derive history from git diffs alone.
+
+### 2026-11-01 (Documentation of Modal Data-ID Limitations & Confirmation Dialog Usage)
+
+- Documented open TODO `MDL-1` in `.junie/rules/share-management-e2e.md` (Section 3b) and Known Issues Register (`.junie/progress/share-management-e2e-progress.md`).
+- Noted that several frontend modals lack granular `data-id` attributes on form inputs or inner elements, requiring PageObjects to access form inputs via `locator.page()`.
+- Noted that generic `confirmationDialog` (rendering as `null.modal`) is frequently reused for custom content instead of dedicated modal components with proper `data-id` roots.
+- Refactored `TestWorkflow.runWith` implementations to return typed domain data objects (e.g. `Organization`, `UserProfile`, `ApiShareSubscriptions`, `ShareEnvironmentSetupResult`, `ApiShareSubscription`) instead of locators.
+- Updated all E2E test status assertions to compare directly against `ShareStatus` data objects (e.g., `ShareStatus.Subscribed`, `ShareStatus.ClearedForAuction`, `ShareStatus.Cancelled`, `ShareStatus.Suspended`, `ShareStatus.AwaitingAhcAuthorization`).
 
 ### 2026-10-31 (Rule 3b: Mandatory PageObjects & Modal Component Refactoring)
 

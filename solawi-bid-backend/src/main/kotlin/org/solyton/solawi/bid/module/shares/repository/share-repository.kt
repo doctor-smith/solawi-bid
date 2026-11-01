@@ -289,7 +289,7 @@ fun Transaction.updateShareSubscription(
     shareOfferId: UUID,
     userProfileId: UUID,
     status: ShareStatus,
-    distributionPointId: UUID,
+    distributionPointId: UUID?,
     fiscalYearId: UUID,
     numberOfShares: Int,
     pricePerShare: Double?,
@@ -331,7 +331,7 @@ fun Transaction.updateShareSubscription(
         shareSubscription.status = shareStatusEntity
     }
     if(distributionPointChanged) {
-        val distributionPoint = validatedDistributionPoint(distributionPointId)
+        val distributionPoint = distributionPointId?.let { validatedDistributionPoint(it) }
         shareSubscription.distributionPoint = distributionPoint
     }
     if(numberOfSharesChanged) {

@@ -3,6 +3,7 @@ package org.solyton.solawi.bid.workflow.shares
 import org.solyton.solawi.bid.TestUserContext
 import org.solyton.solawi.bid.TestWorkflow
 import org.solyton.solawi.bid.module.shares.data.api.ApiShareOffer
+import org.solyton.solawi.bid.module.shares.data.api.ShareType
 import org.solyton.solawi.bid.navigateToOrganizationApplicationPage
 import org.solyton.solawi.bid.pageobjects.SharesPage
 import org.solyton.solawi.bid.pageobjects.application.dashboard.DashboardPage
@@ -31,10 +32,15 @@ data class SetupSharesInput(
     val offers: List<ShareOfferConfig>
 )
 
+data class SharesSetupResult(
+    val shareType: ShareType,
+    val offers: List<ApiShareOffer>
+)
+
 class SetupSharesWorkflow(
     override val context: TestUserContext
-) : TestWorkflow<SetupSharesInput, List<ApiShareOffer>> {
-    override fun TestUserContext.runWith(input: SetupSharesInput): List<ApiShareOffer> {
+) : TestWorkflow<SetupSharesInput, SharesSetupResult> {
+    override fun TestUserContext.runWith(input: SetupSharesInput): SharesSetupResult {
         val navBar = NavBar(page)
         val dashboardPage = DashboardPage(page)
         val sharesPage = SharesPage(page)
@@ -43,9 +49,9 @@ class SetupSharesWorkflow(
         dashboardPage.shareManagementOrganizationManagementLink().click()
         page.navigateToOrganizationApplicationPage("shares", input.organizationName, false)
 
-        sharesPage.createShareType(input.shareTypeName, input.shareTypeKey, input.shareTypeDescription)
+        val shareType = sharesPage.createShareType(input.shareTypeName, input.shareTypeKey, input.shareTypeDescription)
 
-        return input.offers.map { offerConfig ->
+        val offers = input.offers.map { offerConfig ->
             val offer = sharesPage.createShareOffer(
                 offerConfig.fiscalYearKey,
                 input.shareTypeName,
@@ -67,5 +73,7 @@ class SetupSharesWorkflow(
             }
             offer
         }
+
+        return SharesSetupResult(shareType, offers)
     }
 }

@@ -3,6 +3,7 @@ package org.solyton.solawi.bid.workflow.user
 import org.solyton.solawi.bid.TestUserContext
 import org.solyton.solawi.bid.TestWorkflow
 import org.solyton.solawi.bid.assertThat
+import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfile
 import org.solyton.solawi.bid.module.values.Firstname
 import org.solyton.solawi.bid.module.values.Lastname
 import org.solyton.solawi.bid.module.values.PhoneNumber
@@ -29,8 +30,8 @@ data class CreateProfileInput(
 
 class CreateProfileWorkflow(
     override val context: TestUserContext
-) : TestWorkflow<CreateProfileInput, Unit> {
-    override fun TestUserContext.runWith(input: CreateProfileInput) {
+) : TestWorkflow<CreateProfileInput, UserProfile> {
+    override fun TestUserContext.runWith(input: CreateProfileInput): UserProfile {
         val navBar = NavBar(page)
         val dashboardPage = DashboardPage(page)
         val personalDataPage = PersonalDataPage(page)
@@ -40,7 +41,7 @@ class CreateProfileWorkflow(
         personalDataCard.click()
         waitForLoadingToFinish()
 
-        personalDataPage.createProfile(
+        val profile = personalDataPage.createProfile(
             input.title,
             input.firstname,
             input.lastname,
@@ -56,5 +57,6 @@ class CreateProfileWorkflow(
             input.stateOrProvince
         )
         navBar.moveToDashboard()
+        return profile
     }
 }
