@@ -128,6 +128,10 @@ Key requirements:
   - Accordions must inherit from `DefaultTestAccordion`.
   - Modals and sub-components (e.g. transfer ownership modal, upsert share type/offer modals, SEPA mandate modal) must be exposed as typed properties/functions on the corresponding `TestPage` or parent `TestComponent`.
 - **Reusable TestComponents**: When new UI elements or modals are added or tested, appropriate `TestComponent` subclasses must be created in `pageobjects` (or `pageobjects/shared`) rather than written inline inside test files.
+- **Modal Locator & Data-ID Limitations (Frontend TODO)**:
+  - Several frontend modals currently lack granular `data-id` attributes on form inputs or inner elements. Where scoped sub-locators on `locator` are missing, PageObjects/TestModals must temporarily access input elements via `locator.page().getByDataId(...)`.
+  - Many action confirmations reuse the generic `confirmationDialog` (rendering as `null.modal`) with embedded custom content instead of a dedicated modal component.
+  - *TODO for Frontend*: Refactor inline confirmation dialog usages to dedicated modal components with proper root and input `data-id` attributes so PageObjects can scope all interactions strictly within their modal root `locator`.
 
 ## 4. Implement incrementally
 

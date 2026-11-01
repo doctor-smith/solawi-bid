@@ -3,6 +3,7 @@ package org.solyton.solawi.bid.test.module.shares
 import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
+import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -10,6 +11,7 @@ import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.module.authentication.service.generateSecurePassword
 import org.solyton.solawi.bid.module.values.Password
 import org.solyton.solawi.bid.module.values.Username
+import org.solyton.solawi.bid.pageobjects.SharesPage
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserInput
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserWorkflow
 import org.solyton.solawi.bid.workflow.banking.FiscalYearPeriod
@@ -32,8 +34,14 @@ class RolloverActivationWorkflowTest {
         @JvmStatic
         @BeforeAll
         fun beforeAll() {
+            val headless = TestConfig.HEADLESS
+            val slowMo = TestConfig.SLOW_MO
             playwright = Playwright.create()
-            browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
+            browser = playwright.chromium().launch(
+                BrowserType.LaunchOptions()
+                    .setHeadless(headless)
+                    .setSlowMo(slowMo)
+            )
             TestUtils().getCookie(browser, STORAGE_PATH)
         }
 
@@ -141,17 +149,18 @@ class RolloverActivationWorkflowTest {
                 )
 
                 // 3 & 4. Activate the shadow subscription (PENDING_ACTIVATION) via Bulk Edit to SUBSCRIBED
-                val shareSubscriptionList = run(BulkChangeSubscriptionStatusWorkflow(this)) withInput BulkChangeSubscriptionStatusInput(
+                val updatedSubscriptions = run(BulkChangeSubscriptionStatusWorkflow(this)) withInput BulkChangeSubscriptionStatusInput(
                     filterStatus = "PENDING_ACTIVATION",
                     newStatus = "SUBSCRIBED"
                 )
 
                 // Assertions:
                 // a) The shadow subscription is now SUBSCRIBED
-                assertThat(shareSubscriptionList.statusBadge("SUBSCRIBED")).isVisible()
+                val sharesList = SharesPage(page).ShareSubscriptionManagement().listOfSubscriptions()
+                assertThat(sharesList.statusBadge("SUBSCRIBED")).isVisible()
 
                 // b) The original subscription has transitioned automatically to ROLLED_OVER
-                assertThat(shareSubscriptionList.statusBadge("ROLLED_OVER")).isVisible()
+                assertThat(sharesList.statusBadge("ROLLED_OVER")).isVisible()
             }
         }
     }

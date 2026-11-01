@@ -46,8 +46,14 @@ class PaymentMandateAuthorizationWorkflowTest {
         @JvmStatic
         @BeforeAll
         fun beforeAll() {
+            val headless = TestConfig.HEADLESS
+            val slowMo = TestConfig.SLOW_MO
             playwright = Playwright.create()
-            browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
+            browser = playwright.chromium().launch(
+                BrowserType.LaunchOptions()
+                    .setHeadless(headless)
+                    .setSlowMo(slowMo)
+            )
             TestUtils().getCookie(browser, STORAGE_PATH)
         }
 

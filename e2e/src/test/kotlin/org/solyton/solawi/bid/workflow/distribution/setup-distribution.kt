@@ -2,6 +2,7 @@ package org.solyton.solawi.bid.workflow.distribution
 
 import org.solyton.solawi.bid.TestUserContext
 import org.solyton.solawi.bid.TestWorkflow
+import org.solyton.solawi.bid.module.distribution.data.api.ApiDistributionPoint
 import org.solyton.solawi.bid.navigateToOrganizationApplicationPage
 import org.solyton.solawi.bid.pageobjects.DistributionPage
 import org.solyton.solawi.bid.pageobjects.application.dashboard.DashboardPage
@@ -15,8 +16,8 @@ data class SetupDistributionInput(
 
 class SetupDistributionWorkflow(
     override val context: TestUserContext
-) : TestWorkflow<SetupDistributionInput, Unit> {
-    override fun TestUserContext.runWith(input: SetupDistributionInput) {
+) : TestWorkflow<SetupDistributionInput, ApiDistributionPoint> {
+    override fun TestUserContext.runWith(input: SetupDistributionInput): ApiDistributionPoint {
         val navBar = NavBar(page)
         val dashboardPage = DashboardPage(page)
         val distributionPage = DistributionPage(page)
@@ -25,7 +26,9 @@ class SetupDistributionWorkflow(
         dashboardPage.distributionOrganizationManagementLink().click()
 
         page.navigateToOrganizationApplicationPage("distribution", input.organizationName, false)
-        distributionPage.createDistributionPoint(input.distributionPointName)
+        val distributionPoint = distributionPage.createDistributionPoint(input.distributionPointName)
         waitForLoadingToFinish()
+
+        return distributionPoint
     }
 }

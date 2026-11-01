@@ -2,7 +2,9 @@ package org.solyton.solawi.bid.workflow.shares
 
 import org.solyton.solawi.bid.TestUserContext
 import org.solyton.solawi.bid.TestWorkflow
-import org.solyton.solawi.bid.module.shares.data.api.ApiShareOffer
+import org.solyton.solawi.bid.module.distribution.data.api.ApiDistributionPoint
+import org.solyton.solawi.bid.module.user.data.api.organization.Organization
+import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfile
 import org.solyton.solawi.bid.module.values.Firstname
 import org.solyton.solawi.bid.module.values.Lastname
 import org.solyton.solawi.bid.run
@@ -31,25 +33,33 @@ data class SetupShareEnvironmentInput(
     val debtorBankAccount: DebtorBankAccountInput? = DebtorBankAccountInput()
 )
 
+data class ShareEnvironmentSetupResult(
+    val userProfile: UserProfile,
+    val organization: Organization,
+    val banking: BankingSetupResult,
+    val distributionPoint: ApiDistributionPoint,
+    val shares: SharesSetupResult
+)
+
 class SetupShareEnvironmentWorkflow(
     override val context: TestUserContext
-) : TestWorkflow<SetupShareEnvironmentInput, List<ApiShareOffer>> {
-    override fun TestUserContext.runWith(input: SetupShareEnvironmentInput): List<ApiShareOffer> {
+) : TestWorkflow<SetupShareEnvironmentInput, ShareEnvironmentSetupResult> {
+    override fun TestUserContext.runWith(input: SetupShareEnvironmentInput): ShareEnvironmentSetupResult {
         run(UserLoginWorkflow(this)) withInput UserLoginInput()
 
         val memberName = "${input.firstname.value} ${input.lastname.value}"
-        run(CreateProfileWorkflow(this)) withInput CreateProfileInput(
+        val userProfile = run(CreateProfileWorkflow(this)) withInput CreateProfileInput(
             firstname = input.firstname,
             lastname = input.lastname,
             recipientName = memberName,
             organizationName = input.organizationName
         )
 
-        run(CreateOrganizationWorkflow(this)) withInput CreateOrganizationInput(
+        val organization = run(CreateOrganizationWorkflow(this)) withInput CreateOrganizationInput(
             organizationName = input.organizationName
         )
 
-        run(SetupBankingWorkflow(this)) withInput SetupBankingInput(
+        val banking = run(SetupBankingWorkflow(this)) withInput SetupBankingInput(
             organizationName = input.organizationName,
             fiscalYears = input.fiscalYears,
             creditorBankAccount = input.creditorBankAccount,
@@ -57,17 +67,25 @@ class SetupShareEnvironmentWorkflow(
             debtorName = memberName
         )
 
-        run(SetupDistributionWorkflow(this)) withInput SetupDistributionInput(
+        val distributionPoint = run(SetupDistributionWorkflow(this)) withInput SetupDistributionInput(
             organizationName = input.organizationName,
             distributionPointName = input.distributionPointName
         )
 
-        return run(SetupSharesWorkflow(this)) withInput SetupSharesInput(
+        val shares = run(SetupSharesWorkflow(this)) withInput SetupSharesInput(
             organizationName = input.organizationName,
             shareTypeName = input.shareTypeName,
             shareTypeKey = input.shareTypeKey,
             shareTypeDescription = input.shareTypeDescription,
             offers = input.offers
+        )
+
+        return ShareEnvironmentSetupResult(
+            userProfile = userProfile,
+            organization = organization,
+            banking = banking,
+            distributionPoint = distributionPoint,
+            shares = shares
         )
     }
 }

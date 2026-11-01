@@ -3,15 +3,19 @@ package org.solyton.solawi.bid.test.module.shares
 import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
+import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.module.authentication.service.generateSecurePassword
+import org.solyton.solawi.bid.module.shares.data.api.ShareStatus
 import org.solyton.solawi.bid.module.values.Firstname
 import org.solyton.solawi.bid.module.values.Lastname
 import org.solyton.solawi.bid.module.values.Password
 import org.solyton.solawi.bid.module.values.Username
+import org.solyton.solawi.bid.pageobjects.SharesPage
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserInput
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserWorkflow
 import org.solyton.solawi.bid.workflow.banking.FiscalYearPeriod
@@ -33,8 +37,14 @@ class ShareSubscriptionApprovalWorkflowTest {
         @JvmStatic
         @BeforeAll
         fun beforeAll() {
+            val headless = TestConfig.HEADLESS
+            val slowMo = TestConfig.SLOW_MO
             playwright = Playwright.create()
-            browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
+            browser = playwright.chromium().launch(
+                BrowserType.LaunchOptions()
+                    .setHeadless(headless)
+                    .setSlowMo(slowMo)
+            )
             TestUtils().getCookie(browser, STORAGE_PATH)
         }
 
@@ -70,7 +80,7 @@ class ShareSubscriptionApprovalWorkflowTest {
         }
 
         // 2. Perform workflow as the isolated test user
-        withUser(testUser on browser) {
+        withUser<Unit>(testUser on browser) {
             withFailureDiagnostics("$reportDirectory/user-actions") {
                 val organizationName = "e2e-shares-org-$suffix"
                 val shareTypeName = "e2e-share-type-$suffix"
@@ -110,12 +120,14 @@ class ShareSubscriptionApprovalWorkflowTest {
                 )
 
                 // Provider approval without a payment mandate: PendingActivation -> Subscribed.
-                val subscribedList = run(BulkChangeSubscriptionStatusWorkflow(this)) withInput BulkChangeSubscriptionStatusInput(
+                val subscribedSubscriptions = run(BulkChangeSubscriptionStatusWorkflow(this)) withInput BulkChangeSubscriptionStatusInput(
                     filterStatus = "All Statuses",
                     newStatus = "SUBSCRIBED"
                 )
+                assertEquals(ShareStatus.Subscribed, subscribedSubscriptions.all.first { it.id == subscription.id }.status)
 
-                assertThat(subscribedList.itemStatus(subscription.id, "SUBSCRIBED")).isVisible()
+                val sharesList = SharesPage(page).ShareSubscriptionManagement().listOfSubscriptions()
+                assertThat(sharesList.itemStatus(subscription.id, "SUBSCRIBED")).isVisible()
             }
         }
     }

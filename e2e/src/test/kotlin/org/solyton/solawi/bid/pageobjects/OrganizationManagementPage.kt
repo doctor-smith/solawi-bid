@@ -215,7 +215,7 @@ class OrganizationManagementPage(private val page: Page) {
         firstname: String = "New",
         lastname: String = "Member",
         hasToNavigate: Boolean = true
-    ) {
+    ): Organization {
         if (hasToNavigate) page.navigate("${TestConfig.BASE_URL}/app/management/organizations")
         page.dismissStrayErrorDialogIfPresent()
         page.waitForLoadingToFinish()
@@ -238,12 +238,14 @@ class OrganizationManagementPage(private val page: Page) {
         modal.firstnameInput().fill(firstname)
         modal.lastnameInput().fill(lastname)
 
-        page.waitForApi(
+        val organization = page.waitForApi(
             api = solawiApi,
             keyOfEndpoint = ImportMembers::class
         ) {
             modal.submitButton().click()
-        }
+        }.decodeBodyTo<Organization>()
         page.waitForLoadingToFinish()
+
+        return organization
     }
 }

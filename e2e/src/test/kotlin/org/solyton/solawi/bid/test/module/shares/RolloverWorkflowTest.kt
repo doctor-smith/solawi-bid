@@ -11,6 +11,7 @@ import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.module.authentication.service.generateSecurePassword
 import org.solyton.solawi.bid.module.values.Password
 import org.solyton.solawi.bid.module.values.Username
+import org.solyton.solawi.bid.pageobjects.SharesPage
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserInput
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserWorkflow
 import org.solyton.solawi.bid.workflow.banking.FiscalYearPeriod
@@ -34,8 +35,14 @@ class RolloverWorkflowTest {
         @JvmStatic
         @BeforeAll
         fun beforeAll() {
+            val headless = TestConfig.HEADLESS
+            val slowMo = TestConfig.SLOW_MO
             playwright = Playwright.create()
-            browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
+            browser = playwright.chromium().launch(
+                BrowserType.LaunchOptions()
+                    .setHeadless(headless)
+                    .setSlowMo(slowMo)
+            )
             TestUtils().getCookie(browser, STORAGE_PATH)
         }
 
@@ -136,18 +143,26 @@ class RolloverWorkflowTest {
 
                 // Perform Rollover to next season (FY2 Offer)
                 val targetOfferOptionText = "$fiscalYearKey2 - $shareTypeName"
-                val shareSubscriptionList = run(BulkRolloverSubscriptionsWorkflow(this)) withInput BulkRolloverSubscriptionsInput(
+                val shareSubscriptions = run(BulkRolloverSubscriptionsWorkflow(this)) withInput BulkRolloverSubscriptionsInput(
                     filterStatus = "All Statuses",
                     filterAhcAuth = "All Authorized",
                     targetOfferOptionText = targetOfferOptionText
                 )
+                with(SharesPage(page)) {
+                    val subscriptionManagement = ShareSubscriptionManagement()
+                    val shareSubscriptionList = subscriptionManagement.listOfSubscriptions()
 
-                // Assertions:
-                // 1. Original subscription in FY1 must be in status ROLLING_OVER
-                assertThat(shareSubscriptionList.statusBadge("ROLLING_OVER")).isVisible()
+                    subscriptionManagement.open()
+                    assertThat(shareSubscriptionList).isVisible()
 
-                // 2. Newly created shadow subscription in FY2 must be in status PENDING_ACTIVATION
-                assertThat(shareSubscriptionList.statusBadge("PENDING_ACTIVATION")).isVisible()
+
+                    // Assertions:
+                    // 1. Original subscription in FY1 must be in status ROLLING_OVER
+                    assertThat(shareSubscriptionList.statusBadge("ROLLING_OVER")).isVisible()
+
+                    // 2. Newly created shadow subscription in FY2 must be in status PENDING_ACTIVATION
+                    assertThat(shareSubscriptionList.statusBadge("PENDING_ACTIVATION")).isVisible()
+                }
             }
         }
     }

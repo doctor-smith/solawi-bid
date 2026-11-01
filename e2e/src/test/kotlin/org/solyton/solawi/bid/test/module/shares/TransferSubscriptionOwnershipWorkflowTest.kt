@@ -5,14 +5,17 @@ import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.module.authentication.service.generateSecurePassword
+import org.solyton.solawi.bid.module.shares.data.api.ShareStatus
 import org.solyton.solawi.bid.module.values.Firstname
 import org.solyton.solawi.bid.module.values.Lastname
 import org.solyton.solawi.bid.module.values.Password
 import org.solyton.solawi.bid.module.values.Username
+import org.solyton.solawi.bid.pageobjects.SharesPage
 import org.solyton.solawi.bid.workflow.banking.FiscalYearPeriod
 import org.solyton.solawi.bid.workflow.organization.AddMemberToOrganizationInput
 import org.solyton.solawi.bid.workflow.organization.AddMemberToOrganizationWorkflow
@@ -94,7 +97,7 @@ class TransferSubscriptionOwnershipWorkflowTest {
         }
 
         // 3. Ablauf als Provider durchführen
-        withUser(providerUser on browser) {
+        withUser<Unit>(providerUser on browser) {
             withFailureDiagnostics("$reportDirectory/user-actions") {
                 val organizationName = "e2e-shares-org-transfer-$suffix"
                 val shareTypeName = "e2e-share-type-transfer-$suffix"
@@ -136,11 +139,14 @@ class TransferSubscriptionOwnershipWorkflowTest {
                 )
 
                 // Genehmigung auf SUBSCRIBED
-                val subscribedList = run(BulkChangeSubscriptionStatusWorkflow(this)) withInput BulkChangeSubscriptionStatusInput(
+                val subscribedSubscriptions = run(BulkChangeSubscriptionStatusWorkflow(this)) withInput BulkChangeSubscriptionStatusInput(
                     filterStatus = "All Statuses",
                     newStatus = "SUBSCRIBED"
                 )
-                assertThat(subscribedList.itemStatus(subscription.id, "SUBSCRIBED")).isVisible()
+                assertEquals(ShareStatus.Subscribed, subscribedSubscriptions.all.first { it.id == subscription.id }.status)
+
+                val sharesList = SharesPage(page).ShareSubscriptionManagement().listOfSubscriptions()
+                assertThat(sharesList.itemStatus(subscription.id, "SUBSCRIBED")).isVisible()
 
                 // Neuen Eigentümer als Mitglied zur Organisation via Organisationsseiten-Modal hinzufügen
                 run(AddMemberToOrganizationWorkflow(this)) withInput AddMemberToOrganizationInput(

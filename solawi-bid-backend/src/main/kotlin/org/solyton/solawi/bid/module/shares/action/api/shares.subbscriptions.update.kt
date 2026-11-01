@@ -26,7 +26,7 @@ fun UpdateShareSubscription() = KlAction<Result<Contextual<UpdateShareSubscripti
             UUID.fromString(data.shareOfferId),
             UUID.fromString(data.userProfileId),
             data.status.toInternalType(),
-            UUID.fromString(data.distributionPointId),
+            data.distributionPointId?.let { UUID.fromString(it) },
             UUID.fromString(data.fiscalYearId),
             data.numberOfShares,
             data.pricePerShare,

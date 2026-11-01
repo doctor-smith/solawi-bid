@@ -2,6 +2,9 @@ package org.solyton.solawi.bid.workflow.banking
 
 import org.solyton.solawi.bid.TestUserContext
 import org.solyton.solawi.bid.TestWorkflow
+import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccount
+import org.solyton.solawi.bid.module.banking.data.api.ApiFiscalYear
+import org.solyton.solawi.bid.module.banking.data.api.ApiLegalEntity
 import org.solyton.solawi.bid.navigateToOrganizationApplicationPage
 import org.solyton.solawi.bid.pageobjects.BankingPage
 import org.solyton.solawi.bid.pageobjects.application.dashboard.DashboardPage
@@ -35,10 +38,17 @@ data class SetupBankingInput(
     val debtorName: String? = null
 )
 
+data class BankingSetupResult(
+    val legalEntity: ApiLegalEntity,
+    val fiscalYears: List<ApiFiscalYear>,
+    val creditorBankAccount: ApiBankAccount?,
+    val debtorBankAccount: ApiBankAccount?
+)
+
 class SetupBankingWorkflow(
     override val context: TestUserContext
-) : TestWorkflow<SetupBankingInput, Unit> {
-    override fun TestUserContext.runWith(input: SetupBankingInput) {
+) : TestWorkflow<SetupBankingInput, BankingSetupResult> {
+    override fun TestUserContext.runWith(input: SetupBankingInput): BankingSetupResult {
         val navBar = NavBar(page)
         val dashboardPage = DashboardPage(page)
         val bankingPage = BankingPage(page)
@@ -47,33 +57,43 @@ class SetupBankingWorkflow(
         dashboardPage.bankingOrganizationManagementLink().click()
         page.navigateToOrganizationApplicationPage("banking", input.organizationName, false)
 
-        bankingPage.createLegalEntityWithCreditorId(input.organizationName, input.legalEntitySuffix, input.creditorId)
+        val legalEntity = bankingPage.createLegalEntityWithCreditorId(input.organizationName, input.legalEntitySuffix, input.creditorId)
         waitForLoadingToFinish()
 
-        input.fiscalYears.forEach { period ->
-            bankingPage.createFiscalYear(period.startDate, period.endDate)
+        val fiscalYears = input.fiscalYears.map { period ->
+            val fy = bankingPage.createFiscalYear(period.startDate, period.endDate)
             waitForLoadingToFinish()
+            fy
         }
 
-        input.creditorBankAccount?.let { creditor ->
-            bankingPage.createCreditorBankAccount(
+        val creditorAccount = input.creditorBankAccount?.let { creditor ->
+            val account = bankingPage.createCreditorBankAccount(
                 accountHolder = input.organizationName,
                 iban = creditor.iban,
                 bic = creditor.bic,
                 description = creditor.description
             )
             waitForLoadingToFinish()
+            account
         }
 
-        input.debtorBankAccount?.let { debtor ->
+        val debtorAccount = input.debtorBankAccount?.let { debtor ->
             val accountHolder = debtor.accountHolder ?: input.debtorName ?: user.username.value
-            bankingPage.createDebtorBankAccount(
+            val account = bankingPage.createDebtorBankAccount(
                 username = user.username.value,
                 accountHolder = accountHolder,
                 iban = debtor.iban,
                 bic = debtor.bic
             )
             waitForLoadingToFinish()
+            account
         }
+
+        return BankingSetupResult(
+            legalEntity = legalEntity,
+            fiscalYears = fiscalYears,
+            creditorBankAccount = creditorAccount,
+            debtorBankAccount = debtorAccount
+        )
     }
 }

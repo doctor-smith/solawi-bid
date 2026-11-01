@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.workflow.shares
 
 import org.solyton.solawi.bid.*
+import org.solyton.solawi.bid.module.shares.data.api.ApiShareSubscriptions
 import org.solyton.solawi.bid.pageobjects.SharesPage
 
 data class BulkRolloverSubscriptionsInput(
@@ -11,8 +12,8 @@ data class BulkRolloverSubscriptionsInput(
 
 class BulkRolloverSubscriptionsWorkflow(
     override val context: TestUserContext
-) : TestWorkflow<BulkRolloverSubscriptionsInput, SharesPage.ShareSubscriptionManagement.ListOfShareSubscriptions> {
-    override fun TestUserContext.runWith(input: BulkRolloverSubscriptionsInput): SharesPage.ShareSubscriptionManagement.ListOfShareSubscriptions {
+) : TestWorkflow<BulkRolloverSubscriptionsInput, ApiShareSubscriptions> {
+    override fun TestUserContext.runWith(input: BulkRolloverSubscriptionsInput): ApiShareSubscriptions {
         val sharesPage = SharesPage(page)
         val shareSubscriptions = sharesPage.ShareSubscriptionManagement()
         shareSubscriptions.open()
@@ -33,14 +34,12 @@ class BulkRolloverSubscriptionsWorkflow(
             waitForLoadingToFinish()
         }
 
-        sharesPage.rolloverViaBulkEdit(input.targetOfferOptionText)
+        val subscriptions = sharesPage.rolloverViaBulkEdit(input.targetOfferOptionText)
         waitForLoadingToFinish()
 
         statusFilter.select("All Statuses")
         waitForLoadingToFinish()
 
-        return SharesPage.ShareSubscriptionManagement.ListOfShareSubscriptions(
-            locator = page.getByDataId("shares.page.share-subscription.list")
-        )
+        return subscriptions
     }
 }

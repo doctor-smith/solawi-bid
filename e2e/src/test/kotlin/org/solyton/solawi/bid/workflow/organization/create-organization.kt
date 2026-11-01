@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.workflow.organization
 
 import org.solyton.solawi.bid.*
+import org.solyton.solawi.bid.module.user.data.api.organization.Organization
 import org.solyton.solawi.bid.pageobjects.OrganizationManagementPage
 import org.solyton.solawi.bid.pageobjects.PrivateApplicationManagementPage
 import org.solyton.solawi.bid.pageobjects.application.dashboard.DashboardPage
@@ -31,8 +32,8 @@ data class CreateOrganizationInput(
 
 class CreateOrganizationWorkflow(
     override val context: TestUserContext
-) : TestWorkflow<CreateOrganizationInput, Unit> {
-    override fun TestUserContext.runWith(input: CreateOrganizationInput) {
+) : TestWorkflow<CreateOrganizationInput, Organization> {
+    override fun TestUserContext.runWith(input: CreateOrganizationInput): Organization {
         val navBar = NavBar(page)
         val dashboardPage = DashboardPage(page)
         val organizationManagementPage = OrganizationManagementPage(page)
@@ -44,7 +45,7 @@ class CreateOrganizationWorkflow(
         dismissStrayErrorDialogIfPresent()
         waitForLoadingToFinish()
 
-        organizationManagementPage.createOrganization(input.organizationName)
+        val organization = organizationManagementPage.createOrganization(input.organizationName)
         waitForLoadingToFinish()
 
         navBar.moveToDashboard()
@@ -76,5 +77,7 @@ class CreateOrganizationWorkflow(
                     )
             }
         }
+
+        return organization
     }
 }
