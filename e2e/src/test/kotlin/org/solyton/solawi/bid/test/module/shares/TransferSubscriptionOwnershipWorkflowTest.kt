@@ -15,7 +15,7 @@ import org.solyton.solawi.bid.module.values.Firstname
 import org.solyton.solawi.bid.module.values.Lastname
 import org.solyton.solawi.bid.module.values.Password
 import org.solyton.solawi.bid.module.values.Username
-import org.solyton.solawi.bid.pageobjects.SharesPage
+import org.solyton.solawi.bid.pageobjects.module.shares.SharesPage
 import org.solyton.solawi.bid.workflow.banking.FiscalYearPeriod
 import org.solyton.solawi.bid.workflow.organization.AddMemberToOrganizationInput
 import org.solyton.solawi.bid.workflow.organization.AddMemberToOrganizationWorkflow
@@ -167,7 +167,7 @@ class TransferSubscriptionOwnershipWorkflowTest {
                 )
 
                 // Verifikation: Abonnement existiert weiterhin im Status SUBSCRIBED
-                val listOfSubscriptions = org.solyton.solawi.bid.pageobjects.SharesPage(page).ShareSubscriptionManagement().listOfSubscriptions()
+                val listOfSubscriptions = SharesPage(page).ShareSubscriptionManagement().listOfSubscriptions()
                 assertThat(listOfSubscriptions.itemStatus(transferredSubscription.id, "SUBSCRIBED")).isVisible()
                 assertThat(listOfSubscriptions.itemText(transferredSubscription.id, "New Owner")).isVisible()
             }

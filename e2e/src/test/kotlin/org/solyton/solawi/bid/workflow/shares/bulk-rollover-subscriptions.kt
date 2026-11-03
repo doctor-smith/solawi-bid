@@ -2,7 +2,7 @@ package org.solyton.solawi.bid.workflow.shares
 
 import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.module.shares.data.api.ApiShareSubscriptions
-import org.solyton.solawi.bid.pageobjects.SharesPage
+import org.solyton.solawi.bid.pageobjects.module.shares.SharesPage
 
 data class BulkRolloverSubscriptionsInput(
     val filterStatus: String = "All Statuses",

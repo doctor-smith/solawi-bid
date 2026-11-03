@@ -11,7 +11,7 @@ import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.module.authentication.service.generateSecurePassword
 import org.solyton.solawi.bid.module.values.Password
 import org.solyton.solawi.bid.module.values.Username
-import org.solyton.solawi.bid.pageobjects.SharesPage
+import org.solyton.solawi.bid.pageobjects.module.shares.SharesPage
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserInput
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserWorkflow
 import org.solyton.solawi.bid.workflow.banking.FiscalYearPeriod

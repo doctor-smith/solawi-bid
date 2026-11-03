@@ -5,7 +5,7 @@ import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.application.api.solawiApi
 import org.solyton.solawi.bid.module.shares.data.api.ApiShareSubscription
 import org.solyton.solawi.bid.module.shares.data.api.UpdateShareSubscription
-import org.solyton.solawi.bid.pageobjects.SharesPage
+import org.solyton.solawi.bid.pageobjects.module.shares.SharesPage
 
 data class ImportShareSubscriptionsInput(
     val subscriptionId: String,

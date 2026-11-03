@@ -6,8 +6,8 @@ import org.solyton.solawi.bid.module.banking.data.api.ApiBankAccount
 import org.solyton.solawi.bid.module.banking.data.api.ApiFiscalYear
 import org.solyton.solawi.bid.module.banking.data.api.ApiLegalEntity
 import org.solyton.solawi.bid.navigateToOrganizationApplicationPage
-import org.solyton.solawi.bid.pageobjects.BankingPage
 import org.solyton.solawi.bid.pageobjects.application.dashboard.DashboardPage
+import org.solyton.solawi.bid.pageobjects.module.banking.BankingPage
 import org.solyton.solawi.bid.pageobjects.shared.NavBar
 import org.solyton.solawi.bid.waitForLoadingToFinish
 

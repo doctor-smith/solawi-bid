@@ -4,8 +4,8 @@ import org.solyton.solawi.bid.TestUserContext
 import org.solyton.solawi.bid.TestWorkflow
 import org.solyton.solawi.bid.module.distribution.data.api.ApiDistributionPoint
 import org.solyton.solawi.bid.navigateToOrganizationApplicationPage
-import org.solyton.solawi.bid.pageobjects.DistributionPage
 import org.solyton.solawi.bid.pageobjects.application.dashboard.DashboardPage
+import org.solyton.solawi.bid.pageobjects.module.distribution.DistributionPage
 import org.solyton.solawi.bid.pageobjects.shared.NavBar
 import org.solyton.solawi.bid.waitForLoadingToFinish
 

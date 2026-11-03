@@ -5,8 +5,8 @@ import org.solyton.solawi.bid.TestWorkflow
 import org.solyton.solawi.bid.module.shares.data.api.ApiShareOffer
 import org.solyton.solawi.bid.module.shares.data.api.ShareType
 import org.solyton.solawi.bid.navigateToOrganizationApplicationPage
-import org.solyton.solawi.bid.pageobjects.SharesPage
 import org.solyton.solawi.bid.pageobjects.application.dashboard.DashboardPage
+import org.solyton.solawi.bid.pageobjects.module.shares.SharesPage
 import org.solyton.solawi.bid.pageobjects.shared.NavBar
 import org.solyton.solawi.bid.waitForLoadingToFinish
 

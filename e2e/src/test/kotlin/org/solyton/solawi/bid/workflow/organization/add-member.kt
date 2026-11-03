@@ -3,7 +3,7 @@ package org.solyton.solawi.bid.workflow.organization
 import org.solyton.solawi.bid.TestUserContext
 import org.solyton.solawi.bid.TestWorkflow
 import org.solyton.solawi.bid.module.user.data.api.organization.Organization
-import org.solyton.solawi.bid.pageobjects.OrganizationManagementPage
+import org.solyton.solawi.bid.pageobjects.module.user.OrganizationManagementPage
 
 data class AddMemberToOrganizationInput(
     val organizationName: String,

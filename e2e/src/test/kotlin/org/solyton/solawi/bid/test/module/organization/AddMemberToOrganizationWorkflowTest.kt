@@ -11,6 +11,7 @@ import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.module.authentication.service.generateSecurePassword
 import org.solyton.solawi.bid.module.values.Password
 import org.solyton.solawi.bid.module.values.Username
+import org.solyton.solawi.bid.pageobjects.module.user.OrganizationManagementPage
 import org.solyton.solawi.bid.pageobjects.module.user.UserManagementPage
 import org.solyton.solawi.bid.pageobjects.shared.NavBar
 import org.solyton.solawi.bid.workflow.organization.AddMemberToOrganizationInput
@@ -103,7 +104,7 @@ class AddMemberToOrganizationWorkflowTest {
                 )
 
                 // Verification: new member appears in member list
-                val membersCard = org.solyton.solawi.bid.pageobjects.OrganizationManagementPage(page).MembersCard()
+                val membersCard = OrganizationManagementPage(page).MembersCard()
                 assertThat(membersCard.memberRow(memberUsername)).isVisible()
             }
         }

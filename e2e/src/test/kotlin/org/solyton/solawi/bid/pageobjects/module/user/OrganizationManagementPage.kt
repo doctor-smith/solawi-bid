@@ -1,8 +1,8 @@
-package org.solyton.solawi.bid.pageobjects
+package org.solyton.solawi.bid.pageobjects.module.user
 
 import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
-import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
+import com.microsoft.playwright.assertions.PlaywrightAssertions
 import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.application.api.solawiApi
 import org.solyton.solawi.bid.module.permission.data.api.PutUserRoleContext
@@ -74,7 +74,7 @@ class OrganizationManagementPage(private val page: Page) {
             page.getByDataId("null.modal"),
             page.getByDataId("organization-management-page.button.create-organization")
         )
-        assertThat(modal.trigger).isVisible()
+        PlaywrightAssertions.assertThat(modal.trigger).isVisible()
         modal.trigger.click()
 
         modal.nameInput().fill(name)
@@ -225,14 +225,14 @@ class OrganizationManagementPage(private val page: Page) {
         page.dismissStrayErrorDialogIfPresent()
 
         val chevron = page.getByDataId("organization.page.members.chevron")
-        assertThat(chevron).isVisible()
+        PlaywrightAssertions.assertThat(chevron).isVisible()
         chevron.click()
 
         val modal = AddMemberModal()
-        assertThat(modal.trigger).isVisible()
+        PlaywrightAssertions.assertThat(modal.trigger).isVisible()
         modal.trigger.click()
 
-        assertThat(modal.locator).isVisible()
+        PlaywrightAssertions.assertThat(modal.locator).isVisible()
 
         modal.usernameInput().fill(username)
         modal.firstnameInput().fill(firstname)

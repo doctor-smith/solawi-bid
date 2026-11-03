@@ -1,8 +1,8 @@
-package org.solyton.solawi.bid.pageobjects
+package org.solyton.solawi.bid.pageobjects.module.banking
 
 import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
-import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
+import com.microsoft.playwright.assertions.PlaywrightAssertions
 import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.application.api.solawiApi
 import org.solyton.solawi.bid.module.banking.data.api.*
@@ -217,7 +217,7 @@ class BankingPage(private val page: Page) {
         page.clickOn("banking.page.customer-bank-accounts.create-button")
 
         val modal = page.getByDataId("banking.upsert-bank-account.modal")
-        assertThat(modal).isVisible()
+        PlaywrightAssertions.assertThat(modal).isVisible()
 
         // fill search box
         page.getByDataId("banking.bank-account.upsert-with-user-search.form.search-input").fill(username)
@@ -237,7 +237,7 @@ class BankingPage(private val page: Page) {
         page.clickOn("bank-account-form.is-active-dropdown.option.TRUE")
 
         val submitButton = page.getByDataId("banking.upsert-bank-account.modal.submit-button")
-        assertThat(submitButton).isEnabled()
+        PlaywrightAssertions.assertThat(submitButton).isEnabled()
 
 
         val bankAccount = page.waitForApi(
@@ -249,7 +249,7 @@ class BankingPage(private val page: Page) {
 
 
 
-        assertThat(modal).not().isVisible()
+        PlaywrightAssertions.assertThat(modal).not().isVisible()
 
         bankAccount
     }
@@ -264,7 +264,7 @@ class BankingPage(private val page: Page) {
             page.clickOn("banking.page.fiscal-years.create-button")
 
             val modal = page.getByDataId("banking.upsert-fiscal-years.modal")
-            assertThat(modal).isVisible()
+            PlaywrightAssertions.assertThat(modal).isVisible()
 
             val startDate = page.getByDataId("upsert-fiscal-year.form.input.date.start")
             val endDate = page.getByDataId("upsert-fiscal-year.form.input.date.end")
@@ -272,15 +272,15 @@ class BankingPage(private val page: Page) {
 
             startDate.apply {
                 fill(start)
-                assertThat(this).hasValue(start)
+                PlaywrightAssertions.assertThat(this).hasValue(start)
             }
 
             endDate.apply {
                 fill(end)
-                assertThat(this).hasValue(end)
+                PlaywrightAssertions.assertThat(this).hasValue(end)
             }
 
-            assertThat(submitButton).isEnabled()
+            PlaywrightAssertions.assertThat(submitButton).isEnabled()
 
             val fiscalYear = page.waitForApi(
                 api = solawiApi,
@@ -289,7 +289,7 @@ class BankingPage(private val page: Page) {
                 submitButton.click()
             }.decodeBodyTo<ApiFiscalYear>()
 
-            assertThat(modal).not().isVisible()
+            PlaywrightAssertions.assertThat(modal).not().isVisible()
 
             fiscalYear
         }
