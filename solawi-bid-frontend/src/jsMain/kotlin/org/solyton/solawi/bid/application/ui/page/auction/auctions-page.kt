@@ -2,8 +2,7 @@ package org.solyton.solawi.bid.application.ui.page.auction
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
+import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.guard.data.ConditionalActionInput
@@ -61,7 +60,7 @@ import org.solyton.solawi.bid.module.user.data.actions as userActions
 fun AuctionsPage(storage: Storage<Application>) {
     if((storage * context * isEmpty()).emit()) return
     Div {
-
+        val scope = rememberCoroutineScope()
 
         // Bid Application Storage
         val bidApplicationStorage = storage * bidApplicationIso
@@ -119,7 +118,6 @@ fun AuctionsPage(storage: Storage<Application>) {
                         H1({style { marginLeft(20.px) }}) { Text((texts * title).emit()) }
                         CreateAuctionButton(
                             storage = bidApplicationStorage,
-                            auction = auction,
                             applicationId = applicationId,
                             texts = texts * subComp("buttons") * subComp("createAuction")
                         )
@@ -134,7 +132,7 @@ fun AuctionsPage(storage: Storage<Application>) {
                     bidApplicationStorage * modals,
                     bidApplicationStorage * deviceData * mediaType.get
                 ) {
-                    CoroutineScope(Job()).launch {
+                    scope.launch {
                         val actions = (bidApplicationStorage * actions).read()
                         try {
                             actions.dispatch(it)

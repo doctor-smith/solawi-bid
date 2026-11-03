@@ -1,8 +1,6 @@
 package org.solyton.solawi.bid.module.bid.component.button
 
-import androidx.compose.runtime.Composable
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
+import androidx.compose.runtime.*
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.device.data.mediaType
@@ -21,6 +19,8 @@ import org.jetbrains.compose.web.css.Color
 import org.solyton.solawi.bid.module.bid.action.configureAuction
 import org.solyton.solawi.bid.module.bid.component.form.showUpdateAuctionModal
 import org.solyton.solawi.bid.module.bid.data.*
+import org.solyton.solawi.bid.module.bid.data.api.AuctionDetails
+import org.solyton.solawi.bid.module.bid.data.api.ConfigureAuction
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.auction.rounds
 import org.solyton.solawi.bid.module.bid.data.biduser.organizations
@@ -46,14 +46,24 @@ fun UpdateAuctionButton(
     dataId: String,
     showText: Boolean = false
 ) {
+    val scope = rememberCoroutineScope()
+
+    var auctionState by remember { mutableStateOf<Auction>((storage * auction).read() ) }
+    val auctionStorage = Storage<Auction>(
+        read = {auctionState},
+        write = { auctionState = it }
+    )
+
     // Auction can only be configured, if no rounds have been created
-    val isDisabled = (storage * auction * rounds * existRounds).emit() ||
-        (storage * auction * auctionAccepted).emit()||
+    val isDisabled = (auctionStorage * rounds * existRounds).emit() ||
+        (auctionStorage * auctionAccepted).emit()||
         (storage * user.get).emit().isNotGranted(BidRight.Auction.update)
+
+
 
     val action: () -> Unit = {
         (storage * modals).showUpdateAuctionModal(
-            auction =  storage * auction,
+            auction =  auctionStorage,
             organizations = storage * user * organizations.get,
             organizationApplicationContextRelations = storage * applicationOrganizationRelations.get,
             applicationId = applicationId,
@@ -61,8 +71,22 @@ fun UpdateAuctionButton(
             device = storage * deviceData * mediaType.get,
             cancel = {}
         ) {
-            CoroutineScope(Job()).launch {
-                val action = configureAuction(auction)
+            val a = auctionStorage.read()
+            val data = ConfigureAuction(
+                a.auctionId,
+                a.name,
+                a.contextId,
+                a.date,
+                AuctionDetails.SolawiTuebingen(
+                    a.auctionDetails.minimalBid ?: 0.0,
+                    a.auctionDetails.benchmark ?: 0.0,
+                    a.auctionDetails.targetAmount ?: 0.0,
+                    a.auctionDetails.solidarityContribution ?: 0.0
+                )
+            )
+
+            scope.launch {
+                val action = configureAuction(data)
                 val actions = (storage * actions).read()
                 try {
                     actions.dispatch( action )

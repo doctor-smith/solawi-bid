@@ -2,8 +2,6 @@ package org.solyton.solawi.bid.module.bid.component.button
 
 import androidx.compose.runtime.*
 import io.ktor.util.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.device.data.mediaType
@@ -52,6 +50,8 @@ fun ImportBiddersButton(
     dataId: String,
     showText: Boolean = false
 ) {
+    val scope = rememberCoroutineScope()
+
     var isOkButtonDisabled by remember { mutableStateOf(true) }
 
     val isDisabled = (storage * auction * rounds * existRounds).emit() ||
@@ -78,7 +78,7 @@ fun ImportBiddersButton(
             device = storage * deviceData * mediaType.get,
             cancel = {},
             update = {
-                CoroutineScope(Job()).launch {
+                scope.launch {
                     (storage * actions).read().dispatch(addBidders(addBidders.read()))
                     (storage * actions).read().dispatch(importBidders(newBidders.read(), auction))
                 }

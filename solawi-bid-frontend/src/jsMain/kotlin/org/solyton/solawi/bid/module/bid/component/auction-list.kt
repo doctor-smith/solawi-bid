@@ -1,6 +1,6 @@
 package org.solyton.solawi.bid.module.bid.component
 
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import kotlinx.coroutines.DelicateCoroutinesApi
 import org.evoleq.compose.Markup
 import org.evoleq.compose.date.format
@@ -12,8 +12,6 @@ import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.map
 import org.evoleq.math.times
-import org.evoleq.optics.lens.FirstBy
-import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Action
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.transform.times
@@ -27,6 +25,8 @@ import org.solyton.solawi.bid.module.bid.component.form.showUpdateAuctionModal
 import org.solyton.solawi.bid.module.bid.component.styles.actionButtonBgColor
 import org.solyton.solawi.bid.module.bid.component.styles.actionButtonColor
 import org.solyton.solawi.bid.module.bid.data.BidApplication
+import org.solyton.solawi.bid.module.bid.data.api.AuctionDetails
+import org.solyton.solawi.bid.module.bid.data.api.ConfigureAuction
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.auction.date
 import org.solyton.solawi.bid.module.bid.data.auction.name
@@ -44,7 +44,6 @@ import org.solyton.solawi.bid.module.style.listEven
 import org.solyton.solawi.bid.module.style.listItemGap
 import org.solyton.solawi.bid.module.style.listOdd
 import org.solyton.solawi.bid.module.style.verticalAccentBar
-import org.solyton.solawi.bid.module.bid.data.auctions as auctionLens
 
 @Markup
 @Composable
@@ -67,8 +66,15 @@ fun AuctionList(
     with(auctions.read()) {
         sortedByDescending { it.date }
         .forEachIndexed{ index, auction ->
+
+            var auctionState by remember { mutableStateOf<Auction>(auction) }
+            val auctionStorage = Storage<Auction> (
+                read = {auctionState},
+                write = {auctionState = it}
+            )
+
             AuctionListItem(
-                auctions * FirstBy<Auction> { it.auctionId == auction.auctionId},
+                auctionStorage,
                 user,
                 organizationApplicationContextRelations,
                 applicationId,
@@ -78,7 +84,22 @@ fun AuctionList(
                 styles,
                 index,
                 dispatchDelete = { dispatch(deleteAuctionAction(auction)) },
-                dispatchConfiguration = {dispatch(configureAuction(auctionLens * FirstBy<Auction> { it.auctionId == auction.auctionId}))    }
+                dispatchConfiguration = {
+                    val a = auctionStorage.read()
+                    val data = ConfigureAuction(
+                        a.auctionId,
+                        a.name,
+                        a.contextId,
+                        a.date,
+                        AuctionDetails.SolawiTuebingen(
+                            a.auctionDetails.minimalBid ?: 0.0,
+                            a.auctionDetails.benchmark ?: 0.0,
+                            a.auctionDetails.targetAmount ?: 0.0,
+                            a.auctionDetails.solidarityContribution ?: 0.0
+                        )
+                    )
+                    dispatch(configureAuction(data))
+                }
             )
         }
     }
@@ -150,7 +171,7 @@ fun AuctionListItem(
             actionButtonBgColor,
             buttons * subComp("edit") * tooltip,
             device,
-            (auction * auctionAccepted).emit() || user.emit().isNotGranted(BidRight.Auction.manage),
+            (auction * auctionAccepted).emit() || user.emit().isNotGranted(BidRight.Auction.update),
         ) {
             // open edit dialog
             (modals).showUpdateAuctionModal(
@@ -183,7 +204,7 @@ fun AuctionListItem(
             actionButtonBgColor,
             buttons * subComp("delete") * tooltip,
             device,
-            (auction * auctionAccepted).emit() || user.emit().isNotGranted(BidRight.Auction.manage)
+            (auction * auctionAccepted).emit() || user.emit().isNotGranted(BidRight.Auction.delete)
         ) {
             dispatchDelete()
         }

@@ -10,6 +10,42 @@ import org.w3c.dom.get
 import org.w3c.files.File
 import org.w3c.files.FileReader
 
+
+data class DropzoneStyles(
+    val style: StyleScope.() -> Unit = defaultDropzoneStyle,
+    val dragStyle: StyleScope.() -> Unit = defaultDropzoneDragStyle
+)
+
+val defaultDropzoneStyle: StyleScope.() -> Unit = {
+    height(160.px)
+    padding(16.px)
+    borderRadius(12.px)
+
+    border(
+        2.px,
+        LineStyle.Dashed,
+        Color("#A9C9B3")
+    )
+
+    backgroundColor(Color.white)
+
+    display(DisplayStyle.Flex)
+    flexDirection(FlexDirection.Column)
+    justifyContent(JustifyContent.Center)
+    alignItems(AlignItems.Center)
+
+    textAlign("center")
+
+    property("box-sizing", "border-box")
+    property("transition", "all 0.2s ease")
+}
+
+val defaultDropzoneDragStyle: StyleScope.() -> Unit = {
+    // borderColor(Color("#438A63"))
+    backgroundColor(Color("#F0F8F2"))
+}
+
+
 @Markup
 @Composable
 @Suppress("FunctionName")
@@ -17,6 +53,7 @@ fun Dropzone(
     onProcessingStarted: ()->Unit = {},
     onProcessingStopped: ()->Unit = {},
     dataId: String? = null,
+    styles: DropzoneStyles = DropzoneStyles(),
     onFilesDropped: (List<File>) -> Unit
 ) {
     var isDragging by remember { mutableStateOf(false) }
@@ -26,11 +63,12 @@ fun Dropzone(
         attrs = {
             if(dataId != null) dataId(dataId)
             style {
-                height(70.vh)
-                padding(16.px)
-                border(2.px, LineStyle.Dashed, if (isDragging) Color.green else Color.gray)
-                textAlign("center")
-                backgroundColor(if (isDragging) Color.lightgray else Color.white)
+                with(styles) {
+                    style()
+                    if (isDragging) {
+                        dragStyle()
+                    }
+                }
             }
             onDragOver {
                 it.preventDefault()
@@ -53,7 +91,7 @@ fun Dropzone(
                 val dt = event.dataTransfer ?: return@onDrop
                 val fileList = mutableListOf<File>()
 
-                console.log("Dropzone: Drop-Event gefangen. dt = ${dt.files}")
+                // console.log("Dropzone: Drop-Event gefangen. dt = ${dt.files}")
 
                 // 1. Versuch: Über dt.files
                 val files = dt.files

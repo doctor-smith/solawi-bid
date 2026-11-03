@@ -1,8 +1,6 @@
 package org.solyton.solawi.bid.application.ui.page.auction
 
 import androidx.compose.runtime.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.compose.conditional.When
@@ -46,9 +44,8 @@ import org.solyton.solawi.bid.module.bid.component.effect.*
 import org.solyton.solawi.bid.module.bid.component.form.ApplicationContextKey
 import org.solyton.solawi.bid.module.bid.component.form.showUpdateAuctionModal
 import org.solyton.solawi.bid.module.bid.data.*
-import org.solyton.solawi.bid.module.bid.data.api.AddBidders
-import org.solyton.solawi.bid.module.bid.data.api.NewBidder
-import org.solyton.solawi.bid.module.bid.data.api.RoundState
+import org.solyton.solawi.bid.module.bid.data.api.*
+import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.auction.contextId
 import org.solyton.solawi.bid.module.bid.data.auction.rounds
 import org.solyton.solawi.bid.module.bid.data.bidround.Round
@@ -94,7 +91,9 @@ val auctionPropertiesStyles = PropertiesStyles(
 @Suppress("FunctionName", "CognitiveComplexMethod")
 fun AuctionPage(storage: Storage<Application>, auctionId: String) {
     if((storage * context * isEmpty()).emit()) return
-    Div({style { overflowY("auto" /*todo:dev - scroll only if needed*/)}}) {
+    Div({style {
+        // overflowY("auto" /*todo:dev - scroll only if needed*/)
+    }}) {
         // Bid Application Storage
         val bidApplicationStorage = storage * bidApplicationIso
 
@@ -114,24 +113,24 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) {
 
         // Effects
         if(isLoading(
-                onEmpty(
-                    bidApplicationStorage * auctions.get
-                ) {
-                    LaunchedEffect(Unit) {
-                        (bidApplicationStorage * actions).read().dispatch(readAuctions())
-                    }
-                },
-                onMissing(
-                    BidComponent.AuctionPage,
-                    bidApplicationStorage * i18N.get,
-                ) {
-                    LaunchComponentLookup(
-                        BidComponent.AuctionPage,
-                        storage  * Reader { app: Application -> app.environment.useI18nTransform() },
-                        bidApplicationStorage * i18N
-                    )
+            onEmpty(
+                bidApplicationStorage * auctions.get
+            ) {
+                LaunchedEffect(Unit) {
+                    (bidApplicationStorage * actions).read().dispatch(readAuctions())
                 }
-            )) return@Div
+            },
+            onMissing(
+                BidComponent.AuctionPage,
+                bidApplicationStorage * i18N.get,
+            ) {
+                LaunchComponentLookup(
+                    BidComponent.AuctionPage,
+                    storage  * Reader { app: Application -> app.environment.useI18nTransform() },
+                    bidApplicationStorage * i18N
+                )
+            }
+        )) return@Div
 
         // Internal State
         var newBidders by remember { mutableStateOf<List<NewBidder>>(listOf()) }
@@ -168,6 +167,12 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) {
         val details = texts * subComp("details")
         val buttons = texts * subComp("buttons")
 
+        var auctionState by remember { mutableStateOf<Auction>((bidApplicationStorage * auction).read() ) }
+        val auctionStorage = Storage<Auction>(
+            read = {auctionState},
+            write = { auctionState = it }
+        )
+        val scope = rememberCoroutineScope()
         var confirmationModalOpen by remember { mutableStateOf(false)}
         if(!confirmationModalOpen && onStringEmpty(
                 bidApplicationStorage * auction * contextId.get
@@ -179,7 +184,7 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) {
                     dataId = "auction-page.dialog.",
                 ) {
                     (bidApplicationStorage * modals).showUpdateAuctionModal(
-                        auction =  bidApplicationStorage * auction,
+                        auction =  auctionStorage,
                         organizations = bidApplicationStorage * user * organizations.get,
                         organizationApplicationContextRelations = bidApplicationStorage * applicationOrganizationRelations.get,
                         applicationId = applicationId,
@@ -187,8 +192,21 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) {
                         device = bidApplicationStorage * deviceData * mediaType.get,
                         cancel = {confirmationModalOpen = false}
                     ) {
-                        CoroutineScope(Job()).launch {
-                            val action = configureAuction(auction)
+                        scope.launch {
+                            val a = auctionStorage.read()
+                            val data = ConfigureAuction(
+                                a.auctionId,
+                                a.name,
+                                a.contextId,
+                                a.date,
+                                AuctionDetails.SolawiTuebingen(
+                                    a.auctionDetails.minimalBid ?: 0.0,
+                                    a.auctionDetails.benchmark ?: 0.0,
+                                    a.auctionDetails.targetAmount ?: 0.0,
+                                    a.auctionDetails.solidarityContribution ?: 0.0
+                                )
+                            )
+                            val action = configureAuction(data)
                             val actions = (bidApplicationStorage * actions).read()
                             try {
                                 actions.dispatch( action )
@@ -202,6 +220,11 @@ fun AuctionPage(storage: Storage<Application>, auctionId: String) {
                     }
                 }
             }) return@Div
+
+
+
+
+
 
         // Markup
         Page({verticalPageStyle(); }) {

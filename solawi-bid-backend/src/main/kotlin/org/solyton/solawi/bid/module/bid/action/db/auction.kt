@@ -25,15 +25,11 @@ import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.data.toApiType
 import org.solyton.solawi.bid.module.bid.exception.BidRoundException
 import org.solyton.solawi.bid.module.bid.schema.*
-import org.solyton.solawi.bid.module.bid.schema.AuctionEntity
+import org.solyton.solawi.bid.module.bid.schema.Auctions
 import org.solyton.solawi.bid.module.bid.service.addUserAsOwnerToContext
 import org.solyton.solawi.bid.module.bid.service.cloneDefaultAuctionContext
 import org.solyton.solawi.bid.module.permission.exception.ContextException
-import org.solyton.solawi.bid.module.permission.schema.ContextEntity
-import org.solyton.solawi.bid.module.permission.schema.ContextsTable
-import org.solyton.solawi.bid.module.permission.schema.RoleEntity
-import org.solyton.solawi.bid.module.permission.schema.RolesTable
-import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
+import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.user.exception.OrganizationException
 import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
 import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
@@ -139,6 +135,15 @@ val ReadAllAuctions = KlAction<Result<Contextual<GetAuctions>>, Result<ApiAuctio
     }
     // TODO(use identifier to return all auction which are accessible as identified person)
     } x database }
+}
+
+fun Transaction.getAuctionDetailsById(auctionId: UUID): AuctionDetails {
+    val auction = AuctionEntity.find { AuctionsTable.id eq auctionId }.firstOrNull()
+    return if(auction != null) {
+        getAuctionDetails(auction)
+    } else {
+        AuctionDetails.Empty
+    }
 }
 
 fun Transaction.getAuctionDetails(auction: AuctionEntity): AuctionDetails {

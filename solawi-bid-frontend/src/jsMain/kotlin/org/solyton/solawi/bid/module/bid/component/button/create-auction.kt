@@ -4,13 +4,14 @@ import androidx.compose.runtime.*
 import kotlinx.coroutines.launch
 import org.evoleq.compose.Markup
 import org.evoleq.device.data.mediaType
+import org.evoleq.kotlinx.date.toDateTime
+import org.evoleq.kotlinx.date.today
 import org.evoleq.language.Lang
 import org.evoleq.language.component
 import org.evoleq.language.tooltip
 import org.evoleq.math.Source
 import org.evoleq.math.emit
 import org.evoleq.math.times
-import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.remove
 import org.evoleq.optics.transform.times
@@ -34,13 +35,28 @@ import org.solyton.solawi.bid.module.i18n.data.language
 @Suppress("FunctionName")
 fun CreateAuctionButton(
     storage: Storage<BidApplication>,
-    auction: Lens<BidApplication, Auction>,
     applicationId: Source<String>,
     texts: Source<Lang.Block>
 ) {
     val scope = rememberCoroutineScope()
 
-    var auctionState by remember{ mutableStateOf<Auction?>(null) }
+    var auctionState by remember{ mutableStateOf<Auction>(Auction(
+        DEFAULT_AUCTION_ID,
+        "",
+        today().toDateTime(),
+    )) }
+    val auctionStorage = Storage<Auction>(
+        read = {auctionState},
+        write = { auctionState = it }
+    )
+    fun resetAuction() {
+        auctionState = Auction(
+            DEFAULT_AUCTION_ID,
+            "",
+            today().toDateTime(),
+        )
+    }
+
 
     PlusButton(
         color = Color.black,
@@ -50,10 +66,9 @@ fun CreateAuctionButton(
         isDisabled = (storage * user.get).emit().isNotGranted(BidRight.Auction.create),
         dataId = "auctions-page.create-auction-button"
     ) {
-
         // Show the auction modal
         (storage * modals).showAuctionModal(
-            auction = storage * auction,
+            auction = auctionStorage,
             organizations = storage * user * organizations.get,
             organizationApplicationContextRelations = storage * applicationOrganizationRelations.get,
             applicationId = applicationId,
@@ -64,7 +79,7 @@ fun CreateAuctionButton(
             scope.launch {
                 val actions = (storage * actions).read()
                 try {
-                    val auction = requireNotNull(auctionState) {
+                    val auction = requireNotNull(auctionStorage.read()) {
                         "Auction is null"
                     }
                     actions.dispatch(createAuction(
@@ -81,6 +96,8 @@ fun CreateAuctionButton(
                         ),
                         device = storage * deviceData * mediaType.get,
                     )
+                } finally {
+                    resetAuction()
                 }
             }
         }
