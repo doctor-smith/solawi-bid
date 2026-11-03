@@ -2,9 +2,9 @@ package org.solyton.solawi.bid.workflow.organization
 
 import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.module.user.data.api.organization.Organization
-import org.solyton.solawi.bid.pageobjects.OrganizationManagementPage
-import org.solyton.solawi.bid.pageobjects.PrivateApplicationManagementPage
 import org.solyton.solawi.bid.pageobjects.application.dashboard.DashboardPage
+import org.solyton.solawi.bid.pageobjects.module.application.PrivateApplicationManagementPage
+import org.solyton.solawi.bid.pageobjects.module.user.OrganizationManagementPage
 import org.solyton.solawi.bid.pageobjects.shared.NavBar
 
 sealed class ApplicationBookingConfig(open val name: String) {

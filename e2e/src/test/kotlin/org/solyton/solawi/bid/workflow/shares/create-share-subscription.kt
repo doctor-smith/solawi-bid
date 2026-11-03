@@ -3,7 +3,7 @@ package org.solyton.solawi.bid.workflow.shares
 import org.solyton.solawi.bid.TestUserContext
 import org.solyton.solawi.bid.TestWorkflow
 import org.solyton.solawi.bid.module.shares.data.api.ApiShareSubscription
-import org.solyton.solawi.bid.pageobjects.SharesPage
+import org.solyton.solawi.bid.pageobjects.module.shares.SharesPage
 import org.solyton.solawi.bid.waitForLoadingToFinish
 
 data class CreateShareSubscriptionInput(

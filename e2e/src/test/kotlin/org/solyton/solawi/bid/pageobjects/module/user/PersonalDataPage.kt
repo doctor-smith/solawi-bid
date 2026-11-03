@@ -1,7 +1,7 @@
-package org.solyton.solawi.bid.pageobjects
+package org.solyton.solawi.bid.pageobjects.module.user
 
 import com.microsoft.playwright.Page
-import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
+import com.microsoft.playwright.assertions.PlaywrightAssertions
 import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.application.api.solawiApi
 import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateUserProfile
@@ -43,7 +43,7 @@ class PersonalDataPage(private val page: Page) : TestPage(page, "app/private/dat
         page.clickOn("private-data.page.profile.create")
 
         val modal = page.getByDataId("upsert-user-profile.modal")
-        assertThat(modal).isVisible()
+        PlaywrightAssertions.assertThat(modal).isVisible()
 
         title?.let {
             page.getByDataId("user-profile.form.title-input").fill(title)
@@ -78,7 +78,7 @@ class PersonalDataPage(private val page: Page) : TestPage(page, "app/private/dat
          */
 
         val submitButton = page.getByDataId("upsert-user-profile.modal.submit-button")
-        assertThat(submitButton).isEnabled()
+        PlaywrightAssertions.assertThat(submitButton).isEnabled()
 
         val response = page.waitForApi(
             api = solawiApi,
@@ -87,7 +87,7 @@ class PersonalDataPage(private val page: Page) : TestPage(page, "app/private/dat
             submitButton.click()
         }
 
-        assertThat(modal).not().isVisible()
+        PlaywrightAssertions.assertThat(modal).not().isVisible()
 
         val userProfile = response.decodeBodyTo<UserProfile>()
         return userProfile

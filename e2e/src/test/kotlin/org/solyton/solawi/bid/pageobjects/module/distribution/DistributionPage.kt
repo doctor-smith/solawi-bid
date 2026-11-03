@@ -1,7 +1,7 @@
-package org.solyton.solawi.bid.pageobjects
+package org.solyton.solawi.bid.pageobjects.module.distribution
 
 import com.microsoft.playwright.Page
-import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
+import com.microsoft.playwright.assertions.PlaywrightAssertions
 import org.solyton.solawi.bid.application.api.solawiApi
 import org.solyton.solawi.bid.clickOn
 import org.solyton.solawi.bid.decodeBodyTo
@@ -21,7 +21,7 @@ class DistributionPage(private val page: Page) {
         page.clickOn("distribution.page.distribution-point.create-button")
 
         val modal = page.getByDataId("distribution.upsert-distribution-point.modal")
-        assertThat(modal).isVisible()
+        PlaywrightAssertions.assertThat(modal).isVisible()
 
         page.locator("#distribution-point-name").fill(name)
 
@@ -33,7 +33,7 @@ class DistributionPage(private val page: Page) {
         }.decodeBodyTo<ApiDistributionPoint>()
 
 
-        assertThat(modal).not().isVisible()
+        PlaywrightAssertions.assertThat(modal).not().isVisible()
 
         return distributionPoint
     }

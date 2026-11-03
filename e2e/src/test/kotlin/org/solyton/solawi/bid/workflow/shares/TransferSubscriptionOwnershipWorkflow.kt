@@ -5,7 +5,7 @@ import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.application.api.solawiApi
 import org.solyton.solawi.bid.module.shares.data.api.ShareSubscription
 import org.solyton.solawi.bid.module.shares.data.api.TransferOwnership
-import org.solyton.solawi.bid.pageobjects.SharesPage
+import org.solyton.solawi.bid.pageobjects.module.shares.SharesPage
 
 data class TransferSubscriptionOwnershipInput(
     val subscriptionId: String,

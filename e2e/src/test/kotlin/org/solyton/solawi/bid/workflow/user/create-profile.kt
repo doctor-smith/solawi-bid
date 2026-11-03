@@ -7,8 +7,8 @@ import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfile
 import org.solyton.solawi.bid.module.values.Firstname
 import org.solyton.solawi.bid.module.values.Lastname
 import org.solyton.solawi.bid.module.values.PhoneNumber
-import org.solyton.solawi.bid.pageobjects.PersonalDataPage
 import org.solyton.solawi.bid.pageobjects.application.dashboard.DashboardPage
+import org.solyton.solawi.bid.pageobjects.module.user.PersonalDataPage
 import org.solyton.solawi.bid.pageobjects.shared.NavBar
 import org.solyton.solawi.bid.waitForLoadingToFinish
 

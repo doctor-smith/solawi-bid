@@ -1,11 +1,11 @@
-package org.solyton.solawi.bid.pageobjects
+package org.solyton.solawi.bid.pageobjects.module.shares
 
 import CHECK_FALSE
 import CHECK_TRUE
 import checkIcon
 import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
-import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
+import com.microsoft.playwright.assertions.PlaywrightAssertions
 import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.application.api.solawiApi
 import org.solyton.solawi.bid.module.banking.data.api.*
@@ -91,13 +91,13 @@ class SharesPage(private val page: Page) {
         fun deselectAll() {
             if (selectAllButton().isChecked) {
                 selectAllButton().click()
-                assertThat(selectAllButton()).not().isChecked()
+                PlaywrightAssertions.assertThat(selectAllButton()).not().isChecked()
             }
         }
         fun selectAll() {
             deselectAll()
             selectAllButton().click()
-            assertThat(selectAllButton()).isChecked()
+            PlaywrightAssertions.assertThat(selectAllButton()).isChecked()
         }
 
         class ListOfShareSubscriptions(
@@ -295,7 +295,7 @@ class SharesPage(private val page: Page) {
 
         fun dropCsv(csvContent: String, fileName: String = "share-subscriptions.csv") {
             val dropzoneElement = dropzone()
-            assertThat(dropzoneElement).isVisible()
+            PlaywrightAssertions.assertThat(dropzoneElement).isVisible()
             val jsScript = """
                 (element, args) => {
                     const content = args.content;
@@ -400,7 +400,7 @@ class SharesPage(private val page: Page) {
 
         val modal = UpsertShareTypeModal()
         modal.trigger.click()
-        assertThat(modal.locator).isVisible()
+        PlaywrightAssertions.assertThat(modal.locator).isVisible()
 
         modal.nameInput().fill(name)
         modal.keyInput().fill(key)
@@ -414,7 +414,7 @@ class SharesPage(private val page: Page) {
         }.decodeBodyTo<ShareType>()
 
 
-        assertThat(modal.locator).not().isVisible()
+        PlaywrightAssertions.assertThat(modal.locator).not().isVisible()
 
         return shareType
     }
@@ -437,9 +437,9 @@ class SharesPage(private val page: Page) {
         if(!management.isOpened()) management.open()
 
         val modal = UpsertShareOfferModal()
-        assertThat(modal.trigger).isVisible()
+        PlaywrightAssertions.assertThat(modal.trigger).isVisible()
         modal.trigger.click()
-        assertThat(modal.locator).isVisible()
+        PlaywrightAssertions.assertThat(modal.locator).isVisible()
 
         modal.fiscalYearDropdown().click()
         modal.fiscalYearOption(fiscalYearKey).click()
@@ -463,7 +463,7 @@ class SharesPage(private val page: Page) {
             modal.submitButton().click()
         }.decodeBodyTo<ApiShareOffer>()
 
-        assertThat(modal.locator).not().isVisible()
+        PlaywrightAssertions.assertThat(modal.locator).not().isVisible()
 
         return shareOffer
     }
@@ -484,7 +484,7 @@ class SharesPage(private val page: Page) {
         if(!isOpened()) open()
 
         val modal = AttachSepaCollectionModal(shareOffer.id)
-        assertThat(modal.trigger).isVisible()
+        PlaywrightAssertions.assertThat(modal.trigger).isVisible()
         modal.trigger.click()
 
         modal.bankAccountDropdown().click()
@@ -495,7 +495,7 @@ class SharesPage(private val page: Page) {
         modal.remittanceInformationInput().fill(remittanceInformation)
 
         val submitButton = modal.submitButton()
-        assertThat(submitButton).isEnabled()
+        PlaywrightAssertions.assertThat(submitButton).isEnabled()
         val collection = page.waitForApi(
             api = solawiApi,
             keyOfEndpoint = CreateSepaCollection::class
@@ -525,7 +525,7 @@ class SharesPage(private val page: Page) {
         }
 
         val modal = AttachOrUpsertSepaMandateModal()
-        assertThat(modal.trigger).isEnabled()
+        PlaywrightAssertions.assertThat(modal.trigger).isEnabled()
         modal.trigger.click()
 
         modal.statusDropdown().click()
@@ -564,16 +564,16 @@ class SharesPage(private val page: Page) {
 
         val modal = UpsertShareSubscriptionModal()
         modal.trigger.click()
-        assertThat(modal.locator).isVisible()
+        PlaywrightAssertions.assertThat(modal.locator).isVisible()
 
         val selectedUser = modal.userDisplayInput()
         val userSelectionButton = modal.userSelectButton(username)
         userSelectionButton.apply {
-            assertThat(this).isVisible()
-            assertThat(this).isEnabled()
+            PlaywrightAssertions.assertThat(this).isVisible()
+            PlaywrightAssertions.assertThat(this).isEnabled()
             click()
         }
-        assertThat(selectedUser).hasValue(fullName)
+        PlaywrightAssertions.assertThat(selectedUser).hasValue(fullName)
 
         modal.fiscalYearDropdown().click()
         modal.fiscalYearOption(fiscalYearKey).click()
@@ -585,10 +585,10 @@ class SharesPage(private val page: Page) {
         modal.shareOfferOption("$shareTypeName - $fiscalYearKey").click()
 
         modal.pricePerShareInput().fill(price)
-        assertThat(modal.pricePerShareInput()).hasValue(price)
+        PlaywrightAssertions.assertThat(modal.pricePerShareInput()).hasValue(price)
 
         modal.numberOfSharesInput().fill(numberOfShares)
-        assertThat(modal.numberOfSharesInput()).hasValue(numberOfShares)
+        PlaywrightAssertions.assertThat(modal.numberOfSharesInput()).hasValue(numberOfShares)
 
         modal.ahcAuthorizedDropdown().click()
         modal.ahcAuthorizedOption(ahcAuthorized.checkIcon()).click()
@@ -598,7 +598,7 @@ class SharesPage(private val page: Page) {
         )
 
         val submitButton = modal.submitButton()
-        assertThat(submitButton).isEnabled()
+        PlaywrightAssertions.assertThat(submitButton).isEnabled()
 
         val subscription = page.waitForApi(
             api = solawiApi,
@@ -621,12 +621,12 @@ class SharesPage(private val page: Page) {
      */
     fun changeStatusViaBulkEdit(targetStatus: String): ApiShareSubscriptions = with(ShareSubscriptionManagement()){
         open()
-        assertThat(selectAllButton()).isEnabled()
+        PlaywrightAssertions.assertThat(selectAllButton()).isEnabled()
 
         selectAll()
 
         val bulkModal = BulkEditModal(page)
-        assertThat(bulkModal.trigger).isEnabled()
+        PlaywrightAssertions.assertThat(bulkModal.trigger).isEnabled()
 
         bulkModal.open()
         assertThat(bulkModal).isVisible()
@@ -636,7 +636,7 @@ class SharesPage(private val page: Page) {
 
 
         val submitButton = bulkModal.submitButton()
-        assertThat(submitButton).isEnabled()
+        PlaywrightAssertions.assertThat(submitButton).isEnabled()
 
         page.waitForApi(
             api = solawiApi,
@@ -651,7 +651,7 @@ class SharesPage(private val page: Page) {
             // actually dispatches the status change.
             val confirmationModal = ConfirmationModal()
             confirmationModal.submitButton().click()
-            assertThat(confirmationModal.locator).not().isVisible()
+            PlaywrightAssertions.assertThat(confirmationModal.locator).not().isVisible()
         }.decodeBodyTo<ApiShareSubscriptions>()
     }
 
@@ -661,12 +661,12 @@ class SharesPage(private val page: Page) {
      */
     fun rolloverViaBulkEdit(targetOfferOptionText: String): ApiShareSubscriptions = with(ShareSubscriptionManagement()) {
         open()
-        assertThat(selectAllButton()).isEnabled()
+        PlaywrightAssertions.assertThat(selectAllButton()).isEnabled()
 
         selectAll()
 
         val bulkModal = BulkEditModal(page)
-        assertThat(bulkModal.trigger).isEnabled()
+        PlaywrightAssertions.assertThat(bulkModal.trigger).isEnabled()
 
         bulkModal.open()
         assertThat(bulkModal).isVisible()
@@ -676,7 +676,7 @@ class SharesPage(private val page: Page) {
         bulkModal.rolloverShareOfferOption(targetOfferOptionText).click()
 
         val submitButton = bulkModal.submitButton()
-        assertThat(submitButton).isEnabled()
+        PlaywrightAssertions.assertThat(submitButton).isEnabled()
 
         val shareSubscriptions = page.waitForApi(
             api = solawiApi,
@@ -689,9 +689,9 @@ class SharesPage(private val page: Page) {
 
             // Confirmation dialog
             val confirmationModal = ConfirmationModal()
-            assertThat(confirmationModal.submitButton()).isVisible()
+            PlaywrightAssertions.assertThat(confirmationModal.submitButton()).isVisible()
             confirmationModal.submitButton().click()
-            assertThat(confirmationModal.locator).not().isVisible()
+            PlaywrightAssertions.assertThat(confirmationModal.locator).not().isVisible()
         }.decodeBodyTo<ApiShareSubscriptions>()
 
         return shareSubscriptions

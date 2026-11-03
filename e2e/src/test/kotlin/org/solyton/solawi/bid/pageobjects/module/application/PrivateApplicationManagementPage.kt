@@ -1,4 +1,4 @@
-package org.solyton.solawi.bid.pageobjects
+package org.solyton.solawi.bid.pageobjects.module.application
 
 import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
