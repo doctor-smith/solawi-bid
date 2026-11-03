@@ -66,6 +66,7 @@ class ActionTests{
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
     fun sendBidTest() = runComposeTest{
+        installSerializers()
         val bid = Bid("name", "link",2.0)
 
         val action = sendBidAction(bid)
@@ -106,6 +107,7 @@ class ActionTests{
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test
     fun importBiddersTest() = runComposeTest{
+        installSerializers()
 
         val date = todayWithTime()
         val auction = Auction("id", "name", date)
@@ -140,6 +142,7 @@ class ActionTests{
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test fun createRoundTest() = runComposeTest{
+        installSerializers()
         val date = todayWithTime()
         val auction = Auction("id", "name", date)
         val auctionLens = auctions * FirstBy<Auction> { auc -> auc.auctionId == auction.auctionId }
@@ -187,11 +190,17 @@ class ActionTests{
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test fun configureAuctionTest() = runComposeTest{
+        installSerializers()
         val date = todayWithTime()
         val auction = Auction("id", "name", date)
         val auctionLens = auctions * FirstBy<Auction> { auc -> auc.auctionId == auction.auctionId }
 
-        val action = configureAuction(auctionLens)
+        val action = configureAuction(ConfigureAuction(
+            id = "id",
+            name = "name",
+            date = date,
+            contextId = "context_id"
+        ))
 
 
         composition {
@@ -224,6 +233,7 @@ class ActionTests{
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test fun changeRoundStateTest() = runComposeTest{
+        installSerializers()
         val date = todayWithTime()
         val auction = Auction("id", "name", date)
         val auctionLens = auctions * FirstBy<Auction> { auc -> auc.auctionId == auction.auctionId }
@@ -265,6 +275,7 @@ class ActionTests{
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test fun exportBidRoundTest() = runComposeTest{
+        installSerializers()
         val date = todayWithTime()
         val auction = Auction("id", "name", date)
         val auctionLens = auctions * FirstBy<Auction> { auc -> auc.auctionId == auction.auctionId }
@@ -312,6 +323,7 @@ class ActionTests{
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test fun evaluateBidRoundTest() = runComposeTest{
+        installSerializers()
         val date = todayWithTime()
         val auction = Auction("id", "name", date)
         val auctionLens = auctions * FirstBy<Auction> { auc -> auc.auctionId == auction.auctionId }
@@ -378,6 +390,7 @@ class ActionTests{
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test fun preEvaluateBidRoundTest() = runComposeTest{
+        installSerializers()
         val date = todayWithTime()
         val auction = Auction("id", "name", date)
         val auctionLens = auctions * FirstBy<Auction> { auc -> auc.auctionId == auction.auctionId }
@@ -435,6 +448,7 @@ class ActionTests{
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test fun acceptRoundTest() = runComposeTest{
+        installSerializers()
         val date = todayWithTime()
         val auction = Auction("id", "name", date)
         val auctionLens = auctions * FirstBy<Auction> { auc -> auc.auctionId == auction.auctionId }
@@ -476,6 +490,7 @@ class ActionTests{
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test fun commentOnRoundTest() = runComposeTest{
+        installSerializers()
         val date = todayWithTime()
         val auction = Auction("id", "name", date)
         val auctionLens = auctions * FirstBy<Auction> { auc -> auc.auctionId == auction.auctionId }
@@ -524,6 +539,7 @@ class ActionTests{
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test fun addBidders() = runComposeTest{
+        installSerializers()
 
         val bidders = AddBidders()
         val addBidders = addBidders(bidders)
@@ -539,6 +555,7 @@ class ActionTests{
 
     @OptIn(ComposeWebExperimentalTestsApi::class)
     @Test fun searchBidders() = runComposeTest{
+        installSerializers()
 
         val bidders = SearchBidderData(
             "",

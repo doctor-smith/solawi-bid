@@ -196,12 +196,17 @@ tasks.withType<Test>().configureEach {
         1
     }
 
+    val slowMo = System.getenv("SLOW_MO")?.toDoubleOrNull() ?: 0.0
+    val headless = System.getenv("HEADLESS")?.toBoolean() ?: true
+
     doFirst {
         logger.lifecycle("========================================")
         logger.lifecycle("Test task: $name")
         logger.lifecycle("PARALLEL_TESTS: $parallelTests")
         logger.lifecycle("NUMBER_OF_WORKERS requested: $numberOfWorkers")
         logger.lifecycle("Gradle maxParallelForks: $maxParallelForks")
+        logger.lifecycle("Slow Motion: $slowMo ms")
+        logger.lifecycle("Headless: $headless")
         logger.lifecycle("========================================")
     }
 }

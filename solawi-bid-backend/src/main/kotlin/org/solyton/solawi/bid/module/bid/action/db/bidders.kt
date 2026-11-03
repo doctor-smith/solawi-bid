@@ -10,6 +10,7 @@ import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.evoleq.uuid.UUID_ZERO
+import org.evoleq.uuid.toUuid
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
@@ -18,53 +19,22 @@ import org.solyton.solawi.bid.module.bid.data.toApiType
 import org.solyton.solawi.bid.module.bid.exception.BidRoundException
 import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.bid.schema.Auction
-import org.solyton.solawi.bid.module.bid.schema.AuctionEntity
 import org.solyton.solawi.bid.module.bid.schema.Auctions
 import org.solyton.solawi.bid.module.bid.schema.Bidder
-import org.solyton.solawi.bid.module.bid.schema.BidderDetailsSolawiTuebingenEntity
-import org.solyton.solawi.bid.module.bid.schema.BidderEntity
-import org.solyton.solawi.bid.module.bid.schema.SearchBidderEntity
 import org.solyton.solawi.bid.module.shares.data.internal.ShareStatus
-import org.solyton.solawi.bid.module.shares.schema.ShareOfferEntity
-import org.solyton.solawi.bid.module.shares.schema.ShareOffersTable
-import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionEntity
-import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionsTable
-import org.solyton.solawi.bid.module.shares.schema.ShareTypeEntity
-import org.solyton.solawi.bid.module.shares.schema.ShareTypesTable
+import org.solyton.solawi.bid.module.shares.schema.*
 import org.solyton.solawi.bid.module.user.exception.OrganizationException
 import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
 import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import java.util.*
-import kotlin.Boolean
-import kotlin.String
-import kotlin.Suppress
-import kotlin.Unit
-import kotlin.collections.List
-import kotlin.collections.contains
-import kotlin.collections.drop
-import kotlin.collections.filter
-import kotlin.collections.first
-import kotlin.collections.firstOrNull
-import kotlin.collections.forEach
-import kotlin.collections.isNotEmpty
-import kotlin.collections.joinToString
-import kotlin.collections.listOf
-import kotlin.collections.map
-import kotlin.collections.mutableListOf
-import kotlin.collections.reduceOrNull
-import kotlin.collections.toList
-import kotlin.collections.toTypedArray
-import kotlin.text.contains
-import kotlin.text.isNotBlank
-import kotlin.text.lowercase
-import kotlin.text.trim
 
 @MathDsl
 val ImportBidders = KlAction{bidders: Result<Contextual<ImportBidders>> -> DbAction {
     database: Database -> bidders bindSuspend  {
         resultTransaction(database) {
             importBidders(auctionId = UUID.fromString(it.data.auctionId), it.data.bidders).toApiType().copy(
-                bidderInfo = getBidderDetails(it.data.bidders).map{det -> det.toBidderInfo()}
+                bidderInfo = getBidderDetails(it.data.bidders).map{det -> det.toBidderInfo()},
+                auctionDetails = getAuctionDetailsById(it.data.auctionId.toUuid())
             )
         }
     } x database

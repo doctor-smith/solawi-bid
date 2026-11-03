@@ -4,9 +4,6 @@ import androidx.compose.runtime.*
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.evoleq.compose.Markup
-import org.evoleq.compose.layout.Property
-import org.evoleq.compose.layout.PropertyStyles
-import org.evoleq.compose.layout.ReadOnlyProperty
 import org.evoleq.math.round
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.storage.Storage
@@ -24,7 +21,6 @@ import org.jetbrains.letsPlot.scale.scaleYContinuous
 import org.solyton.solawi.bid.module.bid.data.BidApplication
 import org.solyton.solawi.bid.module.bid.data.bidround.Round
 import org.solyton.solawi.bid.module.bid.data.bidround.bidRoundEvaluation
-import org.solyton.solawi.bid.module.separator.LineSeparator
 import org.solyton.solawi.bid.module.style.wrap.Wrap
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLParagraphElement
@@ -135,6 +131,7 @@ fun BidRoundEvaluation(
         }
     }
     LaunchedEffect(evaluation, showStandardBidsTotal) {
+        if(!config.showEvaluationDiagrams) return@LaunchedEffect
         val totalBids = evaluation.weightedBids.map { (it.weight * it.bid).round(2) }
         updateHistogram(
             totalBids,
@@ -144,6 +141,7 @@ fun BidRoundEvaluation(
         )
     }
     LaunchedEffect(evaluation, showStandardBidsPerShare) {
+        if(!config.showEvaluationDiagrams) return@LaunchedEffect
         val totalBidsPerShare = evaluation.weightedBids.map { it.bid }
         updateHistogram(
             totalBidsPerShare,
@@ -153,6 +151,7 @@ fun BidRoundEvaluation(
         )
     }
     LaunchedEffect(evaluation) {
+        if(!config.showEvaluationDiagrams) return@LaunchedEffect
         val totalSharesAmount = evaluation.weightedBids.map { it.weight.toDouble() }
         updateHistogram(
             totalSharesAmount,
@@ -181,6 +180,12 @@ fun BidRoundEvaluation(
         }
         id("dialogContainer")
     }) mainDiv@{
+        EvaluationSummary(
+            targetAmount = evaluation.auctionDetails.targetAmount ?: 0.0,
+            achievedAmount = evaluation.totalSumOfWeightedBids,
+            totalShares = evaluation.totalNumberOfShares
+        )
+        /*
         Wrap {
             H4 { Text(headingText) }
             ReadOnlyProperty(Property("Zielsumme", evaluation.auctionDetails.targetAmount))
@@ -212,6 +217,8 @@ fun BidRoundEvaluation(
             )
             P { Text("Gesamtanzahl Anteile: ${evaluation.totalNumberOfShares}") }
         }
+
+         */
         //todo:dev inject value via auction configuration.
         // Idea: 3 states: SHOW_ALWAYS, SHOW_NEVER, SHOW_ON_DEMAND (-> Checkbox)
 
@@ -332,3 +339,119 @@ fun BidRoundEvaluation(
     }
 }
 
+@Composable
+fun EvaluationSummary(
+    targetAmount: Double,
+    achievedAmount: Double,
+    totalShares: Int
+) {
+    val difference = (achievedAmount - targetAmount).round(2)
+    val targetReached = difference >= 0
+
+    val percentage = if (targetAmount != 0.0) {
+        (difference / targetAmount * 100).roundToInt()
+    } else {
+        0
+    }
+
+    Div({
+        style {
+            property("max-width", "520px")
+            width(100.percent)
+            property("box-sizing", "border-box")
+            property("margin", "0 auto")
+
+            padding(24.px)
+            borderRadius(12.px)
+            backgroundColor(Color("#F8FBF8"))
+        }
+    }) {
+
+        H3({
+            style {
+                marginTop(0.px)
+                marginBottom(20.px)
+                color(
+                    if (targetReached) Color("#438A63")
+                    else Color("#C0392B")
+                )
+            }
+        }) {
+            Text(
+                if (targetReached)
+                    "✓ Ziel erreicht!"
+                else
+                    "Ziel nicht erreicht"
+            )
+        }
+
+        EvaluationRow("Zielsumme", "$targetAmount €")
+        EvaluationRow("Erreichte Summe", "$achievedAmount €")
+
+        Hr({
+            style {
+                margin(16.px, 0.px)
+                border(0.px)
+                border(1.px, LineStyle.Solid, Color("#E2E8E4"))
+            }
+        })
+
+        EvaluationRow(
+            "Differenz",
+            "${if (difference >= 0) "+" else ""}$difference € ($percentage %)",
+            highlighted = true,
+            positive = targetReached
+        )
+
+        EvaluationRow(
+            "Gesamtanzahl Anteile",
+            "$totalShares"
+        )
+    }
+}
+
+@Composable
+private fun EvaluationRow(
+    label: String,
+    value: String,
+    highlighted: Boolean = false,
+    positive: Boolean = true
+) {
+    Div({
+        style {
+            display(DisplayStyle.Flex)
+            justifyContent(JustifyContent.SpaceBetween)
+            alignItems(AlignItems.Center)
+            gap(20.px)
+            padding(10.px, 0.px)
+        }
+    }) {
+
+        Span({
+            style {
+                color(Color("#718078"))
+                fontSize(14.px)
+            }
+        }) {
+            Text(label)
+        }
+
+        Span({
+            style {
+                fontWeight(if (highlighted) "700" else "600")
+                fontSize(14.px)
+
+                color(
+                    if (highlighted) {
+                        if (positive) Color("#438A63")
+                        else Color("#C0392B")
+                    } else {
+                        Color("#243B2C")
+                    }
+                )
+            }
+        }) {
+            Text(value)
+        }
+    }
+}

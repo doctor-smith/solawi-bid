@@ -1,17 +1,16 @@
 package org.solyton.solawi.bid.module.bid.component.form
 
 import androidx.compose.runtime.*
+import kotlinx.datetime.LocalDateTime
 import org.evoleq.compose.Markup
 import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.date.format
-import org.evoleq.compose.date.parse
 import org.evoleq.compose.form.label.Label
 import org.evoleq.compose.modal.Modal
 import org.evoleq.compose.modal.ModalData
 import org.evoleq.compose.modal.ModalType
 import org.evoleq.compose.modal.Modals
 import org.evoleq.compose.style.data.device.DeviceType
-import org.evoleq.kotlinx.date.toDateTime
 import org.evoleq.language.Lang
 import org.evoleq.language.Locale
 import org.evoleq.language.component
@@ -34,7 +33,6 @@ import org.solyton.solawi.bid.module.bid.component.styles.auctionModalStyles
 import org.solyton.solawi.bid.module.bid.data.auction.Auction
 import org.solyton.solawi.bid.module.bid.data.auction.contextId
 import org.solyton.solawi.bid.module.bid.data.auction.date
-import org.solyton.solawi.bid.module.bid.data.auction.name
 import org.solyton.solawi.bid.module.style.form.*
 import org.solyton.solawi.bid.module.user.data.organization.Organization
 import org.w3c.dom.HTMLElement
@@ -112,7 +110,7 @@ fun AuctionModal(
                 style { textInputDesktopStyle() }
                 onInput {
                     nameState = it.value
-                    (auction * name).write(it.value)
+                    auction.write(auction.read().copy(name = it.value))
                 }
             }
         }
@@ -127,7 +125,7 @@ fun AuctionModal(
                 style { dateInputDesktopStyle() }
                 onInput {
                     dateStringState = it.value
-                    (auction * date).write(it.value.parse(Locale.Iso).toDateTime())
+                    auction.write(auction.read().copy(date = LocalDateTime.parse(dateStringState)))
                 }
             }
         }
@@ -156,11 +154,12 @@ fun AuctionModal(
                         "No context found for application ${applicationId.emit()} and organization ${organization.organizationId}"
                     }.contextId
                     auctionContextIdState = applicationContextId
-                    (auction * contextId).write(applicationContextId)
+                    auction.write(auction.read().copy(contextId = applicationContextId))
+                }
             }
         }
     }
-}
+
 
 @Markup
 fun Storage<Modals<Int>>.showAuctionModal(
