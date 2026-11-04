@@ -1,10 +1,11 @@
 package org.solyton.solawi.bid.module.bid.component.form
 
 import androidx.compose.runtime.*
-import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.atTime
 import org.evoleq.compose.Markup
 import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.date.format
+import org.evoleq.compose.date.parse
 import org.evoleq.compose.form.label.Label
 import org.evoleq.compose.modal.Modal
 import org.evoleq.compose.modal.ModalData
@@ -22,6 +23,7 @@ import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.nextId
 import org.evoleq.optics.storage.put
 import org.evoleq.optics.transform.times
+import org.evoleq.uuid.NIL_UUID
 import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.ElementScope
@@ -37,7 +39,7 @@ import org.solyton.solawi.bid.module.style.form.*
 import org.solyton.solawi.bid.module.user.data.organization.Organization
 import org.w3c.dom.HTMLElement
 
-const val DEFAULT_AUCTION_ID = "DEFAULT_AUCTION_ID"
+const val DEFAULT_AUCTION_ID = NIL_UUID
 
 data class ApplicationContextKey( val applicationId: String, val contextId: String)
 data class ApplicationOrganizationKey( val applicationId: String, val organizationId: String)
@@ -67,6 +69,7 @@ fun AuctionModal(
         cancel()
     },
     texts = texts,
+    dataId = "create-auction",
     styles = auctionModalStyles(device),
 ) {
     // input texts
@@ -125,7 +128,8 @@ fun AuctionModal(
                 style { dateInputDesktopStyle() }
                 onInput {
                     dateStringState = it.value
-                    auction.write(auction.read().copy(date = LocalDateTime.parse(dateStringState)))
+                    // TODO In future release, we will need to parse the time as well
+                    auction.write(auction.read().copy(date = it.value.parse(Locale.Iso).atTime(0,0)))
                 }
             }
         }

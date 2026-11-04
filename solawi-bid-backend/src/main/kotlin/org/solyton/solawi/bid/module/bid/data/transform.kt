@@ -1,5 +1,6 @@
 package org.solyton.solawi.bid.module.bid.data
 
+import org.evoleq.exposedx.joda.forgetTime
 import org.evoleq.exposedx.joda.toKotlinxWithZone
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.bid.schema.AcceptedRound
@@ -18,7 +19,7 @@ fun AuctionEntity.toApiType(): Auction = Auction(
     id = id.value.toString(),
     name = name,
     contextId = context.id.value.toString(),
-    date = date.toKotlinxWithZone(),
+    date = date.toKotlinxWithZone().forgetTime(),
     rounds = try{ rounds.map {
         it.toApiType()
     }} catch(e:Exception){

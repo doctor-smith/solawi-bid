@@ -11,6 +11,7 @@ import kotlinx.serialization.json.Json
 import org.evoleq.ktorx.api.Api
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.serializers
+import org.evoleq.language.Locale
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.solyton.solawi.bid.application.pipeline.installSerializers
 import java.nio.file.Files
@@ -18,6 +19,16 @@ import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.reflect.KClass
+
+fun Page.log(message: String) = evaluate("(m)=>console.log(m)", message)
+
+fun Page.warn(message: String) = evaluate("(m)=>console.warn(m)", message)
+
+fun Page.debug(message: String) = evaluate("(m)=>console.debug(m)", message)
+
+fun Page.info(message: String) = evaluate("(m)=>console.info(m)", message)
+
+fun Page.error(message: String) = evaluate("(m)=>console.error(m)", message)
 
 fun Page.getByDataId(testId: String): Locator {
     return locator("[data-id='$testId']")
@@ -277,5 +288,19 @@ inline fun <reified T> Response.decodeBodyTo(
     assertTrue(result is Result.Success)
     require(result is Result.Success<*>)
     return result.data as T
+}
+
+
+fun kotlinx.datetime.LocalDateTime.format(locale: Locale): String = when(locale) {
+    Locale.De -> "${dayOfMonth.toString().padStart(2, '0')}." +
+            "${monthNumber.toString().padStart(2, '0')}.$year"
+
+    Locale.En -> "$year/" +
+            "${monthNumber.toString().padStart(2, '0')}/" +
+            "${dayOfMonth.toString().padStart(2, '0')}"
+
+    Locale.Iso -> "$year-" +
+            "${monthNumber.toString().padStart(2, '0')}-" +
+            "${dayOfMonth.toString().padStart(2, '0')}"
 }
 

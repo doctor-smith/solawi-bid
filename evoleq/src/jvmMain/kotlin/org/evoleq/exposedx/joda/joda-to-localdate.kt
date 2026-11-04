@@ -1,18 +1,12 @@
 package org.evoleq.exposedx.joda
 
-import kotlinx.datetime.LocalDateTime as KotlinXLocalDateTime
-import kotlinx.datetime.LocalDate as KotlinXLocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toJavaInstant
-import kotlinx.datetime.toKotlinInstant
-import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.*
 import org.evoleq.kotlinx.date.toDateTime
-import org.joda.time.LocalDate as JodaLocalDate
-import org.joda.time.LocalDateTime as JodaLocalDateTime
-
-import org.joda.time.DateTime as JodaDateTime
 import org.joda.time.DateTimeZone
+import kotlinx.datetime.LocalDate as KotlinXLocalDate
+import kotlinx.datetime.LocalDateTime as KotlinXLocalDateTime
+import org.joda.time.DateTime as JodaDateTime
+import org.joda.time.LocalDate as JodaLocalDate
 
 fun KotlinXLocalDateTime.toJoda(
     zone: TimeZone = TimeZone.UTC
@@ -31,6 +25,10 @@ fun JodaDateTime.toKotlinxWithZone(): KotlinXLocalDateTime {
     val instant = toInstant().toDate().toInstant().toKotlinInstant()
     val zone = TimeZone.of(zone.id)
     return instant.toLocalDateTime(zone)
+}
+
+fun KotlinXLocalDateTime.forgetTime(): KotlinXLocalDateTime {
+    return date.atTime(0,0)
 }
 
 fun KotlinXLocalDate.toJoda(

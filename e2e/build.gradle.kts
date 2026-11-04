@@ -25,6 +25,9 @@ dependencies {
     // Backend code
     testImplementation(project(":solawi-bid-backend"))
 
+    // datetime
+    testImplementation(libs.kotlinx.datetime)
+
     // Serialization
     testImplementation(libs.kotlinx.serialization.json)
     testImplementation(libs.ktor.client.serialization)

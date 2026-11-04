@@ -24,8 +24,24 @@ abstract class TestPage(
     /**
      *
      */
-    fun load(): Response? = page.navigate("$baseUrl/$url")
+    fun load(vararg params: Pair<String, String>): Response? = page.navigate("$baseUrl/${url.replace(*params)})}}")
+
+
+    fun String.replace(vararg params: Pair<String, String>): String = url.replace(
+        mapOf(*params)
+    )
+
+    fun String.replace(params: Map<String, String>): String = url.split("/")
+        .filter { it.isNotBlank() }.joinToString("/") {
+            when {
+                it.startsWith(":") -> requireNotNull(params[it.removePrefix(":")]){
+                    "route parameter $it is not set"
+                }
+                else -> it
+            }
+        }
 }
+
 
 /**
  * Represents an abstract class that serves as a base component for interaction with a specific UI element
@@ -33,7 +49,7 @@ abstract class TestPage(
  *
  * @property locator The locator used to identify and interact with the component.
  */
-abstract class TestComponent(internal open val locator: Locator){
+abstract class TestComponent(open val locator: Locator){
 
     fun click() = locator.click()
 
@@ -118,6 +134,10 @@ abstract class TestDropdown(
 
     companion object Builder {
          val option: Locator.(String)-> Pair<String, ()-> Locator> = {item->  item x { getByPartialDataId(".option.$item") }}
+
+        val options: Locator.(Collection<String>)-> Map<String, ()-> Locator> = {
+            options-> mapOf(*options.map { option(it) }.toTypedArray())
+        }
     }
 }
 

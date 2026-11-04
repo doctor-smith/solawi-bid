@@ -154,7 +154,7 @@ fun DashboardPage(storage: Storage<Application>) {
 
             // auctionsCard
             When(canAccessAuctions) {
-                Card("page.dashboard.auctions-card",{
+                Card("page.dashboard.card.auctions",{
                     navigate("/app/auctions")
                 }) {
                     Wrap { H3 { Text("Auktionen") } }
