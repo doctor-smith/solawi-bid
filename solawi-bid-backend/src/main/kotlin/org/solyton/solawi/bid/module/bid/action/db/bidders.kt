@@ -10,7 +10,6 @@ import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.evoleq.uuid.UUID_ZERO
-import org.evoleq.uuid.toUuid
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
@@ -32,9 +31,11 @@ import java.util.*
 val ImportBidders = KlAction{bidders: Result<Contextual<ImportBidders>> -> DbAction {
     database: Database -> bidders bindSuspend  {
         resultTransaction(database) {
-            importBidders(auctionId = UUID.fromString(it.data.auctionId), it.data.bidders).toApiType().copy(
+            val auction = importBidders(auctionId = UUID.fromString(it.data.auctionId), it.data.bidders)
+            val auctionDetails = getAuctionDetails(auction)
+            auction.toApiType().copy(
                 bidderInfo = getBidderDetails(it.data.bidders).map{det -> det.toBidderInfo()},
-                auctionDetails = getAuctionDetailsById(it.data.auctionId.toUuid())
+                auctionDetails = auctionDetails
             )
         }
     } x database
@@ -75,10 +76,12 @@ val ImportBiddersFromOrganization = KlAction{result: Result<Contextual<ImportBid
             }
 
 
-            importBidders(
+            val auction = importBidders(
                 auctionId = auctionId,
                 newBidders = bidders
-             ).toApiType()
+             )
+            val auctionDetails = getAuctionDetails(auction)
+            auction.toApiType().copy(auctionDetails = auctionDetails)
         }
     } x database
 }}

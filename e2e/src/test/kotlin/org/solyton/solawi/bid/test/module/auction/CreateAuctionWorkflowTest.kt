@@ -4,16 +4,26 @@ import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
+import kotlinx.datetime.atTime
+import org.evoleq.kotlinx.date.plusDays
+import org.evoleq.kotlinx.date.today
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.module.authentication.service.generateSecurePassword
+import org.solyton.solawi.bid.module.bid.data.api.AuctionDetails
 import org.solyton.solawi.bid.module.values.Password
 import org.solyton.solawi.bid.module.values.Username
+import org.solyton.solawi.bid.pageobjects.application.dashboard.DashboardPage
+import org.solyton.solawi.bid.pageobjects.module.auction.AuctionsPage
 import org.solyton.solawi.bid.pageobjects.module.user.OrganizationManagementPage
 import org.solyton.solawi.bid.pageobjects.module.user.UserManagementPage
 import org.solyton.solawi.bid.pageobjects.shared.NavBar
+import org.solyton.solawi.bid.workflow.auction.CreateAuctionInput
+import org.solyton.solawi.bid.workflow.auction.CreateAuctionWorkflow
+import org.solyton.solawi.bid.workflow.auction.UpdateAuctionFromAuctionsPageWorkflow
+import org.solyton.solawi.bid.workflow.auction.UpdateAuctionInput
 import org.solyton.solawi.bid.workflow.organization.*
 import org.solyton.solawi.bid.workflow.user.UserLoginInput
 import org.solyton.solawi.bid.workflow.user.UserLoginWorkflow
@@ -111,6 +121,53 @@ class CreateAuctionWorkflowTest {
                 assertThat(membersCard.memberRow(memberUsername)).isVisible()
 
 
+                NavBar(page).moveToDashboard()
+
+
+                // val dashboard = DashboardPage(page)
+                // dashboard.load()
+                val auctionsCard = DashboardPage.AuctionsCard(page)
+                assertThat(auctionsCard).isVisible()
+                auctionsCard.click()
+
+                val auctionName = "Test Auction - $suffix"
+                val auctionDate = today().plusDays(10).atTime(0, 0)
+                val targetAmount = 100_000.0
+                val benchmark = 100.0
+                val minimalBid = 0.0
+                val solidarityContribution = 10.0
+
+                val auction = run(CreateAuctionWorkflow(this)) withInput CreateAuctionInput(
+                    "Test Auction",
+                    auctionDate,
+                    organizationName
+                )
+
+                // Now we have the auction. In order to set the type, we have to configure the auction
+                // val configuredAuction =
+                 run(UpdateAuctionFromAuctionsPageWorkflow(this)) withInput UpdateAuctionInput(
+                    auction.id,
+                    auctionName,
+                    auctionDate,
+                    organizationName,
+                    AuctionDetails.SolawiTuebingen(
+                        minimalBid,
+                        benchmark,
+                        targetAmount,
+                        solidarityContribution
+                    )
+                )
+
+                // Further assertions:
+                // Deletion is enabled
+                // Run auction is enabled
+                // ...
+                with(AuctionsPage(page).list()) {
+                    val item = item(auction.id)
+                    assertThat(item.updateButton()).isEnabled()
+                    assertThat(item.deleteButton()).isEnabled()
+                    assertThat(item.runAuctionButton()).isEnabled()
+                }
             }
         }
     }

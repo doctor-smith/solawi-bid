@@ -33,6 +33,7 @@ fun OrganizationsDropdown(
         selected = organizationsMap.nameOfSelectedOrganization(selectedOrganization?.organizationId?:"")?: "Select",
         closeOnSelect = true,
         styles = dropdownStyles,
+        dataId = "organization-dropdown",
         iconContent =  { open ->
             SimpleUpDown(open)
         },

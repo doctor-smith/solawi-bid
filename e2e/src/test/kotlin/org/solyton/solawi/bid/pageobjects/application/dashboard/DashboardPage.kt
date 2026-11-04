@@ -45,6 +45,12 @@ class DashboardPage(
         locator = page.getByDataId("page.dashboard.card.shares")
     )
 
+    class AuctionsCard(
+        page: Page
+    ): Card(
+        locator = page.getByDataId("page.dashboard.card.auctions")
+    )
+
     fun privateDataCard(): PrivateDataCard =
         PrivateDataCard(page)
 

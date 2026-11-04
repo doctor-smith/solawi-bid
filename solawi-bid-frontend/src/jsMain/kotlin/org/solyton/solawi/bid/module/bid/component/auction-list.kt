@@ -3,6 +3,7 @@ package org.solyton.solawi.bid.module.bid.component
 import androidx.compose.runtime.*
 import kotlinx.coroutines.DelicateCoroutinesApi
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.date.format
 import org.evoleq.compose.modal.Modals
 import org.evoleq.compose.routing.navigate
@@ -59,7 +60,10 @@ fun AuctionList(
     styles: AuctionListStyles = AuctionListStyles(),
     dispatch: (Action<BidApplication, *, *>) -> Unit
 ) = Div(
-    attrs = {style{styles.wrapper(this)}}
+    attrs = {
+        dataId("auctions-page.list")
+        style{styles.wrapper(this)}
+    }
 ) {
     AuctionListHeader(styles)
     // LineSeparator(headerSeparatorStyles)
@@ -122,6 +126,7 @@ fun AuctionListItem(
     dispatchDelete: ()->Unit,
     dispatchConfiguration: ()->Unit
 ) = Div(attrs = {
+    dataId("auctions-page.list.item.${auction.read().auctionId}")
     style {
         styles.listItemWrapper(this)
         backgroundColor(when{
@@ -171,7 +176,8 @@ fun AuctionListItem(
             actionButtonBgColor,
             buttons * subComp("edit") * tooltip,
             device,
-            (auction * auctionAccepted).emit() || user.emit().isNotGranted(BidRight.Auction.update),
+            dataId = "edit-button",
+            isDisabled = (auction * auctionAccepted).emit() || user.emit().isNotGranted(BidRight.Auction.update),
         ) {
             // open edit dialog
             (modals).showUpdateAuctionModal(
@@ -193,7 +199,8 @@ fun AuctionListItem(
             buttons * subComp("run") * tooltip,
             device,
             // todo:permissions
-            false,
+            isDisabled = false,
+            dataId = "run-auction-button",
         ) {
             navigate("/app/auctions/${auction.read().auctionId}")
         }
@@ -204,7 +211,8 @@ fun AuctionListItem(
             actionButtonBgColor,
             buttons * subComp("delete") * tooltip,
             device,
-            (auction * auctionAccepted).emit() || user.emit().isNotGranted(BidRight.Auction.delete)
+            isDisabled = (auction * auctionAccepted).emit() || user.emit().isNotGranted(BidRight.Auction.delete),
+            dataId = "delete-button",
         ) {
             dispatchDelete()
         }

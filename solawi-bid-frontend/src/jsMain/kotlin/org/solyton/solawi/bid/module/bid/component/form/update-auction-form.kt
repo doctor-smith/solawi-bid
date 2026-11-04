@@ -1,7 +1,9 @@
 package org.solyton.solawi.bid.module.bid.component.form
 
 import androidx.compose.runtime.*
+import kotlinx.datetime.atTime
 import org.evoleq.compose.Markup
+import org.evoleq.compose.attribute.dataId
 import org.evoleq.compose.date.format
 import org.evoleq.compose.date.parse
 import org.evoleq.compose.form.label.Label
@@ -10,7 +12,6 @@ import org.evoleq.compose.modal.ModalData
 import org.evoleq.compose.modal.ModalType
 import org.evoleq.compose.modal.Modals
 import org.evoleq.compose.style.data.device.DeviceType
-import org.evoleq.kotlinx.date.toDateTime
 import org.evoleq.language.Lang
 import org.evoleq.language.Locale
 import org.evoleq.language.component
@@ -64,6 +65,7 @@ fun UpdateAuctionModal(
     },
     texts = texts,
     styles = auctionModalStyles(device),
+    dataId = "update-auction"
 ) {
     // input texts
     val inputs: Lang.Block = texts.component("inputs")
@@ -98,6 +100,7 @@ fun UpdateAuctionModal(
             Label(inputs["title"], id = "name" , labelStyle = formLabelDesktopStyle)
             TextInput(nameState) {
                 id("name")
+                dataId("update-auction.form.input.name")
                 style { textInputDesktopStyle() }
                 onInput {
                     nameState = it.value
@@ -110,11 +113,13 @@ fun UpdateAuctionModal(
             Label(inputs["date"], id = "date" , labelStyle = formLabelDesktopStyle)
             Input(InputType.Date) {
                 id("date")
+                dataId("update-auction.form.input.date")
                 value(dateStringState)
                 style { dateInputDesktopStyle() }
                 onInput {
                     dateStringState = it.value
-                    (auction * date).write(it.value.parse(Locale.Iso).toDateTime())
+                    // TODO In future release, we will need to parse the time as well
+                    (auction * date).write(it.value.parse(Locale.Iso).atTime(0,0))
                 }
             }
         }
@@ -123,6 +128,7 @@ fun UpdateAuctionModal(
             Label(inputs["targetAmount"], id = "targetAmount" , labelStyle = formLabelDesktopStyle)
             TextInput(onNullEmpty((auction * auctionDetails * targetAmount).read()){it}) {
                 id("targetAmount")
+                dataId("update-auction.form.input.target-amount")
                 style { numberInputDesktopStyle() }
                 onInput {
                     onIsDouble(it.value) {
@@ -135,6 +141,7 @@ fun UpdateAuctionModal(
             Label(inputs["benchmark"], id = "benchmark" , labelStyle = formLabelDesktopStyle)
             TextInput (onNullEmpty((auction * auctionDetails * benchmark).read()){it}) {
                 id("benchmark")
+                dataId("update-auction.form.input.benchmark")
                 style { numberInputDesktopStyle() }
                 onInput {
                     onIsDouble(it.value) {
@@ -149,6 +156,7 @@ fun UpdateAuctionModal(
             Label(inputs["solidarityContribution"], id = "solidarityContribution" , labelStyle = formLabelDesktopStyle)
             TextInput(onNullEmpty((auction * auctionDetails * solidarityContribution).read()){it}) {
                 id("solidarityContribution")
+                dataId("update-auction.form.input.solidarity-contribution")
                 style { numberInputDesktopStyle() }
                 onInput {
                     onIsDouble(it.value) {
@@ -163,6 +171,7 @@ fun UpdateAuctionModal(
             Label("Minimal Bid", id = "minimalBid" , labelStyle = formLabelDesktopStyle)
             TextInput(onNullEmpty((auction * auctionDetails * minimalBid).read()){it}) {
                 id("minimalBid")
+                dataId("update-auction.form.input.minimal-bid")
                 style { numberInputDesktopStyle() }
                 onInput {
                     onIsDouble(it.value) {
@@ -182,7 +191,6 @@ fun UpdateAuctionModal(
                         val organizationId = applicationTimesContextToOrganizationMap[
                             ApplicationContextKey(applicationId.emit(),this@contextId)
                         ]?.organizationId
-                        println("organizationId: $organizationId")
                         organizationsMap[organizationId]
                     }
                 },
