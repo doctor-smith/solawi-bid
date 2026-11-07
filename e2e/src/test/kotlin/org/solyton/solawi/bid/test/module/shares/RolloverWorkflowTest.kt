@@ -80,6 +80,7 @@ class RolloverWorkflowTest {
         // 2. Perform workflow as the isolated test user
         withUser<Unit>(testUser on browser) {
             withFailureDiagnostics("$reportDirectory/user-actions") {
+                dismissStrayErrorDialogIfPresent(true, "$reportDirectory/user-actions/dismissed-errors")
                 val organizationName = "e2e-shares-org-d1-$suffix"
                 val shareTypeName = "e2e-share-type-d1-$suffix"
                 val shareTypeKey = "key-d1-$suffix"

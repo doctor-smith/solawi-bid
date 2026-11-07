@@ -85,6 +85,7 @@ class AddMemberToOrganizationWorkflowTest {
         // 2. Perform actions as Provider: Create organization and add member
         withUser(providerUser on browser) {
             withFailureDiagnostics("$reportDirectory/user-actions") {
+                dismissStrayErrorDialogIfPresent(true, "$reportDirectory/user-actions/dismissed-errors")
                 run(UserLoginWorkflow(this)) withInput UserLoginInput()
 
                 val organizationName = "e2e-add-member-org-$suffix"

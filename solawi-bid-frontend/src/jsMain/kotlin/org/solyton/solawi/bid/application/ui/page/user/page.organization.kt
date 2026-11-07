@@ -78,6 +78,7 @@ import org.solyton.solawi.bid.module.banking.data.application.BankingApplication
 import org.solyton.solawi.bid.module.banking.data.application.fiscalYears
 import org.solyton.solawi.bid.module.banking.data.bankaccount.BankAccount
 import org.solyton.solawi.bid.module.banking.data.mappings.BankingMappings
+import org.solyton.solawi.bid.module.banking.permissions.BankAccounts
 import org.solyton.solawi.bid.module.control.button.*
 import org.solyton.solawi.bid.module.country.i18n.CountryLangComponent
 import org.solyton.solawi.bid.module.distribution.action.READ_DISTRIBUTION_POINTS
@@ -131,6 +132,7 @@ import org.solyton.solawi.bid.module.user.data.member.Member
 import org.solyton.solawi.bid.module.user.data.organization.members
 import org.solyton.solawi.bid.module.user.data.organization.name
 import org.solyton.solawi.bid.module.user.data.profile.UserProfile
+import org.solyton.solawi.bid.module.user.data.reader.isGranted
 import org.solyton.solawi.bid.module.user.data.user.organizations
 import org.solyton.solawi.bid.module.user.data.user.username
 import org.solyton.solawi.bid.module.user.i18n.Component
@@ -259,6 +261,9 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
         val usesDistributionManagement = connectedApplications.read().any { it.name in setOf("DISTRIBUTION","AUCTIONS", "SHARE_MANAGEMENT") }
         // val usesAuctions = connectedApplications.read().any { it.name == "AUCTIONS" }
 
+        val hasPermissionToReadBankAccounts = usesBankingApplication && (userModuleStorage * isGranted(BankAccounts.Rights.READ_BANK_ACCOUNTS, applicationContextMap.read()["BANKING"]!!)).read()
+
+
         LaunchedEffectOnSource(Read(userModuleStorage * managedUsers) map {users -> users.map{it.username}} ) {
             applicationStorage.runProcesses(scope, *basicDataActions())
         }
@@ -271,7 +276,10 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
                     organizationId,
                     usesShareManagement,
                     usesDistributionManagement,
-                    usesBankingApplication,
+                    BankingPermissions(
+                        usesBankingApplication,
+                        hasPermissionToReadBankAccounts
+                    )
                 )
             )
         }
@@ -917,6 +925,11 @@ fun basicDataActions(
     ),
 )
 
+data class BankingPermissions(
+    val usesBankingApplication: Boolean = false,
+    val hasPermissionToReadBankAccounts: Boolean = false
+)
+
 /**
  * Wrap actions to load specific data based on which applications are used
  */
@@ -924,17 +937,17 @@ fun conditionalActions(
     organizationId: String,
     usesShareManagement: Boolean = false,
     usesDistributionManagement: Boolean = false,
-    usesBankingApplication: Boolean = false
+    bankingPermissions: BankingPermissions
 ) = arrayOf(
     ActionEnvelope(
         bankingApplicationIso * readBankAccounts(LegalEntityId(organizationId)),
         READ_BANK_ACCOUNTS,
-        run = usesBankingApplication || usesShareManagement
+        run = (bankingPermissions.usesBankingApplication || usesShareManagement) && bankingPermissions.hasPermissionToReadBankAccounts
     ),
     ActionEnvelope(
         bankingApplicationIso * readFiscalYears(organizationId),
         READ_FISCAL_YEARS,
-        run = usesBankingApplication || usesShareManagement
+        run = bankingPermissions.usesBankingApplication || usesShareManagement
     ),
     ActionEnvelope(
         shareManagementIso * readShareOffers(organizationId),

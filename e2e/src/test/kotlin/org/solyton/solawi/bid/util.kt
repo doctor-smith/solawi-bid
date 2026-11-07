@@ -13,6 +13,7 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.serializers
 import org.evoleq.language.Locale
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.solyton.solawi.bid.TestConfig.SCREENSHOT_ROOT_DIR
 import org.solyton.solawi.bid.application.pipeline.installSerializers
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -87,7 +88,7 @@ fun Page.inputText(selector: String, value: String): Page = apply{
  * top of each other. If any show up, dismiss all of them so the page below becomes
  * interactable again, just like a real user clicking them away one by one would.
  */
-fun Page.dismissStrayErrorDialogIfPresent(dismiss: Boolean = true) {
+fun Page.dismissStrayErrorDialogIfPresent(dismiss: Boolean = true, screenshot: String? = null) {
     if (!dismiss) return
     val errorOk = getByDataId("null.modal.submit-button")
     while (true) {
@@ -95,6 +96,7 @@ fun Page.dismissStrayErrorDialogIfPresent(dismiss: Boolean = true) {
             errorOk.first().waitFor(
                 Locator.WaitForOptions().setTimeout(3000.0).setState(WaitForSelectorState.VISIBLE)
             )
+            if(screenshot != null && errorOk.isVisible) shot("$SCREENSHOT_ROOT_DIR/${screenshot}/dismissed-${System.currentTimeMillis()}")
             errorOk.first().click()
         } catch (e: TimeoutError) {
             // No (more) stray error dialogs - nothing left to dismiss.
@@ -103,8 +105,8 @@ fun Page.dismissStrayErrorDialogIfPresent(dismiss: Boolean = true) {
     }
 }
 
-fun TestUserContext.dismissStrayErrorDialogIfPresent(dismiss: Boolean = true) {
-    page.dismissStrayErrorDialogIfPresent(dismiss)
+fun TestUserContext.dismissStrayErrorDialogIfPresent(dismiss: Boolean = true, screenshot: String? = null) {
+    page.dismissStrayErrorDialogIfPresent(dismiss, screenshot)
 }
 
 /**
@@ -184,7 +186,7 @@ fun <T> Page.withFailureDiagnostics(testCase: String? = null, block: () -> T): T
         return block()
     } catch (e: Throwable) {
         try {
-            val dir = Paths.get("build/reports/tests/screenshots${testCase?.let{"/$testCase"}}")
+            val dir = Paths.get("$SCREENSHOT_ROOT_DIR${testCase?.let{"/$testCase"}}")
             Files.createDirectories(dir)
             screenshot(Page.ScreenshotOptions().setPath(dir.resolve("failure.png")).setFullPage(true))
             Files.writeString(dir.resolve("failure.html"), content())

@@ -31,4 +31,6 @@ object TestConfig {
      * without requiring code changes, making it convenient for testing purposes.
      */
     val SLOW_MO: Double = System.getenv("SLOW_MO")?.toDouble() ?: 0.0
+
+    val SCREENSHOT_ROOT_DIR = "build/reports/tests/screenshots"
 }

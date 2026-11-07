@@ -82,6 +82,7 @@ class ImportShareSubscriptionsDataWorkflowTest {
         // 2. Perform workflow as the test user
         withUser<Unit>(testUser on browser) {
             withFailureDiagnostics("$reportDirectory/user-actions") {
+                dismissStrayErrorDialogIfPresent(true, "$reportDirectory/user-actions/dismissed-errors")
                 val organizationName = "e2e-import-org-$suffix"
                 val shareTypeName = "e2e-import-share-type-$suffix"
                 val shareTypeKey = "imp-$suffix"

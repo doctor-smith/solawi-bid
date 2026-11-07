@@ -81,6 +81,7 @@ class FailedAuthorizationWorkflowTest {
         // 2. Perform workflow as the isolated test user
         withUser<Unit>(testUser on browser) {
             withFailureDiagnostics("$reportDirectory/user-actions") {
+                dismissStrayErrorDialogIfPresent(true, "$reportDirectory/user-actions/dismissed-errors")
                 val organizationName = "e2e-shares-org-b3-$suffix"
                 val shareTypeName = "e2e-share-type-b3-$suffix"
                 val shareTypeKey = "key-b3-$suffix"
