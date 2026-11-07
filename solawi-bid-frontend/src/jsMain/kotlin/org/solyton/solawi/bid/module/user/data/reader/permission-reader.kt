@@ -9,7 +9,10 @@ import org.solyton.solawi.bid.module.permissions.data.Context
 import org.solyton.solawi.bid.module.user.data.Application
 
 
-fun isGranted(right: StringValueWithDescription, contextId: String): Reader<Application, Boolean> = Reader{
+fun isGranted(right: StringValueWithDescription, contextId: String): Reader<Application, Boolean> =
+    isGranted(right.value, contextId)
+    /*
+    Reader{
     application -> when(val context: Context? = application.user.permissions.contexts.firstOrNull { it.contextId == contextId }) {
         null -> false
         else -> context.roles.asSequence()
@@ -17,6 +20,21 @@ fun isGranted(right: StringValueWithDescription, contextId: String): Reader<Appl
             .distinctBy { it.rightName }
             .map { it.rightName }
             .contains(right.value)
+    }
+
+
+}
+
+     */
+
+fun isGranted(right: String, contextId: String): Reader<Application, Boolean> = Reader{
+    application -> when(val context: Context? = application.user.permissions.contexts.firstOrNull { it.contextId == contextId }) {
+        null -> false
+        else -> context.roles.asSequence()
+            .flatMap { it.rights }
+            .distinctBy { it.rightName }
+            .map { it.rightName }
+            .contains(right)
     }
 }
 
