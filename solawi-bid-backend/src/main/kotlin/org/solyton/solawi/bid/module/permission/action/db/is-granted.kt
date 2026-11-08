@@ -169,6 +169,7 @@ fun Transaction.isGrantedOneOf(userId: UUID, contextId: UUID, rightIds: List<Str
         .select(UserRoleContext.userId)
         .adjustWhere {
             (UserRoleContext.userId eq userId) and
+            (UserRoleContext.contextId eq RoleRightContexts.contextId) and
             (RoleRightContexts.contextId eq contextId) and
             (Rights.name inList rightIds)
         }
@@ -192,6 +193,7 @@ fun Transaction.isGrantedOneOf(userId: UUID, contextIds: List<UUID>, rightIds: L
         .select(UserRoleContext.userId)
         .adjustWhere {
             (UserRoleContext.userId eq userId) and
+            (UserRoleContext.contextId eq RoleRightContexts.contextId) and
             (RoleRightContexts.contextId inList  contextIds) and
             (Rights.name inList rightIds)
         }
