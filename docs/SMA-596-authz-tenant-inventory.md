@@ -50,7 +50,7 @@ Context-, Organization-, Provider-, Party- und Legal-Entity-Relationen.
 | Banking: Creditor Identifiers | `legalEntityId` | derived, aktiv | Zielbindung vorhanden |
 | Banking: SEPA | Mandat/Collection/Payment/Message IDs bzw. Legal Entity | überwiegend `no` | höchste zusammenhängende offene Schreibfläche |
 | Shares: Types, Offers, Subscriptions | Payload/Query `providerId` → App-Context | alle fachlichen Guards mit `no` | Kontextresolver existiert, Prüfung ist aber deaktiviert |
-| Shares: Batch `update-statuses` | erster Provider plus Same-Provider-Payloadcheck | Guard mit `no` | braucht EACH_TARGET und leere-Liste-Behandlung |
+| Shares: Batch `update-statuses` | Payload-Provider plus DB-Provider jedes Ziels | EACH_TARGET/ALL_OF, aktiv | in SMA-596D geschlossen; leere Liste prüft den Payload-Provider |
 | Shares: History | Subscription-IDs | kein Guard | Ressourcen müssen zu Provider/Actor aufgelöst werden |
 | Distribution Points | Organization aus Provider/Payload/Actor | derived `DISTRIBUTION`-Context; Update prüft Quelle und Ziel | in SMA-596C geschlossen |
 | Auction | Payload/Header/Action | create/update/read teilweise geschützt; configure/delete/accept/import ohne sichtbaren Guard | vollständige Zielbindung noch nicht nachgewiesen |
@@ -60,14 +60,14 @@ Context-, Organization-, Provider-, Party- und Legal-Entity-Relationen.
 
 ## Vollständige explizite `no`-Bestandsaufnahme
 
-Im Routing existieren nach SMA-596C noch **38 aktive deaktivierte Prüfungen**:
+Im Routing existieren nach SMA-596D noch **37 aktive deaktivierte Prüfungen**:
 
 - Banking (23): Bank Account delete/personal read; SEPA mandate create/read/update/attach;
   collection create/create-payments/create-successors/generate-message/update;
   payment create-ad-hoc/update-statuses/update/update-many/delete/delete-many;
   payment-link by-legal-entity/personal; message download/by-legal-entity/update-status/merge.
-- Shares (15): Type create/update/read; Offer create/update/read; Subscription
-  create/rollover/transfer/update/update-status/update-statuses/read-all/read-personal/import.
+- Shares (14): Type create/update/read; Offer create/update/read; Subscription
+  create/rollover/transfer/update/update-status/read-all/read-personal/import.
 - Distribution Points: keine; provider read, personal read, create und update
   leiten ihre Contexts serverseitig ab. Update verwendet ALL_OF für Quell- und
   Zielorganisation.

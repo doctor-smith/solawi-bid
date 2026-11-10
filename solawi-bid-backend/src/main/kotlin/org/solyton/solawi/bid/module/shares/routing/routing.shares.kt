@@ -12,6 +12,7 @@ import org.evoleq.uuid.toUuid
 import org.solyton.solawi.bid.module.application.repository.contextIdOf
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
 import org.solyton.solawi.bid.module.permission.action.db.IsGrantedOneOf
+import org.solyton.solawi.bid.module.permission.action.db.IsGrantedOneOfInAllDerivedContexts
 import org.solyton.solawi.bid.module.permission.action.db.no
 import org.solyton.solawi.bid.module.permission.action.db.rights
 import org.solyton.solawi.bid.module.shares.action.api.*
@@ -19,6 +20,8 @@ import org.solyton.solawi.bid.module.shares.application.SHARE_MANAGEMENT_APPLICA
 import org.solyton.solawi.bid.module.shares.data.api.*
 import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
 import org.solyton.solawi.bid.module.shares.exception.ShareException
+import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionEntity
+import org.solyton.solawil.bid.module.shares.data.toUUID
 import org.solyton.solawil.bid.module.user.data.toUUID
 import java.util.*
 
@@ -237,25 +240,25 @@ authenticate {
             }
             patch("update-statuses") {
                 ReceiveContextual<UpdateShareStatuses>() *
-                TransformContextual {
-                    statuses ->
-                    val (providerId, all) = statuses
-
-                    // All providers musst be the same
-                    val sameProviderPolicyHolds = all.all{ it.providerId == providerId }
-                    if(!sameProviderPolicyHolds) throw ShareException.ProviderMismatch
-                    statuses
-                } *
-                IsGrantedOneOf(
-                    rights(
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
                         "UPDATE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARES"
-                    ),
-                    no // todo:permission enable access check
+                    )
                 ) { contextual ->
-                    val providerId = contextual.data.all.first().providerId.toUUID()
-                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    val payloadProviderId = contextual.data.providerId.toUUID()
+                    val claimedProviderIds = contextual.data.all.map { it.providerId.toUUID() }
+                    val actualProviderIds = contextual.data.all.map { status ->
+                        ShareSubscriptionEntity.findById(status.shareSubscriptionId.toUUID())
+                            ?.shareOffer
+                            ?.shareType
+                            ?.providerId
+                            ?: throw ShareException.NoSuchShareSubscription(status.shareSubscriptionId.value)
+                    }
+                    (listOf(payloadProviderId) + claimedProviderIds + actualProviderIds)
+                        .map { contextIdOf(it, SHARE_MANAGEMENT_APPLICATION_NAME) }
+                        .toSet()
                 } *
                 UpdateShareStatuses() *
                 Respond<ShareSubscriptions> { transform() } runOn Base(call, environment)
