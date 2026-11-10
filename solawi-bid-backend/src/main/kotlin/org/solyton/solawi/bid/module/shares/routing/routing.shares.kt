@@ -195,14 +195,21 @@ authenticate {
             }
             patch("transfer-ownership") {
                 ReceiveContextual<TransferOwnership>() *
-                IsGrantedOneOf(
-                    rights(
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
                         "MANAGE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARES"
-                    ), no
+                    )
                 ) { contextual ->
-                    val providerId = contextual.data.providerId.value.toUuid()
-                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    val data = contextual.data
+                    val actualProviderId = ShareSubscriptionEntity.findById(data.shareSubscriptionId.toUUID())
+                        ?.shareOffer
+                        ?.shareType
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareSubscription(data.shareSubscriptionId.value)
+                    setOf(actualProviderId, data.providerId.toUUID())
+                        .map { contextIdOf(it, SHARE_MANAGEMENT_APPLICATION_NAME) }
+                        .toSet()
                 } *
                 TransferOwnership() *
                 Respond { transform() } runOn Base(call, environment)
