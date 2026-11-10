@@ -18,7 +18,19 @@ import org.solyton.solawi.bid.module.application.schema.UserModulesTable
 import org.solyton.solawi.bid.module.permission.repository.cloneRightRoleContext
 import org.solyton.solawi.bid.module.permission.repository.createChild
 import org.solyton.solawi.bid.module.permission.repository.createRootContext
+import org.solyton.solawi.bid.module.permission.PermissionException
+import org.solyton.solawi.bid.module.user.exception.OrganizationException
+import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
+import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
 import java.util.*
+
+private fun requireOrganizationMembership(organizationId: UUID, userId: UUID) {
+    val organization = OrganizationEntity.find {
+        OrganizationsTable.id eq organizationId
+    }.firstOrNull() ?: throw OrganizationException.NoSuchOrganization(organizationId.toString())
+
+    if (organization.members.none { it.id.value == userId }) throw PermissionException.AccessDenied
+}
 
 /**
  * This function can only be used by the owner of the underlying application.
@@ -30,6 +42,8 @@ fun Transaction.connectApplicationToOrganization(
     userId: UUID
 ): ApplicationOrganizationRelations {
     // validation
+    requireOrganizationMembership(organizationId, userId)
+
     val application = ApplicationEntity.find { ApplicationsTable.id eq applicationId }.firstOrNull()
         ?: throw ApplicationException.NoSuchApplication(applicationId.toString())
 

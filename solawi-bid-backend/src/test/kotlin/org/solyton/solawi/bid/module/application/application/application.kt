@@ -8,8 +8,10 @@ import io.ktor.server.routing.*
 import org.evoleq.exposedx.data.Database
 import org.evoleq.ktorx.headers.Header
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.solyton.solawi.bid.application.environment.Environment
 import org.solyton.solawi.bid.application.environment.MailService
@@ -33,6 +35,8 @@ import org.solyton.solawi.bid.module.user.data.api.ApiUser
 import org.solyton.solawi.bid.module.user.data.api.ApiUsers
 import org.solyton.solawi.bid.module.user.data.toApiType
 import org.solyton.solawi.bid.module.user.schema.UserEntity
+import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
+import org.solyton.solawi.bid.module.user.schema.UserOrganization
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import java.util.*
 
@@ -53,6 +57,29 @@ fun Application.applicationTest() {
         provideUserTokens(environment.jwt, database)
         testContexts(database)
         route("setup") {
+            get("organization") {
+                val name = requireNotNull(call.parameters["name"])
+                val owner = requireNotNull(call.parameters["owner"])
+                val organizationId = transaction(database) {
+                    SchemaUtils.create(UserOrganization)
+                    val ownerId = UserEntity.find { UsersTable.username eq owner }.first().id.value
+                    val context = ContextEntity.new {
+                        this.name = name
+                        createdBy = ownerId
+                    }
+                    val organization = OrganizationEntity.new {
+                        this.name = name
+                        this.context = context
+                        createdBy = ownerId
+                    }
+                    UserOrganization.insert {
+                        it[userId] = ownerId
+                        it[organizationId] = organization.id
+                    }
+                    organization.id.value
+                }
+                call.respondText(organizationId.toString())
+            }
             get("root-context-by-name") {
                 val contextName = call.request.headers[Header.CONTEXT]!!
                 val contextEntity: ContextEntity = transaction(database) {
@@ -171,4 +198,3 @@ fun Application.setupTestEnvironment(dbNameSuffix: String): Environment = with(e
         mailService = mailService
     )
 }
-
