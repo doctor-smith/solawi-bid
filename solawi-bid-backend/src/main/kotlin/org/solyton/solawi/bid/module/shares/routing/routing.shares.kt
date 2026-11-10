@@ -224,16 +224,23 @@ authenticate {
             }
             patch("update-status") {
                 ReceiveContextual<UpdateShareStatus>() *
-                IsGrantedOneOf(
-                    rights(
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
                         "UPDATE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARES"
-                    ),
-                    no // todo:permission enable access check
+                    )
                 ) { contextual ->
-                    val providerId = contextual.data.providerId.toUUID()
-                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    val status = contextual.data
+                    val actualProviderId = ShareSubscriptionEntity
+                        .findById(status.shareSubscriptionId.toUUID())
+                        ?.shareOffer
+                        ?.shareType
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareSubscription(status.shareSubscriptionId.value)
+                    setOf(status.providerId.toUUID(), actualProviderId)
+                        .map { contextIdOf(it, SHARE_MANAGEMENT_APPLICATION_NAME) }
+                        .toSet()
                 } *
                 UpdateShareStatus() *
                 Respond<ShareSubscriptions> { transform() } runOn Base(call, environment)
