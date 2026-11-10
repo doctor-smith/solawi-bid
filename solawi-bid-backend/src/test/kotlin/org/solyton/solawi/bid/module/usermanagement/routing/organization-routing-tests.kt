@@ -634,6 +634,10 @@ class OrganizationRoutingTests {
             val organizationWithMember = addMemberResult.data
             assertTrue { organizationWithMember.members.isNotEmpty() }
             assertEquals(2, organizationWithMember.members.size)
+            val ownerId = client.getUserId("developer@alpha-structure.com")
+            val ownerRolesBeforeUpdate = organizationWithMember.members
+                .first { it.userId == ownerId }
+                .roles
             val member = organizationWithMember.members.find{it.userId == memberId}
             assertNotNull(member)
             assertEquals(memberId, member.userId)
@@ -664,6 +668,11 @@ class OrganizationRoutingTests {
             assertEquals(1, updatedMember.roles.size)
             assertEquals(managerRoleId, updatedMember.roles.first().id, "Wrong role id")
             assertEquals("MANAGER", updatedMember.roles.first().name)
+            assertEquals(
+                ownerRolesBeforeUpdate,
+                updatedOrganizationWithMember.members.first { it.userId == ownerId }.roles,
+                "Updating one member must not change another member's roles"
+            )
         }
     }
 

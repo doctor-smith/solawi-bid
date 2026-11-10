@@ -130,7 +130,9 @@ fun UpdateMember(): KlAction<Result<Contextual<UpdateMember>>, Result<Organizati
 
         val roleIds = data.roles.map { UUID.fromString(it) }
         UserRoleContext.deleteWhere {
-            UserRoleContext.contextId eq organization.context.id and (UserRoleContext.userId notInList roleIds)
+            (UserRoleContext.contextId eq organization.context.id) and
+                (UserRoleContext.userId eq memberId) and
+                (UserRoleContext.roleId notInList roleIds)
         }
         val existingRoles = UserRoleContext.selectAll().where {
             UserRoleContext.userId eq memberId and (UserRoleContext.contextId eq organization.context.id)
