@@ -33,7 +33,9 @@ if (!isCI) {
     val gitDirectory = rootProject.file(".git")
     val hooksDirectory = rootProject.file(".githooks")
 
-    if (gitDirectory.exists() && hooksDirectory.isDirectory) {
+    // A linked worktree stores .git as a pointer file. That pointer is unusable
+    // when the source is copied into a Docker build context.
+    if (gitDirectory.isDirectory && hooksDirectory.isDirectory) {
         val currentHooksPath = providers.exec {
             workingDir = rootProject.projectDir
             commandLine("git", "config", "--local", "--get", "core.hooksPath")
