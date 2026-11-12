@@ -19,15 +19,15 @@ object Config {
     }
 
     object Local : DbConf {
-        override val url: String = "jdbc:mysql://localhost:3306/hanoi_towers?useSSL=false&allowPublicKeyRetrieval=true"
-        override val driver: String = "com.mysql.cj.jdbc.Driver"
+        override val url: String = "jdbc:mariadb://localhost:3306/hanoi_towers?allowPublicKeyRetrieval=true"
+        override val driver: String = "org.mariadb.jdbc.Driver"
         override val user: String = "root"
         override val password: String = "pass123"
     }
 
     object DB : DbConf {
-        override val url: String = "jdbc:mysql://hanoi_database:3306/hanoi_towers?useSSL=false&allowPublicKeyRetrieval=true"
-        override val driver: String = "com.mysql.cj.jdbc.Driver"
+        override val url: String = "jdbc:mariadb://hanoi_database:3306/hanoi_towers?allowPublicKeyRetrieval=true"
+        override val driver: String = "org.mariadb.jdbc.Driver"
         override val user: String = "root"
         override val password: String = "pass123"
     }

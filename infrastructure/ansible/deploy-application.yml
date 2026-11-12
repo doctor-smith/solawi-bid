@@ -240,8 +240,8 @@
           JWT_AUDIENCE: solawi-bid_backend
           JWT_REALM: solawi-bid_backend
           JWT_SECRET: "{{ jwt_secret }}"
-          DATABASE_URL: "jdbc:mysql://solawi-bid_database_{{ environment_letter }}:3306/solawi-bid"
-          DATABASE_DRIVER: com.mysql.jdbc.Driver
+          DATABASE_URL: "jdbc:mariadb://solawi-bid_database_{{ environment_letter }}:3306/solawi-bid?allowPublicKeyRetrieval=true"
+          DATABASE_DRIVER: org.mariadb.jdbc.Driver
           DATABASE_USER: solawi-bid
           DATABASE_PASSWORD: "{{ mysql_password }}"
           APPLICATION_OWNER_USERNAME: "{{ application_owner_username }}"
