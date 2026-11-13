@@ -46,7 +46,7 @@ Context-, Organization-, Provider-, Party- und Legal-Entity-Relationen.
 | Application mit Organization verbinden | Payload `organizationId`, `applicationId` | kein Route-Guard; UserApplication-Existenz in Repository | App-Besitz wird nur angenommen; keine nachgewiesene Berechtigung an Zielorganisation |
 | Banking: Legal Entity personal | Payload/Query `partyId` | derived Banking-Context, `yes` | gute Zielableitung; Party-Typ-Konsistenz ungeklärt |
 | Banking: Fiscal Year | Payload `legalEntityId` | create/update derived; read auskommentiert | Read kann fremde Legal Entities anfragen |
-| Banking: Bank Accounts | Legal Entity oder User | read/create/update/import aktiv; delete und personal read deaktiviert | gemischte Semantik innerhalb derselben Ressource |
+| Banking: Bank Accounts | Legal Entity, tatsächlicher Account-Owner oder JWT-Actor | Provider-Operationen aktiv; personal read self-bound | geschützt; Delete löst den Owner serverseitig auf |
 | Banking: Creditor Identifiers | `legalEntityId` | derived, aktiv | Zielbindung vorhanden |
 | Banking: SEPA | Mandat/Collection/Payment/Message IDs bzw. Legal Entity | überwiegend `no` | höchste zusammenhängende offene Schreibfläche |
 | Shares: Types, Offers, Subscriptions | Payload/Query oder tatsächliche Ressource → Provider → App-Context; Personal über JWT-Actor | Provider-Reads/Writes aktiv, Personal self-bound | geschützt; Quell- und Zielressourcen werden bei Änderungen serverseitig aufgelöst |
@@ -60,9 +60,9 @@ Context-, Organization-, Provider-, Party- und Legal-Entity-Relationen.
 
 ## Vollständige explizite `no`-Bestandsaufnahme
 
-Im Routing existieren nach Aktivierung der Share-Import-Prüfung noch **23 aktive deaktivierte Prüfungen**:
+Im Routing existieren nach Aktivierung der Bank-Account-Prüfungen noch **21 aktive deaktivierte Prüfungen**:
 
-- Banking (23): Bank Account delete/personal read; SEPA mandate create/read/update/attach;
+- Banking (21): SEPA mandate create/read/update/attach;
   collection create/create-payments/create-successors/generate-message/update;
   payment create-ad-hoc/update-statuses/update/update-many/delete/delete-many;
   payment-link by-legal-entity/personal; message download/by-legal-entity/update-status/merge.
@@ -94,7 +94,7 @@ Rollenzuordnungen anderer Nutzer im selben Organisationskontext gelöscht
 werden. Die vorhandenen Tests prüfen Erfolg, fehlendes Recht und falschen
 Header-Kontext, aber nicht den Erhalt eines zweiten Mitglieds.
 
-### P0: Noch 23 deklarierte Prüfungen sind deaktiviert
+### P0: Noch 21 deklarierte Prüfungen sind deaktiviert
 
 Das ist besonders kritisch für SEPA-Schreiboperationen. Die Share-Routen sind
 inzwischen providergebunden oder bei persönlichen Reads an den JWT-Actor
@@ -145,7 +145,7 @@ SEPA sollte anschließend in einem eigenen Slice pro Ressourcenwurzel erfolgen;
 **Fakten**
 
 - Die äußere JWT-Topologie und ursprünglich 42 `no`-Stellen wurden aus dem
-  Routing erhoben; nach den bisherigen Slices verbleiben 23 in Banking/SEPA.
+  Routing erhoben; nach den bisherigen Slices verbleiben 21 in SEPA.
 - Die beiden direkten Permission-Schreibpfade leiten ihren Kontext inzwischen
   aus dem Payload ab.
 - Der `UpdateMember`-Delete-Filter und die fehlende Organization-Prüfung beim
