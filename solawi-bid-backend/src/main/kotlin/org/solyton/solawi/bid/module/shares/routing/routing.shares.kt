@@ -10,6 +10,8 @@ import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
 import org.evoleq.uuid.toUuid
 import org.solyton.solawi.bid.module.application.repository.contextIdOf
+import org.solyton.solawi.bid.module.distribution.exception.DistributionPointException
+import org.solyton.solawi.bid.module.distribution.schema.DistributionPointEntity
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
 import org.solyton.solawi.bid.module.permission.action.db.IsGrantedOneOf
 import org.solyton.solawi.bid.module.permission.action.db.IsGrantedOneOfInAllDerivedContexts
@@ -179,16 +181,31 @@ authenticate {
         route("subscriptions") {
             post("create") {
                 ReceiveContextual<CreateShareSubscription>() *
-                IsGrantedOneOf(
-                    rights(
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
                         "CREATE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARES"
-                    ),
-                    no // todo:permission enable access check
+                    )
                 ) { contextual ->
-                    val providerId = UUID.fromString(contextual.data.providerId)
-                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    val data = contextual.data
+                    val offerProviderId = ShareOfferEntity.findById(UUID.fromString(data.shareOfferId))
+                        ?.shareType
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareOffer(data.shareOfferId)
+                    val distributionProviderId = data.distributionPointId?.let { distributionPointId ->
+                        DistributionPointEntity.findById(UUID.fromString(distributionPointId))
+                            ?.organization
+                            ?.id
+                            ?.value
+                            ?: throw DistributionPointException.NoSuchDistributionPoint(distributionPointId)
+                    }
+                    setOfNotNull(
+                        offerProviderId,
+                        distributionProviderId,
+                        UUID.fromString(data.providerId)
+                    ).map { contextIdOf(it, SHARE_MANAGEMENT_APPLICATION_NAME) }
+                        .toSet()
                 } *
                 CreateShareSubscription() *
                 Respond<ShareSubscription> { transform() } runOn Base(call, environment)
