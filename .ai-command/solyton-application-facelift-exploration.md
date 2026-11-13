@@ -98,17 +98,35 @@ Skizziere mögliche Modulgrenzen (nur Vorschlag, an reale Struktur anpassen):
 - solyton-ui-theme-management-ee (Theme-Switcher, Katalog, Zuweisung)
 - solyton-ui-layout-* (sichere, dokumentierte Layout-Presets)
 
+### Bestehende Device-Erkennung und künftiges Device × Theme-Modell
+
+**Vorhandene Architektur wiederverwenden statt eine neue Geräteklassifikation erfinden.** Nachweisbare Einstiegspunkte:
+- `evoleq/src/jsMain/kotlin/org/evoleq/compose/style/data/device/media-type.kt`: `DeviceType` mit `Empty`, `Mobile`, `Tablet`, `Laptop`, `Desktop`, `Huge` und `detect(width, userAgent, hasTouch, maxTouchPoints)`.
+- `evoleq/src/jsMain/kotlin/org/evoleq/device/data/device.kt`: `Device` mit u. a. `screenWidth`, `isTouchDevice`, `userAgent`, `mediaType`.
+- `solawi-bid-frontend/src/jsMain/kotlin/org/solyton/solawi/bid/application/ui/effect/read-device-data-effect.kt`: `LaunchSetDeviceData`, inklusive `resize`-Listener.
+- `solawi-bid-frontend/src/jsMain/kotlin/org/solyton/solawi/bid/module/style/form/common-styles.kt`: vorhandene deviceabhängige Styling-Funktionen.
+
+**Perspektivisch: Device × Theme (und ggf. Layout-Preset) als orthogonale Dimensionen.** Nicht pro Kombination eine eigene Theme-/Layout-Implementierung erzwingen.
+- Einheitliche semantische Theme-Tokens als Default plus **optionale device-/viewport-spezifische Overrides** (beispielsweise Dichte, Abstand, Navigation, Cards, Layout-Slots).
+- Standardmäßig responsiv über CSS-Layout/Media Queries denken; die bestehende `DeviceType`-Abstraktion für tatsächlich unterschiedliche Interaktions- und AppShell-Varianten nutzen. **Device-Klasse ist nicht mit Viewport/Breite gleichzusetzen.**
+- Aktuelle Erkennung nutzt neben Breite auch UA und Touch: prüfen, was bei Resize, Orientation, Browserzoom, iPad-/Desktop-UA und dynamischem Viewport geschieht. Nicht allein von der nominellen Geräteklasse auf verfügbare Fläche schließen.
+- Fallback-Regeln definieren: fehlender Device-Override → Basistokens/-layout; unbekannter/temporär `Empty`-Typ → robustes Standardlayout. Wenn ein Theme auf Tablet kein Speziallayout anbietet, muss es trotzdem funktionieren.
+- Das Device-/Theme-Mapping ist Teil der **offenen Theme API**; EE kann Theme-Auswahl und Zuweisung verwalten, ohne die Geräteerkennung proprietär zu machen.
+- Früh klären, ob Layout-Presets auch Community-erweiterbar sind, ohne beliebigen ausführbaren Drittcode zur Laufzeit zu laden.
+- Gezielte **Testmatrix** aus repräsentativen Device-Profilen × Theme-Typen (CE Default, Community, EE Premium) × Locales × zentralen Workflows; keine ausufernde Vollkombinatorik.
+
 ## 6. E2E-Tests, UI-Screenshots und I18N als Pflichtbestandteil
 
 **Jede Migrationswelle muss bestehende fachliche E2E-Workflows und Übersetzungen erhalten.** E2E und I18N dürfen nicht als spätes Aufräumen geplant werden.
 
 ### 6.1 E2E und visuelle Baseline
-- Bestehende Kotlin/Playwright-E2E-Workflows, Fixtures, Tags, Selektoren, isolierte Testumgebung und kritische Pfade anhand des Codes inventarisieren.
+- Bestehende Kotlin/Playwright-E2E-Workflows, Fixtures, Tags, Selektoren, isolierte Testumgebung und kritische Pfade anhand des Codes inventarisieren. **Die existierenden E2E-Testquellen sind die primäre technische Klick-/Navigationsreferenz**; keine parallelen, abweichenden Klickanleitungen erfinden. Vorhandene Testcode-Schritte in wiederverwendbare Screenshot-Szenarien übertragen.
 - Die vorhandenen Klick-/Workflow-Anleitungen möglichst als **wiederholbare Browser-Runs** nutzen: Codex/Playwright führt sie mit stabilen Testdaten aus und erzeugt **Screenshots vor dem Facelift** für modul-, seiten- und zustandsbezogene UI-Inventare. Nach jeder Migrationswelle identische Szenarien und **Nachher-Screenshots** erstellen.
 - Screenshots versionieren/ablegen, mit definierten Viewports, Locale, Testdaten und stabilen UI-Zuständen; sensible/personenbezogene Daten und Zugangsdaten aus Aufnahmen ausschließen. Tool-/Browserzugriff und nötige Berechtigungen dokumentieren; die Automatisierung muss nicht auf jeder Codex-Umgebung sofort verfügbar sein.
 - Alte und neue DOM-Strukturen, Routen, Organisation-/Modulwahl, Modals, Formulare, Responsive-Verhalten, Rechte und Entitlements erfassen. Selektoren bevorzugt semantisch (Role/Accessible Name) bzw. gezielte `data-testid` statt fragilen CSS-Klassen/Texten.
 - **Test-Migrationsmatrix**: Fläche/Workflow → existierende E2E-Tests → erforderliche Anpassungen → neue/ergänzte Tests → Baseline-Screenshot → Nachher-Screenshot → Ergebnis.
 - Kritische Geschäftsprozesse, Organisationwechsel, direkte Links, Refresh, CE/EE-Zustände, Theme-Auswahl/Fallbacks und Barrierefreiheit berücksichtigen.
+- Für Screenshots Device-Klasse, Viewport, UA/Touch-Simulation, Orientation, Locale und Theme explizit festhalten; die bestehende `DeviceType.detect`-Semantik verifizieren und mobile/Tablet/Desktop-Layouts anhand realer E2E-Workflows prüfen. Repräsentative Paarungen priorisieren statt Testfall-Explosion.
 - Testausführung ausschließlich mit dafür vorgesehener **isolierter E2E-Umgebung**, nicht gegen Produktivdaten oder die normale Entwicklungsdatenbank.
 - Visuelle Regression dort einsetzen, wo sie stabil und wartbar ist; dynamische Inhalte maskieren/normalisieren. Funktionale Assertions sind durch Screenshots nicht ersetzbar.
 
@@ -133,7 +151,7 @@ Lege die Exploration als nachvollziehbare Markdown-Dokumentation im Repository a
 1. **UI-Inventar:** Module, Seiten, Screens und Component-Stile mit Dateireferenzen.
 2. **UX-Zielbild:** AppShell, Modul × Organisation, Rechte, Desktop/Mobile und zentrale Workflows.
 3. **Designsystem-Spezifikation:** semantische Tokens, Komponentenliste, Zustände, a11y.
-4. **Theme-/Edition-Architekturentscheidungsvorlage:** CE/EE-Grenzen, Community-Erweiterungen, Premium-Module, Layout-Plug-ins, Sicherheits-/Lizenz-/Betriebsaspekte.
+4. **Theme-/Edition-Architekturentscheidungsvorlage:** CE/EE-Grenzen, Community-Erweiterungen, Premium-Module, Layout-Plug-ins, **Device × Theme/Responsive-Fallbacks**, Sicherheits-/Lizenz-/Betriebsaspekte.
 5. **E2E- und I18N-Migrationsmatrix einschließlich Vorher-/Nachher-Screenshot-Baselines:** Testinventar, Selektoren, Workflows, Sprachressourcen, Locales und QA je Welle.
 6. **Migration Roadmap für die gesamte Anwendung:** priorisierte Wellen, zuerst Shell + Dashboard als Pilot, dann gemeinsame Components, danach alle Module schrittweise. Je Welle Abhängigkeiten, Aufwand, Risiken, Tests, Rollback.
 7. **Folge-Issues/Tasks als Vorschlag** mit testbaren Akzeptanzkriterien (noch keine neuen Tickets ohne separaten Auftrag).
@@ -146,6 +164,7 @@ Lege die Exploration als nachvollziehbare Markdown-Dokumentation im Repository a
 - Ein konsistentes Theme- und Component-Modell mit überprüfbaren Kontrast-, Fokus- und Zustandsregeln ist beschrieben.
 - Community kann Themen/Preset-Layouts unabhängig von EE entwickeln, EE kann diese nach Lizenzprüfung verwenden.
 - Premium-Themes und Theme-Management sind technisch und lizenzseitig **separierbar**, ohne CE zu kompromittieren.
+- Device × Theme ist als kombinierbares Modell spezifiziert; bestehende `DeviceType`-Abstraktion berücksichtigt, Responsive-Fallbacks und repräsentative geräteübergreifende E2E-Tests beschrieben.
 - Klare Unterscheidung von verfügbarer Funktion, Designvorschlag, Zukunftsidee.
 - Kleine, realistische Rollout-Schritte statt Big-Bang-Rewrite.
 - Jede Welle besitzt einen realistischen E2E- und I18N-Update-/Validierungsplan; Screenshots sind reproduzierbar und datenschutzkonform.
