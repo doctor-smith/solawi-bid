@@ -40,6 +40,11 @@ import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_MANDATES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_MESSAGES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_PAYMENTS
+import org.solyton.solawi.bid.module.banking.repository.validatedCreditorIdentifier
+import org.solyton.solawi.bid.module.banking.repository.validatedFiscalYear
+import org.solyton.solawi.bid.module.banking.repository.validatedLegalEntity
+import org.solyton.solawi.bid.module.banking.repository.validatedSepaCollection
+import org.solyton.solawi.bid.module.banking.repository.validatedSepaMandate
 import org.solyton.solawi.bid.module.banking.service.validatedBankAccount
 import org.solyton.solawi.bid.module.permission.action.db.*
 import org.solyton.solawil.bid.module.bid.data.api.toUUID
@@ -114,7 +119,8 @@ fun <BankingEnv> Routing.banking (
                     } *
                     IsGrantedInAllDerivedContexts(READ_FISCAL_YEARS) { contextual ->
                         contextual.data.map { legalEntityId ->
-                            contextIdOf(BANKING_APPLICATION_NAME) { legalEntityId.toUuid() }
+                            val partyId = validatedLegalEntity(legalEntityId.toUuid()).partyId
+                            contextIdOf(BANKING_APPLICATION_NAME) { partyId }
                         }.toSet()
                     } *
                     ReadFiscalYearsByLegalEntity() *
@@ -124,24 +130,23 @@ fun <BankingEnv> Routing.banking (
                     ReceiveContextual<CreateFiscalYear>() *
                     IsGrantedInDerivedContext(
                         CREATE_FISCAL_YEARS, yes
-                    ) {
-                        contextIdOf(
-                            BANKING_APPLICATION_NAME
-                        ) {
-                            it.data.legalEntityId.toUuid()
-                        }
+                    ) { contextual ->
+                        val partyId = validatedLegalEntity(contextual.data.legalEntityId.toUuid()).partyId
+                        contextIdOf(BANKING_APPLICATION_NAME) { partyId }
                     } *
                     CreateFiscalYear() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
                 patch("update") {
                     ReceiveContextual<UpdateFiscalYear>() *
-                    IsGrantedInDerivedContext(
-                        UPDATE_FISCAL_YEARS, yes
-                    ) {
-                        contextIdOf(BANKING_APPLICATION_NAME) {
-                            it.data.legalEntityId.toUuid()
-                        }
+                    IsGrantedInAllDerivedContexts(UPDATE_FISCAL_YEARS) { contextual ->
+                        val data = contextual.data
+                        val sourceLegalEntityId = validatedFiscalYear(data.id.toUuid()).legalEntityId
+                        val sourcePartyId = validatedLegalEntity(sourceLegalEntityId).partyId
+                        val targetPartyId = validatedLegalEntity(data.legalEntityId.toUuid()).partyId
+                        setOf(sourcePartyId, targetPartyId).map { partyId ->
+                            contextIdOf(BANKING_APPLICATION_NAME) { partyId }
+                        }.toSet()
                     } *
                     UpdateFiscalYear() *
                     Respond{ transform() } runOn Base(call, environment)
@@ -274,10 +279,21 @@ fun <BankingEnv> Routing.banking (
 
             route("sepa") {
                 route("mandates") {
-                    // TODO(correct context needs to be provided)
                     post("create") {
                         ReceiveContextual<CreateSepaMandate>() *
-                        IsGranted(CREATE_SEPA_MANDATES, no) *
+                        IsGrantedInAllDerivedContexts(CREATE_SEPA_MANDATES) { contextual ->
+                            val data = contextual.data
+                            val creditorPartyId = validatedCreditorIdentifier(data.creditorId).legalEntity.partyId
+                            val amendmentPartyId = data.amendmentOf?.let { mandateId ->
+                                validatedSepaMandate(mandateId.value.toUuid()).creditorIdentifier.legalEntity.partyId
+                            }
+                            val collectionPartyId = data.collectionId?.let { collectionId ->
+                                validatedSepaCollection(collectionId.value.toUuid()).creditorIdentifier.legalEntity.partyId
+                            }
+                            setOfNotNull(creditorPartyId, amendmentPartyId, collectionPartyId).map { partyId ->
+                                contextIdOf(BANKING_APPLICATION_NAME) { partyId }
+                            }.toSet()
+                        } *
                         CreateSepaMandate() *
                         Respond{ transform() } runOn Base(call, environment)
                     }
@@ -288,22 +304,40 @@ fun <BankingEnv> Routing.banking (
                             }
                         } *
                         IsGrantedInDerivedContext(READ_SEPA_MANDATES) { contextual ->
-                            contextIdOf(BANKING_APPLICATION_NAME) { contextual.data.toUuid() }
+                            val partyId = validatedLegalEntity(contextual.data.toUuid()).partyId
+                            contextIdOf(BANKING_APPLICATION_NAME) { partyId }
                         } *
                         ReadSepaMandatesByCreditorsLegalEntity() *
                         Respond { transform() } runOn Base(call, environment)
                     }
-                    // TODO(correct context needs to be provided)
                     patch("update") {
                         ReceiveContextual<UpdateSepaMandate>() *
-                        IsGranted(UPDATE_SEPA_MANDATES, no) *
+                        IsGrantedInAllDerivedContexts(UPDATE_SEPA_MANDATES) { contextual ->
+                            val data = contextual.data
+                            val sourcePartyId = validatedSepaMandate(data.sepaMandateId.value.toUuid())
+                                .creditorIdentifier.legalEntity.partyId
+                            val targetPartyId = validatedCreditorIdentifier(data.creditorId).legalEntity.partyId
+                            setOf(sourcePartyId, targetPartyId).map { partyId ->
+                                contextIdOf(BANKING_APPLICATION_NAME) { partyId }
+                            }.toSet()
+                        } *
                         UpdateSepaMandate() *
                         Respond{ transform() } runOn Base(call, environment)
 
                     }
                     patch("attach-reference-data") {
                         ReceiveContextual<AttachSepaMandateReferenceData>() *
-                        IsGranted(UPDATE_SEPA_MANDATES, no) *
+                        IsGrantedInAllDerivedContexts(UPDATE_SEPA_MANDATES) { contextual ->
+                            val data = contextual.data
+                            val mandatePartyId = validatedSepaMandate(data.sepaMandateId.value.toUuid())
+                                .creditorIdentifier.legalEntity.partyId
+                            val collectionPartyId = data.collectionId?.let { collectionId ->
+                                validatedSepaCollection(collectionId.value.toUuid()).creditorIdentifier.legalEntity.partyId
+                            }
+                            setOfNotNull(mandatePartyId, collectionPartyId).map { partyId ->
+                                contextIdOf(BANKING_APPLICATION_NAME) { partyId }
+                            }.toSet()
+                        } *
                         AttachSepaMandateReferenceData() *
                         Respond<SepaMandate>{ transform() } runOn Base(call, environment)
                     }
