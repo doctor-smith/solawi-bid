@@ -22,6 +22,7 @@ import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
 import org.solyton.solawi.bid.module.shares.exception.ShareException
 import org.solyton.solawi.bid.module.shares.schema.ShareOfferEntity
 import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionEntity
+import org.solyton.solawi.bid.module.shares.schema.ShareTypeEntity
 import org.solyton.solawil.bid.module.shares.data.toUUID
 import org.solyton.solawil.bid.module.user.data.toUUID
 import java.util.*
@@ -54,16 +55,20 @@ authenticate {
             }
             patch("update"){
                 ReceiveContextual<UpdateShareType>() *
-                IsGrantedOneOf(
-                    rights(
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
                         "UPDATE_SHARE_TYPES",
                         "MANAGE_SHARE_TYPES",
                         "MANAGE_SHARES"
-                    ),
-                    no // todo:permission enable access check
+                    )
                 ) { contextual ->
-                    val providerId = UUID.fromString(contextual.data.providerId)
-                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    val data = contextual.data
+                    val actualProviderId = ShareTypeEntity.findById(UUID.fromString(data.id))
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareType(data.id)
+                    setOf(actualProviderId, UUID.fromString(data.providerId))
+                        .map { contextIdOf(it, SHARE_MANAGEMENT_APPLICATION_NAME) }
+                        .toSet()
                 } *
                 UpdateShareType() *
                 Respond<ShareType> { transform() } runOn Base(call, environment)
