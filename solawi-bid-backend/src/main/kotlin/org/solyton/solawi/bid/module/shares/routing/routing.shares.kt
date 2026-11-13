@@ -12,10 +12,8 @@ import org.evoleq.uuid.toUuid
 import org.solyton.solawi.bid.module.application.repository.contextIdOf
 import org.solyton.solawi.bid.module.distribution.exception.DistributionPointException
 import org.solyton.solawi.bid.module.distribution.schema.DistributionPointEntity
-import org.solyton.solawi.bid.module.permission.action.db.IsGranted
 import org.solyton.solawi.bid.module.permission.action.db.IsGrantedOneOf
 import org.solyton.solawi.bid.module.permission.action.db.IsGrantedOneOfInAllDerivedContexts
-import org.solyton.solawi.bid.module.permission.action.db.no
 import org.solyton.solawi.bid.module.permission.action.db.rights
 import org.solyton.solawi.bid.module.shares.action.api.*
 import org.solyton.solawi.bid.module.shares.application.SHARE_MANAGEMENT_APPLICATION_NAME
@@ -360,14 +358,29 @@ authenticate {
                     val ids = (params.getAll("share_subscription_id").orEmpty()).map{ ShareSubscriptionId(it) }
                     ReadShareSubscriptionStatusHistories(ids)
                 } *
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
+                        "READ_SHARE_SUBSCRIPTIONS",
+                        "MANAGE_SHARE_SUBSCRIPTIONS",
+                        "MANAGE_SHARES"
+                    )
+                ) { contextual ->
+                    contextual.data.all.map { subscriptionId ->
+                        val providerId = ShareSubscriptionEntity.findById(subscriptionId.value.toUuid())
+                            ?.shareOffer
+                            ?.shareType
+                            ?.providerId
+                            ?: throw ShareException.NoSuchShareSubscription(subscriptionId.value)
+                        contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    }.toSet()
+                } *
                 ReadShareSubscriptionStatusHistories() *
                 Respond< ShareSubscriptionStatusHistories> { transform() } runOn Base(call, environment)
             }
             get("personal") {
-                ReceiveContextual{ params ->
+                ReceiveContextual{
                     ReadPersonalShareSubscriptions(listOf())
                 } *
-                IsGranted("", no) *
                 ReadPersonalShareSubscriptions() *
                 Respond<ShareSubscriptions> { transform() } runOn Base(call,environment)
 
@@ -378,8 +391,7 @@ authenticate {
             post("import") {
                 ReceiveContextual<ImportShareSubscriptions>() *
                 IsGrantedOneOf(
-                    rights("IMPORT_SHARE_SUBSCRIPTIONS"),
-                    no
+                    rights("IMPORT_SHARE_SUBSCRIPTIONS")
                 ) { contextual ->
                     val providerId = contextual.data.providerId.toUuid()
                     contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
