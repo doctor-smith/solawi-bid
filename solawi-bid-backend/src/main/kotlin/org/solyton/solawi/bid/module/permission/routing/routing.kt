@@ -13,6 +13,7 @@ import org.evoleq.math.state.times
 import org.solyton.solawi.bid.module.permission.action.db.*
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.permission.permission.Right
+import java.util.UUID
 
 @KtorDsl
 fun <PermissionEnv> Routing.permissions(
@@ -33,8 +34,11 @@ fun <PermissionEnv> Routing.permissions(
                 }
                 put("user-role-context") {
                     ReceiveContextual<PutUserRoleContext>() *
-                    // IsGranted()
-                    PutUserRoleContext * Respond<UserContext> { transform() } runOn Base(call, environment)
+                    IsGrantedInDerivedContext("MANAGE_USER_ROLE_CONTEXTS") { contextual ->
+                        UUID.fromString(contextual.data.contextId)
+                    } *
+                    PutUserRoleContext *
+                    Respond<UserContext> { transform() } runOn Base(call, environment)
                 }
             }
 
@@ -62,7 +66,9 @@ fun <PermissionEnv> Routing.permissions(
                 }
                 put("role-right-context") {
                     ReceiveContextual<PutRoleRightContext>() *
-                    IsGranted("MANAGE_ROLE_RIGHT_CONTEXTS", no) *
+                    IsGrantedInDerivedContext("MANAGE_ROLE_RIGHT_CONTEXTS") { contextual ->
+                        UUID.fromString(contextual.data.contextId.value)
+                    } *
                     PutRoleRightContext *
                     Respond<Context> { transform() } runOn Base(call, environment)
                 }
