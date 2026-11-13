@@ -3,6 +3,8 @@
 > **Status:** Planungs- und Arbeitsbranch; noch keine produktiven Codeänderungen oder DB-Migrationen.  
 > **Branch:** `feature/SMA-594-legal-entity-tenancy` (von `main`)
 
+> **Handoff aktualisiert am 13.11.2026:** SMA-595 Cross-Context-Fix und die zwei Permission-Write-Guards aus SMA-604 sind in diesem Branch bereits committed. **Nächste Priorität für Codex:** vollständige SMA-596-Inventur fortsetzen und `UpdateMember`-Rollenlöschung als möglichen Datenintegritätsfehler lokal mit Negativtest untersuchen. Aktuelle Dokumentation: [SMA-596 Handoff im AI Command](https://github.com/doctor-smith/ai-command/blob/main/research/SMA-596-authz-tenant-handoff-2026-11-13.md). **Keine neue Codeänderung, Merge, Migration ohne ausdrückliche menschliche Freigabe.**
+
 ## Einstieg
 
 - **Jira Epic:** [SMA-594](https://solawi-management.atlassian.net/browse/SMA-594)
@@ -26,7 +28,7 @@
 | 8 | [SMA-602](https://solawi-management.atlassian.net/browse/SMA-602) | Context-Vererbung und `Role × Right × Context × Time` |
 | 9 | [SMA-603](https://solawi-management.atlassian.net/browse/SMA-603) | Optionales Premium-Modul bzw. App für Advanced Permissions |
 
-## Arbeitsauftrag an Codex — als Erstes
+## Historischer SMA-595-Ausgangsauftrag (im Feature-Branch bereits umgesetzt)
 
 1. Arbeitsbranch überprüfen und `SMA-595` lesen.
 2. Bestehende Tests und `module/permission/action/db/is-granted.kt` auf beiden `isGrantedOneOf`-Overloads prüfen.
