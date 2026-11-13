@@ -98,7 +98,35 @@ Skizziere mögliche Modulgrenzen (nur Vorschlag, an reale Struktur anpassen):
 - solyton-ui-theme-management-ee (Theme-Switcher, Katalog, Zuweisung)
 - solyton-ui-layout-* (sichere, dokumentierte Layout-Presets)
 
-## 6. Konkrete Ergebnisse
+## 6. E2E-Tests, UI-Screenshots und I18N als Pflichtbestandteil
+
+**Jede Migrationswelle muss bestehende fachliche E2E-Workflows und Übersetzungen erhalten.** E2E und I18N dürfen nicht als spätes Aufräumen geplant werden.
+
+### 6.1 E2E und visuelle Baseline
+- Bestehende Kotlin/Playwright-E2E-Workflows, Fixtures, Tags, Selektoren, isolierte Testumgebung und kritische Pfade anhand des Codes inventarisieren.
+- Die vorhandenen Klick-/Workflow-Anleitungen möglichst als **wiederholbare Browser-Runs** nutzen: Codex/Playwright führt sie mit stabilen Testdaten aus und erzeugt **Screenshots vor dem Facelift** für modul-, seiten- und zustandsbezogene UI-Inventare. Nach jeder Migrationswelle identische Szenarien und **Nachher-Screenshots** erstellen.
+- Screenshots versionieren/ablegen, mit definierten Viewports, Locale, Testdaten und stabilen UI-Zuständen; sensible/personenbezogene Daten und Zugangsdaten aus Aufnahmen ausschließen. Tool-/Browserzugriff und nötige Berechtigungen dokumentieren; die Automatisierung muss nicht auf jeder Codex-Umgebung sofort verfügbar sein.
+- Alte und neue DOM-Strukturen, Routen, Organisation-/Modulwahl, Modals, Formulare, Responsive-Verhalten, Rechte und Entitlements erfassen. Selektoren bevorzugt semantisch (Role/Accessible Name) bzw. gezielte `data-testid` statt fragilen CSS-Klassen/Texten.
+- **Test-Migrationsmatrix**: Fläche/Workflow → existierende E2E-Tests → erforderliche Anpassungen → neue/ergänzte Tests → Baseline-Screenshot → Nachher-Screenshot → Ergebnis.
+- Kritische Geschäftsprozesse, Organisationwechsel, direkte Links, Refresh, CE/EE-Zustände, Theme-Auswahl/Fallbacks und Barrierefreiheit berücksichtigen.
+- Testausführung ausschließlich mit dafür vorgesehener **isolierter E2E-Umgebung**, nicht gegen Produktivdaten oder die normale Entwicklungsdatenbank.
+- Visuelle Regression dort einsetzen, wo sie stabil und wartbar ist; dynamische Inhalte maskieren/normalisieren. Funktionale Assertions sind durch Screenshots nicht ersetzbar.
+
+### 6.2 Internationalisierung (I18N)
+- Den tatsächlichen I18N-Stack, unterstützte Sprachen, Ressourcen-/Key-Struktur, Fallbacks, Sprachwechsel und Persistenz im Repository erfassen.
+- Hardcodierte Texte, doppelte/verwaiste Keys, unübersetzte Fehler-/Validierungs-/Statusmeldungen und uneinheitliche Benennungen finden; Konsistenz für Module, Sidebar, Organisationen und Dashboard planen.
+- Neue Komponenten, leere Zustände, Statusbadges, Dialoge, Theme-Management, Formulare und zugängliche Beschriftungen vollständig lokalisierbar entwerfen.
+- Pluralformen, Platzhalter, Datums-/Zahlen-/Währungsformate, Textlängen und responsive Übersetzungsoverflows prüfen; Fallback-Verhalten definieren.
+- **Themes bleiben sprachunabhängig** (Tokens/Assets/Layout). Texte und Accessibility-Labels gehören in die Anwendung bzw. in definierte I18N-Ressourcen, nicht fest in Community- oder Premium-Themes.
+- Locale-bezogene E2E-Tests für die tatsächlich unterstützten Sprachen sowie Sprachwechsel, Layout und Fehlermeldungen einplanen. Eine größere I18N-Migration nur empfehlen, wenn der Audit sie begründet.
+
+### Definition of Done pro späterer Implementierungswelle
+- Betroffene E2E-Tests angepasst und in der isolierten Testumgebung erfolgreich; kritische Workflows unverändert funktionsfähig.
+- Relevante Screens mit reproduzierbaren Vorher-/Nachher-Aufnahmen dokumentiert; visuelle Abweichungen bewertet.
+- Neue bzw. geänderte Texte für alle unterstützten Sprachen vorhanden und auf Fallback, Accessibility und Überlauf geprüft.
+- Testabdeckung, offene Risiken und Rollback in der Welle ausgewiesen.
+
+## 7. Konkrete Ergebnisse
 
 Lege die Exploration als nachvollziehbare Markdown-Dokumentation im Repository ab (z. B. unter .ai/ oder docs/, **bestehende Konvention zuerst prüfen**). Erwartet:
 
@@ -106,11 +134,12 @@ Lege die Exploration als nachvollziehbare Markdown-Dokumentation im Repository a
 2. **UX-Zielbild:** AppShell, Modul × Organisation, Rechte, Desktop/Mobile und zentrale Workflows.
 3. **Designsystem-Spezifikation:** semantische Tokens, Komponentenliste, Zustände, a11y.
 4. **Theme-/Edition-Architekturentscheidungsvorlage:** CE/EE-Grenzen, Community-Erweiterungen, Premium-Module, Layout-Plug-ins, Sicherheits-/Lizenz-/Betriebsaspekte.
-5. **Migration Roadmap für die gesamte Anwendung:** priorisierte Wellen, zuerst Shell + Dashboard als Pilot, dann gemeinsame Components, danach alle Module schrittweise. Je Welle Abhängigkeiten, Aufwand, Risiken, Tests, Rollback.
-6. **Folge-Issues/Tasks als Vorschlag** mit testbaren Akzeptanzkriterien (noch keine neuen Tickets ohne separaten Auftrag).
-7. **Offene Fragen** und Entscheidungen, die der Product Owner treffen muss.
+5. **E2E- und I18N-Migrationsmatrix einschließlich Vorher-/Nachher-Screenshot-Baselines:** Testinventar, Selektoren, Workflows, Sprachressourcen, Locales und QA je Welle.
+6. **Migration Roadmap für die gesamte Anwendung:** priorisierte Wellen, zuerst Shell + Dashboard als Pilot, dann gemeinsame Components, danach alle Module schrittweise. Je Welle Abhängigkeiten, Aufwand, Risiken, Tests, Rollback.
+7. **Folge-Issues/Tasks als Vorschlag** mit testbaren Akzeptanzkriterien (noch keine neuen Tickets ohne separaten Auftrag).
+8. **Offene Fragen** und Entscheidungen, die der Product Owner treffen muss.
 
-## 7. Akzeptanzkriterien für die Exploration
+## 8. Akzeptanzkriterien für die Exploration
 
 - Nicht nur Dashboard: **vollständiger belegbarer UI-Scope** inklusive Admin-, Fachmodul- und Workflow-Screens.
 - Navigation funktioniert im Konzept über Modul × Organisationskontext ohne Sicherheitsregressionen.
@@ -119,6 +148,7 @@ Lege die Exploration als nachvollziehbare Markdown-Dokumentation im Repository a
 - Premium-Themes und Theme-Management sind technisch und lizenzseitig **separierbar**, ohne CE zu kompromittieren.
 - Klare Unterscheidung von verfügbarer Funktion, Designvorschlag, Zukunftsidee.
 - Kleine, realistische Rollout-Schritte statt Big-Bang-Rewrite.
+- Jede Welle besitzt einen realistischen E2E- und I18N-Update-/Validierungsplan; Screenshots sind reproduzierbar und datenschutzkonform.
 - Ergebnisse mit Code-/Architekturbelegen, Trade-offs und konkret überprüfbaren nächsten Schritten.
 
 ## Nicht im Umfang
