@@ -1,7 +1,8 @@
 # SMA-596: Authz-/Tenant-Grenzen und Regression-Baseline
 
-Stand: 2026-11-14
-Code-Baseline: `feature/SMA-596-authz-tenant-inventory` / Working Tree nach `c37da07c`
+Stand: 2026-11-14 (Dokumentationsabgleich; keine neue Testausführung)  
+Code-Baseline: [`feature/SMA-596-authz-tenant-inventory` @ `40b50a39`](https://github.com/doctor-smith/solawi-bid/tree/40b50a39fe7335e93ced32fcfba5482c7e6a89dc)  
+Jira: [SMA-596](https://solawi-management.atlassian.net/browse/SMA-596) – **In Progress**; Architektur: [AI Command #9](https://github.com/doctor-smith/ai-command/issues/9)
 
 Diese Bestandsaufnahme wird mit den SMA-596-Slices fortgeschrieben. Sie
 beschreibt den aktuellen Code und die inzwischen aktivierte
@@ -9,6 +10,15 @@ Berechtigungssemantik. Die bereits unter
 SMA-604 geschützten Permission-Schreibpfade sind in
 [`permission-write-path-reachability.md`](permission-write-path-reachability.md)
 detailliert beschrieben.
+
+> **Korrekturstand 14.11.2026:** Die früheren P0/P1-Befunde und die 42
+> deaktivierten Guards beschreiben die **historische Ausgangslage**. Auf dem
+> referenzierten SMA-596-Branch ist der `UpdateMember`-Löschfilter korrigiert,
+> App→Organization prüft inzwischen Organisationsmitgliedschaft, und die
+> Inventur meldet **keine aktiven `no`-Guards** mehr im betrachteten Routing.
+> Dies belegt **nicht** die vollständige Tenant-Sicherheit oder Integration
+> in `main`. Code und Test-Assertions wurden über GitHub gelesen; **keine
+> neuen Tests ausgeführt**.
 
 ## Begriffe und Prüfregel
 
@@ -43,8 +53,8 @@ Context-, Organization-, Provider-, Party- und Legal-Entity-Relationen.
 |---|---|---|---|
 | Permission: User-Rollen in Context schreiben | Payload `contextId` | `MANAGE_USER_ROLE_CONTEXTS`, derived | geschützt; negative API-Regression vorhanden |
 | Permission: Rollen-Rechte in Context schreiben | Payload `contextId` | `MANAGE_ROLE_RIGHT_CONTEXTS`, derived | geschützt; negative API-Regression vorhanden |
-| Organization CRUD und Members | Context-Header; Action prüft teilweise Organization-Context erneut | generische Rechte | Header/Ziel-Bindung uneinheitlich; bestätigter Defekt in `UpdateMember` |
-| Application mit Organization verbinden | Payload `organizationId`, `applicationId` | kein Route-Guard; UserApplication-Existenz in Repository | App-Besitz wird nur angenommen; keine nachgewiesene Berechtigung an Zielorganisation |
+| Organization CRUD und Members | Context-Header; Action prüft teilweise Organization-Context erneut | `MANAGE_USERS` im Ziel-Org-Context und weitere Rechte | `UpdateMember`-Löschfilter korrigiert; übrige Header-/Zielbindungen noch nicht vollständig inventarisiert |
+| Application mit Organization verbinden | Payload `organizationId`, `applicationId` | Repository: `requireOrganizationMembership` + UserApplication | Mitgliedschaft wird geprüft; 403 für fremde Organisation im Testcode; ob Membership statt Manager-/Owner-Recht genügt, ist offen |
 | Banking: Legal Entity personal | Payload/Query `partyId` | derived Banking-Context, `yes` | gute Zielableitung; Party-Typ-Konsistenz ungeklärt |
 | Banking: Fiscal Year | Payload/Query `legalEntityId` → Legal Entity → Party | create derived; update/read ALL_OF | geschützt; Update prüft Quell- und Ziel-Party |
 | Banking: Bank Accounts | Legal Entity, tatsächlicher Account-Owner oder JWT-Actor | Provider-Operationen aktiv; personal read self-bound | geschützt; Delete löst den Owner serverseitig auf |
@@ -61,7 +71,7 @@ Context-, Organization-, Provider-, Party- und Legal-Entity-Relationen.
 
 ## Vollständige explizite `no`-Bestandsaufnahme
 
-Im Routing existieren **keine aktiven deaktivierten Prüfungen** mehr:
+Laut aktueller Branch-Inventur existieren im betrachteten Routing **keine aktiven expliziten `no`-Prüfungen** mehr (ursprünglich 42; kein vollständiger dynamischer Sicherheitsnachweis):
 
 - Banking: Collections, Payments und Messages leiten ihre Contexts aus den
   gespeicherten Zielressourcen ab. Batch-Operationen prüfen alle betroffenen
@@ -80,32 +90,46 @@ werden, weil eine Action noch eine interne Prüfung enthalten kann.
 
 ## Bestätigte Defekte und Risiken
 
-### P0: `UpdateMember` kann Rollen anderer Nutzer löschen
+### P0 – behoben auf SMA-596-Branch: `UpdateMember`-Löschfilter
 
-Die Delete-Bedingung lautet sinngemäß:
+Historischer Befund: `userId notInList roleIds` verglich User- mit
+Rollen-IDs und löschte ohne `memberId`-Filter potenziell fremde
+Rollenzuweisungen. **Bereits korrigiert** mit
+[Commit `2ca16465`](https://github.com/doctor-smith/solawi-bid/commit/2ca16465e741779ffce1723376a7f27e5a04827e):
 
 ```kotlin
-contextId == organization.contextId && userId !in roleIds
+UserRoleContext.deleteWhere {
+    (UserRoleContext.contextId eq organization.context.id) and
+        (UserRoleContext.userId eq memberId) and
+        (UserRoleContext.roleId notInList roleIds)
+}
 ```
 
-`roleIds` wird damit fälschlich mit `userId` verglichen; außerdem fehlt die
-Einschränkung auf `memberId`. Beim Ändern eines Mitglieds können deshalb
-Rollenzuordnungen anderer Nutzer im selben Organisationskontext gelöscht
-werden. Die vorhandenen Tests prüfen Erfolg, fehlendes Recht und falschen
-Header-Kontext, aber nicht den Erhalt eines zweiten Mitglieds.
+[`OrganizationRoutingTests`](https://github.com/doctor-smith/solawi-bid/blob/40b50a39fe7335e93ced32fcfba5482c7e6a89dc/solawi-bid-backend/src/test/kotlin/org/solyton/solawi/bid/module/usermanagement/routing/organization-routing-tests.kt#L583-L675)
+enthält eine Regression-Assertion, dass beim Bearbeiten eines Mitglieds
+die Rollen des Owners erhalten bleiben. **Implementiert und im Code
+nachgewiesen; keine aktuelle Testausführung und keine Integration in
+`main` nachgewiesen.** Weitere Mitglieder, andere Contexts und
+Parallelitätsfälle bleiben für vertiefte Tests relevant.
 
 ### Erledigt: Deklarierte Prüfungen waren deaktiviert
 
 Die SEPA-Schreiboperationen sind inzwischen resource-derived geschützt. Im
 Routing wird kein `no` mehr an einen Permission-Guard übergeben.
 
-### P1: Application→Organization prüft die Zielorganisation nicht
+### P1 – teilweise geschlossen: Application→Organization
 
-`connectApplicationToOrganization` akzeptiert jede `organizationId`, sobald
-für den Actor eine `UserApplication` existiert. Der Kommentar setzt
-Registrierung/Besitz gleich; eine Membership- oder Management-Berechtigung an
-der Zielorganisation wird nicht geprüft. Das kann Contexts und OWNER-Rollen an
-einer fremden Organisation erzeugen.
+[`connectApplicationToOrganization`](https://github.com/doctor-smith/solawi-bid/blob/40b50a39fe7335e93ced32fcfba5482c7e6a89dc/solawi-bid-backend/src/main/kotlin/org/solyton/solawi/bid/module/application/repository/connect-applications-and-organizations.kt)
+ruft jetzt **`requireOrganizationMembership(organizationId, userId)`**
+vor der Mutation auf. In
+[`ApplicationOrganizationTests`](https://github.com/doctor-smith/solawi-bid/blob/40b50a39fe7335e93ced32fcfba5482c7e6a89dc/solawi-bid-backend/src/test/kotlin/org/solyton/solawi/bid/module/application/routing/appliction-organization-tests.kt#L109-L147)
+sind der negative API-Fall für eine fremde Organisation (erwartet 403)
+und der legitime Verbindungsweg im Testcode vorhanden.
+
+**Rest:** Mitgliedschaft ist kein nachgewiesenes Organisations-Manage-
+oder Owner-Recht. Fachliche Policy entscheiden, ob ein normales Mitglied
+Anwendungen verbinden und dadurch OWNER-Rollen im App-Context erzeugen
+darf. 403 allein beweist keinen fehlenden Seiteneffekt; gezielt prüfen.
 
 ### Erledigt: ID-basierte SEPA-Reads lösen Ressourcen serverseitig auf
 
@@ -122,22 +146,32 @@ transformiert. In der untersuchten Route ist keine Konsistenzprüfung zur
 referenzierten Party sichtbar. Ob dies nur Datenqualität oder eine spätere
 Autorisierungsgrundlage betrifft, ist noch offen.
 
-## Regression-Baseline: nächste kleine Schnitte
+## Regression-Baseline – tatsächlicher Fortschritt / nächste Schritte
 
-1. **SMA-596A – Organization Member Integrity**: Zwei Mitglieder mit Rollen
-   anlegen, nur eines aktualisieren und beweisen, dass Actor und zweites Mitglied
-   unverändert bleiben. Danach den Delete-Filter minimal korrigieren.
-2. **SMA-596B – Application/Organization Cross-Boundary**: Actor besitzt die
-   Anwendung, aber weder Mitgliedschaft noch Managementrecht an Organisation B;
-   `connect-organization` muss ohne Seiteneffekt scheitern. Positivfall für eine
-   berechtigte Organisation ergänzen.
-3. **SMA-596C – Provider-bound Writes**: Zuerst Distribution oder Shares
-   `update-statuses`: gleicher Tenant positiv, fremder Provider negativ,
-   manipulierter Header negativ, Mixed-Provider-Batch und leere Liste negativ.
-   Erst danach den jeweiligen `no`-Schalter entfernen.
+1. **SMA-596A – Organization Member Integrity:** Codefix `2ca16465`
+   und Regression-Assertion (Owner-Rollen bleiben bei Member-Update gleich)
+   vorhanden. Testlauf auf aktuellem HEAD und Last-Owner-/Cross-Context-
+   Varianten separat nachweisen.
+2. **SMA-596B – Application/Organization Cross-Boundary:** Membership-
+   Prüfung implementiert und 403-Negativfall in `ApplicationOrganizationTests`
+   vorhanden. Offen: Manager-/Owner-Policy, fehlende Seiteneffekte, Tests.
+3. **SMA-596C/D – Distribution & Shares:** Guards und Quell-/Ziel-
+   bzw. EACH_TARGET-Checks laut aktuellem Branch-Inventar aktiviert; konkrete
+   negative Testresultate für aktuellen SHA erfassen.
+4. **SEPA-Slices:** Mandates/Collections/Payments/Messages und ID-basierte
+   Reads laut Routing resource-derived geschützt; negative Tests einschließlich
+   Batch/leer/fremde Legal Entity und Seiteneffekten nachweisen.
+5. **Nächste Sicherheitsinventur:** `putUserRoleContext` (letzter Owner,
+   Self-Lockout), Auction, Round, Bidders, öffentliches `bid/send`, User/
+   Profile; pro realer Route Guard, serverseitige Ressource→Context-Bindung,
+   DB-Filter, Policy, positive/negative Tests und Rest-Risiko auflisten.
 
-SEPA wurde anschließend in getrennten Slices für Mandates, Collections,
-Payments und Messages aktiviert.
+**Teststand nicht verwechseln:** Existierender Kotlin-Testcode ist keine
+aktuell erfolgreiche Testausführung. Im [AI Command Coordination
+Channel #7](https://github.com/doctor-smith/ai-command/issues/7) berichtete
+Codex früher 8/8 Permission-API-, 7/7 Permission-DB- und 22/22 isolierte
+E2E-Tests; diese Berichte stammen **vor** den neuesten SMA-596-Slices.
+Für Branch-HEAD `40b50a39` wurde hier kein neuer lokaler Testlauf belegt.
 
 ## Fakten, Annahmen, Unsicherheiten
 
@@ -147,8 +181,8 @@ Payments und Messages aktiviert.
   Routing erhoben; nach den bisherigen Slices verbleibt keine davon.
 - Die beiden direkten Permission-Schreibpfade leiten ihren Kontext inzwischen
   aus dem Payload ab.
-- Der `UpdateMember`-Delete-Filter und die fehlende Organization-Prüfung beim
-  App-Connect sind bis in Repository/SQL verfolgt.
+- Der `UpdateMember`-Delete-Filter ist auf diesem Branch mit `2ca16465` korrigiert; ein Regression-Assert ist vorhanden.
+- Die App→Org-Verknüpfung verlangt jetzt Membership; ein stärkeres Organisations-Manage-/Owner-Recht ist noch nicht entschieden.
 - Es gibt im Backend keine gefundene explizite `tenantId`-Spalte oder
   `Tenant`-Entität.
 
@@ -164,6 +198,8 @@ Payments und Messages aktiviert.
 
 - Für Auction, Round und Bidders ist noch nicht für jede Action bewiesen, ob
   sie intern dieselbe Zielbindung erzwingt.
+- Last-Owner-/Self-Lockout-Schutz in `putUserRoleContext` sowie vollständige
+  Ressource↔Context-/Tenant-Bindings und aktuelle Tests bleiben offen.
 - Die gewünschte Semantik für persönliche Reads gegenüber Management-Rechten
   ist nicht überall dokumentiert.
 - Die verbindliche Regel für `LegalEntityType` gegenüber User/Organization ist
@@ -171,7 +207,12 @@ Payments und Messages aktiviert.
 
 ## Abschlusskriterium für SMA-596
 
-SMA-596 ist abgeschlossen, wenn die drei Regression-Slices als ausführbare
-Tests oder klar abgegrenzte Folgetickets vorliegen, jede offene Route eine
-benannte Kontextquelle und Zielsemantik (`ALL_OF`, `ANY_OF`, `EACH_TARGET` oder
-`RELATED_BY`) besitzt und die P0/P1-Funde priorisiert in die Umsetzung gehen.
+SMA-596 ist abnahmefähig, wenn (1) die umgesetzten Slices inklusive
+`UpdateMember`, App→Org, Shares, Distribution und SEPA mit aktuellen
+Testläufen/Reviews nachgewiesen sind, (2) die übrigen tatsächlichen Routes
+(Auction/Round/Bidders/User/Profile und weitere) inklusive interner
+Repository-/SQL-Filter in einer prüfbaren Ziel-/Context-/Policy-Matrix
+(`ALL_OF`, `ANY_OF`, `EACH_TARGET`, `RELATED_BY`) erfasst sind, (3) Owner-/
+Self-Lockout-Invarianten und Cross-Context-/Tenant-Bindungen geprüft und
+(4) offene P0/P1-Punkte als bewusste Entscheidungen/Folgeaufträge abgegrenzt
+sind. Ein Merge nach `main` ist ein gesondert freizugebender Schritt.
