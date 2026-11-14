@@ -1,0 +1,12 @@
+# Never commit real or pseudonymized database data.
+*.sql
+*.sql.gz
+*.dump
+*.db
+*.sqlite
+*.sqlite3
+*.jsonl
+__pycache__/
+*.pyc
+.env
+.env.*
