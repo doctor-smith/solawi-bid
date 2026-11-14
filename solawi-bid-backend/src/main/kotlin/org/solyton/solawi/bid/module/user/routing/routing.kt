@@ -23,6 +23,18 @@ import org.solyton.solawi.bid.module.user.data.api.organization.*
 import org.solyton.solawi.bid.module.user.data.api.userprofile.*
 import org.solyton.solawil.bid.module.bid.data.api.toUUID
 
+// Administrative account changes are authorized only in the trusted, global
+// platform user-management context, never in a caller-selected organization context.
+private fun <T> RequirePlatformUserManagement() = IsGrantedInDerivedContext<T>("UPDATE_USER") {
+    val adminContext = ContextEntity.find {
+        ContextsTable.name eq "ORGANIZATION_MANAGEMENT"
+    }.firstOrNull() ?: throw PermissionException.AccessDenied
+    if (adminContext.path() != "APPLICATION/MANAGEMENT/ORGANIZATION_MANAGEMENT") {
+        throw PermissionException.AccessDenied
+    }
+    adminContext.id.value
+}
+
 @KtorDsl
 fun <UserEnv> Routing.user(
     environment: UserEnv,
@@ -50,18 +62,7 @@ fun <UserEnv> Routing.user(
 
             patch("change-password") {
                 ReceiveContextual<ChangePassword>() *
-                // An administrator must have UPDATE_USER in the fixed, trusted platform
-                // management context. Never authorize a password reset using the
-                // caller-supplied CONTEXT header or the target username alone.
-                IsGrantedInDerivedContext("UPDATE_USER") {
-                    val adminContext = ContextEntity.find {
-                        ContextsTable.name eq "ORGANIZATION_MANAGEMENT"
-                    }.firstOrNull() ?: throw PermissionException.AccessDenied
-                    if (adminContext.path() != "APPLICATION/MANAGEMENT/ORGANIZATION_MANAGEMENT") {
-                        throw PermissionException.AccessDenied
-                    }
-                    adminContext.id.value
-                } *
+                RequirePlatformUserManagement<ChangePassword>() *
                 ChangePassword *
                 Respond<User>{ transform() } runOn Base(call, environment)
             }
@@ -70,7 +71,7 @@ fun <UserEnv> Routing.user(
             }
             patch("update-username") {
                 ReceiveContextual<UpdateUsername>() *
-                IsGranted("MANAGE_USERS") *
+                RequirePlatformUserManagement<UpdateUsername>() *
                 UpdateUsername *
                 Respond<User>{ transform() } runOn Base(call, environment)
             }
