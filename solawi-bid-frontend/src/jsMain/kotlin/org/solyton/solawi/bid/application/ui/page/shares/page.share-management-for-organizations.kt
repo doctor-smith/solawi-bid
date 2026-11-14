@@ -242,15 +242,14 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
             }
             launch {
                 bankingApplicationActions dispatch readPersonalSepaCollections(
-                    providerId,
                     legalEntityId
                 )
             }
             launch {
-                bankingApplicationActions dispatch readSepaMessagesByLegalEntity(LegalEntityId(providerId.value))
+                bankingApplicationActions dispatch readSepaMessagesByLegalEntity(legalEntityId)
             }
             launch {
-                bankingApplicationActions dispatch readSepaMandatesByCreditorsLegalEntity(LegalEntityId(providerId.value))
+                bankingApplicationActions dispatch readSepaMandatesByCreditorsLegalEntity(legalEntityId)
             }
         }
     }

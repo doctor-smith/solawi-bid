@@ -1,10 +1,11 @@
 # SMA-596: Authz-/Tenant-Grenzen und Regression-Baseline
 
-Stand: 2026-11-10  
-Code-Baseline: `feature/SMA-596-authz-tenant-inventory` / `4726e81e`
+Stand: 2026-11-14
+Code-Baseline: `feature/SMA-596-authz-tenant-inventory` / Working Tree nach `c37da07c`
 
-Diese Bestandsaufnahme ist ein Read-only-Ergebnis. Sie beschreibt den aktuellen
-Code, aber legt noch keine neue Berechtigungssemantik fest. Die bereits unter
+Diese Bestandsaufnahme wird mit den SMA-596-Slices fortgeschrieben. Sie
+beschreibt den aktuellen Code und die inzwischen aktivierte
+Berechtigungssemantik. Die bereits unter
 SMA-604 geschützten Permission-Schreibpfade sind in
 [`permission-write-path-reachability.md`](permission-write-path-reachability.md)
 detailliert beschrieben.
@@ -48,7 +49,7 @@ Context-, Organization-, Provider-, Party- und Legal-Entity-Relationen.
 | Banking: Fiscal Year | Payload/Query `legalEntityId` → Legal Entity → Party | create derived; update/read ALL_OF | geschützt; Update prüft Quell- und Ziel-Party |
 | Banking: Bank Accounts | Legal Entity, tatsächlicher Account-Owner oder JWT-Actor | Provider-Operationen aktiv; personal read self-bound | geschützt; Delete löst den Owner serverseitig auf |
 | Banking: Creditor Identifiers | `legalEntityId` | derived, aktiv | Zielbindung vorhanden |
-| Banking: SEPA | Mandat/Collection/Payment/Message IDs bzw. Legal Entity | überwiegend `no` | höchste zusammenhängende offene Schreibfläche |
+| Banking: SEPA | Mandat/Collection/Payment/Message IDs bzw. Legal Entity | resource-derived, ALL_OF/EACH_TARGET; Personal Reads self-bound | geschützt; IDs werden serverseitig zu Legal Entity/Party/Banking-Context aufgelöst |
 | Shares: Types, Offers, Subscriptions | Payload/Query oder tatsächliche Ressource → Provider → App-Context; Personal über JWT-Actor | Provider-Reads/Writes aktiv, Personal self-bound | geschützt; Quell- und Zielressourcen werden bei Änderungen serverseitig aufgelöst |
 | Shares: Batch `update-statuses` | Payload-Provider plus DB-Provider jedes Ziels | EACH_TARGET/ALL_OF, aktiv | in SMA-596D geschlossen; leere Liste prüft den Payload-Provider |
 | Shares: History | Subscription-IDs → Provider → App-Context | `READ_SHARE_SUBSCRIPTIONS`/Management, EACH_TARGET | geschützt; jede Subscription wird serverseitig aufgelöst |
@@ -60,11 +61,12 @@ Context-, Organization-, Provider-, Party- und Legal-Entity-Relationen.
 
 ## Vollständige explizite `no`-Bestandsaufnahme
 
-Im Routing existieren nach Aktivierung der Mandate-Prüfungen noch **17 aktive deaktivierte Prüfungen**:
+Im Routing existieren **keine aktiven deaktivierten Prüfungen** mehr:
 
-- Banking (17): SEPA collections create/create-payments/create-successors/generate-message/update;
-  payment create-ad-hoc/update-statuses/update/update-many/delete/delete-many;
-  payment-link by-legal-entity/personal; message download/by-legal-entity/update-status/merge.
+- Banking: Collections, Payments und Messages leiten ihre Contexts aus den
+  gespeicherten Zielressourcen ab. Batch-Operationen prüfen alle betroffenen
+  Ressourcen und lehnen leere Zielmengen ab. Persönliche Mandate und
+  Payment-Links sind an die JWT-Identität gebundene Self-Service-Pfade.
 - Shares: keine; der persönliche Subscription-Read ist als authentifizierter
   Self-Service-Pfad an die JWT-Identität gebunden, und Import leitet den
   Share-Management-Context aus dem Provider im Payload ab.
@@ -92,11 +94,10 @@ Rollenzuordnungen anderer Nutzer im selben Organisationskontext gelöscht
 werden. Die vorhandenen Tests prüfen Erfolg, fehlendes Recht und falschen
 Header-Kontext, aber nicht den Erhalt eines zweiten Mitglieds.
 
-### P0: Noch 17 deklarierte Prüfungen sind deaktiviert
+### Erledigt: Deklarierte Prüfungen waren deaktiviert
 
-Das ist besonders kritisch für SEPA-Schreiboperationen. Die Share-Routen sind
-inzwischen providergebunden oder bei persönlichen Reads an den JWT-Actor
-gebunden; in diesem Bereich wird kein `no` mehr übergeben.
+Die SEPA-Schreiboperationen sind inzwischen resource-derived geschützt. Im
+Routing wird kein `no` mehr an einen Permission-Guard übergeben.
 
 ### P1: Application→Organization prüft die Zielorganisation nicht
 
@@ -106,13 +107,13 @@ Registrierung/Besitz gleich; eine Membership- oder Management-Berechtigung an
 der Zielorganisation wird nicht geprüft. Das kann Contexts und OWNER-Rollen an
 einer fremden Organisation erzeugen.
 
-### P1: Verbleibende ID-basierte Reads brauchen Ressourcenauflösung
+### Erledigt: ID-basierte SEPA-Reads lösen Ressourcen serverseitig auf
 
-SEPA-Downloads erhalten lediglich IDs. Eine robuste Prüfung muss erst
-`ID → Ressource → Legal Entity → Context` auflösen und anschließend alle Ziele
-prüfen. Der Client darf den Kontext nicht durch Auswahl einer ID oder eines
-Headers bestimmen. Shares-History und Share-Batch-Updates lösen inzwischen jede
-Subscription serverseitig zum Provider-Context auf.
+SEPA-Downloads und Legal-Entity-Reads lösen
+`ID → Ressource → Legal Entity/Party → Banking-Context` auf. Der Client kann
+den Kontext nicht durch einen Header bestimmen. Shares-History und
+Share-Batch-Updates lösen ebenfalls jede Subscription serverseitig zum
+Provider-Context auf.
 
 ### P2: Legal-Entity-Typ ist nicht gegen Party-Typ abgesichert
 
@@ -135,15 +136,15 @@ Autorisierungsgrundlage betrifft, ist noch offen.
    manipulierter Header negativ, Mixed-Provider-Batch und leere Liste negativ.
    Erst danach den jeweiligen `no`-Schalter entfernen.
 
-SEPA sollte anschließend in einem eigenen Slice pro Ressourcenwurzel erfolgen;
-23 Pfade auf einmal umzuschalten wäre nicht klein und schwer überprüfbar.
+SEPA wurde anschließend in getrennten Slices für Mandates, Collections,
+Payments und Messages aktiviert.
 
 ## Fakten, Annahmen, Unsicherheiten
 
 **Fakten**
 
 - Die äußere JWT-Topologie und ursprünglich 42 `no`-Stellen wurden aus dem
-  Routing erhoben; nach den bisherigen Slices verbleiben 17 in SEPA.
+  Routing erhoben; nach den bisherigen Slices verbleibt keine davon.
 - Die beiden direkten Permission-Schreibpfade leiten ihren Kontext inzwischen
   aus dem Payload ab.
 - Der `UpdateMember`-Delete-Filter und die fehlende Organization-Prüfung beim

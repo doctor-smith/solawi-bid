@@ -3,7 +3,10 @@ package org.solyton.solawi.bid.module.banking.routing
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import org.evoleq.exposedx.data.DbEnv
-import org.evoleq.ktorx.*
+import org.evoleq.ktorx.Base
+import org.evoleq.ktorx.NotImplemented
+import org.evoleq.ktorx.ReceiveContextual
+import org.evoleq.ktorx.Respond
 import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
@@ -12,6 +15,7 @@ import org.evoleq.uuid.toUuid
 import org.solyton.solawi.bid.module.application.repository.contextIdOf
 import org.solyton.solawi.bid.module.banking.action.*
 import org.solyton.solawi.bid.module.banking.application.BANKING_APPLICATION_NAME
+import org.solyton.solawi.bid.module.banking.data.SepaMessageId
 import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.banking.permissions.BankAccounts.Rights.CREATE_BANK_ACCOUNTS
 import org.solyton.solawi.bid.module.banking.permissions.BankAccounts.Rights.DELETE_BANK_ACCOUNTS
@@ -40,13 +44,10 @@ import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_MANDATES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_MESSAGES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_PAYMENTS
-import org.solyton.solawi.bid.module.banking.repository.validatedCreditorIdentifier
-import org.solyton.solawi.bid.module.banking.repository.validatedFiscalYear
-import org.solyton.solawi.bid.module.banking.repository.validatedLegalEntity
-import org.solyton.solawi.bid.module.banking.repository.validatedSepaCollection
-import org.solyton.solawi.bid.module.banking.repository.validatedSepaMandate
+import org.solyton.solawi.bid.module.banking.repository.*
 import org.solyton.solawi.bid.module.banking.service.validatedBankAccount
 import org.solyton.solawi.bid.module.permission.action.db.*
+import org.solyton.solawi.bid.module.values.LegalEntityId
 import org.solyton.solawil.bid.module.bid.data.api.toUUID
 
 fun <BankingEnv> Routing.banking (
@@ -362,57 +363,116 @@ fun <BankingEnv> Routing.banking (
                 }
                 route("collections"){
                     get("by-legal-entity") {
-                        ReceiveContextual<Pair<String, String>>{
-                            parameters ->
-                            val legalEntity = requireNotNull(parameters["legal_entity"]) {
+                        ReceiveContextual<LegalEntityId> { parameters ->
+                            LegalEntityId(requireNotNull(parameters["legal_entity"]) {
                                 "Parameter 'legal_entity' is empty"
-                            }
-                            val provider = requireNotNull(parameters["provider"]) {
-                                "Parameter 'provider' is empty"
-                            }
-                            provider x legalEntity
+                            })
                         } *
-                        IsGrantedInDerivedContext(READ_SEPA_COLLECTIONS, yes) {
-                            contextual -> contextIdOf(BANKING_APPLICATION_NAME){
-                                contextual.data.first.toUuid()
-                            }
+                        IsGrantedInDerivedContext(READ_SEPA_COLLECTIONS) { contextual ->
+                            val partyId = validatedLegalEntity(contextual.data.value.toUuid()).partyId
+                            contextIdOf(BANKING_APPLICATION_NAME) { partyId }
                         } *
-                        TransformContextual { x: Pair<String, String> -> x.second } *
                         ReadSepaCollectionsByLegalEntity() *
                         Respond { transform() } runOn Base(call, environment)
                     }
-                    // TODO(correct context needs to be provided)
                     post("create") {
                         ReceiveContextual<CreateSepaCollection>() *
-                        IsGranted(CREATE_SEPA_COLLECTIONS, no) *
+                        IsGrantedOneOfInAllDerivedContexts(
+                            rights(CREATE_SEPA_COLLECTIONS, "MANAGE_BANK_TRANSACTIONS")
+                        ) { contextual ->
+                            val data = contextual.data
+                            val creditorPartyId = validatedCreditorIdentifier(
+                                data.creditorIdentifierId.value.toUuid()
+                            ).legalEntity.partyId
+                            val accountOwnerId = validatedBankAccount(
+                                data.creditorBankAccountId.value.toUuid()
+                            ).userId
+                            setOf(creditorPartyId, accountOwnerId).map { partyId ->
+                                contextIdOf(BANKING_APPLICATION_NAME) { partyId }
+                            }.toSet()
+                        } *
                         CreateSepaCollection() *
                         Respond { transform() } runOn Base(call, environment)
                     }
-                    // TODO(correct context needs to be provided)
                     post("create-payments"){
                         ReceiveContextual<CreateSepaPaymentsForCollection>() *
-                        IsGranted(CREATE_SEPA_PAYMENTS, no) *
+                        IsGrantedOneOfInAllDerivedContexts(
+                            rights(CREATE_SEPA_PAYMENTS, "MANAGE_BANK_TRANSACTIONS")
+                        ) { contextual ->
+                            val collection = validatedSepaCollection(
+                                contextual.data.sepaCollectionId.value.toUuid()
+                            )
+                            setOf(
+                                collection.creditorIdentifier.legalEntity.partyId,
+                                collection.creditorAccount.userId
+                            ).map { partyId ->
+                                contextIdOf(BANKING_APPLICATION_NAME) { partyId }
+                            }.toSet()
+                        } *
                         CreateSepaPaymentsForCollection() *
                         Respond { transform() } runOn Base(call, environment)
                     }
-                    // TODO(correct context needs to be provided)
                     post("create-payment-successors") {
                         ReceiveContextual<CreateSepaPaymentSuccessors>() *
-                        IsGranted(CREATE_SEPA_PAYMENTS, no) *
+                        IsGrantedOneOfInAllDerivedContexts(
+                            rights(CREATE_SEPA_PAYMENTS, "MANAGE_BANK_TRANSACTIONS")
+                        ) { contextual ->
+                            require(contextual.data.paymentIds.isNotEmpty()) {
+                                "At least one SEPA payment is required"
+                            }
+                            contextual.data.paymentIds.flatMap { paymentId ->
+                                val collection = validatedPayment(paymentId.value.toUuid()).collection
+                                listOf(
+                                    collection.creditorIdentifier.legalEntity.partyId,
+                                    collection.creditorAccount.userId
+                                )
+                            }.map { partyId ->
+                                contextIdOf(BANKING_APPLICATION_NAME) { partyId }
+                            }.toSet()
+                        } *
                         CreateSepaPaymentSuccessors() *
                         Respond { transform() } runOn Base(call, environment)
                     }
-                    // TODO(correct context needs to be provided)
                     post("generate-sepa-message") {
                         ReceiveContextual<GenerateSepaMessageForCollection>() *
-                        IsGranted(CREATE_SEPA_MESSAGES, no) *
+                        IsGrantedOneOfInAllDerivedContexts(
+                            rights(CREATE_SEPA_MESSAGES, "MANAGE_BANK_TRANSACTIONS")
+                        ) { contextual ->
+                            val collection = validatedSepaCollection(
+                                contextual.data.sepaCollectionId.value.toUuid()
+                            )
+                            setOf(
+                                collection.creditorIdentifier.legalEntity.partyId,
+                                collection.creditorAccount.userId
+                            ).map { partyId ->
+                                contextIdOf(BANKING_APPLICATION_NAME) { partyId }
+                            }.toSet()
+                        } *
                         GenerateSepaMessageForCollection() *
                         Respond { transform() } runOn Base(call, environment)
                     }
-                    // TODO(correct context needs to be provided)
                     patch("update") {
                         ReceiveContextual<UpdateSepaCollection>() *
-                        IsGranted(UPDATE_SEPA_COLLECTIONS, no) *
+                        IsGrantedOneOfInAllDerivedContexts(
+                            rights(UPDATE_SEPA_COLLECTIONS, "MANAGE_BANK_TRANSACTIONS")
+                        ) { contextual ->
+                            val data = contextual.data
+                            val sourceCollection = validatedSepaCollection(data.sepaCollectionId.value.toUuid())
+                            val targetCreditorPartyId = validatedCreditorIdentifier(
+                                data.creditorIdentifierId.value.toUuid()
+                            ).legalEntity.partyId
+                            val targetAccountOwnerId = validatedBankAccount(
+                                data.creditorAccountId.value.toUuid()
+                            ).userId
+                            setOf(
+                                sourceCollection.creditorIdentifier.legalEntity.partyId,
+                                sourceCollection.creditorAccount.userId,
+                                targetCreditorPartyId,
+                                targetAccountOwnerId
+                            ).map { partyId ->
+                                contextIdOf(BANKING_APPLICATION_NAME) { partyId }
+                            }.toSet()
+                        } *
                         UpdateSepaCollection() *
                         Respond { transform() } runOn Base(call, environment)
                     }
@@ -421,98 +481,237 @@ fun <BankingEnv> Routing.banking (
                     }
 
                 }
-                // TODO(correct context needs to be provided)
                 route("payments"){
                     post("create") {
                         NotImplemented("Sepa collection creation is not implemented yet")
                     }
                     post("create-ad-hoc") {
                         ReceiveContextual<CreateAdHocSepaPayment>() *
-                        IsGranted(UPDATE_SEPA_PAYMENTS, no) *
+                        IsGrantedOneOfInAllDerivedContexts(
+                            rights(UPDATE_SEPA_PAYMENTS, "MANAGE_BANK_TRANSACTIONS")
+                        ) { contextual ->
+                            val data = contextual.data
+                            val collection = validatedSepaCollection(data.sepaCollectionId.value.toUuid())
+                            val mandate = validatedSepaMandate(data.sepaMandateId.value.toUuid())
+                            val predecessorCollection = data.predecessorId?.let { predecessorId ->
+                                validatedPayment(predecessorId.value.toUuid()).collection
+                            }
+                            listOfNotNull(
+                                collection.creditorIdentifier.legalEntity.partyId,
+                                collection.creditorAccount.userId,
+                                mandate.creditorIdentifier.legalEntity.partyId,
+                                predecessorCollection?.creditorIdentifier?.legalEntity?.partyId,
+                                predecessorCollection?.creditorAccount?.userId
+                            ).map { partyId ->
+                                contextIdOf(BANKING_APPLICATION_NAME) { partyId }
+                            }.toSet()
+                        } *
                         CreateAdHocSepaPayment() *
                         Respond { transform() } runOn Base(call, environment)
                     }
                     patch("update-execution-statuses") {
                         ReceiveContextual<UpdateSepaPaymentExecutionStatuses>() *
-                        IsGranted(UPDATE_SEPA_PAYMENTS, no) *
+                        IsGrantedOneOfInAllDerivedContexts(
+                            rights(UPDATE_SEPA_PAYMENTS, "MANAGE_BANK_TRANSACTIONS")
+                        ) { contextual ->
+                            require(contextual.data.paymentIds.isNotEmpty()) {
+                                "At least one SEPA payment is required"
+                            }
+                            contextual.data.paymentIds.flatMap { paymentId ->
+                                val collection = validatedPayment(paymentId.value.toUuid()).collection
+                                listOf(
+                                    collection.creditorIdentifier.legalEntity.partyId,
+                                    collection.creditorAccount.userId
+                                )
+                            }.map { partyId ->
+                                contextIdOf(BANKING_APPLICATION_NAME) { partyId }
+                            }.toSet()
+                        } *
                         UpdateSepaPaymentExecutionStatuses() *
                         Respond { transform() } runOn Base(call, environment)
                     }
                     patch("update") {
                         ReceiveContextual<UpdateSepaPayment>() *
-                        IsGranted(UPDATE_SEPA_PAYMENTS, no) *
+                        IsGrantedOneOfInAllDerivedContexts(
+                            rights(UPDATE_SEPA_PAYMENTS, "MANAGE_BANK_TRANSACTIONS")
+                        ) { contextual ->
+                            val data = contextual.data
+                            val collection = validatedPayment(data.sepaPaymentId.value.toUuid()).collection
+                            val message = data.sepaMessageId?.let { messageId ->
+                                validateSepaMessage(messageId.value.toUuid())
+                            }
+                            listOfNotNull(
+                                collection.creditorIdentifier.legalEntity.partyId,
+                                collection.creditorAccount.userId,
+                                message?.creditorIdentifier?.legalEntity?.partyId,
+                                message?.creditorAccount?.userId
+                            ).map { partyId ->
+                                contextIdOf(BANKING_APPLICATION_NAME) { partyId }
+                            }.toSet()
+                        } *
                         UpdateSepaPayment() *
                         Respond { transform() } runOn Base(call, environment)
                     }
                     patch("update-many") {
                         ReceiveContextual<UpdateSepaPayments>() *
-                        IsGranted(UPDATE_SEPA_PAYMENTS, no) *
+                        IsGrantedOneOfInAllDerivedContexts(
+                            rights(UPDATE_SEPA_PAYMENTS, "MANAGE_BANK_TRANSACTIONS")
+                        ) { contextual ->
+                            require(contextual.data.all.isNotEmpty()) {
+                                "At least one SEPA payment is required"
+                            }
+                            contextual.data.all.flatMap { paymentUpdate ->
+                                val collection = validatedPayment(
+                                    paymentUpdate.sepaPaymentId.value.toUuid()
+                                ).collection
+                                val message = paymentUpdate.sepaMessageId?.let { messageId ->
+                                    validateSepaMessage(messageId.value.toUuid())
+                                }
+                                listOfNotNull(
+                                    collection.creditorIdentifier.legalEntity.partyId,
+                                    collection.creditorAccount.userId,
+                                    message?.creditorIdentifier?.legalEntity?.partyId,
+                                    message?.creditorAccount?.userId
+                                )
+                            }.map { partyId ->
+                                contextIdOf(BANKING_APPLICATION_NAME) { partyId }
+                            }.toSet()
+                        } *
                         UpdateSepaPayments() *
                         Respond { transform() } runOn Base(call, environment)
                     }
                     delete("delete") {
                         ReceiveContextual<DeleteSepaPayment>() *
-                        IsGranted(DELETE_SEPA_PAYMENTS, no) *
+                        IsGrantedOneOfInAllDerivedContexts(
+                            rights(DELETE_SEPA_PAYMENTS, "MANAGE_BANK_TRANSACTIONS")
+                        ) { contextual ->
+                            val collection = validatedPayment(contextual.data.id.value.toUuid()).collection
+                            setOf(
+                                collection.creditorIdentifier.legalEntity.partyId,
+                                collection.creditorAccount.userId
+                            ).map { partyId ->
+                                contextIdOf(BANKING_APPLICATION_NAME) { partyId }
+                            }.toSet()
+                        } *
                         DeleteSepaPayment() *
                         Respond { transform() } runOn Base(call, environment)
                     }
                     delete("delete-many") {
                         ReceiveContextual<DeleteSepaPayments>() *
-                        IsGranted(DELETE_SEPA_PAYMENTS, no) *
+                        IsGrantedOneOfInAllDerivedContexts(
+                            rights(DELETE_SEPA_PAYMENTS, "MANAGE_BANK_TRANSACTIONS")
+                        ) { contextual ->
+                            require(contextual.data.paymentIds.isNotEmpty()) {
+                                "At least one SEPA payment is required"
+                            }
+                            contextual.data.paymentIds.flatMap { paymentId ->
+                                val collection = validatedPayment(paymentId.value.toUuid()).collection
+                                listOf(
+                                    collection.creditorIdentifier.legalEntity.partyId,
+                                    collection.creditorAccount.userId
+                                )
+                            }.map { partyId ->
+                                contextIdOf(BANKING_APPLICATION_NAME) { partyId }
+                            }.toSet()
+                        } *
                         DeleteSepaPayments() *
                         Respond { transform() } runOn Base(call, environment)
                     }
                 }
-                // TODO(correct context needs to be provided)
                 route("payment-links") {
                     get("by-legal-entity") {
-                        ReceiveContextual<String>{
-                            parameters -> requireNotNull(parameters["legal_entity"]) {
+                        ReceiveContextual<LegalEntityId> { parameters ->
+                            LegalEntityId(requireNotNull(parameters["legal_entity"]) {
                                 "Parameter 'legal_entity' is empty"
-                            }
+                            })
                         } *
-                        IsGranted(READ_SEPA_PAYMENTS, no) *
+                        IsGrantedOneOfInAllDerivedContexts(
+                            rights(READ_SEPA_PAYMENTS, "MANAGE_BANK_TRANSACTIONS")
+                        ) { contextual ->
+                            val partyId = validatedLegalEntity(contextual.data.value.toUuid()).partyId
+                            setOf(contextIdOf(BANKING_APPLICATION_NAME) { partyId })
+                        } *
                         ReadSepaPaymentLinksByLegalEntity() *
                         Respond { transform() } runOn Base(call, environment)
                     }
                     get("personal") {
                         ReceiveContextual<Unit>{} *
-                        IsGranted(READ_SEPA_PAYMENTS, no) *
                         ReadPersonalSepaPaymentLinks() *
                         Respond { transform() } runOn Base(call, environment)
                     }
                 }
-                // TODO(correct context needs to be provided)
                 route("messages") {
                     get("download") {
-                        ReceiveContextual<String>{
-                                parameters -> requireNotNull(parameters["message_id"]) {
-                            "Parameter 'message_id' is empty"
-                        }
+                        ReceiveContextual<SepaMessageId> { parameters ->
+                            SepaMessageId(requireNotNull(parameters["message_id"]) {
+                                "Parameter 'message_id' is empty"
+                            })
                         } *
-                        IsGranted(READ_SEPA_MESSAGES, no) *
+                        IsGrantedOneOfInAllDerivedContexts(
+                            rights(READ_SEPA_MESSAGES, "MANAGE_BANK_TRANSACTIONS")
+                        ) { contextual ->
+                            val message = validateSepaMessage(contextual.data.value.toUuid())
+                            setOf(
+                                message.creditorIdentifier.legalEntity.partyId,
+                                message.creditorAccount.userId
+                            ).map { partyId ->
+                                contextIdOf(BANKING_APPLICATION_NAME) { partyId }
+                            }.toSet()
+                        } *
                         DownloadSepaMessage() *
                         Respond { transform() } runOn Base(call, environment)
                     }
                     get("by-legal-entity") {
-                        ReceiveContextual<String>{
-                            parameters -> requireNotNull(parameters["legal_entity"]) {
+                        ReceiveContextual<LegalEntityId> { parameters ->
+                            LegalEntityId(requireNotNull(parameters["legal_entity"]) {
                                 "Parameter 'legal_entity' is empty"
-                            }
+                            })
                         } *
-                        IsGranted(READ_SEPA_MESSAGES, no) *
+                        IsGrantedOneOfInAllDerivedContexts(
+                            rights(READ_SEPA_MESSAGES, "MANAGE_BANK_TRANSACTIONS")
+                        ) { contextual ->
+                            val partyId = validatedLegalEntity(contextual.data.value.toUuid()).partyId
+                            setOf(contextIdOf(BANKING_APPLICATION_NAME) { partyId })
+                        } *
                         ReadSepaMessagesByLegalEntityId() *
                         Respond { transform() } runOn Base(call, environment)
                     }
                     patch("update-status") {
                         ReceiveContextual<UpdateSepaMessageStatus>() *
-                        IsGranted(UPDATE_SEPA_MESSAGES, no) *
+                        IsGrantedOneOfInAllDerivedContexts(
+                            rights(UPDATE_SEPA_MESSAGES, "MANAGE_BANK_TRANSACTIONS")
+                        ) { contextual ->
+                            val message = validateSepaMessage(
+                                contextual.data.sepaMessageId.value.toUuid()
+                            )
+                            setOf(
+                                message.creditorIdentifier.legalEntity.partyId,
+                                message.creditorAccount.userId
+                            ).map { partyId ->
+                                contextIdOf(BANKING_APPLICATION_NAME) { partyId }
+                            }.toSet()
+                        } *
                         UpdateSepaMessageStatus() *
                         Respond { transform() } runOn Base(call, environment)
                     }
                     post("merge") {
                         ReceiveContextual<MergeSepaMessages>() *
-                        IsGranted(UPDATE_SEPA_MESSAGES, no) *
+                        IsGrantedOneOfInAllDerivedContexts(
+                            rights(UPDATE_SEPA_MESSAGES, "MANAGE_BANK_TRANSACTIONS")
+                        ) { contextual ->
+                            require(contextual.data.sepaMessageIds.isNotEmpty()) {
+                                "At least one SEPA message is required"
+                            }
+                            contextual.data.sepaMessageIds.flatMap { messageId ->
+                                val message = validateSepaMessage(messageId.value.toUuid())
+                                listOf(
+                                    message.creditorIdentifier.legalEntity.partyId,
+                                    message.creditorAccount.userId
+                                )
+                            }.map { partyId ->
+                                contextIdOf(BANKING_APPLICATION_NAME) { partyId }
+                            }.toSet()
+                        } *
                         MergeSepaMessages() *
                         Respond { transform() } runOn Base(call, environment)
                     }
