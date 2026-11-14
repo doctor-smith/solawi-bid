@@ -1,0 +1,46 @@
+{
+  "user_tables": [
+    "users"
+  ],
+  "user_id_column": "id",
+  "allow_columns": [
+    "*.created_by",
+    "*.modified_by",
+    "lifecycle_transitions.from",
+    "lifecycle_transitions.to",
+    "share_subscription_status_history.modified",
+    "sepa_mandates.amendment_of",
+    "user_organization.organizationid",
+    "user_organization.userid",
+    "legal_entities.legal_form",
+    "sepa_collections.local_instrument",
+    "sepa_collections.charge_bearer",
+    "share_types.share_key",
+    "applications.name",
+    "auctions.name",
+    "contexts.name",
+    "lifecycle_stages.name",
+    "modules.name",
+    "rights.name",
+    "roles.name",
+    "share_status.name",
+    "share_types.name",
+    "system_processes.name"
+  ],
+  "rules": {
+    "addresses.recipient_name": "full_name",
+    "addresses.organization_name": "organization_name",
+    "addresses.state_or_province": "region",
+    "distribution_points.name": "organization_name",
+    "legal_entities.name": "organization_name",
+    "organizations.name": "organization_name",
+    "rounds.link": "url",
+    "search-bidders.related_names": "redact",
+    "sepa_collections.remittance_information": "redact",
+    "sepa_mandates.debtor_name": "full_name",
+    "sepa_messages.remittance_information": "redact",
+    "sepa_payments.failure_reason": "redact",
+    "sessions.user_agent": "redact",
+    "user_profiles.title": "redact"
+  }
+}
