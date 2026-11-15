@@ -134,6 +134,7 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
         is UserManagementException -> when(value as UserManagementException) {
             is UserManagementException.UserDoesNotExist -> HttpStatusCode.Unauthorized
             is UserManagementException.WrongCredentials -> HttpStatusCode.Unauthorized
+            is UserManagementException.PasswordPolicyViolation -> HttpStatusCode.BadRequest
             is UserManagementException.NoSuchUserProfile -> HttpStatusCode.NotFound
             is UserManagementException.UsersDoNotExist -> HttpStatusCode.NotFound
         }

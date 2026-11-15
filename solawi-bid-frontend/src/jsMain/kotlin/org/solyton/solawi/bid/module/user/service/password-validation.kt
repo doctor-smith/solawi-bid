@@ -1,5 +1,7 @@
 package org.solyton.solawi.bid.module.user.service
 
+import org.solyton.solawi.bid.module.user.data.api.PasswordRequirements
+
 fun <T> onPasswordCombinationValid(
     value: T,
     storedPassword: String?,
@@ -9,8 +11,7 @@ fun <T> onPasswordCombinationValid(
     act: (T)->Unit
 ): PasswordCombinationCheck = when {
     storedPassword != null && oldPassword != null && oldPassword != storedPassword -> PasswordCombinationCheck.WrongPassword
-    // newPassword.isBlank() -> PasswordCombinationCheck.RequirementsViolated
-    newPassword.isNotEmpty() && (newPassword.length < 8 || newPassword.contains(" ")) -> PasswordCombinationCheck.RequirementsViolated
+    newPassword.isNotEmpty() && newPassword.length < PasswordRequirements.MINIMUM_LENGTH -> PasswordCombinationCheck.RequirementsViolated
     newPassword == storedPassword -> PasswordCombinationCheck.NewPasswordEqualsStoredPassword
     newPassword != newPasswordRepeat -> PasswordCombinationCheck.RepeatedPasswordMismatch
     else -> {
