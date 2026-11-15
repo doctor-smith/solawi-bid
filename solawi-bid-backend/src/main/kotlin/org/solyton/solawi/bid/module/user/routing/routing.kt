@@ -6,10 +6,16 @@ import io.ktor.server.routing.*
 import io.ktor.util.*
 import org.evoleq.exposedx.data.DbEnv
 import org.evoleq.ktorx.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
+import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
+import org.solyton.solawi.bid.module.permission.action.db.IsGrantedInDerivedContext
+import org.solyton.solawi.bid.module.permission.repository.path
+import org.solyton.solawi.bid.module.permission.schema.ContextEntity
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.user.action.organization.*
 import org.solyton.solawi.bid.module.user.action.user.*
 import org.solyton.solawi.bid.module.user.data.api.*
@@ -43,7 +49,21 @@ fun <UserEnv> Routing.user(
                 Respond<Users>{ transform() } runOn Base(call, environment) }
 
             patch("change-password") {
-                ReceiveContextual<ChangePassword>() * ChangePassword * Respond<User>{ transform() } runOn Base(call, environment)
+                ReceiveContextual<ChangePassword>() *
+                // An administrator must have UPDATE_USER in the fixed, trusted platform
+                // management context. Never authorize a password reset using the
+                // caller-supplied CONTEXT header or the target username alone.
+                IsGrantedInDerivedContext("UPDATE_USER") {
+                    val adminContext = ContextEntity.find {
+                        ContextsTable.name eq "ORGANIZATION_MANAGEMENT"
+                    }.firstOrNull() ?: throw PermissionException.AccessDenied
+                    if (adminContext.path() != "APPLICATION/MANAGEMENT/ORGANIZATION_MANAGEMENT") {
+                        throw PermissionException.AccessDenied
+                    }
+                    adminContext.id.value
+                } *
+                ChangePassword *
+                Respond<User>{ transform() } runOn Base(call, environment)
             }
             patch("update") {
                 ReceiveContextual<UpdateUser>() * UpdateUser * Respond<User>{ transform() } runOn Base(call, environment)
