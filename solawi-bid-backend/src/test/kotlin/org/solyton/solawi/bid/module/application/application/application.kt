@@ -7,8 +7,8 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.evoleq.exposedx.data.Database
 import org.evoleq.ktorx.headers.Header
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
@@ -34,8 +34,8 @@ import org.solyton.solawi.bid.module.testFramework.testContexts
 import org.solyton.solawi.bid.module.user.data.api.ApiUser
 import org.solyton.solawi.bid.module.user.data.api.ApiUsers
 import org.solyton.solawi.bid.module.user.data.toApiType
-import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
+import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserOrganization
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import java.util.*

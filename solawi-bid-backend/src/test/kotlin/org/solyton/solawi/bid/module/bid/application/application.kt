@@ -2,10 +2,9 @@ package org.solyton.solawi.bid.module.bid.application
 
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.response.respondText
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.solyton.solawi.bid.application.environment.setupEnvironment
@@ -16,11 +15,7 @@ import org.solyton.solawi.bid.module.bid.routing.*
 import org.solyton.solawi.bid.module.bid.routing.migrations.bidRoutingMigrations
 import org.solyton.solawi.bid.module.testFramework.provideUserTokens
 import org.solyton.solawi.bid.module.testFramework.testContexts
-import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
-import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
-import org.solyton.solawi.bid.module.user.schema.UserEntity
-import org.solyton.solawi.bid.module.user.schema.UserOrganization
-import org.solyton.solawi.bid.module.user.schema.UsersTable
+import org.solyton.solawi.bid.module.user.schema.*
 
 
 fun Application.bidTest() {
