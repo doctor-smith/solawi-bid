@@ -39,6 +39,7 @@ import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_MANDATES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_MESSAGES
 import org.solyton.solawi.bid.module.banking.permissions.Sepa.Rights.UPDATE_SEPA_PAYMENTS
+import org.solyton.solawi.bid.module.banking.service.validatedBankAccount
 import org.solyton.solawi.bid.module.permission.action.db.*
 import org.solyton.solawil.bid.module.bid.data.api.toUUID
 
@@ -193,20 +194,18 @@ fun <BankingEnv> Routing.banking (
                     ImportBankAccounts() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
-                // TODO(correct context needs to be provided)
                 delete("delete") {
                     ReceiveContextual<DeleteBankAccount>() *
-                    IsGranted(DELETE_BANK_ACCOUNTS, no) *
+                    IsGrantedInDerivedContext(DELETE_BANK_ACCOUNTS) { contextual ->
+                        val ownerId = validatedBankAccount(contextual.data.id.value.toUuid()).userId
+                        contextIdOf(BANKING_APPLICATION_NAME) { ownerId }
+                    } *
                     DeleteBankAccount() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
                 route("personal") {
-                    // TODO(correct context needs to be provided)
                     get("/all") {
-                        ReceiveContextual<String>{
-                            _ -> ""
-                        } *
-                        IsGranted(READ_BANK_ACCOUNTS, no) *
+                        ReceiveContextual<String>{ "" } *
                         ReadPersonalBankAccounts() *
                         Respond { transform() } runOn Base(call, environment)
                     }
