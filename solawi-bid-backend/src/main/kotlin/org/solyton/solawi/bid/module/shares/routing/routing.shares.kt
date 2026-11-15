@@ -180,15 +180,28 @@ authenticate {
             }
             post("rollover"){
                 ReceiveContextual<RolloverShareSubscriptions>() *
-                IsGrantedOneOf(
-                    rights(
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
                         "CREATE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARES"
-                    ), no
+                    )
                 ) { contextual ->
-                    val providerId = UUID.fromString(contextual.data.providerId.value)
-                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    val data = contextual.data
+                    val sourceProviderIds = data.shareSubscriptionIds.map { id ->
+                        ShareSubscriptionEntity.findById(id.toUUID())
+                            ?.shareOffer
+                            ?.shareType
+                            ?.providerId
+                            ?: throw ShareException.NoSuchShareSubscription(id.value)
+                    }
+                    val targetProviderId = ShareOfferEntity.findById(data.toShareOfferId.toUUID())
+                        ?.shareType
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareOffer(data.toShareOfferId.value)
+                    (sourceProviderIds + targetProviderId + data.providerId.toUUID())
+                        .map { contextIdOf(it, SHARE_MANAGEMENT_APPLICATION_NAME) }
+                        .toSet()
                 } *
                 RolloverShareSubscription() *
                 Respond<ShareSubscriptions> { transform() } runOn Base(call, environment)
