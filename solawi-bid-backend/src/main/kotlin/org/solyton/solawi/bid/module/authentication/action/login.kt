@@ -58,7 +58,7 @@ fun Transaction.login(login: Login, jwt: JWT): LoggedIn {
     val user = User.find{ Users.username eq login.username }.firstOrNull()
         ?: throw UserManagementException.UserDoesNotExist.Username(login.username)
 
-    val loginImpossible = user.status in setOf(UserStatus.REGISTERED, UserStatus.DISABLED, UserStatus.INVITED)
+    val loginImpossible = user.status in setOf(UserStatus.REGISTERED, UserStatus.PENDING, UserStatus.DISABLED, UserStatus.INVITED)
     if(loginImpossible) throw PermissionException.AccessDenied
 
     val password = requireNotNull(user.password)
