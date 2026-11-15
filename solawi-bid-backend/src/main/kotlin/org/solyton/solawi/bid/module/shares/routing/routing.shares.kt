@@ -100,16 +100,20 @@ authenticate {
         route("offers") {
             post("create") {
                 ReceiveContextual<CreateShareOffer>() *
-                IsGrantedOneOf(
-                    rights(
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
                         "CREATE_SHARE_OFFERS",
                         "MANAGE_SHARE_OFFERS",
                         "MANAGE_SHARES"
-                    ),
-                    no // todo:permission enable access check
+                    )
                 ) { contextual ->
-                    val providerId = UUID.fromString(contextual.data.providerId)
-                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    val data = contextual.data
+                    val actualProviderId = ShareTypeEntity.findById(UUID.fromString(data.shareTypeId))
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareType(data.shareTypeId)
+                    setOf(actualProviderId, UUID.fromString(data.providerId))
+                        .map { contextIdOf(it, SHARE_MANAGEMENT_APPLICATION_NAME) }
+                        .toSet()
                 } *
                 CreateShareOffer() *
                 Respond<ShareOffer> { transform() } runOn Base(call, environment)
