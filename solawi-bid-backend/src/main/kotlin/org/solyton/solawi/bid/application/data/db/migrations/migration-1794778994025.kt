@@ -14,8 +14,8 @@ import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
  * SMA-615: additive global catalog relation, with precisely two required edges.
  * No booking actions, module grants, permission contexts or tenant mutations.
  */
-class Migration1794776717000(override val database: Database) : Migration {
-    override val id: Long = 1794776717000
+class Migration1794778994025(override val database: Database) : Migration {
+    override val id: Long = 1794778994025
 
     override suspend fun Transaction.up() {
         // Check all prerequisites BEFORE the DDL (MariaDB DDL can auto-commit).
