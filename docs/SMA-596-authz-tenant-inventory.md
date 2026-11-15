@@ -60,14 +60,13 @@ Context-, Organization-, Provider-, Party- und Legal-Entity-Relationen.
 
 ## Vollständige explizite `no`-Bestandsaufnahme
 
-Im Routing existieren nach SMA-596N noch **27 aktive deaktivierte Prüfungen**:
+Im Routing existieren nach SMA-596O noch **26 aktive deaktivierte Prüfungen**:
 
 - Banking (23): Bank Account delete/personal read; SEPA mandate create/read/update/attach;
   collection create/create-payments/create-successors/generate-message/update;
   payment create-ad-hoc/update-statuses/update/update-many/delete/delete-many;
   payment-link by-legal-entity/personal; message download/by-legal-entity/update-status/merge.
-- Shares (4): Subscription
-  create/read-all/read-personal/import.
+- Shares (3): Subscription read-all/read-personal/import.
 - Distribution Points: keine; provider read, personal read, create und update
   leiten ihre Contexts serverseitig ab. Update verwendet ALL_OF für Quell- und
   Zielorganisation.
