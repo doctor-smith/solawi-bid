@@ -120,16 +120,24 @@ authenticate {
             }
             patch("update"){
                 ReceiveContextual<UpdateShareOffer>() *
-                IsGrantedOneOf(
-                    rights(
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
                         "UPDATE_SHARE_OFFERS",
                         "MANAGE_SHARE_OFFERS",
                         "MANAGE_SHARES"
-                    ),
-                    no // todo:permission enable access check
+                    )
                 ) { contextual ->
-                    val providerId = UUID.fromString(contextual.data.providerId)
-                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    val data = contextual.data
+                    val sourceProviderId = ShareOfferEntity.findById(UUID.fromString(data.id))
+                        ?.shareType
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareOffer(data.id)
+                    val targetProviderId = ShareTypeEntity.findById(UUID.fromString(data.shareTypeId))
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareType(data.shareTypeId)
+                    setOf(sourceProviderId, targetProviderId, UUID.fromString(data.providerId))
+                        .map { contextIdOf(it, SHARE_MANAGEMENT_APPLICATION_NAME) }
+                        .toSet()
                 } *
                 UpdateShareOffer() *
                 Respond<ShareOffer> { transform() } runOn Base(call, environment)
