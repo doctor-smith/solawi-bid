@@ -287,7 +287,9 @@ fun <BankingEnv> Routing.banking (
                                 "Parameter 'legal_entity' is empty"
                             }
                         } *
-                        IsGranted(READ_SEPA_MANDATES, no) *
+                        IsGrantedInDerivedContext(READ_SEPA_MANDATES) { contextual ->
+                            contextIdOf(BANKING_APPLICATION_NAME) { contextual.data.toUuid() }
+                        } *
                         ReadSepaMandatesByCreditorsLegalEntity() *
                         Respond { transform() } runOn Base(call, environment)
                     }
