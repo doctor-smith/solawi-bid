@@ -70,6 +70,25 @@ fun <T> IsGrantedInDerivedContext(
 
 @MathDsl
 @Suppress("FunctionName")
+fun <T> IsGrantedInAllDerivedContexts(
+    right: String,
+    deriveContextIds: Transaction.(Contextual<T>) -> Set<UUID>
+): KlAction<Result<Contextual<T>>, Result<Contextual<T>>> = KlAction { result ->
+    DbAction { database ->
+        result bindSuspend { contextual ->
+            resultTransaction(database) {
+                val grantedForAllTargets = deriveContextIds(contextual).all { contextId ->
+                    isGranted(contextual.userId, contextId, right)
+                }
+                if (!grantedForAllTargets) throw PermissionException.AccessDenied
+                contextual
+            }
+        } x database
+    }
+}
+
+@MathDsl
+@Suppress("FunctionName")
 fun <T> IsGranted(right: UUID): KlAction<Result<Contextual<T>>,Result<Contextual<T>>> = KlAction {
     result -> DbAction { database -> result bindSuspend  { data ->
         resultTransaction(database) {
