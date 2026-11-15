@@ -46,8 +46,8 @@ class BankingMandatoryFlagsMigrationTest {
 
             runBlocking {
                 val migration = Migration1794780961715(db)
-                assertTrue(migration.up().await())
-                assertFalse(migration.up().await()) // migration registry prevents a second execution
+                assertTrue(with(migration) { db.up().await() })
+                assertFalse(with(migration) { db.up().await() }) // migration registry prevents a second execution
             }
 
             transaction(db) {
@@ -78,7 +78,7 @@ class BankingMandatoryFlagsMigrationTest {
                 id
             }
             assertThrows<IllegalStateException> {
-                runBlocking { Migration1794780961715(db).up().await() }
+                runBlocking { with(Migration1794780961715(db)) { db.up().await() } }
             }
             transaction(db) {
                 assertEquals(
