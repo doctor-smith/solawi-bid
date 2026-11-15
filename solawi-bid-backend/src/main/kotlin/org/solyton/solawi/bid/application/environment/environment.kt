@@ -11,18 +11,10 @@ import org.jetbrains.exposed.sql.DatabaseConfig
 import org.jetbrains.exposed.sql.ExperimentalKeywordApi
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Slf4jSqlDebugLogger
-import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.solyton.solawi.bid.application.action.io.transform
-import org.solyton.solawi.bid.application.permission.Role
-import org.solyton.solawi.bid.module.application.permission.Context
 import org.solyton.solawi.bid.module.authentication.environment.JWT
 import org.solyton.solawi.bid.module.authentication.environment.JwtEnv
-import org.solyton.solawi.bid.module.permission.schema.ContextEntity
-import org.solyton.solawi.bid.module.permission.schema.Contexts
-import org.solyton.solawi.bid.module.permission.schema.RoleEntity
-import org.solyton.solawi.bid.module.permission.schema.Roles
-import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.Users
@@ -142,39 +134,15 @@ data class Environment(
         transaction(database) {
             SchemaUtils.create(Users)
 
-            val appOwnerExists = UserEntity.find{ Users.username eq applicationOwner.username }.empty().not()
-            if(appOwnerExists) return@transaction
-
-            val applicationOwner = UserEntity.new {
+            val existing = UserEntity.find { Users.username eq applicationOwner.username }.firstOrNull()
+            // Matching a configured username alone must never authorize elevating an existing account.
+            val owner = existing ?: UserEntity.new {
                 username = applicationOwner.username
                 password = applicationOwner.password
                 status = UserStatus.ACTIVE
                 createdBy = UUID_ZERO
             }
-
-            val applicationContextId = ContextEntity.find {
-                Contexts.name eq Context.Application.value
-            }.first().id.value
-
-            val ownerRoleId = RoleEntity.find {
-                Roles.name eq Role.owner.value
-            }.first().id
-
-            val userRoleId = RoleEntity.find{
-                Roles.name eq Role.user.value
-            }.first().id
-
-            UserRoleContext.insert {
-                it[userId] = applicationOwner.id.value
-                it[contextId] = applicationContextId
-                it[roleId] = ownerRoleId
-            }
-
-            UserRoleContext.insert {
-                it[userId] = applicationOwner.id.value
-                it[contextId] = applicationContextId
-                it[roleId] = userRoleId
-            }
+            provisionPlatformOwner(owner, alreadyExisted = existing != null)
         }
     }
 }
