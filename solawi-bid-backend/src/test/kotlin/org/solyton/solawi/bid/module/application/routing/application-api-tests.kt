@@ -23,7 +23,7 @@ import org.solyton.solawi.bid.module.application.getRootContextByName
 import org.solyton.solawi.bid.module.application.login
 import org.solyton.solawi.bid.module.authentication.data.api.LoggedIn
 import org.solyton.solawi.bid.module.bid.routing.util.getApplications
-import org.solyton.solawi.bid.module.testFramework.*
+import org.solyton.solawi.bid.module.testFramework.getTestToken
 import org.solyton.solawi.bid.module.user.data.api.ApiUsers
 import java.io.File
 import java.util.*
