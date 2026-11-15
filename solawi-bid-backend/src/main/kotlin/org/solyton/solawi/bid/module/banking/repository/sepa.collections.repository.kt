@@ -8,6 +8,7 @@ import org.solyton.solawi.bid.module.banking.data.api.ApiSepaPayments
 import org.solyton.solawi.bid.module.banking.exception.SepaException
 import org.solyton.solawi.bid.module.banking.schema.*
 import org.solyton.solawi.bid.module.banking.service.validatedBankAccount
+import org.solyton.solawi.bid.module.values.LegalEntityId
 import java.util.*
 
 @Suppress("NoNameShadowing")
@@ -69,11 +70,12 @@ fun Transaction.createSepaCollection(
 }
 
 
-fun Transaction.readSepaCollectionsByLegalEntity(legalEntityId: UUID): ApiSepaCollections {
-    validatedLegalEntity(legalEntityId)
+fun Transaction.readSepaCollectionsByLegalEntity(legalEntityId: LegalEntityId): ApiSepaCollections {
+    val legalEntityUuid = UUID.fromString(legalEntityId.value)
+    validatedLegalEntity(legalEntityUuid)
 
     val creditorIdentifiers = CreditorIdentifierEntity.find{
-        CreditorIdentifiersTable.legalEntityId eq legalEntityId
+        CreditorIdentifiersTable.legalEntityId eq legalEntityUuid
     }.toList()
 
     val creditorIdentifierIds = creditorIdentifiers.map {it.id.value}

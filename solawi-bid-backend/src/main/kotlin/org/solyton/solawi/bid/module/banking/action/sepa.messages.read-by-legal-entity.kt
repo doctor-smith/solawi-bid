@@ -11,17 +11,16 @@ import org.evoleq.math.x
 import org.solyton.solawi.bid.module.banking.data.api.SepaMessages
 import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.banking.repository.readSepaMessagesByLegalEntity
-import java.util.*
+import org.solyton.solawi.bid.module.values.LegalEntityId
 
 
 @MathDsl
 @Suppress("FunctionName")
-fun ReadSepaMessagesByLegalEntityId(): KlAction<Result<Contextual<String>>, Result<SepaMessages>> = KlAction { result ->
+fun ReadSepaMessagesByLegalEntityId(): KlAction<Result<Contextual<LegalEntityId>>, Result<SepaMessages>> = KlAction { result ->
     DbAction { database ->
         result bindSuspend { contextual ->
             resultTransaction(database) {
-                val legalEntity = UUID.fromString(contextual.data)
-                readSepaMessagesByLegalEntity(legalEntity).toApiType()
+                readSepaMessagesByLegalEntity(contextual.data).toApiType()
             }
         } x database
     }
