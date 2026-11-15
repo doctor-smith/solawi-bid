@@ -90,7 +90,6 @@ kotlin{
                 implementation(libs.exposed.core)
                 implementation(libs.exposed.dao)
                 implementation(libs.exposed.jdbc)
-                implementation(libs.mysql.connector.java)
                 // h2
                 implementation(libs.h2)
                 // slf4j
@@ -266,4 +265,3 @@ dependencyAnalyser {
         checkAppModalDependencies = false
     }
 }
-
