@@ -22,6 +22,7 @@ import org.solyton.solawi.bid.module.banking.permissions.CreditorIdentifiers.Rig
 import org.solyton.solawi.bid.module.banking.permissions.CreditorIdentifiers.Rights.READ_CREDITOR_IDENTIFIERS
 import org.solyton.solawi.bid.module.banking.permissions.CreditorIdentifiers.Rights.UPDATE_CREDITOR_IDENTIFIERS
 import org.solyton.solawi.bid.module.banking.permissions.FiscalYears.Rights.CREATE_FISCAL_YEARS
+import org.solyton.solawi.bid.module.banking.permissions.FiscalYears.Rights.READ_FISCAL_YEARS
 import org.solyton.solawi.bid.module.banking.permissions.FiscalYears.Rights.UPDATE_FISCAL_YEARS
 import org.solyton.solawi.bid.module.banking.permissions.LegalEntities.Rights.CREATE_LEGAL_ENTITIES
 import org.solyton.solawi.bid.module.banking.permissions.LegalEntities.Rights.READ_LEGAL_ENTITIES
@@ -110,14 +111,12 @@ fun <BankingEnv> Routing.banking (
                     @Suppress("UnsafeCallOnNullableType")
                     ReceiveContextual<List<String>>{
                         parameters -> parameters.getAll("legal_entity")!!
-                    } /*
-                    IsGrantedInDerivedContext(
-                        READ_FISCAL_YEARS, yes
-                    ) {
-                        contextIdOf(BANKING_APPLICATION_NAME) {
-                            it.data.toUuid()
-                        }
-                    }*/ *
+                    } *
+                    IsGrantedInAllDerivedContexts(READ_FISCAL_YEARS) { contextual ->
+                        contextual.data.map { legalEntityId ->
+                            contextIdOf(BANKING_APPLICATION_NAME) { legalEntityId.toUuid() }
+                        }.toSet()
+                    } *
                     ReadFiscalYearsByLegalEntity() *
                     Respond{ transform() } runOn Base(call, environment)
                 }
