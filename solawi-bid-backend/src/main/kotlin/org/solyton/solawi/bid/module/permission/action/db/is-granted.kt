@@ -125,6 +125,25 @@ fun <T> IsGrantedOneOf(
         } x database
     }
 }
+
+@MathDsl
+@Suppress("FunctionName")
+fun <T> IsGrantedOneOfInAllDerivedContexts(
+    rights: Set<String>,
+    deriveContextIds: Transaction.(Contextual<T>) -> Set<UUID>
+): KlAction<Result<Contextual<T>>, Result<Contextual<T>>> = KlAction { result ->
+    DbAction { database ->
+        result bindSuspend { contextual ->
+            resultTransaction(database) {
+                val grantedForAllTargets = deriveContextIds(contextual).all { contextId ->
+                    isGrantedOneOf(contextual.userId, contextId, rights.toList())
+                }
+                if (!grantedForAllTargets) throw PermissionException.AccessDenied
+                contextual
+            }
+        } x database
+    }
+}
 fun Transaction.isGranted(userId: UUID, context: String, right: String): Boolean {
 
     val contextEntity = ContextEntity.find { Contexts.name eq context }.firstOrNull()
