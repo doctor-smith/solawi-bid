@@ -20,6 +20,7 @@ import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.RolesTable
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
+import org.solyton.solawi.bid.module.user.data.api.UserStatus as ApiUserStatus
 import org.solyton.solawi.bid.module.user.data.api.organization.*
 import org.solyton.solawi.bid.module.user.data.api.organization.Organization
 import org.solyton.solawi.bid.module.user.data.toApiType
@@ -177,7 +178,7 @@ fun ImportMembers(): KlAction<Result<Contextual<ImportMembers>>, Result<Organiza
         val userAccountsToAdd = membersToAdd.filter { it !in membersWithUserAccounts.map { user -> user.username} }
         val recentlyAddedUserAccounts = userAccountsToAdd.map {
             createUserEntity(
-                CreateUser(it, "NOT_SET"),
+                CreateUser(it, null, ApiUserStatus.PENDING),
                 userId
             )
         }
