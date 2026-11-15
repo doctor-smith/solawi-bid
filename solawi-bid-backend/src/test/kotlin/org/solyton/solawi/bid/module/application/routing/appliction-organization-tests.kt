@@ -106,8 +106,30 @@ class ApplicationOrganizationTests {
             assertIs<org.evoleq.ktorx.result.Result.Success<ApiApplications>>(registerApplicationsResult)
             val registeredApplication = registerApplicationsResult.data.list.first { it.name == "AUCTIONS" }
 
-            val organizationId = UUID.randomUUID()
+            val organizationId = UUID.fromString(
+                client.get("/setup/organization?name=OWN_ORGANIZATION&owner=$USERNAME").bodyAsText()
+            )
+            val foreignOrganizationId = UUID.fromString(
+                client.get("/setup/organization?name=FOREIGN_ORGANIZATION&owner=dummy_0@solyton.org").bodyAsText()
+            )
             val registeredModuleIds = registeredApplication.modules.filter { it.lifecycleStage is LifecycleStage.Registered }.map { it.id }
+            val forbiddenResponse = client.post("applications/personal/connect-organization") {
+                header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(HttpHeaders.Authorization, "Bearer ${data.accessToken}")
+                header(Header.CONTEXT, data.contextId)
+                setBody(
+                    Json.encodeToString(
+                        ConnectApplicationToOrganization.serializer(),
+                        ConnectApplicationToOrganization(
+                            application.id,
+                            foreignOrganizationId.toString(),
+                            registeredModuleIds
+                        )
+                    )
+                )
+            }
+            assertEquals(HttpStatusCode.Forbidden, forbiddenResponse.status)
+
             val applicationOrganizationRelationsResponse = client.post("applications/personal/connect-organization") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer ${data.accessToken}")
