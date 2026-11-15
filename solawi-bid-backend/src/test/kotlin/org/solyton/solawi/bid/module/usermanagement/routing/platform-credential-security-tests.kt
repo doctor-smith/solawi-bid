@@ -79,6 +79,9 @@ class PlatformCredentialSecurityTests {
             val originalPassword = transaction(database) {
                 UserEntity.find { UsersTable.username eq adminName }.first().password
             }
+            val originalTargetPassword = transaction(database) {
+                UserEntity.find { UsersTable.username eq target }.first().password
+            }
 
             for (context in listOf(platformId, foreignId, rootId)) {
                 val reset = client.patch("users/change-password") {
@@ -99,6 +102,17 @@ class PlatformCredentialSecurityTests {
             transaction(database) {
                 assertEquals(originalPassword, UserEntity.find { UsersTable.username eq adminName }.first().password)
                 assertTrue(UserEntity.find { UsersTable.username eq renamed }.empty())
+            }
+
+            val weakPasswordReset = client.patch("users/change-password") {
+                header(HttpHeaders.Authorization, "Bearer $admin")
+                header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(Header.CONTEXT, foreignId)
+                setBody(Json.encodeToString(ChangePassword.serializer(), ChangePassword(target, "too-short")))
+            }
+            assertEquals(HttpStatusCode.BadRequest, weakPasswordReset.status)
+            transaction(database) {
+                assertEquals(originalTargetPassword, UserEntity.find { UsersTable.username eq target }.first().password)
             }
 
             val reset = client.patch("users/change-password") {
