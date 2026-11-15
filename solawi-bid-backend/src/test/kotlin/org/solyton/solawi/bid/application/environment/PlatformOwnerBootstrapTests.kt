@@ -79,16 +79,16 @@ class PlatformOwnerBootstrapTests {
         }
     }
 
-    private fun db(): Database = Database.connect(
-        "jdbc:h2:mem:platform_owner_${UUID.randomUUID()};DB_CLOSE_DELAY=-1",
-        driver = "org.h2.Driver", user = "root", password = ""
-    )
+    private fun db(): Pair<Database, String> {
+        val url = "jdbc:h2:mem:platform_owner_${UUID.randomUUID()};DB_CLOSE_DELAY=-1"
+        return Database.connect(url, driver = "org.h2.Driver", user = "root", password = "") to url
+    }
 
     @DbFunctional @Test
     fun freshOwnerReceivesPlatformRolesAndApplicationEnrollmentIdempotently() {
-        val db = db()
+        val (db, url) = db()
         setup(db)
-        val env = configuredEnvironment(db.url, "configured-platform-owner@solyton.test")
+        val env = configuredEnvironment(url, "configured-platform-owner@solyton.test")
 
         env.injectUsers(db)
         val initialCount = transaction(db) { UserRoleContext.selectAll().count() }
@@ -120,9 +120,9 @@ class PlatformOwnerBootstrapTests {
 
     @DbFunctional @Test
     fun repairsEstablishedOwnerWithoutResettingCredentials() {
-        val db = db()
+        val (db, url) = db()
         setup(db)
-        val env = configuredEnvironment(db.url, "existing-platform-owner@solyton.test")
+        val env = configuredEnvironment(url, "existing-platform-owner@solyton.test")
         transaction(db) {
             val owner = UserEntity.new {
                 username = env.applicationOwner.username
@@ -150,9 +150,9 @@ class PlatformOwnerBootstrapTests {
 
     @DbFunctional @Test
     fun refusesToElevateExistingAccountWithOnlyMatchingUsername() {
-        val db = db()
+        val (db, url) = db()
         setup(db)
-        val env = configuredEnvironment(db.url, "ordinary-user@solyton.test")
+        val env = configuredEnvironment(url, "ordinary-user@solyton.test")
         transaction(db) {
             UserEntity.new {
                 username = env.applicationOwner.username
