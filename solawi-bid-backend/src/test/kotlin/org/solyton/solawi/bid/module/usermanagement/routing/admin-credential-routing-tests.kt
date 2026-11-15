@@ -19,6 +19,7 @@ import org.solyton.solawi.bid.module.testFramework.getTestContextIdByName
 import org.solyton.solawi.bid.module.testFramework.getTestToken
 import org.solyton.solawi.bid.module.user.data.api.ChangePassword
 import org.solyton.solawi.bid.module.user.data.api.UpdateUser
+import org.solyton.solawi.bid.module.user.data.api.UpdateUsername
 import org.solyton.solawi.bid.module.values.Password
 import org.solyton.solawi.bid.module.values.Username
 import java.io.File
@@ -57,6 +58,52 @@ class AdminCredentialRoutingTests {
                     UpdateUser(
                         oldUsername = Username("developer@alpha-structure.com"),
                         newUsername = Username("developer@alpha-structure.com"),
+                        oldPassword = Password("pass1234"),
+                        newPassword = Password("pass1234")
+                    )
+                ))
+            }
+            assertEquals(HttpStatusCode.OK, unchanged.status)
+        }
+    }
+
+    @Api @Test
+    fun nonAdministratorCannotRenameAnotherAccount() = runBlocking {
+        testApplication {
+            environment {
+                config = HoconApplicationConfig(
+                    ConfigFactory.parseFile(File("src/test/resources/usermanagement.api.test.conf"))
+                )
+            }
+            val callerToken = client.getTestToken("unautorized@solyton.org")
+            val targetName = "developer@alpha-structure.com"
+            val applicationContextId = client.getTestContextIdByName("APPLICATION")
+
+            val forbidden = client.patch("users/update-username") {
+                header(HttpHeaders.Authorization, "Bearer $callerToken")
+                header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(Header.CONTEXT, applicationContextId)
+                setBody(Json.encodeToString(
+                    UpdateUsername.serializer(),
+                    UpdateUsername(
+                        oldUsername = Username(targetName),
+                        newUsername = Username("not-an-admin-rename@solyton.org")
+                    )
+                ))
+            }
+            assertEquals(HttpStatusCode.Forbidden, forbidden.status)
+
+            // The denied request must not rename the actual account.
+            val originalUserToken = client.getTestToken(targetName)
+            val unchanged = client.patch("users/update") {
+                header(HttpHeaders.Authorization, "Bearer $originalUserToken")
+                header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(Header.CONTEXT, applicationContextId)
+                setBody(Json.encodeToString(
+                    UpdateUser.serializer(),
+                    UpdateUser(
+                        oldUsername = Username(targetName),
+                        newUsername = Username(targetName),
                         oldPassword = Password("pass1234"),
                         newPassword = Password("pass1234")
                     )
