@@ -157,8 +157,7 @@ authenticate {
                         "READ_SHARE_OFFERS",
                         "MANAGE_SHARE_OFFERS",
                         "MANAGE_SHARES"
-                    ),
-                    no // todo:permission enable access check
+                    )
                 ) { contextual ->
                     val providerId = contextual.data.providerId
                     contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
