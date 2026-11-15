@@ -21,6 +21,7 @@ import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.user.service.bcrypt.credentialsAreOK
 import org.solyton.solawi.bid.module.user.service.bcrypt.hashPassword
+import org.solyton.solawi.bid.module.user.service.password.PasswordPolicy
 
 
 @MathDsl
@@ -54,6 +55,7 @@ val UpdateUser: KlAction<Result<Contextual<UpdateUser>>, Result<User>> = KlActio
             user.username = data.newUsername.value.lowercase().trim()
         }
         if(passwordChanged) {
+            PasswordPolicy.validate(data.newPassword.value, user.username)
             user.password = hashPassword(data.newPassword.value)
         }
 

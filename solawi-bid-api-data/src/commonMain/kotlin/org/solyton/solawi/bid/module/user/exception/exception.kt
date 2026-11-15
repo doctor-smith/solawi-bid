@@ -11,6 +11,7 @@ sealed class UserManagementException(override val message: String?) : Exception(
         data class Ids(val ids: List<String>) : UsersDoNotExist("Users with ids ${ids.joinToString()} do not exists")
     }
     data object WrongCredentials : UserManagementException("Wrong credentials")
+    data object PasswordPolicyViolation : UserManagementException("Password does not meet the security requirements")
 
     data class NoSuchUserProfile(val id: String): UserManagementException("No such user profile $id")
 }

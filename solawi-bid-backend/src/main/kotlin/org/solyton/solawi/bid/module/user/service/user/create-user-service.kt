@@ -19,6 +19,7 @@ import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.user.service.bcrypt.hashPassword
+import org.solyton.solawi.bid.module.user.service.password.PasswordPolicy
 import java.util.*
 
 /**
@@ -50,6 +51,11 @@ fun Transaction.createUserEntity(data: CreateUser, creatorId: UUID): UserEntity 
     return if(user != null) {
         user
     } else {
+        val (adjustedPassword, adjustedStatus) = adjustPasswordToStatus(
+            data.password,
+            data.status.toDomainType(),
+            data.username
+        )
         val applicationContext = ContextEntity.find { ContextsTable.name eq ApplicationContext.value }.firstOrNull()
             ?: throw ContextException.NoSuchRootContext(ApplicationContext.value)
         val applicationOrganizationContext =
@@ -58,11 +64,6 @@ fun Transaction.createUserEntity(data: CreateUser, creatorId: UUID): UserEntity 
                 ?: throw ContextException.NoSuchContext("${ApplicationContext.value}/${Value.ORGANIZATION}")
         val userRole = applicationContext.roles.find { it.name == Role.user.value }
             ?: throw PermissionExceptionD.NoSuchRole(Role.user.value)
-
-        val (adjustedPassword, adjustedStatus)  = adjustPasswordToStatus(
-            data.password,
-            data.status.toDomainType()
-        )
 
         val userEntity = UserEntity.new {
             username = data.username
@@ -90,13 +91,18 @@ fun Transaction.createUserEntity(data: CreateUser, creatorId: UUID): UserEntity 
     }
 }
 
-fun Transaction.adjustPasswordToStatus( newPassword: String?, newStatus: UserStatus) : Pair<String?, UserStatus> = when(newStatus){
+fun Transaction.adjustPasswordToStatus(
+    newPassword: String?,
+    newStatus: UserStatus,
+    username: String
+) : Pair<String?, UserStatus> = when(newStatus){
     UserStatus.INVITED -> null to newStatus
     UserStatus.PENDING -> null to newStatus
     else -> {
         requireNotNull(newPassword) {
             "Password cannot be null for a user with status $newStatus"
         }
+        PasswordPolicy.validate(newPassword, username)
         hashPassword(newPassword) to newStatus
     }
 }
