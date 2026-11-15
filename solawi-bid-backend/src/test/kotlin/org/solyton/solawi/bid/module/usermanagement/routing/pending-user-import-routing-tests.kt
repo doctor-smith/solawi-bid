@@ -46,7 +46,7 @@ import kotlin.test.assertTrue
  * Never replace missing credentials with a shared or predictable placeholder.
  */
 class PendingUserImportRoutingTests {
-    private fun config(url: String) = HoconApplicationConfig(
+    private fun userManagementConfig(url: String) = HoconApplicationConfig(
         ConfigFactory.parseString("database.url = \"$url\"")
             .withFallback(ConfigFactory.parseFile(File("src/test/resources/usermanagement.api.test.conf")))
             .resolve()
@@ -56,7 +56,7 @@ class PendingUserImportRoutingTests {
     fun importMembersCreatesPendingAccountWithoutPassword() = runBlocking {
         val url = "jdbc:h2:mem:pending_members_${UUID.randomUUID()};DB_CLOSE_DELAY=-1"
         testApplication {
-            environment { config = config(url) }
+            environment { config = userManagementConfig(url) }
             val token = client.getTestToken("developer@alpha-structure.com")
             val rootContextId = client.getTestContextIdByName("APPLICATION")
             val created = client.createOrganization(
@@ -105,7 +105,7 @@ class PendingUserImportRoutingTests {
     fun importProfilesCreatesPendingAccountWithoutPassword() = runBlocking {
         val url = "jdbc:h2:mem:pending_profiles_${UUID.randomUUID()};DB_CLOSE_DELAY=-1"
         testApplication {
-            environment { config = config(url) }
+            environment { config = userManagementConfig(url) }
             val token = client.getTestToken("developer@alpha-structure.com")
             val rootContextId = client.getTestContextIdByName("APPLICATION")
             val username = "new-profile-${UUID.randomUUID()}@solyton.test"
