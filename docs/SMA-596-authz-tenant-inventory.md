@@ -49,9 +49,9 @@ Context-, Organization-, Provider-, Party- und Legal-Entity-Relationen.
 | Banking: Bank Accounts | Legal Entity oder User | read/create/update/import aktiv; delete und personal read deaktiviert | gemischte Semantik innerhalb derselben Ressource |
 | Banking: Creditor Identifiers | `legalEntityId` | derived, aktiv | Zielbindung vorhanden |
 | Banking: SEPA | Mandat/Collection/Payment/Message IDs bzw. Legal Entity | überwiegend `no` | höchste zusammenhängende offene Schreibfläche |
-| Shares: Types, Offers, Subscriptions | Payload/Query `providerId` → App-Context | alle fachlichen Guards mit `no` | Kontextresolver existiert, Prüfung ist aber deaktiviert |
+| Shares: Types, Offers, Subscriptions | Payload/Query oder tatsächliche Ressource → Provider → App-Context; Personal über JWT-Actor | Provider-Reads/Writes aktiv, Personal self-bound | geschützt; Quell- und Zielressourcen werden bei Änderungen serverseitig aufgelöst |
 | Shares: Batch `update-statuses` | Payload-Provider plus DB-Provider jedes Ziels | EACH_TARGET/ALL_OF, aktiv | in SMA-596D geschlossen; leere Liste prüft den Payload-Provider |
-| Shares: History | Subscription-IDs | kein Guard | Ressourcen müssen zu Provider/Actor aufgelöst werden |
+| Shares: History | Subscription-IDs → Provider → App-Context | `READ_SHARE_SUBSCRIPTIONS`/Management, EACH_TARGET | geschützt; jede Subscription wird serverseitig aufgelöst |
 | Distribution Points | Organization aus Provider/Payload/Actor | derived `DISTRIBUTION`-Context; Update prüft Quelle und Ziel | in SMA-596C geschlossen |
 | Auction | Payload/Header/Action | create/update/read teilweise geschützt; configure/delete/accept/import ohne sichtbaren Guard | vollständige Zielbindung noch nicht nachgewiesen |
 | Round | Payload-IDs | kein sichtbarer Route-Guard | create/state/export/evaluate/comment offen zu charakterisieren |
@@ -60,20 +60,22 @@ Context-, Organization-, Provider-, Party- und Legal-Entity-Relationen.
 
 ## Vollständige explizite `no`-Bestandsaufnahme
 
-Im Routing existieren nach SMA-596P noch **25 aktive deaktivierte Prüfungen**:
+Im Routing existieren nach Aktivierung der Share-Import-Prüfung noch **23 aktive deaktivierte Prüfungen**:
 
 - Banking (23): Bank Account delete/personal read; SEPA mandate create/read/update/attach;
   collection create/create-payments/create-successors/generate-message/update;
   payment create-ad-hoc/update-statuses/update/update-many/delete/delete-many;
   payment-link by-legal-entity/personal; message download/by-legal-entity/update-status/merge.
-- Shares (2): Subscription read-personal/import.
+- Shares: keine; der persönliche Subscription-Read ist als authentifizierter
+  Self-Service-Pfad an die JWT-Identität gebunden, und Import leitet den
+  Share-Management-Context aus dem Provider im Payload ab.
 - Distribution Points: keine; provider read, personal read, create und update
   leiten ihre Contexts serverseitig ab. Update verwendet ALL_OF für Quell- und
   Zielorganisation.
 
 Zusätzlich ist der Guard für `GET banking/fiscal-years/all` auskommentiert.
 Routes ohne sichtbaren Permission-Schritt sind in der Matrix separat markiert;
-sie dürfen nicht automatisch mit den 42 expliziten Bypässen gleichgesetzt
+sie dürfen nicht automatisch mit den ursprünglich 42 expliziten Bypässen gleichgesetzt
 werden, weil eine Action noch eine interne Prüfung enthalten kann.
 
 ## Bestätigte Defekte und Risiken
@@ -92,11 +94,11 @@ Rollenzuordnungen anderer Nutzer im selben Organisationskontext gelöscht
 werden. Die vorhandenen Tests prüfen Erfolg, fehlendes Recht und falschen
 Header-Kontext, aber nicht den Erhalt eines zweiten Mitglieds.
 
-### P0: 42 deklarierte Prüfungen sind deaktiviert
+### P0: Noch 23 deklarierte Prüfungen sind deaktiviert
 
-Das ist besonders kritisch für SEPA-Schreiboperationen und Shares-Statuswechsel.
-Die bloße Existenz eines Context-Resolvers in Shares schützt nicht, solange
-`no` übergeben wird.
+Das ist besonders kritisch für SEPA-Schreiboperationen. Die Share-Routen sind
+inzwischen providergebunden oder bei persönlichen Reads an den JWT-Actor
+gebunden; in diesem Bereich wird kein `no` mehr übergeben.
 
 ### P1: Application→Organization prüft die Zielorganisation nicht
 
@@ -106,12 +108,13 @@ Registrierung/Besitz gleich; eine Membership- oder Management-Berechtigung an
 der Zielorganisation wird nicht geprüft. Das kann Contexts und OWNER-Rollen an
 einer fremden Organisation erzeugen.
 
-### P1: Batch- und ID-basierte Reads brauchen Ressourcenauflösung
+### P1: Verbleibende ID-basierte Reads brauchen Ressourcenauflösung
 
-Shares-History, SEPA-Downloads und Batch-Updates erhalten lediglich IDs. Eine
-robuste Prüfung muss erst `ID → Ressource → Legal Entity/Provider → Context`
-auflösen und anschließend alle Ziele prüfen. Der Client darf den Kontext nicht
-durch Auswahl einer ID oder eines Headers bestimmen.
+SEPA-Downloads erhalten lediglich IDs. Eine robuste Prüfung muss erst
+`ID → Ressource → Legal Entity → Context` auflösen und anschließend alle Ziele
+prüfen. Der Client darf den Kontext nicht durch Auswahl einer ID oder eines
+Headers bestimmen. Shares-History und Share-Batch-Updates lösen inzwischen jede
+Subscription serverseitig zum Provider-Context auf.
 
 ### P2: Legal-Entity-Typ ist nicht gegen Party-Typ abgesichert
 
@@ -141,8 +144,8 @@ SEPA sollte anschließend in einem eigenen Slice pro Ressourcenwurzel erfolgen;
 
 **Fakten**
 
-- Die äußere JWT-Topologie und die 42 `no`-Stellen wurden aus dem Routing
-  erhoben.
+- Die äußere JWT-Topologie und ursprünglich 42 `no`-Stellen wurden aus dem
+  Routing erhoben; nach den bisherigen Slices verbleiben 23 in Banking/SEPA.
 - Die beiden direkten Permission-Schreibpfade leiten ihren Kontext inzwischen
   aus dem Payload ab.
 - Der `UpdateMember`-Delete-Filter und die fehlende Organization-Prüfung beim
