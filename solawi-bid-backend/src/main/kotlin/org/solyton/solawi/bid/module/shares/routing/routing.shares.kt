@@ -20,6 +20,7 @@ import org.solyton.solawi.bid.module.shares.application.SHARE_MANAGEMENT_APPLICA
 import org.solyton.solawi.bid.module.shares.data.api.*
 import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
 import org.solyton.solawi.bid.module.shares.exception.ShareException
+import org.solyton.solawi.bid.module.shares.schema.ShareOfferEntity
 import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionEntity
 import org.solyton.solawil.bid.module.shares.data.toUUID
 import org.solyton.solawil.bid.module.user.data.toUUID
@@ -208,16 +209,26 @@ authenticate {
             }
             patch("update"){
                 ReceiveContextual<UpdateShareSubscription>() *
-                IsGrantedOneOf(
-                    rights(
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
                         "UPDATE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARES"
-                    ),
-                    no // todo:permission enable access check
+                    )
                 ) { contextual ->
-                    val providerId = UUID.fromString(contextual.data.providerId)
-                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    val data = contextual.data
+                    val sourceProviderId = ShareSubscriptionEntity.findById(UUID.fromString(data.id))
+                        ?.shareOffer
+                        ?.shareType
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareSubscription(data.id)
+                    val targetProviderId = ShareOfferEntity.findById(UUID.fromString(data.shareOfferId))
+                        ?.shareType
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareOffer(data.shareOfferId)
+                    setOf(sourceProviderId, targetProviderId, UUID.fromString(data.providerId))
+                        .map { contextIdOf(it, SHARE_MANAGEMENT_APPLICATION_NAME) }
+                        .toSet()
                 } *
                 UpdateShareSubscription() *
                 Respond<ShareSubscription> { transform() } runOn Base(call, environment)
