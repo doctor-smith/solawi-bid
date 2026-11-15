@@ -11,6 +11,7 @@ import org.evoleq.math.x
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.selectAll
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
+import org.solyton.solawi.bid.module.user.data.api.UserStatus as ApiUserStatus
 import org.solyton.solawi.bid.module.user.data.api.userprofile.*
 import org.solyton.solawi.bid.module.user.data.toApiType
 import org.solyton.solawi.bid.module.user.repository.createUserProfile
@@ -53,7 +54,7 @@ fun ImportProfiles(): KlAction<Result<Contextual<ImportUserProfiles>>, Result<Us
         val usersToCreate = usernames.filter { it !in existingUsers.map { user -> user.username} }
 
         val recentlyAddedUserAccounts = usersToCreate.map {
-            createUserEntity(CreateUser(it, "NOT_SET"), userId)
+            createUserEntity(CreateUser(it, null, ApiUserStatus.PENDING), userId)
         }
         val userProfiles: List<UserProfileEntity> = listOf(existingUsers, recentlyAddedUserAccounts).flatten().distinctBy { it.username }.map { user ->
             val userProfileData = userProfileMap[user.username]!!
