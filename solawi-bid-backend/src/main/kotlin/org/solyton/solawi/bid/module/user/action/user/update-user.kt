@@ -31,7 +31,7 @@ val UpdateUser: KlAction<Result<Contextual<UpdateUser>>, Result<User>> = KlActio
         val data = contextual.data
 
         val user = UserEntity.find { UsersTable.username eq data.oldUsername.value }.firstOrNull()
-            ?:throw UserManagementException.UserDoesNotExist.Username(data.oldUsername.value)
+            ?: throw PermissionException.AccessDenied
 
         // The request body identifies the target account, not the authenticated actor.
         // Only the user identified by the verified JWT may change their own credentials.
