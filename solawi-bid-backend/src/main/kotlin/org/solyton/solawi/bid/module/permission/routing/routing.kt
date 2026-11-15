@@ -13,7 +13,7 @@ import org.evoleq.math.state.times
 import org.solyton.solawi.bid.module.permission.action.db.*
 import org.solyton.solawi.bid.module.permission.data.api.*
 import org.solyton.solawi.bid.module.permission.permission.Right
-import java.util.UUID
+import java.util.*
 
 @KtorDsl
 fun <PermissionEnv> Routing.permissions(
