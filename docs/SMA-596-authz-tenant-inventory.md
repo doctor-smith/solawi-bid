@@ -45,7 +45,7 @@ Context-, Organization-, Provider-, Party- und Legal-Entity-Relationen.
 | Organization CRUD und Members | Context-Header; Action prüft teilweise Organization-Context erneut | generische Rechte | Header/Ziel-Bindung uneinheitlich; bestätigter Defekt in `UpdateMember` |
 | Application mit Organization verbinden | Payload `organizationId`, `applicationId` | kein Route-Guard; UserApplication-Existenz in Repository | App-Besitz wird nur angenommen; keine nachgewiesene Berechtigung an Zielorganisation |
 | Banking: Legal Entity personal | Payload/Query `partyId` | derived Banking-Context, `yes` | gute Zielableitung; Party-Typ-Konsistenz ungeklärt |
-| Banking: Fiscal Year | Payload `legalEntityId` | create/update derived; read auskommentiert | Read kann fremde Legal Entities anfragen |
+| Banking: Fiscal Year | Payload/Query `legalEntityId` | create/update derived; read ALL_OF | geschützt; jeder angefragte Legal-Entity-Context wird geprüft |
 | Banking: Bank Accounts | Legal Entity, tatsächlicher Account-Owner oder JWT-Actor | Provider-Operationen aktiv; personal read self-bound | geschützt; Delete löst den Owner serverseitig auf |
 | Banking: Creditor Identifiers | `legalEntityId` | derived, aktiv | Zielbindung vorhanden |
 | Banking: SEPA | Mandat/Collection/Payment/Message IDs bzw. Legal Entity | überwiegend `no` | höchste zusammenhängende offene Schreibfläche |
@@ -73,7 +73,6 @@ Im Routing existieren nach Aktivierung der Bank-Account-Prüfungen noch **21 akt
   leiten ihre Contexts serverseitig ab. Update verwendet ALL_OF für Quell- und
   Zielorganisation.
 
-Zusätzlich ist der Guard für `GET banking/fiscal-years/all` auskommentiert.
 Routes ohne sichtbaren Permission-Schritt sind in der Matrix separat markiert;
 sie dürfen nicht automatisch mit den ursprünglich 42 expliziten Bypässen gleichgesetzt
 werden, weil eine Action noch eine interne Prüfung enthalten kann.
