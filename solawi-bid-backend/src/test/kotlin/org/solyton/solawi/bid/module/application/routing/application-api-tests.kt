@@ -670,7 +670,9 @@ class ApplicationApiTests {
             assertIs<Result.Success<ApiApplications>>(registerApplicationsResult)
             val registeredApplication = registerApplicationsResult.data.list.first { it.name == "AUCTIONS" }
 
-            val organizationId = UUID.randomUUID()
+            val organizationId = UUID.fromString(
+                client.get("/setup/organization?name=APPLICATION_API_ORGANIZATION&owner=$USERNAME").bodyAsText()
+            )
             val registeredModuleIds = registeredApplication.modules.filter { it.lifecycleStage is LifecycleStage.Registered }.map { it.id }
             val applicationOrganizationRelationsResponse = client.post("applications/personal/connect-organization") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
