@@ -1,5 +1,8 @@
 package org.solyton.solawi.bid.application.environment
 
+import com.typesafe.config.ConfigFactory
+import io.ktor.server.config.HoconApplicationConfig
+import io.ktor.server.testing.testApplication
 import org.evoleq.exposedx.data.Database as DatabaseSettings
 import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.Database
@@ -10,6 +13,9 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
+import org.solyton.solawi.bid.application.data.db.migrations.applicationMigrations
+import org.solyton.solawi.bid.application.pipeline.installDatabase
+import org.solyton.solawi.bid.application.pipeline.installUsers
 import org.solyton.solawi.bid.module.application.repository.createApplication
 import org.solyton.solawi.bid.module.application.repository.createLifecycleStage
 import org.solyton.solawi.bid.module.application.repository.createModule
@@ -22,6 +28,7 @@ import org.solyton.solawi.bid.module.permission.repository.createRight
 import org.solyton.solawi.bid.module.permission.repository.createRole
 import org.solyton.solawi.bid.module.permission.repository.grant
 import org.solyton.solawi.bid.module.permission.repository.of
+import org.solyton.solawi.bid.module.permission.repository.path
 import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserStatus
@@ -82,6 +89,65 @@ class PlatformOwnerBootstrapTests {
     private fun db(): Pair<Database, String> {
         val url = "jdbc:h2:mem:platform_owner_${UUID.randomUUID()};DB_CLOSE_DELAY=-1"
         return Database.connect(url, driver = "org.h2.Driver", user = "root", password = "") to url
+    }
+
+    @DbFunctional @Test
+    fun freshApplicationMigrationsProvisionOwnerIdempotentlyWithoutCustomerPrivileges() = testApplication {
+        val (_, url) = db()
+        val env = configuredEnvironment(url, "fresh-migrated-platform-owner@solyton.test")
+        lateinit var database: Database
+
+        environment {
+            config = HoconApplicationConfig(ConfigFactory.parseString("ktor.application.modules = []"))
+        }
+        application {
+            database = installDatabase(env, applicationMigrations)
+            installUsers(env, database)
+            transaction(database) {
+                createRootContext("CUSTOMER_ORGANIZATION")
+            }
+            installUsers(env, database)
+        }
+        startApplication()
+
+        transaction(database) {
+            val owner = UserEntity.find { UsersTable.username eq env.applicationOwner.username }.single()
+            val ownerRole = RoleEntity.find { RolesTable.name eq "OWNER" }.single()
+            val customer = ContextEntity.find { ContextsTable.name eq "CUSTOMER_ORGANIZATION" }.single()
+            val expectedPaths = listOf(
+                "APPLICATION",
+                "APPLICATION/MANAGEMENT",
+                "APPLICATION/MANAGEMENT/TECHNICAL_APPLICATION_MANAGEMENT",
+                "APPLICATION/MANAGEMENT/ORGANIZATION_MANAGEMENT",
+                "APPLICATION/MANAGEMENT/APPLICATION_USER_MANAGEMENT",
+                "APPLICATION/MANAGEMENT/FINANCIAL_TOOLING"
+            )
+            val expectedContexts = expectedPaths.map { expectedPath ->
+                ContextEntity.all().single { it.path() == expectedPath }
+            }
+
+            assertTrue(expectedContexts.all { context ->
+                UserRoleContext.selectAll().where {
+                    (UserRoleContext.userId eq owner.id.value) and
+                        (UserRoleContext.roleId eq ownerRole.id) and
+                        (UserRoleContext.contextId eq context.id)
+                }.any()
+            })
+            assertFalse(UserRoleContext.selectAll().where {
+                (UserRoleContext.userId eq owner.id.value) and
+                    (UserRoleContext.contextId eq customer.id)
+            }.any())
+
+            val application = ApplicationEntity.find {
+                ApplicationsTable.name eq "APPLICATION_MANAGEMENT"
+            }.single()
+            assertEquals("MANAGEMENT", application.defaultContext.name)
+            assertEquals(1, UserApplicationEntity.find {
+                (UserApplicationsTable.applicationId eq application.id) and
+                    (UserApplicationsTable.userId eq owner.id.value)
+            }.count())
+            assertEquals(4, UserModuleEntity.find { UserModulesTable.userId eq owner.id.value }.count())
+        }
     }
 
     @DbFunctional @Test
