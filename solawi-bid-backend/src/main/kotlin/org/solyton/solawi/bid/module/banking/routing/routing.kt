@@ -281,15 +281,19 @@ fun <BankingEnv> Routing.banking (
                 route("mandates") {
                     post("create") {
                         ReceiveContextual<CreateSepaMandate>() *
-                        IsGrantedInAllDerivedContexts(CREATE_SEPA_MANDATES) { contextual ->
+                        IsGrantedOneOfInAllDerivedContexts(
+                            rights(CREATE_SEPA_MANDATES, "MANAGE_BANK_TRANSACTIONS")
+                        ) { contextual ->
                             val data = contextual.data
-                            val creditorPartyId = validatedCreditorIdentifier(data.creditorId).legalEntity.partyId
+                            val collection = data.collectionId?.let { collectionId ->
+                                validatedSepaCollection(collectionId.value.toUuid())
+                            }
+                            val creditorPartyId = collection?.creditorIdentifier?.legalEntity?.partyId
+                                ?: validatedCreditorIdentifier(data.creditorId).legalEntity.partyId
                             val amendmentPartyId = data.amendmentOf?.let { mandateId ->
                                 validatedSepaMandate(mandateId.value.toUuid()).creditorIdentifier.legalEntity.partyId
                             }
-                            val collectionPartyId = data.collectionId?.let { collectionId ->
-                                validatedSepaCollection(collectionId.value.toUuid()).creditorIdentifier.legalEntity.partyId
-                            }
+                            val collectionPartyId = collection?.creditorIdentifier?.legalEntity?.partyId
                             setOfNotNull(creditorPartyId, amendmentPartyId, collectionPartyId).map { partyId ->
                                 contextIdOf(BANKING_APPLICATION_NAME) { partyId }
                             }.toSet()
@@ -312,7 +316,9 @@ fun <BankingEnv> Routing.banking (
                     }
                     patch("update") {
                         ReceiveContextual<UpdateSepaMandate>() *
-                        IsGrantedInAllDerivedContexts(UPDATE_SEPA_MANDATES) { contextual ->
+                        IsGrantedOneOfInAllDerivedContexts(
+                            rights(UPDATE_SEPA_MANDATES, "MANAGE_BANK_TRANSACTIONS")
+                        ) { contextual ->
                             val data = contextual.data
                             val sourcePartyId = validatedSepaMandate(data.sepaMandateId.value.toUuid())
                                 .creditorIdentifier.legalEntity.partyId
@@ -327,7 +333,9 @@ fun <BankingEnv> Routing.banking (
                     }
                     patch("attach-reference-data") {
                         ReceiveContextual<AttachSepaMandateReferenceData>() *
-                        IsGrantedInAllDerivedContexts(UPDATE_SEPA_MANDATES) { contextual ->
+                        IsGrantedOneOfInAllDerivedContexts(
+                            rights(UPDATE_SEPA_MANDATES, "MANAGE_BANK_TRANSACTIONS")
+                        ) { contextual ->
                             val data = contextual.data
                             val mandatePartyId = validatedSepaMandate(data.sepaMandateId.value.toUuid())
                                 .creditorIdentifier.legalEntity.partyId
