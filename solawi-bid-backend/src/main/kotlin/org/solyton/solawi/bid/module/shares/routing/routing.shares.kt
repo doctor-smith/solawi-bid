@@ -39,12 +39,12 @@ authenticate {
         route("types") {
             post("create") {
                 ReceiveContextual<CreateShareType>() *
-                IsGrantedOneOf(rights(
-                    "CREATE_SHARE_TYPES",
-                    "MANAGE_SHARE_TYPES",
-                    "MANAGE_SHARES"
-                ),
-                    no, // todo:permission enable access check
+                IsGrantedOneOf(
+                    rights(
+                        "CREATE_SHARE_TYPES",
+                        "MANAGE_SHARE_TYPES",
+                        "MANAGE_SHARES"
+                    )
                 ) { contextual ->
                     val providerId = UUID.fromString(contextual.data.providerId)
                     contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
