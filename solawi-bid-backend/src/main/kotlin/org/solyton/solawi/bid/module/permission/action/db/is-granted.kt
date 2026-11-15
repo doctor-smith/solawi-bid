@@ -70,6 +70,29 @@ fun <T> IsGrantedInDerivedContext(
 
 @MathDsl
 @Suppress("FunctionName")
+fun <T> IsGrantedInExactDerivedContext(
+    right: String,
+    deriveContextId: Transaction.(Contextual<T>) -> UUID
+): KlAction<Result<Contextual<T>>, Result<Contextual<T>>> = KlAction { result ->
+    DbAction { database -> result bindSuspend { contextual ->
+        resultTransaction(database) {
+            val contextId = deriveContextId(contextual)
+            val rightId = RightEntity.find { RightsTable.name eq right }.firstOrNull()?.id
+                ?: throw PermissionException.NoSuchRight(right)
+            val roleIds = RoleRightContexts.selectAll().where {
+                (RoleRightContexts.contextId eq contextId) and (RoleRightContexts.rightId eq rightId)
+            }.map { it[RoleRightContexts.roleId] }
+            if (UserRoleContext.selectAll().where {
+                (UserRoleContext.userId eq contextual.userId) and
+                    (UserRoleContext.contextId eq contextId) and (UserRoleContext.roleId inList roleIds)
+            }.empty()) throw PermissionException.AccessDenied
+            contextual
+        }
+    } x database }
+}
+
+@MathDsl
+@Suppress("FunctionName")
 fun <T> IsGrantedInAllDerivedContexts(
     right: String,
     deriveContextIds: Transaction.(Contextual<T>) -> Set<UUID>

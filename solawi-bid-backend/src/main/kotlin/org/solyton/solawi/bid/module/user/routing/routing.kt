@@ -12,7 +12,7 @@ import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
-import org.solyton.solawi.bid.module.permission.action.db.IsGrantedInDerivedContext
+import org.solyton.solawi.bid.module.permission.action.db.IsGrantedInExactDerivedContext
 import org.solyton.solawi.bid.module.permission.repository.path
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
@@ -25,7 +25,8 @@ import org.solyton.solawil.bid.module.bid.data.api.toUUID
 
 // Administrative account changes are authorized only in the trusted, global
 // platform user-management context, never in a caller-selected organization context.
-private fun <T> RequirePlatformUserManagement() = IsGrantedInDerivedContext<T>("UPDATE_USER") {
+@Suppress("FunctionNaming")
+private fun <T> RequirePlatformUserManagement() = IsGrantedInExactDerivedContext<T>("UPDATE_USER") {
     val adminContext = ContextEntity.find {
         ContextsTable.name eq "ORGANIZATION_MANAGEMENT"
     }.firstOrNull() ?: throw PermissionException.AccessDenied
