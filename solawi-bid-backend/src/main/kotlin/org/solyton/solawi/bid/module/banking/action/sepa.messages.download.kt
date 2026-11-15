@@ -18,12 +18,11 @@ import org.solyton.solawi.bid.module.banking.service.buildPain008Xml
 
 @MathDsl
 @Suppress("FunctionName")
-fun DownloadSepaMessage(): KlAction<Result<Contextual<String>>, Result<SepaMessageString>> = KlAction { result ->
+fun DownloadSepaMessage(): KlAction<Result<Contextual<SepaMessageId>>, Result<SepaMessageString>> = KlAction { result ->
     DbAction { database ->
         result bindSuspend { contextual ->
             resultTransaction(database) {
-                val data = contextual.data
-                val message = buildPain008Xml(SepaMessageId( data))
+                val message = buildPain008Xml(contextual.data)
                 SepaMessageString(
                     version = SepaMessageVersion.PAIN008,
                     message = message

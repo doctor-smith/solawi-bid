@@ -4,21 +4,29 @@ import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.util.*
 import org.evoleq.exposedx.data.DbEnv
-import org.evoleq.ktorx.*
+import org.evoleq.ktorx.Base
+import org.evoleq.ktorx.NotImplemented
+import org.evoleq.ktorx.ReceiveContextual
+import org.evoleq.ktorx.Respond
 import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
 import org.evoleq.uuid.toUuid
 import org.solyton.solawi.bid.module.application.repository.contextIdOf
-import org.solyton.solawi.bid.module.permission.action.db.IsGranted
+import org.solyton.solawi.bid.module.distribution.exception.DistributionPointException
+import org.solyton.solawi.bid.module.distribution.schema.DistributionPointEntity
 import org.solyton.solawi.bid.module.permission.action.db.IsGrantedOneOf
-import org.solyton.solawi.bid.module.permission.action.db.no
+import org.solyton.solawi.bid.module.permission.action.db.IsGrantedOneOfInAllDerivedContexts
 import org.solyton.solawi.bid.module.permission.action.db.rights
 import org.solyton.solawi.bid.module.shares.action.api.*
 import org.solyton.solawi.bid.module.shares.application.SHARE_MANAGEMENT_APPLICATION_NAME
 import org.solyton.solawi.bid.module.shares.data.api.*
 import org.solyton.solawi.bid.module.shares.data.values.ShareSubscriptionId
 import org.solyton.solawi.bid.module.shares.exception.ShareException
+import org.solyton.solawi.bid.module.shares.schema.ShareOfferEntity
+import org.solyton.solawi.bid.module.shares.schema.ShareSubscriptionEntity
+import org.solyton.solawi.bid.module.shares.schema.ShareTypeEntity
+import org.solyton.solawil.bid.module.shares.data.toUUID
 import org.solyton.solawil.bid.module.user.data.toUUID
 import java.util.*
 
@@ -35,12 +43,12 @@ authenticate {
         route("types") {
             post("create") {
                 ReceiveContextual<CreateShareType>() *
-                IsGrantedOneOf(rights(
-                    "CREATE_SHARE_TYPES",
-                    "MANAGE_SHARE_TYPES",
-                    "MANAGE_SHARES"
-                ),
-                    no, // todo:permission enable access check
+                IsGrantedOneOf(
+                    rights(
+                        "CREATE_SHARE_TYPES",
+                        "MANAGE_SHARE_TYPES",
+                        "MANAGE_SHARES"
+                    )
                 ) { contextual ->
                     val providerId = UUID.fromString(contextual.data.providerId)
                     contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
@@ -50,16 +58,20 @@ authenticate {
             }
             patch("update"){
                 ReceiveContextual<UpdateShareType>() *
-                IsGrantedOneOf(
-                    rights(
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
                         "UPDATE_SHARE_TYPES",
                         "MANAGE_SHARE_TYPES",
                         "MANAGE_SHARES"
-                    ),
-                    no // todo:permission enable access check
+                    )
                 ) { contextual ->
-                    val providerId = UUID.fromString(contextual.data.providerId)
-                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    val data = contextual.data
+                    val actualProviderId = ShareTypeEntity.findById(UUID.fromString(data.id))
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareType(data.id)
+                    setOf(actualProviderId, UUID.fromString(data.providerId))
+                        .map { contextIdOf(it, SHARE_MANAGEMENT_APPLICATION_NAME) }
+                        .toSet()
                 } *
                 UpdateShareType() *
                 Respond<ShareType> { transform() } runOn Base(call, environment)
@@ -76,8 +88,7 @@ authenticate {
                         "READ_SHARE_TYPES",
                         "MANAGE_SHARE_TYPES",
                         "MANAGE_SHARES"
-                    ),
-                    no // todo:permission enable access check
+                    )
                 ) { contextual ->
                     val providerId = contextual.data.providerId
                     contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
@@ -92,32 +103,44 @@ authenticate {
         route("offers") {
             post("create") {
                 ReceiveContextual<CreateShareOffer>() *
-                IsGrantedOneOf(
-                    rights(
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
                         "CREATE_SHARE_OFFERS",
                         "MANAGE_SHARE_OFFERS",
                         "MANAGE_SHARES"
-                    ),
-                    no // todo:permission enable access check
+                    )
                 ) { contextual ->
-                    val providerId = UUID.fromString(contextual.data.providerId)
-                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    val data = contextual.data
+                    val actualProviderId = ShareTypeEntity.findById(UUID.fromString(data.shareTypeId))
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareType(data.shareTypeId)
+                    setOf(actualProviderId, UUID.fromString(data.providerId))
+                        .map { contextIdOf(it, SHARE_MANAGEMENT_APPLICATION_NAME) }
+                        .toSet()
                 } *
                 CreateShareOffer() *
                 Respond<ShareOffer> { transform() } runOn Base(call, environment)
             }
             patch("update"){
                 ReceiveContextual<UpdateShareOffer>() *
-                IsGrantedOneOf(
-                    rights(
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
                         "UPDATE_SHARE_OFFERS",
                         "MANAGE_SHARE_OFFERS",
                         "MANAGE_SHARES"
-                    ),
-                    no // todo:permission enable access check
+                    )
                 ) { contextual ->
-                    val providerId = UUID.fromString(contextual.data.providerId)
-                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    val data = contextual.data
+                    val sourceProviderId = ShareOfferEntity.findById(UUID.fromString(data.id))
+                        ?.shareType
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareOffer(data.id)
+                    val targetProviderId = ShareTypeEntity.findById(UUID.fromString(data.shareTypeId))
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareType(data.shareTypeId)
+                    setOf(sourceProviderId, targetProviderId, UUID.fromString(data.providerId))
+                        .map { contextIdOf(it, SHARE_MANAGEMENT_APPLICATION_NAME) }
+                        .toSet()
                 } *
                 UpdateShareOffer() *
                 Respond<ShareOffer> { transform() } runOn Base(call, environment)
@@ -137,8 +160,7 @@ authenticate {
                         "READ_SHARE_OFFERS",
                         "MANAGE_SHARE_OFFERS",
                         "MANAGE_SHARES"
-                    ),
-                    no // todo:permission enable access check
+                    )
                 ) { contextual ->
                     val providerId = contextual.data.providerId
                     contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
@@ -160,102 +182,154 @@ authenticate {
         route("subscriptions") {
             post("create") {
                 ReceiveContextual<CreateShareSubscription>() *
-                IsGrantedOneOf(
-                    rights(
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
                         "CREATE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARES"
-                    ),
-                    no // todo:permission enable access check
+                    )
                 ) { contextual ->
-                    val providerId = UUID.fromString(contextual.data.providerId)
-                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    val data = contextual.data
+                    val offerProviderId = ShareOfferEntity.findById(UUID.fromString(data.shareOfferId))
+                        ?.shareType
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareOffer(data.shareOfferId)
+                    val distributionProviderId = data.distributionPointId?.let { distributionPointId ->
+                        DistributionPointEntity.findById(UUID.fromString(distributionPointId))
+                            ?.organization
+                            ?.id
+                            ?.value
+                            ?: throw DistributionPointException.NoSuchDistributionPoint(distributionPointId)
+                    }
+                    setOfNotNull(
+                        offerProviderId,
+                        distributionProviderId,
+                        UUID.fromString(data.providerId)
+                    ).map { contextIdOf(it, SHARE_MANAGEMENT_APPLICATION_NAME) }
+                        .toSet()
                 } *
                 CreateShareSubscription() *
                 Respond<ShareSubscription> { transform() } runOn Base(call, environment)
             }
             post("rollover"){
                 ReceiveContextual<RolloverShareSubscriptions>() *
-                IsGrantedOneOf(
-                    rights(
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
                         "CREATE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARES"
-                    ), no
+                    )
                 ) { contextual ->
-                    val providerId = UUID.fromString(contextual.data.providerId.value)
-                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    val data = contextual.data
+                    val sourceProviderIds = data.shareSubscriptionIds.map { id ->
+                        ShareSubscriptionEntity.findById(id.toUUID())
+                            ?.shareOffer
+                            ?.shareType
+                            ?.providerId
+                            ?: throw ShareException.NoSuchShareSubscription(id.value)
+                    }
+                    val targetProviderId = ShareOfferEntity.findById(data.toShareOfferId.toUUID())
+                        ?.shareType
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareOffer(data.toShareOfferId.value)
+                    (sourceProviderIds + targetProviderId + data.providerId.toUUID())
+                        .map { contextIdOf(it, SHARE_MANAGEMENT_APPLICATION_NAME) }
+                        .toSet()
                 } *
                 RolloverShareSubscription() *
                 Respond<ShareSubscriptions> { transform() } runOn Base(call, environment)
             }
             patch("transfer-ownership") {
                 ReceiveContextual<TransferOwnership>() *
-                IsGrantedOneOf(
-                    rights(
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
                         "MANAGE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARES"
-                    ), no
+                    )
                 ) { contextual ->
-                    val providerId = contextual.data.providerId.value.toUuid()
-                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    val data = contextual.data
+                    val actualProviderId = ShareSubscriptionEntity.findById(data.shareSubscriptionId.toUUID())
+                        ?.shareOffer
+                        ?.shareType
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareSubscription(data.shareSubscriptionId.value)
+                    setOf(actualProviderId, data.providerId.toUUID())
+                        .map { contextIdOf(it, SHARE_MANAGEMENT_APPLICATION_NAME) }
+                        .toSet()
                 } *
                 TransferOwnership() *
                 Respond { transform() } runOn Base(call, environment)
             }
             patch("update"){
                 ReceiveContextual<UpdateShareSubscription>() *
-                IsGrantedOneOf(
-                    rights(
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
                         "UPDATE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARES"
-                    ),
-                    no // todo:permission enable access check
+                    )
                 ) { contextual ->
-                    val providerId = UUID.fromString(contextual.data.providerId)
-                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    val data = contextual.data
+                    val sourceProviderId = ShareSubscriptionEntity.findById(UUID.fromString(data.id))
+                        ?.shareOffer
+                        ?.shareType
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareSubscription(data.id)
+                    val targetProviderId = ShareOfferEntity.findById(UUID.fromString(data.shareOfferId))
+                        ?.shareType
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareOffer(data.shareOfferId)
+                    setOf(sourceProviderId, targetProviderId, UUID.fromString(data.providerId))
+                        .map { contextIdOf(it, SHARE_MANAGEMENT_APPLICATION_NAME) }
+                        .toSet()
                 } *
                 UpdateShareSubscription() *
                 Respond<ShareSubscription> { transform() } runOn Base(call, environment)
             }
             patch("update-status") {
                 ReceiveContextual<UpdateShareStatus>() *
-                IsGrantedOneOf(
-                    rights(
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
                         "UPDATE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARES"
-                    ),
-                    no // todo:permission enable access check
+                    )
                 ) { contextual ->
-                    val providerId = contextual.data.providerId.toUUID()
-                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    val status = contextual.data
+                    val actualProviderId = ShareSubscriptionEntity
+                        .findById(status.shareSubscriptionId.toUUID())
+                        ?.shareOffer
+                        ?.shareType
+                        ?.providerId
+                        ?: throw ShareException.NoSuchShareSubscription(status.shareSubscriptionId.value)
+                    setOf(status.providerId.toUUID(), actualProviderId)
+                        .map { contextIdOf(it, SHARE_MANAGEMENT_APPLICATION_NAME) }
+                        .toSet()
                 } *
                 UpdateShareStatus() *
                 Respond<ShareSubscriptions> { transform() } runOn Base(call, environment)
             }
             patch("update-statuses") {
                 ReceiveContextual<UpdateShareStatuses>() *
-                TransformContextual {
-                    statuses ->
-                    val (providerId, all) = statuses
-
-                    // All providers musst be the same
-                    val sameProviderPolicyHolds = all.all{ it.providerId == providerId }
-                    if(!sameProviderPolicyHolds) throw ShareException.ProviderMismatch
-                    statuses
-                } *
-                IsGrantedOneOf(
-                    rights(
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
                         "UPDATE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARES"
-                    ),
-                    no // todo:permission enable access check
+                    )
                 ) { contextual ->
-                    val providerId = contextual.data.all.first().providerId.toUUID()
-                    contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    val payloadProviderId = contextual.data.providerId.toUUID()
+                    val claimedProviderIds = contextual.data.all.map { it.providerId.toUUID() }
+                    val actualProviderIds = contextual.data.all.map { status ->
+                        ShareSubscriptionEntity.findById(status.shareSubscriptionId.toUUID())
+                            ?.shareOffer
+                            ?.shareType
+                            ?.providerId
+                            ?: throw ShareException.NoSuchShareSubscription(status.shareSubscriptionId.value)
+                    }
+                    (listOf(payloadProviderId) + claimedProviderIds + actualProviderIds)
+                        .map { contextIdOf(it, SHARE_MANAGEMENT_APPLICATION_NAME) }
+                        .toSet()
                 } *
                 UpdateShareStatuses() *
                 Respond<ShareSubscriptions> { transform() } runOn Base(call, environment)
@@ -275,8 +349,7 @@ authenticate {
                         "READ_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARE_SUBSCRIPTIONS",
                         "MANAGE_SHARES"
-                    ),
-                    no // todo:permission enable access check
+                    )
                 ) { contextual ->
                     val providerId = contextual.data.providerId
                     contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
@@ -288,14 +361,29 @@ authenticate {
                     val ids = (params.getAll("share_subscription_id").orEmpty()).map{ ShareSubscriptionId(it) }
                     ReadShareSubscriptionStatusHistories(ids)
                 } *
+                IsGrantedOneOfInAllDerivedContexts(
+                    rights = rights(
+                        "READ_SHARE_SUBSCRIPTIONS",
+                        "MANAGE_SHARE_SUBSCRIPTIONS",
+                        "MANAGE_SHARES"
+                    )
+                ) { contextual ->
+                    contextual.data.all.map { subscriptionId ->
+                        val providerId = ShareSubscriptionEntity.findById(subscriptionId.value.toUuid())
+                            ?.shareOffer
+                            ?.shareType
+                            ?.providerId
+                            ?: throw ShareException.NoSuchShareSubscription(subscriptionId.value)
+                        contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)
+                    }.toSet()
+                } *
                 ReadShareSubscriptionStatusHistories() *
                 Respond< ShareSubscriptionStatusHistories> { transform() } runOn Base(call, environment)
             }
             get("personal") {
-                ReceiveContextual{ params ->
+                ReceiveContextual{
                     ReadPersonalShareSubscriptions(listOf())
                 } *
-                IsGranted("", no) *
                 ReadPersonalShareSubscriptions() *
                 Respond<ShareSubscriptions> { transform() } runOn Base(call,environment)
 
@@ -306,8 +394,7 @@ authenticate {
             post("import") {
                 ReceiveContextual<ImportShareSubscriptions>() *
                 IsGrantedOneOf(
-                    rights("IMPORT_SHARE_SUBSCRIPTIONS"),
-                    no
+                    rights("IMPORT_SHARE_SUBSCRIPTIONS")
                 ) { contextual ->
                     val providerId = contextual.data.providerId.toUuid()
                     contextIdOf(providerId, SHARE_MANAGEMENT_APPLICATION_NAME)

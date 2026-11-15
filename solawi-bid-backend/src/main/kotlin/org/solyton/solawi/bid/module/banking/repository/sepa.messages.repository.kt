@@ -7,16 +7,18 @@ import org.solyton.solawi.bid.module.banking.exception.SepaException
 import org.solyton.solawi.bid.module.banking.schema.*
 import org.solyton.solawi.bid.module.banking.service.generateE2ETransactionId
 import org.solyton.solawi.bid.module.banking.service.generateMessageId
+import org.solyton.solawi.bid.module.values.LegalEntityId
 import java.util.*
 
 fun Transaction.readSepaMessagesByLegalEntity(
-    legalEntityId: UUID
+    legalEntityId: LegalEntityId
 ): List<SepaMessageEntity> {
+    val legalEntityUuid = UUID.fromString(legalEntityId.value)
     // Each sepa message is associated with a creditor identifier
     // We can use this fact to find the creditor identifier for the given legal entity
     // and then retrieve the sepa messages associated with that creditor identifier
     val creditorIdentifier = CreditorIdentifierEntity.find{
-        CreditorIdentifiersTable.legalEntityId eq legalEntityId
+        CreditorIdentifiersTable.legalEntityId eq legalEntityUuid
     }.firstOrNull()
 
     if(creditorIdentifier == null) return emptyList()

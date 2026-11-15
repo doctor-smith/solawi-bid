@@ -11,17 +11,15 @@ import org.evoleq.math.x
 import org.solyton.solawi.bid.module.banking.data.api.SepaPaymentLinks
 import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.banking.repository.readSepaPaymentLinksByLegalEntity
-import java.util.*
+import org.solyton.solawi.bid.module.values.LegalEntityId
 
 @MathDsl
 @Suppress("FunctionName")
-fun ReadSepaPaymentLinksByLegalEntity(): KlAction<Result<Contextual<String>>, Result<SepaPaymentLinks>> = KlAction { result ->
+fun ReadSepaPaymentLinksByLegalEntity(): KlAction<Result<Contextual<LegalEntityId>>, Result<SepaPaymentLinks>> = KlAction { result ->
     DbAction { database ->
         result bindSuspend { contextual ->
             resultTransaction(database) {
-                val data = contextual.data
-                val legalEntityId = UUID.fromString(data)
-                SepaPaymentLinks(readSepaPaymentLinksByLegalEntity(legalEntityId).toApiType())
+                SepaPaymentLinks(readSepaPaymentLinksByLegalEntity(contextual.data).toApiType())
             }
         } x database
     }

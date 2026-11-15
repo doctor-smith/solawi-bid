@@ -12,20 +12,17 @@ import org.solyton.solawi.bid.module.banking.data.application.sepaModule
 import org.solyton.solawi.bid.module.banking.data.sepa.sepaCollections
 import org.solyton.solawi.bid.module.banking.data.toDomainType
 import org.solyton.solawi.bid.module.values.LegalEntityId
-import org.solyton.solawi.bid.module.values.ProviderId
 
 const val READ_PERSONAL_SEPA_COLLECTIONS = "READ_PERSONAL_SEPA_COLLECTIONS"
 
 @Markup
 fun readPersonalSepaCollections(
-    providerId: ProviderId,
     legalEntityId: LegalEntityId,
     nameSuffix: String? = null
 ) = Action<BankingApplication, ReadSepaCollectionsByLegalEntity, ApiSepaCollections>(
     name = READ_PERSONAL_SEPA_COLLECTIONS.suffixed(nameSuffix),
     reader = {_ -> ReadSepaCollectionsByLegalEntity(
         listOf(
-            "provider" to providerId.value,
             "legal_entity" to legalEntityId.value
         )
     )},
