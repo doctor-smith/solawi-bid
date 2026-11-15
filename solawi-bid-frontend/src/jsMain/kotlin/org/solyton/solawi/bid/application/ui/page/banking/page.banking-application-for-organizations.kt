@@ -172,12 +172,6 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
         launch {
             bankingApplicationActions dispatch readBankAccounts(LegalEntityId(providerId.value))
         }
-        launch {
-            bankingApplicationActions dispatch readSepaMessagesByLegalEntity(LegalEntityId(providerId.value))
-        }
-        launch {
-            bankingApplicationActions dispatch readSepaPaymentLInksByLegalEntity(LegalEntityId(providerId.value))
-        }
     }
     LaunchedEffectOnSource(Read(managedUsers)) {
         if(Read(managedUsers).emit().isNotEmpty()) {
@@ -207,6 +201,12 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
             }
             launch {
                 bankingApplicationActions dispatch readSepaMandatesByCreditorsLegalEntity(legalEntityId)
+            }
+            launch {
+                bankingApplicationActions dispatch readSepaMessagesByLegalEntity(legalEntityId)
+            }
+            launch {
+                bankingApplicationActions dispatch readSepaPaymentLInksByLegalEntity(legalEntityId)
             }
         }
     }
@@ -1130,7 +1130,6 @@ fun SepaCollections(
         if(downloadStatus.read() == Download.Start) {
             scope.launch{
                 bankingApplicationActions dispatch readPersonalSepaCollections(
-                    providerId,
                     Read(legalEntity * legalEntityId) * Emit
                 )
             }.join()
@@ -1141,18 +1140,18 @@ fun SepaCollections(
     LaunchedEffectOnSource(Read(sepaMandates), Read(sepaMessages)) {
         if(isLegalEntityDefined.emit()) launch{
             bankingApplicationActions dispatch readPersonalSepaCollections(
-                providerId,
                 Read(legalEntity * legalEntityId) * Emit
             )
         }
     }
     LaunchedEffectOnSource(Read(sepaCollections)) {
         if(isLegalEntityDefined.emit()) {
+            val currentLegalEntityId = Read(legalEntity * legalEntityId) * Emit
             launch {
-                bankingApplicationActions dispatch readSepaPaymentLInksByLegalEntity(LegalEntityId(providerId.value))
+                bankingApplicationActions dispatch readSepaPaymentLInksByLegalEntity(currentLegalEntityId)
             }
             launch{
-                bankingApplicationActions dispatch readSepaMessagesByLegalEntity(LegalEntityId(providerId.value))
+                bankingApplicationActions dispatch readSepaMessagesByLegalEntity(currentLegalEntityId)
             }
         }
 

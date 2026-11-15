@@ -16,6 +16,7 @@ import org.solyton.solawi.bid.module.banking.schema.*
 import org.solyton.solawi.bid.module.banking.service.SepaMessageGenerationResult
 import org.solyton.solawi.bid.module.banking.service.generateE2ETransactionId
 import org.solyton.solawi.bid.module.banking.service.generatePain008Xml
+import org.solyton.solawi.bid.module.values.LegalEntityId
 import java.util.*
 
 /**
@@ -948,9 +949,9 @@ fun Transaction.readPaymentsByUser(userId: UUID): List<SepaPaymentEntity> {
     return SepaPaymentEntity.wrapRows(query).toList()
 }
 
-fun Transaction.readSepaPaymentLinksByLegalEntity(legalEntityId: UUID): List<SepaPaymentLinkEntity> {
+fun Transaction.readSepaPaymentLinksByLegalEntity(legalEntityId: LegalEntityId): List<SepaPaymentLinkEntity> {
 
-    val payments = readPaymentsByLegalEntity(legalEntityId).map { it.id.value }
+    val payments = readPaymentsByLegalEntity(UUID.fromString(legalEntityId.value)).map { it.id.value }
     return SepaPaymentLinkEntity.find {
         SepaPaymentLinks.successorId inList payments and (SepaPaymentLinks.predecessorId inList payments)
     }.toList()

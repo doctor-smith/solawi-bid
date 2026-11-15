@@ -521,7 +521,7 @@ val solawiApi by lazy {
                 key = UpdateSepaPayment::class,
                 url = "sepa/payments/update"
             )
-            patch<UpdateSepaPayments, SepaPayment>(
+            patch<UpdateSepaPayments, SepaPayments>(
                 key = UpdateSepaPayments::class,
                 url = "sepa/payments/update-many"
             )
@@ -573,7 +573,7 @@ val solawiApi by lazy {
                 key = UpdateSepaMandate::class,
                 url = "sepa/mandates/update"
             )
-            patch<AttachSepaMandateReferenceData, SepaCollection>(
+            patch<AttachSepaMandateReferenceData, SepaMandate>(
                 key = AttachSepaMandateReferenceData::class,
                 url = "sepa/mandates/attach-reference-data"
             )
