@@ -28,8 +28,8 @@ services:
       - JWT_AUDIENCE=solawi-bid_backend
       - JWT_REALM=solawi-bid_backend
       - JWT_SECRET=super-test-secret-for-solawi-bid
-      - DATABASE_URL=jdbc:mysql://solawi-bid_database:3306/solawi-bid
-      - DATABASE_DRIVER=com.mysql.jdbc.Driver
+      - DATABASE_URL=jdbc:mariadb://solawi-bid_database:3306/solawi-bid?allowPublicKeyRetrieval=true
+      - DATABASE_DRIVER=org.mariadb.jdbc.Driver
       - DATABASE_USER=solawi-bid
       - DATABASE_PASSWORD=secure
       - APPLICATION_OWNER_USERNAME=owner@solyton.org

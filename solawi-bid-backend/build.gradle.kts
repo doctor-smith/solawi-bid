@@ -87,8 +87,8 @@ dependencies {
     implementation(libs.exposed.dao)
     implementation(libs.exposed.jdbc)
     implementation(libs.exposed.joda.time)
-    // mysql connector
-    implementation(libs.mysql.connector.java)
+    // JDBC driver; kept outside the fat JAR by the Docker distribution.
+    runtimeOnly(libs.mariadb.connector.java)
 
     // h2
     implementation(libs.h2)
@@ -103,6 +103,21 @@ dependencies {
     testImplementation(libs.ktor.server.tests.jvm)
     testImplementation(libs.kotlin.test.junit)
     testImplementation(libs.junit.jupiter)
+}
+
+tasks.register<Copy>("copyJdbcDriver") {
+    description = "Collect the replaceable MariaDB JDBC driver for distribution"
+    group = "distribution"
+    from(configurations.runtimeClasspath) {
+        include("mariadb-java-client-*.jar")
+    }
+    into(layout.buildDirectory.dir("jdbc-driver"))
+}
+
+tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>().configureEach {
+    dependencies {
+        exclude(dependency("org.mariadb.jdbc:mariadb-java-client:.*"))
+    }
 }
 
 tasks.register<Test>("dbFunctionalTest"  ) {

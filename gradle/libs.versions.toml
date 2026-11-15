@@ -27,7 +27,7 @@ ktor-client-js="2.3.12"#
 ktor-client-core="2.3.12"
 logback = "1.5.13"
 mindrot-jbcrypt = "0.4"
-mysql-connector = "8.0.33"
+mariadb-connector = "3.5.11"
 playwright = "1.64.0"
 shadow = "8.1.0"
 sl4j = "2.0.7"
@@ -81,7 +81,7 @@ ktor-http-cio = { module = "io.ktor:ktor-http-cio", version.ref = "ktor"}
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 mindrot-jbcrypt = { module = "org.mindrot:jbcrypt", version.ref = "mindrot-jbcrypt" }
 microsoft-playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
-mysql-connector-java = { module = "mysql:mysql-connector-java", version.ref = "mysql-connector" }
+mariadb-connector-java = { module = "org.mariadb.jdbc:mariadb-java-client", version.ref = "mariadb-connector" }
 slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "sl4j"}
 
 
