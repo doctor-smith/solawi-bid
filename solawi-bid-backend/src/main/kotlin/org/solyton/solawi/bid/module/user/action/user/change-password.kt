@@ -17,6 +17,7 @@ import org.solyton.solawi.bid.module.user.exception.UserManagementException
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.user.service.bcrypt.hashPassword
+import org.solyton.solawi.bid.module.user.service.password.PasswordPolicy
 
 @MathDsl
 @Suppress("FunctionName")
@@ -28,6 +29,7 @@ val ChangePassword: KlAction<Result<Contextual<ChangePassword>>, Result<User>> =
         val user = UserEntity.find { UsersTable.username eq data.username }.firstOrNull()
             ?:throw UserManagementException.UserDoesNotExist.Username(data.username)
 
+        PasswordPolicy.validate(data.password, user.username)
         user.password = hashPassword(data.password)
         user.modifiedBy = modifierId
         user.modifiedAt = DateTime.now()
