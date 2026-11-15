@@ -138,6 +138,15 @@ class PlatformOwnerBootstrapTests {
                     (UserRoleContext.contextId eq customer.id)
             }.any())
 
+            // With real migrations (not a handcrafted right grant), the configured
+            // platform owner must be able to pass the exact-scope admin guard.
+            // This is the positive half of the credential API boundary tests.
+            val platformUserManagement = expectedContexts.single {
+                it.path() == "APPLICATION/MANAGEMENT/ORGANIZATION_MANAGEMENT"
+            }
+            assertTrue(isGranted(owner.id.value, platformUserManagement.id.value, "UPDATE_USER"))
+            assertFalse(isGranted(owner.id.value, customer.id.value, "UPDATE_USER"))
+
             val application = ApplicationEntity.find {
                 ApplicationsTable.name eq "APPLICATION_MANAGEMENT"
             }.single()
