@@ -17,6 +17,7 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
+import org.solyton.solawi.bid.module.authentication.data.api.Login
 import org.solyton.solawi.bid.module.testFramework.getTestContextIdByName
 import org.solyton.solawi.bid.module.testFramework.getTestToken
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiOrganization
@@ -87,6 +88,16 @@ class PendingUserImportRoutingTests {
                 }.single()
                 assertTrue(savedOrganization.members.any { it.id == user.id })
             }
+
+            // A pending imported account cannot authenticate, even with a guessed password.
+            val loginResponse = client.post("login") {
+                header(HttpHeaders.ContentType, ContentType.Application.Json)
+                setBody(Json.encodeToString(
+                    Login.serializer(),
+                    Login(username, "not-a-valid-password")
+                ))
+            }
+            assertEquals(HttpStatusCode.Forbidden, loginResponse.status)
         }
     }
 
