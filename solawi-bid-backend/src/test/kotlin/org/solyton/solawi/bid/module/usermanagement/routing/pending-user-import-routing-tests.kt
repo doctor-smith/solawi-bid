@@ -1,14 +1,11 @@
 package org.solyton.solawi.bid.module.usermanagement.routing
 
 import com.typesafe.config.ConfigFactory
-import io.ktor.client.request.header
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.config.HoconApplicationConfig
-import io.ktor.server.testing.testApplication
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.server.config.*
+import io.ktor.server.testing.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import org.evoleq.ktorx.headers.Header
@@ -18,6 +15,10 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
 import org.solyton.solawi.bid.module.authentication.data.api.Login
+import org.solyton.solawi.bid.module.permission.repository.createChild
+import org.solyton.solawi.bid.module.permission.repository.grant
+import org.solyton.solawi.bid.module.permission.repository.of
+import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.testFramework.getTestContextIdByName
 import org.solyton.solawi.bid.module.testFramework.getTestToken
 import org.solyton.solawi.bid.module.user.data.api.organization.ApiOrganization
@@ -26,16 +27,10 @@ import org.solyton.solawi.bid.module.user.data.api.organization.ImportMembers
 import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.ImportUserProfiles
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UserProfileToImport
-import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
-import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
-import org.solyton.solawi.bid.module.user.schema.UserEntity
-import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
-import org.solyton.solawi.bid.module.user.schema.UserProfilesTable
-import org.solyton.solawi.bid.module.user.schema.UserStatus
-import org.solyton.solawi.bid.module.user.schema.UsersTable
+import org.solyton.solawi.bid.module.user.schema.*
 import org.solyton.solawi.bid.module.usermanagement.routing.util.createOrganization
 import java.io.File
-import java.util.UUID
+import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
@@ -52,12 +47,30 @@ class PendingUserImportRoutingTests {
             .resolve()
     )
 
+    /** Complete the deliberately small user-management test migration with the
+     * root-context grants required by the production import path. */
+    private fun prepareImportPermissions(url: String) {
+        val database = Database.connect(url, driver = "org.h2.Driver", user = "root", password = "")
+        transaction(database) {
+            val application = ContextEntity.find { ContextsTable.name eq "APPLICATION" }.single()
+            val developer = RoleEntity.find { RolesTable.name eq "DEVELOPER" }.single()
+            val user = RoleEntity.find { RolesTable.name eq "USER" }.single()
+            val manageUsers = RightEntity.find { RightsTable.name eq "MANAGE_USERS" }.single()
+            val readOrganization = RightEntity.find { RightsTable.name eq "READ_ORGANIZATION" }.single()
+
+            application.createChild("ORGANIZATION")
+            (developer of application).grant(manageUsers)
+            (user of application).grant(readOrganization)
+        }
+    }
+
     @Api @Test
     fun importMembersCreatesPendingAccountWithoutPassword() = runBlocking {
         val url = "jdbc:h2:mem:pending_members_${UUID.randomUUID()};DB_CLOSE_DELAY=-1"
         testApplication {
             environment { config = userManagementConfig(url) }
             val token = client.getTestToken("developer@alpha-structure.com")
+            prepareImportPermissions(url)
             val rootContextId = client.getTestContextIdByName("APPLICATION")
             val created = client.createOrganization(
                 CreateOrganization("pending-members-${UUID.randomUUID()}"),
@@ -76,7 +89,7 @@ class PendingUserImportRoutingTests {
                     ImportMembers(organization.id, listOf(username))
                 ))
             }
-            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals(HttpStatusCode.OK, response.status, response.bodyAsText())
 
             val database = Database.connect(url, driver = "org.h2.Driver", user = "root", password = "")
             transaction(database) {
@@ -107,6 +120,7 @@ class PendingUserImportRoutingTests {
         testApplication {
             environment { config = userManagementConfig(url) }
             val token = client.getTestToken("developer@alpha-structure.com")
+            prepareImportPermissions(url)
             val rootContextId = client.getTestContextIdByName("APPLICATION")
             val username = "new-profile-${UUID.randomUUID()}@solyton.test"
             val profile = UserProfileToImport(
@@ -137,7 +151,7 @@ class PendingUserImportRoutingTests {
                     ImportUserProfiles(listOf(profile))
                 ))
             }
-            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals(HttpStatusCode.OK, response.status, response.bodyAsText())
 
             val database = Database.connect(url, driver = "org.h2.Driver", user = "root", password = "")
             transaction(database) {
