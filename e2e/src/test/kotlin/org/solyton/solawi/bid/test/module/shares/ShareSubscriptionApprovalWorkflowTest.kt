@@ -5,6 +5,7 @@ import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import kotlinx.coroutines.runBlocking
+import org.evoleq.math.state.State
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
 import org.junit.jupiter.api.AfterAll
@@ -66,7 +67,7 @@ class ShareSubscriptionApprovalWorkflowTest {
 
     @Workflow
     @Test
-    fun `provider approves pending subscription without payment mandate` () {
+    fun `provider approves pending subscription without payment mandate`() {
         val reportDirectory = "ShareSubscriptionApprovalWorkflowTest"
         val suffix = System.currentTimeMillis()
         val report = E2eReport("Provider approves a pending subscription without payment mandate")
@@ -121,37 +122,15 @@ class ShareSubscriptionApprovalWorkflowTest {
                     newStatus = "SUBSCRIBED"
                 )
 
-                // Domain-readable workflow; the existing OOP Page Objects remain unchanged.
-                // The returned values of one step feed the next using evoleq Kleisli composition.
-                val scenario: E2eAction<Unit> = runBlocking {
-                    workflowStep("Admin creates a test user", createUser, ::CreateTestUserWorkflow) *
-                        { testUser: StdTestUser -> switchUser(testUser) } *
-                        { _: Unit ->
-                            workflowStep("Set up the share-management environment", setup, ::SetupShareEnvironmentWorkflow)
-                        } *
-                        { _: ShareEnvironmentSetupResult ->
-                            workflowStep("Member subscribes to a share", subscribe, ::CreateShareSubscriptionWorkflow)
-                        } *
-                        { subscription: ApiShareSubscription ->
-                            workflowStep("Provider approves the subscription", approve, ::BulkChangeSubscriptionStatusWorkflow) *
-                                { subscriptions: ApiShareSubscriptions ->
-                                    // Independent checks are accumulated rather than failing on the first assertion.
-                                    verifyAll(
-                                        expect("Subscription is marked SUBSCRIBED in domain data") {
-                                            val actual = subscriptions.all.first { it.id == subscription.id }
-                                            assertEquals(ShareStatus.Subscribed, actual.status)
-                                        },
-                                        expect("Subscription is visible as SUBSCRIBED in the user interface") {
-                                            val list = SharesPage(userContext.page)
-                                                .ShareSubscriptionManagement()
-                                                .listOfSubscriptions()
-                                            assertThat(list.itemStatus(subscription.id, "SUBSCRIBED")).isVisible()
-                                        }
-                                    )
-                                }
-                        }
+                runBlocking {
+                    State<E2eState, ApprovalFixture>(ApprovalFixture(createUser, setup, subscribe, approve)) *
+                    CreateMember() *
+                    SwitchUser<MemberScenario> { it.user } *
+                    PrepareShares() *
+                    Subscribe() *
+                    Approve() *
+                    VerifyApproval() runOn initial
                 }
-                runBlocking { scenario runOn initial }
             }
         } finally {
             report.writeTo(
@@ -160,3 +139,45 @@ class ShareSubscriptionApprovalWorkflowTest {
         }
     }
 }
+
+
+/** Each phase retains its predecessor and adds a typed result; no nullable result slots. */
+private data class ApprovalFixture(
+    val createUser: CreateTestUserInput,
+    val setup: SetupShareEnvironmentInput,
+    val subscribe: CreateShareSubscriptionInput,
+    val approve: BulkChangeSubscriptionStatusInput
+)
+
+private data class MemberScenario(val fixture: ApprovalFixture, val user: StdTestUser)
+private data class PreparedScenario(val member: MemberScenario, val environment: ShareEnvironmentSetupResult)
+private data class PendingScenario(val prepared: PreparedScenario, val subscription: ApiShareSubscription)
+private data class ApprovedScenario(val pending: PendingScenario, val subscriptions: ApiShareSubscriptions)
+
+private fun CreateMember(): E2eStep<ApprovalFixture, MemberScenario> =
+    (workflow(::CreateTestUserWorkflow) reportedAs "Admin creates a test user")
+        .retaining(ApprovalFixture::createUser, ::MemberScenario)
+
+private fun PrepareShares(): E2eStep<MemberScenario, PreparedScenario> =
+    (workflow(::SetupShareEnvironmentWorkflow) reportedAs "Set up the share-management environment")
+        .retaining({ member: MemberScenario -> member.fixture.setup }, ::PreparedScenario)
+
+private fun Subscribe(): E2eStep<PreparedScenario, PendingScenario> =
+    (workflow(::CreateShareSubscriptionWorkflow) reportedAs "Member subscribes to a share")
+        .retaining({ prepared: PreparedScenario -> prepared.member.fixture.subscribe }, ::PendingScenario)
+
+private fun Approve(): E2eStep<PendingScenario, ApprovedScenario> =
+    (workflow(::BulkChangeSubscriptionStatusWorkflow) reportedAs "Provider approves the subscription")
+        .retaining({ pending: PendingScenario -> pending.prepared.member.fixture.approve }, ::ApprovedScenario)
+
+private fun VerifyApproval(): E2eStep<ApprovedScenario, ApprovedScenario> = verifyAll(
+    expect("Subscription is marked SUBSCRIBED in domain data") { approved: ApprovedScenario ->
+        val subscription = approved.pending.subscription
+        val actual = approved.subscriptions.all.first { it.id == subscription.id }
+        assertEquals(ShareStatus.Subscribed, actual.status)
+    },
+    expect("Subscription is visible as SUBSCRIBED in the user interface") { approved: ApprovedScenario ->
+        val list = SharesPage(userContext.page).ShareSubscriptionManagement().listOfSubscriptions()
+        assertThat(list.itemStatus(approved.pending.subscription.id, "SUBSCRIBED")).isVisible()
+    }
+)
