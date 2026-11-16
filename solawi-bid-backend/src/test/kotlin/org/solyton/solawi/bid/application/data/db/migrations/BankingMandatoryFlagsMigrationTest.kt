@@ -1,8 +1,10 @@
 package org.solyton.solawi.bid.application.data.db.migrations
 
 import kotlinx.coroutines.runBlocking
-import org.evoleq.exposedx.test.runH2Test
+import org.evoleq.exposedx.migrations.MigrationTable
 import org.evoleq.uuid.UUID_ZERO
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -23,6 +25,28 @@ import kotlin.test.assertTrue
 class BankingMandatoryFlagsMigrationTest {
     private val tables = arrayOf(ContextsTable, ApplicationsTable, ModulesTable)
 
+    /**
+     * Keep the same in-memory H2 database alive across transactions.
+     * runH2Test uses a DB URL without DB_CLOSE_DELAY=-1; H2 drops its schema
+     * when the last connection closes between setup and migration execution.
+     */
+    private fun withMigrationDatabase(block: (Database) -> Unit) {
+        val db = Database.connect(
+            url = "jdbc:h2:mem:banking_mandatory_flags_${UUID.randomUUID()};DB_CLOSE_DELAY=-1",
+            driver = "org.h2.Driver",
+            user = "root",
+            password = ""
+        )
+        try {
+            transaction(db) { SchemaUtils.create(*tables) }
+            block(db)
+        } finally {
+            transaction(db) {
+                SchemaUtils.drop(ModulesTable, ApplicationsTable, ContextsTable, MigrationTable)
+            }
+        }
+    }
+
     private fun Transaction.flags(applicationId: UUID): Map<String, Boolean> =
         ModulesTable.selectAll()
             .where { ModulesTable.applicationId eq applicationId }
@@ -31,7 +55,7 @@ class BankingMandatoryFlagsMigrationTest {
     @DbFunctional
     @Test
     fun optionalBankingModulesAreCorrectedWithoutChangingMandatoryOrOtherApps() =
-        runH2Test(*tables) { db ->
+        withMigrationDatabase { db ->
             val (bankingId, otherId) = transaction(db) {
                 createRootContext("EMPTY")
                 val bankingId = createApplication("BANKING", "Banking", UUID_ZERO).id.value
@@ -67,7 +91,7 @@ class BankingMandatoryFlagsMigrationTest {
     @DbFunctional
     @Test
     fun missingBankingModuleAbortsBeforeAnyFlagIsModified() =
-        runH2Test(*tables) { db ->
+        withMigrationDatabase { db ->
             val bankingId = transaction(db) {
                 createRootContext("EMPTY")
                 val id = createApplication("BANKING", "Banking", UUID_ZERO).id.value
