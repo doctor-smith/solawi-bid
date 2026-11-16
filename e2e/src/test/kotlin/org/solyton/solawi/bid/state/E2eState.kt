@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.state
 
 import com.microsoft.playwright.Browser
+import org.evoleq.math.state.KlState
 import org.evoleq.math.state.State
 import org.solyton.solawi.bid.AdminTestUser
 import org.solyton.solawi.bid.StdTestUser
@@ -8,7 +9,6 @@ import org.solyton.solawi.bid.TestUser
 import org.solyton.solawi.bid.TestUserContext
 import org.solyton.solawi.bid.TestWorkflow
 import org.solyton.solawi.bid.on
-import org.solyton.solawi.bid.withFailureDiagnostics
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.CancellationException
@@ -54,6 +54,7 @@ data class E2eState(
 )
 
 typealias E2eAction<T> = State<E2eState, T>
+typealias E2eStep<I, O> = KlState<E2eState, I, O>
 
 private enum class EntryType { STEP, CHECK }
 
@@ -100,38 +101,50 @@ class E2eReport(private val scenario: String) {
     }
 }
 
-/** Reuse an existing OOP PageObject workflow without modifying that workflow. */
-fun <I, O> workflowStep(
-    title: String,
-    input: I,
-    workflow: (TestUserContext) -> TestWorkflow<I, O>,
-    diagnosticsPath: String? = null
-): E2eAction<O> = State { state: E2eState ->
-    val start = System.nanoTime()
-    try {
-        val result = if (diagnosticsPath == null) {
-            workflow(state.userContext).runWith(input)
-        } else {
-            state.userContext.withFailureDiagnostics(diagnosticsPath) {
-                workflow(state.userContext).runWith(input)
-            }
+/** Adapt a workflow constructor; input and execution context are supplied later. */
+fun <I, O> workflow(
+    workflow: (TestUserContext) -> TestWorkflow<I, O>
+): E2eStep<I, O> = { input ->
+    State { state -> workflow(state.userContext).runWith(input) to state }
+}
+
+/** Reporting decorates an arrow without changing its input or output type. */
+infix fun <I, O> E2eStep<I, O>.reportedAs(title: String): E2eStep<I, O> = { input ->
+    State { state ->
+        val start = System.nanoTime()
+        try {
+            val result = this@reportedAs(input)(state)
+            state.report.step(title, (System.nanoTime() - start) / 1_000_000)
+            result
+        } catch (failure: Throwable) {
+            state.report.step(title, (System.nanoTime() - start) / 1_000_000, failure)
+            throw failure
         }
-        state.report.step(title, (System.nanoTime() - start) / 1_000_000)
-        result to state
-    } catch (failure: Throwable) {
-        state.report.step(title, (System.nanoTime() - start) / 1_000_000, failure)
-        throw failure
     }
 }
 
-/** Switch to a new isolated Playwright user context, with the environment owning cleanup. */
-fun switchUser(user: TestUser): E2eAction<Unit> = State { state: E2eState ->
-    Unit to state.copy(userContext = state.environment.open(user))
+/** Focus a workflow on part of the input and explicitly retain the surrounding data. */
+fun <D, I, O, R> E2eStep<I, O>.retaining(
+    input: (D) -> I,
+    combine: (D, O) -> R
+): E2eStep<D, R> = { data ->
+    State { state ->
+        val (result, next) = this@retaining(input(data))(state)
+        combine(data, result) to next
+    }
 }
 
-data class E2eExpectation(val title: String, val evaluate: E2eState.() -> Unit)
+/** Change browser context while passing the complete input through unchanged. */
+@Suppress("FunctionName")
+fun <T> SwitchUser(user: (T) -> TestUser): E2eStep<T, T> = { data ->
+    State { state ->
+        data to state.copy(userContext = state.environment.open(user(data)))
+    }
+}
 
-fun expect(title: String, evaluate: E2eState.() -> Unit): E2eExpectation =
+data class E2eExpectation<T>(val title: String, val evaluate: E2eState.(T) -> Unit)
+
+fun <T> expect(title: String, evaluate: E2eState.(T) -> Unit): E2eExpectation<T> =
     E2eExpectation(title, evaluate)
 
 /**
@@ -142,23 +155,25 @@ fun expect(title: String, evaluate: E2eState.() -> Unit): E2eExpectation =
  * This is deliberately NOT a new Applicative typeclass; the independent
  * validation phase can be generalized after validating this small spike.
  */
-fun verifyAll(vararg expectations: E2eExpectation): E2eAction<Unit> = State { state: E2eState ->
-    val failures = mutableListOf<String>()
-    expectations.forEach { expectation ->
-        val start = System.nanoTime()
-        try {
-            expectation.evaluate(state)
-            state.report.verification(expectation.title, (System.nanoTime() - start) / 1_000_000)
-        } catch (failure: Throwable) {
-            if (failure is CancellationException || failure is VirtualMachineError || failure is ThreadDeath) {
-                throw failure
+fun <T> verifyAll(vararg expectations: E2eExpectation<T>): E2eStep<T, T> = { data ->
+    State { state ->
+        val failures = mutableListOf<String>()
+        expectations.forEach { expectation ->
+            val start = System.nanoTime()
+            try {
+                expectation.evaluate(state, data)
+                state.report.verification(expectation.title, (System.nanoTime() - start) / 1_000_000)
+            } catch (failure: Throwable) {
+                if (failure is CancellationException || failure is VirtualMachineError || failure is ThreadDeath) {
+                    throw failure
+                }
+                state.report.verification(expectation.title, (System.nanoTime() - start) / 1_000_000, failure)
+                failures += expectation.title
             }
-            state.report.verification(expectation.title, (System.nanoTime() - start) / 1_000_000, failure)
-            failures += expectation.title
         }
+        if (failures.isNotEmpty()) {
+            throw AssertionError(failures.size.toString() + " independent expectation(s) failed: " + failures.joinToString())
+        }
+        data to state
     }
-    if (failures.isNotEmpty()) {
-        throw AssertionError(failures.size.toString() + " independent expectation(s) failed: " + failures.joinToString())
-    }
-    Unit to state
 }
