@@ -22,22 +22,41 @@ Existing session management and browser setup in the test class remain unchanged
 
 ## How the scenario reads
 
-A short excerpt from the refactored test:
+The scenario uses the same State/Kleisli composition as the backend routes:
 
 ~~~kotlin
-workflowStep("Admin creates a test user", createUser, ::CreateTestUserWorkflow) *
-    { testUser: StdTestUser -> switchUser(testUser) } *
-    { _: Unit ->
-        workflowStep("Set up the share-management environment", setup, ::SetupShareEnvironmentWorkflow)
-    } *
-    { _: ShareEnvironmentSetupResult ->
-        workflowStep("Member subscribes to a share", subscribe, ::CreateShareSubscriptionWorkflow)
-    }
+State<E2eState, ApprovalFixture>(fixture) *
+CreateMember() *
+SwitchUser<MemberScenario> { it.user } *
+PrepareShares() *
+Subscribe() *
+Approve() *
+VerifyApproval() runOn initial
 ~~~
 
-The full scenario goes on to approve the subscription and then evaluate two independent expectations: the domain status and the UI status.
+The named arrows are small adapters over existing workflows, for example:
 
-The operator is **evoleq's existing State/Kleisli composition**, not a new ad-hoc workflow engine.
+~~~kotlin
+private fun CreateMember(): E2eStep<ApprovalFixture, MemberScenario> =
+    (workflow(::CreateTestUserWorkflow) reportedAs "Admin creates a test user")
+        .retaining(ApprovalFixture::createUser, ::MemberScenario)
+~~~
+
+`workflow(constructor)` is curried: it produces `I -> State<E2eState, O>`.
+The input arrives through composition; the active browser context is supplied at execution.
+`reportedAs` decorates that arrow without changing its input/output types.
+`retaining(select, combine)` focuses on a workflow input and combines its result with
+its original surrounding data, propagating the workflow's returned state.
+
+The scenario uses typed phases: fixture → member → prepared environment → pending
+subscription → approved subscriptions. Each phase retains its predecessor and adds
+the workflow result. There are no nullable result slots or captured subscription values.
+`SwitchUser` changes the browser context while passing its entire input through unchanged.
+`verifyAll` gives each independent expectation the same typed input and also passes it
+through on success. Neither operation replaces useful data with `Unit`.
+
+The operator is **evoleq's existing State/Kleisli composition**, not a new workflow engine.
+The final checks verify both the domain status and the UI status.
 
 ## Reporting
 
@@ -53,8 +72,12 @@ The report intentionally omits user names, tokens, passwords, request bodies and
 
 Unit verification (no browser required):
 
+`E2eCompositionTest` covers deferred workflow execution, retained payloads, returned
+state propagation, user switching and cleanup, independent checks, prerequisite
+failures, and cancellation. Playwright interfaces use strict in-memory stubs.
+
 ~~~shell
-./gradlew :e2e:test --tests 'org.solyton.solawi.bid.state.E2eReportTest'
+./gradlew :e2e:test --tests 'org.solyton.solawi.bid.state.*'
 ~~~
 
 Full isolated E2E scenario (needs the dedicated E2E environment):
@@ -73,7 +96,7 @@ When using the standard E2E helper, follow [e2e/README.md](../e2e/README.md) for
 3. **Validation algebra:** The current check combiner is an accumulator of independent, sequential assertions, not a generic Applicative instance. Prove the utility before introducing a more general algebra.
 4. **Browser concurrency:** Never evaluate independent checks concurrently on the same Playwright Page. Independence in validation refers to absence of data dependence, not guaranteed thread-safety.
 5. **Test ownership:** Tests still control their browser lifecycle. A future JUnit 5 extension could create E2eEnvironment, publish attachments, and clean up even when setup fails.
-6. **Run status:** The changes are proposed for review. Static inspection is not a substitute for compiling and running the E2E test in the project CI.
+6. **Run status:** Local Gradle verification was attempted but the wrapper distribution download failed because `services.gradle.org` is unreachable in this environment. Compilation, unit tests, and the browser scenario still require CI or a configured local environment.
 
 ## Why this belongs in the book
 
