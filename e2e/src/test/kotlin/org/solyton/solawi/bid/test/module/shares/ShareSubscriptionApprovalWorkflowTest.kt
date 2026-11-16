@@ -4,18 +4,25 @@ import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
+import kotlinx.coroutines.runBlocking
+import org.evoleq.math.state.runOn
+import org.evoleq.math.state.times
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
+import java.nio.file.Paths
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.*
 import org.solyton.solawi.bid.module.authentication.service.generateSecurePassword
 import org.solyton.solawi.bid.module.shares.data.api.ShareStatus
+import org.solyton.solawi.bid.module.shares.data.api.ApiShareSubscription
+import org.solyton.solawi.bid.module.shares.data.api.ApiShareSubscriptions
 import org.solyton.solawi.bid.module.values.Firstname
 import org.solyton.solawi.bid.module.values.Lastname
 import org.solyton.solawi.bid.module.values.Password
 import org.solyton.solawi.bid.module.values.Username
 import org.solyton.solawi.bid.pageobjects.module.shares.SharesPage
+import org.solyton.solawi.bid.state.*
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserInput
 import org.solyton.solawi.bid.workflow.admin.CreateTestUserWorkflow
 import org.solyton.solawi.bid.workflow.banking.FiscalYearPeriod
@@ -59,77 +66,97 @@ class ShareSubscriptionApprovalWorkflowTest {
 
     @Workflow
     @Test
-    fun `provider approves pending subscription without payment mandate`() {
+    fun `provider approves pending subscription without payment mandate` () {
         val reportDirectory = "ShareSubscriptionApprovalWorkflowTest"
         val suffix = System.currentTimeMillis()
+        val report = E2eReport("Provider approves a pending subscription without payment mandate")
 
         val adminUsername = requireNotNull(System.getenv("TEST_USER")) { "TEST_USER must be set" }
         val adminPassword = requireNotNull(System.getenv("TEST_USER_PASSWORD")) { "TEST_USER_PASSWORD must be set" }
         val adminUser = AdminTestUser(Username(adminUsername), Password(adminPassword), STORAGE_PATH)
 
-        // 1. Create a test user via workflow
-        val testUser = withUser(adminUser on browser) {
-            run(CreateTestUserWorkflow(this)) withInput
-                CreateTestUserInput(
-                    Username("e2e-user@solyton.org"),
-                    Password(generateSecurePassword()),
-                    true,
-                    "$suffix",
-                    "$reportDirectory/admin-actions"
+        try {
+            E2eEnvironment(browser).use { environment ->
+                val initial = E2eState(
+                    userContext = environment.open(adminUser),
+                    environment = environment,
+                    report = report
                 )
-        }
 
-        // 2. Perform workflow as the isolated test user
-        withUser<Unit>(testUser on browser) {
-            withFailureDiagnostics("$reportDirectory/user-actions") {
-                dismissStrayErrorDialogIfPresent(true, "$reportDirectory/user-actions/dismissed-errors")
-                val organizationName = "e2e-shares-org-$suffix"
-                val shareTypeName = "e2e-share-type-$suffix"
-                val shareTypeKey = "key-$suffix"
-                val distributionPointName = "e2e-dp-$suffix"
-                val fiscalYearKey = "3026"
-                val price = "100"
-
-                // Setup entire share environment
-                run(SetupShareEnvironmentWorkflow(this)) withInput SetupShareEnvironmentInput(
-                    organizationName = organizationName,
+                val createUser = CreateTestUserInput(
+                    username = Username("e2e-user@solyton.org"),
+                    password = Password(generateSecurePassword()),
+                    useSuffixInUserName = true,
+                    suffix = suffix.toString(),
+                    reportDirectory = reportDirectory + "/admin-actions"
+                )
+                val setup = SetupShareEnvironmentInput(
+                    organizationName = "e2e-shares-org-" + suffix,
                     firstname = Firstname("John"),
                     lastname = Lastname("Doe"),
-                    fiscalYears = listOf(FiscalYearPeriod("$fiscalYearKey-01-01", "$fiscalYearKey-12-31")),
-                    distributionPointName = distributionPointName,
-                    shareTypeName = shareTypeName,
-                    shareTypeKey = shareTypeKey,
+                    fiscalYears = listOf(FiscalYearPeriod("3026-01-01", "3026-12-31")),
+                    distributionPointName = "e2e-dp-" + suffix,
+                    shareTypeName = "e2e-share-type-" + suffix,
+                    shareTypeKey = "key-" + suffix,
                     shareTypeDescription = "E2E fixture share type",
                     offers = listOf(
                         ShareOfferConfig(
-                            fiscalYearKey = fiscalYearKey,
-                            price = price,
+                            fiscalYearKey = "3026",
+                            price = "100",
                             ahcAuthorizationRequired = false
                         )
                     )
                 )
-
-                // Member subscription - starts out as PendingActivation
-                val subscription = run(CreateShareSubscriptionWorkflow(this)) withInput CreateShareSubscriptionInput(
+                val subscribe = CreateShareSubscriptionInput(
                     memberName = "John Doe",
-                    fiscalYearKey = fiscalYearKey,
-                    shareTypeName = shareTypeName,
-                    distributionPointName = distributionPointName,
-                    price = price,
+                    fiscalYearKey = "3026",
+                    shareTypeName = setup.shareTypeName,
+                    distributionPointName = setup.distributionPointName,
+                    price = "100",
                     quantity = "1",
                     ahcAuthorized = false
                 )
-
-                // Provider approval without a payment mandate: PendingActivation -> Subscribed.
-                val subscribedSubscriptions = run(BulkChangeSubscriptionStatusWorkflow(this)) withInput BulkChangeSubscriptionStatusInput(
+                val approve = BulkChangeSubscriptionStatusInput(
                     filterStatus = "All Statuses",
                     newStatus = "SUBSCRIBED"
                 )
-                assertEquals(ShareStatus.Subscribed, subscribedSubscriptions.all.first { it.id == subscription.id }.status)
 
-                val sharesList = SharesPage(page).ShareSubscriptionManagement().listOfSubscriptions()
-                assertThat(sharesList.itemStatus(subscription.id, "SUBSCRIBED")).isVisible()
+                // Domain-readable workflow; the existing OOP Page Objects remain unchanged.
+                // The returned values of one step feed the next using evoleq Kleisli composition.
+                val scenario: E2eAction<Unit> = runBlocking {
+                    workflowStep("Admin creates a test user", createUser, ::CreateTestUserWorkflow) *
+                        { testUser: StdTestUser -> switchUser(testUser) } *
+                        { _: Unit ->
+                            workflowStep("Set up the share-management environment", setup, ::SetupShareEnvironmentWorkflow)
+                        } *
+                        { _: ShareEnvironmentSetupResult ->
+                            workflowStep("Member subscribes to a share", subscribe, ::CreateShareSubscriptionWorkflow)
+                        } *
+                        { subscription: ApiShareSubscription ->
+                            workflowStep("Provider approves the subscription", approve, ::BulkChangeSubscriptionStatusWorkflow) *
+                                { subscriptions: ApiShareSubscriptions ->
+                                    // Independent checks are accumulated rather than failing on the first assertion.
+                                    verifyAll(
+                                        expect("Subscription is marked SUBSCRIBED in domain data") {
+                                            val actual = subscriptions.all.first { it.id == subscription.id }
+                                            assertEquals(ShareStatus.Subscribed, actual.status)
+                                        },
+                                        expect("Subscription is visible as SUBSCRIBED in the user interface") {
+                                            val list = SharesPage(userContext.page)
+                                                .ShareSubscriptionManagement()
+                                                .listOfSubscriptions()
+                                            assertThat(list.itemStatus(subscription.id, "SUBSCRIBED")).isVisible()
+                                        }
+                                    )
+                                }
+                        }
+                }
+                runBlocking { scenario runOn initial }
             }
+        } finally {
+            report.writeTo(
+                Paths.get("build/reports/tests/scenarios", "share-subscription-approval.md")
+            )
         }
     }
 }
