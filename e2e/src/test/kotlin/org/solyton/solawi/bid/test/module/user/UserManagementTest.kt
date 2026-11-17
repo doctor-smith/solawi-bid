@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.*
+import org.solyton.solawi.bid.module.authentication.service.generateSecurePassword
 import java.nio.file.Files
 
 /**
@@ -59,7 +60,7 @@ class UserManagementTest {
     private fun createUserViaAdminUi(page: Page): Pair<String, String> {
         // Usernames must be valid email addresses.
         val username = "e2e-user-${System.currentTimeMillis()}@example.com"
-        val password = "Test-Pass-123"
+        val password = generateSecurePassword()
 
         page.navigate("${TestConfig.BASE_URL}/app/management/users")
         dismissStrayErrorDialogIfPresent(page)

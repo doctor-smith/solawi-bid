@@ -21,6 +21,11 @@ services:
     image: solawi-bid/backend:local
     env_file:
       - solawi-bid-backend/.env.e2e
+    environment:
+      # Keep the JDBC configuration versioned here. Local .env.e2e files are ignored
+      # and may still reference the removed MySQL Connector/J driver.
+      - DATABASE_URL=jdbc:mariadb://solawi-bid_database:3306/solawi-bid?allowPublicKeyRetrieval=true
+      - DATABASE_DRIVER=org.mariadb.jdbc.Driver
     ports:
       - "18081:8080"
     container_name: solawi-bid_backend

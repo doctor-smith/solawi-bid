@@ -1,35 +1,25 @@
 package org.solyton.solawi.bid.module.application.routing
 
 import com.typesafe.config.ConfigFactory
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.client.request.patch
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.config.HoconApplicationConfig
-import io.ktor.server.testing.testApplication
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.server.config.*
+import io.ktor.server.testing.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
+import org.evoleq.ktorx.headers.Header
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.test.setupData
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
-import org.evoleq.ktorx.headers.Header
 import org.solyton.solawi.bid.module.application.USERNAME
-import org.solyton.solawi.bid.module.application.data.ApiApplications
-import org.solyton.solawi.bid.module.application.data.ApplicationOrganizationRelations
-import org.solyton.solawi.bid.module.application.data.ConnectApplicationToOrganization
-import org.solyton.solawi.bid.module.application.data.LifecycleStage
-import org.solyton.solawi.bid.module.application.data.RegisterForApplications
+import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.application.getRootContextByName
 import org.solyton.solawi.bid.module.testFramework.getTestToken
 import java.io.File
-import java.util.UUID
+import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
@@ -106,8 +96,30 @@ class ApplicationOrganizationTests {
             assertIs<org.evoleq.ktorx.result.Result.Success<ApiApplications>>(registerApplicationsResult)
             val registeredApplication = registerApplicationsResult.data.list.first { it.name == "AUCTIONS" }
 
-            val organizationId = UUID.randomUUID()
+            val organizationId = UUID.fromString(
+                client.get("/setup/organization?name=OWN_ORGANIZATION&owner=$USERNAME").bodyAsText()
+            )
+            val foreignOrganizationId = UUID.fromString(
+                client.get("/setup/organization?name=FOREIGN_ORGANIZATION&owner=dummy_0@solyton.org").bodyAsText()
+            )
             val registeredModuleIds = registeredApplication.modules.filter { it.lifecycleStage is LifecycleStage.Registered }.map { it.id }
+            val forbiddenResponse = client.post("applications/personal/connect-organization") {
+                header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(HttpHeaders.Authorization, "Bearer ${data.accessToken}")
+                header(Header.CONTEXT, data.contextId)
+                setBody(
+                    Json.encodeToString(
+                        ConnectApplicationToOrganization.serializer(),
+                        ConnectApplicationToOrganization(
+                            application.id,
+                            foreignOrganizationId.toString(),
+                            registeredModuleIds
+                        )
+                    )
+                )
+            }
+            assertEquals(HttpStatusCode.Forbidden, forbiddenResponse.status)
+
             val applicationOrganizationRelationsResponse = client.post("applications/personal/connect-organization") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer ${data.accessToken}")

@@ -21,6 +21,7 @@ import org.solyton.solawi.bid.module.user.schema.UserStatus
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.user.service.bcrypt.credentialsAreOK
 import org.solyton.solawi.bid.module.user.service.bcrypt.hashPassword
+import org.solyton.solawi.bid.module.user.service.password.PasswordPolicy
 
 
 @MathDsl
@@ -31,7 +32,11 @@ val UpdateUser: KlAction<Result<Contextual<UpdateUser>>, Result<User>> = KlActio
         val data = contextual.data
 
         val user = UserEntity.find { UsersTable.username eq data.oldUsername.value }.firstOrNull()
-            ?:throw UserManagementException.UserDoesNotExist.Username(data.oldUsername.value)
+            ?: throw PermissionException.AccessDenied
+
+        // The request body identifies the target account, not the authenticated actor.
+        // Only the user identified by the verified JWT may change their own credentials.
+        if (user.id.value != contextual.userId) throw PermissionException.AccessDenied
 
         val loginImpossible = user.status in setOf(UserStatus.REGISTERED, UserStatus.DISABLED, UserStatus.INVITED)
         if(loginImpossible) throw PermissionException.AccessDenied
@@ -50,6 +55,7 @@ val UpdateUser: KlAction<Result<Contextual<UpdateUser>>, Result<User>> = KlActio
             user.username = data.newUsername.value.lowercase().trim()
         }
         if(passwordChanged) {
+            PasswordPolicy.validate(data.newPassword.value, user.username)
             user.password = hashPassword(data.newPassword.value)
         }
 
