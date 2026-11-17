@@ -3,51 +3,60 @@ package org.evoleq.optics.lens
 import org.evoleq.math.MathDsl
 
 /**
- * Creates a `Lens` for a `List<T>` that focuses on the first element matching the given predicate.
+ * A partial focus on the first matching list element.
  *
- * This lens allows getting and updating the first element in the list that matches the specified predicate.
- * During updates, the list is reconstructed with the modified value, preserving the order of other elements.
+ * Each read/write searches the list provided to that call. No mutable state is kept in the
+ * lens, so it can safely be reused with different lists.
  *
- * @param predicate A function to test each element for a condition.
- * @return A `Lens` that focuses on the first element matching the predicate.
+ * This is not a total, universally lawful lens: a matching element must exist, and replacing
+ * it with a value that no longer satisfies [predicate] can invalidate Put-Get on subsequent
+ * reads. Use it only when the caller can guarantee a stable matching focus.
+ *
+ * @throws NoSuchElementException if no list element matches [predicate].
  */
 @MathDsl
 @Suppress("FunctionName")
-fun <T> FirstBy(predicate: (T) -> Boolean): Lens<List<T>, T> {
-    var lead: List<T>? = null
-    var tail: List<T>? = null
-    return Lens(
-        get = { list -> list.first(predicate) },
-        set = { t ->
-            { list ->
-                if (lead == null) {
-                    lead = list.takeWhile { item -> !predicate(item) }
-                }
-                if (tail == null) {
-                    tail = list.dropWhile { item -> !predicate(item) }.drop(1)
-                }
-                lead + listOf(t) + tail
+fun <T> FirstBy(predicate: (T) -> Boolean): Lens<List<T>, T> = Lens(
+    get = { list -> list.first(predicate) },
+    set = { replacement ->
+        { list ->
+            val index = list.indexOfFirst(predicate)
+            if (index < 0) {
+                throw NoSuchElementException("No list element matches the FirstBy predicate")
+            }
+            list.mapIndexed { position, item ->
+                if (position == index) replacement else item
             }
         }
-    )
+    }
+)
+
+/**
+ * An explicit, order-changing selection/edit operation on a list, NOT a lawful Lens.
+ *
+ * [select] returns the elements matching the predicate. [replaceWith] removes all matching
+ * elements and appends replacements after the untouched non-matching elements. In particular,
+ * replacing a selection with itself may reorder a list; this type intentionally does not
+ * implement [LensType] or claim lens laws.
+ */
+class ListSelection<T>(private val predicate: (T) -> Boolean) {
+
+    fun select(source: List<T>): List<T> = source.filter(predicate)
+
+    fun replaceWith(source: List<T>, replacement: List<T>): List<T> =
+        source.filterNot(predicate) + replacement
 }
 
 /**
- * Creates a `Lens` for filtering elements within a list based on a given predicate.
- * The resulting `Lens` allows access to the filtered elements or applying transformations
- * that replace the filtered elements with a new list while preserving non-matching elements.
+ * Select and replace elements matching [predicate], preserving the prior replacement semantics
+ * but without falsely claiming the lens laws.
  *
- * @param predicate A filtering function that takes an element of type `T` and returns a
- *                  boolean indicating whether the element satisfies the condition.
- * @return A `Lens` that focuses on elements of a list matching the specified predicate,
- *         enabling functional access and transformation of those elements.
+ * This changes the return type from Lens<List<T>, List<T>> to [ListSelection]. Callers should
+ * use `selection.select(list)` and `selection.replaceWith(list, replacement)`.
  */
 @MathDsl
 @Suppress("FunctionName")
-fun <T> FilterBy(predicate: (T)-> Boolean): Lens<List<T>,  List<T>> = Lens(
-    get = {list -> list.filter(predicate)},
-    set = {ts -> {list -> list.filterNot(predicate) + ts}}
-)
+fun <T> FilterBy(predicate: (T) -> Boolean): ListSelection<T> = ListSelection(predicate)
 
 @MathDsl
 @Suppress("FunctionName")
