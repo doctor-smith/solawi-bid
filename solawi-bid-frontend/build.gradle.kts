@@ -16,12 +16,14 @@ plugins {
 
 repositories {
     mavenCentral()
-    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
-    maven {
-        url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev")
+    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev") {
+        content { includeGroupByRegex("org[.]jetbrains[.]compose([.].*)?") }
     }
-    maven {
-        url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
+    maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") {
+        content { includeGroupByRegex("org[.]jetbrains[.]kotlin([.].*)?") }
+    }
+    maven("https://maven.pkg.jetbrains.space/public/p/ktor/eap") {
+        content { includeGroupByRegex("io[.]ktor([.].*)?") }
     }
     google()
     mavenLocal()

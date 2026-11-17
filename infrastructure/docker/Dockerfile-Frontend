@@ -10,10 +10,10 @@ COPY gradle/ ./gradle/
 
 COPY settings.gradle.kts.frontend ./settings.gradle.kts
 COPY build.gradle* gradle.properties ./
-COPY buildSrc/ ./
-COPY solawi-bid-api-data/build.gradle*  ./
-COPY solawi-bid-frontend/build.gradle*  ./
-COPY evoleq/build.gradle*  ./
+COPY buildSrc/ ./buildSrc/
+COPY solawi-bid-api-data/build.gradle* ./solawi-bid-api-data/
+COPY solawi-bid-frontend/build.gradle* ./solawi-bid-frontend/
+COPY evoleq/build.gradle* ./evoleq/
 
 # ---- Step 2: Pre-download dependencies for better caching ----
 RUN --mount=type=cache,target=/home/gradle/.gradle \
