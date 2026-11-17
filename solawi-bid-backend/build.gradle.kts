@@ -41,7 +41,9 @@ application {
 
 repositories {
     mavenCentral()
-    maven("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
+    maven("https://maven.pkg.jetbrains.space/public/p/ktor/eap") {
+        content { includeGroupByRegex("io[.]ktor([.].*)?") }
+    }
     mavenLocal()
 }
 
