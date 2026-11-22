@@ -77,7 +77,7 @@ class PaymentFailureRecoveryWorkflowTest {
 
         withUser<Unit>(testUser on browser) {
             withFailureDiagnostics("$reportDirectory/user-actions") {
-                dismissStrayErrorDialogIfPresent(true, "$reportDirectory/user-actions/dismissed-errors")
+                dismissStrayErrorDialogIfPresent(true)
                 val fiscalYearKey = "3029"
                 val shareTypeName = "e2e-share-type-c3-$suffix"
 
