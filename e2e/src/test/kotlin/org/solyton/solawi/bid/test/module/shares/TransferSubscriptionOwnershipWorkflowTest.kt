@@ -99,7 +99,7 @@ class TransferSubscriptionOwnershipWorkflowTest {
         // 3. Ablauf als Provider durchführen
         withUser<Unit>(providerUser on browser) {
             withFailureDiagnostics("$reportDirectory/user-actions") {
-                dismissStrayErrorDialogIfPresent(true, "$reportDirectory/user-actions/dismissed-errors")
+                dismissStrayErrorDialogIfPresent(true)
                 val organizationName = "e2e-shares-org-transfer-$suffix"
                 val shareTypeName = "e2e-share-type-transfer-$suffix"
                 val shareTypeKey = "key-transfer-$suffix".take(20)

@@ -79,13 +79,6 @@ fun TestUserContext.waitForLoadingToFinish() {
     page.waitForLoadingToFinish()
 }
 
-fun Page.shot(path: String): ByteArray = screenshot(Page.ScreenshotOptions().setPath(Paths.get(path.let{
-    when{
-        it.endsWith(".png") -> path
-        else -> "$path.png"
-    }
-})))
-
 fun Page.inputText(selector: String, value: String): Page = apply{
     locator(selector).fill(value)
 }
@@ -98,7 +91,7 @@ fun Page.inputText(selector: String, value: String): Page = apply{
  * top of each other. If any show up, dismiss all of them so the page below becomes
  * interactable again, just like a real user clicking them away one by one would.
  */
-fun Page.dismissStrayErrorDialogIfPresent(dismiss: Boolean = true, screenshot: String? = null) {
+fun Page.dismissStrayErrorDialogIfPresent(dismiss: Boolean = true) {
     if (!dismiss) return
     val errorOk = getByDataId("null.modal.submit-button")
     while (true) {
@@ -106,7 +99,6 @@ fun Page.dismissStrayErrorDialogIfPresent(dismiss: Boolean = true, screenshot: S
             errorOk.first().waitFor(
                 Locator.WaitForOptions().setTimeout(3000.0).setState(WaitForSelectorState.VISIBLE)
             )
-            if(screenshot != null && errorOk.isVisible) shot("$SCREENSHOT_ROOT_DIR/${screenshot}/dismissed-${System.currentTimeMillis()}")
             errorOk.first().click()
         } catch (e: TimeoutError) {
             // No (more) stray error dialogs - nothing left to dismiss.
@@ -115,8 +107,8 @@ fun Page.dismissStrayErrorDialogIfPresent(dismiss: Boolean = true, screenshot: S
     }
 }
 
-fun TestUserContext.dismissStrayErrorDialogIfPresent(dismiss: Boolean = true, screenshot: String? = null) {
-    page.dismissStrayErrorDialogIfPresent(dismiss, screenshot)
+fun TestUserContext.dismissStrayErrorDialogIfPresent(dismiss: Boolean = true) {
+    page.dismissStrayErrorDialogIfPresent(dismiss)
 }
 
 /**
