@@ -84,7 +84,7 @@ class E2eCompositionTest {
         }
         E2eEnvironment(browser).use { environment ->
             val state = initial().copy(environment = environment)
-            val user = StdTestUser(Username("member"), Password("unused"))
+            val user = StdTestUser(Username("member@example.test"), Password("unused"))
             val payload = user to "important data"
             val (result, next) = SwitchUser<Pair<StdTestUser, String>> { it.first }(payload)(state)
             assertSame(payload, result)
@@ -161,8 +161,35 @@ class E2eCompositionTest {
         assertFalse(reached)
     }
 
+    @Test
+    fun `a failed page creation closes the newly opened context`() {
+        val pageFailure = IllegalStateException("page creation failed")
+        var closed = false
+        val context = stub<BrowserContext> { method ->
+            when (method) {
+                "newPage" -> throw pageFailure
+                "close" -> {
+                    closed = true
+                    null
+                }
+                else -> error("Unexpected context call: $method")
+            }
+        }
+        val browser = stub<Browser> { method ->
+            check(method == "newContext")
+            context
+        }
+        E2eEnvironment(browser).use { environment ->
+            val failure = assertThrows(IllegalStateException::class.java) {
+                environment.open(initial().userContext.user)
+            }
+            assertSame(pageFailure, failure)
+        }
+        assertTrue(closed)
+    }
+
     private fun initial(): E2eState {
-        val user = StdTestUser(Username("initial"), Password("unused"))
+        val user = StdTestUser(Username("initial@example.test"), Password("unused"))
         return E2eState(
             TestUserContext(user, stub<Page>(), stub<BrowserContext>()),
             E2eEnvironment(stub<Browser>()),

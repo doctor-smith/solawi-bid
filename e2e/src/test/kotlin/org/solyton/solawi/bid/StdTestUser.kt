@@ -57,12 +57,22 @@ infix fun AdminTestUser.on(browser: Browser): TestUserContext {
     val context = browser.newContext(
         Browser.NewContextOptions().setStorageState(storedState)
     )
-    val page = context.newPage()
-    return TestUserContext(this, page, context)
+    return context.openPageFor(this)
 }
 
 infix fun StdTestUser.on(browser: Browser): TestUserContext {
     val context = browser.newContext()
-    val page = context.newPage()
-    return TestUserContext(this, page, context)
+    return context.openPageFor(this)
 }
+
+private fun BrowserContext.openPageFor(user: TestUser): TestUserContext =
+    try {
+        TestUserContext(user, newPage(), this)
+    } catch (failure: Throwable) {
+        try {
+            close()
+        } catch (cleanupFailure: Throwable) {
+            failure.addSuppressed(cleanupFailure)
+        }
+        throw failure
+    }

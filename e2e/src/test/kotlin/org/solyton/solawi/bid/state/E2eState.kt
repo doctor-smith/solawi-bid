@@ -39,6 +39,7 @@ class E2eEnvironment(private val browser: Browser) : AutoCloseable {
                 else firstFailure?.addSuppressed(failure)
             }
         }
+        sessions.clear()
         firstFailure?.let { throw it }
     }
 }
