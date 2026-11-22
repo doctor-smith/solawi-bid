@@ -60,8 +60,8 @@ class UserManagementPage(private val page: Page) {
         modal.trigger.click()
 
         modal.usernameInput().fill(realUsername)
-        modal.passwordInput().fill(password.value)
-        modal.repeatPasswordInput().fill(password.value)
+        modal.passwordInput().fillPassword(password.value)
+        modal.repeatPasswordInput().fillPassword(password.value)
 
         page.waitForApi(
             api = solawiApi,
