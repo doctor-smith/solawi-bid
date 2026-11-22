@@ -1,12 +1,14 @@
 package org.solyton.solawi.bid
 import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
+import com.microsoft.playwright.PlaywrightException
 import com.microsoft.playwright.Response
 import com.microsoft.playwright.TimeoutError
 import com.microsoft.playwright.assertions.LocatorAssertions
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import com.microsoft.playwright.options.WaitForSelectorState
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import org.evoleq.ktorx.api.Api
 import org.evoleq.ktorx.result.Result
@@ -17,8 +19,8 @@ import org.solyton.solawi.bid.TestConfig.SCREENSHOT_ROOT_DIR
 import org.solyton.solawi.bid.application.pipeline.installSerializers
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import java.util.concurrent.CancellationException
+import java.util.function.Consumer
 import kotlin.reflect.KClass
 
 fun Page.log(message: String) = evaluate("(m)=>console.log(m)", message)
@@ -48,6 +50,14 @@ fun Locator.getByPartialDataId(testId: String): Locator {
 }
 
 fun Page.put(testId: String, value: String) = getByDataId(testId).fill(value)
+
+fun Locator.fillPassword(password: String) {
+    try {
+        fill(password)
+    } catch (_: PlaywrightException) {
+        throw AssertionError("Could not fill password field")
+    }
+}
 
 fun Page.clickOn(testId: String) = getByDataId(testId).apply {
     assertThat(this).isVisible()
@@ -152,107 +162,34 @@ fun Page.navigateToOrganizationApplicationPage(listSegment: String, organization
     dismissStrayErrorDialogIfPresent()
 }
 
-/**
- * On any failure, dumps a full-page screenshot and the current page's HTML into
- * `build/reports/tests/screenshots/` for debugging, before rethrowing.
- */
+/** Record response statuses without capturing browser data that can contain credentials. */
 fun <T> Page.withFailureDiagnostics(testCase: String? = null, block: () -> T): T {
-    val consoleLog = StringBuilder()
     val networkLog = StringBuilder()
-    onConsoleMessage { msg -> consoleLog.appendLine("[console:${msg.type()}] ${msg.text()}") }
-    onPageError { error -> consoleLog.appendLine("[pageerror] $error") }
-    onResponse { response ->
+    val listener = Consumer<Response> { response ->
         if (response.status() >= 400) {
-            try {
-                val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
-
-                networkLog.appendLine("=== ${response.request().method()} ${response.url()} -> ${response.status()} ===")
-                networkLog.appendLine("timestamp: $timestamp")
-                val context = response.request().headerValue("CONTEXT")
-                networkLog.appendLine("context-header: $context")
-                val postData = response.request().postData()
-                if (postData != null) networkLog.appendLine("request body: $postData")
-                networkLog.appendLine("response body: ${response.text()}")
-                // The page the test was on when this background request fired, so a failing
-                // call can be matched back to the fixture step that triggered it.
-                networkLog.appendLine("source-page-url: ${url()}")
-                networkLog.appendLine()
-            } catch (ignored: Exception) {
-                // Response body may not be readable for every request type - ignore.
-            }
+            networkLog.appendLine("HTTP ${response.status()}")
         }
     }
+    onResponse(listener)
     try {
         return block()
-    } catch (e: Throwable) {
+    } catch (failure: Throwable) {
+        if (failure is CancellationException) throw failure
         try {
-            val dir = Paths.get("$SCREENSHOT_ROOT_DIR${testCase?.let{"/$testCase"}}")
+            val dir = Paths.get(SCREENSHOT_ROOT_DIR, testCase.orEmpty())
             Files.createDirectories(dir)
-            screenshot(Page.ScreenshotOptions().setPath(dir.resolve("failure.png")).setFullPage(true))
-            Files.writeString(dir.resolve("failure.html"), content())
-            Files.writeString(dir.resolve("failure-console.log"), consoleLog.toString())
             Files.writeString(dir.resolve("failure-network.log"), networkLog.toString())
-        } catch (diagnosticFailure: Exception) {
-            // Best-effort diagnostics only - never hide the original failure.
+        } catch (_: Exception) {
+            // Diagnostics must preserve the original test failure.
         }
-        throw e
+        throw failure
+    } finally {
+        offResponse(listener)
     }
 }
 
-fun <T> TestUserContext.withFailureDiagnostics(testCase: String? = null, block: () -> T): T {
-    val userLog = StringBuilder()
-    val consoleLog = StringBuilder()
-    val networkLog = StringBuilder()
-
-    val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
-    userLog.appendLine("Date: $timestamp")
-    userLog.appendLine("username: ${user.username.value}")
-    userLog.appendLine("password: ${user.password.value}")
-
-    // create dir and write user log
-    val dir = Paths.get("build/reports/tests/screenshots${testCase?.let{"/$testCase/${user.username.value}"}}")
-    Files.createDirectories(dir)
-    Files.writeString(dir.resolve("user.log"), userLog.toString())
-
-    page.onConsoleMessage { msg -> consoleLog.appendLine("[console:${msg.type()}] ${msg.text()}") }
-    page.onPageError { error -> consoleLog.appendLine("[pageerror] $error") }
-    page.onResponse { response ->
-        if (response.status() >= 400) {
-            try {
-                val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
-
-                networkLog.appendLine("=== ${response.request().method()} ${response.url()} -> ${response.status()} ===")
-                networkLog.appendLine("timestamp: $timestamp")
-                val context = response.request().headerValue("CONTEXT")
-                networkLog.appendLine("context-header: $context")
-                val postData = response.request().postData()
-                if (postData != null) networkLog.appendLine("request body: $postData")
-                networkLog.appendLine("response body: ${response.text()}")
-                // The page the test was on when this background request fired, so a failing
-                // call can be matched back to the fixture step that triggered it.
-                networkLog.appendLine("source-page-url: ${page.url()}")
-                networkLog.appendLine()
-            } catch (ignored: Exception) {
-                // Response body may not be readable for every request type - ignore.
-            }
-        }
-    }
-    try {
-        return block()
-    } catch (e: Throwable) {
-        try {
-
-
-            page.screenshot(Page.ScreenshotOptions().setPath(dir.resolve("failure.png")).setFullPage(true))
-            Files.writeString(dir.resolve("failure.html"), page.content())
-            Files.writeString(dir.resolve("failure-console.log"), consoleLog.toString())
-            Files.writeString(dir.resolve("failure-network.log"), networkLog.toString())
-        } catch (diagnosticFailure: Exception) {
-            // Best-effort diagnostics only - never hide the original failure.
-        }
-        throw e
-    }
-}
+fun <T> TestUserContext.withFailureDiagnostics(testCase: String? = null, block: () -> T): T =
+    page.withFailureDiagnostics(testCase, block)
 
 fun Page.waitForApi(
     api: Api,
@@ -286,7 +223,11 @@ inline fun <reified T> Response.decodeBodyTo(
     val serializer = requireNotNull (serializers()[T::class]) {
         "Serializer not defined"
     }
-    val result = json.decodeFromString(Result.serializer(serializer), text())
+    val result = try {
+        json.decodeFromString(Result.serializer(serializer), text())
+    } catch (_: SerializationException) {
+        throw AssertionError("Could not decode ${T::class.simpleName} response")
+    }
     assertTrue(result is Result.Success)
     require(result is Result.Success<*>)
     return result.data as T
