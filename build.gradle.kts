@@ -5,7 +5,7 @@ allprojects {
         mavenCentral()
         maven { url = uri("https://jitpack.io") }
         google()
-        // Preview repositories must not intercept AndroidX or other stable dependencies.
+        // Keep preview repositories from intercepting AndroidX and stable artifacts.
         maven("https://maven.pkg.jetbrains.space/public/p/ktor/eap") {
             content { includeGroupByRegex("io[.]ktor([.].*)?") }
         }
