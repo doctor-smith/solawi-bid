@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Smoke
 import org.solyton.solawi.bid.TestConfig
 import org.solyton.solawi.bid.clickOn
+import org.solyton.solawi.bid.fillPassword
+import org.solyton.solawi.bid.getByDataId
 import org.solyton.solawi.bid.put
 
 class LoginTest {
@@ -45,7 +47,7 @@ class LoginTest {
         page.clickOn("cookie-disclaimer.modal.submit-button")
 
         page.put("login-form.input.username", user)
-        page.put("login-form.input.password", password)
+        page.getByDataId("login-form.input.password").fillPassword(password)
         page.clickOn("login-form.submit-button")
 
         page.waitForURL("**/dashboard")
