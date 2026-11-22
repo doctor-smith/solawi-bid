@@ -66,7 +66,7 @@ class LoginTest {
         page.clickOn("cookie-disclaimer.modal.submit-button")
 
         page.put("login-form.input.username", "Tom")
-        page.put("login-form.input.password", "1234")
+        page.getByDataId("login-form.input.password").fillPassword("1234")
         page.clickOn("login-form.submit-button")
 
         val errorMessage = page.waitForSelector("text=User with username Tom does not exists")
