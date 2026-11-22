@@ -5,6 +5,7 @@ import org.evoleq.math.contraMap
 import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.lens.times
 import org.evoleq.optics.storage.Action
+import org.evoleq.optics.transform.upsertAll
 import org.solyton.solawi.bid.module.permission.data.api.PutUserRoleContext
 import org.solyton.solawi.bid.module.permission.data.api.UserContext
 import org.solyton.solawi.bid.module.permissions.data.contexts
@@ -36,9 +37,8 @@ fun putUsersRoleContext(
     writer = (managedUsers *
         FirstBy { it.id == userId } *
         permissions *
-        contexts *
-        FirstBy { ctx -> ctx.contextId == contextId }
-    ).set contraMap {
-        userContext: UserContext -> userContext.context.toDomainType()
+        contexts
+    ).upsertAll { updated, existing -> updated.contextId == existing.contextId } contraMap {
+        userContext: UserContext -> listOf(userContext.context.toDomainType())
     },
 )

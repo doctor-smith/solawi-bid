@@ -117,7 +117,7 @@ class ActionTests{
 
         composition {
             val storage = TestStorage() * bidApplicationIso
-            (storage * auctionLens).write(auction)
+            (storage * auctions).write(listOf(auction))
             assertEquals(auction, (storage * auctionLens).read())
 
             val importBidders = (storage * action.reader).emit()
@@ -161,7 +161,7 @@ class ActionTests{
 
         composition {
             val storage = TestStorage() * bidApplicationIso
-            (storage * auctionLens).write(auction)
+            (storage * auctions).write(listOf(auction))
 
             // create an auction
             val apiAuction = ApiAuction(
@@ -205,7 +205,7 @@ class ActionTests{
 
         composition {
             val storage = TestStorage() * bidApplicationIso
-            (storage * auctionLens).write(auction)
+            (storage * auctions).write(listOf(auction))
 
 
             val apiAuction = ApiAuction(
@@ -252,7 +252,7 @@ class ActionTests{
 
         composition {
             val storage = TestStorage() * bidApplicationIso
-            (storage * auctionLens).write(auction)
+            (storage * auctions).write(listOf(auction))
 
             (storage * createRound.writer).write(round) on Unit
             val initStoredRound = (storage * roundLens).read()
@@ -293,7 +293,7 @@ class ActionTests{
 
         composition {
             val storage = TestStorage() * bidApplicationIso
-            (storage * auctionLens).write(auction)
+            (storage * auctions).write(listOf(auction))
             (storage * createRound.writer).write(round) on Unit
 
             // Check Reader of action
@@ -342,7 +342,7 @@ class ActionTests{
 
         composition {
             val storage = TestStorage() * bidApplicationIso
-            (storage * auctionLens).write(auction)
+            (storage * auctions).write(listOf(auction))
             (storage * createRound.writer).write(round) on Unit
 
             val evaluation = ApiBidRoundEvaluation(
@@ -409,7 +409,7 @@ class ActionTests{
 
         composition {
             val storage = TestStorage() * bidApplicationIso
-            (storage * auctionLens).write(auction)
+            (storage * auctions).write(listOf(auction))
             (storage * createRound.writer).write(round) on Unit
 
             val evaluation = ApiBidRoundPreEvaluation(
@@ -466,7 +466,7 @@ class ActionTests{
 
         composition {
             val storage = TestStorage() * bidApplicationIso
-            (storage * auctionLens).write(auction)
+            (storage * auctions).write(listOf(auction))
             (storage * createRound.writer).write(round) on Unit
 
             val acceptedRound = AcceptedRound("id")
@@ -510,7 +510,7 @@ class ActionTests{
 
         composition {
             val storage = TestStorage() * bidApplicationIso
-            (storage * auctionLens).write(auction)
+            (storage * auctions).write(listOf(auction))
             (storage * createRound.writer).write(round) on Unit
             assertEquals(0, (storage * roundLens * comments).read().size)
 
