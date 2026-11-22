@@ -53,7 +53,7 @@ class TestUtils {
 
             val passwordInput = page.getByDataId("login-form.input.password",)
             assertThat(passwordInput).isVisible()
-            passwordInput.fill(password)
+            passwordInput.fillPassword(password)
 
             val submitButton = page.getByDataId("login-form.submit-button")
             assertThat(submitButton).isVisible()
