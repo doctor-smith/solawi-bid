@@ -66,8 +66,8 @@ class UserManagementTest {
         page.clickOn("user-management.create-user-button")
 
         page.put("create-user-modal.input.username", username)
-        page.put("create-user-modal.input.password", password)
-        page.put("create-user-modal.input.repeat-password", password)
+        page.getByDataId("create-user-modal.input.password").fillPassword(password)
+        page.getByDataId("create-user-modal.input.repeat-password").fillPassword(password)
         page.clickOn("create-user-modal.modal.submit-button")
 
         return username to password
@@ -129,7 +129,7 @@ class UserManagementTest {
             page.clickOn("cookie-disclaimer.modal.submit-button")
 
             page.put("login-form.input.username", username)
-            page.put("login-form.input.password", password)
+            page.getByDataId("login-form.input.password").fillPassword(password)
             page.clickOn("login-form.submit-button")
 
             page.waitForURL("**/dashboard")
