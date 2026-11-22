@@ -27,6 +27,11 @@ operator fun <E, F, T> Reader<E, F>.times(other: Reader<F, T>): Reader<E, T> = t
 
 infix fun <E,S, T> Reader<E, S>.branch(other: Reader<E, T>): Reader<E, Pair<S,T>> = Reader {e: E -> this(e) to other(e) }
 
+/** Read the matching elements in source order. */
+@MathDsl
+@Suppress("FunctionName")
+fun <T> Filter(predicate: (T) -> Boolean): Reader<List<T>, List<T>> = Reader { it.filter(predicate) }
+
 @MathDsl
 @Suppress("FunctionName")
 fun <T> FirstOrNull(predicate: (T)->Boolean): Reader<List<T>,T?> = Reader{

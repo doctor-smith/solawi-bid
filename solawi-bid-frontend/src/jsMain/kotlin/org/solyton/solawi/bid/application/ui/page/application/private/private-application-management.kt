@@ -13,7 +13,8 @@ import org.evoleq.language.*
 import org.evoleq.math.DeepRead
 import org.evoleq.math.emit
 import org.evoleq.math.times
-import org.evoleq.optics.lens.FilterBy
+import org.evoleq.math.Filter
+import org.evoleq.math.read
 import org.evoleq.optics.storage.ActionEnvelope
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
@@ -139,7 +140,7 @@ fun PrivateApplicationManagementPage(storage: Storage<Application>) {
         val personalApplications = storage * personalApplications
 
         // todo:dev don't show Main Application to every one!! For the moment we just filter it out
-        val availableApplications = storage * applicationManagementModule * availableApplications * FilterBy {
+        val availableApplications = storage * applicationManagementModule * availableApplications * Filter {
             app -> app.name != "APPLICATION_MANAGEMENT"  && app.id !in personalApplications.read().map { it.id }
         }
         val organizations = storage * userIso * user * organizations

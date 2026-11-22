@@ -15,7 +15,7 @@ import org.evoleq.compose.style.data.device.DeviceType
 import org.evoleq.device.data.mediaType
 import org.evoleq.language.*
 import org.evoleq.math.*
-import org.evoleq.optics.lens.FilterBy
+import org.evoleq.math.Filter
 import org.evoleq.optics.lens.Lens
 import org.evoleq.optics.prism.Either
 import org.evoleq.optics.storage.Read
@@ -576,11 +576,11 @@ fun Banking(
          */
     }
 
-    val sepaMandates = bankingStorage *  sepaModule * sepaMandates * FilterBy {
+    val sepaMandates = bankingStorage *  sepaModule * sepaMandates * Filter {
         it.debtorBankAccountId in Read(bankingStorage * bankAccounts)
     }
 
-    // val organizations = userDataStorage * organizations * FilterBy {  }
+    // val organizations = userDataStorage * organizations * Filter {  }
 
     // Banking
     Wrap(cardStyle) {
