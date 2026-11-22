@@ -89,6 +89,7 @@ which applies the same `${VAR}`/`$VAR` interpolation as the compose YAML itself.
 literal `$` in the bcrypt hash (e.g. `$2a$10$...`) must therefore be escaped as `$$`,
 **not** `\$` — backslash-escaping does not prevent interpolation and silently
 corrupts the hash, which breaks login for every test without any obvious error.
+Generate the hash with the `$2a$` prefix supported by the backend bcrypt library.
 
 ### Note on the frontend base image
 `Dockerfile-Frontend` builds `FROM ghcr.io/doctor-smith/gradle-base-frontend:latest`,
