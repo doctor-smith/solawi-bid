@@ -7,3 +7,6 @@ build-reports
 *.sh
 *.md
 docker-compose*.yml
+local.properties
+**/.env
+**/.env.e2e
