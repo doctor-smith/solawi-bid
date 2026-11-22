@@ -1,12 +1,14 @@
 package org.solyton.solawi.bid
 import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
+import com.microsoft.playwright.PlaywrightException
 import com.microsoft.playwright.Response
 import com.microsoft.playwright.TimeoutError
 import com.microsoft.playwright.assertions.LocatorAssertions
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import com.microsoft.playwright.options.WaitForSelectorState
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import org.evoleq.ktorx.api.Api
 import org.evoleq.ktorx.result.Result
@@ -48,6 +50,14 @@ fun Locator.getByPartialDataId(testId: String): Locator {
 }
 
 fun Page.put(testId: String, value: String) = getByDataId(testId).fill(value)
+
+fun Locator.fillPassword(password: String) {
+    try {
+        fill(password)
+    } catch (_: PlaywrightException) {
+        throw AssertionError("Could not fill password field")
+    }
+}
 
 fun Page.clickOn(testId: String) = getByDataId(testId).apply {
     assertThat(this).isVisible()
@@ -213,7 +223,11 @@ inline fun <reified T> Response.decodeBodyTo(
     val serializer = requireNotNull (serializers()[T::class]) {
         "Serializer not defined"
     }
-    val result = json.decodeFromString(Result.serializer(serializer), text())
+    val result = try {
+        json.decodeFromString(Result.serializer(serializer), text())
+    } catch (_: SerializationException) {
+        throw AssertionError("Could not decode ${T::class.simpleName} response")
+    }
     assertTrue(result is Result.Success)
     require(result is Result.Success<*>)
     return result.data as T
