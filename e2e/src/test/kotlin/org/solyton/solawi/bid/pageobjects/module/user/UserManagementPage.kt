@@ -42,9 +42,20 @@ class UserManagementPage(private val page: Page) {
 
     fun openCreateUserModal(): CreateUserModal {
         val modal = CreateUserModal()
-        val strayError = page.getByDataId("null.modal.submit-button").first()
-        // The mount-time dialog can appear after a check before the click.
-        page.addLocatorHandler(strayError, { it.click() }, Page.AddLocatorHandlerOptions().setNoWaitAfter(true))
+        val errorButtonId = "null.modal.submit-button"
+        val strayError = page.getByDataId(errorButtonId).first()
+        page.addLocatorHandler(
+            strayError,
+            {
+                // Resolve and dismiss in one browser call. A locator click could retry after
+                // a rerender and wait for this same handler to return.
+                page.evaluate(
+                    """(id) => document.querySelector('[data-id="' + id + '"]')?.click()""",
+                    errorButtonId,
+                )
+            },
+            Page.AddLocatorHandlerOptions().setNoWaitAfter(true),
+        )
         try {
             modal.trigger.click()
         } finally {

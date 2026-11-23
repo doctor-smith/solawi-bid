@@ -70,24 +70,35 @@ class UserManagementTest {
     }
 
     @Test
-    fun `create user modal opens when a late error dialog covers its trigger`() {
+    fun `create user modal opens when a late error dialog rerenders its button`() {
         browser.newContext().use { context ->
             val page = context.newPage()
             page.setContent(
                 """
+                <style>
+                    @keyframes move-error-button { to { transform: translateX(50px); } }
+                </style>
                 <button data-id="user-management.create-user-button" disabled
                         onclick="document.getElementById('create-user').hidden = false">Create user</button>
                 <div id="create-user" data-id="create-user-modal.modal" hidden>
                     <input data-id="create-user-modal.input.username">
                 </div>
                 <div id="error" style="position: fixed; inset: 0; z-index: 1" hidden>
-                    <button data-id="null.modal.submit-button"
+                    <button data-id="null.modal.submit-button" style="animation: move-error-button 1s linear infinite"
                             onclick="document.getElementById('error').remove()">Dismiss error</button>
                 </div>
                 <script>
                     setTimeout(() => {
-                        document.getElementById('error').hidden = false;
+                        const error = document.getElementById('error');
+                        error.hidden = false;
                         document.querySelector('[data-id="user-management.create-user-button"]').disabled = false;
+                        setTimeout(() => {
+                            if (!error.isConnected) return;
+                            const button = error.querySelector('button');
+                            const replacement = button.cloneNode(true);
+                            replacement.style.pointerEvents = 'none';
+                            button.replaceWith(replacement);
+                        }, 1000);
                     }, 200);
                 </script>
                 """.trimIndent()
