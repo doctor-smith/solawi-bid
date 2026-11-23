@@ -40,6 +40,19 @@ class UserManagementPage(private val page: Page) {
 
     fun load(): Response? = page.navigate(url)
 
+    fun openCreateUserModal(): CreateUserModal {
+        val modal = CreateUserModal()
+        val strayError = page.getByDataId("null.modal.submit-button").first()
+        // The mount-time dialog can appear after a check before the click.
+        page.addLocatorHandler(strayError, { it.click() }, Page.AddLocatorHandlerOptions().setNoWaitAfter(true))
+        try {
+            modal.trigger.click()
+        } finally {
+            page.removeLocatorHandler(strayError)
+        }
+        return modal
+    }
+
     /**
      *
      */
@@ -56,8 +69,7 @@ class UserManagementPage(private val page: Page) {
             else -> username.value
         }
 
-        val modal = CreateUserModal()
-        modal.trigger.click()
+        val modal = openCreateUserModal()
 
         modal.usernameInput().fill(realUsername)
         modal.passwordInput().fillPassword(password.value)
