@@ -1,10 +1,8 @@
 package org.solyton.solawi.bid.module.application.routing
 
-import com.typesafe.config.ConfigFactory
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.server.config.*
 import io.ktor.server.testing.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
@@ -12,13 +10,17 @@ import org.evoleq.ktorx.headers.Header
 import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.test.setupData
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
 import org.solyton.solawi.bid.module.application.USERNAME
+import org.solyton.solawi.bid.module.application.application.useApplicationTestDatabase
 import org.solyton.solawi.bid.module.application.data.*
 import org.solyton.solawi.bid.module.application.getRootContextByName
+import org.solyton.solawi.bid.module.application.schema.OrganizationApplicationContextsTable
+import org.solyton.solawi.bid.module.application.schema.OrganizationModuleContextsTable
 import org.solyton.solawi.bid.module.testFramework.getTestToken
-import java.io.File
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -34,16 +36,10 @@ class ApplicationOrganizationTests {
             val applications: ApiApplications
         )
 
-        testApplication() {
-
+        testApplication {
+            val database = useApplicationTestDatabase()
 
             val data = setupData {
-                environment {
-                    // Load the HOCON file explicitly with the file path
-                    val configFile = File("src/test/resources/application.module.api.test.conf")
-                    config = HoconApplicationConfig(ConfigFactory.parseFile(configFile))
-                }
-
                 // get token
                 val accessToken = client.getTestToken(USERNAME)
 
@@ -69,10 +65,6 @@ class ApplicationOrganizationTests {
 
 
             val application = data.applications.list.first { application -> application.name == "AUCTIONS" }
-            val x = client.get("/setup/registered-app?app-id=${application.id}")
-            println(x)
-
-
             val registerApplicationsResponse = client.patch("applications/personal/register") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer ${data.accessToken}")
@@ -87,7 +79,7 @@ class ApplicationOrganizationTests {
                 )
             }
 
-//            assertEquals(HttpStatusCode.OK, registerApplicationsResponse.status, "Wrong status during setup")
+            assertEquals(HttpStatusCode.OK, registerApplicationsResponse.status)
 
             val registerApplicationsResult = Json.decodeFromString(
                 ResultSerializer,
@@ -103,6 +95,25 @@ class ApplicationOrganizationTests {
                 client.get("/setup/organization?name=FOREIGN_ORGANIZATION&owner=dummy_0@solyton.org").bodyAsText()
             )
             val registeredModuleIds = registeredApplication.modules.filter { it.lifecycleStage is LifecycleStage.Registered }.map { it.id }
+
+            fun linkedContexts(targetId: UUID) = transaction(database) {
+                val applicationContexts = OrganizationApplicationContextsTable
+                    .select(OrganizationApplicationContextsTable.contextId)
+                    .where {
+                        (OrganizationApplicationContextsTable.organizationId eq targetId) and
+                            (OrganizationApplicationContextsTable.applicationId eq UUID.fromString(application.id))
+                    }.map { it[OrganizationApplicationContextsTable.contextId].value }.toSet()
+                val moduleContexts = OrganizationModuleContextsTable
+                    .select(OrganizationModuleContextsTable.contextId)
+                    .where {
+                        (OrganizationModuleContextsTable.organizationId eq targetId) and
+                            (OrganizationModuleContextsTable.moduleId inList registeredModuleIds.map(UUID::fromString))
+                    }.map { it[OrganizationModuleContextsTable.contextId].value }.toSet()
+                applicationContexts to moduleContexts
+            }
+
+            val foreignContextsBefore = linkedContexts(foreignOrganizationId)
+            assertEquals(emptySet<UUID>() to emptySet<UUID>(), foreignContextsBefore)
             val forbiddenResponse = client.post("applications/personal/connect-organization") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer ${data.accessToken}")
@@ -119,6 +130,7 @@ class ApplicationOrganizationTests {
                 )
             }
             assertEquals(HttpStatusCode.Forbidden, forbiddenResponse.status)
+            assertEquals(foreignContextsBefore, linkedContexts(foreignOrganizationId))
 
             val applicationOrganizationRelationsResponse = client.post("applications/personal/connect-organization") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
@@ -151,6 +163,11 @@ class ApplicationOrganizationTests {
 
             val allModulesAreThere = applicationOrganizationRelations.all.first().moduleIds.containsAll(registeredModuleIds)
             assertTrue { allModulesAreThere }
+
+            val (applicationContexts, moduleContexts) = linkedContexts(organizationId)
+            assertEquals(setOf(UUID.fromString(applicationOrganizationRelations.all.single().contextId)), applicationContexts)
+            assertEquals(registeredModuleIds.size, moduleContexts.size)
+            assertEquals(foreignContextsBefore, linkedContexts(foreignOrganizationId))
         }
     }
 }
