@@ -17,6 +17,7 @@ import org.solyton.solawi.bid.module.banking.action.*
 import org.solyton.solawi.bid.module.banking.application.BANKING_APPLICATION_NAME
 import org.solyton.solawi.bid.module.banking.data.SepaMessageId
 import org.solyton.solawi.bid.module.banking.data.api.*
+import org.solyton.solawi.bid.module.banking.exception.SepaException
 import org.solyton.solawi.bid.module.banking.permissions.BankAccounts.Rights.CREATE_BANK_ACCOUNTS
 import org.solyton.solawi.bid.module.banking.permissions.BankAccounts.Rights.DELETE_BANK_ACCOUNTS
 import org.solyton.solawi.bid.module.banking.permissions.BankAccounts.Rights.IMPORT_BANK_ACCOUNTS
@@ -417,9 +418,7 @@ fun <BankingEnv> Routing.banking (
                         IsGrantedOneOfInAllDerivedContexts(
                             rights(CREATE_SEPA_PAYMENTS, "MANAGE_BANK_TRANSACTIONS")
                         ) { contextual ->
-                            require(contextual.data.paymentIds.isNotEmpty()) {
-                                "At least one SEPA payment is required"
-                            }
+                            contextual.data.paymentIds.requireSepaBatch(SepaException.Payment.EmptyBatch)
                             contextual.data.paymentIds.flatMap { paymentId ->
                                 val collection = validatedPayment(paymentId.value.toUuid()).collection
                                 listOf(
@@ -438,6 +437,7 @@ fun <BankingEnv> Routing.banking (
                         IsGrantedOneOfInAllDerivedContexts(
                             rights(CREATE_SEPA_MESSAGES, "MANAGE_BANK_TRANSACTIONS")
                         ) { contextual ->
+                            contextual.data.sepaPaymentIds?.requireSepaBatch(SepaException.Payment.EmptyBatch)
                             val collection = validatedSepaCollection(
                                 contextual.data.sepaCollectionId.value.toUuid()
                             )
@@ -514,9 +514,7 @@ fun <BankingEnv> Routing.banking (
                         IsGrantedOneOfInAllDerivedContexts(
                             rights(UPDATE_SEPA_PAYMENTS, "MANAGE_BANK_TRANSACTIONS")
                         ) { contextual ->
-                            require(contextual.data.paymentIds.isNotEmpty()) {
-                                "At least one SEPA payment is required"
-                            }
+                            contextual.data.paymentIds.requireSepaBatch(SepaException.Payment.EmptyBatch)
                             contextual.data.paymentIds.flatMap { paymentId ->
                                 val collection = validatedPayment(paymentId.value.toUuid()).collection
                                 listOf(
@@ -557,9 +555,7 @@ fun <BankingEnv> Routing.banking (
                         IsGrantedOneOfInAllDerivedContexts(
                             rights(UPDATE_SEPA_PAYMENTS, "MANAGE_BANK_TRANSACTIONS")
                         ) { contextual ->
-                            require(contextual.data.all.isNotEmpty()) {
-                                "At least one SEPA payment is required"
-                            }
+                            contextual.data.all.requireSepaBatch(SepaException.Payment.EmptyBatch)
                             contextual.data.all.flatMap { paymentUpdate ->
                                 val collection = validatedPayment(
                                     paymentUpdate.sepaPaymentId.value.toUuid()
@@ -601,9 +597,7 @@ fun <BankingEnv> Routing.banking (
                         IsGrantedOneOfInAllDerivedContexts(
                             rights(DELETE_SEPA_PAYMENTS, "MANAGE_BANK_TRANSACTIONS")
                         ) { contextual ->
-                            require(contextual.data.paymentIds.isNotEmpty()) {
-                                "At least one SEPA payment is required"
-                            }
+                            contextual.data.paymentIds.requireSepaBatch(SepaException.Payment.EmptyBatch)
                             contextual.data.paymentIds.flatMap { paymentId ->
                                 val collection = validatedPayment(paymentId.value.toUuid()).collection
                                 listOf(
@@ -699,9 +693,7 @@ fun <BankingEnv> Routing.banking (
                         IsGrantedOneOfInAllDerivedContexts(
                             rights(UPDATE_SEPA_MESSAGES, "MANAGE_BANK_TRANSACTIONS")
                         ) { contextual ->
-                            require(contextual.data.sepaMessageIds.isNotEmpty()) {
-                                "At least one SEPA message is required"
-                            }
+                            contextual.data.sepaMessageIds.requireSepaBatch(SepaException.Message.EmptyBatch)
                             contextual.data.sepaMessageIds.flatMap { messageId ->
                                 val message = validateSepaMessage(messageId.value.toUuid())
                                 listOf(
@@ -719,4 +711,8 @@ fun <BankingEnv> Routing.banking (
             }
         }
     }
+}
+
+private fun List<*>.requireSepaBatch(emptyBatch: SepaException) {
+    if (isEmpty()) throw emptyBatch
 }
