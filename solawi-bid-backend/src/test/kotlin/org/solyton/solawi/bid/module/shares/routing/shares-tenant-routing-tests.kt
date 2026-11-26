@@ -67,7 +67,10 @@ class SharesTenantRoutingTests {
             }
             val before = storedOffer()
             val path = "shares/offers/update"
-            assertEquals(HttpStatusCode.Forbidden, client.patchInContext(path, sourceToken, providers.source.contextId, update))
+            val updateInSourceContext = update.copy(providerId = providers.source.organizationId.toString())
+            assertEquals(
+                HttpStatusCode.Forbidden, client.patchInContext(path, sourceToken, providers.source.contextId, updateInSourceContext)
+            )
             assertEquals(before, storedOffer())
             assertEquals(
                 HttpStatusCode.Forbidden,
@@ -109,7 +112,7 @@ class SharesTenantRoutingTests {
             )
             val mixed = UpdateShareStatuses(
                 sourceProvider,
-                listOf(statusUpdate, statusUpdate.copy(providerId = destinationProvider, shareSubscriptionId = destination.subscriptionId))
+                listOf(statusUpdate, statusUpdate.copy(shareSubscriptionId = destination.subscriptionId))
             )
             val context = providers.source.contextId
             assertEquals(HttpStatusCode.Forbidden, client.patchInContext(path, token, context, mixed))
