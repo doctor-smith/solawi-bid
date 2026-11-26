@@ -30,6 +30,11 @@ sealed class SepaException(override val message: String): Exception(message) {
     data class NoSuchSepaCollection(val id:String) : SepaException("No such sepa collection; id = $id")
 
     sealed class Payment(override val message: String) : SepaException(message) {
+        data object EmptyBatch : Payment("At least one SEPA payment is required") {
+            @Suppress("UnusedPrivateMember")
+            private fun readResolve(): Any = EmptyBatch
+        }
+
         data class CannotCreate(override val message: String): Payment(message)
 
         data class NoSuchPayment(val id: String): Payment("No such payment; id = $id")
@@ -48,6 +53,13 @@ sealed class SepaException(override val message: String): Exception(message) {
         data class NoSuchTemplate(val id: String): Payment("No such payment template; id = $id")
     }
     sealed class Message(override val message: String) : SepaException(message) {
+        data object EmptyBatch : Message("At least one SEPA message is required") {
+            @Suppress("UnusedPrivateMember")
+            private fun readResolve(): Any = EmptyBatch
+        }
+
+        data class NoCreatedPayments(override val message: String = "No created payments found") : Message(message)
+
         data class NoSuchMessage(val id: String): Message("No such message; id = $id")
         data class Locked(val id: String): Message("Message is locked; id = $id")
 

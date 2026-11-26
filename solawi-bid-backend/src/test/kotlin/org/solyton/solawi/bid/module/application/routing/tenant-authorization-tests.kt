@@ -55,7 +55,6 @@ import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 
@@ -204,7 +203,7 @@ class TenantAuthorizationTests {
                 contentType(ContentType.Application.Json)
                 setBody(Json.encodeToString(batch.copy(sepaMessageIds = emptyList())))
             }
-            assertFalse(emptyBatch.status.isSuccess())
+            assertEquals(HttpStatusCode.BadRequest, emptyBatch.status)
             val failure = Json.decodeFromString(Result.Failure.Message.serializer(), emptyBatch.bodyAsText())
             assertEquals(Result.Failure.Message("At least one SEPA message is required"), failure)
             assertEquals(before, storedMessages())
