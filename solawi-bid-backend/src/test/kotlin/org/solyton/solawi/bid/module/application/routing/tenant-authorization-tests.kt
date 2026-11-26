@@ -1,6 +1,5 @@
 package org.solyton.solawi.bid.module.application.routing
 
-import io.ktor.client.HttpClient
 import io.ktor.client.request.*
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.*
@@ -21,9 +20,6 @@ import org.joda.time.DateTimeZone
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
 import org.solyton.solawi.bid.module.application.application.useApplicationTestDatabase
-import org.solyton.solawi.bid.module.application.repository.createApplication
-import org.solyton.solawi.bid.module.application.repository.createUserRoleContext
-import org.solyton.solawi.bid.module.application.repository.registerOrganizationForApplication
 import org.solyton.solawi.bid.module.banking.application.BANKING_APPLICATION_NAME
 import org.solyton.solawi.bid.module.banking.data.RemittanceInformation
 import org.solyton.solawi.bid.module.banking.data.SepaMessageId
@@ -42,7 +38,6 @@ import org.solyton.solawi.bid.module.distribution.data.toApiType
 import org.solyton.solawi.bid.module.distribution.repository.createDistributionPoint
 import org.solyton.solawi.bid.module.distribution.schema.DistributionPointEntity
 import org.solyton.solawi.bid.module.distribution.schema.DistributionPointsTable
-import org.solyton.solawi.bid.module.permission.repository.*
 import org.solyton.solawi.bid.module.shares.data.api.UpdateShareType
 import org.solyton.solawi.bid.module.shares.data.toApiType
 import org.solyton.solawi.bid.module.shares.repository.createShareType
@@ -50,9 +45,6 @@ import org.solyton.solawi.bid.module.shares.schema.ShareTypeEntity
 import org.solyton.solawi.bid.module.shares.schema.ShareTypesTable
 import org.solyton.solawi.bid.module.testFramework.getTestToken
 import org.solyton.solawi.bid.module.user.repository.createAddress
-import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
-import org.solyton.solawi.bid.module.user.schema.UserEntity
-import org.solyton.solawi.bid.module.user.schema.UsersTable
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -239,67 +231,5 @@ class TenantAuthorizationTests {
         return SepaFixture(legalEntity.id.value, SepaMessageId(message.id.value.toString()))
     }
 
-    private fun Transaction.createProviders(
-        applicationName: String,
-        sourceRight: String,
-        destinationRight: String
-    ): Providers {
-        val application = createApplication(
-            applicationName, "Tenant authorization fixture", UUID_ZERO,
-            defaultContextId = createRootContext(applicationName).id.value
-        )
-        val sourceUserId = findUserId(SOURCE_USER)
-        val source = createProvider("Source provider", application.id.value, sourceRight, sourceUserId)
-        val destination = createProvider(
-            "Destination provider", application.id.value, destinationRight, findUserId(DESTINATION_USER)
-        )
-        return Providers(source, destination, sourceUserId)
-    }
-
-    private fun Transaction.createProvider(
-        name: String,
-        applicationId: UUID,
-        rightName: String,
-        userId: UUID
-    ): Provider {
-        val organizationContext = createRootContext(name)
-        val organization = OrganizationEntity.new {
-            this.name = name
-            context = organizationContext
-            createdBy = userId
-        }
-        val applicationContext = registerOrganizationForApplication(organization.id.value, applicationId).context
-        val role = createRole("$name editor", "Can edit the fixture resource", UUID_ZERO)
-        val right = createRightIfNotExists(rightName, "Can edit the fixture resource", UUID_ZERO)
-        (role of applicationContext).grant(right)
-        return Provider(organization.id.value, applicationContext.id.value, role.name).also { it.grantTo(userId) }
-    }
-
-    private fun findUserId(username: String) =
-        UserEntity.find { UsersTable.username eq username }.single().id.value
-
-    private suspend inline fun <reified T> HttpClient.patchInContext(
-        path: String,
-        token: String,
-        contextId: UUID,
-        update: T
-    ): HttpStatusCode = patch(path) {
-        bearerAuth(token)
-        header(Header.CONTEXT, contextId.toString())
-        contentType(ContentType.Application.Json)
-        setBody(Json.encodeToString(update))
-    }.status
-
     private data class SepaFixture(val legalEntityId: UUID, val messageId: SepaMessageId)
-
-    private data class Providers(val source: Provider, val destination: Provider, val sourceUserId: UUID)
-
-    private data class Provider(val organizationId: UUID, val contextId: UUID, val role: String) {
-        fun grantTo(userId: UUID) = createUserRoleContext(userId, role, contextId)
-    }
-
-    private companion object {
-        const val SOURCE_USER = "dummy_0@solyton.org"
-        const val DESTINATION_USER = "dummy_1@solyton.org"
-    }
 }
