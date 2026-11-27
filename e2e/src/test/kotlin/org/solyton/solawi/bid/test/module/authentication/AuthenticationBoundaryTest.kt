@@ -1,6 +1,7 @@
 package org.solyton.solawi.bid.test.module.authentication
 
 import com.microsoft.playwright.Playwright
+import com.microsoft.playwright.options.RequestOptions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Regression
@@ -15,7 +16,10 @@ class AuthenticationBoundaryTest {
         Playwright.create().use { playwright ->
             val requests = playwright.request().newContext()
             try {
-                val response = requests.get("${TestConfig.BACKEND_URL}/banking/sepa/mandates/personal/all")
+                val response = requests.get(
+                    "${TestConfig.BACKEND_URL}/banking/sepa/mandates/personal/all",
+                    RequestOptions.create().setHeader("CONTEXT", "solawi-bid")
+                )
                 assertEquals(401, response.status())
             } finally {
                 requests.dispose()
