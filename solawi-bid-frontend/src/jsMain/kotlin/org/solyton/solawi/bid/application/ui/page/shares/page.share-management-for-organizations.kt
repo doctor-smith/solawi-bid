@@ -203,7 +203,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
     if(usersStorage.read().isEmpty()) return
     LaunchedEffect(usersStorage.read()) {
         launch {
-            userActions dispatch readUserProfiles(memberStorage.read().map { it.memberId })
+            userActions dispatch readUserProfiles(memberStorage.read().map { it.memberId }, organizationId = providerId.value)
         }
     }
 
@@ -241,17 +241,20 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
                 )
             }
             launch {
-                bankingApplicationActions dispatch readPersonalSepaCollections(
-                    legalEntityId
-                )
-            }
-            launch {
                 bankingApplicationActions dispatch readSepaMessagesByLegalEntity(legalEntityId)
             }
             launch {
                 bankingApplicationActions dispatch readSepaMandatesByCreditorsLegalEntity(legalEntityId)
             }
         }
+    }
+
+    LaunchedEffectOnSource(
+        Read(legalEntityStorage * legalEntityId),
+        Read(shareManagementStore * shareSubscriptions) map { subscriptions -> subscriptions.map { it.shareSubscriptionId } }
+    ) {
+        val id = (legalEntityStorage * legalEntityId).read()
+        if (id.value != NIL_UUID) bankingApplicationActions dispatch readPersonalSepaCollections(id)
     }
 
     val deviceType = shareManagementStore * deviceData * mediaType.get

@@ -117,7 +117,7 @@ val PutUserRoleContext: KlAction<Result<Contextual<PutUserRoleContext>>, Result<
             val roleIds = data.data.roleIds.map { UUID.fromString(it) }
             val contextId = UUID.fromString(data.data.contextId)
 
-            putUserRoleContext(userId, contextId, roleIds)
+            updateUserRoleContext(data.userId, userId, contextId, roleIds.toSet())
     } } x database }
 }
 

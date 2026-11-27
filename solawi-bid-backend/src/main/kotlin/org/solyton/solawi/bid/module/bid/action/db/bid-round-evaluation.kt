@@ -17,6 +17,7 @@ import org.solyton.solawi.bid.module.bid.schema.AuctionsTable
 import org.solyton.solawi.bid.module.bid.schema.BidRoundEntity
 import org.solyton.solawi.bid.module.bid.schema.BidRoundsTable
 import org.solyton.solawi.bid.module.bid.schema.BidderDetails
+import org.jetbrains.exposed.sql.and
 import java.util.*
 
 @MathDsl
@@ -62,15 +63,17 @@ fun Transaction.getResults(auctionId: UUID, roundId: UUID, includeEarlierRounds:
         AuctionsTable.id eq auctionId
     }.firstOrNull()?: throw BidRoundException.NoSuchAuction
 
+    val selectedRound = readRound(roundId.toString(), auctionId.toString())
     val bidderDetails = getBidderDetails(auction).map { it as BidderDetails.SolawiTuebingen }
 
     // Compute results for those who have sent bids
     val bidResults = when(includeEarlierRounds) {
         false -> BidRoundEntity.find {
-            BidRoundsTable.round eq roundId
+            (BidRoundsTable.auction eq auction.id) and (BidRoundsTable.round eq selectedRound.id)
         }
         true -> BidRoundEntity.find {
-            BidRoundsTable.round inList auction.rounds.map { it.id }
+            (BidRoundsTable.auction eq auction.id) and
+                (BidRoundsTable.round inList auction.rounds.map { it.id })
         }.groupBy { round -> round.bidder.username }
          .map { it.value.maxBy {
             round -> round.round.number

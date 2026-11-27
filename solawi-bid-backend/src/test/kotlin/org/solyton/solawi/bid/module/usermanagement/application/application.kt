@@ -7,6 +7,12 @@ import kotlinx.serialization.Serializable
 import org.evoleq.ktorx.*
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.transactions.transaction
+import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
+import org.solyton.solawi.bid.module.application.schema.ModulesTable
+import org.solyton.solawi.bid.module.application.schema.LifecycleStagesTable
+import org.solyton.solawi.bid.module.application.schema.OrganizationApplicationContextsTable
 import org.solyton.solawi.bid.application.environment.setupEnvironment
 import org.solyton.solawi.bid.application.pipeline.*
 import org.solyton.solawi.bid.module.authentication.migrations.authenticationMigrations
@@ -46,6 +52,9 @@ fun Application.userManagementTest() {
 
         // helper modules
         val database = environment.connectToDatabase()
+        transaction(database) {
+            SchemaUtils.create(ApplicationsTable, ModulesTable, LifecycleStagesTable, OrganizationApplicationContextsTable)
+        }
         provideUserTokens(environment.jwt, database)
         testContexts(database)
         route("setup") {

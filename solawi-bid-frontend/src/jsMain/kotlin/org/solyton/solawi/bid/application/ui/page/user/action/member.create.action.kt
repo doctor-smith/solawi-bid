@@ -79,7 +79,7 @@ fun memberCreateAction(
     }
 
     val importUserProfiles = when(userProfile) {
-        null -> ImportUserProfiles(emptyList())
+        null -> ImportUserProfiles(emptyList(), providerId.value)
         else -> ImportUserProfiles(
             listOf(
                 UserProfileToImport(
@@ -91,7 +91,8 @@ fun memberCreateAction(
                     phoneNumber1 = userProfile.phoneNumber1,
                     address = address,
                 )
-            )
+            ),
+            organizationId = providerId.value
         )
     }
     val shareSubscriptionsToImport: List<ImportShareSubscription>? = shareSubscriptionsChange.new?.all?.map {

@@ -20,7 +20,7 @@ import org.solyton.solawi.bid.module.bid.schema.AcceptedRoundEntity
 import org.solyton.solawi.bid.module.bid.schema.AcceptedRoundsTable
 import org.solyton.solawi.bid.module.bid.schema.AuctionEntity
 import org.solyton.solawi.bid.module.bid.schema.Auctions
-import org.solyton.solawi.bid.module.bid.schema.Rounds
+import org.solyton.solawi.bid.module.bid.schema.RoundEntity
 import java.util.*
 
 @MathDsl
@@ -30,6 +30,14 @@ val CreateRound = KlAction<Result<Contextual<CreateRound>>, Result<Round>> {
             addRound(contextual.data).toApiType()
         } } x database
     }
+}
+
+internal fun Transaction.readRound(roundId: String, auctionId: String? = null): RoundEntity {
+    val round = RoundEntity.findById(UUID.fromString(roundId)) ?: throw BidRoundException.NoSuchRound
+    if (auctionId != null && round.auction.id.value != UUID.fromString(auctionId)) {
+        throw BidRoundException.NoSuchRound
+    }
+    return round
 }
 
 fun Transaction.addRound(round: CreateRound): org.solyton.solawi.bid.module.bid.schema.Round {
@@ -61,8 +69,7 @@ val ChangeRoundState = KlAction<Result<Contextual<ChangeRoundState>>, Result<Rou
 }
 
 fun Transaction.changeRoundState(newState: ChangeRoundState): org.solyton.solawi.bid.module.bid.schema.Round {
-    val round = org.solyton.solawi.bid.module.bid.schema.Round.find { Rounds.id eq UUID.fromString(newState.roundId) }.firstOrNull()
-        ?: throw BidRoundException.NoSuchRound
+    val round = readRound(newState.roundId)
 
     validateAuctionNotAccepted(round)
 
@@ -95,8 +102,7 @@ fun Transaction.acceptRound(acceptRound: AcceptRound): AcceptedRound {
 
     validateAuctionNotAccepted(auction)
 
-    val round = org.solyton.solawi.bid.module.bid.schema.Round.find { Rounds.id eq UUID.fromString(acceptRound.roundId) }.firstOrNull()
-        ?: throw BidRoundException.NoSuchRound
+    val round = readRound(acceptRound.roundId, acceptRound.auctionId)
 
     validateAuctionNotAccepted(round)
 

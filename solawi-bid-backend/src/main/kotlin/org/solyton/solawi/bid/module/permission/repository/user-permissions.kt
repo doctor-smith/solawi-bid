@@ -1,6 +1,5 @@
 package org.solyton.solawi.bid.module.permission.repository
 
-import org.evoleq.math.x
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.selectAll
@@ -344,24 +343,10 @@ fun Transaction.getRightRoleContexts(contextsIds: List<UUID>): List<Context> {
     return contexts
 }
 
-fun Transaction.getUserRightContexts(userId: UUID, rights: List<String>): List<UUID> {
-    val rightIds = RightEntity.find { RightsTable.name inList rights }.map { it.id.value }.distinct()
-    val userRoleContexts = UserRoleContext.selectAll().where{
-        UserRoleContext.userId eq userId
-    }.map {
-        it[UserRoleContext.roleId] x it[UserRoleContext.contextId]
-    }
-    val relevantUserRoleIds = RoleEntity.find { RolesTable.id inList userRoleContexts.map { it.first } }.distinctBy {
-            role -> role.id.value
-    }.filter {
-            role -> role.rights.toList().map { it.id.value }.any { rightIds.contains(it) }
-    }.map {
-            role -> role.id.value
-    }
-    return userRoleContexts.filter {
-            pair -> relevantUserRoleIds.contains(pair.first.value)
-    }.map { pair -> pair.second.value }
-}
+fun Transaction.getUserRightContexts(userId: UUID, rights: List<String>): List<UUID> =
+    getRoleRightContexts(userId)
+        .filter { context -> context.roles.any { role -> role.rights.any { it.name in rights } } }
+        .map { UUID.fromString(it.id) }
 
 fun Transaction.getRolesByUserAndContext(userId: UUID, contextId: UUID): List<RoleEntity> {
     val roleIds = UserRoleContext.selectAll().where{

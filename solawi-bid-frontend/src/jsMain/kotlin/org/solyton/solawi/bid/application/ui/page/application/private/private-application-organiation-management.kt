@@ -24,6 +24,7 @@ import org.evoleq.optics.transform.times
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Text
+import org.solyton.solawi.bid.module.application.permission.delegableOrganizationApplicationRoles
 import org.solyton.solawi.bid.application.data.*
 import org.solyton.solawi.bid.application.data.env.i18nEnvironment
 import org.solyton.solawi.bid.application.data.transform.application.management.applicationManagementModule
@@ -185,6 +186,7 @@ fun PrivateApplicationOrganizationManagementPage(
         it.applicationId == applicationId && it.organizationId == organizationId
     }.contextId
 
+    val delegableRoles = delegableOrganizationApplicationRoles((app * nameOfApplication.get).emit())
     val context = storage * availablePermissions * contexts * DeepSearch { it.contextId == applicationOrganizationContextId }
 
     val users = storage * managedUsers
@@ -240,7 +242,7 @@ fun PrivateApplicationOrganizationManagementPage(
                     ) {
                         val userRoleIds = memberPermissions?.roles?.map{it.roleId}.orEmpty()
                         var checkedRoles: List<CheckedUserRole> by remember {
-                            mutableStateOf( context.read().roles.map {
+                            mutableStateOf(context.read().roles.filter { it.roleName in delegableRoles }.map {
                                 when {
                                     it.roleId in userRoleIds -> CheckedUserRole(it, true)
                                     else -> CheckedUserRole(it, false)

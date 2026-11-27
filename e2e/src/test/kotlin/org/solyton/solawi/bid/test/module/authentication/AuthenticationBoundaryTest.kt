@@ -1,0 +1,29 @@
+package org.solyton.solawi.bid.test.module.authentication
+
+import com.microsoft.playwright.Playwright
+import com.microsoft.playwright.options.RequestOptions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+import org.solyton.solawi.bid.Regression
+import org.solyton.solawi.bid.Security
+import org.solyton.solawi.bid.TestConfig
+
+class AuthenticationBoundaryTest {
+    @Security
+    @Regression
+    @Test
+    fun personalMandatesRequireAuthentication() {
+        Playwright.create().use { playwright ->
+            val requests = playwright.request().newContext()
+            try {
+                val response = requests.get(
+                    "${TestConfig.BACKEND_URL}/banking/sepa/mandates/personal/all",
+                    RequestOptions.create().setHeader("CONTEXT", "solawi-bid")
+                )
+                assertEquals(401, response.status())
+            } finally {
+                requests.dispose()
+            }
+        }
+    }
+}

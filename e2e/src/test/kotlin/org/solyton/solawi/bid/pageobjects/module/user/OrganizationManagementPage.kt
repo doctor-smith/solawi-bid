@@ -91,56 +91,6 @@ class OrganizationManagementPage(private val page: Page) {
         return organization
     }
 
-    /**
-     * Grants the current user (TEST_USER) every available role on the given
-     * [applicationName] context for the organization called [organizationName], via
-     * the organization's own "connected applications" card -> "manage permissions"
-     * dialog. Plain `OWNER` (auto-granted server side at booking time, see
-     * `connectApplicationToOrganization`) alone is not sufficient for every action
-     * (e.g. creating a legal entity), so every role checkbox is checked here; the user
-     * will restrict this later once the exact required roles are known.
-     */
-    fun grantAllPermissions(
-        organizationName: String,
-        applicationName: String,
-        username: String,
-        hasToNavigate: Boolean = true
-    ): UserContext {
-        if (hasToNavigate) page.navigate("${TestConfig.BASE_URL}/app/management/organizations")
-        page.dismissStrayErrorDialogIfPresent()
-        page.waitForLoadingToFinish()
-
-        page.clickOn("organization-management-page.organization-list.organization.$organizationName.details-button")
-        page.waitForLoadingToFinish()
-        page.dismissStrayErrorDialogIfPresent()
-
-        page.clickOn("organization.page.connected-applications.chevron")
-        page.clickOn("organization.page.connected-applications.$applicationName.manage-permissions-button")
-        page.waitForLoadingToFinish()
-        page.dismissStrayErrorDialogIfPresent()
-
-        page.clickOn("private-application-organization-management.page.member.$username.manage-permissions-button")
-
-        val permissionsModal = ManageUserPermissionsModal(page.getByDataId("manage-user-permissions.modal"))
-        val roleCheckboxes = permissionsModal.allRoleCheckboxes()
-        roleCheckboxes.first().waitFor()
-        val count = roleCheckboxes.count()
-        if (count <= 0) throw IllegalArgumentException("There should be at least one role")
-        for (i in 0 until count) {
-            val checkbox = roleCheckboxes.nth(i)
-            if (checkbox.isChecked.not()) checkbox.check()
-        }
-
-        val response = page.waitForApi(
-            api = solawiApi,
-            keyOfEndpoint = PutUserRoleContext::class,
-        ) {
-            permissionsModal.submitButton().click()
-        }.decodeBodyTo<UserContext>()
-
-        return response
-    }
-
     fun grantPermissions(
         organizationName: String,
         applicationName: String,
@@ -168,7 +118,7 @@ class OrganizationManagementPage(private val page: Page) {
         roleCheckboxes.first().waitFor()
 
         roles.forEach { role ->
-            permissionsModal.roleCheckbox(role).click()
+            permissionsModal.roleCheckbox(role).check()
         }
 
         val response = page.waitForApi(

@@ -222,11 +222,7 @@ class BankingPage(private val page: Page) {
         // fill search box
         page.getByDataId("banking.bank-account.upsert-with-user-search.form.search-input").fill(username)
 
-        // find first matching element in the list and click it
-        page.getByPartialDataId("banking.bank-account.upsert-with-user-search.form.search-list.select").first().click()
-
-
-        // page.locator("span", Page.LocatorOptions().setHasText(username)).first().click()
+        modal.getByText(username, Locator.GetByTextOptions().setExact(true)).click()
 
         page.locator("#account-holder").fill(accountHolder)
         page.locator("#iban").fill(iban)

@@ -6,16 +6,19 @@ import io.ktor.server.routing.*
 import io.ktor.util.*
 import org.evoleq.exposedx.data.DbEnv
 import org.evoleq.ktorx.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
+import org.solyton.solawi.bid.module.application.schema.ApplicationEntity
+import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
 import org.solyton.solawi.bid.module.permission.action.db.IsGrantedInExactDerivedContext
-import org.solyton.solawi.bid.module.permission.repository.path
+import org.solyton.solawi.bid.module.permission.action.db.isGranted
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.jetbrains.exposed.sql.and
+import java.util.UUID
 import org.solyton.solawi.bid.module.user.action.organization.*
 import org.solyton.solawi.bid.module.user.action.user.*
 import org.solyton.solawi.bid.module.user.data.api.*
@@ -26,11 +29,16 @@ import org.solyton.solawil.bid.module.bid.data.api.toUUID
 // Administrative account changes are authorized only in the trusted, global
 // platform user-management context, never in a caller-selected organization context.
 @Suppress("FunctionNaming")
-private fun <T> RequirePlatformUserManagement() = IsGrantedInExactDerivedContext<T>("UPDATE_USER") {
-    val adminContext = ContextEntity.find {
-        ContextsTable.name eq "ORGANIZATION_MANAGEMENT"
+private fun <T> RequirePlatformUserManagement(right: String) = IsGrantedInExactDerivedContext<T>(right) {
+    val application = ApplicationEntity.find {
+        ApplicationsTable.name eq "APPLICATION_MANAGEMENT"
     }.firstOrNull() ?: throw PermissionException.AccessDenied
-    if (adminContext.path() != "APPLICATION/MANAGEMENT/ORGANIZATION_MANAGEMENT") {
+    val management = application.defaultContext
+    val platform = management.root
+    // The registered module owns the scope even when the context tree is reindexed.
+    val adminContext = application.modules.singleOrNull { module -> module.name == "ORGANIZATION_MANAGEMENT" }?.defaultContext
+    if (management.name != "MANAGEMENT" || platform?.name != "APPLICATION") throw PermissionException.AccessDenied
+    if (adminContext?.name != "ORGANIZATION_MANAGEMENT" || adminContext.root?.id != platform.id) {
         throw PermissionException.AccessDenied
     }
     adminContext.id.value
@@ -52,7 +60,10 @@ fun <UserEnv> Routing.user(
             }
 
             post("create") {
-                ReceiveContextual<CreateUser>() * CreateNewUser * Respond<User>{ transform() } runOn Base(call, environment)
+                ReceiveContextual<CreateUser>() *
+                    RequirePlatformUserManagement<CreateUser>("CREATE_USER") *
+                    CreateNewUser *
+                    Respond<User>{ transform() } runOn Base(call, environment)
             }
 
             post("query") {
@@ -63,7 +74,7 @@ fun <UserEnv> Routing.user(
 
             patch("change-password") {
                 ReceiveContextual<ChangePassword>() *
-                RequirePlatformUserManagement<ChangePassword>() *
+                RequirePlatformUserManagement<ChangePassword>("UPDATE_USER") *
                 ChangePassword *
                 Respond<User>{ transform() } runOn Base(call, environment)
             }
@@ -72,20 +83,18 @@ fun <UserEnv> Routing.user(
             }
             patch("update-username") {
                 ReceiveContextual<UpdateUsername>() *
-                RequirePlatformUserManagement<UpdateUsername>() *
+                RequirePlatformUserManagement<UpdateUsername>("UPDATE_USER") *
                 UpdateUsername *
                 Respond<User>{ transform() } runOn Base(call, environment)
             }
             route("profiles") {
-                patch("read-by-ids") { // todo:test write api test
+                patch("read-by-ids") {
                     ReceiveContextual<ReadUserProfiles>() *
-                    IsGranted("MANAGE_USERS") *
                     ReadUserProfiles() *
                     Respond<UserProfiles>{ transform() } runOn Base(call, environment)
                 }
-                post("import") { // todo:test write api test
+                post("import") {
                     ReceiveContextual<ImportUserProfiles>() *
-                    IsGranted("MANAGE_USERS") *
                     ImportProfiles() *
                     Respond<UserProfiles> { transform() } runOn Base(call, environment)
                 }
@@ -93,7 +102,7 @@ fun <UserEnv> Routing.user(
                     ReceiveContextual<CreateUserProfile>() *
                     IsGranted("MANAGE_USERS") {
                         // Grant that each user can create its own user profile
-                        contextual -> contextual.userId == contextual.data.userId.toUUID()
+                        contextual -> contextual.userId != contextual.data.userId.toUUID()
                     } *
                     CreateUserProfile() *
                     Respond<UserProfile> { transform() } runOn Base(call, environment)
@@ -102,7 +111,7 @@ fun <UserEnv> Routing.user(
                     ReceiveContextual<UpdateUserProfile>() *
                     IsGranted("MANAGE_USERS") {
                         // Grant that each user can update its own user profile
-                        contextual -> contextual.userId == contextual.data.userId.toUUID()
+                        contextual -> contextual.userId != contextual.data.userId.toUUID()
                     } *
                     UpdateUserProfile() *
                     Respond<UserProfile> { transform() } runOn Base(call, environment)
@@ -126,7 +135,17 @@ fun <OrganizationEnv> Routing.organization(
         route("organizations") {
             get("all") {
                 ReceiveContextual(ReadOrganizations) *
-                IsGranted("READ_ORGANIZATION") *
+                IsGrantedInExactDerivedContext<ReadOrganizations>("READ_ORGANIZATION") { request ->
+                    val requested = UUID.fromString(request.context)
+                    val context = ContextEntity.findById(requested)
+                    if (context?.name == "APPLICATION" && context.root == null &&
+                        !isGranted(request.userId, requested, "READ_ORGANIZATION")
+                    ) {
+                        ContextEntity.find {
+                            (ContextsTable.rootId eq context.id) and (ContextsTable.name eq "ORGANIZATION")
+                        }.firstOrNull()?.id?.value ?: requested
+                    } else requested
+                } *
                 ReadOrganizations() *
                 Respond { transform() } runOn Base(call, environment)
             }
@@ -165,9 +184,8 @@ fun <OrganizationEnv> Routing.organization(
                     AddMember() *
                     Respond { transform() } runOn Base(call, environment)
                 }
-                post("import") { // todo:test write api test
+                post("import") {
                     ReceiveContextual<ImportMembers>() *
-                    IsGranted("MANAGE_USERS") *
                     ImportMembers() *
                     Respond { transform() } runOn Base(call, environment)
                 }

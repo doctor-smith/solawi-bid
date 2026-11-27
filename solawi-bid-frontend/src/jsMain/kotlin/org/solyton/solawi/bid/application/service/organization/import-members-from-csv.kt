@@ -66,7 +66,7 @@ fun Storage<Application>.importMembersFromCsv(
             )
         }
     }
-    val importUserProfiles = ImportUserProfiles(userProfilesToImport)
+    val importUserProfiles = ImportUserProfiles(userProfilesToImport, organizationId)
 
 
     val shareSubscriptionsToImport = when {

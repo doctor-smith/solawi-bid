@@ -3,6 +3,7 @@ package org.solyton.solawi.bid.module.usermanagement.routing
 import com.typesafe.config.ConfigFactory
 import io.ktor.client.request.header
 import io.ktor.client.request.patch
+import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
@@ -14,13 +15,17 @@ import kotlinx.serialization.json.Json
 import org.evoleq.ktorx.headers.Header
 import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mindrot.jbcrypt.BCrypt
 import org.solyton.solawi.bid.Api
+import org.solyton.solawi.bid.module.application.repository.createApplication
+import org.solyton.solawi.bid.module.application.repository.createModule
 import org.solyton.solawi.bid.module.permission.repository.createChild
 import org.solyton.solawi.bid.module.permission.repository.grant
 import org.solyton.solawi.bid.module.permission.repository.of
@@ -28,11 +33,14 @@ import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.permission.schema.RightEntity
 import org.solyton.solawi.bid.module.permission.schema.RoleEntity
+import org.solyton.solawi.bid.module.permission.schema.RolesTable
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.testFramework.getTestContextIdByName
 import org.solyton.solawi.bid.module.testFramework.getTestToken
 import org.solyton.solawi.bid.module.user.data.api.ChangePassword
+import org.solyton.solawi.bid.module.user.data.api.CreateUser
 import org.solyton.solawi.bid.module.user.data.api.UpdateUsername
+import org.solyton.solawi.bid.module.user.data.api.UserStatus
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UsersTable
 import org.solyton.solawi.bid.module.values.Username
@@ -41,7 +49,7 @@ import java.util.UUID
 
 class PlatformCredentialSecurityTests {
     @Api @Test
-    fun platformRightsMustMatchTheExactContextForBothCredentialOperations() = runBlocking {
+    fun platformRightsMustMatchTheExactContextForAccountManagement() = runBlocking {
         val url = "jdbc:h2:mem:credential_${UUID.randomUUID()};DB_CLOSE_DELAY=-1"
         testApplication {
             environment {
@@ -55,15 +63,29 @@ class PlatformCredentialSecurityTests {
             val database = Database.connect(url, driver = "org.h2.Driver", user = "root", password = "")
             val (platformId, foreignId) = transaction(database) {
                 val root = ContextEntity.find { ContextsTable.name eq "APPLICATION" }.first()
-                val platform = root.createChild("MANAGEMENT").createChild("ORGANIZATION_MANAGEMENT")
+                val management = root.createChild("MANAGEMENT")
+                val platform = management.createChild("ORGANIZATION_MANAGEMENT")
+                val app = createApplication(
+                    "APPLICATION_MANAGEMENT", "Platform management", UUID_ZERO, defaultContextId = management.id.value
+                )
+                createModule(
+                    "ORGANIZATION_MANAGEMENT", "Organization management", app.id.value, UUID_ZERO,
+                    defaultContextId = platform.id.value
+                )
                 val foreign = root.createChild("OTHER_ORGANIZATION")
+                ContextEntity.find { (ContextsTable.name eq "ORGANIZATION") and (ContextsTable.rootId eq root.id) }
+                    .firstOrNull() ?: root.createChild("ORGANIZATION")
                 val update = RightEntity.new { name = "UPDATE_USER"; description = "Update users"; createdBy = UUID_ZERO }
+                val create = RightEntity.new { name = "CREATE_USER"; description = "Create users"; createdBy = UUID_ZERO }
                 val read = RightEntity.new { name = "READ_USER"; description = "Read users"; createdBy = UUID_ZERO }
                 val admin = RoleEntity.new { name = "APPLICATION_ORGANIZATION_MANAGER"; description = "Platform admin"; createdBy = UUID_ZERO }
                 val mixed = RoleEntity.new { name = "MIXED_ROLE"; description = "Other context only"; createdBy = UUID_ZERO }
-                (admin of platform).grant(update)
+                val userRole = RoleEntity.find { RolesTable.name eq "USER" }.firstOrNull()
+                    ?: RoleEntity.new { name = "USER"; description = "Default user"; createdBy = UUID_ZERO }
+                (userRole of root).grant(read)
+                (admin of platform).grant(update, create)
                 (mixed of platform).grant(read)
-                (mixed of foreign).grant(update)
+                (mixed of foreign).grant(update, create)
                 val adminUser = UserEntity.find { UsersTable.username eq "developer@alpha-structure.com" }.first()
                 val attacker = UserEntity.find { UsersTable.username eq "unautorized@solyton.org" }.first()
                 UserRoleContext.insert { it[userId] = adminUser.id.value; it[roleId] = admin.id; it[contextId] = platform.id }
@@ -74,6 +96,13 @@ class PlatformCredentialSecurityTests {
             val attacker = client.getTestToken("unautorized@solyton.org")
             val admin = client.getTestToken("developer@alpha-structure.com")
             val target = "unautorized@solyton.org"
+            val newUsername = "platform-created-user@example.test"
+            suspend fun createUser(token: String, context: String, password: String) = client.post("users/create") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+                header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(Header.CONTEXT, context)
+                setBody(Json.encodeToString(CreateUser.serializer(), CreateUser(newUsername, password, UserStatus.ACTIVE)))
+            }
             val renamed = "renamed-test-user@solyton.org"
             val adminName = "developer@alpha-structure.com"
             val originalPassword = transaction(database) {
@@ -83,7 +112,14 @@ class PlatformCredentialSecurityTests {
                 UserEntity.find { UsersTable.username eq target }.first().password
             }
 
+            fun accountState() = transaction(database) {
+                UsersTable.selectAll().count() to UserRoleContext.selectAll().count()
+            }
+            val originalAccountState = accountState()
+            val testPassword = "valid-test-password-596"
             for (context in listOf(platformId, foreignId, rootId)) {
+                val create = createUser(attacker, context, testPassword)
+                assertEquals(HttpStatusCode.Forbidden, create.status)
                 val reset = client.patch("users/change-password") {
                     header(HttpHeaders.Authorization, "Bearer $attacker")
                     header(HttpHeaders.ContentType, ContentType.Application.Json)
@@ -102,6 +138,15 @@ class PlatformCredentialSecurityTests {
             transaction(database) {
                 assertEquals(originalPassword, UserEntity.find { UsersTable.username eq adminName }.first().password)
                 assertTrue(UserEntity.find { UsersTable.username eq renamed }.empty())
+            }
+
+            assertEquals(HttpStatusCode.BadRequest, createUser(admin, foreignId, "too-short").status)
+            assertEquals(originalAccountState, accountState())
+            assertEquals(HttpStatusCode.OK, createUser(admin, foreignId, testPassword).status)
+            transaction(database) {
+                val created = UserEntity.find { UsersTable.username eq newUsername }.single()
+                assertTrue(BCrypt.checkpw(testPassword, created.password))
+                assertEquals(UserStatus.ACTIVE.name, created.status.name)
             }
 
             val weakPasswordReset = client.patch("users/change-password") {

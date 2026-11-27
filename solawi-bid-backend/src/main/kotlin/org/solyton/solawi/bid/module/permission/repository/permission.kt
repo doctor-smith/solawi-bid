@@ -69,14 +69,15 @@ fun Transaction.cloneRightRoleContextWrtRoles(
     newContextId: UUID,
     vararg roleNames: String
 ): List<RightRoleContextIds> {
-    val existingInTarget = getRoleRightContextsByRoleNames(newContextId,*roleNames)
+    val existingInTarget = getRoleRightContextsByRoleNames(newContextId, *roleNames)
+        .map { it.roleId to it.rightId }.toSet()
     val rightRoleContexts = getRoleRightContextsByRoleNames(
         oldContextId,
         *roleNames
     ).map { it.copy(
         contextId = newContextId
     ) }.filter {
-        it !in existingInTarget
+        (it.roleId to it.rightId) !in existingInTarget
     }.map{ rrc ->
         val id = RoleRightContexts.insertAndGetId {
             it[contextId] = rrc.contextId
@@ -99,7 +100,7 @@ fun getRoleRightContextsByRoleNames(
 ): List<RightRoleContextIds> {
     val roleIds = RoleEntity.find { RolesTable.name inList listOf(*roleNames) }.map { it.id.value }
     val rightRoleContexts = RoleRightContexts.selectAll().where {
-        RoleRightContexts.contextId eq contextId and (RoleRightContexts.rightId inList roleIds)
+        RoleRightContexts.contextId eq contextId and (RoleRightContexts.roleId inList roleIds)
     }.map { row -> RightRoleContextIds(
         row[RoleRightContexts.id].value,
         row[RoleRightContexts.rightId].value,

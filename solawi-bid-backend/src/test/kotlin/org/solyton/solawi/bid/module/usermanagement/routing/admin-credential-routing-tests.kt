@@ -3,7 +3,6 @@ package org.solyton.solawi.bid.module.usermanagement.routing
 import com.typesafe.config.ConfigFactory
 import io.ktor.client.request.header
 import io.ktor.client.request.patch
-import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
@@ -19,10 +18,8 @@ import org.solyton.solawi.bid.Api
 import org.solyton.solawi.bid.module.testFramework.getTestContextIdByName
 import org.solyton.solawi.bid.module.testFramework.getTestToken
 import org.solyton.solawi.bid.module.user.data.api.ChangePassword
-import org.solyton.solawi.bid.module.user.data.api.CreateUser
 import org.solyton.solawi.bid.module.user.data.api.UpdateUser
 import org.solyton.solawi.bid.module.user.data.api.UpdateUsername
-import org.solyton.solawi.bid.module.user.data.api.UserStatus
 import org.solyton.solawi.bid.module.values.Password
 import org.solyton.solawi.bid.module.values.Username
 import java.io.File
@@ -180,31 +177,6 @@ class AdminCredentialRoutingTests {
                 ))
             }
             assertEquals(HttpStatusCode.OK, unchanged.status)
-        }
-    }
-
-    @Api @Test
-    fun passwordPolicyAppliesWhenCreatingActiveUsers() = runBlocking {
-        testApplication {
-            environment {
-                config = HoconApplicationConfig(
-                    ConfigFactory.parseFile(File("src/test/resources/usermanagement.api.test.conf"))
-                )
-            }
-            val token = client.getTestToken("developer@alpha-structure.com")
-            val applicationContextId = client.getTestContextIdByName("APPLICATION")
-            val username = "new-policy-user@solyton.org"
-
-            val rejected = client.post("users/create") {
-                header(HttpHeaders.Authorization, "Bearer $token")
-                header(HttpHeaders.ContentType, ContentType.Application.Json)
-                header(Header.CONTEXT, applicationContextId)
-                setBody(Json.encodeToString(
-                    CreateUser.serializer(),
-                    CreateUser(username, "too-short", UserStatus.ACTIVE)
-                ))
-            }
-            assertEquals(HttpStatusCode.BadRequest, rejected.status)
         }
     }
 }

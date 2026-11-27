@@ -14,7 +14,6 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.selectAll
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.data.api.ContextId
 import org.solyton.solawi.bid.module.permission.schema.*
@@ -73,23 +72,8 @@ fun <T> IsGrantedInDerivedContext(
 fun <T> IsGrantedInExactDerivedContext(
     right: String,
     deriveContextId: Transaction.(Contextual<T>) -> UUID
-): KlAction<Result<Contextual<T>>, Result<Contextual<T>>> = KlAction { result ->
-    DbAction { database -> result bindSuspend { contextual ->
-        resultTransaction(database) {
-            val contextId = deriveContextId(contextual)
-            val rightId = RightEntity.find { RightsTable.name eq right }.firstOrNull()?.id
-                ?: throw PermissionException.NoSuchRight(right)
-            val roleIds = RoleRightContexts.selectAll().where {
-                (RoleRightContexts.contextId eq contextId) and (RoleRightContexts.rightId eq rightId)
-            }.map { it[RoleRightContexts.roleId] }
-            if (UserRoleContext.selectAll().where {
-                (UserRoleContext.userId eq contextual.userId) and
-                    (UserRoleContext.contextId eq contextId) and (UserRoleContext.roleId inList roleIds)
-            }.empty()) throw PermissionException.AccessDenied
-            contextual
-        }
-    } x database }
-}
+): KlAction<Result<Contextual<T>>, Result<Contextual<T>>> =
+    IsGrantedInDerivedContext(right, deriveContextId = deriveContextId)
 
 @MathDsl
 @Suppress("FunctionName")
@@ -173,29 +157,31 @@ fun Transaction.isGranted(userId: UUID, context: String, right: String): Boolean
         ?: throw PermissionException.NoSuchContext(context)
     val rightEntity = RightEntity.find{ Rights.name eq right }.firstOrNull()
         ?: throw PermissionException.NoSuchRight(right)
-    val roleIds = contextEntity.roles.filter { it.rights.contains(rightEntity) }.map { it.id }
-
-    return UserRoleContext.selectAll().where {
-        UserRoleContext.userId eq userId and
-        ( UserRoleContext.contextId eq contextEntity.id ) and
-        ( UserRoleContext.roleId inList roleIds )
-    }.toList().isNotEmpty()
+    return hasExactRight(userId, contextEntity.id.value, rightEntity.id.value)
 }
 
 fun Transaction.isGranted(userId: UUID, contextId: UUID, rightId: UUID): Boolean {
+    ContextEntity.findById(contextId) ?: throw PermissionException.NoSuchContext(contextId.toString())
+    return hasExactRight(userId, contextId, rightId)
+}
 
-    val context = ContextEntity.find { ContextsTable.id eq contextId }.firstOrNull()
-        ?: throw PermissionException.NoSuchContext(contextId.toString())
-    val roleIds = context.roles.filter { it.rights.any { r -> r.id.value == rightId }}.map { it.id }.distinct()
-
-    return !UserRoleContext.selectAll().where {
-        UserRoleContext.userId eq userId and
-        ( UserRoleContext.contextId eq contextId ) and
-        ( UserRoleContext.roleId inList roleIds  )
-    }
+private fun hasExactRight(userId: UUID, contextId: UUID, rightId: UUID): Boolean =
+    !UserRoleContext
+        .join(
+            RoleRightContexts,
+            JoinType.INNER,
+            onColumn = UserRoleContext.roleId,
+            otherColumn = RoleRightContexts.roleId
+        )
+        .select(UserRoleContext.userId)
+        .where {
+            (UserRoleContext.userId eq userId) and
+                (UserRoleContext.contextId eq RoleRightContexts.contextId) and
+                (RoleRightContexts.contextId eq contextId) and
+                (RoleRightContexts.rightId eq rightId)
+        }
         .limit(1)
         .empty()
-}
 
 fun Transaction.isGranted(userId: UUID, contextId: UUID, right: String): Boolean {
     val rightId = RightEntity.find { RightsTable.name eq right }.firstOrNull()?.id

@@ -24,7 +24,7 @@ data class UserProfile(
 )
 
 @Serializable
-data class ReadUserProfiles(val userIds: List<String>)
+data class ReadUserProfiles(val userIds: List<String>, val organizationId: String? = null)
 
 @Serializable
 data class ReadUserProfile(val userId: String)
@@ -67,4 +67,4 @@ data class UserProfileToImport(
 )
 
 @Serializable
-data class ImportUserProfiles(val profiles: List<UserProfileToImport>)
+data class ImportUserProfiles(val profiles: List<UserProfileToImport>, val organizationId: String? = null)

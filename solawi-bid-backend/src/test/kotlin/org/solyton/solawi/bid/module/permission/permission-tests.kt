@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.DbFunctional
 import org.solyton.solawi.bid.module.permission.action.db.isGranted
 import org.solyton.solawi.bid.module.permission.action.db.isGrantedOneOf
-import org.solyton.solawi.bid.module.permission.repository.cloneRightRoleContext
+import org.solyton.solawi.bid.module.permission.repository.*
 import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserStatus
@@ -19,6 +19,65 @@ import kotlin.test.assertTrue
 
 
 class PermissionTests {
+    @DbFunctional @Test
+    fun rightsRequireAnExactRoleAndContextWhileEmptyAnyOfDenies() = runSimpleH2Test(
+        RoleRightContexts, UserRoleContext, UsersTable, ContextsTable, RightsTable, RolesTable
+    ) {
+        val actor = UserEntity.new {
+            username = "hierarchy-fixture"
+            password = "fixture"
+            status = UserStatus.ACTIVE
+            createdBy = UUID_ZERO
+        }.id.value
+        val parent = createRootContext("PARENT")
+        val child = parent.createChild("CHILD")
+        val role = createRole("HIERARCHY_ROLE", "Fixture", UUID_ZERO)
+        val read = createRight("HIERARCHY_READ", "Fixture", UUID_ZERO)
+        val write = createRight("HIERARCHY_WRITE", "Fixture", UUID_ZERO)
+        (role of parent).grant(write)
+        (role of child).grant(read)
+        for (context in listOf(parent, child)) {
+            UserRoleContext.insert {
+                it[userId] = actor
+                it[contextId] = context.id
+                it[roleId] = role.id
+            }
+        }
+
+        assertTrue(isGranted(actor, parent.id.value, write.id.value))
+        assertTrue(isGranted(actor, child.id.value, read.name))
+        assertTrue(getUserRightContexts(actor, listOf(read.name)) == listOf(child.id.value))
+        assertTrue(getUserRightContexts(actor, emptyList()).isEmpty())
+        assertFalse(isGranted(actor, child.id.value, write.name))
+        assertFalse(isGranted(actor, child.name, write.name))
+        assertFalse(isGrantedOneOf(actor, child.id.value, listOf(write.name)))
+        assertFalse(isGrantedOneOf(actor, emptyList(), listOf(write.name)))
+        assertFalse(isGrantedOneOf(actor, listOf(parent.id.value, child.id.value), emptyList()))
+    }
+
+    @DbFunctional @Test
+    fun contextPolicyCopiesOnlyTheRequestedRolesAndIsIdempotent() = runSimpleH2Test(
+        RoleRightContexts, ContextsTable, RightsTable, RolesTable
+    ) {
+        val source = createRootContext("POLICY_SOURCE")
+        val target = createRootContext("POLICY_TARGET")
+        val role = createRole("COPIED_ROLE", "Fixture", UUID_ZERO)
+        val otherRole = createRole("EXCLUDED_ROLE", "Fixture", UUID_ZERO)
+        val read = createRight("COPY_READ", "Fixture", UUID_ZERO)
+        val write = createRight("COPY_WRITE", "Fixture", UUID_ZERO)
+        (role of source).grant(read, write)
+        (otherRole of source).grant(write)
+        (role of target).grant(read)
+
+        val inserted = cloneRightRoleContextWrtRoles(source.id.value, target.id.value, role.name).single()
+        assertEquals(target.id.value, inserted.contextId)
+        assertEquals(role.id.value, inserted.roleId)
+        assertEquals(write.id.value, inserted.rightId)
+        assertTrue(cloneRightRoleContextWrtRoles(source.id.value, target.id.value, role.name).isEmpty())
+        assertTrue(getRoleRightContextsByRoleNames(target.id.value, otherRole.name).isEmpty())
+        assertEquals(setOf(read.id.value, write.id.value), getRoleRightContextsByRoleNames(target.id.value, role.name).map { it.rightId }.toSet())
+    }
+
     @DbFunctional@Test
     fun `isGranted requires user role and right policy in the same context`() = runSimpleH2Test(
         RoleRightContexts,
