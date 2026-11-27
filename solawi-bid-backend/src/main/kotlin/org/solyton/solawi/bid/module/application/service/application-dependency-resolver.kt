@@ -41,7 +41,7 @@ sealed class InvalidApplicationDependency(message: String) : IllegalArgumentExce
 class ApplicationDependencyResolver(private val catalog: ApplicationDependencyCatalog) {
     private val byApplication = catalog.dependencies.groupBy { it.applicationId }
     private val applicationOrder = compareBy<UUID>(
-        { catalog.applicationNames[it] ?: "" },
+        { catalog.applicationNames[it].orEmpty() },
         { it.toString() }
     )
 
