@@ -24,6 +24,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mindrot.jbcrypt.BCrypt
 import org.solyton.solawi.bid.Api
+import org.solyton.solawi.bid.module.application.repository.createApplication
+import org.solyton.solawi.bid.module.application.repository.createModule
 import org.solyton.solawi.bid.module.permission.repository.createChild
 import org.solyton.solawi.bid.module.permission.repository.grant
 import org.solyton.solawi.bid.module.permission.repository.of
@@ -61,7 +63,15 @@ class PlatformCredentialSecurityTests {
             val database = Database.connect(url, driver = "org.h2.Driver", user = "root", password = "")
             val (platformId, foreignId) = transaction(database) {
                 val root = ContextEntity.find { ContextsTable.name eq "APPLICATION" }.first()
-                val platform = root.createChild("MANAGEMENT").createChild("ORGANIZATION_MANAGEMENT")
+                val management = root.createChild("MANAGEMENT")
+                val platform = management.createChild("ORGANIZATION_MANAGEMENT")
+                val app = createApplication(
+                    "APPLICATION_MANAGEMENT", "Platform management", UUID_ZERO, defaultContextId = management.id.value
+                )
+                createModule(
+                    "ORGANIZATION_MANAGEMENT", "Organization management", app.id.value, UUID_ZERO,
+                    defaultContextId = platform.id.value
+                )
                 val foreign = root.createChild("OTHER_ORGANIZATION")
                 ContextEntity.find { (ContextsTable.name eq "ORGANIZATION") and (ContextsTable.rootId eq root.id) }
                     .firstOrNull() ?: root.createChild("ORGANIZATION")

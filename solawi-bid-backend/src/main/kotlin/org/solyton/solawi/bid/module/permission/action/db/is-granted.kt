@@ -14,7 +14,6 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.selectAll
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.data.api.ContextId
 import org.solyton.solawi.bid.module.permission.schema.*
@@ -166,15 +165,23 @@ fun Transaction.isGranted(userId: UUID, contextId: UUID, rightId: UUID): Boolean
     return hasExactRight(userId, contextId, rightId)
 }
 
-private fun hasExactRight(userId: UUID, contextId: UUID, rightId: UUID): Boolean {
-    val roleIds = RoleRightContexts.select(RoleRightContexts.roleId).where {
-        (RoleRightContexts.contextId eq contextId) and (RoleRightContexts.rightId eq rightId)
-    }.map { it[RoleRightContexts.roleId] }
-    return !UserRoleContext.select(UserRoleContext.userId).where {
-        (UserRoleContext.userId eq userId) and (UserRoleContext.contextId eq contextId) and
-            (UserRoleContext.roleId inList roleIds)
-    }.limit(1).empty()
-}
+private fun hasExactRight(userId: UUID, contextId: UUID, rightId: UUID): Boolean =
+    !UserRoleContext
+        .join(
+            RoleRightContexts,
+            JoinType.INNER,
+            onColumn = UserRoleContext.roleId,
+            otherColumn = RoleRightContexts.roleId
+        )
+        .select(UserRoleContext.userId)
+        .where {
+            (UserRoleContext.userId eq userId) and
+                (UserRoleContext.contextId eq RoleRightContexts.contextId) and
+                (RoleRightContexts.contextId eq contextId) and
+                (RoleRightContexts.rightId eq rightId)
+        }
+        .limit(1)
+        .empty()
 
 fun Transaction.isGranted(userId: UUID, contextId: UUID, right: String): Boolean {
     val rightId = RightEntity.find { RightsTable.name eq right }.firstOrNull()?.id

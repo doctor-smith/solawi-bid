@@ -145,6 +145,7 @@ class PlatformOwnerBootstrapTests {
                 it.path() == "APPLICATION/MANAGEMENT/ORGANIZATION_MANAGEMENT"
             }
             assertTrue(isGranted(owner.id.value, platformUserManagement.id.value, "UPDATE_USER"))
+            assertTrue(isGranted(owner.id.value, platformUserManagement.id.value, "CREATE_USER"))
             assertFalse(isGranted(owner.id.value, customer.id.value, "UPDATE_USER"))
 
             val application = ApplicationEntity.find {

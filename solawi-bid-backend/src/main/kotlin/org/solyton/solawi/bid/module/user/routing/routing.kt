@@ -6,16 +6,14 @@ import io.ktor.server.routing.*
 import io.ktor.util.*
 import org.evoleq.exposedx.data.DbEnv
 import org.evoleq.ktorx.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.evoleq.ktorx.data.KTorEnv
 import org.evoleq.math.state.runOn
 import org.evoleq.math.state.times
+import org.solyton.solawi.bid.module.application.schema.ApplicationEntity
+import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
 import org.solyton.solawi.bid.module.permission.action.db.IsGrantedInExactDerivedContext
-import org.solyton.solawi.bid.module.permission.repository.path
-import org.solyton.solawi.bid.module.permission.schema.ContextEntity
-import org.solyton.solawi.bid.module.permission.schema.ContextsTable
 import org.solyton.solawi.bid.module.user.action.organization.*
 import org.solyton.solawi.bid.module.user.action.user.*
 import org.solyton.solawi.bid.module.user.data.api.*
@@ -27,10 +25,15 @@ import org.solyton.solawil.bid.module.bid.data.api.toUUID
 // platform user-management context, never in a caller-selected organization context.
 @Suppress("FunctionNaming")
 private fun <T> RequirePlatformUserManagement(right: String) = IsGrantedInExactDerivedContext<T>(right) {
-    val adminContext = ContextEntity.find {
-        ContextsTable.name eq "ORGANIZATION_MANAGEMENT"
+    val application = ApplicationEntity.find {
+        ApplicationsTable.name eq "APPLICATION_MANAGEMENT"
     }.firstOrNull() ?: throw PermissionException.AccessDenied
-    if (adminContext.path() != "APPLICATION/MANAGEMENT/ORGANIZATION_MANAGEMENT") {
+    val management = application.defaultContext
+    val platform = management.root
+    // The registered module owns the scope even when the context tree is reindexed.
+    val adminContext = application.modules.singleOrNull { module -> module.name == "ORGANIZATION_MANAGEMENT" }?.defaultContext
+    if (management.name != "MANAGEMENT" || platform?.name != "APPLICATION") throw PermissionException.AccessDenied
+    if (adminContext?.name != "ORGANIZATION_MANAGEMENT" || adminContext.root?.id != platform.id) {
         throw PermissionException.AccessDenied
     }
     adminContext.id.value
