@@ -12,6 +12,7 @@ import org.solyton.solawi.bid.module.application.repository.createApplication
 import org.solyton.solawi.bid.module.application.repository.createUserRoleContext
 import org.solyton.solawi.bid.module.application.repository.registerOrganizationForApplication
 import org.solyton.solawi.bid.module.permission.repository.*
+import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UsersTable
@@ -53,7 +54,13 @@ private fun Transaction.createProvider(
     return Provider(organization.id.value, applicationContext.id.value, role.name).also { it.grantTo(userId) }
 }
 
-private fun findUserId(username: String) =
+internal fun Transaction.grantProviderRight(provider: Provider, rightName: String) {
+    val context = requireNotNull(ContextEntity.findById(provider.contextId))
+    val right = createRightIfNotExists(rightName, "Test authorization right", UUID_ZERO)
+    (readRoleByName(provider.role) of context).grant(right)
+}
+
+internal fun findUserId(username: String) =
     UserEntity.find { UsersTable.username eq username }.single().id.value
 
 internal suspend inline fun <reified T> HttpClient.patchInContext(
