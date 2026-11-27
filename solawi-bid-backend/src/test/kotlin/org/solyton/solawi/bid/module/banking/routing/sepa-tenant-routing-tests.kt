@@ -11,32 +11,19 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.evoleq.ktorx.headers.Header
 import org.evoleq.ktorx.result.Result
-import org.evoleq.uuid.UUID_ZERO
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
 import org.solyton.solawi.bid.module.application.application.useApplicationTestDatabase
 import org.solyton.solawi.bid.module.application.routing.*
-import org.solyton.solawi.bid.module.banking.application.BANKING_APPLICATION_NAME
 import org.solyton.solawi.bid.module.banking.data.*
 import org.solyton.solawi.bid.module.banking.data.api.*
 import org.solyton.solawi.bid.module.banking.data.toApiType
-import org.solyton.solawi.bid.module.banking.repository.*
 import org.solyton.solawi.bid.module.banking.schema.*
-import org.solyton.solawi.bid.module.banking.schema.AccountType
-import org.solyton.solawi.bid.module.banking.schema.LegalEntityType
-import org.solyton.solawi.bid.module.banking.schema.SepaPaymentLinks
 import org.solyton.solawi.bid.module.testFramework.getTestToken
-import org.solyton.solawi.bid.module.user.repository.createAddress
 import java.util.UUID
-import org.joda.time.LocalDate as JodaLocalDate
 import org.solyton.solawi.bid.module.banking.data.api.PaymentExecutionStatus as ApiPaymentStatus
 import org.solyton.solawi.bid.module.banking.data.api.SepaSequenceType as ApiSequenceType
-import org.solyton.solawi.bid.module.banking.schema.SepaSequenceType as StoredSequenceType
 import kotlin.test.assertEquals
 
 class SepaTenantRoutingTests {
@@ -174,71 +161,4 @@ class SepaTenantRoutingTests {
             contentType(ContentType.Application.Json)
             setBody(Json.encodeToString(data))
         }
-
-    private fun Transaction.seedBanking(): SepaFixture {
-        SchemaUtils.createMissingTablesAndColumns(
-            SepaMandateCollectionsTable, SepaMandateDataMappingsTable, SepaCollectionMappings,
-            SepaPaymentStatusHistory, SepaPaymentLinks
-        )
-        val providers = createProviders(BANKING_APPLICATION_NAME, "MANAGE_BANK_TRANSACTIONS", "MANAGE_BANK_TRANSACTIONS")
-        return SepaFixture(
-            providers,
-            createProviderBanking(providers.source, "source"),
-            createProviderBanking(providers.destination, "destination")
-        )
-    }
-
-    private fun Transaction.createProviderBanking(provider: Provider, name: String): ProviderBanking {
-        val date = DateTime(2026, 12, 1, 0, 0, DateTimeZone.UTC)
-        val address = createAddress(name, name, "Test street", "", "Test city", "", "00000", "DE", UUID_ZERO)
-        val entity = createLegalEntity(
-            provider.organizationId, name, "Test organization", LegalEntityType.ORGANIZATION, address.id.value, UUID_ZERO
-        )
-        val creditor = CreditorIdentifierEntity.new {
-            legalEntity = entity
-            creditorId = "test-creditor-$name"
-            validFrom = date
-            createdBy = UUID_ZERO
-        }
-        val account = BankAccountEntity.new {
-            userId = provider.organizationId
-            iban = "test-iban"
-            bic = "test-bic"
-            accountHolder = name
-            accountType = AccountType.CREDITOR
-            createdBy = UUID_ZERO
-        }
-        val creditorId = CreditorIdentifierId(creditor.id.value.toString())
-        val accountId = BankAccountId(account.id.value.toString())
-        val collection = createSepaCollection(
-            UUID_ZERO, creditorId, accountId, MandateReferencePrefix("TEST"), SepaCollectionKey(name),
-            RemittanceInformation("Test"), StoredSequenceType.FRST, null
-        )
-        val mandate = createSepaMandateWithRetry(
-            UUID_ZERO, creditor.id.value, account.id.value, "Test debtor", date, date, null,
-            mandateReference = MandateReference("mandate-$name"), collectionId = collection.id.value
-        )
-        val payment = createPayment(
-            UUID_ZERO, mandate.id.value, collection.id.value, 12.0,
-            JodaLocalDate(executionDate.year, executionDate.monthNumber, executionDate.dayOfMonth)
-        )
-        return ProviderBanking(
-            creditorId, accountId, SepaCollectionId(collection.id.value.toString()),
-            SepaMandateId(mandate.id.value.toString()), SepaPaymentId(payment.id.value.toString())
-        )
-    }
-
-    private data class SepaFixture(val providers: Providers, val source: ProviderBanking, val destination: ProviderBanking)
-
-    private data class ProviderBanking(
-        val creditorId: CreditorIdentifierId,
-        val accountId: BankAccountId,
-        val collectionId: SepaCollectionId,
-        val mandateId: SepaMandateId,
-        val paymentId: SepaPaymentId
-    )
-
-    private companion object {
-        val executionDate = LocalDate(2026, 12, 1)
-    }
 }

@@ -352,11 +352,8 @@ fun <BankingEnv> Routing.banking (
                         Respond<SepaMandate>{ transform() } runOn Base(call, environment)
                     }
                     route("personal") {
-                        // TODO(correct context needs to be provided)
                         get("all") {
-                            ReceiveContextual<String>{
-                                _-> ""
-                            } *
+                            ReceiveContextual<Unit> {} *
                             ReadPersonalSepaMandates() *
                             Respond { transform() } runOn Base(call, environment)
                         }
