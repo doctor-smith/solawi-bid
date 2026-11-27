@@ -103,12 +103,14 @@ Für die registrierten Platzhalter gibt es keine fachliche Erfolgsbaseline.
 | Self-Lockout und Delegation | Inhaber administrativer Rechte können Rollen ändern. Der gewünschte Erhalt der eigenen administrativen Handlungsfähigkeit und die Wiederherstellung sind noch zu bestimmen. | Selbstentzug generell sperren oder gestatten, sobald ein weiterer berechtigter Admin übernimmt. Eine Sperre erschwert legitime Austritte. Empfehlung ist eine bestätigte Übergabe mit geprüften Restrechten und gesonderter Recovery. |
 | Mitgliedschaft und App-Verknüpfung | Die Verknüpfung verlangt derzeit Mitgliedschaft. Mitgliedschaft und die Übernahme administrativer Verantwortung für eine Anwendung sind unterschiedliche Vorgänge. | Verknüpfung für jedes Mitglied erhalten, ein ausdrückliches Organisationsrecht verlangen oder einen Freigabeprozess einführen. Die letzten beiden Optionen ändern Delegation bzw. UI-Abläufe. Empfehlung ist ein explizites Organisationsrecht nach Bestätigung der Rollenverantwortung. |
 
-Die E2E-Einrichtung eigener Organisationen hängt von der fachlichen
-Delegation in gebuchten Anwendungen ab. Der gezielte
-Payment-Mandate-Workflow erreicht nach der Korrektur des Einstiegskontexts
-diese Grenze und erhält HTTP 403. Die weitere Abnahme erfordert eine klare
-Regel für anwendungsspezifische Rollen und eine darauf abgestimmte
-Test-Fixture. Sicherheitsrelevante Details und Optionen stehen in Jira.
+Für gebuchte Organisationsanwendungen ist begrenzte Delegation bestätigt.
+Der App-Owner kann explizit freigegebene Fachrollen im gebuchten
+Anwendungskontext an Organisationsmitglieder vergeben oder ihnen entziehen.
+Die Rollen müssen im Context bereitgestellt sein. Die Änderung lässt
+bestehende Owner- und sonstige Rollen außerhalb der Freigabeliste bestehen.
+Eigentumswechsel und die übergreifende Last-Owner-Invariante bleiben eigene
+Vorgänge. Die E2E-Fixture und die UI beziehen ihre Rollen aus derselben
+expliziten Freigabeliste.
 
 Noch zu klären sind außerdem der bereichsübergreifende Geltungsbereich der
 Benutzer- und Bidder-Verzeichnisse, der Auction-Provisioning-Vertrag,

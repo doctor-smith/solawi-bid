@@ -34,9 +34,6 @@ fun <PermissionEnv> Routing.permissions(
                 }
                 put("user-role-context") {
                     ReceiveContextual<PutUserRoleContext>() *
-                    IsGrantedInDerivedContext("MANAGE_USER_ROLE_CONTEXTS") { contextual ->
-                        UUID.fromString(contextual.data.contextId)
-                    } *
                     PutUserRoleContext *
                     Respond<UserContext> { transform() } runOn Base(call, environment)
                 }
