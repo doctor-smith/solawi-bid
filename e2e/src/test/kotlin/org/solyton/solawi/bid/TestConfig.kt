@@ -9,6 +9,12 @@ object TestConfig {
      */
     val BASE_URL: String = System.getenv("E2E_BASE_URL") ?: "http://localhost:8080"
 
+    val BACKEND_URL: String = System.getenv("E2E_BACKEND_URL") ?: when (BASE_URL.trimEnd('/')) {
+        "http://localhost:18080" -> "http://localhost:18081"
+        "http://localhost:8080" -> "http://localhost:8081"
+        else -> BASE_URL
+    }
+
     /**
      * Indicates whether the application should run in a headless mode, typically used in environments
      * where a graphical user interface is not available or required.

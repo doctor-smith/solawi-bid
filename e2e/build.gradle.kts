@@ -172,6 +172,7 @@ tasks.withType<Test>().configureEach {
         "TEST_USER",
         "TEST_USER_PASSWORD",
         "E2E_BASE_URL",
+        "E2E_BACKEND_URL",
         "E2E_RESET_DB",
         "PARALLEL_TESTS",
         "NUMBER_OF_WORKERS",

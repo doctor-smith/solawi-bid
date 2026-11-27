@@ -71,14 +71,9 @@ class VersionInfoTest {
                     } catch (_: Exception) { Pair("", "") }
                 } else Pair("", "")
 
-                val backendUrl = System.getenv("E2E_BACKEND_URL")
-                    ?: if (TestConfig.BASE_URL.contains("18080")) "http://localhost:18081"
-                    else if (TestConfig.BASE_URL.contains("8080")) "http://localhost:8081"
-                    else TestConfig.BASE_URL
-
                 val beResponse = try {
                     page.request().get(
-                        "$backendUrl/api/version",
+                        "${TestConfig.BACKEND_URL}/api/version",
                         RequestOptions.create().setHeader("CONTEXT", "solawi-bid")
                     )
                 } catch (_: Exception) { null }
