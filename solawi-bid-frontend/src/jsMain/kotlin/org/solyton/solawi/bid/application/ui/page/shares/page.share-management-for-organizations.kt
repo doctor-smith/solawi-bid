@@ -203,7 +203,7 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
     if(usersStorage.read().isEmpty()) return
     LaunchedEffect(usersStorage.read()) {
         launch {
-            userActions dispatch readUserProfiles(memberStorage.read().map { it.memberId })
+            userActions dispatch readUserProfiles(memberStorage.read().map { it.memberId }, organizationId = providerId.value)
         }
     }
 

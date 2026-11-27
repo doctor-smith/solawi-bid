@@ -9,6 +9,9 @@ import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.Transaction
+import org.solyton.solawi.bid.module.permission.PermissionException
+import org.solyton.solawi.bid.module.permission.action.db.isGranted
 import org.jetbrains.exposed.sql.selectAll
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
 import org.solyton.solawi.bid.module.user.data.api.UserStatus as ApiUserStatus
@@ -17,6 +20,7 @@ import org.solyton.solawi.bid.module.user.data.toApiType
 import org.solyton.solawi.bid.module.user.repository.createUserProfile
 import org.solyton.solawi.bid.module.user.repository.updateUserProfile
 import org.solyton.solawi.bid.module.user.schema.AddressEntity
+import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
 import org.solyton.solawi.bid.module.user.schema.UserEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
 import org.solyton.solawi.bid.module.user.schema.UserProfilesTable
@@ -94,13 +98,25 @@ fun ImportProfiles(): KlAction<Result<Contextual<ImportUserProfiles>>, Result<Us
 @Suppress("FunctionName")
 fun ReadUserProfiles(): KlAction<Result<Contextual<ReadUserProfiles>>, Result<UserProfiles>> = KlAction{ result ->
     DbAction { database -> result bindSuspend {contextual -> resultTransaction(database) {
-        // val userId = contextual.userId
-        val data = contextual.data
-        val userIds = data.userIds.map { UUID.fromString(it) }
+        val userIds = contextual.data.userIds.map(UUID::fromString)
+        requireProfileReadAccess(contextual, userIds)
 
         val userProfileList = UserProfileEntity.find { UserProfilesTable.userId inList userIds }.toList().map { it.toApiType(this)  }
         UserProfiles(userProfileList)
     } } x database }
+}
+
+private fun Transaction.requireProfileReadAccess(request: Contextual<ReadUserProfiles>, userIds: List<UUID>) {
+    val organizationId = request.data.organizationId
+    if (organizationId == null && userIds.isNotEmpty() && userIds.all { it == request.userId }) return
+
+    val contextId = if (organizationId == null) UUID.fromString(request.context) else {
+        val organization = OrganizationEntity.findById(UUID.fromString(organizationId)) ?: throw PermissionException.AccessDenied
+        val members = organization.members.map { it.id.value }.toSet()
+        if (request.userId !in members || !members.containsAll(userIds)) throw PermissionException.AccessDenied
+        organization.context.id.value
+    }
+    if (!isGranted(request.userId, contextId, "MANAGE_USERS")) throw PermissionException.AccessDenied
 }
 
 @MathDsl

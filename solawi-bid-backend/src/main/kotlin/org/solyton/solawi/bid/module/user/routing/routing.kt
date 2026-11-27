@@ -90,10 +90,6 @@ fun <UserEnv> Routing.user(
             route("profiles") {
                 patch("read-by-ids") {
                     ReceiveContextual<ReadUserProfiles>() *
-                    IsGranted<ReadUserProfiles>("MANAGE_USERS") { contextual ->
-                        contextual.data.userIds.isEmpty() ||
-                            contextual.data.userIds.any { !it.equals(contextual.userId.toString(), ignoreCase = true) }
-                    } *
                     ReadUserProfiles() *
                     Respond<UserProfiles>{ transform() } runOn Base(call, environment)
                 }

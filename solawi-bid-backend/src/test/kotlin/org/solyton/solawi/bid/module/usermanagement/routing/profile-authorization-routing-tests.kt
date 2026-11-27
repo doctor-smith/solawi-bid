@@ -15,6 +15,9 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.ResultSerializer
 import org.evoleq.uuid.UUID_ZERO
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.insert
+import org.solyton.solawi.bid.module.user.schema.UserOrganization
+import org.solyton.solawi.bid.module.user.schema.repository.createRootOrganization
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
@@ -103,6 +106,37 @@ class ProfileAuthorizationRoutingTests {
                 assertEquals("Updated", profile[UserProfilesTable.firstName])
                 assertEquals("New City", address[AddressesTable.city])
             }
+        }
+    }
+
+    @Api @Test
+    fun organizationProfileReadsUseStoredManagementScopeAndMembership() = runBlocking {
+        val databaseUrl = isolatedDatabaseUrl()
+        testApplication {
+            environment { config = userManagementConfig(databaseUrl) }
+            val headerContext = client.getTestContextIdByName("APPLICATION")
+            val manager = client.getTestToken(OTHER_USER)
+            val member = client.getTestToken(PROFILE_OWNER)
+            val (organization, target) = transaction(connect(databaseUrl)) {
+                val org = createRootOrganization("Profile read fixture", findUserId(OTHER_USER))
+                val profile = seedProfile(PROFILE_OWNER)
+                UserOrganization.insert {
+                    it[userId] = UUID.fromString(profile.owner.value)
+                    it[organizationId] = org.id
+                }
+                org.id.value.toString() to profile.owner.value
+            }
+            val request = ReadUserProfiles(listOf(target), organization)
+            val accepted = client.profileRequest(HttpMethod.Patch, "read-by-ids", manager, headerContext, request)
+            assertEquals(HttpStatusCode.OK, accepted.status)
+            val profiles = assertIs<Result.Success<UserProfiles>>(
+                Json.decodeFromString(ResultSerializer<UserProfiles>(), accepted.bodyAsText())
+            ).data
+            assertEquals(listOf(target), profiles.all.map { it.userId })
+
+            val mixed = request.copy(userIds = listOf(target, UUID.randomUUID().toString()))
+            assertEquals(HttpStatusCode.Forbidden, client.profileRequest(HttpMethod.Patch, "read-by-ids", manager, headerContext, mixed).status)
+            assertEquals(HttpStatusCode.Forbidden, client.profileRequest(HttpMethod.Patch, "read-by-ids", member, headerContext, request).status)
         }
     }
 

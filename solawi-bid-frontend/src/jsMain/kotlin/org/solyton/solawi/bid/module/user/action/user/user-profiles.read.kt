@@ -25,11 +25,12 @@ const val READ_USER_PROFILES = "ReadUserProfiles"
  * @return An `Action` that fetches and writes user profile data for the given user IDs.
  */
 @Markup
-fun readUserProfiles(userIds: List<String>, nameSuffix: String = "", ): Action<Application, ReadUserProfiles, ApiUserProfiles> = Action(
+fun readUserProfiles(userIds: List<String>, nameSuffix: String = "", organizationId: String? = null): Action<Application, ReadUserProfiles, ApiUserProfiles> = Action(
     name = READ_USER_PROFILES.suffixed(nameSuffix),
     reader = {userManagement: Application ->
         val storedUserIds = userManagement.managedUsers.map{it.id}
-        ReadUserProfiles(listOf(storedUserIds,userIds).flatten().distinct())
+        val requestedIds = if (organizationId == null) storedUserIds + userIds else userIds
+        ReadUserProfiles(requestedIds.distinct(), organizationId)
     },
     endPoint = ReadUserProfiles::class,
     writer = managedUsers * (Writer {
