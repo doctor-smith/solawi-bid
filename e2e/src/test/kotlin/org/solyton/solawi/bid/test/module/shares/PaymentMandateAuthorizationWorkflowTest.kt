@@ -91,7 +91,7 @@ class PaymentMandateAuthorizationWorkflowTest {
         // Run the test with the recently created test user
         withUser(testUser on browser) {
             withFailureDiagnostics("$reportDirectory/user-actions") {
-                dismissStrayErrorDialogIfPresent(true, "$reportDirectory/user-actions/dismissed-errors")
+                dismissStrayErrorDialogIfPresent(true)
                 val organizationName = "e2e-shares-org-b2-$suffix"
                 val shareTypeName = "e2e-share-type-b2-$suffix"
                 val shareTypeKey = "key-b2-$suffix"

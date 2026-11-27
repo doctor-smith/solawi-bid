@@ -10,16 +10,15 @@ import org.evoleq.math.MathDsl
 import org.evoleq.math.x
 import org.solyton.solawi.bid.module.banking.data.api.SepaCollections
 import org.solyton.solawi.bid.module.banking.repository.readSepaCollectionsByLegalEntity
-import java.util.*
+import org.solyton.solawi.bid.module.values.LegalEntityId
 
 @MathDsl
 @Suppress("FunctionName")
-fun ReadSepaCollectionsByLegalEntity(): KlAction<Result<Contextual<String>>, Result<SepaCollections>> = KlAction { result ->
+fun ReadSepaCollectionsByLegalEntity(): KlAction<Result<Contextual<LegalEntityId>>, Result<SepaCollections>> = KlAction { result ->
     DbAction { database ->
         result bindSuspend { contextual ->
             resultTransaction(database) {
-                val legalEntity = UUID.fromString(contextual.data)
-                readSepaCollectionsByLegalEntity(legalEntity)
+                readSepaCollectionsByLegalEntity(contextual.data)
             }
         } x database
     }

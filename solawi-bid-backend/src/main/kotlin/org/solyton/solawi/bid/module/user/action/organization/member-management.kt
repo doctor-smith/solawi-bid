@@ -20,15 +20,13 @@ import org.solyton.solawi.bid.module.permission.schema.RoleEntity
 import org.solyton.solawi.bid.module.permission.schema.RolesTable
 import org.solyton.solawi.bid.module.permission.schema.UserRoleContext
 import org.solyton.solawi.bid.module.user.data.api.CreateUser
+import org.solyton.solawi.bid.module.user.data.api.UserStatus as ApiUserStatus
 import org.solyton.solawi.bid.module.user.data.api.organization.*
+import org.solyton.solawi.bid.module.user.data.api.organization.Organization
 import org.solyton.solawi.bid.module.user.data.toApiType
 import org.solyton.solawi.bid.module.user.exception.OrganizationException
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
-import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
-import org.solyton.solawi.bid.module.user.schema.OrganizationsTable
-import org.solyton.solawi.bid.module.user.schema.UserEntity
-import org.solyton.solawi.bid.module.user.schema.UserOrganization
-import org.solyton.solawi.bid.module.user.schema.UsersTable
+import org.solyton.solawi.bid.module.user.schema.*
 import org.solyton.solawi.bid.module.user.service.user.createUserEntity
 import java.util.*
 
@@ -130,7 +128,9 @@ fun UpdateMember(): KlAction<Result<Contextual<UpdateMember>>, Result<Organizati
 
         val roleIds = data.roles.map { UUID.fromString(it) }
         UserRoleContext.deleteWhere {
-            UserRoleContext.contextId eq organization.context.id and (UserRoleContext.userId notInList roleIds)
+            (UserRoleContext.contextId eq organization.context.id) and
+                (UserRoleContext.userId eq memberId) and
+                (UserRoleContext.roleId notInList roleIds)
         }
         val existingRoles = UserRoleContext.selectAll().where {
             UserRoleContext.userId eq memberId and (UserRoleContext.contextId eq organization.context.id)
@@ -178,7 +178,7 @@ fun ImportMembers(): KlAction<Result<Contextual<ImportMembers>>, Result<Organiza
         val userAccountsToAdd = membersToAdd.filter { it !in membersWithUserAccounts.map { user -> user.username} }
         val recentlyAddedUserAccounts = userAccountsToAdd.map {
             createUserEntity(
-                CreateUser(it, "NOT_SET"),
+                CreateUser(it, null, ApiUserStatus.PENDING),
                 userId
             )
         }

@@ -16,6 +16,7 @@ import org.solyton.solawi.bid.module.banking.schema.*
 import org.solyton.solawi.bid.module.banking.service.SepaMessageGenerationResult
 import org.solyton.solawi.bid.module.banking.service.generateE2ETransactionId
 import org.solyton.solawi.bid.module.banking.service.generatePain008Xml
+import org.solyton.solawi.bid.module.values.LegalEntityId
 import java.util.*
 
 /**
@@ -652,7 +653,7 @@ fun Transaction.generateSepaMessageForCollection(
         sepaPaymentIds?.contains(it.id.value) ?: true
     }
 
-    require(createdPayments.isNotEmpty()){ "No created payments found"}
+    if (createdPayments.isEmpty()) throw SepaException.Message.NoCreatedPayments()
     if(sepaPaymentIds != null) require(createdPayments.map { it.id.value }.distinct().size == sepaPaymentIds.size){ "All created payments must be found"}
     if(executionDate == null) require(createdPayments.map { it.executionDate }.distinct().size == 1)
 
@@ -662,6 +663,7 @@ fun Transaction.generateSepaMessageForCollection(
     }
 
     val finalPayments = createdPayments.filter { it.executionDate.toLocalDate() == finalExecutionDate }
+    if (finalPayments.isEmpty()) throw SepaException.Message.NoCreatedPayments("No created payments found for execution date")
 
     val paymentWithE2E = finalPayments.map { it to generateE2ETransactionId() }
 
@@ -948,9 +950,9 @@ fun Transaction.readPaymentsByUser(userId: UUID): List<SepaPaymentEntity> {
     return SepaPaymentEntity.wrapRows(query).toList()
 }
 
-fun Transaction.readSepaPaymentLinksByLegalEntity(legalEntityId: UUID): List<SepaPaymentLinkEntity> {
+fun Transaction.readSepaPaymentLinksByLegalEntity(legalEntityId: LegalEntityId): List<SepaPaymentLinkEntity> {
 
-    val payments = readPaymentsByLegalEntity(legalEntityId).map { it.id.value }
+    val payments = readPaymentsByLegalEntity(UUID.fromString(legalEntityId.value)).map { it.id.value }
     return SepaPaymentLinkEntity.find {
         SepaPaymentLinks.successorId inList payments and (SepaPaymentLinks.predecessorId inList payments)
     }.toList()

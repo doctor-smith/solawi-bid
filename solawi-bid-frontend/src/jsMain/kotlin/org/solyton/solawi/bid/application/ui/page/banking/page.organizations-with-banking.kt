@@ -7,7 +7,7 @@ import kotlinx.coroutines.launch
 import org.evoleq.compose.layout.Vertical
 import org.evoleq.compose.link.Link
 import org.evoleq.math.*
-import org.evoleq.optics.lens.FilterBy
+import org.evoleq.math.Filter
 import org.evoleq.optics.storage.Read
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
@@ -52,7 +52,7 @@ fun OrganizationsWithBankingPage(storage: Storage<Application>) {
     val organizationIds = Read(applicationOrganizationRelations) map { relations ->
         relations.filter { it.applicationId in applicationIds }.map { it.organizationId }
     }
-    val organizations = Read(storage * userData * organizations * FilterBy{org -> org.organizationId in organizationIds})
+    val organizations = (storage * userData * organizations * Filter{org -> org.organizationId in organizationIds})
 
     LaunchedEffect(Unit) {
         scope.launch {

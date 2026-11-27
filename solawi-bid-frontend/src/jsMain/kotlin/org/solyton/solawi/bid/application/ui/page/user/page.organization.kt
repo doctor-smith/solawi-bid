@@ -18,7 +18,7 @@ import org.evoleq.language.title
 import org.evoleq.language.tooltip
 import org.evoleq.math.*
 import org.evoleq.optics.lens.DeepSearch
-import org.evoleq.optics.lens.FilterBy
+import org.evoleq.math.Filter
 import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.storage.ActionEnvelope
 import org.evoleq.optics.storage.Read
@@ -246,10 +246,10 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
         val applicationManagementStorage = applicationStorage * applicationManagementModule
         val availableApplications = applicationManagementStorage * availableApplications
         val applicationOrganizationRelations = applicationManagementStorage * applicationOrganizationRelations
-        val connectedApplications = availableApplications * FilterBy { app ->
+        val connectedApplications = availableApplications * Filter { app ->
             applicationOrganizationRelations.read().any { it.applicationId == app.id && it.organizationId == organizationId }
         }
-        val applicationContextMap: Source<Map<String, String>> = Read(connectedApplications) map {
+        val applicationContextMap: Source<Map<String, String>> = connectedApplications map {
             apps: List<App> -> apps.associateBy({ it.name }) {
                 (applicationManagementStorage  * organizationApplicationContextId(it.name, organizationId)).emit()
             }.filterNotNullValues()
@@ -269,7 +269,7 @@ fun OrganizationPage(applicationStorage: Storage<Application>, organizationId: S
         }
 
         // Now load special data based on which applications are used
-        LaunchedEffectOnSource(Read(connectedApplications)) {
+        LaunchedEffectOnSource(connectedApplications) {
             applicationStorage.runProcesses(
                 scope,
                 *conditionalActions(

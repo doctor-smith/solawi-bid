@@ -15,6 +15,7 @@ import org.solyton.solawi.bid.module.banking.data.toApiType
 import org.solyton.solawi.bid.module.banking.data.toDomainType
 import org.solyton.solawi.bid.module.banking.repository.createSepaMandateWithRetry
 import org.solyton.solawi.bid.module.banking.repository.validatedCreditorIdentifier
+import org.solyton.solawi.bid.module.banking.repository.validatedSepaCollection
 import java.util.*
 
 @MathDsl
@@ -26,10 +27,16 @@ fun CreateSepaMandate(): KlAction<Result<Contextual<CreateSepaMandate>>, Result<
                 val data = contextual.data
                 val userId = contextual.userId
 
-                val creditor = validatedCreditorIdentifier(data.creditorId)
+                val collectionId = data.collectionId?.let { UUID.fromString(it.value) }
+                val creditor = collectionId
+                    ?.let(::validatedSepaCollection)
+                    ?.creditorIdentifier
+                    ?: validatedCreditorIdentifier(data.creditorId)
+                require(creditor.creditorId == data.creditorId.value) {
+                    "Creditor identifier does not belong to the selected collection"
+                }
                 val creditorIdentifierId = creditor.id.value
                 val debtorBankAccountId = UUID.fromString(data.debtorBankAccountId.value)
-                val collectionId = data.collectionId?.let { UUID.fromString(it.value) }
 
                 createSepaMandateWithRetry(
                     creatorId = userId,

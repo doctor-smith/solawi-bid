@@ -19,7 +19,7 @@ import org.evoleq.language.texts
 import org.evoleq.math.*
 import org.evoleq.optics.lens.BiMap
 import org.evoleq.optics.lens.DeepSearch
-import org.evoleq.optics.lens.FilterBy
+import org.evoleq.math.Filter
 import org.evoleq.optics.lens.FirstBy
 import org.evoleq.optics.storage.*
 import org.evoleq.optics.transform.flatMap
@@ -242,15 +242,14 @@ fun ShareManagementForOrganizationsPage(storage: Storage<Application>, providerI
             }
             launch {
                 bankingApplicationActions dispatch readPersonalSepaCollections(
-                    providerId,
                     legalEntityId
                 )
             }
             launch {
-                bankingApplicationActions dispatch readSepaMessagesByLegalEntity(LegalEntityId(providerId.value))
+                bankingApplicationActions dispatch readSepaMessagesByLegalEntity(legalEntityId)
             }
             launch {
-                bankingApplicationActions dispatch readSepaMandatesByCreditorsLegalEntity(LegalEntityId(providerId.value))
+                bankingApplicationActions dispatch readSepaMandatesByCreditorsLegalEntity(legalEntityId)
             }
         }
     }
@@ -483,13 +482,13 @@ fun ShareOfferManagement(
 
     // Banking stuff
     val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
-    val debtorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy {
+    val debtorBankAccounts = bankingApplicationStorage * bankAccounts * Filter {
         it.bankAccountType == AccountType.DEBTOR ||
         it.userId != UserId(providerId.value)
     }
     val fiscalYears = bankingApplicationStorage * fiscalYears
     val creditorIdentifier = bankingApplicationStorage * creditorIdentifier
-    val creditorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy {
+    val creditorBankAccounts = bankingApplicationStorage * bankAccounts * Filter {
         it.bankAccountType == AccountType.CREDITOR ||
         it.userId == UserId(providerId.value)
     }
@@ -582,7 +581,7 @@ fun ShareOfferManagement(
 
                             fun getKeyOf(value: Boolean): String = booleansMap.filter { it.value == value }.keys.first()
                             val sepaCollections =
-                                sepaCollections * FilterBy { shareOffer.shareOfferId in it.referenceIds.map { ref -> ref.value } }
+                                sepaCollections * Filter { shareOffer.shareOfferId in it.referenceIds.map { ref -> ref.value } }
 
                             DataWrapper(cardListStyles.dataWrapper) {
                                 TextCell(shareOffer.fiscalYear.format()) { width(10.percent) }
@@ -642,7 +641,7 @@ fun ShareOfferManagement(
                                             bankingApplicationStorage,
                                             texts = dialogModalTexts("Attach Sepa Collection"),
                                             device = deviceType,
-                                            bankAccounts = Read(creditorBankAccounts),
+                                            bankAccounts = creditorBankAccounts,
                                             sepaCollection = sepaCollectionState,
                                             isOkButtonDisabled = {
                                                 with(sepaCollectionState) {
@@ -812,11 +811,11 @@ fun ShareSubscriptionManagement(
 
     // Banking stuff
     val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
-    val debtorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.bankAccountType == AccountType.DEBTOR }
+    val debtorBankAccounts = bankingApplicationStorage * bankAccounts * Filter { it.bankAccountType == AccountType.DEBTOR }
     val fiscalYears = bankingApplicationStorage * fiscalYears
     val currentFiscalYear = fiscalYears * FirstOrNull { now().date in it.start..it.end }
     val creditorIdentifier = bankingApplicationStorage * creditorIdentifier
-    val creditorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.bankAccountType == AccountType.CREDITOR }
+    val creditorBankAccounts = bankingApplicationStorage * bankAccounts * Filter { it.bankAccountType == AccountType.CREDITOR }
     val sepaModule = bankingApplicationStorage * sepaModule
     val sepaCollections = sepaModule * sepaCollections
 
@@ -827,7 +826,7 @@ fun ShareSubscriptionManagement(
     val memberStorage = organizationStorage * members
     val usersStorage = userStorage * managedUsers
     val currentUserId = usersStorage * FirstBy { it.username == (userStorage * user * username).read() } * id
-    val membersAsUsers = usersStorage * FilterBy { it.username in (memberStorage.read().map { m -> m.username }) }
+    val membersAsUsers = usersStorage * Filter { it.username in (memberStorage.read().map { m -> m.username }) }
 
     Wrap(
         style = { cardStyle() },
@@ -972,7 +971,7 @@ fun ShareSubscriptionManagement(
                                 Read(distributionPoints),
                                 Read(shareOffers),
                                 providerId,
-                                Read(membersAsUsers),
+                                membersAsUsers,
                                 ChangedBy.PROVIDER,
                                 {
                                     newShareSubscriptionState?.userProfileId == null
@@ -1599,7 +1598,7 @@ fun ShareSubscriptionManagement(
                                             texts = transferOwnershipOfShareSubscriptionModalTexts.emit(),
                                             device = deviceType,
                                             providerId = providerId,
-                                            users = Read(membersAsUsers),
+                                            users = membersAsUsers,
                                             changesDoneBy = ChangedBy.PROVIDER,
                                             shareSubscription = subscription,
                                             isOkButtonDisabled = {
@@ -1624,7 +1623,7 @@ fun ShareSubscriptionManagement(
 
 
                                     val associatedCollections = shareSubscriptionToCollectionsMap.emit()[ShareSubscriptionId(subscription.shareSubscriptionId)]
-                                    val availableCollections = Read(sepaCollections * FilterBy { subscription.shareOfferId in it.referenceIds.map { ref -> ref.value } }) * Emit
+                                    val availableCollections = (sepaCollections * Filter { subscription.shareOfferId in it.referenceIds.map { ref -> ref.value } }) * Emit
 
                                     val collections = associatedCollections ?: availableCollections
 
@@ -1757,7 +1756,7 @@ fun ShareSubscriptionManagement(
                                             Read(distributionPoints),
                                             Read(shareOffers),
                                             providerId,
-                                            Read(membersAsUsers),
+                                            membersAsUsers,
                                             ChangedBy.PROVIDER,
                                             { false },
                                             subscription,

@@ -18,7 +18,7 @@ class LoginPage(private val page: Page) {
 
     fun login(username: Username, password: Password): LoggedIn {
         page.put("login-form.input.username", username.value)
-        page.put("login-form.input.password", password.value)
+        page.getByDataId("login-form.input.password").fillPassword(password.value)
 
         val user = page.waitForApi(
             api = solawiApi,

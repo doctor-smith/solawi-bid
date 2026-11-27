@@ -3,6 +3,8 @@ package org.solyton.solawi.bid
 import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserContext
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
+import org.solyton.solawi.bid.application.api.solawiApi
+import org.solyton.solawi.bid.module.authentication.data.api.Login
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -53,11 +55,13 @@ class TestUtils {
 
             val passwordInput = page.getByDataId("login-form.input.password",)
             assertThat(passwordInput).isVisible()
-            passwordInput.fill(password)
+            passwordInput.fillPassword(password)
 
             val submitButton = page.getByDataId("login-form.submit-button")
             assertThat(submitButton).isVisible()
-            submitButton.click()
+            page.waitForApi(solawiApi, Login::class) {
+                submitButton.click()
+            }
 
             page.waitForURL("**/dashboard")
 

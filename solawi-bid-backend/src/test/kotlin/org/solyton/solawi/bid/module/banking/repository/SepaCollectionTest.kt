@@ -19,10 +19,7 @@ import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateAddress
 import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateUserProfile
 import org.solyton.solawi.bid.module.user.repository.createUserProfile
 import org.solyton.solawi.bid.module.user.schema.*
-import org.solyton.solawi.bid.module.values.Firstname
-import org.solyton.solawi.bid.module.values.Lastname
-import org.solyton.solawi.bid.module.values.PhoneNumber
-import org.solyton.solawi.bid.module.values.UserId
+import org.solyton.solawi.bid.module.values.*
 import java.util.*
 import kotlin.test.DefaultAsserter.assertNotNull
 import kotlin.test.assertEquals
@@ -307,7 +304,7 @@ class SepaCollectionTest {
         )
         flushCache()
 
-        val result = readSepaCollectionsByLegalEntity(legalEntityA.id.value)
+        val result = readSepaCollectionsByLegalEntity(LegalEntityId(legalEntityA.id.value.toString()))
 
         assertEquals(1, result.all.size)
         assertEquals(collectionA.id.value.toString(), result.all.first().sepaCollectionId.value)
@@ -561,7 +558,7 @@ class SepaCollectionTest {
         createRootContext("APPLICATION").createChild("ORGANIZATION")
 
         assertFailsWith<Exception> {
-            readSepaCollectionsByLegalEntity(UUID.randomUUID())
+            readSepaCollectionsByLegalEntity(LegalEntityId(UUID.randomUUID().toString()))
         }
     }
 
@@ -572,7 +569,7 @@ class SepaCollectionTest {
         createRootContext("APPLICATION").createChild("ORGANIZATION")
         val (legalEntity, _) = setupCreditor()
 
-        val result = readSepaCollectionsByLegalEntity(legalEntity.id.value)
+        val result = readSepaCollectionsByLegalEntity(LegalEntityId(legalEntity.id.value.toString()))
 
         assertEquals(0, result.all.size)
     }
@@ -627,7 +624,7 @@ class SepaCollectionTest {
         )
         flushCache()
 
-        val result = readSepaCollectionsByLegalEntity(legalEntity.id.value)
+        val result = readSepaCollectionsByLegalEntity(LegalEntityId(legalEntity.id.value.toString()))
 
         val apiPayment = result.all.first().sepaPayments?.all?.first { it.sepaPaymentId.value == payment.id.value.toString() }
         assertEquals(successor.id.value.toString(), apiPayment?.nextPeriodSuccessorId?.value)

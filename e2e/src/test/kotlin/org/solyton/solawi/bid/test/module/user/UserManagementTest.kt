@@ -1,12 +1,16 @@
 package org.solyton.solawi.bid.test.module.user
 
 import com.microsoft.playwright.*
-import com.microsoft.playwright.options.WaitForSelectorState
+import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.*
+import org.solyton.solawi.bid.module.authentication.service.generateSecurePassword
+import org.solyton.solawi.bid.module.values.Password
+import org.solyton.solawi.bid.module.values.Username
+import org.solyton.solawi.bid.pageobjects.module.user.UserManagementPage
 import java.nio.file.Files
 
 /**
@@ -57,37 +61,52 @@ class UserManagementTest {
      * Returns the generated username/password of the created user.
      */
     private fun createUserViaAdminUi(page: Page): Pair<String, String> {
-        // Usernames must be valid email addresses.
-        val username = "e2e-user-${System.currentTimeMillis()}@example.com"
-        val password = "Test-Pass-123"
-
-        page.navigate("${TestConfig.BASE_URL}/app/management/users")
-        dismissStrayErrorDialogIfPresent(page)
-        page.clickOn("user-management.create-user-button")
-
-        page.put("create-user-modal.input.username", username)
-        page.put("create-user-modal.input.password", password)
-        page.put("create-user-modal.input.repeat-password", password)
-        page.clickOn("create-user-modal.modal.submit-button")
-
-        return username to password
+        val username = Username("e2e-user-${System.currentTimeMillis()}@example.com")
+        val password = Password(generateSecurePassword())
+        val userPage = UserManagementPage(page)
+        userPage.load()
+        val user = userPage.createUserViaAdminUi(username, password)
+        return user.username.value to user.password.value
     }
 
-    /**
-     * Navigating straight to the user management page can briefly flash an unrelated
-     * "coroutine scope left the composition" error dialog on first mount, which covers
-     * the whole page. If it shows up, dismiss it so the page below becomes interactable
-     * again, just like a real user clicking it away would.
-     */
-    private fun dismissStrayErrorDialogIfPresent(page: Page) {
-        val errorOk = page.getByDataId("null.modal.submit-button")
-        try {
-            errorOk.first().waitFor(
-                Locator.WaitForOptions().setTimeout(3000.0).setState(WaitForSelectorState.VISIBLE)
+    @Test
+    fun `create user modal opens when a late error dialog rerenders its button`() {
+        browser.newContext().use { context ->
+            val page = context.newPage()
+            page.setContent(
+                """
+                <style>
+                    @keyframes move-error-button { to { transform: translateX(50px); } }
+                </style>
+                <button data-id="user-management.create-user-button" disabled
+                        onclick="document.getElementById('create-user').hidden = false">Create user</button>
+                <div id="create-user" data-id="create-user-modal.modal" hidden>
+                    <input data-id="create-user-modal.input.username">
+                </div>
+                <div id="error" style="position: fixed; inset: 0; z-index: 1" hidden>
+                    <button data-id="null.modal.submit-button" style="animation: move-error-button 1s linear infinite"
+                            onclick="document.getElementById('error').remove()">Dismiss error</button>
+                </div>
+                <script>
+                    setTimeout(() => {
+                        const error = document.getElementById('error');
+                        error.hidden = false;
+                        document.querySelector('[data-id="user-management.create-user-button"]').disabled = false;
+                        setTimeout(() => {
+                            if (!error.isConnected) return;
+                            const button = error.querySelector('button');
+                            const replacement = button.cloneNode(true);
+                            replacement.style.pointerEvents = 'none';
+                            button.replaceWith(replacement);
+                        }, 1000);
+                    }, 200);
+                </script>
+                """.trimIndent()
             )
-            errorOk.first().click()
-        } catch (e: TimeoutError) {
-            // No stray error dialog appeared - nothing to dismiss.
+
+            val modal = UserManagementPage(page).openCreateUserModal()
+
+            assertThat(modal.usernameInput()).isVisible()
         }
     }
 
@@ -129,7 +148,7 @@ class UserManagementTest {
             page.clickOn("cookie-disclaimer.modal.submit-button")
 
             page.put("login-form.input.username", username)
-            page.put("login-form.input.password", password)
+            page.getByDataId("login-form.input.password").fillPassword(password)
             page.clickOn("login-form.submit-button")
 
             page.waitForURL("**/dashboard")

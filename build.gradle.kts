@@ -4,9 +4,14 @@ allprojects {
     repositories {
         mavenCentral()
         maven { url = uri("https://jitpack.io") }
-        maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
         google()
+        // Keep preview repositories from intercepting AndroidX and stable artifacts.
+        maven("https://maven.pkg.jetbrains.space/public/p/ktor/eap") {
+            content { includeGroupByRegex("io[.]ktor([.].*)?") }
+        }
+        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev") {
+            content { includeGroupByRegex("org[.]jetbrains[.]compose([.].*)?") }
+        }
         mavenLocal()
     }
 }

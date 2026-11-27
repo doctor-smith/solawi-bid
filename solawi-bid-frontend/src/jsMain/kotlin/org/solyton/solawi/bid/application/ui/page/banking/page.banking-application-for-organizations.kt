@@ -25,7 +25,7 @@ import org.evoleq.kotlinx.date.now
 import org.evoleq.kotlinx.date.today
 import org.evoleq.language.*
 import org.evoleq.math.*
-import org.evoleq.optics.lens.FilterBy
+import org.evoleq.math.Filter
 import org.evoleq.optics.storage.Read
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
@@ -121,7 +121,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
     val bankingApplicationStorage = storage * bankingApplicationIso
     // val organization = Read(bankingApplicationStorage * user * organizations * DeepSearch { it.organizationId == providerId.value })
     // val organizationMembers = organization * Reader{ o -> o.members.map{it.memberId}}
-    val managedUsers = storage * managedUsers //  * FilterBy { user -> user.id in organizationMembers }
+    val managedUsers = storage * managedUsers //  * Filter { user -> user.id in organizationMembers }
     val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
     val deviceType = bankingApplicationStorage * deviceData * mediaType.get
 
@@ -170,16 +170,7 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
             )
         }
         launch {
-           bankingApplicationActions dispatch readFiscalYears(providerId.value)
-        }
-        launch {
             bankingApplicationActions dispatch readBankAccounts(LegalEntityId(providerId.value))
-        }
-        launch {
-            bankingApplicationActions dispatch readSepaMessagesByLegalEntity(LegalEntityId(providerId.value))
-        }
-        launch {
-            bankingApplicationActions dispatch readSepaPaymentLInksByLegalEntity(LegalEntityId(providerId.value))
         }
     }
     LaunchedEffectOnSource(Read(managedUsers)) {
@@ -190,6 +181,9 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
     LaunchedEffectOnSource(Read(legalEntity)) {
         val legalEntityId = legalEntity.read().legalEntityId
         if(legalEntityId.value != NIL_UUID) {
+            launch {
+                bankingApplicationActions dispatch readFiscalYears(legalEntityId.value)
+            }
             launch {
                 // Same context-key convention as createCreditorIdentifier/updateCreditorIdentifier
                 // below: the permission context is keyed by the organization (provider) id, not
@@ -206,7 +200,13 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
                 )
             }
             launch {
-                bankingApplicationActions dispatch readSepaMandatesByCreditorsLegalEntity(LegalEntityId(providerId.value))
+                bankingApplicationActions dispatch readSepaMandatesByCreditorsLegalEntity(legalEntityId)
+            }
+            launch {
+                bankingApplicationActions dispatch readSepaMessagesByLegalEntity(legalEntityId)
+            }
+            launch {
+                bankingApplicationActions dispatch readSepaPaymentLInksByLegalEntity(legalEntityId)
             }
         }
     }
@@ -263,7 +263,6 @@ fun BankingApplicationForOrganizationsPage(storage: Storage<Application>, provid
 
         FiscalYears(
             bankingApplicationStorage,
-            providerId,
             scope,
             deviceType
         )
@@ -475,7 +474,7 @@ fun CreditorBankAccounts(
 
     val bankingApplicationActions = bankingApplicationStorage * bankingApplicationActions
     val bankingApplicationModals = bankingApplicationStorage * bankingApplicationModals
-    val creditorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.userId == UserId(providerId.value) }
+    val creditorBankAccounts = bankingApplicationStorage * bankAccounts * Filter { it.userId == UserId(providerId.value) }
 
     // i18n
     val texts = bankingApplicationStorage * i18N * language * component(BankingLangComponent.BankingForOrganizationsPage) * subComp("creditorBankAccounts")
@@ -640,7 +639,7 @@ fun CustomerBankAccounts(
     val bankingApplicationModals = bankingApplicationStorage * bankingApplicationModals
 
     val creditorIdentifier = bankingApplicationStorage * creditorIdentifier
-    val customerBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.userId != UserId(providerId.value) }
+    val customerBankAccounts = bankingApplicationStorage * bankAccounts * Filter { it.userId != UserId(providerId.value) }
 
     // i18n
     val texts = bankingApplicationStorage * i18N * language * component(BankingLangComponent.BankingForOrganizationsPage) * subComp("customerBankAccounts")
@@ -652,7 +651,7 @@ fun CustomerBankAccounts(
             (managedUsers * FirstOrNull<ManagedUser> { user: ManagedUser -> user.id == it.userId.value }).emit()
         }.filterNotNullValues()
     }
-    val customerBankAccountCandidates = managedUsers * FilterBy { customerBankAccounts.read().none { customer -> customer.userId.value == it.id } }
+    val customerBankAccountCandidates = managedUsers * Filter { customerBankAccounts.read().none { customer -> customer.userId.value == it.id } }
 
     val sepaModule = bankingApplicationStorage * sepaModule
     val sepaMandates = sepaModule * sepaMandates
@@ -885,10 +884,10 @@ fun CustomerBankAccounts(
                                     }
                                 }
                                 val usersSepaMandates =
-                                    sepaMandates * FilterBy { it.debtorBankAccountId == bankAccount.bankAccountId }
+                                    sepaMandates * Filter { it.debtorBankAccountId == bankAccount.bankAccountId }
                                 val usersSepaMandateIds =
-                                    Read(usersSepaMandates).emit().map { mandate -> mandate.sepaMandateId }
-                                val usersCollections = sepaCollections * FilterBy {
+                                    usersSepaMandates.emit().map { mandate -> mandate.sepaMandateId }
+                                val usersCollections = sepaCollections * Filter {
                                     it.sepaMandates.map { mandate -> mandate.sepaMandateId }.any { id ->
                                         id in usersSepaMandateIds
                                     }
@@ -961,7 +960,6 @@ fun CustomerBankAccounts(
 @Composable
 fun FiscalYears(
     bankingApplicationStorage: Storage<BankingApplication>,
-    providerId: ProviderId,
     scope: CoroutineScope,
     deviceType: Source<DeviceType>
 ) {
@@ -969,6 +967,7 @@ fun FiscalYears(
     val bankingApplicationModals = bankingApplicationStorage * bankingApplicationModals
 
     val fiscalYears = bankingApplicationStorage * fiscalYears
+    val legalEntity = bankingApplicationStorage * legalEntity
 
     // i18n
     val texts = bankingApplicationStorage * i18N * language * component(BankingLangComponent.BankingForOrganizationsPage) * subComp("fiscalYears")
@@ -1007,7 +1006,7 @@ fun FiscalYears(
                                 requireNotNull(state) { "fiscal year state is null" }
                                 scope.launch {
                                     bankingApplicationActions dispatch createFiscalYear(
-                                        providerId.value,
+                                        legalEntity.read().legalEntityId.value,
                                         state.start,
                                         state.end
                                     )
@@ -1065,7 +1064,7 @@ fun FiscalYears(
                                     scope.launch {
                                         bankingApplicationActions dispatch updateFiscalYear(
                                             fiscalYear.fiscalYearId,
-                                            providerId.value,
+                                            legalEntity.read().legalEntityId.value,
                                             state.start,
                                             state.end
                                         )
@@ -1103,7 +1102,7 @@ fun SepaCollections(
     val legalEntity = bankingApplicationStorage * legalEntity
     val isLegalEntityDefined = Read(legalEntity * legalEntityId) map { it.value != NIL_UUID }
 
-    val creditorBankAccounts = bankingApplicationStorage * bankAccounts * FilterBy { it.userId == UserId(providerId.value) }
+    val creditorBankAccounts = bankingApplicationStorage * bankAccounts * Filter { it.userId == UserId(providerId.value) }
 
     val sepaModule = bankingApplicationStorage * sepaModule
     val sepaCollections = sepaModule * sepaCollections
@@ -1131,7 +1130,6 @@ fun SepaCollections(
         if(downloadStatus.read() == Download.Start) {
             scope.launch{
                 bankingApplicationActions dispatch readPersonalSepaCollections(
-                    providerId,
                     Read(legalEntity * legalEntityId) * Emit
                 )
             }.join()
@@ -1142,18 +1140,18 @@ fun SepaCollections(
     LaunchedEffectOnSource(Read(sepaMandates), Read(sepaMessages)) {
         if(isLegalEntityDefined.emit()) launch{
             bankingApplicationActions dispatch readPersonalSepaCollections(
-                providerId,
                 Read(legalEntity * legalEntityId) * Emit
             )
         }
     }
     LaunchedEffectOnSource(Read(sepaCollections)) {
         if(isLegalEntityDefined.emit()) {
+            val currentLegalEntityId = Read(legalEntity * legalEntityId) * Emit
             launch {
-                bankingApplicationActions dispatch readSepaPaymentLInksByLegalEntity(LegalEntityId(providerId.value))
+                bankingApplicationActions dispatch readSepaPaymentLInksByLegalEntity(currentLegalEntityId)
             }
             launch{
-                bankingApplicationActions dispatch readSepaMessagesByLegalEntity(LegalEntityId(providerId.value))
+                bankingApplicationActions dispatch readSepaMessagesByLegalEntity(currentLegalEntityId)
             }
         }
 

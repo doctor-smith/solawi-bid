@@ -1,15 +1,20 @@
 package org.solyton.solawi.bid.module.application.application
 
+import com.typesafe.config.ConfigFactory
 import io.ktor.server.application.*
 import io.ktor.server.application.Application
 import io.ktor.server.auth.*
+import io.ktor.server.config.HoconApplicationConfig
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.testing.ApplicationTestBuilder
 import org.evoleq.exposedx.data.Database
 import org.evoleq.ktorx.headers.Header
+import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.solyton.solawi.bid.application.environment.Environment
 import org.solyton.solawi.bid.application.environment.MailService
@@ -22,22 +27,31 @@ import org.solyton.solawi.bid.module.application.schema.*
 import org.solyton.solawi.bid.module.authentication.environment.JWT
 import org.solyton.solawi.bid.module.authentication.migrations.authenticationMigrations
 import org.solyton.solawi.bid.module.authentication.routing.authentication
+import org.solyton.solawi.bid.module.banking.routing.banking
+import org.solyton.solawi.bid.module.distribution.routing.distributionPoints
 import org.solyton.solawi.bid.module.permission.data.api.ApiContext
 import org.solyton.solawi.bid.module.permission.exception.ContextException
 import org.solyton.solawi.bid.module.permission.schema.ContextEntity
 import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.solyton.solawi.bid.module.shares.routing.shares
 import org.solyton.solawi.bid.module.testFramework.appendDbNameSuffix
 import org.solyton.solawi.bid.module.testFramework.provideUserTokens
 import org.solyton.solawi.bid.module.testFramework.testContexts
 import org.solyton.solawi.bid.module.user.data.api.ApiUser
 import org.solyton.solawi.bid.module.user.data.api.ApiUsers
 import org.solyton.solawi.bid.module.user.data.toApiType
+import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
 import org.solyton.solawi.bid.module.user.schema.UserEntity
+import org.solyton.solawi.bid.module.user.schema.UserOrganization
 import org.solyton.solawi.bid.module.user.schema.UsersTable
+import java.io.File
 import java.util.*
+import org.jetbrains.exposed.sql.Database as SqlDatabase
 
 fun Application.applicationTest() {
-    val environment = setupTestEnvironment(UUID.randomUUID().toString())
+    val databaseSuffix = environment.config.propertyOrNull("test.database-suffix")?.getString()
+        ?: UUID.randomUUID().toString()
+    val environment = setupTestEnvironment(databaseSuffix)
     installDatabase(environment, authenticationMigrations)
     installDatabase(environment, applicationMigrations)
     installAuthentication(environment.jwt)
@@ -49,10 +63,36 @@ fun Application.applicationTest() {
         application(environment) {
             authenticate("auth-jwt"){ it() }
         }
+        distributionPoints(environment) { authenticate("auth-jwt") { it() } }
+        shares(environment) { authenticate("auth-jwt") { it() } }
+        banking(environment) { authenticate("auth-jwt") { it() } }
         val database = environment.connectToDatabase()
         provideUserTokens(environment.jwt, database)
         testContexts(database)
         route("setup") {
+            get("organization") {
+                val name = requireNotNull(call.parameters["name"])
+                val owner = requireNotNull(call.parameters["owner"])
+                val organizationId = transaction(database) {
+                    SchemaUtils.create(UserOrganization)
+                    val ownerId = UserEntity.find { UsersTable.username eq owner }.first().id.value
+                    val context = ContextEntity.new {
+                        this.name = name
+                        createdBy = ownerId
+                    }
+                    val organization = OrganizationEntity.new {
+                        this.name = name
+                        this.context = context
+                        createdBy = ownerId
+                    }
+                    UserOrganization.insert {
+                        it[userId] = ownerId
+                        it[organizationId] = organization.id
+                    }
+                    organization.id.value
+                }
+                call.respondText(organizationId.toString())
+            }
             get("root-context-by-name") {
                 val contextName = call.request.headers[Header.CONTEXT]!!
                 val contextEntity: ContextEntity = transaction(database) {
@@ -172,3 +212,16 @@ fun Application.setupTestEnvironment(dbNameSuffix: String): Environment = with(e
     )
 }
 
+fun ApplicationTestBuilder.useApplicationTestDatabase(): SqlDatabase {
+    val suffix = UUID.randomUUID().toString()
+    val testConfig = ConfigFactory.parseString("test.database-suffix = \"$suffix\"").withFallback(
+        ConfigFactory.parseFile(File("src/test/resources/application.module.api.test.conf"))
+    ).resolve()
+    environment { config = HoconApplicationConfig(testConfig) }
+    return SqlDatabase.connect(
+        url = testConfig.getString("database.url").appendDbNameSuffix(suffix),
+        driver = testConfig.getString("database.driver"),
+        user = testConfig.getString("database.user"),
+        password = testConfig.getString("database.password")
+    )
+}

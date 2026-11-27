@@ -119,12 +119,15 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
             is SepaException.CannotUpdateSepaMandate -> HttpStatusCode.BadRequest
             is SepaException.NoSuchSepaCollection -> HttpStatusCode.NotFound
             is SepaException.NoSuchSepaMandate -> HttpStatusCode.NotFound
+            is SepaException.Payment.EmptyBatch -> HttpStatusCode.BadRequest
             is SepaException.Payment.CannotCreate -> HttpStatusCode.BadRequest
             is SepaException.Payment.ChangeRequiresDateOfReport ->HttpStatusCode.BadRequest
             is SepaException.Payment.ChangesNotAllowed -> HttpStatusCode.BadRequest
             is SepaException.Payment.NoSuchPayment -> HttpStatusCode.NotFound
             is SepaException.Payment.StateTransitionForbidden -> HttpStatusCode.BadRequest
             is SepaException.Payment.NoSuchTemplate -> HttpStatusCode.NotFound
+            is SepaException.Message.EmptyBatch,
+            is SepaException.Message.NoCreatedPayments -> HttpStatusCode.BadRequest
             is SepaException.Message.Locked -> HttpStatusCode.BadRequest
             is SepaException.Message.NoSuchMessage -> HttpStatusCode.NotFound
             is SepaException.Message.InvalidStatusTransition -> HttpStatusCode.BadRequest
@@ -134,6 +137,7 @@ fun Result.Failure.Exception.transform(): Pair<HttpStatusCode, Result.Failure.Me
         is UserManagementException -> when(value as UserManagementException) {
             is UserManagementException.UserDoesNotExist -> HttpStatusCode.Unauthorized
             is UserManagementException.WrongCredentials -> HttpStatusCode.Unauthorized
+            is UserManagementException.PasswordPolicyViolation -> HttpStatusCode.BadRequest
             is UserManagementException.NoSuchUserProfile -> HttpStatusCode.NotFound
             is UserManagementException.UsersDoNotExist -> HttpStatusCode.NotFound
         }

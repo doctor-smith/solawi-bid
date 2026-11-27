@@ -9,10 +9,10 @@ COPY gradlew ./
 COPY gradle/ ./gradle/
 COPY settings.gradle.kts.backend ./settings.gradle.kts
 COPY build.gradle*  gradle.properties ./
-COPY buildSrc/ ./
-COPY solawi-bid-api-data/build.gradle*  ./
-COPY solawi-bid-backend/build.gradle*  ./
-COPY evoleq/build.gradle*  ./
+COPY buildSrc/ ./buildSrc/
+COPY solawi-bid-api-data/build.gradle* ./solawi-bid-api-data/
+COPY solawi-bid-backend/build.gradle* ./solawi-bid-backend/
+COPY evoleq/build.gradle* ./evoleq/
 
 
 

@@ -15,7 +15,7 @@ import org.evoleq.language.component
 import org.evoleq.language.subComp
 import org.evoleq.language.title
 import org.evoleq.math.*
-import org.evoleq.optics.lens.FilterBy
+import org.evoleq.math.Filter
 import org.evoleq.optics.storage.Read
 import org.evoleq.optics.storage.Storage
 import org.evoleq.optics.storage.dispatch
@@ -82,7 +82,7 @@ fun DashboardPage(storage: Storage<Application>) {
     val canAccessDistributionManagement = storage * applicationManagementModule * canAccessApplication(DISTRIBUTION_APPLICATION_NAME) * Emit
     val canAccessBankingApplication = storage * applicationManagementModule * canAccessApplication(BANKING_APPLICATION_NAME) * Emit
     val hasPersonalShareSubscriptions = Read(storage * personalShareSubscriptions) * IsNotEmpty
-    val hasPersonalBankAccounts = Read(storage * bankAccounts * FilterBy { it.userId.value == userId * Emit }) * IsNotEmpty
+    val hasPersonalBankAccounts = (storage * bankAccounts * Filter { it.userId.value == userId * Emit }) * IsNotEmpty
 
 
     // Texts

@@ -40,6 +40,30 @@ class UserManagementPage(private val page: Page) {
 
     fun load(): Response? = page.navigate(url)
 
+    fun openCreateUserModal(): CreateUserModal {
+        val modal = CreateUserModal()
+        val errorButtonId = "null.modal.submit-button"
+        val strayError = page.getByDataId(errorButtonId).first()
+        page.addLocatorHandler(
+            strayError,
+            {
+                // Resolve and dismiss in one browser call. A locator click could retry after
+                // a rerender and wait for this same handler to return.
+                page.evaluate(
+                    """(id) => document.querySelector('[data-id="' + id + '"]')?.click()""",
+                    errorButtonId,
+                )
+            },
+            Page.AddLocatorHandlerOptions().setNoWaitAfter(true),
+        )
+        try {
+            modal.trigger.click()
+        } finally {
+            page.removeLocatorHandler(strayError)
+        }
+        return modal
+    }
+
     /**
      *
      */
@@ -56,12 +80,11 @@ class UserManagementPage(private val page: Page) {
             else -> username.value
         }
 
-        val modal = CreateUserModal()
-        modal.trigger.click()
+        val modal = openCreateUserModal()
 
         modal.usernameInput().fill(realUsername)
-        modal.passwordInput().fill(password.value)
-        modal.repeatPasswordInput().fill(password.value)
+        modal.passwordInput().fillPassword(password.value)
+        modal.repeatPasswordInput().fillPassword(password.value)
 
         page.waitForApi(
             api = solawiApi,

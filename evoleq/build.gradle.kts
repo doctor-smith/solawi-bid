@@ -18,8 +18,12 @@ val kotlinVersion = libs.versions.kotlin
 repositories {
     mavenCentral()
     google()
-    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
-    maven ("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
+    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev") {
+        content { includeGroupByRegex("org[.]jetbrains[.]compose([.].*)?") }
+    }
+    maven("https://maven.pkg.jetbrains.space/public/p/ktor/eap") {
+        content { includeGroupByRegex("io[.]ktor([.].*)?") }
+    }
     mavenLocal()
 }
 
