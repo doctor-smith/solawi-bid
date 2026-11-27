@@ -11,6 +11,7 @@ import kotlinx.serialization.json.Json
 import org.evoleq.ktorx.headers.Header
 import org.evoleq.ktorx.result.Result
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Api
@@ -80,18 +81,30 @@ class PendingUserImportRoutingTests {
             val organization = assertIs<Result.Success<ApiOrganization>>(created).data
             val username = "new-member-${UUID.randomUUID()}@solyton.test"
 
-            val response = client.post("organizations/members/import") {
-                header(HttpHeaders.Authorization, "Bearer $token")
-                header(HttpHeaders.ContentType, ContentType.Application.Json)
-                header(Header.CONTEXT, organization.contextId)
+            val database = Database.connect(url, driver = "org.h2.Driver", user = "root", password = "")
+            fun assignmentState() = transaction(database) {
+                UsersTable.selectAll().count() to UserOrganization.selectAll().count()
+            }
+
+            suspend fun importMembers(actor: String, context: String) = client.post("organizations/members/import") {
+                bearerAuth(actor)
+                contentType(ContentType.Application.Json)
+                header(Header.CONTEXT, context)
                 setBody(Json.encodeToString(
                     ImportMembers.serializer(),
                     ImportMembers(organization.id, listOf(username))
                 ))
             }
+
+            val before = assignmentState()
+            val otherActor = client.getTestToken("unautorized@solyton.org")
+            assertEquals(HttpStatusCode.Forbidden, importMembers(otherActor, organization.contextId).status)
+            assertEquals(before, assignmentState())
+
+            val unrelatedContext = client.getTestContextIdByName("ORGANIZATION")
+            val response = importMembers(token, unrelatedContext)
             assertEquals(HttpStatusCode.OK, response.status, response.bodyAsText())
 
-            val database = Database.connect(url, driver = "org.h2.Driver", user = "root", password = "")
             transaction(database) {
                 val user = UserEntity.find { UsersTable.username eq username }.single()
                 assertEquals(UserStatus.PENDING, user.status)

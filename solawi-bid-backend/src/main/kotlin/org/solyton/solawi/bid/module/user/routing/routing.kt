@@ -185,9 +185,8 @@ fun <OrganizationEnv> Routing.organization(
                     AddMember() *
                     Respond { transform() } runOn Base(call, environment)
                 }
-                post("import") { // todo:test write api test
+                post("import") {
                     ReceiveContextual<ImportMembers>() *
-                    IsGranted("MANAGE_USERS") *
                     ImportMembers() *
                     Respond { transform() } runOn Base(call, environment)
                 }
