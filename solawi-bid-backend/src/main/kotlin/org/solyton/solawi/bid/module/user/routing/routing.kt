@@ -26,7 +26,7 @@ import org.solyton.solawil.bid.module.bid.data.api.toUUID
 // Administrative account changes are authorized only in the trusted, global
 // platform user-management context, never in a caller-selected organization context.
 @Suppress("FunctionNaming")
-private fun <T> RequirePlatformUserManagement() = IsGrantedInExactDerivedContext<T>("UPDATE_USER") {
+private fun <T> RequirePlatformUserManagement(right: String) = IsGrantedInExactDerivedContext<T>(right) {
     val adminContext = ContextEntity.find {
         ContextsTable.name eq "ORGANIZATION_MANAGEMENT"
     }.firstOrNull() ?: throw PermissionException.AccessDenied
@@ -52,7 +52,10 @@ fun <UserEnv> Routing.user(
             }
 
             post("create") {
-                ReceiveContextual<CreateUser>() * CreateNewUser * Respond<User>{ transform() } runOn Base(call, environment)
+                ReceiveContextual<CreateUser>() *
+                    RequirePlatformUserManagement<CreateUser>("CREATE_USER") *
+                    CreateNewUser *
+                    Respond<User>{ transform() } runOn Base(call, environment)
             }
 
             post("query") {
@@ -63,7 +66,7 @@ fun <UserEnv> Routing.user(
 
             patch("change-password") {
                 ReceiveContextual<ChangePassword>() *
-                RequirePlatformUserManagement<ChangePassword>() *
+                RequirePlatformUserManagement<ChangePassword>("UPDATE_USER") *
                 ChangePassword *
                 Respond<User>{ transform() } runOn Base(call, environment)
             }
@@ -72,7 +75,7 @@ fun <UserEnv> Routing.user(
             }
             patch("update-username") {
                 ReceiveContextual<UpdateUsername>() *
-                RequirePlatformUserManagement<UpdateUsername>() *
+                RequirePlatformUserManagement<UpdateUsername>("UPDATE_USER") *
                 UpdateUsername *
                 Respond<User>{ transform() } runOn Base(call, environment)
             }
