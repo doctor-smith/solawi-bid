@@ -1,7 +1,7 @@
 # SMA-596 – Autorisierungsgrenzen und Regressionen
 
 Stand 27.11.2026. Die Integration in PR #379 steht auf `c65c904f`. Die
-Prüfmatrix erfasst zusätzlich den vorgeschlagenen Code bis `f4af93d4`.
+Prüfmatrix erfasst zusätzlich den vorgeschlagenen Code bis `255c7d4a`.
 Die Ausgangsinventur vom 14.11. ist über die Git-Historie verfügbar.
 Der Stand der Abnahme und die privaten Detailbefunde stehen in Jira.
 [SMA-596](https://solawi-management.atlassian.net/browse/SMA-596)
@@ -31,7 +31,7 @@ Die Routen stehen in
 | PATCH `users/change-password`, `users/update-username` | `UPDATE_USER` im serverseitig aufgelösten Plattform-Context → jeweilige Action → Benutzerzeile. | SMA-611 und administrativer Teil von SMA-612. Festes Plattformrecht, D-008, anonym abgewiesener Reset, und gespeicherte Credentials nach Ablehnung geprüft. Prüfung einer veröffentlichten Umgebung bleibt gesondert. |
 | PATCH `users/profiles/read-by-ids` | Eigene ID-Menge, Organisationsabruf oder `MANAGE_USERS` im bestehenden Verwaltungsaufruf. Beim Shares-Abruf bestimmt die gespeicherte Anbieterorganisation den Context und bindet Actor sowie alle Profilziele an ihre Mitgliedschaft. | Eigener Read, gültiger Organisationsabruf sowie fremde und gemischte Ziele sind geprüft. Der administrative Zielumfang für übrige Aufrufe bleibt Teil der Verzeichnisentscheidung. |
 | POST `users/profiles/create`, PATCH `users/profiles/update` | Eigener Actor oder `MANAGE_USERS` → Profil-Repository. Update bindet Profil-ID und Benutzer-ID sowie vorhandene Adressen an dasselbe Profil. | Eigener Create/Update. Abgelehnte Änderungen lassen Profile und Adressen unverändert. |
-| POST `users/profiles/import` | `MANAGE_USERS` → `ImportProfiles` → Benutzer- und Profil-Repositories. | Profilimport hält neue Konten ohne zugewiesenes Passwort in `PENDING`. Administrativen Zielumfang zusammen mit der Organisationsmitgliedschaft festlegen. |
+| POST `users/profiles/import` | `ImportProfiles` prüft `MANAGE_USERS` und bei Organisationsimporten zusätzlich die gespeicherten Mitgliedschaften von Actor und allen Zielkonten. | Organisationsimport erzeugt keine fremden Konten. Wiederholungen erzeugen keine zusätzlichen Profile. Der Verwaltungspfad ohne angegebenen Organisationsbezug hält neue Konten ohne Passwort in `PENDING`. |
 | DELETE `users/profiles/delete` | Registrierter Platzhalter ohne fachliche Mutation. | Künftige Lösch- und Aufbewahrungsregel separat festlegen. |
 
 ## Auction, Round und Bidders
@@ -87,7 +87,7 @@ Für die registrierten Platzhalter gibt es keine fachliche Erfolgsbaseline.
 
 | Bereich | Ressourcenbindung und Regression |
 | --- | --- |
-| Organization CRUD und Members | Organisationsobjekt und dessen Context werden in den Actions verwendet. Die Organisationsliste ermittelt effektive Rechte je Context anhand von RRCT. Bei Einstieg über `APPLICATION` wird ggf. der zugehörige Standard-Organisationskontext geprüft. Member-Updates bleiben auf bestehende Mitgliedschaften beschränkt. Das Entfernen eines Nichtmitglieds lässt unabhängige Context-Rollen intakt. Die Sichtbarkeit von Vorfahren, Geschwistern und Unterorganisationen bleibt fachlich zu präzisieren. |
+| Organization CRUD und Members | Organisationsobjekt und dessen Context werden in den Actions verwendet. Die Organisationsliste ermittelt effektive Rechte je Context anhand von RRCT. Der Mitgliederimport autorisiert am gespeicherten Organisationskontext. Bei Einstieg über `APPLICATION` wird ggf. der zugehörige Standard-Organisationskontext geprüft. Member-Updates bleiben auf bestehende Mitgliedschaften beschränkt. Das Entfernen eines Nichtmitglieds lässt unabhängige Context-Rollen intakt. Die Sichtbarkeit von Vorfahren, Geschwistern und Unterorganisationen bleibt fachlich zu präzisieren. |
 | Persönliche Applications und Modules | Listen und Context-Relationen lesen ausschließlich die Buchungen des JWT-Actors. Für den Einstieg `APPLICATION` können explizite Rechte in den gespeicherten Einschreibungs- und Verwaltungs-Contexts verwendet werden. Dieselbe Auflösung gilt für eigene Buchungsaktionen mit dem dafür benannten Recht. |
 | Application↔Organization | Zielorganisation und UserApplication. Die Repository-Prüfung verlangt Mitgliedschaft. Der Produktvertrag für zusätzliche Manager-/Owner-Rechte bleibt offen. |
 | Banking | Legal Entity → Party → Banking-Context. Fiscal-Year-Updates prüfen Quelle und Ziel. Kontolöschung folgt dem gespeicherten Eigentümer, persönliche Konto-Reads dem JWT-Actor. Creditor Identifier sind an die Legal Entity gebunden. |
@@ -121,7 +121,7 @@ Tenant-Invariante gehört in das Tenant-Kernmodell.
 
 ## Testnachweis
 
-Auf `2212774a` bestanden 135 Backend-API-, 119 Backend-Unit- und 716
+Auf `255c7d4a` bestanden 137 Backend-API-, 119 Backend-Unit- und 716
 Datenbanktests sowie Detekt für Produktions- und Testquellen. Evoleq
 bestand 377 JVM- und 215 Browser-Tests, das API-Daten-Modul 2 JVM-Tests.
 Der [Integrationslauf für c65c904f](https://github.com/doctor-smith/solawi-bid/actions/runs/45948799565)
