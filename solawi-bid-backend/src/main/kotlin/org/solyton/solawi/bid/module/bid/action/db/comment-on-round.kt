@@ -12,19 +12,14 @@ import org.solyton.solawi.bid.module.bid.data.api.ApiRoundComments
 import org.solyton.solawi.bid.module.bid.data.api.CommentOnRound
 import org.solyton.solawi.bid.module.bid.data.api.RoundComments
 import org.solyton.solawi.bid.module.bid.data.toApiType
-import org.solyton.solawi.bid.module.bid.exception.BidRoundException
 import org.solyton.solawi.bid.module.bid.repository.addComment
-import org.solyton.solawi.bid.module.bid.schema.RoundEntity
-import org.solyton.solawi.bid.module.bid.schema.RoundsTable
-import java.util.*
 
 @MathDsl
 val CommentOnRound = KlAction<Result< Contextual< CommentOnRound>>, Result<RoundComments>> {
     result -> DbAction {
         database -> result bindSuspend  { contextual -> resultTransaction(database){
             val data = contextual.data
-            val round = RoundEntity.find { RoundsTable.id eq UUID.fromString(data.roundId) }.firstOrNull()
-                ?: throw BidRoundException.NoSuchRound
+            val round = readRound(data.roundId)
 
             round.addComment(
                 data.comment,

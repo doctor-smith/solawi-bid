@@ -28,6 +28,7 @@ import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.bid.schema.Auctions
 import org.solyton.solawi.bid.module.bid.service.addUserAsOwnerToContext
 import org.solyton.solawi.bid.module.bid.service.cloneDefaultAuctionContext
+import org.solyton.solawi.bid.module.permission.repository.getRoleRightContexts
 import org.solyton.solawi.bid.module.permission.exception.ContextException
 import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.user.exception.OrganizationException
@@ -117,12 +118,9 @@ fun Transaction.eventuallyConnectAuctionWithOrganization(
 @MathDsl
 val ReadAllAuctions = KlAction<Result<Contextual<GetAuctions>>, Result<ApiAuctions>> {
     result -> DbAction { database -> result bindSuspend {contextual ->  resultTransaction(database) {
-        val auctionRoleIds = RoleEntity.find { RolesTable.name inList listOf(
-            "BIDDER", "USER", "OWNER", "AUCTION_MANAGER", "AUCTION_TEAMMATE", "AUCTION_MODERATOR"
-        ) }.map { it.id.value }
-        val contextIds = UserRoleContext.selectAll().where {
-            UserRoleContext.userId eq contextual.userId and (UserRoleContext.roleId inList auctionRoleIds)
-        }.map { row -> row[UserRoleContext.contextId].value }
+        val contextIds = getRoleRightContexts(contextual.userId).filter { context ->
+            context.roles.any { role -> role.rights.any { it.name == "READ_AUCTION" } }
+        }.map { UUID.fromString(it.id) }
 
         val auctions = readAuctions(contextIds).map {
             it.toApiType().copy(
@@ -208,8 +206,8 @@ val DeleteAuctions = KlAction<Result<Contextual<DeleteAuctions>>, Result<Context
 fun Transaction.deleteAuctions(auctionIds: List<UUID>) {
     // todo:dev validation: There could be accepted auctions in the list -> What to do?; First solu: filter
     val acceptedAuctionIds = AcceptedRoundEntity.find { AcceptedRoundsTable.auctionId inList auctionIds }
-        .toList().map { it.id.value }
-    val auctionsToDelete = auctionIds.filterNot{ it in acceptedAuctionIds }
+        .map { it.auction.id.value }.toSet()
+    val auctionsToDelete = auctionIds.filterNot { it in acceptedAuctionIds }
     OrganizationAuctions.deleteWhere { OrganizationAuctions.auctionId inList auctionsToDelete }
     Auctions.deleteWhere { Auctions.id inList auctionsToDelete }
 }

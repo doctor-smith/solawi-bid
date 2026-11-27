@@ -14,7 +14,12 @@ import org.evoleq.math.state.times
 import org.solyton.solawi.bid.module.bid.action.db.*
 import org.solyton.solawi.bid.module.bid.data.api.*
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
+import org.solyton.solawi.bid.module.permission.action.db.IsGrantedInAllDerivedContexts
+import org.solyton.solawi.bid.module.permission.action.db.IsGrantedInDerivedContext
 import org.solyton.solawi.bid.module.permission.action.db.IsGrantedInSpecialContext
+import org.solyton.solawi.bid.module.user.exception.OrganizationException
+import org.solyton.solawi.bid.module.user.schema.OrganizationEntity
+import java.util.UUID
 
 @KtorDsl
 fun <BidEnv> Routing.auction(
@@ -42,14 +47,26 @@ fun <BidEnv> Routing.auction(
 
             }
             patch("configure") {
-                ReceiveContextual<ConfigureAuction>() * ConfigureAuction * Respond<Auction>{ transform() } runOn Base(call, environment)
+                ReceiveContextual<ConfigureAuction>() *
+                    IsGrantedInAllDerivedContexts<ConfigureAuction>("UPDATE_AUCTION") { request ->
+                        setOf(readAuction(UUID.fromString(request.data.id)).context.id.value, UUID.fromString(request.data.contextId))
+                    } *
+                    ConfigureAuction * Respond<Auction> { transform() } runOn Base(call, environment)
             }
             delete("delete") {
-                (ReceiveContextual<DeleteAuctions>() * DeleteAuctions * ReadAllAuctions * Respond<Auctions>{ transform() }) runOn Base(call, environment)
+                ReceiveContextual<DeleteAuctions>() *
+                    IsGrantedInAllDerivedContexts<DeleteAuctions>("DELETE_AUCTION") { request ->
+                        request.data.auctionIds.map { readAuction(UUID.fromString(it)).context.id.value }.toSet()
+                    } *
+                    DeleteAuctions * ReadAllAuctions * Respond<Auctions> { transform() } runOn Base(call, environment)
             }
 
             patch("accept-round") {
-                (ReceiveContextual<AcceptRound>()) * AcceptRound * Respond<AcceptedRound>{ transform() } runOn Base(call, environment)
+                ReceiveContextual<AcceptRound>() *
+                    IsGrantedInDerivedContext<AcceptRound>("UPDATE_AUCTION") { request ->
+                        readRound(request.data.roundId, request.data.auctionId).auction.context.id.value
+                    } *
+                    AcceptRound * Respond<AcceptedRound> { transform() } runOn Base(call, environment)
             }
             get("all"){
                 (ReceiveContextual(GetAuctions) *
@@ -60,14 +77,23 @@ fun <BidEnv> Routing.auction(
             }
             route("bidder") {
                 post("import") {
-                    (ReceiveContextual<ImportBidders>() *
-                    ImportBidders *
-                    Respond<Auction>{ transform() }) runOn Base(call, environment)
+                    ReceiveContextual<ImportBidders>() *
+                        IsGrantedInDerivedContext<ImportBidders>("IMPORT_BIDDERS") { request ->
+                            readAuction(UUID.fromString(request.data.auctionId)).context.id.value
+                        } *
+                        ImportBidders * Respond<Auction> { transform() } runOn Base(call, environment)
                 }
                 post("import-bidders-from-organization") {
                     ReceiveContextual<ImportBiddersFromOrganization>() *
-                    ImportBiddersFromOrganization *
-                    Respond<Auction>{ transform() } runOn Base(call, environment)
+                        IsGrantedInDerivedContext<ImportBiddersFromOrganization>("IMPORT_BIDDERS") { request ->
+                            readAuction(UUID.fromString(request.data.auctionId.value)).context.id.value
+                        } *
+                        IsGrantedInDerivedContext<ImportBiddersFromOrganization>("READ_ORGANIZATION") { request ->
+                            val organization = OrganizationEntity.findById(UUID.fromString(request.data.organizationId.value))
+                                ?: throw OrganizationException.NoSuchOrganization(request.data.organizationId.value)
+                            organization.context.id.value
+                        } *
+                        ImportBiddersFromOrganization * Respond<Auction> { transform() } runOn Base(call, environment)
                 }
                 delete("delete"){
                     // will delete all listed bidders
