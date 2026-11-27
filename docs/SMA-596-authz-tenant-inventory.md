@@ -1,7 +1,7 @@
 # SMA-596 – Autorisierungsgrenzen und Regressionen
 
 Stand 27.11.2026. Die Integration in PR #379 steht auf `c65c904f`. Die
-Prüfmatrix erfasst zusätzlich den vorgeschlagenen Code bis `5c448d1b`.
+Prüfmatrix erfasst zusätzlich den vorgeschlagenen Code bis `2212774a`.
 Die Ausgangsinventur vom 14.11. ist über die Git-Historie verfügbar.
 Der Stand der Abnahme und die privaten Detailbefunde stehen in Jira.
 [SMA-596](https://solawi-management.atlassian.net/browse/SMA-596)
@@ -87,7 +87,8 @@ Für die registrierten Platzhalter gibt es keine fachliche Erfolgsbaseline.
 
 | Bereich | Ressourcenbindung und Regression |
 | --- | --- |
-| Organization CRUD und Members | Organisationsobjekt und dessen Context werden in den Actions verwendet. Member-Updates bleiben auf bestehende Mitgliedschaften beschränkt. Das Entfernen eines Nichtmitglieds lässt unabhängige Context-Rollen intakt. |
+| Organization CRUD und Members | Organisationsobjekt und dessen Context werden in den Actions verwendet. Die Organisationsliste ermittelt effektive Rechte je Context anhand von RRCT. Bei Einstieg über `APPLICATION` wird ggf. der zugehörige Standard-Organisationskontext geprüft. Member-Updates bleiben auf bestehende Mitgliedschaften beschränkt. Das Entfernen eines Nichtmitglieds lässt unabhängige Context-Rollen intakt. Die Sichtbarkeit von Vorfahren, Geschwistern und Unterorganisationen bleibt fachlich zu präzisieren. |
+| Persönliche Applications und Modules | Listen und Context-Relationen lesen ausschließlich die Buchungen des JWT-Actors. Für den Einstieg `APPLICATION` können explizite Rechte in den gespeicherten Einschreibungs- und Verwaltungs-Contexts verwendet werden. Dieselbe Auflösung gilt für eigene Buchungsaktionen mit dem dafür benannten Recht. |
 | Application↔Organization | Zielorganisation und UserApplication. Die Repository-Prüfung verlangt Mitgliedschaft. Der Produktvertrag für zusätzliche Manager-/Owner-Rechte bleibt offen. |
 | Banking | Legal Entity → Party → Banking-Context. Fiscal-Year-Updates prüfen Quelle und Ziel. Kontolöschung folgt dem gespeicherten Eigentümer, persönliche Konto-Reads dem JWT-Actor. Creditor Identifier sind an die Legal Entity gebunden. |
 | SEPA | Collections, Payments, Messages und Mandate aus Ressourcen-ID bzw. Legal Entity zum Banking-Context. Persönliche Reads und Links folgen dem Actor. #402/#403 decken leere und fremde Ziele, beide Contexts und Persistenz nach Ablehnung ab. |
@@ -102,6 +103,13 @@ Für die registrierten Platzhalter gibt es keine fachliche Erfolgsbaseline.
 | Self-Lockout und Delegation | Inhaber administrativer Rechte können Rollen ändern. Der gewünschte Erhalt der eigenen administrativen Handlungsfähigkeit und die Wiederherstellung sind noch zu bestimmen. | Selbstentzug generell sperren oder gestatten, sobald ein weiterer berechtigter Admin übernimmt. Eine Sperre erschwert legitime Austritte. Empfehlung ist eine bestätigte Übergabe mit geprüften Restrechten und gesonderter Recovery. |
 | Mitgliedschaft und App-Verknüpfung | Die Verknüpfung verlangt derzeit Mitgliedschaft. Mitgliedschaft und die Übernahme administrativer Verantwortung für eine Anwendung sind unterschiedliche Vorgänge. | Verknüpfung für jedes Mitglied erhalten, ein ausdrückliches Organisationsrecht verlangen oder einen Freigabeprozess einführen. Die letzten beiden Optionen ändern Delegation bzw. UI-Abläufe. Empfehlung ist ein explizites Organisationsrecht nach Bestätigung der Rollenverantwortung. |
 
+Die E2E-Einrichtung eigener Organisationen hängt von der fachlichen
+Delegation in gebuchten Anwendungen ab. Der gezielte
+Payment-Mandate-Workflow erreicht nach der Korrektur des Einstiegskontexts
+diese Grenze und erhält HTTP 403. Die weitere Abnahme erfordert eine klare
+Regel für anwendungsspezifische Rollen und eine darauf abgestimmte
+Test-Fixture. Sicherheitsrelevante Details und Optionen stehen in Jira.
+
 Noch zu klären sind außerdem der bereichsübergreifende Geltungsbereich der
 Benutzer- und Bidder-Verzeichnisse, der Auction-Provisioning-Vertrag,
 die persönliche Bestätigung öffentlicher Gebote und die Konsistenz von
@@ -111,7 +119,7 @@ Tenant-Invariante gehört in das Tenant-Kernmodell.
 
 ## Testnachweis
 
-Auf `5c448d1b` bestanden 135 Backend-API-, 119 Backend-Unit- und 716
+Auf `2212774a` bestanden 135 Backend-API-, 119 Backend-Unit- und 716
 Datenbanktests sowie Detekt für Produktions- und Testquellen. Evoleq
 bestand 377 JVM- und 215 Browser-Tests, das API-Daten-Modul 2 JVM-Tests.
 Der [Integrationslauf für c65c904f](https://github.com/doctor-smith/solawi-bid/actions/runs/45948799565)
