@@ -1,7 +1,7 @@
 # SMA-596 – Autorisierungsgrenzen und Regressionen
 
 Stand 27.11.2026. Die Integration in PR #379 steht auf `c65c904f`. Die
-Prüfmatrix erfasst zusätzlich den vorgeschlagenen Code bis `df18d7cd`.
+Prüfmatrix erfasst zusätzlich den vorgeschlagenen Code bis `f4af93d4`.
 Die Ausgangsinventur vom 14.11. ist über die Git-Historie verfügbar.
 Der Stand der Abnahme und die privaten Detailbefunde stehen in Jira.
 [SMA-596](https://solawi-management.atlassian.net/browse/SMA-596)
@@ -29,7 +29,7 @@ Die Routen stehen in
 | POST `users/create` | `CREATE_USER` im serverseitig aufgelösten Plattform-Context `APPLICATION/MANAGEMENT/ORGANIZATION_MANAGEMENT` → `CreateNewUser` → `createUserEntity` → Benutzerzeile und Standardrollen. | Plattform-Positivfall und Organisations-Negativfall. Abgelehnte Anlage lässt Benutzer und Rollenzuordnungen unverändert. D-008 greift bei aktiven Konten. |
 | PATCH `users/update` | `UpdateUser` → JWT-Actor muss Zielkonto sein → bisherige Credentials prüfen → Benutzerzeile ändern. | SMA-612. Eigener Zugriff, fremdes Ziel, ungültiges JWT und falsches bisheriges Passwort sind geprüft. |
 | PATCH `users/change-password`, `users/update-username` | `UPDATE_USER` im serverseitig aufgelösten Plattform-Context → jeweilige Action → Benutzerzeile. | SMA-611 und administrativer Teil von SMA-612. Festes Plattformrecht, D-008, anonym abgewiesener Reset, und gespeicherte Credentials nach Ablehnung geprüft. Prüfung einer veröffentlichten Umgebung bleibt gesondert. |
-| PATCH `users/profiles/read-by-ids` | Eigene ID-Menge oder `MANAGE_USERS` → `ReadUserProfiles` → Profil und Adressen anhand der User-IDs. | Eigener Read und fremde bzw. gemischte Ziele getestet. Administrativen Zielumfang zusammen mit dem Verzeichnis klären. |
+| PATCH `users/profiles/read-by-ids` | Eigene ID-Menge, Organisationsabruf oder `MANAGE_USERS` im bestehenden Verwaltungsaufruf. Beim Shares-Abruf bestimmt die gespeicherte Anbieterorganisation den Context und bindet Actor sowie alle Profilziele an ihre Mitgliedschaft. | Eigener Read, gültiger Organisationsabruf sowie fremde und gemischte Ziele sind geprüft. Der administrative Zielumfang für übrige Aufrufe bleibt Teil der Verzeichnisentscheidung. |
 | POST `users/profiles/create`, PATCH `users/profiles/update` | Eigener Actor oder `MANAGE_USERS` → Profil-Repository. Update bindet Profil-ID und Benutzer-ID sowie vorhandene Adressen an dasselbe Profil. | Eigener Create/Update. Abgelehnte Änderungen lassen Profile und Adressen unverändert. |
 | POST `users/profiles/import` | `MANAGE_USERS` → `ImportProfiles` → Benutzer- und Profil-Repositories. | Profilimport hält neue Konten ohne zugewiesenes Passwort in `PENDING`. Administrativen Zielumfang zusammen mit der Organisationsmitgliedschaft festlegen. |
 | DELETE `users/profiles/delete` | Registrierter Platzhalter ohne fachliche Mutation. | Künftige Lösch- und Aufbewahrungsregel separat festlegen. |
