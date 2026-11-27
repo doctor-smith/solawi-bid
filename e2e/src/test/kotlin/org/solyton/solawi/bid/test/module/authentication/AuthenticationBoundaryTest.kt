@@ -1,11 +1,11 @@
 package org.solyton.solawi.bid.test.module.authentication
 
 import com.microsoft.playwright.Playwright
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.solyton.solawi.bid.Regression
 import org.solyton.solawi.bid.Security
 import org.solyton.solawi.bid.TestConfig
-import kotlin.test.assertEquals
 
 class AuthenticationBoundaryTest {
     @Security
