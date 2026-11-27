@@ -77,9 +77,12 @@ fun <UserEnv> Routing.user(
                 Respond<User>{ transform() } runOn Base(call, environment)
             }
             route("profiles") {
-                patch("read-by-ids") { // todo:test write api test
+                patch("read-by-ids") {
                     ReceiveContextual<ReadUserProfiles>() *
-                    IsGranted("MANAGE_USERS") *
+                    IsGranted<ReadUserProfiles>("MANAGE_USERS") { contextual ->
+                        contextual.data.userIds.isEmpty() ||
+                            contextual.data.userIds.any { !it.equals(contextual.userId.toString(), ignoreCase = true) }
+                    } *
                     ReadUserProfiles() *
                     Respond<UserProfiles>{ transform() } runOn Base(call, environment)
                 }
@@ -93,7 +96,7 @@ fun <UserEnv> Routing.user(
                     ReceiveContextual<CreateUserProfile>() *
                     IsGranted("MANAGE_USERS") {
                         // Grant that each user can create its own user profile
-                        contextual -> contextual.userId == contextual.data.userId.toUUID()
+                        contextual -> contextual.userId != contextual.data.userId.toUUID()
                     } *
                     CreateUserProfile() *
                     Respond<UserProfile> { transform() } runOn Base(call, environment)
@@ -102,7 +105,7 @@ fun <UserEnv> Routing.user(
                     ReceiveContextual<UpdateUserProfile>() *
                     IsGranted("MANAGE_USERS") {
                         // Grant that each user can update its own user profile
-                        contextual -> contextual.userId == contextual.data.userId.toUUID()
+                        contextual -> contextual.userId != contextual.data.userId.toUUID()
                     } *
                     UpdateUserProfile() *
                     Respond<UserProfile> { transform() } runOn Base(call, environment)

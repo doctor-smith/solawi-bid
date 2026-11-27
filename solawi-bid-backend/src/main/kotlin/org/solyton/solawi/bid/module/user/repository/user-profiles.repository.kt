@@ -1,7 +1,9 @@
 package org.solyton.solawi.bid.module.user.repository
 
 import org.jetbrains.exposed.sql.Transaction
+import org.jetbrains.exposed.sql.and
 import org.joda.time.DateTime
+import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.user.data.api.userprofile.CreateUserProfile
 import org.solyton.solawi.bid.module.user.data.api.userprofile.UpdateUserProfile
 import org.solyton.solawi.bid.module.user.exception.UserManagementException
@@ -46,7 +48,14 @@ fun Transaction.updateUserProfile(
     data: UpdateUserProfile,
     modifierId: UUID
 ): UserProfileEntity {
-    val userProfile = validatedUserProfile(data.userProfileId.toUUID())
+    val userProfile = UserProfileEntity.find {
+        (UserProfilesTable.id eq data.userProfileId.toUUID()) and (UserProfilesTable.userId eq data.userId.toUUID())
+    }.firstOrNull() ?: throw PermissionException.AccessDenied
+
+    val addresses = data.addresses.map { UUID.fromString(it.id) to it }
+    val profileAddressIds = userProfile.addresses.map { it.id.value }.toSet()
+    if (addresses.any { (id, _) -> id !in profileAddressIds }) throw PermissionException.AccessDenied
+
     val changes = booleanArrayOf(
         data.title?.value != userProfile.title,
         data.phoneNumber?.value != userProfile.phoneNumber,
@@ -55,8 +64,8 @@ fun Transaction.updateUserProfile(
         data.lastname.value != userProfile.lastName
     )
 
-    data.addresses.forEach { address -> updateAddress(
-        UUID.fromString(address.id),
+    addresses.forEach { (addressId, address) -> updateAddress(
+        addressId,
         address.recipientName,
         address.organizationName,
         address.addressLine1,
