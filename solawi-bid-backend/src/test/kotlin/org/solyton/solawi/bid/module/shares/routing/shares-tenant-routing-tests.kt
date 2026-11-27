@@ -21,6 +21,7 @@ import org.solyton.solawi.bid.Api
 import org.solyton.solawi.bid.module.application.application.useApplicationTestDatabase
 import org.solyton.solawi.bid.module.application.routing.*
 import org.solyton.solawi.bid.module.banking.repository.createFiscalYear
+import org.solyton.solawi.bid.module.banking.schema.SepaMandateDataMappingsTable
 import org.solyton.solawi.bid.module.distribution.repository.createDistributionPoint
 import org.solyton.solawi.bid.module.shares.application.SHARE_MANAGEMENT_APPLICATION_NAME
 import org.solyton.solawi.bid.module.shares.data.api.*
@@ -43,6 +44,7 @@ import org.solyton.solawi.bid.module.user.schema.UserProfileEntity
 import org.solyton.solawi.bid.module.values.ModifierId
 import org.solyton.solawi.bid.module.values.ProviderId
 import org.solyton.solawi.bid.module.values.UserId
+import org.solyton.solawi.bid.module.values.UserProfileId
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -197,6 +199,99 @@ class SharesTenantRoutingTests {
             assertEquals(before.second + 2, historyCount)
         }
     }
+
+    @Api @Test
+    fun ownershipTransferRequiresPermissionForTheStoredSubscriptionProvider() = runBlocking {
+        testApplication {
+            val database = useApplicationTestDatabase()
+            val token = client.getTestToken(SOURCE_USER)
+            val (fixture, newOwnerId) = transaction(database) {
+                val fixture = seedShares()
+                SchemaUtils.createMissingTablesAndColumns(SepaMandateDataMappingsTable)
+                createTestShareStatus(InternalStatus.Subscribed)
+                createTestShareStatus(InternalStatus.Transfer)
+                ShareSubscriptionEntity.all().forEach { it.status = statusEntity(InternalStatus.Subscribed) }
+                val recipient = UserProfileEntity.new {
+                    user = assertNotNull(UserEntity.findById(findUserId(DESTINATION_USER)))
+                    firstName = "Test"
+                    lastName = "Recipient"
+                    createdBy = UUID_ZERO
+                }
+                fixture to UserProfileId(recipient.id.value.toString())
+            }
+            val (providers, source, destination) = fixture
+            val request = TransferOwnership(
+                ProviderId(providers.source.organizationId.toString()), destination.subscriptionId, newOwnerId
+            )
+            fun storedState() = transaction(database) { subscriptionsAndHistoryCount() }
+            val before = storedState()
+            val path = "shares/subscriptions/transfer-ownership"
+            assertEquals(HttpStatusCode.Forbidden, client.patchInContext(path, token, providers.source.contextId, request))
+            assertEquals(before, storedState())
+
+            val ownRequest = request.copy(shareSubscriptionId = source.subscriptionId)
+            assertEquals(HttpStatusCode.OK, client.patchInContext(path, token, providers.source.contextId, ownRequest))
+            val (subscriptions, history) = storedState()
+            assertEquals(newOwnerId.value, subscriptions.single { it.first.id == source.subscriptionId.value }.first.userProfileId)
+            assertEquals(
+                before.first.single { it.first.id == destination.subscriptionId.value },
+                subscriptions.single { it.first.id == destination.subscriptionId.value }
+            )
+            assertEquals(before.second + 2, history)
+        }
+    }
+
+    @Api @Test
+    fun importRequiresTheImportRightInTheRequestedProviderContext() = runBlocking {
+        testApplication {
+            val database = useApplicationTestDatabase()
+            val token = client.getTestToken(SOURCE_USER)
+            val (providers, source, destination) = transaction(database) {
+                seedShares().also { createTestShareStatus(InternalStatus.External) }
+            }
+            fun prepareImport(provider: Provider, shares: ProviderShares) = ImportShareSubscriptions(
+                override = true,
+                providerId = provider.organizationId.toString(),
+                fiscalYearId = shares.fiscalYearId.toString(),
+                shareSubscriptions = listOf(
+                    ImportShareSubscription(
+                        shares.offerId.toString(), SOURCE_USER, null, shares.fiscalYearId.toString(),
+                        3, 20.0, false, ShareStatus.ActivationRejected
+                    )
+                )
+            )
+            suspend fun importShares(data: ImportShareSubscriptions) = client.post("shares/subscriptions/import") {
+                bearerAuth(token)
+                header(Header.CONTEXT, providers.source.contextId.toString())
+                contentType(ContentType.Application.Json)
+                setBody(Json.encodeToString(data))
+            }.status
+            fun storedState() = transaction(database) { subscriptionsAndHistoryCount() }
+            val before = storedState()
+            val own = prepareImport(providers.source, source)
+            assertEquals(HttpStatusCode.Forbidden, importShares(own))
+            assertEquals(before, storedState())
+
+            transaction(database) { grantProviderRight(providers.source, "IMPORT_SHARE_SUBSCRIPTIONS") }
+            assertEquals(HttpStatusCode.Forbidden, importShares(prepareImport(providers.destination, destination)))
+            assertEquals(before, storedState())
+
+            assertEquals(HttpStatusCode.OK, importShares(own))
+            val (subscriptions, history) = storedState()
+            val updated = subscriptions.single { it.first.id == source.subscriptionId.value }
+            assertEquals(3, updated.first.numberOfShares)
+            assertEquals(ShareStatus.ActivationRejected, updated.first.status)
+            assertEquals(providers.sourceUserId, updated.second)
+            assertEquals(
+                before.first.single { it.first.id == destination.subscriptionId.value },
+                subscriptions.single { it.first.id == destination.subscriptionId.value }
+            )
+            assertEquals(before.second + 1, history)
+        }
+    }
+
+    private fun Transaction.subscriptionsAndHistoryCount() =
+        ShareSubscriptionEntity.all().map { it.toApiType() to it.modifiedBy }.toSet() to ShareSubscriptionStatusHistoryEntry.count()
 
     private fun Transaction.seedShares(): SharesFixture {
         SchemaUtils.createMissingTablesAndColumns(ShareSubscriptionStatusHistory, CoSubscribersTable)
