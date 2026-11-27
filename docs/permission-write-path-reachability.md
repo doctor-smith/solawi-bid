@@ -1,35 +1,26 @@
 # Permission write paths: reachability and callers
 
-Baseline: `feature/SMA-594-legal-entity-tenancy` at merge commit `0265c8a4`.
+Baseline for the application delegation section is `df18d7cd`. The right-policy write section refers to the existing integration behavior.
 
 This note separates HTTP reachability from internal repository use. It is a
 code-and-test inventory, not an authorization redesign.
 
 ## `PutUserRoleContext`
 
-- `Application.setupRouting` registers `permissions` behind JWT authentication
-  (`application/routing/routing.kt:46-48`).
-- `PUT permissions/user/user-role-context` is registered and invokes the
-  `PutUserRoleContext` action without an `IsGranted` action
-  (`module/permission/routing/routing.kt:34-37`).
-- The action calls `Transaction.putUserRoleContext` directly. The repository
-  replaces all role bindings for the body `userId` and `contextId`; it contains
-  no actor, owner, membership, or entitlement check
-  (`module/permission/repository/put-user-role-context.kt:29-35`).
-- This is a live application flow, not merely an unused API declaration. The
-  private application/organization management UI dispatches
-  `putUsersRoleContext` when its permissions dialog is submitted
-  (`private-application-organiation-management.kt:265-272`). The frontend
-  action maps that operation to the `PutUserRoleContext` endpoint
-  (`put-users-role-context.kt:27-43`). Existing E2E page objects also wait for
-  this endpoint while granting permissions.
-- No other production caller of `putUserRoleContext` was found. Organization
-  member management modifies `UserRoleContext` independently and therefore is
-  a separate write path.
-
-Conclusion: the HTTP route is registered, frontend-used, and reaches the
-repository. The route now requires `MANAGE_USER_ROLE_CONTEXTS` in the payload
-context before invoking the action.
+- `Application.setupRouting` registers this route behind JWT authentication.
+  The action passes the authenticated actor and requested context to the
+  repository, where the authorization check and write share a transaction.
+- A stored organization-application booking selects its specific policy.
+  The actor needs the Owner role in that context. Both the actor and target
+  must be members of the organization on the stored booking.
+- Only the application-specific roles on the shared allowlist can be added
+  or removed by this policy. They must also exist in the context's policy.
+  Existing Owner assignments and other nondelegable roles are preserved.
+- For other contexts, the repository requires an exact
+  `MANAGE_USER_ROLE_CONTEXTS` grant and uses the existing replacement
+  contract. Organization member management is a separate write path.
+- The organization's booked-application dialog offers the same explicit
+  role list used by the backend.
 
 ## `PutRoleRightContext`
 
@@ -62,3 +53,7 @@ must not be assessed as one authorization boundary.
 state and verify both `403` and an unchanged observable assignment state. The
 guard derives its authorization context from the payload rather than trusting
 the request header.
+
+`OrganizationApplicationDelegationRoutingTests` proves allowed assignment and
+removal, retry without duplicate writes, and unchanged rows after rejecting
+a non-owner, a nonmember target, or a request to assign Owner.

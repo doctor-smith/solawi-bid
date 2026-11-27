@@ -1,7 +1,7 @@
 # SMA-596 – Autorisierungsgrenzen und Regressionen
 
 Stand 27.11.2026. Die Integration in PR #379 steht auf `c65c904f`. Die
-Prüfmatrix erfasst zusätzlich den vorgeschlagenen Code bis `2212774a`.
+Prüfmatrix erfasst zusätzlich den vorgeschlagenen Code bis `df18d7cd`.
 Die Ausgangsinventur vom 14.11. ist über die Git-Historie verfügbar.
 Der Stand der Abnahme und die privaten Detailbefunde stehen in Jira.
 [SMA-596](https://solawi-management.atlassian.net/browse/SMA-596)
