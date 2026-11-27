@@ -14,6 +14,11 @@ import org.solyton.solawi.bid.module.application.schema.ApplicationsTable
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.action.db.IsGranted
 import org.solyton.solawi.bid.module.permission.action.db.IsGrantedInExactDerivedContext
+import org.solyton.solawi.bid.module.permission.action.db.isGranted
+import org.solyton.solawi.bid.module.permission.schema.ContextEntity
+import org.solyton.solawi.bid.module.permission.schema.ContextsTable
+import org.jetbrains.exposed.sql.and
+import java.util.UUID
 import org.solyton.solawi.bid.module.user.action.organization.*
 import org.solyton.solawi.bid.module.user.action.user.*
 import org.solyton.solawi.bid.module.user.data.api.*
@@ -135,7 +140,17 @@ fun <OrganizationEnv> Routing.organization(
         route("organizations") {
             get("all") {
                 ReceiveContextual(ReadOrganizations) *
-                IsGranted("READ_ORGANIZATION") *
+                IsGrantedInExactDerivedContext<ReadOrganizations>("READ_ORGANIZATION") { request ->
+                    val requested = UUID.fromString(request.context)
+                    val context = ContextEntity.findById(requested)
+                    if (context?.name == "APPLICATION" && context.root == null &&
+                        !isGranted(request.userId, requested, "READ_ORGANIZATION")
+                    ) {
+                        ContextEntity.find {
+                            (ContextsTable.rootId eq context.id) and (ContextsTable.name eq "ORGANIZATION")
+                        }.firstOrNull()?.id?.value ?: requested
+                    } else requested
+                } *
                 ReadOrganizations() *
                 Respond { transform() } runOn Base(call, environment)
             }

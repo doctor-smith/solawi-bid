@@ -46,6 +46,8 @@ class PermissionTests {
 
         assertTrue(isGranted(actor, parent.id.value, write.id.value))
         assertTrue(isGranted(actor, child.id.value, read.name))
+        assertTrue(getUserRightContexts(actor, listOf(read.name)) == listOf(child.id.value))
+        assertTrue(getUserRightContexts(actor, emptyList()).isEmpty())
         assertFalse(isGranted(actor, child.id.value, write.name))
         assertFalse(isGranted(actor, child.name, write.name))
         assertFalse(isGrantedOneOf(actor, child.id.value, listOf(write.name)))

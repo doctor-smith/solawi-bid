@@ -28,7 +28,7 @@ import org.solyton.solawi.bid.module.bid.schema.*
 import org.solyton.solawi.bid.module.bid.schema.Auctions
 import org.solyton.solawi.bid.module.bid.service.addUserAsOwnerToContext
 import org.solyton.solawi.bid.module.bid.service.cloneDefaultAuctionContext
-import org.solyton.solawi.bid.module.permission.repository.getRoleRightContexts
+import org.solyton.solawi.bid.module.permission.repository.getUserRightContexts
 import org.solyton.solawi.bid.module.permission.exception.ContextException
 import org.solyton.solawi.bid.module.permission.schema.*
 import org.solyton.solawi.bid.module.user.exception.OrganizationException
@@ -118,9 +118,7 @@ fun Transaction.eventuallyConnectAuctionWithOrganization(
 @MathDsl
 val ReadAllAuctions = KlAction<Result<Contextual<GetAuctions>>, Result<ApiAuctions>> {
     result -> DbAction { database -> result bindSuspend {contextual ->  resultTransaction(database) {
-        val contextIds = getRoleRightContexts(contextual.userId).filter { context ->
-            context.roles.any { role -> role.rights.any { it.name == "READ_AUCTION" } }
-        }.map { UUID.fromString(it.id) }
+        val contextIds = getUserRightContexts(contextual.userId, listOf("READ_AUCTION"))
 
         val auctions = readAuctions(contextIds).map {
             it.toApiType().copy(
