@@ -1,7 +1,7 @@
 # SMA-596 – Autorisierungsgrenzen und Regressionen
 
 Stand 27.11.2026. Die Integration in PR #379 steht auf `c65c904f`. Die
-Prüfmatrix erfasst zusätzlich den vorgeschlagenen Code bis `ab07b0fe`.
+Prüfmatrix erfasst zusätzlich den vorgeschlagenen Code bis `5c448d1b`.
 Die Ausgangsinventur vom 14.11. ist über die Git-Historie verfügbar.
 Der Stand der Abnahme und die privaten Detailbefunde stehen in Jira.
 [SMA-596](https://solawi-management.atlassian.net/browse/SMA-596)
@@ -12,6 +12,11 @@ Authentication, Health und Version sind öffentlich. Die öffentliche
 Gebotsabgabe hat einen eigenen fachlichen Vertrag. Die Autorisierungsgrenzen
 beruhen auf Context-, Organization-, Provider-, Party- und Legal-Entity-Relationen.
 Das Schema hat noch kein eigenständiges Tenant-Modell.
+
+Plattformbezogene Kontoaktionen lösen den Context über das gespeicherte
+Modul `ORGANIZATION_MANAGEMENT` von `APPLICATION_MANAGEMENT` auf und
+prüfen die Zugehörigkeit zum Plattform-Root. Das gilt auch nach einer
+Änderung der aus Baumpositionen berechneten Pfadanzeige.
 
 ## User und Profile
 
@@ -106,8 +111,12 @@ Tenant-Invariante gehört in das Tenant-Kernmodell.
 
 ## Testnachweis
 
-Die Backend- und E2E-Ergebnisse werden je Commit in der Integrations-PR
-und in Jira protokolliert. `regressionTest` und `securityTest` erfassen
+Auf `5c448d1b` bestanden 135 Backend-API-, 119 Backend-Unit- und 716
+Datenbanktests sowie Detekt für Produktions- und Testquellen. Evoleq
+bestand 377 JVM- und 215 Browser-Tests, das API-Daten-Modul 2 JVM-Tests.
+Der [Integrationslauf für c65c904f](https://github.com/doctor-smith/solawi-bid/actions/runs/45948799565)
+ist vollständig erfolgreich. Den E2E-Nachweis des geprüften Stands
+führt [Review-PR #404](https://github.com/doctor-smith/solawi-bid/pull/404). `regressionTest` und `securityTest` erfassen
 jetzt denselben gezielt klassifizierten HTTP-Regressionstest für die
 persönlichen SEPA-Mandate. Die Testfälle zur Context- und Datenbankisolation
 liegen in den Backend-API- und DB-Suiten.
