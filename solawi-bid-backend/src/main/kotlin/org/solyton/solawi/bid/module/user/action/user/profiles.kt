@@ -8,7 +8,6 @@ import org.evoleq.ktorx.result.Result
 import org.evoleq.ktorx.result.bindSuspend
 import org.evoleq.math.MathDsl
 import org.evoleq.math.x
-import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.Transaction
 import org.solyton.solawi.bid.module.permission.PermissionException
 import org.solyton.solawi.bid.module.permission.action.db.isGranted
@@ -50,12 +49,13 @@ fun ImportProfiles(): KlAction<Result<Contextual<ImportUserProfiles>>, Result<Us
         val userProfileMap = data.profiles.associateBy { it.username }
 
         val usernames = data.profiles.map { it.username }
+        requireProfileImportAccess(contextual, usernames)
         val existingUserProfiles = (UsersTable innerJoin UserProfilesTable).selectAll().where{
-            UserProfilesTable.userId eq userId and (UsersTable.username inList usernames )
+            UsersTable.username inList usernames
         }.toList()
         val userProfilesToCreate = usernames.filter { it !in existingUserProfiles.map { userProfile -> userProfile[UsersTable.username]} }
         val existingUsers = UserEntity.find { UsersTable.username inList userProfilesToCreate }.toList()
-        val usersToCreate = usernames.filter { it !in existingUsers.map { user -> user.username} }
+        val usersToCreate = userProfilesToCreate.filter { it !in existingUsers.map { user -> user.username} }
 
         val recentlyAddedUserAccounts = usersToCreate.map {
             createUserEntity(CreateUser(it, null, ApiUserStatus.PENDING), userId)
@@ -110,13 +110,32 @@ private fun Transaction.requireProfileReadAccess(request: Contextual<ReadUserPro
     val organizationId = request.data.organizationId
     if (organizationId == null && userIds.isNotEmpty() && userIds.all { it == request.userId }) return
 
-    val contextId = if (organizationId == null) UUID.fromString(request.context) else {
-        val organization = OrganizationEntity.findById(UUID.fromString(organizationId)) ?: throw PermissionException.AccessDenied
-        val members = organization.members.map { it.id.value }.toSet()
-        if (request.userId !in members || !members.containsAll(userIds)) throw PermissionException.AccessDenied
-        organization.context.id.value
+    if (organizationId == null) {
+        if (!isGranted(request.userId, UUID.fromString(request.context), "MANAGE_USERS")) throw PermissionException.AccessDenied
+        return
     }
-    if (!isGranted(request.userId, contextId, "MANAGE_USERS")) throw PermissionException.AccessDenied
+    val organization = requireManagedProfileOrganization(request.userId, organizationId)
+    val members = organization.members.map { it.id.value }.toSet()
+    if (!members.containsAll(userIds)) throw PermissionException.AccessDenied
+}
+
+private fun Transaction.requireProfileImportAccess(request: Contextual<ImportUserProfiles>, usernames: List<String>) {
+    val organizationId = request.data.organizationId
+    if (organizationId == null) {
+        if (!isGranted(request.userId, UUID.fromString(request.context), "MANAGE_USERS")) throw PermissionException.AccessDenied
+        return
+    }
+    val organization = requireManagedProfileOrganization(request.userId, organizationId)
+    val members = organization.members.map { it.username }.toSet()
+    if (!members.containsAll(usernames)) throw PermissionException.AccessDenied
+}
+
+private fun Transaction.requireManagedProfileOrganization(actorId: UUID, organizationId: String): OrganizationEntity {
+    val organization = OrganizationEntity.findById(UUID.fromString(organizationId)) ?: throw PermissionException.AccessDenied
+    if (organization.members.none { it.id.value == actorId } || !isGranted(actorId, organization.context.id.value, "MANAGE_USERS")) {
+        throw PermissionException.AccessDenied
+    }
+    return organization
 }
 
 @MathDsl

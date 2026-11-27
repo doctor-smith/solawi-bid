@@ -115,6 +115,38 @@ class PendingUserImportRoutingTests {
                 assertTrue(savedOrganization.members.any { it.id == user.id })
             }
 
+            val profile = UserProfileToImport(
+                username = username,
+                firstName = "New",
+                lastName = "Member",
+                title = null,
+                phoneNumber = null,
+                phoneNumber1 = null,
+                address = CreateAddress.empty
+            )
+            suspend fun importProfiles(actor: String, profiles: List<UserProfileToImport>) = client.post("users/profiles/import") {
+                bearerAuth(actor)
+                contentType(ContentType.Application.Json)
+                header(Header.CONTEXT, unrelatedContext)
+                setBody(Json.encodeToString(
+                    ImportUserProfiles.serializer(),
+                    ImportUserProfiles(profiles, organization.id)
+                ))
+            }
+
+            val beforeProfileImport = assignmentState()
+            val profileCount = transaction(database) { UserProfilesTable.selectAll().count() }
+            val mixedProfiles = listOf(profile, profile.copy(username = "outside-profile@example.test"))
+            assertEquals(HttpStatusCode.Forbidden, importProfiles(token, mixedProfiles).status)
+            assertEquals(HttpStatusCode.Forbidden, importProfiles(otherActor, listOf(profile)).status)
+            assertEquals(beforeProfileImport, assignmentState())
+            assertEquals(profileCount, transaction(database) { UserProfilesTable.selectAll().count() })
+
+            assertEquals(HttpStatusCode.OK, importProfiles(token, listOf(profile)).status)
+            assertEquals(HttpStatusCode.OK, importProfiles(token, listOf(profile)).status)
+            assertEquals(beforeProfileImport, assignmentState())
+            assertEquals(profileCount + 1, transaction(database) { UserProfilesTable.selectAll().count() })
+
             // A pending imported account cannot authenticate, even with a guessed password.
             val loginResponse = client.post("login") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)

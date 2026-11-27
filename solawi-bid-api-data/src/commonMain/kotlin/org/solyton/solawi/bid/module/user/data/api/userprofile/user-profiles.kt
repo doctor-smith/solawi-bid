@@ -67,4 +67,4 @@ data class UserProfileToImport(
 )
 
 @Serializable
-data class ImportUserProfiles(val profiles: List<UserProfileToImport>)
+data class ImportUserProfiles(val profiles: List<UserProfileToImport>, val organizationId: String? = null)

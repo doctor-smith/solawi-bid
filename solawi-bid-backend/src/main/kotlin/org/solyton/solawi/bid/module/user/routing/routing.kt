@@ -93,9 +93,8 @@ fun <UserEnv> Routing.user(
                     ReadUserProfiles() *
                     Respond<UserProfiles>{ transform() } runOn Base(call, environment)
                 }
-                post("import") { // todo:test write api test
+                post("import") {
                     ReceiveContextual<ImportUserProfiles>() *
-                    IsGranted("MANAGE_USERS") *
                     ImportProfiles() *
                     Respond<UserProfiles> { transform() } runOn Base(call, environment)
                 }
