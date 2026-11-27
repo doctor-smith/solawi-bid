@@ -93,10 +93,12 @@ fun RemoveMember(): KlAction<Result<Contextual<RemoveMember>>, Result<Organizati
         )) throw PermissionException.AccessDenied
 
         // remove member
-        UserOrganization.deleteWhere {
+        val removedMemberships = UserOrganization.deleteWhere {
             UserOrganization.userId eq user.id and
             (UserOrganization.organizationId eq organization.id)
         }
+
+        if (removedMemberships == 0) return@resultTransaction organization.toApiType(this)
 
         // remove roles from user-role-contexts
         UserRoleContext.deleteWhere {
@@ -125,6 +127,8 @@ fun UpdateMember(): KlAction<Result<Contextual<UpdateMember>>, Result<Organizati
             organization.context.id.value,
             "MANAGE_USERS"
         )) throw PermissionException.AccessDenied
+
+        if (organization.members.none { it.id.value == memberId }) throw PermissionException.AccessDenied
 
         val roleIds = data.roles.map { UUID.fromString(it) }
         UserRoleContext.deleteWhere {
