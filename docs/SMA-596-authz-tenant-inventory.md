@@ -1,218 +1,113 @@
-# SMA-596: Authz-/Tenant-Grenzen und Regression-Baseline
+# SMA-596 – Autorisierungsgrenzen und Regressionen
 
-Stand: 2026-11-14 (Dokumentationsabgleich; keine neue Testausführung)  
-Code-Baseline: [`feature/SMA-596-authz-tenant-inventory` @ `40b50a39`](https://github.com/doctor-smith/solawi-bid/tree/40b50a39fe7335e93ced32fcfba5482c7e6a89dc)  
-Jira: [SMA-596](https://solawi-management.atlassian.net/browse/SMA-596) – **In Progress**; Architektur: [AI Command #9](https://github.com/doctor-smith/ai-command/issues/9)
+Stand 27.11.2026. Die Integration in PR #379 steht auf `c65c904f`. Die
+Prüfmatrix erfasst zusätzlich den vorgeschlagenen Code bis `ab07b0fe`.
+Die Ausgangsinventur vom 14.11. ist über die Git-Historie verfügbar.
+Der Stand der Abnahme und die privaten Detailbefunde stehen in Jira.
+[SMA-596](https://solawi-management.atlassian.net/browse/SMA-596)
+· [Integration #379](https://github.com/doctor-smith/solawi-bid/pull/379)
 
-Diese Bestandsaufnahme wird mit den SMA-596-Slices fortgeschrieben. Sie
-beschreibt den aktuellen Code und die inzwischen aktivierte
-Berechtigungssemantik. Die bereits unter
-SMA-604 geschützten Permission-Schreibpfade sind in
-[`permission-write-path-reachability.md`](permission-write-path-reachability.md)
-detailliert beschrieben.
+JWT identifiziert den Actor in den registrierten Verwaltungsrouten.
+Authentication, Health und Version sind öffentlich. Die öffentliche
+Gebotsabgabe hat einen eigenen fachlichen Vertrag. Die Autorisierungsgrenzen
+beruhen auf Context-, Organization-, Provider-, Party- und Legal-Entity-Relationen.
+Das Schema hat noch kein eigenständiges Tenant-Modell.
 
-> **Korrekturstand 14.11.2026:** Die früheren P0/P1-Befunde und die 42
-> deaktivierten Guards beschreiben die **historische Ausgangslage**. Auf dem
-> referenzierten SMA-596-Branch ist der `UpdateMember`-Löschfilter korrigiert,
-> App→Organization prüft inzwischen Organisationsmitgliedschaft, und die
-> Inventur meldet **keine aktiven `no`-Guards** mehr im betrachteten Routing.
-> Dies belegt **nicht** die vollständige Tenant-Sicherheit oder Integration
-> in `main`. Code und Test-Assertions wurden über GitHub gelesen; **keine
-> neuen Tests ausgeführt**.
+## User und Profile
 
-## Begriffe und Prüfregel
+Die Routen stehen in
+[`module/user/routing/routing.kt`](../solawi-bid-backend/src/main/kotlin/org/solyton/solawi/bid/module/user/routing/routing.kt).
 
-- **Authentifiziert**: Die Route liegt hinter `authenticate("auth-jwt")`.
-- **Autorisierter Kontext**: Der Kontext, in dem das benötigte Recht geprüft
-  wird. Er muss aus einem fachlich gebundenen Ziel abgeleitet werden, nicht nur
-  aus einem frei wählbaren Header.
-- **Zielressource**: Das Objekt, das gelesen oder verändert wird, zum Beispiel
-  Organisation, Provider, Legal Entity, Zahlung oder Subscription.
-- **EACH_TARGET**: Bei Batch-Operationen muss jedes Ziel aufgelöst und geprüft
-  werden. Gleiche IDs im Payload sind nur eine Konsistenzprüfung, kein
-  Berechtigungsnachweis.
-- **`no`**: `accessCheckNeeded = false`; die deklarierte Prüfung ist deaktiviert.
-  Diese Stellen sind keine dokumentierten Ausnahmen, sondern offene
-  Autorisierungslücken.
+| Registrierte Route | Grenze und Datenpfad | Nachweis oder Restarbeit |
+| --- | --- | --- |
+| GET `users/all`, POST `users/query` | Bestehende Aufrufstellen verwenden das Benutzerverzeichnis persönlich und administrativ. Die Query-Route prüft `MANAGE_USERS`. | Sichtbarkeit je Aufrufstelle und autorisierte Zielmenge fachlich festlegen. |
+| POST `users/create` | `CREATE_USER` im serverseitig aufgelösten Plattform-Context `APPLICATION/MANAGEMENT/ORGANIZATION_MANAGEMENT` → `CreateNewUser` → `createUserEntity` → Benutzerzeile und Standardrollen. | Plattform-Positivfall und Organisations-Negativfall. Abgelehnte Anlage lässt Benutzer und Rollenzuordnungen unverändert. D-008 greift bei aktiven Konten. |
+| PATCH `users/update` | `UpdateUser` → JWT-Actor muss Zielkonto sein → bisherige Credentials prüfen → Benutzerzeile ändern. | SMA-612. Eigener Zugriff, fremdes Ziel, ungültiges JWT und falsches bisheriges Passwort sind geprüft. |
+| PATCH `users/change-password`, `users/update-username` | `UPDATE_USER` im serverseitig aufgelösten Plattform-Context → jeweilige Action → Benutzerzeile. | SMA-611 und administrativer Teil von SMA-612. Festes Plattformrecht, D-008, anonym abgewiesener Reset, und gespeicherte Credentials nach Ablehnung geprüft. Prüfung einer veröffentlichten Umgebung bleibt gesondert. |
+| PATCH `users/profiles/read-by-ids` | Eigene ID-Menge oder `MANAGE_USERS` → `ReadUserProfiles` → Profil und Adressen anhand der User-IDs. | Eigener Read und fremde bzw. gemischte Ziele getestet. Administrativen Zielumfang zusammen mit dem Verzeichnis klären. |
+| POST `users/profiles/create`, PATCH `users/profiles/update` | Eigener Actor oder `MANAGE_USERS` → Profil-Repository. Update bindet Profil-ID und Benutzer-ID sowie vorhandene Adressen an dasselbe Profil. | Eigener Create/Update. Abgelehnte Änderungen lassen Profile und Adressen unverändert. |
+| POST `users/profiles/import` | `MANAGE_USERS` → `ImportProfiles` → Benutzer- und Profil-Repositories. | Profilimport hält neue Konten ohne zugewiesenes Passwort in `PENDING`. Administrativen Zielumfang zusammen mit der Organisationsmitgliedschaft festlegen. |
+| DELETE `users/profiles/delete` | Registrierter Platzhalter ohne fachliche Mutation. | Künftige Lösch- und Aufbewahrungsregel separat festlegen. |
 
-## Äußere Grenze
+## Auction, Round und Bidders
 
-`Application.setupRouting` schützt User, Organization, Permission, Auction,
-Round, Bidders, Distribution, Shares, Application und Banking mit JWT.
-Authentication, Health und `/api/version` sind öffentlich. `sendBid` liegt
-ebenfalls außerhalb des JWT-Blocks und muss als eigener öffentlicher
-Vertrauenspfad betrachtet werden.
+Die implementierten Actions verwenden Exposed-Transaktionen. Einige
+Routen delegieren direkt an Transaction-Funktionen und DAOs. Die
+Route-, Action- und Service-Dateien liegen im
+[`module/bid`](../solawi-bid-backend/src/main/kotlin/org/solyton/solawi/bid/module/bid).
 
-JWT allein stellt nur die Identität fest. Eine fachliche Tenant-Grenze ist im
-Schema nicht als `tenantId` modelliert. Isolation entsteht heute indirekt über
-Context-, Organization-, Provider-, Party- und Legal-Entity-Relationen.
+| Registrierte Route | Serverauflösung und Verarbeitung | Nachweis oder Restarbeit |
+| --- | --- | --- |
+| POST `auction/create` | `CreateAuction` klont die Auction-Policy des Actors, weist Rollen zu und setzt den gespeicherten Auction-Context. Die Organisation wird ggf. über `OrganizationApplicationContexts` verknüpft. | Bestehender Create-Positivfall. Vertragsentscheidung für persönliches und organisationsbezogenes Provisioning offen. |
+| GET `auction/all` | `ReadAllAuctions` filtert `Auctions` auf die Contexts, in denen der Actor `READ_AUCTION` hat. | Bestehende Listen- und Auction-Workflows. |
+| PATCH `auction/update` | Der Mutationsteil `updateAuctions` hat noch keine fachliche Implementierung. | Bei Implementierung jedes Update-Ziel auflösen und prüfen. |
+| PATCH `auction/configure` | Gespeicherter Quell- und Ziel-Context benötigen `UPDATE_AUCTION` → `configureAuction` → `Auctions`, Details und ggf. Context-Zuordnung. | Gemischte Rechte führen zur Ablehnung. Persistenz unverändert. |
+| DELETE `auction/delete` | Jedes gespeicherte Ziel benötigt `DELETE_AUCTION` → `deleteAuctions` → `Auctions`; akzeptierte Auctions bleiben gesperrt. | Gemischte Ziele abgewiesen. `AcceptedRounds` wird mit dem Auktion-Fremdschlüssel abgeglichen. |
+| PATCH `auction/accept-round` | Zusammengehöriges Auction-Round-Paar und `UPDATE_AUCTION` im Auction-Context → `AcceptRound` → `AcceptedRounds`. | Positiver vollständiger Auction-Ablauf. Ablehnung und unveränderte Daten bei fremdem Ziel oder inkonsistentem Paar. |
+| POST `auction/bidder/import` | Gespeicherte Ziel-Auction, `IMPORT_BIDDERS` → Importfunktion → Bidder und Auction-Bidder-Zuordnungen. | Vorhandener Import-Positivfall und neue Ablehnung mit Persistenzprüfung. |
+| POST `auction/bidder/import-bidders-from-organization` | Ziel-Auction mit `IMPORT_BIDDERS` und gespeicherte Quellorganisation mit `READ_ORGANIZATION` → Import aus Mitgliedschaft und Profilen → Auction-Bidder-Zuordnungen. | Fehlendes Recht an der Quelle lässt das Ziel unverändert. |
+| DELETE `auction/bidder/delete` | Registrierter Platzhalter ohne fachliche Mutation. | Bei Implementierung Auction und Teilnahme gemeinsam prüfen. |
+| POST `round/create` | Gespeicherte Parent-Auction, `UPDATE_AUCTION` → `CreateRound` → `Rounds`. | Bestehender Positivfall, neue Ablehnung mit Persistenzprüfung. |
+| PATCH `round/change-state`, POST `round/add-comment` | Gespeicherte Round → Auction-Context, `UPDATE_AUCTION` oder `MODERATE_AUCTION` → `Rounds` bzw. Round-Kommentare. | Positiver Status- und Kommentarfall sowie unveränderte Daten nach Ablehnung. |
+| PATCH `round/evaluate`, `round/pre-evaluate`, `round/export-results` | Gespeichertes Auction-Round-Paar. Auswertung braucht `UPDATE_AUCTION` oder `MODERATE_AUCTION`, Export `Export Results`. `getResults` liest `BidRounds` der zugehörigen Auction. | Auswertung und Export im bestehenden API-Ablauf. Fremde oder inkonsistente Ziele werden abgewiesen. |
+| PATCH `bidders/search`, POST `bidders/add` | `SearchBidderMails` und `AddBidders` arbeiten mit dem bestehenden Suchverzeichnis `SearchBidders`. | Geltungsbereich der Verzeichnisdaten und Rechte für Lesen bzw. Pflegen bestätigen. |
+| POST `bid/send` | Öffentliche `StoreBid`-Action. Gespeicherte Runde, Auction, Teilnahme und offener Status bestimmen, ob der BidRound geschrieben werden darf. | Test akzeptiert ein Gebot für eine geöffnete Runde und überprüft unveränderte Daten bei gesperrter Runde. Vertrag zur persönlichen Bestätigung separat entscheiden. |
 
-## Routenmatrix
+Die Hilfsroute `bid/all` wird im Anwendungsrouting nicht registriert.
+Für die registrierten Platzhalter gibt es keine fachliche Erfolgsbaseline.
 
-| Bereich / Ziel | Kontextquelle | Aktueller Guard | Bewertung |
-|---|---|---|---|
-| Permission: User-Rollen in Context schreiben | Payload `contextId` | `MANAGE_USER_ROLE_CONTEXTS`, derived | geschützt; negative API-Regression vorhanden |
-| Permission: Rollen-Rechte in Context schreiben | Payload `contextId` | `MANAGE_ROLE_RIGHT_CONTEXTS`, derived | geschützt; negative API-Regression vorhanden |
-| Organization CRUD und Members | Context-Header; Action prüft teilweise Organization-Context erneut | `MANAGE_USERS` im Ziel-Org-Context und weitere Rechte | `UpdateMember`-Löschfilter korrigiert; übrige Header-/Zielbindungen noch nicht vollständig inventarisiert |
-| Application mit Organization verbinden | Payload `organizationId`, `applicationId` | Repository: `requireOrganizationMembership` + UserApplication | Mitgliedschaft wird geprüft; 403 für fremde Organisation im Testcode; ob Membership statt Manager-/Owner-Recht genügt, ist offen |
-| Banking: Legal Entity personal | Payload/Query `partyId` | derived Banking-Context, `yes` | gute Zielableitung; Party-Typ-Konsistenz ungeklärt |
-| Banking: Fiscal Year | Payload/Query `legalEntityId` → Legal Entity → Party | create derived; update/read ALL_OF | geschützt; Update prüft Quell- und Ziel-Party |
-| Banking: Bank Accounts | Legal Entity, tatsächlicher Account-Owner oder JWT-Actor | Provider-Operationen aktiv; personal read self-bound | geschützt; Delete löst den Owner serverseitig auf |
-| Banking: Creditor Identifiers | `legalEntityId` | derived, aktiv | Zielbindung vorhanden |
-| Banking: SEPA | Mandat/Collection/Payment/Message IDs bzw. Legal Entity | resource-derived, ALL_OF/EACH_TARGET; Personal Reads self-bound | geschützt; IDs werden serverseitig zu Legal Entity/Party/Banking-Context aufgelöst |
-| Shares: Types, Offers, Subscriptions | Payload/Query oder tatsächliche Ressource → Provider → App-Context; Personal über JWT-Actor | Provider-Reads/Writes aktiv, Personal self-bound | geschützt; Quell- und Zielressourcen werden bei Änderungen serverseitig aufgelöst |
-| Shares: Batch `update-statuses` | Payload-Provider plus DB-Provider jedes Ziels | EACH_TARGET/ALL_OF, aktiv | in SMA-596D geschlossen; leere Liste prüft den Payload-Provider |
-| Shares: History | Subscription-IDs → Provider → App-Context | `READ_SHARE_SUBSCRIPTIONS`/Management, EACH_TARGET | geschützt; jede Subscription wird serverseitig aufgelöst |
-| Distribution Points | Organization aus Provider/Payload/Actor | derived `DISTRIBUTION`-Context; Update prüft Quelle und Ziel | in SMA-596C geschlossen |
-| Auction | Payload/Header/Action | create/update/read teilweise geschützt; configure/delete/accept/import ohne sichtbaren Guard | vollständige Zielbindung noch nicht nachgewiesen |
-| Round | Payload-IDs | kein sichtbarer Route-Guard | create/state/export/evaluate/comment offen zu charakterisieren |
-| Bidders | Payload/Query | kein sichtbarer Route-Guard | search/add offen zu charakterisieren |
-| User/Profile | Actor, Payload oder Header | gemischt; Self-Service teilweise als Bypass im Guard | Header/Ziel-Manipulation und Self-vs-Admin getrennt testen |
+## RRCT und die übrigen Ressourcenpfade
 
-## Vollständige explizite `no`-Bestandsaufnahme
+- Ein Einzelrecht verlangt dieselbe Rolle und denselben Context in
+  `UserRoleContext` und `RoleRightContexts`. Der Eltern-/Kind-Baum
+  bestimmt Beziehungen und Pfade. Ein Recht wird durch den Baum allein
+  weder vererbt noch in einen anderen Context übertragen. Die DB-Regressionen
+  prüfen Einzelrecht, Alternativen und wiederholtes Kopieren der Policy.
+- `ANY_OF` sucht je geprüftem Context ein passendes Recht. Die leere
+  Alternativmenge ergibt false. `ALL_OF`/EACH_TARGET prüft alle ermittelten
+  Ziele, bei alternativen Rechten je Ziel separat. Für eine leere Menge
+  bleibt die Allquantifizierung mathematisch wahr. Das Fach-API legt
+  fest, ob ein leerer Auftrag zulässig ist.
+- SEPA-Batches, die mindestens ein Ziel verlangen, melden HTTP 400.
+  Shares-Statusbatches prüfen auch ohne Einträge den angegebenen Provider.
+  Shares-History ohne IDs liefert keine historischen Datensätze. Persönliche
+  Distribution ohne Mitgliedschaften liefert leere Resultate. Ein leerer
+  Auction-Löschauftrag ändert keine Daten. Die Antwortliste bleibt unabhängig
+  davon auf die Lese-Rechte des Actors beschränkt.
+- Die Permission-Write-Routen prüfen Rechte am explizit adressierten
+  Ziel-Context. Siehe
+  [Permission-Schreibpfade](permission-write-path-reachability.md).
+  Fachliche Ressourcen-IDs werden bei den folgenden Routen serverseitig
+  auf Contexts bezogen. Ein Header kann die Auflösung nicht ersetzen.
 
-Laut aktueller Branch-Inventur existieren im betrachteten Routing **keine aktiven expliziten `no`-Prüfungen** mehr (ursprünglich 42; kein vollständiger dynamischer Sicherheitsnachweis):
+| Bereich | Ressourcenbindung und Regression |
+| --- | --- |
+| Organization CRUD und Members | Organisationsobjekt und dessen Context werden in den Actions verwendet. Member-Updates bleiben auf bestehende Mitgliedschaften beschränkt. Das Entfernen eines Nichtmitglieds lässt unabhängige Context-Rollen intakt. |
+| Application↔Organization | Zielorganisation und UserApplication. Die Repository-Prüfung verlangt Mitgliedschaft. Der Produktvertrag für zusätzliche Manager-/Owner-Rechte bleibt offen. |
+| Banking | Legal Entity → Party → Banking-Context. Fiscal-Year-Updates prüfen Quelle und Ziel. Kontolöschung folgt dem gespeicherten Eigentümer, persönliche Konto-Reads dem JWT-Actor. Creditor Identifier sind an die Legal Entity gebunden. |
+| SEPA | Collections, Payments, Messages und Mandate aus Ressourcen-ID bzw. Legal Entity zum Banking-Context. Persönliche Reads und Links folgen dem Actor. #402/#403 decken leere und fremde Ziele, beide Contexts und Persistenz nach Ablehnung ab. |
+| Shares | Types, Offers, Subscriptions, Ownership Transfer, History und Import über gespeicherte Provider-, Subscription- und Zielbeziehungen. Persönliche Reads folgen dem Actor. #401–#403 decken Quellen und Ziele sowie Persistenz und Historie ab. |
+| Distribution Points | Zielorganisation aus Provider/Actor und gespeicherten Ressourcen. Update prüft Quell- und Zielorganisation. Die API-Regression prüft Cross-Context-Zugriff. |
 
-- Banking: Collections, Payments und Messages leiten ihre Contexts aus den
-  gespeicherten Zielressourcen ab. Batch-Operationen prüfen alle betroffenen
-  Ressourcen und lehnen leere Zielmengen ab. Persönliche Mandate und
-  Payment-Links sind an die JWT-Identität gebundene Self-Service-Pfade.
-- Shares: keine; der persönliche Subscription-Read ist als authentifizierter
-  Self-Service-Pfad an die JWT-Identität gebunden, und Import leitet den
-  Share-Management-Context aus dem Provider im Payload ab.
-- Distribution Points: keine; provider read, personal read, create und update
-  leiten ihre Contexts serverseitig ab. Update verwendet ALL_OF für Quell- und
-  Zielorganisation.
+## Offene Owner- und Manager-Regeln
 
-Routes ohne sichtbaren Permission-Schritt sind in der Matrix separat markiert;
-sie dürfen nicht automatisch mit den ursprünglich 42 expliziten Bypässen gleichgesetzt
-werden, weil eine Action noch eine interne Prüfung enthalten kann.
+| Entscheidung | Aktuelles Verhalten und Risiko | Optionen, Auswirkungen und Empfehlung |
+| --- | --- | --- |
+| Last Owner bei Rollenwechsel oder Austritt | Rollenneuzuweisung und Entfernen einer Mitgliedschaft sind getrennte fachliche Vorgänge. Eine gemeinsame Invariante für den letzten effektiven Owner ist noch zu spezifizieren. Ohne sie kann ein verwalteter Context seine Zuständigkeit verlieren. | Owner-Zahl bei jeder betroffenen Schreibtransaktion absichern oder das Verwaisen mit einer Plattform-Recovery zulassen. Die erste Variante verlangt einen Übergabeprozess, die zweite zusätzliche Recovery-Rechte und Auditierung. Empfehlung ist eine atomare Übergabe für Contexts mit verbindlichem Owner. |
+| Self-Lockout und Delegation | Inhaber administrativer Rechte können Rollen ändern. Der gewünschte Erhalt der eigenen administrativen Handlungsfähigkeit und die Wiederherstellung sind noch zu bestimmen. | Selbstentzug generell sperren oder gestatten, sobald ein weiterer berechtigter Admin übernimmt. Eine Sperre erschwert legitime Austritte. Empfehlung ist eine bestätigte Übergabe mit geprüften Restrechten und gesonderter Recovery. |
+| Mitgliedschaft und App-Verknüpfung | Die Verknüpfung verlangt derzeit Mitgliedschaft. Mitgliedschaft und die Übernahme administrativer Verantwortung für eine Anwendung sind unterschiedliche Vorgänge. | Verknüpfung für jedes Mitglied erhalten, ein ausdrückliches Organisationsrecht verlangen oder einen Freigabeprozess einführen. Die letzten beiden Optionen ändern Delegation bzw. UI-Abläufe. Empfehlung ist ein explizites Organisationsrecht nach Bestätigung der Rollenverantwortung. |
 
-## Bestätigte Defekte und Risiken
+Noch zu klären sind außerdem der bereichsübergreifende Geltungsbereich der
+Benutzer- und Bidder-Verzeichnisse, der Auction-Provisioning-Vertrag,
+die persönliche Bestätigung öffentlicher Gebote und die Konsistenz von
+`LegalEntityType` und Party-Typ. Rechtemodell und Entitlements
+bleiben getrennt. Eine über alle Schreibtransaktionen durchgesetzte
+Tenant-Invariante gehört in das Tenant-Kernmodell.
 
-### P0 – behoben auf SMA-596-Branch: `UpdateMember`-Löschfilter
+## Testnachweis
 
-Historischer Befund: `userId notInList roleIds` verglich User- mit
-Rollen-IDs und löschte ohne `memberId`-Filter potenziell fremde
-Rollenzuweisungen. **Bereits korrigiert** mit
-[Commit `2ca16465`](https://github.com/doctor-smith/solawi-bid/commit/2ca16465e741779ffce1723376a7f27e5a04827e):
-
-```kotlin
-UserRoleContext.deleteWhere {
-    (UserRoleContext.contextId eq organization.context.id) and
-        (UserRoleContext.userId eq memberId) and
-        (UserRoleContext.roleId notInList roleIds)
-}
-```
-
-[`OrganizationRoutingTests`](https://github.com/doctor-smith/solawi-bid/blob/40b50a39fe7335e93ced32fcfba5482c7e6a89dc/solawi-bid-backend/src/test/kotlin/org/solyton/solawi/bid/module/usermanagement/routing/organization-routing-tests.kt#L583-L675)
-enthält eine Regression-Assertion, dass beim Bearbeiten eines Mitglieds
-die Rollen des Owners erhalten bleiben. **Implementiert und im Code
-nachgewiesen; keine aktuelle Testausführung und keine Integration in
-`main` nachgewiesen.** Weitere Mitglieder, andere Contexts und
-Parallelitätsfälle bleiben für vertiefte Tests relevant.
-
-### Erledigt: Deklarierte Prüfungen waren deaktiviert
-
-Die SEPA-Schreiboperationen sind inzwischen resource-derived geschützt. Im
-Routing wird kein `no` mehr an einen Permission-Guard übergeben.
-
-### P1 – teilweise geschlossen: Application→Organization
-
-[`connectApplicationToOrganization`](https://github.com/doctor-smith/solawi-bid/blob/40b50a39fe7335e93ced32fcfba5482c7e6a89dc/solawi-bid-backend/src/main/kotlin/org/solyton/solawi/bid/module/application/repository/connect-applications-and-organizations.kt)
-ruft jetzt **`requireOrganizationMembership(organizationId, userId)`**
-vor der Mutation auf. In
-[`ApplicationOrganizationTests`](https://github.com/doctor-smith/solawi-bid/blob/40b50a39fe7335e93ced32fcfba5482c7e6a89dc/solawi-bid-backend/src/test/kotlin/org/solyton/solawi/bid/module/application/routing/appliction-organization-tests.kt#L109-L147)
-sind der negative API-Fall für eine fremde Organisation (erwartet 403)
-und der legitime Verbindungsweg im Testcode vorhanden.
-
-**Rest:** Mitgliedschaft ist kein nachgewiesenes Organisations-Manage-
-oder Owner-Recht. Fachliche Policy entscheiden, ob ein normales Mitglied
-Anwendungen verbinden und dadurch OWNER-Rollen im App-Context erzeugen
-darf. 403 allein beweist keinen fehlenden Seiteneffekt; gezielt prüfen.
-
-### Erledigt: ID-basierte SEPA-Reads lösen Ressourcen serverseitig auf
-
-SEPA-Downloads und Legal-Entity-Reads lösen
-`ID → Ressource → Legal Entity/Party → Banking-Context` auf. Der Client kann
-den Kontext nicht durch einen Header bestimmen. Shares-History und
-Share-Batch-Updates lösen ebenfalls jede Subscription serverseitig zum
-Provider-Context auf.
-
-### P2: Legal-Entity-Typ ist nicht gegen Party-Typ abgesichert
-
-`LegalEntityType` (`HUMAN`/`ORGANIZATION`) wird aus dem Request gespeichert und
-transformiert. In der untersuchten Route ist keine Konsistenzprüfung zur
-referenzierten Party sichtbar. Ob dies nur Datenqualität oder eine spätere
-Autorisierungsgrundlage betrifft, ist noch offen.
-
-## Regression-Baseline – tatsächlicher Fortschritt / nächste Schritte
-
-1. **SMA-596A – Organization Member Integrity:** Codefix `2ca16465`
-   und Regression-Assertion (Owner-Rollen bleiben bei Member-Update gleich)
-   vorhanden. Testlauf auf aktuellem HEAD und Last-Owner-/Cross-Context-
-   Varianten separat nachweisen.
-2. **SMA-596B – Application/Organization Cross-Boundary:** Membership-
-   Prüfung implementiert und 403-Negativfall in `ApplicationOrganizationTests`
-   vorhanden. Offen: Manager-/Owner-Policy, fehlende Seiteneffekte, Tests.
-3. **SMA-596C/D – Distribution & Shares:** Guards und Quell-/Ziel-
-   bzw. EACH_TARGET-Checks laut aktuellem Branch-Inventar aktiviert; konkrete
-   negative Testresultate für aktuellen SHA erfassen.
-4. **SEPA-Slices:** Mandates/Collections/Payments/Messages und ID-basierte
-   Reads laut Routing resource-derived geschützt; negative Tests einschließlich
-   Batch/leer/fremde Legal Entity und Seiteneffekten nachweisen.
-5. **Nächste Sicherheitsinventur:** `putUserRoleContext` (letzter Owner,
-   Self-Lockout), Auction, Round, Bidders, öffentliches `bid/send`, User/
-   Profile; pro realer Route Guard, serverseitige Ressource→Context-Bindung,
-   DB-Filter, Policy, positive/negative Tests und Rest-Risiko auflisten.
-
-**Teststand nicht verwechseln:** Existierender Kotlin-Testcode ist keine
-aktuell erfolgreiche Testausführung. Im [AI Command Coordination
-Channel #7](https://github.com/doctor-smith/ai-command/issues/7) berichtete
-Codex früher 8/8 Permission-API-, 7/7 Permission-DB- und 22/22 isolierte
-E2E-Tests; diese Berichte stammen **vor** den neuesten SMA-596-Slices.
-Für Branch-HEAD `40b50a39` wurde hier kein neuer lokaler Testlauf belegt.
-
-## Fakten, Annahmen, Unsicherheiten
-
-**Fakten**
-
-- Die äußere JWT-Topologie und ursprünglich 42 `no`-Stellen wurden aus dem
-  Routing erhoben; nach den bisherigen Slices verbleibt keine davon.
-- Die beiden direkten Permission-Schreibpfade leiten ihren Kontext inzwischen
-  aus dem Payload ab.
-- Der `UpdateMember`-Delete-Filter ist auf diesem Branch mit `2ca16465` korrigiert; ein Regression-Assert ist vorhanden.
-- Die App→Org-Verknüpfung verlangt jetzt Membership; ein stärkeres Organisations-Manage-/Owner-Recht ist noch nicht entschieden.
-- Es gibt im Backend keine gefundene explizite `tenantId`-Spalte oder
-  `Tenant`-Entität.
-
-**Annahmen**
-
-- Organization/Provider/Legal Entity bilden fachlich die beabsichtigten
-  Tenant-Grenzen. Diese Zuordnung muss als Produktentscheidung bestätigt
-  werden.
-- `no` ist gemäß SMA-604 unfertige Prüfung und keine bewusst öffentliche
-  Fachoperation.
-
-**Unsicherheiten**
-
-- Für Auction, Round und Bidders ist noch nicht für jede Action bewiesen, ob
-  sie intern dieselbe Zielbindung erzwingt.
-- Last-Owner-/Self-Lockout-Schutz in `putUserRoleContext` sowie vollständige
-  Ressource↔Context-/Tenant-Bindings und aktuelle Tests bleiben offen.
-- Die gewünschte Semantik für persönliche Reads gegenüber Management-Rechten
-  ist nicht überall dokumentiert.
-- Die verbindliche Regel für `LegalEntityType` gegenüber User/Organization ist
-  noch nicht entschieden.
-
-## Abschlusskriterium für SMA-596
-
-SMA-596 ist abnahmefähig, wenn (1) die umgesetzten Slices inklusive
-`UpdateMember`, App→Org, Shares, Distribution und SEPA mit aktuellen
-Testläufen/Reviews nachgewiesen sind, (2) die übrigen tatsächlichen Routes
-(Auction/Round/Bidders/User/Profile und weitere) inklusive interner
-Repository-/SQL-Filter in einer prüfbaren Ziel-/Context-/Policy-Matrix
-(`ALL_OF`, `ANY_OF`, `EACH_TARGET`, `RELATED_BY`) erfasst sind, (3) Owner-/
-Self-Lockout-Invarianten und Cross-Context-/Tenant-Bindungen geprüft und
-(4) offene P0/P1-Punkte als bewusste Entscheidungen/Folgeaufträge abgegrenzt
-sind. Ein Merge nach `main` ist ein gesondert freizugebender Schritt.
+Die Backend- und E2E-Ergebnisse werden je Commit in der Integrations-PR
+und in Jira protokolliert. `regressionTest` und `securityTest` erfassen
+jetzt denselben gezielt klassifizierten HTTP-Regressionstest für die
+persönlichen SEPA-Mandate. Die Testfälle zur Context- und Datenbankisolation
+liegen in den Backend-API- und DB-Suiten.
